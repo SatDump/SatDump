@@ -2875,7 +2875,6 @@
                         "white_balance": true,
                         "geo_correct": true,
                         "description": "descriptions/221.md"
-
                     },
                     "AVHRR 124 False Color": {
                         "equation": "ch3, ch8, 1-ch1",
@@ -3029,7 +3028,7 @@
                         "autogen": false
                     },
                     "SSEC 89 GHz AMSU-B BT": {
-                        "channels": "cch1", 
+                        "channels": "cch1",
                         "lut": "lut/cal/ssec_amsu.png",
                         "calib_cfg": {
                             "cch1": {
@@ -3350,7 +3349,7 @@
                         "autogen": false
                     },
                     "SSEC 89 GHz AMSU-A BT": {
-                        "channels": "cch15", 
+                        "channels": "cch15",
                         "lut": "lut/cal/ssec_amsu.png",
                         "calib_cfg": {
                             "cch15": {
