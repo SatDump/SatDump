@@ -1,4 +1,7 @@
 #include "ceres_reader.h"
+#include "common/ccsds/ccsds_time.h"
+
+#include "common/utils.h"
 
 namespace aqua
 {
@@ -45,12 +48,31 @@ namespace aqua
                 Anyway. It works.
                 */
 
-                channels[0][lines * 660 + i] = packet.payload[18 + (10 * i) + 3] << 8;
-                channels[1][lines * 660 + i] = packet.payload[18 + (10 * i) + 2] << 8;
-                channels[2][lines * 660 + i] = (packet.payload[18 + (10 * i) + 4] << 4 | packet.payload[19 + (10 * i) + 5] >> 4) << 4;
+                uint8_t *ptr = &packet.payload[18 + 10 * i];
+
+                uint16_t longwave = ptr[2] << 4 | (ptr[1] & 0xF);
+                uint16_t shortwave = ptr[3] << 4 | ptr[4] >> 4;
+
+                uint8_t v1 = (ptr[4] & 0xF);
+                uint8_t v2 = (ptr[5] >> 4);
+                uint8_t v3 = (ptr[5] & 0xF);
+                uint8_t v4 = (ptr[0] >> 4);
+
+                uint16_t total = v1 << 8 | v2 << 4; //| v3;
+
+                channels[0][lines * 660 + i] = longwave << 4;  // packet.payload[18 + (10 * i) + 3] << 8;
+                channels[1][lines * 660 + i] = shortwave << 4; // packet.payload[18 + (10 * i) + 2] << 8;
+                channels[2][lines * 660 + i] = total << 4;     //(packet.payload[18 + (10 * i) + 4] << 4 | packet.payload[18 + (10 * i) + 5] >> 4) << 4;
+
+                uint16_t azimuth = ptr[8] << 8 | ptr[9];
+
+                //                printf("Azimuth %f \n", double(azimuth) / 2047.0);
             }
 
             lines++;
+
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383) + 3.3);
 
             for (int i = 0; i < 3; i++)
                 channels[i].resize((lines + 1) * 660);
@@ -58,7 +80,24 @@ namespace aqua
 
         image::Image CERESReader::getImage(int channel)
         {
-            return image::Image(channels[channel].data(), 16, 660, lines, 1);
+            image::Image orin(channels[channel].data(), 16, 660, lines, 1);
+
+            image::Image final(16, 330, lines * 2, 1);
+
+            for (int i = 0; i < lines; i++)
+            {
+                for (int x = 0; x < 330; x++)
+                {
+                    int offset2 = x + 330 + 5;
+                    final.set(0, x, i * 2 + 0, orin.get(0, x + 0, i));
+                    if (offset2 >= 0 && offset2 < 660)
+                        final.set(0, 329 - x, i * 2 + 1, orin.get(0, offset2, i));
+                }
+            }
+
+            final.crop(64, 64 + 206);
+
+            return final;
         }
     } // namespace ceres
 } // namespace aqua

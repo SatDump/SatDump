@@ -17,6 +17,7 @@ namespace aqua
             CERESReader();
             ~CERESReader();
             int lines;
+            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             image::Image getImage(int channel);
         };

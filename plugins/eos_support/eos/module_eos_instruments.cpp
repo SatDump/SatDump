@@ -125,10 +125,10 @@ namespace eos
                     }
                     else if (vcdu.vcid == 15) // CERES FM-4
                     {
-                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid15.work(cadu);
-                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                            if (pkt.header.apid == 157)
-                                ceres_fm4_reader.work(pkt);
+                       // std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid15.work(cadu);
+                       // for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                           // if (pkt.header.apid == 157)
+                            //    ceres_fm4_reader.work(pkt);
                     }
                 }
                 else if (d_satellite == AURA)
@@ -384,21 +384,53 @@ namespace eos
                 logger->info("Lines (FM3) : " + std::to_string(ceres_fm3_reader.lines));
                 logger->info("Lines (FM4) : " + std::to_string(ceres_fm4_reader.lines));
 
-                auto img = ceres_fm3_reader.getImage(0);
-                image::save_img(img, directory + "/CERES1-SHORTWAVE");
-                img = ceres_fm3_reader.getImage(1);
-                image::save_img(img, directory + "/CERES1-LONGWAVE");
-                img = ceres_fm3_reader.getImage(2);
-                image::save_img(img, directory + "/CERES1-TOTAL");
-                ceres_fm3_status = DONE;
+                {
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CERES-FM3";
 
-                img = ceres_fm4_reader.getImage(0);
-                image::save_img(img, directory + "/CERES2-SHORTWAVE");
-                img = ceres_fm4_reader.getImage(1);
-                image::save_img(img, directory + "/CERES2-LONGWAVE");
-                img = ceres_fm4_reader.getImage(2);
-                image::save_img(img, directory + "/CERES2-TOTAL");
-                ceres_fm4_status = DONE;
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    satdump::ImageProducts ceres_products;
+                    ceres_products.instrument_name = "ceres";
+                    ceres_products.has_timestamps = true;
+                    ceres_products.set_tle(satellite_tle);
+                    ceres_products.bit_depth = 16;
+                    ceres_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    ceres_products.set_timestamps(ceres_fm3_reader.timestamps);
+                    ceres_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_ceres_fm3.json")));
+
+                    ceres_products.images.push_back({"CERES-LONGWAVE", "l", ceres_fm3_reader.getImage(0)});
+                    ceres_products.images.push_back({"CERES-SHORTWAVE", "s", ceres_fm3_reader.getImage(1)});
+                    ceres_products.images.push_back({"CERES-TOTAL", "t", ceres_fm3_reader.getImage(2)});
+
+                    ceres_products.save(directory);
+                    dataset.products_list.push_back("CERES-FM3");
+                    ceres_fm3_status = DONE;
+                }
+
+                {
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CERES-FM4";
+
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    satdump::ImageProducts ceres_products;
+                    ceres_products.instrument_name = "ceres";
+                    ceres_products.has_timestamps = true;
+                    ceres_products.set_tle(satellite_tle);
+                    ceres_products.bit_depth = 16;
+                    ceres_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    ceres_products.set_timestamps(ceres_fm4_reader.timestamps);
+                    ceres_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_ceres_fm4.json")));
+
+                    ceres_products.images.push_back({"CERES-LONGWAVE", "l", ceres_fm4_reader.getImage(0)});
+                    ceres_products.images.push_back({"CERES-SHORTWAVE", "s", ceres_fm4_reader.getImage(1)});
+                    ceres_products.images.push_back({"CERES-TOTAL", "t", ceres_fm4_reader.getImage(2)});
+
+                    ceres_products.save(directory);
+                    dataset.products_list.push_back("CERES-FM4");
+                    ceres_fm3_status = DONE;
+                }
             }
 
             if (d_satellite == AURA) // OMI

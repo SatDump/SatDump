@@ -39,11 +39,6 @@ public:
     ImageViewWidget();
     ~ImageViewWidget();
 
-    void recenter()
-    {
-        autoFitNextFrame = true;
-    }
-
     std::function<void(int x, int y)> mouseCallback = [](int, int) {}; // Function that can be used to handle mouse events
 
     void update(image::Image &image);
