@@ -7,11 +7,11 @@
 
 namespace nat2pro
 {
-    class MHSNatCalibrator : public satdump::ImageProducts::CalibratorBase
+    class AVHRRNatCalibrator : public satdump::ImageProducts::CalibratorBase
     {
 
     public:
-        MHSNatCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+        AVHRRNatCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
         {
         }
 
@@ -24,11 +24,10 @@ namespace nat2pro
             if (px_val == 0)
                 return CALIBRATION_INVALID_VALUE;
 
-            double physical_units = double(px_val << 4);
-
-            physical_units /= 1000 * 1000 * 10;
-
-            return physical_units;
+            if (channel == 2 || channel == 3)
+                return (double(px_val) - 32768) / 10000;
+            else
+                return (double(px_val) - 32768) / 100;
         }
     };
 }

@@ -15,6 +15,8 @@ namespace nat2pro
         int all_gcps = 0;
         nlohmann::json gcps_all;
 
+        std::vector<double> wavenumbers(5);
+
         size_t current_ptr = 0;
         while (current_ptr < nat_file.size())
         {
@@ -58,7 +60,7 @@ namespace nat2pro
                         ((uint8_t *)&val)[1] = nat_file[current_ptr + 83 + (i * 5 + c) * 4 + 2];
                         ((uint8_t *)&val)[0] = nat_file[current_ptr + 83 + (i * 5 + c) * 4 + 3];
                         // logger->info("%d", val);
-                        mhs_data[c][(number_of_lines - 1) * image_width + i] = val >> 4;
+                        mhs_data[c][(number_of_lines - 1) * image_width + (89 - i)] = val >> 4;
                     }
                 }
 
@@ -70,13 +72,13 @@ namespace nat2pro
                     double lat_last = get_deg_latlon(&nat_file[current_ptr + 4030 + 0]);
                     double lon_last = get_deg_latlon(&nat_file[current_ptr + 4030 + 4]);
 
-                    gcps_all[all_gcps]["x"] = 0;
+                    gcps_all[all_gcps]["x"] = image_width - 1;
                     gcps_all[all_gcps]["y"] = number_of_lines - 1;
                     gcps_all[all_gcps]["lat"] = lat_first;
                     gcps_all[all_gcps]["lon"] = lon_first;
                     all_gcps++;
 
-                    gcps_all[all_gcps]["x"] = image_width - 1;
+                    gcps_all[all_gcps]["x"] = 0;
                     gcps_all[all_gcps]["y"] = number_of_lines - 1;
                     gcps_all[all_gcps]["lat"] = lat_last;
                     gcps_all[all_gcps]["lon"] = lon_last;
@@ -89,7 +91,7 @@ namespace nat2pro
                             continue;
                         double lat = get_deg_latlon(&nat_file[current_ptr + 3318 + i * 8 + 0]);
                         double lon = get_deg_latlon(&nat_file[current_ptr + 3318 + i * 8 + 4]);
-                        gcps_all[all_gcps]["x"] = px;
+                        gcps_all[all_gcps]["x"] = 89 - px;
                         gcps_all[all_gcps]["y"] = number_of_lines - 1;
                         gcps_all[all_gcps]["lat"] = lat;
                         gcps_all[all_gcps]["lon"] = lon;
@@ -111,7 +113,7 @@ namespace nat2pro
             mhs_products.instrument_name = "mhs";
             // mhs_products.has_timestamps = true;
             // mhs_products.set_tle(satellite_tle);
-            mhs_products.bit_depth = 10;
+            mhs_products.bit_depth = 16;
             // mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
             // mhs_products.set_timestamps(avhrr_reader.timestamps);
             // mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
@@ -131,14 +133,13 @@ namespace nat2pro
             // calib
             nlohmann::json calib_cfg;
             calib_cfg["calibrator"] = "metop_mhs_nat";
-            /*  mhs_products.set_calibration(calib_cfg);
-              for (int n = 0; n < 3; n++)
-              {
-                  mhs_products.set_calibration_type(n, mhs_products.CALIB_REFLECTANCE);
-                  mhs_products.set_calibration_type(n + 3, mhs_products.CALIB_RADIANCE);
-              }
-              for (int c = 0; c < 6; c++)
-                  mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>()); */
+            calib_cfg["wavenumbers"] = calib_coefs["MetOp-B"]["wavenumber"];
+            mhs_products.set_calibration(calib_cfg);
+            for (int n = 0; n < 5; n++)
+            {
+                mhs_products.set_calibration_type(n, mhs_products.CALIB_RADIANCE);
+                mhs_products.set_calibration_default_radiance_range(n, calib_coefs["all"]["default_display_range"][n][0].get<double>(), calib_coefs["all"]["default_display_range"][n][1].get<double>());
+            }
 
             if (!std::filesystem::exists(pro_output_file))
                 std::filesystem::create_directories(pro_output_file);

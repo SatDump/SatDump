@@ -56,6 +56,27 @@ namespace nat2pro
                  identifier[555] == 'x')
             decodeMHSNat(nat_file, pro_output_file);
 
+        // MetOp AMSU(A) Nat
+        else if (identifier[552] == 'A' &&
+                 identifier[553] == 'M' &&
+                 identifier[554] == 'S' &&
+                 identifier[555] == 'A')
+            decodeAMSUNat(nat_file, pro_output_file);
+
+        // MetOp HIRS Nat
+        else if (identifier[552] == 'H' &&
+                 identifier[553] == 'I' &&
+                 identifier[554] == 'R' &&
+                 identifier[555] == 'S')
+            decodeHIRSNat(nat_file, pro_output_file);
+
+        // MetOp IASI Nat
+        else if (identifier[552] == 'I' &&
+                 identifier[553] == 'A' &&
+                 identifier[554] == 'S' &&
+                 identifier[555] == 'I')
+            decodeIASINat(nat_file, pro_output_file);
+
         else
             logger->error("Unknown File Type!");
 
