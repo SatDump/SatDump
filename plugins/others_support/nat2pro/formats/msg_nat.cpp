@@ -237,14 +237,14 @@ namespace nat2pro
         proj.type = proj::ProjType_Geos;
         proj.params.sweep_x = false;
         proj.params.altitude = 35785831.00;
-        proj.proj_offset_x = -5568748.275756353; // 6378169;
-        proj.proj_offset_y = 5568748.275756353;  // 6356583.80;
+        proj.proj_offset_x = -5568748.275756353;                                                      // 6378169;
+        proj.proj_offset_y = vis_ir_y_size == 1392 ? /*RSS CASE*/ 5572548.275756 : 5568748.275756353; // 6356583.80;
         proj.proj_scalar_x = 3000.403165817;
         proj.proj_scalar_y = -3000.403165817;
         proj.lam0 = longitude * DEG2RAD;
         nlohmann::json proj_cfg = proj;
         proj_cfg["width"] = 3712;
-        proj_cfg["height"] = 3712;
+        proj_cfg["height"] = vis_ir_y_size; // 3712;
         //        proj_cfg["type"] = "geos";
         //        proj_cfg["lon"] = longitude;
         //        proj_cfg["alt"] = 35792.74;
@@ -260,6 +260,23 @@ namespace nat2pro
             if (bandsel[channel] != 'X')
                 continue;
             vis_ir_imgs[channel].mirror(true, true);
+
+            // Special case for RSS
+            if (channel == 11 && vis_ir_y_size == 1392)
+            {
+                auto img = vis_ir_imgs[channel];
+                vis_ir_imgs[channel].fill(0);
+                for (int i = 0; i < hrv_x_size; i++)
+                {
+                    for (int c = 0; c < hrv_y_size; c++)
+                    {
+                        int offset = i - 2690;
+                        if (offset >= 0 && offset < hrv_x_size)
+                            vis_ir_imgs[channel].set(0, offset, c, img.get(0, i, c));
+                    }
+                }
+            }
+
             seviri_products.images.push_back({"SEVIRI-" + std::to_string(channel + 1), std::to_string(channel + 1), vis_ir_imgs[channel]});
         }
 
