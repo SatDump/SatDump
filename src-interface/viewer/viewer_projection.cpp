@@ -389,11 +389,14 @@ namespace satdump
                         }
                         ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
 
-                        ImGui::Separator();
-                        auto js = image::get_metadata_proj_cfg(layer.img);
-                        widgets::JSONTableEditor(js, "THEJSONEDITOR");
-                        image::set_metadata_proj_cfg(layer.img, js);
-                        ImGui::Separator();
+                        if (layer.allow_editor)
+                        {
+                            ImGui::Separator();
+                            auto js = image::get_metadata_proj_cfg(layer.img);
+                            widgets::JSONTableEditor(js, "THEJSONEDITOR");
+                            image::set_metadata_proj_cfg(layer.img, js);
+                            ImGui::Separator();
+                        }
 
                         ImGui::EndGroup();
                     }

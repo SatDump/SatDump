@@ -25,6 +25,7 @@ namespace satdump
         bool enabled = true;
         float progress = 0;
         bool old_algo = false;
+        bool allow_editor = false;
 
         unsigned int preview_texid = 0;
         unsigned int getPreview()
