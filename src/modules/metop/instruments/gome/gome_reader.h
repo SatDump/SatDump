@@ -6,14 +6,20 @@
 #define cimg_display 0
 #include "CImg.h"
 
-class GOMEReader
+namespace metop
 {
-private:
-    unsigned short *channels[6144];
+    namespace gome
+    {
+        class GOMEReader
+        {
+        private:
+            unsigned short *channels[6144];
 
-public:
-    GOMEReader();
-    int lines;
-    void work(libccsds::CCSDSPacket &packet);
-    cimg_library::CImg<unsigned short> getChannel(int channel);
-};
+        public:
+            GOMEReader();
+            int lines;
+            void work(libccsds::CCSDSPacket &packet);
+            cimg_library::CImg<unsigned short> getChannel(int channel);
+        };
+    } // namespace gome
+} // namespace metop

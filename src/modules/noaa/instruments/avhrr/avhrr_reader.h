@@ -8,15 +8,18 @@
 
 namespace noaa
 {
-    class AVHRRReader
+    namespace avhrr
     {
-    private:
-        unsigned short *channels[5];
+        class AVHRRReader
+        {
+        private:
+            unsigned short *channels[5];
 
-    public:
-        AVHRRReader();
-        int lines;
-        void work(uint16_t *buffer);
-        cimg_library::CImg<unsigned short> getChannel(int channel);
-    };
+        public:
+            AVHRRReader();
+            int lines;
+            void work(uint16_t *buffer);
+            cimg_library::CImg<unsigned short> getChannel(int channel);
+        };
+    } // namespace avhrr
 } // namespace noaa

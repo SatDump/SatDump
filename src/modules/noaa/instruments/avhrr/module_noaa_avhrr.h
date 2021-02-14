@@ -7,17 +7,22 @@
 #include <dsp/costas_loop.h>
 #include <dsp/clock_recovery_mm.h>
 
-class NOAAAVHRRDecoderModule : public ProcessingModule
+namespace noaa
 {
-protected:
+    namespace avhrr
+    {
+        class NOAAAVHRRDecoderModule : public ProcessingModule
+        {
+        protected:
+        
+        public:
+            NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            void process();
 
-
-public:
-    NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-    void process();
-
-public:
-    static std::string getID();
-    static std::vector<std::string> getParameters();
-    static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-};
+        public:
+            static std::string getID();
+            static std::vector<std::string> getParameters();
+            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        };
+    } // namespace avhrr
+} // namespace noaa

@@ -44,25 +44,25 @@ void registerModules()
     modules_registry.emplace(QPSKDemodModule::getID(), QPSKDemodModule::getInstance);
     modules_registry.emplace(OQPSKDemodModule::getID(), OQPSKDemodModule::getInstance);
 
-    modules_registry.emplace(MetOpAHRPTDecoderModule::getID(), MetOpAHRPTDecoderModule::getInstance);
-    modules_registry.emplace(MetOpAVHRRDecoderModule::getID(), MetOpAVHRRDecoderModule::getInstance);
-    modules_registry.emplace(MetOpMHSDecoderModule::getID(), MetOpMHSDecoderModule::getInstance);
-    modules_registry.emplace(MetOpIASIDecoderModule::getID(), MetOpIASIDecoderModule::getInstance);
-    modules_registry.emplace(MetOpAMSUDecoderModule::getID(), MetOpAMSUDecoderModule::getInstance);
-    modules_registry.emplace(MetOpGOMEDecoderModule::getID(), MetOpGOMEDecoderModule::getInstance);
+    modules_registry.emplace(metop::MetOpAHRPTDecoderModule::getID(), metop::MetOpAHRPTDecoderModule::getInstance);
+    modules_registry.emplace(metop::avhrr::MetOpAVHRRDecoderModule::getID(), metop::avhrr::MetOpAVHRRDecoderModule::getInstance);
+    modules_registry.emplace(metop::mhs::MetOpMHSDecoderModule::getID(), metop::mhs::MetOpMHSDecoderModule::getInstance);
+    modules_registry.emplace(metop::iasi::MetOpIASIDecoderModule::getID(), metop::iasi::MetOpIASIDecoderModule::getInstance);
+    modules_registry.emplace(metop::amsu::MetOpAMSUDecoderModule::getID(), metop::amsu::MetOpAMSUDecoderModule::getInstance);
+    modules_registry.emplace(metop::gome::MetOpGOMEDecoderModule::getID(), metop::gome::MetOpGOMEDecoderModule::getInstance);
 
-    modules_registry.emplace(FengyunAHRPTDecoderModule::getID(), FengyunAHRPTDecoderModule::getInstance);
-    modules_registry.emplace(FengyunMPTDecoderModule::getID(), FengyunMPTDecoderModule::getInstance);
-    modules_registry.emplace(FengyunVIRRDecoderModule::getID(), FengyunVIRRDecoderModule::getInstance);
+    modules_registry.emplace(fengyun::FengyunAHRPTDecoderModule::getID(), fengyun::FengyunAHRPTDecoderModule::getInstance);
+    modules_registry.emplace(fengyun::FengyunMPTDecoderModule::getID(), fengyun::FengyunMPTDecoderModule::getInstance);
+    modules_registry.emplace(fengyun::virr::FengyunVIRRDecoderModule::getID(), fengyun::virr::FengyunVIRRDecoderModule::getInstance);
 
-    modules_registry.emplace(AquaDBDecoderModule::getID(), AquaDBDecoderModule::getInstance);
-    modules_registry.emplace(AquaAIRSDecoderModule::getID(), AquaAIRSDecoderModule::getInstance);
-    modules_registry.emplace(AquaAMSUDecoderModule::getID(), AquaAMSUDecoderModule::getInstance);
+    modules_registry.emplace(aqua::AquaDBDecoderModule::getID(), aqua::AquaDBDecoderModule::getInstance);
+    modules_registry.emplace(aqua::airs::AquaAIRSDecoderModule::getID(), aqua::airs::AquaAIRSDecoderModule::getInstance);
+    modules_registry.emplace(aqua::amsu::AquaAMSUDecoderModule::getID(), aqua::amsu::AquaAMSUDecoderModule::getInstance);
 
-    modules_registry.emplace(EOSMODISDecoderModule::getID(), EOSMODISDecoderModule::getInstance);
+    modules_registry.emplace(eos::modis::EOSMODISDecoderModule::getID(), eos::modis::EOSMODISDecoderModule::getInstance);
 
-    modules_registry.emplace(NOAAHRPTDemodModule::getID(), NOAAHRPTDemodModule::getInstance);
-    modules_registry.emplace(NOAAAVHRRDecoderModule::getID(), NOAAAVHRRDecoderModule::getInstance);
+    modules_registry.emplace(noaa::NOAAHRPTDemodModule::getID(), noaa::NOAAHRPTDemodModule::getInstance);
+    modules_registry.emplace(noaa::avhrr::NOAAAVHRRDecoderModule::getID(), noaa::avhrr::NOAAAVHRRDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
