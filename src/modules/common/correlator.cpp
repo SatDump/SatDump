@@ -6,7 +6,6 @@
  */
 
 #include "correlator.h"
-#include <SatHelper/exceptions/WordSizeException.h>
 #include <memory.h>
 #include <iostream>
 
@@ -29,7 +28,7 @@ Correlator::~Correlator() {
 
 void Correlator::addWord(uint32_t word) {
     if (currentWordSize != 0 && currentWordSize != 32) {
-        throw WordSizeException(32, currentWordSize);
+       // throw WordSizeException(32, currentWordSize);
     }
     VecU8 wordVec;
 
@@ -46,7 +45,7 @@ void Correlator::addWord(uint32_t word) {
 
 void Correlator::addWord(uint64_t word) {
     if (currentWordSize != 0 && currentWordSize != 64) {
-        throw WordSizeException(64, currentWordSize);
+        //throw WordSizeException(64, currentWordSize);
     }
     VecU8 wordVec;
 
