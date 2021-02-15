@@ -72,9 +72,8 @@ Pipeline meteor_hrpt = {"meteor_hrpt", {{"dem", {{"meteor_hrpt_demod", {/*{"samp
                                                                         {"buffer_size", "8192"}}}}},
                                         {"cadu", {{"meteor_hrpt_decoder", {}}}},
                                         {"products", {
-                                                         {"meteor_msumr", {}} /*,
-                                                         {"aqua_airs", {}},
-                                                         {"aqua_amsu", {}}*/
+                                                         {"meteor_msumr", {}},
+                                                         {"meteor_mtvza", {}}
                                                      }}}};
 
 Pipeline npp_hrd = {"npp_hrd", {{"soft", {{"qpsk_demod", {/*{"samplerate", "6000000"},*/

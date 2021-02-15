@@ -37,6 +37,11 @@ target_link_libraries(satdump PUBLIC ${DSP_LIBRARY})
 
 target_link_libraries (satdump PUBLIC correct aec jpeg)
 
+# FMT
+find_package(fmt REQUIRED)
+target_include_directories(satdump PUBLIC ${fmt_INCLUDE_DIRS})
+target_link_libraries(satdump PUBLIC fmt::fmt)
+
 if(WIN32 AND NOT MINGW)
     find_package(PNG CONFIG REQUIRED)
 else()
