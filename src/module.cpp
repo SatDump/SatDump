@@ -52,6 +52,9 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
 
 #include "modules/proba/module_proba_s_decoder.h"
+#include "modules/proba/instruments/swap/module_proba_swap.h"
+#include "modules/proba/instruments/chris/module_proba_chris.h"
+#include "modules/proba/instruments/hrc/module_proba_hrc.h"
 
 void registerModules()
 {
@@ -93,6 +96,9 @@ void registerModules()
     modules_registry.emplace(jpss::viirs::JPSSVIIRSDecoderModule::getID(), jpss::viirs::JPSSVIIRSDecoderModule::getInstance);
 
     modules_registry.emplace(proba::ProbaSDecoderModule::getID(), proba::ProbaSDecoderModule::getInstance);
+    modules_registry.emplace(proba::swap::ProbaSWAPDecoderModule::getID(), proba::swap::ProbaSWAPDecoderModule::getInstance);
+    modules_registry.emplace(proba::chris::ProbaCHRISDecoderModule::getID(), proba::chris::ProbaCHRISDecoderModule::getInstance);
+    modules_registry.emplace(proba::hrc::ProbaHRCDecoderModule::getID(), proba::hrc::ProbaHRCDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

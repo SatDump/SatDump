@@ -85,7 +85,8 @@ Pipeline npp_hrd = {"npp_hrd", {{"soft", {{"qpsk_demod", {/*{"samplerate", "6000
                                                           {"costas_bw", "0.001"},
                                                           {"buffer_size", "8192"}}}}},
                                 {"cadu", {{"npp_hrd_decoder", {{"viterbi_outsync_after", "5"}, {"viterbi_ber_thresold", "0.170"}, {"soft_symbols", "1"}}}}},
-                                {"products", {{"jpss_viirs", {{"npp_mode", "1"}}}, {"jpss_atms", {{"npp_mode", "1"}}
+                                {"products", {{"jpss_viirs", {{"npp_mode", "1"}}}, {
+                                                                                       "jpss_atms", {{"npp_mode", "1"}}
                                                                                        /*,
                                                                      {"metop_mhs", {}},
                                                                      {"metop_amsu", {}},
@@ -101,21 +102,19 @@ Pipeline proba1_dump = {"proba1_dump", {
                                                                      {"rrc_taps", "31"},
                                                                      {"costas_bw", "0.004"},
                                                                      {"buffer_size", "8192"}}}}},
-                                           {"cadu", {{"proba_s_decoder", {{"derandomize", "0"}}}}} /*,
-                            {"products", {{"fengyun_mersi2", {}}}}*/
+                                           {"cadu", {{"proba_s_decoder", {{"derandomize", "0"}}}}} ,
+                            {"products", {{"proba_chris", {}}, {"proba_hrc", {}}}}
                                        }};
 
-Pipeline proba2_dump = {"proba2_dump", {
-                                           {"soft", {{"bpsk_demod", {/*{"samplerate", "6000000"},*/
-                                                                     {"symbolrate", "2000000"},
-                                                                     {"agc_rate", "0.000001"},
-                                                                     {"rrc_alpha", "0.5"},
-                                                                     {"rrc_taps", "31"},
-                                                                     {"costas_bw", "0.004"},
-                                                                     {"buffer_size", "8192"}}}}},
-                                           {"cadu", {{"proba_s_decoder", {{"derandomize", "0"}}}}} /*,
-                            {"products", {{"fengyun_mersi2", {}}}}*/
-                                       }};
+Pipeline proba2_dump = {"proba2_dump", {{"soft", {{"bpsk_demod", {/*{"samplerate", "6000000"},*/
+                                                                  {"symbolrate", "2000000"},
+                                                                  {"agc_rate", "0.000001"},
+                                                                  {"rrc_alpha", "0.5"},
+                                                                  {"rrc_taps", "31"},
+                                                                  {"costas_bw", "0.004"},
+                                                                  {"buffer_size", "8192"}}}}},
+                                        {"cadu", {{"proba_s_decoder", {{"derandomize", "0"}}}}},
+                                        {"products", {{"proba_swap", {}}}}}};
 
 Pipeline probavs_s_dump = {"probav_s_dump", {
                                                 {"soft", {{"bpsk_demod", {/*{"samplerate", "6000000"},*/
