@@ -87,6 +87,12 @@ int main(int argc, char *argv[])
         meteor_hrpt.run(input_file, output_file, parameters, input_level);
     else if (downlink_pipeline == "npp_hrd")
         npp_hrd.run(input_file, output_file, parameters, input_level);
+    else if (downlink_pipeline == "proba1_dump")
+        proba1_dump.run(input_file, output_file, parameters, input_level);
+    else if (downlink_pipeline == "proba2_dump")
+        proba2_dump.run(input_file, output_file, parameters, input_level);
+    else if (downlink_pipeline == "probav_s_dump")
+        probavs_s_dump.run(input_file, output_file, parameters, input_level);
 
     logger->info("Done! Goodbye");
 }

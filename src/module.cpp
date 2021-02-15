@@ -17,6 +17,7 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 
 #include "modules/module_qpsk_demod.h"
 #include "modules/module_oqpsk_demod.h"
+#include "modules/module_bpsk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
@@ -44,11 +45,17 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 
 #include "modules/npp/module_npp_hrd_decoder.h"
 
+#include "modules/jpss/instruments/atms/module_jpss_atms.h"
+#include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
+
+#include "modules/proba/module_proba_s_decoder.h"
+
 void registerModules()
 {
     // Register modules
     modules_registry.emplace(QPSKDemodModule::getID(), QPSKDemodModule::getInstance);
     modules_registry.emplace(OQPSKDemodModule::getID(), OQPSKDemodModule::getInstance);
+    modules_registry.emplace(BPSKDemodModule::getID(), BPSKDemodModule::getInstance);
 
     modules_registry.emplace(metop::MetOpAHRPTDecoderModule::getID(), metop::MetOpAHRPTDecoderModule::getInstance);
     modules_registry.emplace(metop::avhrr::MetOpAVHRRDecoderModule::getID(), metop::avhrr::MetOpAVHRRDecoderModule::getInstance);
@@ -75,6 +82,11 @@ void registerModules()
     modules_registry.emplace(meteor::msumr::METEORMSUMRDecoderModule::getID(), meteor::msumr::METEORMSUMRDecoderModule::getInstance);
 
     modules_registry.emplace(npp::NPPHRDDecoderModule::getID(), npp::NPPHRDDecoderModule::getInstance);
+
+    modules_registry.emplace(jpss::atms::JPSSATMSDecoderModule::getID(), jpss::atms::JPSSATMSDecoderModule::getInstance);
+    modules_registry.emplace(jpss::viirs::JPSSVIIRSDecoderModule::getID(), jpss::viirs::JPSSVIIRSDecoderModule::getInstance);
+
+    modules_registry.emplace(proba::ProbaSDecoderModule::getID(), proba::ProbaSDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

@@ -29,7 +29,7 @@ target_link_libraries(satdump PUBLIC Spdlog::Spdlog)
 find_library(DSP_LIBRARY dsp REQUIRED)
 target_link_libraries(satdump PUBLIC ${DSP_LIBRARY})
 
-target_link_libraries (satdump PUBLIC "correct")
+target_link_libraries (satdump PUBLIC correct aec)
 
 if(WIN32 AND NOT MINGW)
     find_package(PNG CONFIG REQUIRED)
