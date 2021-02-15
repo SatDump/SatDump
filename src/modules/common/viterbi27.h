@@ -24,7 +24,7 @@ namespace SatHelper {
         int BER;
         bool calculateErrors;
 
-        static uint32_t calculateError(uint8_t *original, uint8_t *corrected, int length);
+       // static uint32_t calculateError(uint8_t *original, uint8_t *corrected, int length);
 
         void decode_generic(uint8_t *input, uint8_t *output);
         void encode_generic(uint8_t *input, uint8_t *output);

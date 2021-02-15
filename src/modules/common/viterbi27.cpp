@@ -5,7 +5,7 @@
  *      Author: lucas
  */
 
-#include "SatHelper/SIMD/MemoryOp.h"
+//#include "SatHelper/SIMD/MemoryOp.h"
 
 extern "C" {
 #include <correct.h>
@@ -14,11 +14,9 @@ extern "C" {
     #endif
 }
 
-#include <SatHelper/viterbi27.h>
+#include "viterbi27.h"
 #include <memory.h>
 #include <cstring>
-#include <SatHelper/correlator.h>
-#include <SatHelper/exceptions/ViterbiCreationException.h>
 
 using namespace SatHelper;
 
@@ -42,41 +40,13 @@ Viterbi27::Viterbi27(int frameBits, int polyA, int polyB) {
     //}
 
     if (viterbi == NULL) {
-        throw ViterbiCreationException();
+        //throw ViterbiCreationException();
     }
     this->checkDataPointer = new uint8_t[this->frameBits * 2];
 }
 
 Viterbi27::~Viterbi27() {
     delete[] this->checkDataPointer;
-}
-
-void Viterbi27::encode_sse4(uint8_t *input, uint8_t *output) {
-    #ifdef MEMORY_OP_X86
-    const int l = correct_convolutional_sse_encode_len((correct_convolutional_sse *)viterbi, this->DecodedSize());
-    const int bl = l % 8 == 0 ? l / 8 : (l / 8) + 1;
-    uint8_t *data = new uint8_t[bl];
-    correct_convolutional_sse_encode((correct_convolutional_sse *)viterbi, input, this->DecodedSize(), data);
-
-    // Convert to soft bits
-    for (int i=0; i<bl && i*8 < this->EncodedSize(); i++) {
-        uint8_t d = data[i];
-        for (int z=7; z>=0; z--) {
-            output[i*8+(7-z)] = 0 - ( (d & (1 << z)) == 0);
-        }
-    }
-    delete[] data;
-    #endif
-}
-
-void Viterbi27::decode_sse4(uint8_t *input, uint8_t *output) {
-    #ifdef MEMORY_OP_X86
-    correct_convolutional_sse_decode_soft((correct_convolutional_sse *)viterbi, input, this->frameBits*2, output);
-    if (calculateErrors) {
-        this->encode_sse4(output, this->checkDataPointer);
-        this->BER = Viterbi27::calculateError(input, this->checkDataPointer, this->frameBits*2);
-    }
-    #endif
 }
 
 void Viterbi27::encode_generic(uint8_t *input, uint8_t *output) {
@@ -101,13 +71,4 @@ void Viterbi27::decode_generic(uint8_t *input, uint8_t *output) {
         this->encode_generic(output, this->checkDataPointer);
         this->BER = Viterbi27::calculateError(input, this->checkDataPointer, this->frameBits*2);
     }
-}
-
-uint32_t Viterbi27::calculateError(uint8_t *original, uint8_t *corrected, int length) {
-    uint32_t errors = 0;
-    for (int i = 0; i < length; i++) {
-        errors += (uint32_t) Correlator::hardCorrelate(original[i], ~corrected[i]);
-    }
-
-    return errors;
 }

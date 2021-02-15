@@ -5,7 +5,7 @@
  *      Author: Lucas Teske
  */
 
-#include <SatHelper/derandomizer.h>
+#include "derandomizer.h"
 
 using namespace SatHelper;
 
