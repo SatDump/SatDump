@@ -148,92 +148,70 @@ namespace jpss
             image22.equalize(1000);
 
             logger->info("Channel 1...");
-            image1.save_png(std::string(directory + "/ATMS-1.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-1.png");
+            WRITE_IMAGE(image1, directory + "/ATMS-1.png");
 
             logger->info("Channel 2...");
-            image2.save_png(std::string(directory + "/ATMS-2.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-2.png");
+            WRITE_IMAGE(image2, directory + "/ATMS-2.png");
 
             logger->info("Channel 3...");
-            image3.save_png(std::string(directory + "/ATMS-3.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-3.png");
+            WRITE_IMAGE(image3, directory + "/ATMS-3.png");
 
             logger->info("Channel 4...");
-            image4.save_png(std::string(directory + "/ATMS-4.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-4.png");
+            WRITE_IMAGE(image4, directory + "/ATMS-4.png");
 
             logger->info("Channel 5...");
-            image5.save_png(std::string(directory + "/ATMS-5.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-5.png");
+            WRITE_IMAGE(image5, directory + "/ATMS-5.png");
 
             logger->info("Channel 6...");
-            image6.save_png(std::string(directory + "/ATMS-6.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-6.png");
+            WRITE_IMAGE(image6, directory + "/ATMS-6.png");
 
             logger->info("Channel 7...");
-            image7.save_png(std::string(directory + "/ATMS-7.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-7.png");
+            WRITE_IMAGE(image7, directory + "/ATMS-7.png");
 
             logger->info("Channel 8...");
-            image8.save_png(std::string(directory + "/ATMS-8.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-8.png");
+            WRITE_IMAGE(image8, directory + "/ATMS-8.png");
 
             logger->info("Channel 9...");
-            image9.save_png(std::string(directory + "/ATMS-9.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-9.png");
+            WRITE_IMAGE(image9, directory + "/ATMS-9.png");
 
             logger->info("Channel 10...");
-            image10.save_png(std::string(directory + "/ATMS-10.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-10.png");
+            WRITE_IMAGE(image10, directory + "/ATMS-10.png");
 
             logger->info("Channel 11...");
-            image11.save_png(std::string(directory + "/ATMS-11.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-11.png");
+            WRITE_IMAGE(image11, directory + "/ATMS-11.png");
 
             logger->info("Channel 12...");
-            image12.save_png(std::string(directory + "/ATMS-12.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-12.png");
+            WRITE_IMAGE(image12, directory + "/ATMS-12.png");
 
             logger->info("Channel 13...");
-            image13.save_png(std::string(directory + "/ATMS-13.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-13.png");
+            WRITE_IMAGE(image13, directory + "/ATMS-13.png");
 
             logger->info("Channel 14...");
-            image14.save_png(std::string(directory + "/ATMS-14.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-14.png");
+            WRITE_IMAGE(image14, directory + "/ATMS-14.png");
 
             logger->info("Channel 15...");
-            image15.save_png(std::string(directory + "/ATMS-15.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-15.png");
+            WRITE_IMAGE(image15, directory + "/ATMS-15.png");
 
             logger->info("Channel 16...");
-            image16.save_png(std::string(directory + "/ATMS-16.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-16.png");
+            WRITE_IMAGE(image16, directory + "/ATMS-16.png");
 
             logger->info("Channel 17...");
-            image17.save_png(std::string(directory + "/ATMS-17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-17.png");
+            WRITE_IMAGE(image17, directory + "/ATMS-17.png");
 
             logger->info("Channel 18...");
-            image18.save_png(std::string(directory + "/ATMS-18.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-18.png");
+            WRITE_IMAGE(image18, directory + "/ATMS-18.png");
 
             logger->info("Channel 19...");
-            image19.save_png(std::string(directory + "/ATMS-19.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-19.png");
+            WRITE_IMAGE(image19, directory + "/ATMS-19.png");
 
             logger->info("Channel 20...");
-            image20.save_png(std::string(directory + "/ATMS-20.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-20.png");
+            WRITE_IMAGE(image20, directory + "/ATMS-20.png");
 
             logger->info("Channel 21...");
-            image21.save_png(std::string(directory + "/ATMS-21.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-21.png");
+            WRITE_IMAGE(image21, directory + "/ATMS-21.png");
 
             logger->info("Channel 22...");
-            image22.save_png(std::string(directory + "/ATMS-22.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-22.png");
+            WRITE_IMAGE(image22, directory + "/ATMS-22.png");
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
@@ -265,8 +243,7 @@ namespace jpss
                 imageAll.draw_image(96 * 9, image1.height(), 0, 0, image21);
                 imageAll.draw_image(96 * 10, image1.height(), 0, 0, image22);
             }
-            imageAll.save_png(std::string(directory + "/ATMS-ALL.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/ATMS-ALL.png");
 
             logger->info("346 Composite...");
             cimg_library::CImg<unsigned short> image346(96, image1.height(), 1, 3);
@@ -276,8 +253,7 @@ namespace jpss
                 image346.draw_image(0, 0, 0, 2, image6);
             }
             image346.equalize(1000);
-            image346.save_png(std::string(directory + "/ATMS-RGB-346.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-346.png");
+            WRITE_IMAGE(image346, directory + "/ATMS-RGB-346.png");
 
             logger->info("335 Composite...");
             cimg_library::CImg<unsigned short> image335(96, image1.height(), 1, 3);
@@ -287,8 +263,7 @@ namespace jpss
                 image335.draw_image(0, 0, 0, 2, image5);
             }
             image335.equalize(1000);
-            image335.save_png(std::string(directory + "/ATMS-RGB-335.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-335.png");
+            WRITE_IMAGE(image335, directory + "/ATMS-RGB-335.png");
 
             logger->info("4.3.17 Composite...");
             cimg_library::CImg<unsigned short> image4317(96, image1.height(), 1, 3);
@@ -298,8 +273,7 @@ namespace jpss
                 image4317.draw_image(0, 0, 0, 2, image17);
             }
             image4317.equalize(1000);
-            image4317.save_png(std::string(directory + "/ATMS-RGB-4.3.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-4.3.17.png");
+            WRITE_IMAGE(image4317, directory + "/ATMS-RGB-4.3.17.png");
 
             logger->info("445 Composite...");
             cimg_library::CImg<unsigned short> image445(96, image1.height(), 1, 3);
@@ -309,8 +283,7 @@ namespace jpss
                 image445.draw_image(0, 0, 0, 2, image5);
             }
             image445.equalize(1000);
-            image445.save_png(std::string(directory + "/ATMS-RGB-445.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-445.png");
+            WRITE_IMAGE(image445, directory + "/ATMS-RGB-445.png");
 
             logger->info("4.4.17 Composite...");
             cimg_library::CImg<unsigned short> image4417(96, image1.height(), 1, 3);
@@ -320,8 +293,7 @@ namespace jpss
                 image4417.draw_image(0, 0, 0, 2, image17);
             }
             image4417.equalize(1000);
-            image4417.save_png(std::string(directory + "/ATMS-RGB-4.4.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-4.4.17.png");
+            WRITE_IMAGE(image4417, directory + "/ATMS-RGB-4.4.17.png");
 
             logger->info("4.16.17 Composite...");
             cimg_library::CImg<unsigned short> image41617(96, image1.height(), 1, 3);
@@ -331,8 +303,7 @@ namespace jpss
                 image41617.draw_image(0, 0, 0, 2, image17);
             }
             image41617.equalize(1000);
-            image41617.save_png(std::string(directory + "/ATMS-RGB-4.16.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-4.16.17.png");
+            WRITE_IMAGE(image41617, directory + "/ATMS-RGB-4.16.17.png");
 
             logger->info("3.4.17 Composite...");
             cimg_library::CImg<unsigned short> image3417(96, image1.height(), 1, 3);
@@ -342,8 +313,7 @@ namespace jpss
                 image3417.draw_image(0, 0, 0, 2, image17);
             }
             image3417.equalize(1000);
-            image3417.save_png(std::string(directory + "/ATMS-RGB-3.4.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-3.4.17.png");
+            WRITE_IMAGE(image3417, directory + "/ATMS-RGB-3.4.17.png");
 
             logger->info("5.5.17 Composite...");
             cimg_library::CImg<unsigned short> image5517(96, image1.height(), 1, 3);
@@ -353,8 +323,7 @@ namespace jpss
                 image5517.draw_image(0, 0, 0, 2, image17);
             }
             image5517.equalize(1000);
-            image5517.save_png(std::string(directory + "/ATMS-RGB-5.5.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-5.5.17.png");
+            WRITE_IMAGE(image5517, directory + "/ATMS-RGB-5.5.17.png");
 
             logger->info("6.4.17 Composite...");
             cimg_library::CImg<unsigned short> image6417(96, image1.height(), 1, 3);
@@ -364,8 +333,7 @@ namespace jpss
                 image6417.draw_image(0, 0, 0, 2, image17);
             }
             image6417.equalize(1000);
-            image6417.save_png(std::string(directory + "/ATMS-RGB-6.4.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-6.4.17.png");
+            WRITE_IMAGE(image6417, directory + "/ATMS-RGB-6.4.17.png");
 
             logger->info("16.4.17 Composite...");
             cimg_library::CImg<unsigned short> image16417(96, image1.height(), 1, 3);
@@ -375,8 +343,7 @@ namespace jpss
                 image16417.draw_image(0, 0, 0, 2, image17);
             }
             image16417.equalize(1000);
-            image16417.save_png(std::string(directory + "/ATMS-RGB-16.4.17.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-16.4.17.png");
+            WRITE_IMAGE(image16417, directory + "/ATMS-RGB-16.4.17.png");
 
             logger->info("17.16.6 Composite...");
             cimg_library::CImg<unsigned short> image17166(96, image1.height(), 1, 3);
@@ -386,8 +353,7 @@ namespace jpss
                 image17166.draw_image(0, 0, 0, 2, image6);
             }
             image17166.equalize(1000);
-            image17166.save_png(std::string(directory + "/ATMS-RGB-17.16.6.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-17.16.6.png");
+            WRITE_IMAGE(image17166, directory + "/ATMS-RGB-17.16.6.png");
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
@@ -408,8 +374,7 @@ namespace jpss
                 imageRgbAll.draw_image(96 * 3, image1.height(), 0, 0, image16417);
                 imageRgbAll.draw_image(96 * 4, image1.height(), 0, 0, image17166);
             }
-            imageRgbAll.save_png(std::string(directory + "/ATMS-RGB-ALL.png").c_str());
-            d_output_files.push_back(directory + "/ATMS-RGB-ALL.png");
+            WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
         }
 
         std::string JPSSATMSDecoderModule::getID()

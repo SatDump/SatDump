@@ -8,7 +8,7 @@
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
         class MERSI250Reader
         {
@@ -24,5 +24,5 @@ namespace fengyun
             void pushFrame(std::vector<uint8_t> &data);
             cimg_library::CImg<unsigned short> getImage();
         };
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

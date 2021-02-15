@@ -6,6 +6,10 @@
 #include <functional>
 #include <memory>
 
+#define WRITE_IMAGE(image, path)               \
+    image.save_png(std::string(path).c_str()); \
+    d_output_files.push_back(path);
+
 class ProcessingModule
 {
 protected:

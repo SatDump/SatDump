@@ -86,28 +86,22 @@ namespace meteor
             cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
 
             logger->info("Channel 1...");
-            image1.save_png(std::string(directory + "/MSU-MR-1.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-1.png");
+            WRITE_IMAGE(image1, directory + "/MSU-MR-1.png");
 
             logger->info("Channel 2...");
-            image2.save_png(std::string(directory + "/MSU-MR-2.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-2.png");
+            WRITE_IMAGE(image2, directory + "/MSU-MR-2.png");
 
             logger->info("Channel 3...");
-            image3.save_png(std::string(directory + "/MSU-MR-3.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-3.png");
+            WRITE_IMAGE(image3, directory + "/MSU-MR-3.png");
 
             logger->info("Channel 4...");
-            image4.save_png(std::string(directory + "/MSU-MR-4.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-4.png");
+            WRITE_IMAGE(image4, directory + "/MSU-MR-4.png");
 
             logger->info("Channel 5...");
-            image5.save_png(std::string(directory + "/MSU-MR-5.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-5.png");
+            WRITE_IMAGE(image5, directory + "/MSU-MR-5.png");
 
             logger->info("Channel 6...");
-            image5.save_png(std::string(directory + "/MSU-MR-6.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-6.png");
+            WRITE_IMAGE(image5, directory + "/MSU-MR-6.png");
 
             logger->info("221 Composite...");
             cimg_library::CImg<unsigned short> image221(1572, reader.lines, 1, 3);
@@ -116,12 +110,10 @@ namespace meteor
                 image221.draw_image(0, 0, 0, 1, image2);
                 image221.draw_image(0, 0, 0, 2, image1);
             }
-            image221.save_png(std::string(directory + "/MSU-MR-RGB-221.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-RGB-221.png");
+            WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221.png");
             image221.equalize(1000);
             image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            image221.save_png(std::string(directory + "/MSU-MR-RGB-221-EQU.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-RGB-221-EQU.png");
+            WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
 
             logger->info("321 Composite...");
             cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
@@ -130,12 +122,10 @@ namespace meteor
                 image321.draw_image(0, 0, 0, 1, image2);
                 image321.draw_image(0, 0, 0, 2, image1);
             }
-            image321.save_png(std::string(directory + "/MSU-MR-RGB-321.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-RGB-321.png");
+            WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321.png");
             image321.equalize(1000);
             image321.normalize(0, std::numeric_limits<unsigned char>::max());
-            image321.save_png(std::string(directory + "/MSU-MR-RGB-321-EQU.png").c_str());
-            d_output_files.push_back(directory + "/MSU-MR-RGB-321-EQU.png");
+            WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
         }
 
         std::string METEORMSUMRDecoderModule::getID()

@@ -94,8 +94,7 @@ namespace metop
                 for (int i = 0; i < 6144; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
-                    gome_reader.getChannel(i).save_png(std::string(directory + "/GOME_ALL/GOME-" + std::to_string(i + 1) + ".png").c_str());
-                    d_output_files.push_back(directory + "/GOME_ALL/GOME-" + std::to_string(i + 1) + ".png");
+                    WRITE_IMAGE(gome_reader.getChannel(i), directory + "/GOME_ALL/GOME-" + std::to_string(i + 1) + ".png");
                 }
             }
 
@@ -118,8 +117,7 @@ namespace metop
                     }
                 }
             }
-            imageAll.save_png(std::string(directory + "/GOME-ALL.png").c_str());
-            d_output_files.push_back(directory + "/GOME-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
         }
 
         std::string MetOpGOMEDecoderModule::getID()

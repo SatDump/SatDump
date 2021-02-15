@@ -2,7 +2,7 @@
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
         MERSICorrelator::MERSICorrelator()
         {
@@ -36,11 +36,6 @@ namespace fengyun
             image18 = reader18.getImage();
             image19 = reader19.getImage();
             image20 = reader20.getImage();
-            image21 = reader21.getImage();
-            image22 = reader22.getImage();
-            image23 = reader23.getImage();
-            image24 = reader24.getImage();
-            image25 = reader25.getImage();
 
             // They all need to be flipped horizontally
             image1.mirror('y');
@@ -63,11 +58,6 @@ namespace fengyun
             image18.mirror('y');
             image19.mirror('y');
             image20.mirror('y');
-            image21.mirror('y');
-            image22.mirror('y');
-            image23.mirror('y');
-            image24.mirror('y');
-            image25.mirror('y');
         }
 
         void MERSICorrelator::processScan()
@@ -78,53 +68,45 @@ namespace fengyun
             {
                 int marker = (frameVec[3] % (int)pow(2, 3)) << 7 | frameVec[4] >> 1;
 
-                if (marker >= 240)
+                if (marker >= 200)
                 {
                     m1000Frames++;
 
-                    marker -= 240;
+                    marker -= 200;
 
                     // Demultiplex them all!
                     if (marker < 10 * 1)
-                        reader7.pushFrame(frameVec);
+                        reader6.pushFrame(frameVec);
                     else if (marker >= 10 * 1 && marker < 10 * 2)
-                        reader8.pushFrame(frameVec);
+                        reader7.pushFrame(frameVec);
                     else if (marker >= 10 * 2 && marker < 10 * 3)
-                        reader9.pushFrame(frameVec);
+                        reader8.pushFrame(frameVec);
                     else if (marker >= 10 * 3 && marker < 10 * 4)
-                        reader10.pushFrame(frameVec);
+                        reader9.pushFrame(frameVec);
                     else if (marker >= 10 * 4 && marker < 10 * 5)
-                        reader11.pushFrame(frameVec);
+                        reader10.pushFrame(frameVec);
                     else if (marker >= 10 * 5 && marker < 10 * 6)
-                        reader12.pushFrame(frameVec);
+                        reader11.pushFrame(frameVec);
                     else if (marker >= 10 * 6 && marker < 10 * 7)
-                        reader13.pushFrame(frameVec);
+                        reader12.pushFrame(frameVec);
                     else if (marker >= 10 * 7 && marker < 10 * 8)
-                        reader14.pushFrame(frameVec);
+                        reader13.pushFrame(frameVec);
                     else if (marker >= 10 * 8 && marker < 10 * 9)
-                        reader15.pushFrame(frameVec);
+                        reader14.pushFrame(frameVec);
                     else if (marker >= 10 * 9 && marker < 10 * 10)
-                        reader16.pushFrame(frameVec);
+                        reader15.pushFrame(frameVec);
                     else if (marker >= 10 * 10 && marker < 10 * 11)
-                        reader17.pushFrame(frameVec);
+                        reader16.pushFrame(frameVec);
                     else if (marker >= 10 * 11 && marker < 10 * 12)
-                        reader18.pushFrame(frameVec);
+                        reader17.pushFrame(frameVec);
                     else if (marker >= 10 * 12 && marker < 10 * 13)
-                        reader19.pushFrame(frameVec);
+                        reader18.pushFrame(frameVec);
                     else if (marker >= 10 * 13 && marker < 10 * 14)
-                        reader20.pushFrame(frameVec);
+                        reader19.pushFrame(frameVec);
                     else if (marker >= 10 * 14 && marker < 10 * 15)
-                        reader21.pushFrame(frameVec);
-                    else if (marker >= 10 * 15 && marker < 10 * 16)
-                        reader22.pushFrame(frameVec);
-                    else if (marker >= 10 * 16 && marker < 10 * 17)
-                        reader23.pushFrame(frameVec);
-                    else if (marker >= 10 * 17 && marker < 10 * 18)
-                        reader24.pushFrame(frameVec);
-                    else if (marker >= 10 * 18 && marker < 10 * 19)
-                        reader25.pushFrame(frameVec);
+                        reader20.pushFrame(frameVec);
                 }
-                else if (marker < 240)
+                else if (marker < 200)
                 {
                     m250Frames++;
 
@@ -139,8 +121,6 @@ namespace fengyun
                         reader4.pushFrame(frameVec);
                     else if (marker >= 40 * 4 && marker < 40 * 5)
                         reader5.pushFrame(frameVec);
-                    else if (marker >= 40 * 5 && marker < 40 * 6)
-                        reader6.pushFrame(frameVec);
                 }
             }
 
@@ -166,7 +146,7 @@ namespace fengyun
                     scanBuffer.push_back(data); // Buffer it
 
                     // Complete! Let's read it.
-                    if (lastMarker == 429)
+                    if (lastMarker == 349)
                     {
                         processScan();
                     }
@@ -179,5 +159,5 @@ namespace fengyun
                 }
             }
         }
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

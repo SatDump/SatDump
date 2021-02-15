@@ -58,7 +58,7 @@ Pipeline aqua_db = {"aqua_db", {{"soft", {{"oqpsk_demod", {/*{"samplerate", "600
                                                            {"costas_bw", "0.006"},
                                                            {"buffer_size", "8192"}}}}},
                                 {"cadu", {{"aqua_db_decoder", {}}}},
-                                {"products", {{"eos_modis", {{"terra_mode", "0"}}}, {"aqua_airs", {}}, {"aqua_amsu", {}}}}}};
+                                {"products", {{"eos_modis", {{"terra_mode", "0"}}}, {"aqua_airs", {}}, {"aqua_ceres", {}}, {"aqua_amsu", {}}}}}};
 
 Pipeline noaa_hrpt = {"noaa_hrpt", {{"frames", {{"noaa_hrpt_demod", {/*{"samplerate", "6000000"},*/
                                                                      {"buffer_size", "8192"}}}}},

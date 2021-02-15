@@ -97,15 +97,13 @@ namespace metop
             for (int i = 0; i < 2; i++)
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
-                a2reader.getChannel(i).save_png(std::string(directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png").c_str());
-                d_output_files.push_back(directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(a2reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
             }
 
             for (int i = 0; i < 13; i++)
             {
                 logger->info("Channel " + std::to_string(i + 3) + "...");
-                a1reader.getChannel(i).save_png(std::string(directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png").c_str());
-                d_output_files.push_back(directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
+                WRITE_IMAGE(a1reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
             }
 
             // Output a few nice composites as well
@@ -133,8 +131,7 @@ namespace metop
                 imageAll.draw_image(30 * 5, height, 0, 0, a1reader.getChannel(11));
                 imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
             }
-            imageAll.save_png(std::string(directory + "/AMSU-ALL.png").c_str());
-            d_output_files.push_back(directory + "/AMSU-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
         }
 
         std::string MetOpAMSUDecoderModule::getID()

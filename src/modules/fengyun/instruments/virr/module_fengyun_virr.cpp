@@ -98,44 +98,34 @@ namespace fengyun
 
             // Takes a while so we say how we're doing
             logger->info("Channel 1...");
-            image1.save_png(std::string(directory + "/VIRR-1.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-1.png");
+            WRITE_IMAGE(image1, directory + "/VIRR-1.png");
 
             logger->info("Channel 2...");
-            image2.save_png(std::string(directory + "/VIRR-2.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-2.png");
+            WRITE_IMAGE(image2, directory + "/VIRR-2.png");
 
             logger->info("Channel 3...");
-            image3.save_png(std::string(directory + "/VIRR-3.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-3.png");
+            WRITE_IMAGE(image3, directory + "/VIRR-3.png");
 
             logger->info("Channel 4...");
-            image4.save_png(std::string(directory + "/VIRR-4.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-4.png");
+            WRITE_IMAGE(image4, directory + "/VIRR-4.png");
 
             logger->info("Channel 5...");
-            image5.save_png(std::string(directory + "/VIRR-5.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-5.png");
+            WRITE_IMAGE(image5, directory + "/VIRR-5.png");
 
             logger->info("Channel 6...");
-            image6.save_png(std::string(directory + "/VIRR-6.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-6.png");
+            WRITE_IMAGE(image6, directory + "/VIRR-6.png");
 
             logger->info("Channel 7...");
-            image7.save_png(std::string(directory + "/VIRR-7.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-7.png");
+            WRITE_IMAGE(image7, directory + "/VIRR-7.png");
 
             logger->info("Channel 8...");
-            image8.save_png(std::string(directory + "/VIRR-8.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-8.png");
+            WRITE_IMAGE(image8, directory + "/VIRR-8.png");
 
             logger->info("Channel 9...");
-            image9.save_png(std::string(directory + "/VIRR-9.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-9.png");
+            WRITE_IMAGE(image9, directory + "/VIRR-9.png");
 
             logger->info("Channel 10...");
-            image10.save_png(std::string(directory + "/VIRR-10.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-10.png");
+            WRITE_IMAGE(image10, directory + "/VIRR-10.png");
 
             logger->info("321 Composite...");
             cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
@@ -144,12 +134,10 @@ namespace fengyun
                 image221.draw_image(0, 0, 0, 1, image2);
                 image221.draw_image(0, 0, 0, 2, image1);
             }
-            image221.save_png(std::string(directory + "/VIRR-RGB-221.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-221.png");
+            WRITE_IMAGE(image221, directory + "/VIRR-RGB-221.png");
             image221.equalize(1000);
             image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            image221.save_png(std::string(directory + "/VIRR-RGB-221-EQU.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-221-EQU.png");
+            WRITE_IMAGE(image221, directory + "/VIRR-RGB-221-EQU.png");
 
             logger->info("621 Composite...");
             cimg_library::CImg<unsigned short> image621(2048, reader.lines, 1, 3);
@@ -158,12 +146,10 @@ namespace fengyun
                 image621.draw_image(0, 0, 0, 1, image2);
                 image621.draw_image(0, 0, 0, 2, image1);
             }
-            image621.save_png(std::string(directory + "/VIRR-RGB-621.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-621.png");
+            WRITE_IMAGE(image621, directory + "/VIRR-RGB-621.png");
             image621.equalize(1000);
             image621.normalize(0, std::numeric_limits<unsigned char>::max());
-            image621.save_png(std::string(directory + "/VIRR-RGB-621-EQU.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-621-EQU.png");
+            WRITE_IMAGE(image621, directory + "/VIRR-RGB-621-EQU.png");
 
             logger->info("197 Composite...");
             cimg_library::CImg<unsigned short> image197(2048, reader.lines, 1, 3);
@@ -172,8 +158,7 @@ namespace fengyun
                 image197.draw_image(0, 0, 0, 1, image9);
                 image197.draw_image(-2, 0, 0, 2, image7);
             }
-            image197.save_png(std::string(directory + "/VIRR-RGB-197.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-197.png");
+            WRITE_IMAGE(image197, directory + "/VIRR-RGB-197.png");
             cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
             {
                 cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
@@ -186,8 +171,7 @@ namespace fengyun
                 image197equ.equalize(1000);
                 image197equ.normalize(0, std::numeric_limits<unsigned char>::max());
             }
-            image197equ.save_png(std::string(directory + "/VIRR-RGB-197-EQU.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-197-EQU.png");
+            WRITE_IMAGE(image197equ, directory + "/VIRR-RGB-197-EQU.png");
 
             logger->info("917 Composite...");
             cimg_library::CImg<unsigned short> image917(2048, reader.lines, 1, 3);
@@ -196,8 +180,7 @@ namespace fengyun
                 image917.draw_image(1, 0, 0, 1, image1);
                 image917.draw_image(-1, 0, 0, 2, image7);
             }
-            image917.save_png(std::string(directory + "/VIRR-RGB-917.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-917.png");
+            WRITE_IMAGE(image917, directory + "/VIRR-RGB-917.png");
             cimg_library::CImg<unsigned short> image917equ(2048, reader.lines, 1, 3);
             {
                 cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
@@ -210,8 +193,7 @@ namespace fengyun
                 image917equ.equalize(1000);
                 image917equ.normalize(0, std::numeric_limits<unsigned char>::max());
             }
-            image917equ.save_png(std::string(directory + "/VIRR-RGB-917-EQU.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-917-EQU.png");
+            WRITE_IMAGE(image917equ, directory + "/VIRR-RGB-917-EQU.png");
 
             logger->info("197 True Color XFR Composite... (by ZbychuButItWasTaken)");
             cimg_library::CImg<unsigned short> image197truecolorxfr(2048, reader.lines, 1, 3);
@@ -226,8 +208,7 @@ namespace fengyun
                 image197truecolorxfr.draw_image(0, 0, 0, 1, tempImage9);
                 image197truecolorxfr.draw_image(-2, 0, 0, 2, tempImage7);
             }
-            image197truecolorxfr.save_png(std::string(directory + "/VIRR-RGB-197-TRUECOLOR.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-197-TRUECOLOR.png");
+            WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR.png");
 
             logger->info("197 Night XFR Composite... (by ZbychuButItWasTaken)");
             cimg_library::CImg<unsigned short> image197nightxfr(2048, reader.lines, 1, 3);
@@ -242,8 +223,7 @@ namespace fengyun
                 image197nightxfr.draw_image(0, 0, 0, 1, tempImage9);
                 image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
             }
-            image197nightxfr.save_png(std::string(directory + "/VIRR-RGB-197-NIGHT.png").c_str());
-            d_output_files.push_back(directory + "/VIRR-RGB-197-NIGHT.png");
+            WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
         }
 
         std::string FengyunVIRRDecoderModule::getID()

@@ -10,7 +10,7 @@
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
         class MersiDeframer
         {
@@ -30,5 +30,5 @@ namespace fengyun
             MersiDeframer();
             std::vector<std::vector<uint8_t>> work(std::vector<uint8_t> &data);
         };
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

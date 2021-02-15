@@ -11,10 +11,6 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-#define WRITE_IMAGE(image, path)               \
-    image.save_png(std::string(path).c_str()); \
-    d_output_files.push_back(path);
-
 namespace jpss
 {
     namespace viirs

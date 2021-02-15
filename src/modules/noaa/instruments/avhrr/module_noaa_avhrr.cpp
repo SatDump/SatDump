@@ -67,24 +67,19 @@ namespace noaa
             cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
 
             logger->info("Channel 1...");
-            image1.save_png(std::string(directory + "/AVHRR-1.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-1.png");
+            WRITE_IMAGE(image1, directory + "/AVHRR-1.png");
 
             logger->info("Channel 2...");
-            image2.save_png(std::string(directory + "/AVHRR-2.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-2.png");
+            WRITE_IMAGE(image2, directory + "/AVHRR-2.png");
 
             logger->info("Channel 3...");
-            image3.save_png(std::string(directory + "/AVHRR-3.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-3.png");
+            WRITE_IMAGE(image3, directory + "/AVHRR-3.png");
 
             logger->info("Channel 4...");
-            image4.save_png(std::string(directory + "/AVHRR-4.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-4.png");
+            WRITE_IMAGE(image4, directory + "/AVHRR-4.png");
 
             logger->info("Channel 5...");
-            image5.save_png(std::string(directory + "/AVHRR-5.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-5.png");
+            WRITE_IMAGE(image5, directory + "/AVHRR-5.png");
 
             logger->info("221 Composite...");
             cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
@@ -93,12 +88,10 @@ namespace noaa
                 image221.draw_image(0, 0, 0, 1, image2);
                 image221.draw_image(0, 0, 0, 2, image1);
             }
-            image221.save_png(std::string(directory + "/AVHRR-RGB-221.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-RGB-221.png");
+            WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
             image221.equalize(1000);
             image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            image221.save_png(std::string(directory + "/AVHRR-RGB-221-EQU.png").c_str());
-            d_output_files.push_back(directory + "/AVHRR-RGB-221-EQU.png");
+            WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
         }
 
         std::string NOAAAVHRRDecoderModule::getID()

@@ -1,26 +1,26 @@
-#include "mersi_1000m_reader.h"
+#include "mersi_250m_reader.h"
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
-        MERSI1000Reader::MERSI1000Reader()
+        MERSI250Reader::MERSI250Reader()
         {
-            imageBuffer = new unsigned short[20000 * 2048];
+            imageBuffer = new unsigned short[20000 * 8192];
             frames = 0;
         }
 
-        MERSI1000Reader::~MERSI1000Reader()
+        MERSI250Reader::~MERSI250Reader()
         {
             delete[] imageBuffer;
         }
 
-        void MERSI1000Reader::pushFrame(std::vector<uint8_t> &data)
+        void MERSI250Reader::pushFrame(std::vector<uint8_t> &data)
         {
-            int pos = 63; // MERSI-2 Data position, found through a bit viewer
+            int pos = 96; // MERSI-2 Data position, found through a bit viewer
 
             // Convert into 12-bits values
-            for (int i = 0; i < 2048; i += 2)
+            for (int i = 0; i < 8192; i += 2)
             {
                 byteBufShift[0] = data[pos + 0] << 3 | data[pos + 1] >> 5;
                 byteBufShift[1] = data[pos + 1] << 3 | data[pos + 2] >> 5;
@@ -32,19 +32,19 @@ namespace fengyun
             }
 
             // Load into our image buffer
-            for (int i = 0; i < 2048; i++)
+            for (int i = 0; i < 8192; i++)
             {
                 uint16_t pixel = mersiLineBuffer[i];
-                imageBuffer[frames * 2048 + (2048 - i)] = pixel * 15;
+                imageBuffer[frames * 8192 + (8192 - i)] = pixel * 20;
             }
 
             // Frame counter
             frames++;
         }
 
-        cimg_library::CImg<unsigned short> MERSI1000Reader::getImage()
+        cimg_library::CImg<unsigned short> MERSI250Reader::getImage()
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 2048, frames);
+            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 8192, frames);
         }
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

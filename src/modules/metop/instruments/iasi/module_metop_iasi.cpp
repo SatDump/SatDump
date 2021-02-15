@@ -104,14 +104,12 @@ namespace metop
                 for (int i = 0; i < 8461; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
-                    iasireader.getChannel(i).save_png(std::string(directory + "/IASI_ALL/IASI-" + std::to_string(i + 1) + ".png").c_str());
-                    d_output_files.push_back(directory + "/IASI_ALL/IASI-" + std::to_string(i + 1) + ".png");
+                    WRITE_IMAGE(iasireader.getChannel(i), directory + "/IASI_ALL/IASI-" + std::to_string(i + 1) + ".png");
                 }
             }
 
             logger->info("Channel IR imaging...");
-            iasireader_img.getIRChannel().save_png(std::string(directory + "/IASI-IMG.png").c_str());
-            d_output_files.push_back(directory + "/IASI-IMG.png");
+            WRITE_IMAGE(iasireader_img.getIRChannel(), directory + "/IASI-IMG.png");
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
@@ -132,8 +130,7 @@ namespace metop
                     }
                 }
             }
-            imageAll.save_png(std::string(directory + "/IASI-ALL.png").c_str());
-            d_output_files.push_back(directory + "/IASI-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
         }
 
         std::string MetOpIASIDecoderModule::getID()

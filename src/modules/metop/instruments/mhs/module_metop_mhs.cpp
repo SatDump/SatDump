@@ -89,8 +89,7 @@ namespace metop
             for (int i = 0; i < 5; i++)
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
-                mhsreader.getChannel(i).save_png(std::string(directory + "/MHS-" + std::to_string(i + 1) + ".png").c_str());
-                d_output_files.push_back(directory + "/MHS-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(mhsreader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
             }
 
             // Output a few nice composites as well
@@ -108,8 +107,7 @@ namespace metop
                 imageAll.draw_image(90 * 0, height, 0, 0, mhsreader.getChannel(3));
                 imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4));
             }
-            imageAll.save_png(std::string(directory + "/MHS-ALL.png").c_str());
-            d_output_files.push_back(directory + "/MHS-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
         }
 
         std::string MetOpMHSDecoderModule::getID()

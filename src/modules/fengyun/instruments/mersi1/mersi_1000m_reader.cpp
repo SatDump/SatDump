@@ -2,7 +2,7 @@
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
         MERSI1000Reader::MERSI1000Reader()
         {
@@ -17,7 +17,7 @@ namespace fengyun
 
         void MERSI1000Reader::pushFrame(std::vector<uint8_t> &data)
         {
-            int pos = 63; // MERSI-2 Data position, found through a bit viewer
+            int pos = 96; // MERSI-2 Data position, found through a bit viewer
 
             // Convert into 12-bits values
             for (int i = 0; i < 2048; i += 2)
@@ -46,5 +46,5 @@ namespace fengyun
         {
             return cimg_library::CImg<unsigned short>(&imageBuffer[0], 2048, frames);
         }
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

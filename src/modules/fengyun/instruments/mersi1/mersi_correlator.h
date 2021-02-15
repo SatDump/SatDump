@@ -7,7 +7,7 @@
 
 namespace fengyun
 {
-    namespace mersi2
+    namespace mersi1
     {
         // Synchronizes channels for composites
         class MERSICorrelator
@@ -17,9 +17,9 @@ namespace fengyun
             bool checking;
             std::vector<std::vector<uint8_t>> scanBuffer;
             void processScan();
-            MERSI250Reader reader1, reader2, reader3, reader4, reader5, reader6;
-            MERSI1000Reader reader7, reader8, reader9, reader10, reader11, reader12, reader13, reader14,
-                reader15, reader16, reader17, reader18, reader19, reader20, reader21, reader22, reader23, reader24, reader25;
+            MERSI250Reader reader1, reader2, reader3, reader4, reader5;
+            MERSI1000Reader reader6, reader7, reader8, reader9, reader10, reader11, reader12, reader13, reader14,
+                reader15, reader16, reader17, reader18, reader19, reader20;
 
         public:
             int complete, incomplete;
@@ -51,11 +51,6 @@ namespace fengyun
             cimg_library::CImg<unsigned short> image18;
             cimg_library::CImg<unsigned short> image19;
             cimg_library::CImg<unsigned short> image20;
-            cimg_library::CImg<unsigned short> image21;
-            cimg_library::CImg<unsigned short> image22;
-            cimg_library::CImg<unsigned short> image23;
-            cimg_library::CImg<unsigned short> image24;
-            cimg_library::CImg<unsigned short> image25;
         };
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

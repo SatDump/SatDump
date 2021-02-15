@@ -29,10 +29,13 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/fengyun/module_fengyun_ahrpt_decoder.h"
 #include "modules/fengyun/module_fengyun_mpt_decoder.h"
 #include "modules/fengyun/instruments/virr/module_fengyun_virr.h"
+#include "modules/fengyun/instruments/mersi1/module_fengyun_mersi1.h"
+#include "modules/fengyun/instruments/mersi2/module_fengyun_mersi2.h"
 
 #include "modules/aqua/module_aqua_db_decoder.h"
 #include "modules/aqua/instruments/airs/module_aqua_airs.h"
 #include "modules/aqua/instruments/amsu/module_aqua_amsu.h"
+#include "modules/aqua/instruments/ceres/module_aqua_ceres.h"
 
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 
@@ -67,10 +70,13 @@ void registerModules()
     modules_registry.emplace(fengyun::FengyunAHRPTDecoderModule::getID(), fengyun::FengyunAHRPTDecoderModule::getInstance);
     modules_registry.emplace(fengyun::FengyunMPTDecoderModule::getID(), fengyun::FengyunMPTDecoderModule::getInstance);
     modules_registry.emplace(fengyun::virr::FengyunVIRRDecoderModule::getID(), fengyun::virr::FengyunVIRRDecoderModule::getInstance);
+    modules_registry.emplace(fengyun::mersi1::FengyunMERSI1DecoderModule::getID(), fengyun::mersi1::FengyunMERSI1DecoderModule::getInstance);
+    modules_registry.emplace(fengyun::mersi2::FengyunMERSI2DecoderModule::getID(), fengyun::mersi2::FengyunMERSI2DecoderModule::getInstance);
 
     modules_registry.emplace(aqua::AquaDBDecoderModule::getID(), aqua::AquaDBDecoderModule::getInstance);
     modules_registry.emplace(aqua::airs::AquaAIRSDecoderModule::getID(), aqua::airs::AquaAIRSDecoderModule::getInstance);
     modules_registry.emplace(aqua::amsu::AquaAMSUDecoderModule::getID(), aqua::amsu::AquaAMSUDecoderModule::getInstance);
+    modules_registry.emplace(aqua::ceres::AquaCERESDecoderModule::getID(), aqua::ceres::AquaCERESDecoderModule::getInstance);
 
     modules_registry.emplace(eos::modis::EOSMODISDecoderModule::getID(), eos::modis::EOSMODISDecoderModule::getInstance);
 

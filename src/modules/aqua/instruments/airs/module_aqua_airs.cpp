@@ -95,8 +95,7 @@ namespace aqua
             for (int i = 0; i < 4; i++)
             {
                 logger->info("HD Channel " + std::to_string(i + 1) + "...");
-                airs_reader.getHDChannel(i).save_png(std::string(directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png").c_str());
-                d_output_files.push_back(directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(airs_reader.getHDChannel(i), directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
             }
 
             // Output a few nice composites as well
@@ -118,8 +117,7 @@ namespace aqua
                     }
                 }
             }
-            imageAll.save_png(std::string(directory + "/AIRS-ALL.png").c_str());
-            d_output_files.push_back(directory + "/AIRS-ALL.png");
+            WRITE_IMAGE(imageAll, directory + "/AIRS-ALL.png");
 
             logger->info("HD 221 Composite...");
             cimg_library::CImg<unsigned short> image221(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
@@ -128,8 +126,7 @@ namespace aqua
                 image221.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(1));
                 image221.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(0));
             }
-            image221.save_png(std::string(directory + "/AIRS-HD-RGB-221.png").c_str());
-            d_output_files.push_back(directory + "/AIRS-HD-RGB-221.png");
+            WRITE_IMAGE(image221, directory + "/AIRS-HD-RGB-221.png");
 
             logger->info("HD 332 Composite...");
             cimg_library::CImg<unsigned short> image332(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
@@ -138,8 +135,7 @@ namespace aqua
                 image332.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(2));
                 image332.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(1));
             }
-            image332.save_png(std::string(directory + "/AIRS-HD-RGB-332.png").c_str());
-            d_output_files.push_back(directory + "/AIRS-HD-RGB-332.png");
+            WRITE_IMAGE(image332, directory + "/AIRS-HD-RGB-332.png");
 
             logger->info("HD 321 Composite...");
             cimg_library::CImg<unsigned short> image321(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
@@ -148,8 +144,7 @@ namespace aqua
                 image321.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(1));
                 image321.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(0));
             }
-            image321.save_png(std::string(directory + "/AIRS-HD-RGB-321.png").c_str());
-            d_output_files.push_back(directory + "/AIRS-HD-RGB-321.png");
+            WRITE_IMAGE(image321, directory + "/AIRS-HD-RGB-321.png");
         }
 
         std::string AquaAIRSDecoderModule::getID()

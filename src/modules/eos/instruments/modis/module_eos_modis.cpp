@@ -183,16 +183,14 @@ namespace eos
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage250m(i);
                 logger->info("Channel " + std::to_string(i + 1) + "...");
-                image.save_png(std::string(directory + "/MODIS-" + std::to_string(i + 1) + ".png").c_str());
-                d_output_files.push_back(directory + "/MODIS-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 1) + ".png");
             }
 
             for (int i = 0; i < 5; i++)
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage500m(i);
                 logger->info("Channel " + std::to_string(i + 3) + "...");
-                image.save_png(std::string(directory + "/MODIS-" + std::to_string(i + 3) + ".png").c_str());
-                d_output_files.push_back(directory + "/MODIS-" + std::to_string(i + 3) + ".png");
+                WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 3) + ".png");
             }
 
             for (int i = 0; i < 31; i++)
@@ -201,38 +199,32 @@ namespace eos
                 if (i < 5)
                 {
                     logger->info("Channel " + std::to_string(i + 8) + "...");
-                    image.save_png(std::string(directory + "/MODIS-" + std::to_string(i + 8) + ".png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-" + std::to_string(i + 8) + ".png");
+                    WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 8) + ".png");
                 }
                 else if (i == 5)
                 {
                     logger->info("Channel 13L...");
-                    image.save_png(std::string(directory + "/MODIS-13L.png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-13L.png");
+                    WRITE_IMAGE(image, directory + "/MODIS-13L.png");
                 }
                 else if (i == 6)
                 {
                     logger->info("Channel 13H...");
-                    image.save_png(std::string(directory + "/MODIS-13H.png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-13H.png");
+                    WRITE_IMAGE(image, directory + "/MODIS-13H.png");
                 }
                 else if (i == 7)
                 {
                     logger->info("Channel 14L...");
-                    image.save_png(std::string(directory + "/MODIS-14L.png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-14L.png");
+                    WRITE_IMAGE(image, directory + "/MODIS-14L.png");
                 }
                 else if (i == 8)
                 {
                     logger->info("Channel 14H...");
-                    image.save_png(std::string(directory + "/MODIS-14H.png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-14H.png");
+                    WRITE_IMAGE(image, directory + "/MODIS-14H.png");
                 }
                 else
                 {
                     logger->info("Channel " + std::to_string(i + 6) + "...");
-                    image.save_png(std::string(directory + "/MODIS-" + std::to_string(i + 6) + ".png").c_str());
-                    d_output_files.push_back(directory + "/MODIS-" + std::to_string(i + 6) + ".png");
+                    WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 6) + ".png");
                 }
             }
 
@@ -247,8 +239,7 @@ namespace eos
                 image221.draw_image(0, 0, 0, 1, tempImage2);
                 image221.draw_image(0, 0, 0, 2, tempImage1);
             }
-            image221.save_png(std::string(directory + "/MODIS-RGB-221.png").c_str());
-            d_output_files.push_back(directory + "/MODIS-RGB-221.png");
+            WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
 
             logger->info("121 Composite...");
             cimg_library::CImg<unsigned short> image121(1354 * 4, reader.lines * 4, 1, 3);
@@ -260,8 +251,7 @@ namespace eos
                 image121.draw_image(0, 0, 0, 1, tempImage2);
                 image121.draw_image(0, 0, 0, 2, tempImage1);
             }
-            image121.save_png(std::string(directory + "/MODIS-RGB-121.png").c_str());
-            d_output_files.push_back(directory + "/MODIS-RGB-121.png");
+            WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
 
             logger->info("143 Composite...");
             cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3);
@@ -277,8 +267,7 @@ namespace eos
                 image143.draw_image(0, 0, 0, 2, tempImage3);
                 image143.equalize(1000);
             }
-            image143.save_png(std::string(directory + "/MODIS-RGB-143.png").c_str());
-            d_output_files.push_back(directory + "/MODIS-RGB-143.png");
+            WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
         }
 
         std::string EOSMODISDecoderModule::getID()
