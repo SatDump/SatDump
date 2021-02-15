@@ -9,13 +9,15 @@
 #define SATHELPER_INCLUDES_VITERBI27_H_
 
 #include <cstdint>
-#include <SatHelper/extensions.h>
+//#include <SatHelper/extensions.h>
 
-namespace SatHelper {
+namespace SatHelper
+{
 #define _VITERBI27_POLYA 0x4F
 #define _VITERBI27_POLYB 0x6D
 
-    class Viterbi27 {
+    class Viterbi27
+    {
     private:
         int polynomials[2];
         uint8_t *checkDataPointer;
@@ -33,31 +35,37 @@ namespace SatHelper {
 
         void (Viterbi27::*_encode)(uint8_t *input, uint8_t *output) = NULL;
         void (Viterbi27::*_decode)(uint8_t *input, uint8_t *output) = NULL;
+
     public:
         Viterbi27(int frameBits, int polyA, int polyB);
-        Viterbi27(int frameBits) :
-            Viterbi27(frameBits, _VITERBI27_POLYA, _VITERBI27_POLYB) {
+        Viterbi27(int frameBits) : Viterbi27(frameBits, _VITERBI27_POLYA, _VITERBI27_POLYB)
+        {
         }
 
-        inline int DecodedSize() {
+        inline int DecodedSize()
+        {
             return this->frameBits / 8;
         }
-        inline int EncodedSize() {
+        inline int EncodedSize()
+        {
             return this->frameBits * 2;
         }
-        inline void SetCalculateErrors(bool calculateErrors) {
+        inline void SetCalculateErrors(bool calculateErrors)
+        {
             this->calculateErrors = calculateErrors;
         }
-        inline int GetBER() {
+        inline int GetBER()
+        {
             return this->BER / 2;
         }
-        inline float GetPercentBER() {
+        inline float GetPercentBER()
+        {
             return (100.f * this->BER) / this->frameBits;
         }
 
-        inline bool IsSSEMode() {
-            return SatHelper::Extensions::hasSSE4;
-        }
+        // inline bool IsSSEMode() {
+        //       return SatHelper::Extensions::hasSSE4;
+        //   }
 
         inline void decode(uint8_t *input, uint8_t *output) { (*this.*_decode)(input, output); }
         inline void encode(uint8_t *input, uint8_t *output) { (*this.*_encode)(input, output); }
@@ -65,6 +73,6 @@ namespace SatHelper {
         ~Viterbi27();
     };
 
-}
+} // namespace SatHelper
 
 #endif /* SATHELPER_INCLUDES_VITERBI27_H_ */
