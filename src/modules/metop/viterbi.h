@@ -5,7 +5,7 @@
 
 extern "C"
 {
-#include "viterbi_lib/viterbi.h"
+#include "modules/common/viterbi_lib/viterbi.h"
 }
 
 namespace metop

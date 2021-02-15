@@ -7,9 +7,9 @@ extern "C"
 #include "modules/common/viterbi_lib/viterbi.h"
 }
 
-namespace fengyun
+namespace npp
 {
-    class FengyunMPTViterbi
+    class HRDViterbi
     {
     private:
         bool d_sync_check;
@@ -55,11 +55,11 @@ namespace fengyun
         float d_ber_threshold;
         bool switchInv;
 
-        FengyunMPTViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after);
-        ~FengyunMPTViterbi();
+        HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after);
+        ~HRDViterbi();
 
         unsigned char &getState();
 
         int work(std::complex<float> *in, size_t size, uint8_t *output);
     };
-} // namespace fengyun
+} // namespace npp

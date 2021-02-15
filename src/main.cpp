@@ -83,6 +83,10 @@ int main(int argc, char *argv[])
         aqua_db.run(input_file, output_file, parameters, input_level);
     else if (downlink_pipeline == "noaa_hrpt")
         noaa_hrpt.run(input_file, output_file, parameters, input_level);
+    else if (downlink_pipeline == "meteor_hrpt")
+        meteor_hrpt.run(input_file, output_file, parameters, input_level);
+    else if (downlink_pipeline == "npp_hrd")
+        npp_hrd.run(input_file, output_file, parameters, input_level);
 
     logger->info("Done! Goodbye");
 }

@@ -38,6 +38,12 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/noaa/module_noaa_hrpt_demod.h"
 #include "modules/noaa/instruments/avhrr/module_noaa_avhrr.h"
 
+#include "modules/meteor/module_meteor_hrpt_demod.h"
+#include "modules/meteor/module_meteor_hrpt_decoder.h"
+#include "modules/meteor/instruments/msumr/module_meteor_msumr.h"
+
+#include "modules/npp/module_npp_hrd_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -63,6 +69,12 @@ void registerModules()
 
     modules_registry.emplace(noaa::NOAAHRPTDemodModule::getID(), noaa::NOAAHRPTDemodModule::getInstance);
     modules_registry.emplace(noaa::avhrr::NOAAAVHRRDecoderModule::getID(), noaa::avhrr::NOAAAVHRRDecoderModule::getInstance);
+
+    modules_registry.emplace(meteor::METEORHRPTDemodModule::getID(), meteor::METEORHRPTDemodModule::getInstance);
+    modules_registry.emplace(meteor::METEORHRPTDecoderModule::getID(), meteor::METEORHRPTDecoderModule::getInstance);
+    modules_registry.emplace(meteor::msumr::METEORMSUMRDecoderModule::getID(), meteor::msumr::METEORMSUMRDecoderModule::getInstance);
+
+    modules_registry.emplace(npp::NPPHRDDecoderModule::getID(), npp::NPPHRDDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

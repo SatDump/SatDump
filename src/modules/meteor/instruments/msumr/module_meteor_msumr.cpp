@@ -1,0 +1,156 @@
+#include "module_meteor_msumr.h"
+#include <fstream>
+#include "modules/meteor/simpledeframer.h"
+#include <ccsds/demuxer.h>
+#include <ccsds/vcdu.h>
+#include "logger.h"
+#include <filesystem>
+#include "msumr_reader.h"
+
+#define BUFFER_SIZE 8192
+
+// Return filesize
+size_t getFilesize(std::string filepath);
+
+namespace meteor
+{
+    namespace msumr
+    {
+        METEORMSUMRDecoderModule::METEORMSUMRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        {
+        }
+
+        void METEORMSUMRDecoderModule::process()
+        {
+            size_t filesize = getFilesize(d_input_file);
+            std::ifstream data_in(d_input_file, std::ios::binary);
+
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-MR";
+
+            logger->info("Using input frames " + d_input_file);
+            logger->info("Decoding to " + directory);
+
+            time_t lastTime = 0;
+
+            uint8_t buffer[1024];
+
+            std::vector<uint8_t> msumrData;
+
+            // MSU-MR data
+            SimpleDeframer<uint64_t, 64, 11850 * 8, 0x0218A7A392DD9ABF> msumrDefra;
+
+            MSUMRReader reader;
+
+            logger->info("Demultiplexing and deframing...");
+
+            while (!data_in.eof())
+            {
+                // Read buffer
+                data_in.read((char *)buffer, 1024);
+
+                // Extract MSU-MR
+                msumrData.insert(msumrData.end(), &buffer[23 - 1], &buffer[23 - 1] + 238);
+                msumrData.insert(msumrData.end(), &buffer[279 - 1], &buffer[279 - 1] + 238);
+                msumrData.insert(msumrData.end(), &buffer[535 - 1], &buffer[535 - 1] + 238);
+                msumrData.insert(msumrData.end(), &buffer[791 - 1], &buffer[791 - 1] + 234);
+
+                // Deframe
+                std::vector<std::vector<uint8_t>> msumr_frames = msumrDefra.work(msumrData);
+
+                for (std::vector<uint8_t> frame : msumr_frames)
+                    reader.work(frame.data());
+
+                msumrData.clear();
+
+                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                {
+                    lastTime = time(NULL);
+                    logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                }
+            }
+
+            data_in.close();
+
+            logger->info("MSU-MR Lines          : " + std::to_string(reader.lines));
+
+            logger->info("Writing images.... (Can take a while)");
+
+            if (!std::filesystem::exists(directory))
+                std::filesystem::create_directory(directory);
+
+            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
+            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
+            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
+            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
+            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
+            cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
+
+            logger->info("Channel 1...");
+            image1.save_png(std::string(directory + "/MSU-MR-1.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-1.png");
+
+            logger->info("Channel 2...");
+            image2.save_png(std::string(directory + "/MSU-MR-2.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-2.png");
+
+            logger->info("Channel 3...");
+            image3.save_png(std::string(directory + "/MSU-MR-3.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-3.png");
+
+            logger->info("Channel 4...");
+            image4.save_png(std::string(directory + "/MSU-MR-4.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-4.png");
+
+            logger->info("Channel 5...");
+            image5.save_png(std::string(directory + "/MSU-MR-5.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-5.png");
+
+            logger->info("Channel 6...");
+            image5.save_png(std::string(directory + "/MSU-MR-6.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-6.png");
+
+            logger->info("221 Composite...");
+            cimg_library::CImg<unsigned short> image221(1572, reader.lines, 1, 3);
+            {
+                image221.draw_image(0, 0, 0, 0, image2);
+                image221.draw_image(0, 0, 0, 1, image2);
+                image221.draw_image(0, 0, 0, 2, image1);
+            }
+            image221.save_png(std::string(directory + "/MSU-MR-RGB-221.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-RGB-221.png");
+            image221.equalize(1000);
+            image221.normalize(0, std::numeric_limits<unsigned char>::max());
+            image221.save_png(std::string(directory + "/MSU-MR-RGB-221-EQU.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-RGB-221-EQU.png");
+
+            logger->info("321 Composite...");
+            cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
+            {
+                image321.draw_image(0, 0, 0, 0, image3);
+                image321.draw_image(0, 0, 0, 1, image2);
+                image321.draw_image(0, 0, 0, 2, image1);
+            }
+            image321.save_png(std::string(directory + "/MSU-MR-RGB-321.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-RGB-321.png");
+            image321.equalize(1000);
+            image321.normalize(0, std::numeric_limits<unsigned char>::max());
+            image321.save_png(std::string(directory + "/MSU-MR-RGB-321-EQU.png").c_str());
+            d_output_files.push_back(directory + "/MSU-MR-RGB-321-EQU.png");
+        }
+
+        std::string METEORMSUMRDecoderModule::getID()
+        {
+            return "meteor_msumr";
+        }
+
+        std::vector<std::string> METEORMSUMRDecoderModule::getParameters()
+        {
+            return {};
+        }
+
+        std::shared_ptr<ProcessingModule> METEORMSUMRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        {
+            return std::make_shared<METEORMSUMRDecoderModule>(input_file, output_file_hint, parameters);
+        }
+    } // namespace msumr
+} // namespace meteor

@@ -11,7 +11,7 @@ if(NOT MINGW AND NOT WIN32)
 endif()
 
 project (SatDump)
-file(GLOB_RECURSE SatDump_CPPS src/*.cpp src/viterbi_lib/metrics.c src/viterbi_lib/tab.c src/viterbi_lib/viterbi.c)
+file(GLOB_RECURSE SatDump_CPPS src/*.cpp src/modules/common/viterbi_lib/metrics.c src/modules/common/viterbi_lib/tab.c src/modules/common/viterbi_lib/viterbi.c)
 
 add_executable(satdump ${SatDump_CPPS})
 

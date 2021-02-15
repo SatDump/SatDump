@@ -67,7 +67,7 @@ Pipeline fengyun3abc_mpt = {"fengyun3_abc_mpt", {
 Pipeline fengyun3d_ahrpt = {"fengyun3_d_ahrpt", {
                             {"soft", {{"qpsk_demod", {/*{"samplerate", "6000000"},*/
                                                     {"symbolrate", "30000000"}, 
-                                                    {"agc_rate", "0.1f"}, 
+                                                    {"agc_rate", "0.00001"}, 
                                                     {"rrc_alpha", "0.35"}, 
                                                     {"rrc_taps", "31"}, 
                                                     {"costas_bw", "0.0063"}, 
@@ -99,4 +99,32 @@ Pipeline noaa_hrpt = {"noaa_hrpt", {
                             {"products", {{"noaa_avhrr", {}}/*,
                                                         {"aqua_airs", {}},
                                                         {"aqua_amsu", {}}*/}}
+                        }};
+
+Pipeline meteor_hrpt = {"meteor_hrpt", {
+                            {"dem", {{"meteor_hrpt_demod", {/*{"samplerate", "6000000"},*/
+                                                    {"buffer_size", "8192"}}}}},
+                             {"cadu", {{"meteor_hrpt_decoder", {}}}},
+                            {"products", {{"meteor_msumr", {}}/*,
+                                                        {"aqua_airs", {}},
+                                                        {"aqua_amsu", {}}*/}}
+                        }};
+
+Pipeline npp_hrd = {"npp_hrd", {
+                            {"soft", {{"qpsk_demod", {/*{"samplerate", "6000000"},*/
+                                                    {"symbolrate", "15000000"}, 
+                                                    {"agc_rate", "0.0001f"}, 
+                                                    {"rrc_alpha", "0.7"}, 
+                                                    {"rrc_taps", "31"}, 
+                                                    {"costas_bw", "0.001"}, 
+                                                    {"buffer_size", "8192"}}}}},
+                            {"cadu", {{"npp_hrd_decoder", {{"viterbi_outsync_after", "5"},
+                                                    {"viterbi_ber_thresold", "0.170"},
+                                                    {"soft_symbols", "1"}}}}},
+                            {"products", {{"jpss_viirs", {}}/*,
+                                            {"metop_mhs", {}},
+                                            {"metop_amsu", {}},
+                                            {"metop_iasi", {{"write_all", "0"}}},
+                                            {"metop_gome", {{"write_all", "0"}}}*/
+                                            }}
                         }};
