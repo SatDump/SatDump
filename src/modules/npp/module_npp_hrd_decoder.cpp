@@ -4,7 +4,7 @@
 #include "modules/common/deframer.h"
 #include "modules/common/reedsolomon.h"
 #include "viterbi.h"
-#include "differentialencoding.h"
+#include "modules/common/differentialencoding.h"
 
 #define BUFFER_SIZE 8192
 

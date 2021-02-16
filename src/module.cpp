@@ -59,6 +59,9 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/proba/instruments/chris/module_proba_chris.h"
 #include "modules/proba/instruments/hrc/module_proba_hrc.h"
 
+#include "modules/elektro/module_elektro_rdas_decoder.h"
+#include "modules/elektro/instruments/msugs/module_elektro_msugs.h"
+
 void registerModules()
 {
     // Register modules
@@ -105,6 +108,9 @@ void registerModules()
     modules_registry.emplace(proba::swap::ProbaSWAPDecoderModule::getID(), proba::swap::ProbaSWAPDecoderModule::getInstance);
     modules_registry.emplace(proba::chris::ProbaCHRISDecoderModule::getID(), proba::chris::ProbaCHRISDecoderModule::getInstance);
     modules_registry.emplace(proba::hrc::ProbaHRCDecoderModule::getID(), proba::hrc::ProbaHRCDecoderModule::getInstance);
+
+    modules_registry.emplace(elektro::ElektroRDASDecoderModule::getID(), elektro::ElektroRDASDecoderModule::getInstance);
+    modules_registry.emplace(elektro::msugs::ELEKTROMSUGSDecoderModule::getID(), elektro::msugs::ELEKTROMSUGSDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

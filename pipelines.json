@@ -302,5 +302,23 @@
                 "derandomize": "1"
             }
         }
+    },
+    "elektro_rdas": {
+        "soft": {
+            "bpsk_demod": {
+                "symbolrate": "30720000",
+                "agc_rate": "0.000001",
+                "rrc_alpha": "0.5",
+                "rrc_taps": "31",
+                "costas_bw": "0.03",
+                "buffer_size": "8192"
+            }
+        },
+        "cadu": {
+            "elektro_rdas_decoder": {}
+        },
+        "products": {
+            "elektro_msugs": {}
+        }
     }
 }
