@@ -3,8 +3,8 @@
 #include "pipeline.h"
 #include <signal.h>
 #include <filesystem>
-
-#include "pipelines.h"
+#include "nlohmann/json.hpp"
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
@@ -62,6 +62,47 @@ int main(int argc, char *argv[])
 
     registerModules();
 
+    std::vector<Pipeline> pipelines;
+
+    {
+        std::ifstream iFstream("../pipelines.json");
+        nlohmann::ordered_json jsonObj;
+        iFstream >> jsonObj;
+        iFstream.close();
+
+        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
+        {
+            Pipeline newPipeline;
+            newPipeline.name = pipelineConfig.key();
+            //logger->info(newPipeline.name);
+
+            for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value().items())
+            {
+                PipelineStep newStep;
+                newStep.level_name = pipelineStep.key();
+                //logger->warn(newStep.level_name);
+
+                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
+                {
+                    PipelineModule newModule;
+                    newModule.module_name = pipelineModule.key();
+                    newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
+                    //logger->debug(newModule.module_name);
+
+                    newStep.modules.push_back(newModule);
+                }
+
+                newPipeline.steps.push_back(newStep);
+            }
+
+            pipelines.push_back(newPipeline);
+        }
+    }
+
+    logger->debug("Registered pipelines :");
+    for (Pipeline &pipeline : pipelines)
+        logger->debug(" - " + pipeline.name);
+
     logger->info("Starting processing pipeline " + downlink_pipeline + "...");
     logger->debug("Input file (" + input_level + ") : " + input_file);
     logger->debug("Output file (" + output_level + ") : " + output_file);
@@ -69,30 +110,20 @@ int main(int argc, char *argv[])
     if (!std::filesystem::exists(output_file))
         std::filesystem::create_directory(output_file);
 
-    if (downlink_pipeline == "metop_ahrpt")
-        metop_ahrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "fengyun3_ab_ahrpt")
-        fengyun3ab_ahrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "fengyun3_c_ahrpt")
-        fengyun3c_ahrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "fengyun3_abc_mpt")
-        fengyun3abc_mpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "fengyun3_d_ahrpt")
-        fengyun3d_ahrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "aqua_db")
-        aqua_db.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "noaa_hrpt")
-        noaa_hrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "meteor_hrpt")
-        meteor_hrpt.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "npp_hrd")
-        npp_hrd.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "proba1_dump")
-        proba1_dump.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "proba2_dump")
-        proba2_dump.run(input_file, output_file, parameters, input_level);
-    else if (downlink_pipeline == "probav_s_dump")
-        probavs_s_dump.run(input_file, output_file, parameters, input_level);
+    std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                      pipelines.end(),
+                                                      [&downlink_pipeline](const Pipeline &e) {
+                                                          return e.name == downlink_pipeline;
+                                                      });
+
+    if (it != pipelines.end())
+    {
+        it->run(input_file, output_file, parameters, input_level);
+    }
+    else
+    {
+        logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+    }
 
     logger->info("Done! Goodbye");
 }
