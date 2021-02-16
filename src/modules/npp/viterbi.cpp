@@ -418,4 +418,25 @@ namespace npp
     {
         return d_state;
     }
+
+    float HRDViterbi::ber()
+    {
+        if (d_state == ST_SYNCED)
+            return d_ber[0][0];
+        else
+        {
+            float ber;
+            for (int s = 0; s < 2; s++)
+            {
+                for (int p = 0; p < 2; p++)
+                {
+                    if (ber > d_ber[s][p])
+                    {
+                        ber = d_ber[s][p];
+                    }
+                }
+            }
+            return ber;
+        }
+    }
 } // namespace npp

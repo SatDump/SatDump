@@ -357,4 +357,22 @@ namespace fengyun
     {
         return d_state;
     }
+
+    float FengyunMPTViterbi::ber()
+    {
+        if (d_state == ST_SYNCED)
+            return d_ber[0][0];
+        else
+        {
+            float ber;
+            for (int s = 0; s < 2; s++)
+            {
+                if (ber > d_ber[s][0])
+                {
+                    ber = d_ber[s][0];
+                }
+            }
+            return ber;
+        }
+    }
 } // namespace fengyun

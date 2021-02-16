@@ -36,7 +36,7 @@ namespace metop
         time_t lastTime = 0;
 
         MetopViterbi viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50);
-        
+
         sathelper::ReedSolomon reedSolomon;
         CADUDeframer deframer;
 
@@ -93,7 +93,7 @@ namespace metop
                 lastTime = time(NULL);
                 std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
             }
         }
 

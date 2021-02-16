@@ -59,5 +59,7 @@ namespace metop
         unsigned char &getState();
 
         int work(std::complex<float> *in, size_t size, uint8_t *output);
+
+        float ber();
     };
 } // namespace metop
