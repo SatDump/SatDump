@@ -2,8 +2,8 @@
 #include <fstream>
 #include "logger.h"
 #include "deframer.h"
-#include "modules/common/reedsolomon.h"
-#include "differentialencoding.h"
+#include "modules/common/sathelper/reedsolomon.h"
+#include "modules/common/differential/nrzm.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)
 
@@ -35,8 +35,7 @@ namespace aqua
 
         time_t lastTime = 0;
 
-        SatHelper::DifferentialEncoding diff;
-        SatHelper::ReedSolomon reedSolomon;
+        sathelper::ReedSolomon reedSolomon;
         CADUDeframer deframer;
 
         // Read buffer
@@ -122,8 +121,8 @@ namespace aqua
             }
 
             // Differential decoding for both of them
-            diff.nrzmDecode(bufI, (BUFFER_SIZE / 8) / 2 + 1);
-            diff.nrzmDecode(bufQ, (BUFFER_SIZE / 8) / 2 + 1);
+            diff::nrzm_decode(bufI, (BUFFER_SIZE / 8) / 2 + 1);
+            diff::nrzm_decode(bufQ, (BUFFER_SIZE / 8) / 2 + 1);
 
             // Interleave them back
             for (int i = 0; i < (BUFFER_SIZE / 8) / 2; i++)

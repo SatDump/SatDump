@@ -2,9 +2,9 @@
 #include <fstream>
 #include "logger.h"
 #include "modules/common/deframer.h"
-#include "modules/common/reedsolomon.h"
+#include "modules/common/sathelper/reedsolomon.h"
 #include "viterbi.h"
-#include "modules/common/differentialencoding.h"
+#include "modules/common/differential/nrzm.h"
 
 #define BUFFER_SIZE 8192
 
@@ -37,9 +37,9 @@ namespace npp
         time_t lastTime = 0;
 
         HRDViterbi viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50);
-        NRZMDiff diff;
+        diff::NRZMDiff diff;
 
-        SatHelper::ReedSolomon reedSolomon;
+        sathelper::ReedSolomon reedSolomon;
         CADUDeframer deframer;
 
         int vout;

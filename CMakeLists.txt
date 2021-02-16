@@ -17,7 +17,11 @@ if(NOT MINGW AND NOT WIN32)
 endif()
 
 project (SatDump)
-file(GLOB_RECURSE SatDump_CPPS src/*.cpp src/modules/common/viterbi_lib/metrics.c src/modules/common/viterbi_lib/tab.c src/modules/common/viterbi_lib/viterbi.c)
+file(GLOB_RECURSE SatDump_CPPS  src/*.cpp 
+                                src/modules/common/viterbi_lib/metrics.c src/modules/common/viterbi_lib/tab.c 
+                                src/modules/common/viterbi_lib/viterbi.c src/modules/common/viterbi_lib/viterbi.c
+                                src/modules/common/aec/*.c
+)
 
 add_executable(satdump ${SatDump_CPPS})
 
@@ -35,7 +39,7 @@ target_link_libraries(satdump PUBLIC Spdlog::Spdlog)
 find_library(DSP_LIBRARY dsp REQUIRED)
 target_link_libraries(satdump PUBLIC ${DSP_LIBRARY})
 
-target_link_libraries (satdump PUBLIC correct aec jpeg)
+target_link_libraries (satdump PUBLIC correct jpeg)
 
 # FMT
 find_package(fmt REQUIRED)

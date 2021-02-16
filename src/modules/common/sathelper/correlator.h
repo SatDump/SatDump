@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * correlator.h
  *
@@ -5,19 +7,18 @@
  *      Author: Lucas Teske
  */
 
-#ifndef INCLUDES_CORRELATOR_H_
-#define INCLUDES_CORRELATOR_H_
-
 #include <vector>
 #include <cstdint>
 #include <stdint.h>
 #include <cstdio>
 
-namespace SatHelper {
+namespace sathelper
+{
 
     typedef std::vector<uint8_t> VecU8;
 
-    class Correlator {
+    class Correlator
+    {
     private:
         std::vector<VecU8> words;
         std::vector<uint32_t> correlation;
@@ -34,13 +35,15 @@ namespace SatHelper {
 
         void resetCorrelation();
         void updatePointers();
-    public:
 
-        static inline bool hardCorrelate(uint8_t dataByte, uint8_t wordByte) {
+    public:
+        static inline bool hardCorrelate(uint8_t dataByte, uint8_t wordByte)
+        {
             return ((dataByte >= 127) && (wordByte == 0)) || ((dataByte < 127) && (wordByte == 255));
         }
 
-        static inline uint32_t softCorrelate(uint8_t dataByte, uint8_t wordByte) {
+        static inline uint32_t softCorrelate(uint8_t dataByte, uint8_t wordByte)
+        {
             // TODO: This doesn't work
             /*
             int a = dataByte - 128; // 127
@@ -53,15 +56,18 @@ namespace SatHelper {
         Correlator();
         ~Correlator();
 
-        inline uint32_t getHighestCorrelation() {
+        inline uint32_t getHighestCorrelation()
+        {
             return correlation[wordNumber];
         }
 
-        inline uint32_t getHighestCorrelationPosition() {
+        inline uint32_t getHighestCorrelationPosition()
+        {
             return position[wordNumber];
         }
 
-        inline uint32_t getCorrelationWordNumber() {
+        inline uint32_t getCorrelationWordNumber()
+        {
             return wordNumber;
         }
 
@@ -70,7 +76,4 @@ namespace SatHelper {
 
         void correlate(uint8_t *data, uint32_t length);
     };
-
-}
-
-#endif /* INCLUDES_CORRELATOR_H_ */
+} // namespace sathelper

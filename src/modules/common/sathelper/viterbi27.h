@@ -5,13 +5,12 @@
  *      Author: Lucas Teske
  */
 
-#ifndef SATHELPER_INCLUDES_VITERBI27_H_
-#define SATHELPER_INCLUDES_VITERBI27_H_
+#pragma once
 
 #include <cstdint>
-//#include <SatHelper/extensions.h>
+#include "extensions.h"
 
-namespace SatHelper
+namespace sathelper
 {
 #define _VITERBI27_POLYA 0x4F
 #define _VITERBI27_POLYB 0x6D
@@ -63,9 +62,10 @@ namespace SatHelper
             return (100.f * this->BER) / this->frameBits;
         }
 
-        // inline bool IsSSEMode() {
-        //       return SatHelper::Extensions::hasSSE4;
-        //   }
+        inline bool IsSSEMode()
+        {
+            return Extensions::hasSSE4;
+        }
 
         inline void decode(uint8_t *input, uint8_t *output) { (*this.*_decode)(input, output); }
         inline void encode(uint8_t *input, uint8_t *output) { (*this.*_encode)(input, output); }
@@ -73,6 +73,4 @@ namespace SatHelper
         ~Viterbi27();
     };
 
-} // namespace SatHelper
-
-#endif /* SATHELPER_INCLUDES_VITERBI27_H_ */
+} // namespace sathelper

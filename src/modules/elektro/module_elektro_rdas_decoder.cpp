@@ -2,8 +2,7 @@
 #include <fstream>
 #include "logger.h"
 #include "modules/common/deframer.h"
-#include "modules/common/reedsolomon.h"
-#include "modules/common/differentialencoding.h"
+#include "modules/common/differential/nrzm.h"
 
 #define BUFFER_SIZE 8192
 
@@ -35,7 +34,7 @@ namespace elektro
 
         time_t lastTime = 0;
 
-        NRZMDiff diff;
+        diff::NRZMDiff diff;
         CADUDeframer deframer;
 
         // Read buffer

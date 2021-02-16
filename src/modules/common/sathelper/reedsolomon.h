@@ -5,8 +5,7 @@
  *      Author: Lucas Teske
  */
 
-#ifndef INCLUDES_REEDSOLOMON_H_
-#define INCLUDES_REEDSOLOMON_H_
+#pragma once
 
 #include <cstdint>
 
@@ -15,7 +14,7 @@ extern "C"
 #include <correct.h>
 }
 
-namespace SatHelper
+namespace sathelper
 {
     class ReedSolomon
     {
@@ -45,6 +44,4 @@ namespace SatHelper
 
         ~ReedSolomon();
     };
-} // namespace SatHelper
-
-#endif /* INCLUDES_REEDSOLOMON_H_ */
+} // namespace sathelper

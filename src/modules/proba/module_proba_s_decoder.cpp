@@ -1,10 +1,10 @@
 #include "module_proba_s_decoder.h"
 #include <fstream>
 #include "logger.h"
-#include "modules/common/reedsolomon.h"
-#include "modules/common/correlator.h"
-#include "modules/common/packetfixer.h"
-#include "modules/common/viterbi27.h"
+#include "modules/common/sathelper/reedsolomon.h"
+#include "modules/common/sathelper/correlator.h"
+#include "modules/common/sathelper/packetfixer.h"
+#include "modules/common/sathelper/viterbi27.h"
 #include "modules/common/derandomizer.h"
 
 #define FRAME_SIZE 1279
@@ -33,7 +33,7 @@ namespace proba
         time_t lastTime = 0;
 
         // Correlator
-        SatHelper::Correlator correlator;
+        sathelper::Correlator correlator;
 
         // All encoded sync words. Though PROBAs are BPSK. So we only have 2!
         // Weirdly enough... IQ inversed and always 90/270 deg phase shift weirdness? Well it works so whatever I guess!
@@ -41,10 +41,10 @@ namespace proba
         correlator.addWord((uint64_t)0x56081c971aa73d3e);
 
         // Viterbi, rs, etc
-        SatHelper::PacketFixer packetFixer;
-        SatHelper::Viterbi27 viterbi(ENCODED_FRAME_SIZE / 2);
+        sathelper::PacketFixer packetFixer;
+        sathelper::Viterbi27 viterbi(ENCODED_FRAME_SIZE / 2);
         SatHelper::DeRandomizer derand;
-        SatHelper::ReedSolomon reedSolomon;
+        sathelper::ReedSolomon reedSolomon;
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -94,7 +94,7 @@ namespace proba
                 }
 
                 // Correct phase ambiguity
-                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, word == 0 ? SatHelper::PhaseShift::DEG_90 : SatHelper::PhaseShift::DEG_270, true);
+                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, word == 0 ? sathelper::PhaseShift::DEG_90 : sathelper::PhaseShift::DEG_270, true);
 
                 // Viterbi
                 viterbi.decode(buffer, frameBuffer);

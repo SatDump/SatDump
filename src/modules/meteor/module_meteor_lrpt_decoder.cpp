@@ -1,12 +1,12 @@
 #include "module_meteor_lrpt_decoder.h"
 #include <fstream>
 #include "logger.h"
-#include "modules/common/reedsolomon.h"
-#include "modules/common/correlator.h"
-#include "modules/common/packetfixer.h"
-#include "modules/common/viterbi27.h"
+#include "modules/common/sathelper/reedsolomon.h"
+#include "modules/common/sathelper/correlator.h"
+#include "modules/common/sathelper/packetfixer.h"
+#include "modules/common/sathelper/viterbi27.h"
 #include "modules/common/derandomizer.h"
-#include "modules/aqua/differentialencoding.h"
+#include "modules/common/differential/nrzm.h"
 
 #define FRAME_SIZE 1024
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2
@@ -34,7 +34,7 @@ namespace meteor
         time_t lastTime = 0;
 
         // Correlator
-        SatHelper::Correlator correlator;
+        sathelper::Correlator correlator;
 
         if (diff_decode)
         {
@@ -64,12 +64,12 @@ namespace meteor
         }
 
         // Viterbi, rs, etc
-        SatHelper::PacketFixer packetFixer;
-        SatHelper::PhaseShift phaseShift;
-        SatHelper::Viterbi27 viterbi(ENCODED_FRAME_SIZE / 2);
+        sathelper::PacketFixer packetFixer;
+        sathelper::PhaseShift phaseShift;
+        sathelper::Viterbi27 viterbi(ENCODED_FRAME_SIZE / 2);
         SatHelper::DeRandomizer derand;
-        SatHelper::ReedSolomon reedSolomon;
-        SatHelper::DifferentialEncoding diff;
+        sathelper::ReedSolomon reedSolomon;
+
         bool iqinv;
 
         // Other buffers
@@ -109,19 +109,19 @@ namespace meteor
                 switch (word % 4)
                 {
                 case 0:
-                    phaseShift = SatHelper::PhaseShift::DEG_0;
+                    phaseShift = sathelper::PhaseShift::DEG_0;
                     break;
 
                 case 1:
-                    phaseShift = SatHelper::PhaseShift::DEG_90;
+                    phaseShift = sathelper::PhaseShift::DEG_90;
                     break;
 
                 case 2:
-                    phaseShift = SatHelper::PhaseShift::DEG_180;
+                    phaseShift = sathelper::PhaseShift::DEG_180;
                     break;
 
                 case 3:
-                    phaseShift = SatHelper::PhaseShift::DEG_270;
+                    phaseShift = sathelper::PhaseShift::DEG_270;
                     break;
 
                 default:
@@ -152,7 +152,7 @@ namespace meteor
                 viterbi.decode(buffer, frameBuffer);
 
                 if (diff_decode)
-                    diff.nrzmDecode(frameBuffer, FRAME_SIZE);
+                    diff::nrzm_decode(frameBuffer, FRAME_SIZE);
 
                 // Derandomize that frame
                 derand.DeRandomize(&frameBuffer[4], FRAME_SIZE - 4);
