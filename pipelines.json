@@ -1,4 +1,49 @@
 {
+    "meteor_m2_lrpt": {
+        "soft": {
+            "qpsk_demod": {
+                "symbolrate": "72000",
+                "agc_rate": "0.00001",
+                "rrc_alpha": "0.6",
+                "rrc_taps": "361",
+                "costas_bw": "0.004",
+                "buffer_size": "8192"
+            }
+        },
+        "cadu": {
+            "meteor_lrpt_decoder": {
+                "diff_decode": "0"
+            }
+        },
+        "products": {
+            "meteor_msumr_lrpt": {}
+        }
+    },
+    "meteor_m2-x_lrpt": {
+        "soft": {
+            "oqpsk_demod": {
+                "symbolrate": "72000",
+                "agc_rate": "0.00001",
+                "rrc_alpha": "0.6",
+                "rrc_taps": "361",
+                "costas_bw": "0.004",
+                "clock_gain_omega": "2.5e-7",
+                "clock_mu": "0.5",
+                "clock_gain_mu": "0.001",
+                "clock_omega_relative_limit": "0.005",
+                "dc_block": "0",
+                "buffer_size": "8192"
+            }
+        },
+        "cadu": {
+            "meteor_lrpt_decoder": {
+                "diff_decode": "1"
+            }
+        },
+        "products": {
+            "meteor_msumr_lrpt": {}
+        }
+    },
     "metop_ahrpt": {
         "soft": {
             "qpsk_demod": {
@@ -125,10 +170,15 @@
         "soft": {
             "oqpsk_demod": {
                 "symbolrate": "7500000",
-                "agc_rate": "0.00001",
+                "agc_rate": "0.1",
                 "rrc_alpha": "0.5",
                 "rrc_taps": "31",
                 "costas_bw": "0.006",
+                "clock_gain_omega": "0.8",
+                "clock_mu": "0.9",
+                "clock_gain_mu": "0.037",
+                "clock_omega_relative_limit": "0.0001",
+                "dc_block": "1",
                 "buffer_size": "8192"
             }
         },

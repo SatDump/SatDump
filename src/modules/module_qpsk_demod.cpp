@@ -283,8 +283,17 @@ void QPSKDemodModule::clockrecoveryThreadFunction()
         if (gotten <= 0)
             continue;
 
-        // Clock recovery
-        int recovered_size = rec->work(pll_buffer2, gotten, rec_buffer);
+        int recovered_size = 0;
+
+        try
+        {
+            // Clock recovery
+            recovered_size = rec->work(pll_buffer2, gotten, rec_buffer);
+        }
+        catch (std::runtime_error &e)
+        {
+            logger->error(e.what());
+        }
 
         rec_pipe->push(rec_buffer, recovered_size);
     }

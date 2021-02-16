@@ -44,7 +44,9 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 
 #include "modules/meteor/module_meteor_hrpt_demod.h"
 #include "modules/meteor/module_meteor_hrpt_decoder.h"
+#include "modules/meteor/module_meteor_lrpt_decoder.h"
 #include "modules/meteor/instruments/msumr/module_meteor_msumr.h"
+#include "modules/meteor/instruments/msumr/module_meteor_msumr_lrpt.h"
 #include "modules/meteor/instruments/mtvza/module_meteor_mtvza.h"
 
 #include "modules/npp/module_npp_hrd_decoder.h"
@@ -89,7 +91,9 @@ void registerModules()
 
     modules_registry.emplace(meteor::METEORHRPTDemodModule::getID(), meteor::METEORHRPTDemodModule::getInstance);
     modules_registry.emplace(meteor::METEORHRPTDecoderModule::getID(), meteor::METEORHRPTDecoderModule::getInstance);
+    modules_registry.emplace(meteor::METEORLRPTDecoderModule::getID(), meteor::METEORLRPTDecoderModule::getInstance);
     modules_registry.emplace(meteor::msumr::METEORMSUMRDecoderModule::getID(), meteor::msumr::METEORMSUMRDecoderModule::getInstance);
+    modules_registry.emplace(meteor::msumr::METEORMSUMRLRPTDecoderModule::getID(), meteor::msumr::METEORMSUMRLRPTDecoderModule::getInstance);
     modules_registry.emplace(meteor::mtvza::METEORMTVZADecoderModule::getID(), meteor::mtvza::METEORMTVZADecoderModule::getInstance);
 
     modules_registry.emplace(npp::NPPHRDDecoderModule::getID(), npp::NPPHRDDecoderModule::getInstance);

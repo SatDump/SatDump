@@ -29,6 +29,12 @@ protected:
     const int d_rrc_taps;
     const float d_loop_bw;
     const int d_buffer_size;
+    const bool d_dc_block;
+
+    const float d_clock_gain_omega;
+    const float d_clock_mu;
+    const float d_clock_gain_mu;
+    const float d_clock_omega_relative_limit;
 
     std::complex<float> *in_buffer, *in_buffer1, *in_buffer2;
     std::complex<float> *agc_buffer, *agc_buffer2;

@@ -12,7 +12,12 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_rrc_alpha(std::stof(parameters["rrc_alpha"])),
                                                                                                                                           d_rrc_taps(std::stoi(parameters["rrc_taps"])),
                                                                                                                                           d_loop_bw(std::stof(parameters["costas_bw"])),
-                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"]))
+                                                                                                                                          d_dc_block(std::stoi(parameters["dc_block"])),
+                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"])),
+                                                                                                                                          d_clock_gain_omega(std::stof(parameters["clock_gain_omega"])),
+                                                                                                                                          d_clock_mu(std::stof(parameters["clock_mu"])),
+                                                                                                                                          d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
+                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"]))
 {
     if (parameters["baseband_format"] == "i16")
     {
@@ -37,7 +42,7 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
     rrc = std::make_shared<libdsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<libdsp::CostasLoop>(d_loop_bw, 4);
     del = std::make_shared<DelayOneImag>();
-    rec = std::make_shared<libdsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    rec = std::make_shared<libdsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 
     // Buffers
     in_buffer = new std::complex<float>[d_buffer_size];
@@ -122,8 +127,8 @@ void OQPSKDemodModule::process()
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec_buffer2[i].imag() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec_buffer2[i].real() * 100);
+            sym_buffer[i * 2] = clamp(rec_buffer2[i].imag() * 50);
+            sym_buffer[i * 2 + 1] = clamp(rec_buffer2[i].real() * 50);
         }
 
         data_out.write((char *)sym_buffer, dat_size * 2);
@@ -218,8 +223,11 @@ void OQPSKDemodModule::fileThreadFunction()
             }
         }
 
-        dcb->work(in_buffer, d_buffer_size, in_buffer1);
-        
+        if (d_dc_block)
+            dcb->work(in_buffer, d_buffer_size, in_buffer1);
+        else
+            std::memcpy(in_buffer1, in_buffer, d_buffer_size * sizeof(std::complex<float>));
+
         in_pipe->push(in_buffer1, d_buffer_size);
     }
 }
@@ -288,8 +296,17 @@ void OQPSKDemodModule::clockrecoveryThreadFunction()
         if (gotten <= 0)
             continue;
 
-        // Clock recovery
-        int recovered_size = rec->work(pll_buffer2, gotten, rec_buffer);
+        int recovered_size = 0;
+
+        try
+        {
+            // Clock recovery
+            recovered_size = rec->work(pll_buffer2, gotten, rec_buffer);
+        }
+        catch (std::runtime_error &e)
+        {
+            logger->error(e.what());
+        }
 
         rec_pipe->push(rec_buffer, recovered_size);
     }
@@ -302,7 +319,7 @@ std::string OQPSKDemodModule::getID()
 
 std::vector<std::string> OQPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "baseband_format"};
 }
 
 std::shared_ptr<ProcessingModule> OQPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
