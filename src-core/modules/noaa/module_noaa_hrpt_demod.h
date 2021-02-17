@@ -10,6 +10,7 @@
 #include <dsp/pipe.h>
 #include <thread>
 #include <fstream>
+#include <dsp/random.h>
 
 namespace noaa
 {
@@ -68,10 +69,18 @@ namespace noaa
 
         void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points);
 
+        size_t filesize;
+
+        int frame_count = 0;
+
+        // UI Stuff
+        libdsp::Random rng;
+
     public:
         NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~NOAAHRPTDemodModule();
         void process();
+        void drawUI();
 
     public:
         static std::string getID();

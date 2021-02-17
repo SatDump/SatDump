@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
     include_directories(/usr/local/include)
+    include_directories(/usr/local/opt/jpeg-turbo/include)
     link_directories(/usr/local/lib)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif()

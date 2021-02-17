@@ -1,6 +1,7 @@
 #include "module_noaa_hrpt_demod.h"
 #include <dsp/fir_gen.h>
 #include "logger.h"
+#include "imgui/imgui.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -85,7 +86,7 @@ namespace noaa
 
     void NOAAHRPTDemodModule::process()
     {
-        size_t filesize = getFilesize(d_input_file);
+        filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".raw16", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".raw16");
@@ -103,8 +104,6 @@ namespace noaa
         pllThread = std::thread(&NOAAHRPTDemodModule::pllThreadFunction, this);
         rrcThread = std::thread(&NOAAHRPTDemodModule::rrcThreadFunction, this);
         recThread = std::thread(&NOAAHRPTDemodModule::clockrecoveryThreadFunction, this);
-
-        int frame_count = 0;
 
         int dat_size = 0;
         while (!data_in.eof())
@@ -294,6 +293,48 @@ namespace noaa
 
             rec_pipe->push(rec_buffer, recovered_size);
         }
+    }
+
+    void NOAAHRPTDemodModule::drawUI()
+    {
+        ImGui::Begin("NOAA HRPT Demodulator", NULL);
+
+        // Constellation
+        {
+            ImDrawList *draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                     ImColor::HSV(0, 0, 0));
+
+            for (int i = 0; i < 2048; i++)
+            {
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 50) % 200,
+                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 6) % 200),
+                                           2,
+                                           ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+            }
+
+            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+        }
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Deframer", {200, 20});
+            {
+                ImGui::Text("Frames : ");
+
+                ImGui::SameLine();
+
+                ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), std::to_string(frame_count / 11090).c_str());
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+
+        ImGui::End();
     }
 
     std::string NOAAHRPTDemodModule::getID()

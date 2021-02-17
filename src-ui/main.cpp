@@ -9,6 +9,11 @@
 
 std::thread renderThread;
 
+static void glfw_error_callback(int error, const char *description)
+{
+    logger->error("Glfw Error " + std::to_string(error) + ": " + description);
+}
+
 int main(int argc, char *argv[])
 {
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
@@ -67,6 +72,14 @@ int main(int argc, char *argv[])
     logger->info("");
 
     registerModules();
+
+    // Setup window
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+    {
+        logger->critical("Could not init GLFW");
+        exit(1);
+    }
 
     renderThread = std::thread(&render);
 
