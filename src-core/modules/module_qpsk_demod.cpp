@@ -114,7 +114,7 @@ void QPSKDemodModule::process()
     recThread = std::thread(&QPSKDemodModule::clockrecoveryThreadFunction, this);
 
     int dat_size = 0;
-    while (!data_in.load().eof())
+    while (!data_in.eof())
     {
         dat_size = rec_pipe->pop(rec_buffer2, d_buffer_size);
 
@@ -127,19 +127,19 @@ void QPSKDemodModule::process()
             sym_buffer[i * 2 + 1] = clamp(rec_buffer2[i].real() * 100);
         }
 
-        data_out.load().write((char *)sym_buffer, dat_size * 2);
+        data_out.write((char *)sym_buffer, dat_size * 2);
 
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)data_in.load().tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
         }
     }
 
     logger->info("Demodulation finished");
 
-    data_out.load().close();
-    data_in.load().close();
+    data_out.close();
+    data_in.close();
 
     // Exit all threads... Without causing a race condition!
     agcRun = rrcRun = pllRun = recRun = false;
@@ -182,16 +182,16 @@ void QPSKDemodModule::process()
 
 void QPSKDemodModule::fileThreadFunction()
 {
-    while (!data_in.load().eof())
+    while (!data_in.eof())
     {
         // Get baseband, possibly convert to F32
         if (f32)
         {
-            data_in.load().read((char *)in_buffer, d_buffer_size * sizeof(std::complex<float>));
+            data_in.read((char *)in_buffer, d_buffer_size * sizeof(std::complex<float>));
         }
         else if (i16)
         {
-            data_in.load().read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
+            data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
             for (int i = 0; i < d_buffer_size; i++)
             {
                 using namespace std::complex_literals;
@@ -200,7 +200,7 @@ void QPSKDemodModule::fileThreadFunction()
         }
         else if (i8)
         {
-            data_in.load().read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
+            data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
             for (int i = 0; i < d_buffer_size; i++)
             {
                 using namespace std::complex_literals;
@@ -209,7 +209,7 @@ void QPSKDemodModule::fileThreadFunction()
         }
         else if (w8)
         {
-            data_in.load().read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
+            data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
             for (int i = 0; i < d_buffer_size; i++)
             {
                 float imag = (buffer_u8[i * 2] - 127) * 0.004f;
@@ -218,6 +218,8 @@ void QPSKDemodModule::fileThreadFunction()
                 in_buffer[i] = real + imag * 1if;
             }
         }
+
+        progress = data_in.tellg();
 
         in_pipe->push(in_buffer, d_buffer_size);
     }
@@ -322,7 +324,7 @@ void QPSKDemodModule::drawUI()
         ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
     }
 
-    ImGui::ProgressBar((float)data_in.load().tellg() / (float)filesize, ImVec2(200, 20));
+    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(200, 20));
 
     ImGui::End();
 }
