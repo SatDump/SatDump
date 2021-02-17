@@ -104,6 +104,17 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        (void)io;
+        io.IniFilename = NULL;
+
+        // Setup Platform/Renderer bindings
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 150");
+
         renderThread = std::thread(&render);
     }
 
