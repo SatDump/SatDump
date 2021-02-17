@@ -3,6 +3,7 @@
 #include "modules/meteor/simpledeframer.h"
 #include <ccsds/demuxer.h>
 #include <ccsds/vcdu.h>
+#include <array>
 #include "logger.h"
 #include <filesystem>
 #include <ccsds/demuxer.h>
