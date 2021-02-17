@@ -50,6 +50,7 @@ std::shared_ptr<std::mutex> uiCallListMutex;
 
 std::thread renderThread;
 
+#include "style.h"
 
 int main(int argc, char *argv[])
 {
@@ -95,6 +96,8 @@ int main(int argc, char *argv[])
     ImGui_ImplOpenGL3_Init("#version 150");
 
     renderThread = std::thread(&render, argc, argv);
+
+    style::setDarkStyle("..");
 
     // Main loop
     while (!glfwWindowShouldClose(window))

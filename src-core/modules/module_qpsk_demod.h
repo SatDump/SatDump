@@ -9,6 +9,7 @@
 #include <dsp/pipe.h>
 #include <thread>
 #include <fstream>
+#include <atomic>
 
 class QPSKDemodModule : public ProcessingModule
 {
@@ -68,10 +69,10 @@ protected:
 
     std::thread fileThread, agcThread, rrcThread, pllThread, recThread;
 
-    std::ifstream data_in;
-    std::ofstream data_out;
+    std::atomic<std::ifstream> data_in;
+    std::atomic<std::ofstream> data_out;
 
-    size_t filesize;
+    std::atomic<size_t> filesize;
 
 public:
     QPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
