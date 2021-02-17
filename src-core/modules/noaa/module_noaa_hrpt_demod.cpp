@@ -334,7 +334,7 @@ namespace noaa
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(400, 20));
 
         ImGui::End();
     }
