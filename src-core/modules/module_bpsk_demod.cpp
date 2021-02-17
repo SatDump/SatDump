@@ -126,7 +126,7 @@ void BPSKDemodModule::process()
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
         }
     }
 
@@ -215,6 +215,8 @@ void BPSKDemodModule::fileThreadFunction()
                 in_buffer[i] = real + imag * 1if;
             }
         }
+
+        progress = data_in.tellg();
 
         if (d_dc_block)
             dcB.work(in_buffer, d_buffer_size, in_buffer);
@@ -322,7 +324,7 @@ void BPSKDemodModule::drawUI()
         ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
     }
 
-    ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(200, 20));
 
     ImGui::End();
 }

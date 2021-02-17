@@ -127,7 +127,7 @@ namespace noaa
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames : " + std::to_string(frame_count / 11090));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames : " + std::to_string(frame_count / 11090));
             }
         }
 
@@ -213,6 +213,8 @@ namespace noaa
                     in_buffer[i] = real + imag * 1if;
                 }
             }
+
+            progress = data_in.tellg();
 
             in_pipe->push(in_buffer, d_buffer_size);
         }
@@ -334,7 +336,7 @@ namespace noaa
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(400, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(400, 20));
 
         ImGui::End();
     }

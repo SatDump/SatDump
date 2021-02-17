@@ -44,7 +44,8 @@ namespace fengyun
 
         std::ifstream data_in;
         std::ofstream data_out;
-        size_t filesize;
+        std::atomic<size_t> filesize;
+        std::atomic<size_t> progress;
 
         FengyunMPTViterbi viterbi1, viterbi2;
         CADUDeframer deframer;

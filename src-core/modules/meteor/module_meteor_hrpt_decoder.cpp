@@ -63,11 +63,13 @@ namespace meteor
                 }
             }
 
+            progress = data_in.tellg();
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string deframer_state = def->getState() == 0 ? "NOSYNC" : (def->getState() == 2 || def->getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
             }
         }
 
@@ -103,7 +105,7 @@ namespace meteor
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(200, 20));
 
         ImGui::End();
     }

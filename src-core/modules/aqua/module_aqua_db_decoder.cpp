@@ -171,11 +171,13 @@ namespace aqua
                 }
             }
 
+            progress = data_in.tellg();
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
             }
         }
 
@@ -251,7 +253,7 @@ namespace aqua
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(ImGui::GetWindowWidth(), 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth(), 20));
 
         ImGui::End();
     }

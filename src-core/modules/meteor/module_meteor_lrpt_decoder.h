@@ -21,7 +21,8 @@ namespace meteor
 
         std::ifstream data_in;
         std::ofstream data_out;
-        size_t filesize;
+        std::atomic<size_t> filesize;
+        std::atomic<size_t> progress;
 
         bool locked = false;
         int errors[4];

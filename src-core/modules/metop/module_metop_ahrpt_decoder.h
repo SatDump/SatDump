@@ -27,7 +27,8 @@ namespace metop
 
         std::ifstream data_in;
         std::ofstream data_out;
-        size_t filesize;
+        std::atomic<size_t> filesize;
+        std::atomic<size_t> progress;
 
         MetopViterbi viterbi;
         sathelper::ReedSolomon reedSolomon;

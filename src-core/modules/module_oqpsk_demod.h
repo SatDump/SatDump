@@ -81,7 +81,8 @@ protected:
     std::ifstream data_in;
     std::ofstream data_out;
 
-    size_t filesize;
+    std::atomic<size_t> filesize;
+    std::atomic<size_t> progress;
 
 public:
     OQPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

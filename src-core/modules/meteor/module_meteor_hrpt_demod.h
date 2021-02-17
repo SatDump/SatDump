@@ -73,7 +73,8 @@ namespace meteor
 
         void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points);
 
-        size_t filesize;
+        std::atomic<size_t> filesize;
+        std::atomic<size_t> progress;
 
         // UI Stuff
         libdsp::Random rng;

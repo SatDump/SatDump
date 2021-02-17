@@ -184,11 +184,13 @@ namespace meteor
                 locked = false;
             }
 
+            progress = data_in.tellg();
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.GetPercentBER()) + "%, Lock : " + lock_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.GetPercentBER()) + "%, Lock : " + lock_state);
             }
         }
 
@@ -286,7 +288,7 @@ namespace meteor
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(ImGui::GetWindowWidth(), 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth(), 20));
 
         ImGui::End();
     }
