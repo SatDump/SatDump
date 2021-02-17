@@ -299,6 +299,7 @@ namespace noaa
     {
         ImGui::Begin("NOAA HRPT Demodulator", NULL);
 
+        ImGui::BeginGroup();
         // Constellation
         {
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -316,6 +317,7 @@ namespace noaa
 
             ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
         }
+        ImGui::EndGroup();
 
         ImGui::SameLine();
 
