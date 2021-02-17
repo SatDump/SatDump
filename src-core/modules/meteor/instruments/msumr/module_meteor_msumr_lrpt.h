@@ -6,7 +6,6 @@
 #include <dsp/fir_filter.h>
 #include <dsp/costas_loop.h>
 #include <dsp/clock_recovery_mm.h>
-#include <array>
 
 namespace meteor
 {

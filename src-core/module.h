@@ -5,6 +5,7 @@
 #include <map>
 #include <functional>
 #include <memory>
+#include <atomic>
 
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \

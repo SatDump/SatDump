@@ -8,6 +8,7 @@
 #include "CImg.h"
 
 #include "lrpt/segment.h"
+#include <array>
 
 namespace meteor
 {
