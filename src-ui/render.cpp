@@ -6,30 +6,6 @@ std::shared_ptr<std::mutex> uiCallListMutex;
 
 void render()
 {
-   
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-
-    // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(500, 500, "SatDump", NULL, NULL);
-    if (window == NULL)
-    {
-        logger->critical("Could not init GLFW Window");
-        exit(1);
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
-    if (glewInit() != GLEW_OK)
-    {
-        logger->critical("Failed to initialize OpenGL loader!");
-        exit(1);
-    }
-
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
