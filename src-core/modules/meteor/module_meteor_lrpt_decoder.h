@@ -4,7 +4,6 @@
 #include <complex>
 #include "modules/common/sathelper/viterbi27.h"
 #include <fstream>
-#include <array>
 
 namespace meteor
 {
