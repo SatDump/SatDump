@@ -1,6 +1,7 @@
 #include "module_meteor_hrpt_demod.h"
 #include <dsp/fir_gen.h>
 #include "logger.h"
+#include "imgui/imgui.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -89,7 +90,7 @@ namespace meteor
 
     void METEORHRPTDemodModule::process()
     {
-        size_t filesize = getFilesize(d_input_file);
+        filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".dem", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".dem");
@@ -108,8 +109,6 @@ namespace meteor
         pllThread = std::thread(&METEORHRPTDemodModule::pllThreadFunction, this);
         movThread = std::thread(&METEORHRPTDemodModule::movThreadFunction, this);
         recThread = std::thread(&METEORHRPTDemodModule::clockrecoveryThreadFunction, this);
-
-        int frame_count = 0;
 
         int dat_size = 0;
         while (!data_in.eof())
@@ -318,6 +317,33 @@ namespace meteor
 
             rec_pipe->push(rec_buffer, recovered_size);
         }
+    }
+
+    void METEORHRPTDemodModule::drawUI()
+    {
+        ImGui::Begin("METEOR HRPT Demodulator", NULL);
+
+        // Constellation
+        {
+            ImDrawList *draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                     ImColor::HSV(0, 0, 0));
+
+            for (int i = 0; i < 2048; i++)
+            {
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 50) % 200,
+                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 6) % 200),
+                                           2,
+                                           ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+            }
+
+            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+        }
+
+        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+
+        ImGui::End();
     }
 
     std::string METEORHRPTDemodModule::getID()

@@ -25,10 +25,13 @@ namespace meteor
         std::ifstream data_in;
         std::ofstream data_out;
 
+        size_t filesize;
+
     public:
         METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~METEORHRPTDecoderModule();
         void process();
+        void drawUI();
 
     public:
         static std::string getID();

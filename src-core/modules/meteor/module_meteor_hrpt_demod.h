@@ -11,6 +11,7 @@
 #include <thread>
 #include <fstream>
 #include "deframer.h"
+#include <dsp/random.h>
 
 namespace meteor
 {
@@ -72,10 +73,16 @@ namespace meteor
 
         void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points);
 
+        size_t filesize;
+
+        // UI Stuff
+        libdsp::Random rng;
+
     public:
         METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~METEORHRPTDemodModule();
         void process();
+        void drawUI();
 
     public:
         static std::string getID();

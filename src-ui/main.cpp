@@ -73,50 +73,7 @@ int main(int argc, char *argv[])
 
     registerModules();
 
-    {
-        // Setup window
-        glfwSetErrorCallback(glfw_error_callback);
-        if (!glfwInit())
-        {
-            logger->critical("Could not init GLFW");
-            exit(1);
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-
-        // Create window with graphics context
-        GLFWwindow *window = glfwCreateWindow(500, 500, "SatDump", NULL, NULL);
-        if (window == NULL)
-        {
-            logger->critical("Could not init GLFW Window");
-            exit(1);
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(1); // Enable vsync
-
-        if (glewInit() != GLEW_OK)
-        {
-            logger->critical("Failed to initialize OpenGL loader!");
-            exit(1);
-        }
-
-        // Setup Dear ImGui context
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void)io;
-        io.IniFilename = NULL;
-
-        // Setup Platform/Renderer bindings
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 150");
-
-        renderThread = std::thread(&render);
-    }
+    renderThread = std::thread(&render);
 
     std::vector<Pipeline> pipelines;
 

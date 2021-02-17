@@ -2,6 +2,7 @@
 #include <dsp/fir_gen.h>
 #include "logger.h"
 #include "modules/common/manchester.h"
+#include "imgui/imgui.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -89,7 +90,7 @@ namespace noaa
 
     void NOAADSBDemodModule::process()
     {
-        size_t filesize = getFilesize(d_input_file);
+        filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".tip", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".tip");
@@ -107,8 +108,6 @@ namespace noaa
         pllThread = std::thread(&NOAADSBDemodModule::pllThreadFunction, this);
         rrcThread = std::thread(&NOAADSBDemodModule::rrcThreadFunction, this);
         recThread = std::thread(&NOAADSBDemodModule::clockrecoveryThreadFunction, this);
-
-        int frame_count = 0;
 
         int dat_size = 0, bytes_out = 0, num_byte = 0;
         while (!data_in.eof())
@@ -314,6 +313,65 @@ namespace noaa
 
             rec_pipe->push(rec_buffer, recovered_size);
         }
+    }
+
+    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
+    void NOAADSBDemodModule::drawUI()
+    {
+        ImGui::Begin("NOAA DSB Demodulator", NULL);
+
+        ImGui::BeginGroup();
+        // Constellation
+        {
+            ImDrawList *draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                     ImColor::HSV(0, 0, 0));
+
+            for (int i = 0; i < 2048; i++)
+            {
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 50) % 200,
+                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 6) % 200),
+                                           2,
+                                           ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+            }
+
+            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+        }
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Deframer", {200, 20});
+            {
+                ImGui::Text("State : ");
+
+                ImGui::SameLine();
+
+                if (def->getState() == 0)
+                    ImGui::TextColored(colorNosync, "NOSYNC");
+                else if (def->getState() == 2 || def->getState() == 6)
+                    ImGui::TextColored(colorSyncing, "SYNCING");
+                else
+                    ImGui::TextColored(colorSynced, "SYNCED");
+
+                ImGui::Text("Frames : ");
+
+                ImGui::SameLine();
+
+                ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), std::to_string(frame_count).c_str());
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(400, 20));
+
+        ImGui::End();
     }
 
     std::string NOAADSBDemodModule::getID()

@@ -11,6 +11,7 @@
 #include <thread>
 #include <fstream>
 #include "modules/common/repack_bits_byte.h"
+#include <dsp/random.h>
 
 namespace noaa
 {
@@ -69,10 +70,17 @@ namespace noaa
 
         void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points);
 
+        int frame_count = 0;
+        size_t filesize;
+
+        // UI Stuff
+        libdsp::Random rng;
+
     public:
         NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~NOAADSBDemodModule();
         void process();
+        void drawUI();
 
     public:
         static std::string getID();

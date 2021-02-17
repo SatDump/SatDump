@@ -2,6 +2,7 @@
 #include <dsp/fir_gen.h>
 #include "logger.h"
 #include "modules/common/manchester.h"
+#include "imgui/imgui.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -29,7 +30,7 @@ namespace meteor
 
     void METEORHRPTDecoderModule::process()
     {
-        size_t filesize = getFilesize(d_input_file);
+        filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
@@ -74,6 +75,37 @@ namespace meteor
 
         data_out.close();
         data_in.close();
+    }
+
+    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
+    void METEORHRPTDecoderModule::drawUI()
+    {
+        ImGui::Begin("METEOR HRPT Decoder", NULL);
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Deframer", {200, 20});
+            {
+                ImGui::Text("State : ");
+
+                ImGui::SameLine();
+
+                if (def->getState() == 0)
+                    ImGui::TextColored(colorNosync, "NOSYNC");
+                else if (def->getState() == 2 || def->getState() == 6)
+                    ImGui::TextColored(colorSyncing, "SYNCING");
+                else
+                    ImGui::TextColored(colorSynced, "SYNCED");
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::ProgressBar((float)data_in.tellg() / (float)filesize, ImVec2(200, 20));
+
+        ImGui::End();
     }
 
     std::string METEORHRPTDecoderModule::getID()
