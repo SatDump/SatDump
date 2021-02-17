@@ -1,7 +1,7 @@
 #include "module_meteor_hrpt_decoder.h"
 #include <dsp/fir_gen.h>
 #include "logger.h"
-#include "manchester.h"
+#include "modules/common/manchester.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

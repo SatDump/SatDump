@@ -1,4 +1,14 @@
 {
+    "noaa_dsb": {
+        "frames": {
+            "noaa_dsb_demod": {
+                "buffer_size": "8192"
+            }
+        },
+        "products": {
+            "noaa_hirs": {}
+        }
+    },
     "meteor_m2_lrpt": {
         "soft": {
             "qpsk_demod": {

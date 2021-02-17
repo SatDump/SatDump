@@ -285,7 +285,7 @@ namespace noaa
             try
             {
                 // Clock recovery
-                int recovered_size = rec->work(rrc_buffer2, gotten, rec_buffer);
+                recovered_size = rec->work(rrc_buffer2, gotten, rec_buffer);
             }
             catch (std::runtime_error &e)
             {

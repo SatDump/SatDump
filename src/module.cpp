@@ -40,6 +40,7 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 
 #include "modules/noaa/module_noaa_hrpt_demod.h"
+#include "modules/noaa/module_noaa_dsb_demod.h"
 #include "modules/noaa/instruments/avhrr/module_noaa_avhrr.h"
 
 #include "modules/meteor/module_meteor_hrpt_demod.h"
@@ -90,6 +91,7 @@ void registerModules()
     modules_registry.emplace(eos::modis::EOSMODISDecoderModule::getID(), eos::modis::EOSMODISDecoderModule::getInstance);
 
     modules_registry.emplace(noaa::NOAAHRPTDemodModule::getID(), noaa::NOAAHRPTDemodModule::getInstance);
+    modules_registry.emplace(noaa::NOAADSBDemodModule::getID(), noaa::NOAADSBDemodModule::getInstance);
     modules_registry.emplace(noaa::avhrr::NOAAAVHRRDecoderModule::getID(), noaa::avhrr::NOAAAVHRRDecoderModule::getInstance);
 
     modules_registry.emplace(meteor::METEORHRPTDemodModule::getID(), meteor::METEORHRPTDemodModule::getInstance);
