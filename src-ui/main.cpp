@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
                 for (std::shared_ptr<ProcessingModule> module : *uiCallList)
                 {
                     ImGui::SetNextWindowPos({0, 0});
-                    ImGui::SetNextWindowSize({wwidth, wheight});
+                    ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
                     module->drawUI();
                 }
                 uiCallListMutex->unlock();
@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
                 ImGui::End();
 
                 ImGui::SetNextWindowPos({0, 0});
-                if (ImGuiFileDialog::Instance()->Display("input_file_dialog", ImGuiWindowFlags_NoCollapse | ImGuiFileDialogFlags_ConfirmOverwrite, {wwidth, wheight}, {wwidth, wheight}))
+                if (ImGuiFileDialog::Instance()->Display("input_file_dialog", ImGuiWindowFlags_NoCollapse | ImGuiFileDialogFlags_ConfirmOverwrite, {(float)wwidth, (float)wheight}, {(float)wwidth, (float)wheight}))
                 {
                     if (ImGuiFileDialog::Instance()->IsOk())
                         input_file = ImGuiFileDialog::Instance()->GetSelection().begin()->second;
