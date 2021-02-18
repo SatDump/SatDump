@@ -10,6 +10,7 @@
 #include <fstream>
 #include "process.h"
 #include <thread>
+#include <GLFW/glfw3.h>
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 static void glfw_error_callback(int error, const char *description)
