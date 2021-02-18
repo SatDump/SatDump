@@ -16,7 +16,7 @@ void Pipeline::run(std::string input_file,
 
     int stepC = 0;
 
-    bool foundLevel = input_level == "baseband";
+    bool foundLevel;
 
     for (PipelineStep &step : steps)
     {

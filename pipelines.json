@@ -1,5 +1,6 @@
 {
     "noaa_dsb": {
+        "baseband": {},
         "frames": {
             "noaa_dsb_demod": {
                 "buffer_size": "8192"
@@ -10,6 +11,7 @@
         }
     },
     "meteor_m2_lrpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "72000",
@@ -30,6 +32,7 @@
         }
     },
     "meteor_m2-x_lrpt": {
+        "baseband": {},
         "soft": {
             "oqpsk_demod": {
                 "symbolrate": "72000",
@@ -55,6 +58,7 @@
         }
     },
     "metop_ahrpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "2333333",
@@ -85,6 +89,7 @@
         }
     },
     "fengyun3_ab_ahrpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "2800000",
@@ -108,6 +113,7 @@
         }
     },
     "fengyun3_c_ahrpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "2600000",
@@ -131,6 +137,7 @@
         }
     },
     "fengyun3_abc_mpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "18700000",
@@ -154,6 +161,7 @@
         }
     },
     "fengyun3_d_ahrpt": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "30000000",
@@ -177,6 +185,7 @@
         }
     },
     "aqua_db": {
+        "baseband": {},
         "soft": {
             "oqpsk_demod": {
                 "symbolrate": "7500000",
@@ -205,6 +214,7 @@
         }
     },
     "noaa_hrpt": {
+        "baseband": {},
         "frames": {
             "noaa_hrpt_demod": {
                 "buffer_size": "8192"
@@ -215,6 +225,7 @@
         }
     },
     "meteor_hrpt": {
+        "baseband": {},
         "dem": {
             "meteor_hrpt_demod": {
                 "buffer_size": "8192"
@@ -229,6 +240,7 @@
         }
     },
     "npp_hrd": {
+        "baseband": {},
         "soft": {
             "qpsk_demod": {
                 "symbolrate": "15000000",
@@ -256,6 +268,7 @@
         }
     },
     "proba1_dump": {
+        "baseband": {},
         "soft": {
             "bpsk_demod": {
                 "symbolrate": "2000000",
@@ -277,6 +290,7 @@
         }
     },
     "proba2_dump": {
+        "baseband": {},
         "soft": {
             "bpsk_demod": {
                 "symbolrate": "2000000",
@@ -297,6 +311,7 @@
         }
     },
     "probav_s_dump": {
+        "baseband": {},
         "soft": {
             "bpsk_demod": {
                 "symbolrate": "1919000",
@@ -314,6 +329,7 @@
         }
     },
     "elektro_rdas": {
+        "baseband": {},
         "soft": {
             "bpsk_demod": {
                 "symbolrate": "30720000",

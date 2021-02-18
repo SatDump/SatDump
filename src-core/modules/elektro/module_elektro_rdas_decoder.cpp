@@ -1,8 +1,7 @@
 #include "module_elektro_rdas_decoder.h"
-#include <fstream>
 #include "logger.h"
-#include "modules/common/deframer.h"
 #include "modules/common/differential/nrzm.h"
+#include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
 
@@ -20,13 +19,19 @@ namespace elektro
 {
     ElektroRDASDecoderModule::ElektroRDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
+        buffer = new int8_t[BUFFER_SIZE];
+    }
+
+    ElektroRDASDecoderModule::~ElektroRDASDecoderModule()
+    {
+        delete[] buffer;
     }
 
     void ElektroRDASDecoderModule::process()
     {
-        size_t filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-        std::ofstream data_out(d_output_file_hint + ".cadu", std::ios::binary);
+        filesize = getFilesize(d_input_file);
+        data_in = std::ifstream(d_input_file, std::ios::binary);
+        data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
         logger->info("Using input symbols " + d_input_file);
@@ -35,10 +40,6 @@ namespace elektro
         time_t lastTime = 0;
 
         diff::NRZMDiff diff;
-        CADUDeframer deframer;
-
-        // Read buffer
-        int8_t buffer[BUFFER_SIZE];
 
         // Final buffer after decoding
         uint8_t finalBuffer[BUFFER_SIZE];
@@ -84,16 +85,73 @@ namespace elektro
                 }
             }
 
+            progress = data_in.tellg();
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
             }
         }
 
         data_out.close();
         data_in.close();
+    }
+
+    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
+    void ElektroRDASDecoderModule::drawUI()
+    {
+        ImGui::Begin("ELEKTRO RDS Decoder", NULL);
+
+        ImGui::BeginGroup();
+        {
+            // Constellation
+            {
+                ImDrawList *draw_list = ImGui::GetWindowDrawList();
+                draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                         ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                         ImColor::HSV(0, 0, 0));
+
+                for (int i = 0; i < 2048; i++)
+                {
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + (buffer[i] / 127.0) * 100) % 200,
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 6) % 200),
+                                               2,
+                                               ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                }
+
+                ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Deframer", {200, 20});
+            {
+                ImGui::Text("State : ");
+
+                ImGui::SameLine();
+
+                if (deframer.getState() == 0)
+                    ImGui::TextColored(colorNosync, "NOSYNC");
+                else if (deframer.getState() == 2 || deframer.getState() == 6)
+                    ImGui::TextColored(colorSyncing, "SYNCING");
+                else
+                    ImGui::TextColored(colorSynced, "SYNCED");
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+        ImGui::End();
     }
 
     std::string ElektroRDASDecoderModule::getID()

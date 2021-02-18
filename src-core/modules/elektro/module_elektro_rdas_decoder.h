@@ -2,16 +2,33 @@
 
 #include "module.h"
 #include <complex>
+#include <fstream>
+#include "modules/common/deframer.h"
+#include <dsp/random.h>
 
 namespace elektro
 {
     class ElektroRDASDecoderModule : public ProcessingModule
     {
     protected:
+        // Read buffer
+        int8_t *buffer;
+
+        CADUDeframer deframer;
+
+        std::ifstream data_in;
+        std::ofstream data_out;
+        std::atomic<size_t> filesize;
+        std::atomic<size_t> progress;
+
+        // UI Stuff
+        libdsp::Random rng;
 
     public:
         ElektroRDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~ElektroRDASDecoderModule();
         void process();
+        void drawUI();
 
     public:
         static std::string getID();

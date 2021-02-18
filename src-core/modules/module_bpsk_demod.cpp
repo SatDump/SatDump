@@ -324,7 +324,7 @@ void BPSKDemodModule::drawUI()
         ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
     }
 
-    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(200, 20));
+    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
     ImGui::End();
 }
