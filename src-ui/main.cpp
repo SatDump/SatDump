@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
             else
             {
                 ImGui::SetNextWindowPos({0, 0});
-                ImGui::SetNextWindowSize({wwidth, wheight});
+                ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
                 ImGui::Begin("Select task");
 
                 ImGui::BeginGroup();
