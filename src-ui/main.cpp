@@ -112,6 +112,10 @@ int main(int argc, char *argv[])
 
         // User rendering
         {
+            //ImGui::Begin("SatDump");
+            
+            //ImGui::End();
+
             uiCallListMutex->lock();
             for (std::shared_ptr<ProcessingModule> module : *uiCallList)
             {

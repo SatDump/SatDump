@@ -63,6 +63,9 @@ namespace meteor
 
                 uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43 * 14) + mcuNumber / 14;
 
+                if(id >= 200000)
+                    return;
+
                 if (lastSeg[currentChannel] < id)
                 {
                     lastSeg[currentChannel] = id;
