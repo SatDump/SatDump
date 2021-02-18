@@ -5,9 +5,9 @@
 #include <filesystem>
 #include "nlohmann/json.hpp"
 #include <fstream>
-#include "render.h"
+#include "process.h"
 
-void render(int argc, char *argv[])
+void process(int argc, char *argv[])
 {
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
@@ -16,8 +16,6 @@ void render(int argc, char *argv[])
 #ifndef _WIN32
     signal(SIGPIPE, SIG_IGN);
 #endif
-
-    mkfifo("test.t", 0777);
 
     initLogger();
 
@@ -50,6 +48,11 @@ void render(int argc, char *argv[])
                 {
                     parameters.emplace("baseband_format", argv[i + 1]); // The next value in the array is your value
                     i++;                                                // Move to the next flag
+                }
+                else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
+                {
+                    parameters.emplace("dc_block", argv[i + 1]); // The next value in the array is your value
+                    i++;                                         // Move to the next flag
                 }
             }
         }

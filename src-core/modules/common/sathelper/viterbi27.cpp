@@ -10,8 +10,10 @@
 extern "C"
 {
 #include <correct.h>
+#ifndef __MINGW32__
 #ifdef MEMORY_OP_X86
 #include <correct-sse.h>
+#endif
 #endif
 }
 
@@ -34,10 +36,12 @@ namespace sathelper
 
         if (Extensions::hasSSE4)
         {
+#ifndef __MINGW32__
 #ifdef MEMORY_OP_X86
             viterbi = correct_convolutional_sse_create(2, 7, new uint16_t[2]{(uint16_t)polyA, (uint16_t)polyB});
             this->_encode = &Viterbi27::encode_sse4;
             this->_decode = &Viterbi27::decode_sse4;
+#endif
 #endif
         }
         else
@@ -61,6 +65,7 @@ namespace sathelper
 
     void Viterbi27::encode_sse4(uint8_t *input, uint8_t *output)
     {
+#ifndef __MINGW32__
 #ifdef MEMORY_OP_X86
         const int l = correct_convolutional_sse_encode_len((correct_convolutional_sse *)viterbi, this->DecodedSize());
         const int bl = l % 8 == 0 ? l / 8 : (l / 8) + 1;
@@ -78,10 +83,12 @@ namespace sathelper
         }
         delete[] data;
 #endif
+#endif
     }
 
     void Viterbi27::decode_sse4(uint8_t *input, uint8_t *output)
     {
+#ifndef __MINGW32__
 #ifdef MEMORY_OP_X86
         correct_convolutional_sse_decode_soft((correct_convolutional_sse *)viterbi, input, this->frameBits * 2, output);
         if (calculateErrors)
@@ -89,6 +96,7 @@ namespace sathelper
             this->encode_sse4(output, this->checkDataPointer);
             this->BER = Viterbi27::calculateError(input, this->checkDataPointer, this->frameBits * 2);
         }
+#endif
 #endif
     }
 

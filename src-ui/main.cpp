@@ -1,4 +1,3 @@
-#include "render.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -37,8 +36,9 @@ using namespace gl;
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-#include "render.h"
+#include "process.h"
 #include "logger.h"
+#include "style.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -48,9 +48,7 @@ static void glfw_error_callback(int error, const char *description)
 std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;
 std::shared_ptr<std::mutex> uiCallListMutex;
 
-std::thread renderThread;
-
-#include "style.h"
+std::thread processThread;
 
 int main(int argc, char *argv[])
 {
@@ -95,7 +93,7 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    renderThread = std::thread(&render, argc, argv);
+    processThread = std::thread(&process, argc, argv);
 
     style::setDarkStyle("..");
 
@@ -131,7 +129,7 @@ int main(int argc, char *argv[])
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         //glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
@@ -144,4 +142,7 @@ int main(int argc, char *argv[])
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    if (processThread.joinable())
+        processThread.join();
 }

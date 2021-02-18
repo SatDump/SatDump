@@ -6,4 +6,4 @@
 extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;
 extern std::shared_ptr<std::mutex> uiCallListMutex;
 
-void render(int argc, char *argv[]);
+void process(int argc, char *argv[]);

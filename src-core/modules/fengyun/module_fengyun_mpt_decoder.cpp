@@ -108,7 +108,7 @@ namespace fengyun
             {
                 if (v1 == v2)
                 {
-                    uint8_t bit1, bit2, bitCb;
+                    uint8_t bit1, bit2;
                     for (int y = 0; y < v1; y++)
                     {
                         for (int i = 7; i >= 0; i--)
@@ -163,7 +163,7 @@ namespace fengyun
                 {
                     if (v1 == v2)
                     {
-                        uint8_t bit1, bit2, bitCb;
+                        uint8_t bit1, bit2;
                         for (int y = 0; y < v1; y++)
                         {
                             for (int i = 7; i >= 0; i--)
@@ -309,7 +309,7 @@ namespace fengyun
                 ImGui::SameLine();
                 ImGui::TextColored(viterbi1.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber1).c_str());
 
-                std::memcpy(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
+                std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
 
                 ImGui::PlotLines("", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f, ImVec2(200, 50));
@@ -330,7 +330,7 @@ namespace fengyun
                 ImGui::SameLine();
                 ImGui::TextColored(viterbi2.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber2).c_str());
 
-                std::memcpy(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
+                std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
 
                 ImGui::PlotLines("", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f, ImVec2(200, 50));

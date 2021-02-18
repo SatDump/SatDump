@@ -248,7 +248,7 @@ namespace meteor
                 ImGui::SameLine();
                 ImGui::TextColored(locked ? colorSynced : colorSyncing, std::to_string(cor).c_str());
 
-                std::memcpy(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
+                std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
                 ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200, 50));
@@ -262,7 +262,7 @@ namespace meteor
                 ImGui::SameLine();
                 ImGui::TextColored(ber < 0.22 ? colorSynced : colorNosync, std::to_string(ber).c_str());
 
-                std::memcpy(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
+                std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
                 ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200, 50));

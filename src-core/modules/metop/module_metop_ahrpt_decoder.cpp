@@ -146,7 +146,7 @@ namespace metop
                 ImGui::SameLine();
                 ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber).c_str());
 
-                std::memcpy(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
+                std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
                 ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200, 50));

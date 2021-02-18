@@ -19,7 +19,8 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_rrc_alpha(std::stof(parameters["rrc_alpha"])),
                                                                                                                                         d_rrc_taps(std::stoi(parameters["rrc_taps"])),
                                                                                                                                         d_loop_bw(std::stof(parameters["costas_bw"])),
-                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"]))
+                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"])),
+                                                                                                                                        d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
     if (parameters["baseband_format"] == "i16")
     {
@@ -180,8 +181,11 @@ void QPSKDemodModule::process()
     logger->debug("REC OK");
 }
 
+#include <dsp/dc_blocker.h>
+
 void QPSKDemodModule::fileThreadFunction()
 {
+    libdsp::DCBlocker dcB(320, true);
     while (!data_in.eof())
     {
         // Get baseband, possibly convert to F32
@@ -220,6 +224,9 @@ void QPSKDemodModule::fileThreadFunction()
         }
 
         progress = data_in.tellg();
+
+        if (d_dc_block)
+            dcB.work(in_buffer, d_buffer_size, in_buffer);
 
         in_pipe->push(in_buffer, d_buffer_size);
     }
@@ -336,7 +343,7 @@ std::string QPSKDemodModule::getID()
 
 std::vector<std::string> QPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format"};
 }
 
 std::shared_ptr<ProcessingModule> QPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
