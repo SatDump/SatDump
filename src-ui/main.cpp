@@ -282,8 +282,13 @@ int main(int argc, char *argv[])
                         logger->debug("Opening file dialog");
                         //ImGuiFileDialog::Instance()->OpenDialog("input_file_dialog", "Open input file", ".*", ".");
                         auto result = pfd::open_file("Open input file", ".", {".*"}, false);
-                        if (result.ready())
+                        while (result.ready(1000))
+                        {
+                        }
+
+                        if (result.result().size() > 0)
                             input_file = result.result()[0];
+                        logger->debug("Dir " + input_file);
                     }
                 }
                 ImGui::EndGroup();
@@ -297,8 +302,13 @@ int main(int argc, char *argv[])
                     {
                         logger->debug("Opening file dialog");
                         auto result = pfd::select_folder("Open output directory", ".");
-                        if (result.ready())
-                            output_file = result.result()[0];
+                        while (result.ready(1000))
+                        {
+                        }
+
+                        if (result.result().size() > 0)
+                            output_file = result.result();
+                        logger->debug("Dir " + output_file);
                     }
                 }
                 ImGui::EndGroup();
