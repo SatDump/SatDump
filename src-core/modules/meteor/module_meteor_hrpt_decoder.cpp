@@ -85,7 +85,7 @@ namespace meteor
 
     void METEORHRPTDecoderModule::drawUI()
     {
-        ImGui::Begin("METEOR HRPT Decoder", NULL);
+        ImGui::Begin("METEOR HRPT Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

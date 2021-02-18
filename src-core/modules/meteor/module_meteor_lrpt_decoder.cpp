@@ -212,7 +212,7 @@ namespace meteor
 
     void METEORLRPTDecoderModule::drawUI()
     {
-        ImGui::Begin("METEOR LRPT Decoder", NULL);
+        ImGui::Begin("METEOR LRPT Decoder", NULL, NOWINDOW_FLAGS);
 
         float ber = viterbi.GetPercentBER() / 100.0f;
 

@@ -246,7 +246,7 @@ namespace fengyun
 
     void FengyunMPTDecoderModule::drawUI()
     {
-        ImGui::Begin("FengYun MPT Decoder", NULL);
+        ImGui::Begin("FengYun MPT Decoder", NULL, NOWINDOW_FLAGS);
 
         float ber1 = viterbi1.ber();
         float ber2 = viterbi2.ber();

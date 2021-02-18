@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <atomic>
+#include "imgui/imgui_flags.h"
 
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \

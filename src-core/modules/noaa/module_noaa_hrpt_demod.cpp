@@ -299,7 +299,7 @@ namespace noaa
 
     void NOAAHRPTDemodModule::drawUI()
     {
-        ImGui::Begin("NOAA HRPT Demodulator", NULL);
+        ImGui::Begin("NOAA HRPT Demodulator", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         // Constellation

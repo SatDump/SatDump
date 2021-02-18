@@ -323,7 +323,7 @@ namespace meteor
 
     void METEORHRPTDemodModule::drawUI()
     {
-        ImGui::Begin("METEOR HRPT Demodulator", NULL);
+        ImGui::Begin("METEOR HRPT Demodulator", NULL, NOWINDOW_FLAGS);
 
         // Constellation
         {

@@ -191,7 +191,7 @@ namespace aqua
 
     void AquaDBDecoderModule::drawUI()
     {
-        ImGui::Begin("Aqua DB Decoder", NULL);
+        ImGui::Begin("Aqua DB Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

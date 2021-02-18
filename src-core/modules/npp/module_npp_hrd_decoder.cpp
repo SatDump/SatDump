@@ -112,7 +112,7 @@ namespace npp
 
     void NPPHRDDecoderModule::drawUI()
     {
-        ImGui::Begin("NPP HRD Decoder", NULL);
+        ImGui::Begin("NPP HRD Decoder", NULL, NOWINDOW_FLAGS);
         float ber = viterbi.ber();
 
         ImGui::BeginGroup();

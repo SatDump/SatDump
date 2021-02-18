@@ -317,7 +317,7 @@ void OQPSKDemodModule::clockrecoveryThreadFunction()
 
 void OQPSKDemodModule::drawUI()
 {
-    ImGui::Begin("OQPSK Demodulator", NULL);
+    ImGui::Begin("OQPSK Demodulator", NULL, NOWINDOW_FLAGS);
 
     // Constellation
     {

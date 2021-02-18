@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "simpledeframer.h"
 #include "msu_vis_reader.h"
+#include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
 
@@ -20,8 +21,8 @@ namespace elektro
 
         void ELEKTROMSUGSDecoderModule::process()
         {
-            size_t filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
+            filesize = getFilesize(d_input_file);
+            data_in = std::ifstream(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-GS";
 
@@ -79,6 +80,8 @@ namespace elektro
                         vis3_reader.pushFrame(&frame[0]);
                 } //else if (vcid == 4) // IR
 
+                progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
@@ -109,6 +112,15 @@ namespace elektro
 
             logger->info("Channel 3...");
             WRITE_IMAGE(image3, directory + "/MSU-GS-3.png");
+        }
+
+        void ELEKTROMSUGSDecoderModule::drawUI()
+        {
+            ImGui::Begin("ELEKTRO MSU-GS Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string ELEKTROMSUGSDecoderModule::getID()

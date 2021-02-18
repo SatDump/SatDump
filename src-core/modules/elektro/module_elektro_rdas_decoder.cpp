@@ -105,7 +105,7 @@ namespace elektro
 
     void ElektroRDASDecoderModule::drawUI()
     {
-        ImGui::Begin("ELEKTRO RDS Decoder", NULL);
+        ImGui::Begin("ELEKTRO RDS Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

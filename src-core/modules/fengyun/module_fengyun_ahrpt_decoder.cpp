@@ -246,7 +246,7 @@ namespace fengyun
 
     void FengyunAHRPTDecoderModule::drawUI()
     {
-        ImGui::Begin("FengYun AHRPT Decoder", NULL);
+        ImGui::Begin("FengYun AHRPT Decoder", NULL, NOWINDOW_FLAGS);
 
         float ber1 = viterbi1.ber();
         float ber2 = viterbi2.ber();

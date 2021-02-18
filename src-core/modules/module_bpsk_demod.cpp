@@ -304,7 +304,7 @@ void BPSKDemodModule::clockrecoveryThreadFunction()
 
 void BPSKDemodModule::drawUI()
 {
-    ImGui::Begin("BPSK Demodulator", NULL);
+    ImGui::Begin("BPSK Demodulator", NULL, NOWINDOW_FLAGS);
 
     // Constellation
     {

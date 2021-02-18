@@ -11,7 +11,8 @@
 #include "process.h"
 #include <thread>
 #include <GLFW/glfw3.h>
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include "imgui/imgui_flags.h"
+#include "portable-file-dialogs.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -228,7 +229,7 @@ int main(int argc, char *argv[])
             {
                 ImGui::SetNextWindowPos({0, 0});
                 ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                ImGui::Begin("Select task");
+                ImGui::Begin("Select task", NULL, NOWINDOW_FLAGS);
 
                 ImGui::BeginGroup();
                 {
@@ -279,7 +280,10 @@ int main(int argc, char *argv[])
                     if (ImGui::Button("Select Input"))
                     {
                         logger->debug("Opening file dialog");
-                        ImGuiFileDialog::Instance()->OpenDialog("input_file_dialog", "Open input file", ".*", ".");
+                        //ImGuiFileDialog::Instance()->OpenDialog("input_file_dialog", "Open input file", ".*", ".");
+                        auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+                        if (result.ready())
+                            input_file = result.result()[0];
                     }
                 }
                 ImGui::EndGroup();
@@ -292,7 +296,9 @@ int main(int argc, char *argv[])
                     if (ImGui::Button("Select Output"))
                     {
                         logger->debug("Opening file dialog");
-                        ImGuiFileDialog::Instance()->OpenDialog("output_file_dialog", "Open output directory", nullptr, ".");
+                        auto result = pfd::select_folder("Open output directory", ".");
+                        if (result.ready())
+                            output_file = result.result()[0];
                     }
                 }
                 ImGui::EndGroup();
@@ -362,20 +368,6 @@ int main(int argc, char *argv[])
                 ImGui::EndGroup();
 
                 ImGui::End();
-
-                ImGui::SetNextWindowPos({0, 0});
-                if (ImGuiFileDialog::Instance()->Display("input_file_dialog", ImGuiWindowFlags_NoCollapse | ImGuiFileDialogFlags_ConfirmOverwrite, {(float)wwidth, (float)wheight}, {(float)wwidth, (float)wheight}))
-                {
-                    if (ImGuiFileDialog::Instance()->IsOk())
-                        input_file = ImGuiFileDialog::Instance()->GetSelection().begin()->second;
-                    ImGuiFileDialog::Instance()->Close();
-                }
-                else if (ImGuiFileDialog::Instance()->Display("output_file_dialog", ImGuiWindowFlags_NoCollapse | ImGuiFileDialogFlags_ConfirmOverwrite, {800, 400}, {800, 400}))
-                {
-                    if (ImGuiFileDialog::Instance()->IsOk())
-                        output_file = ImGuiFileDialog::Instance()->GetFilePathName();
-                    ImGuiFileDialog::Instance()->Close();
-                }
             }
         }
 

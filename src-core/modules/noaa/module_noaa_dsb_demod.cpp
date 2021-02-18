@@ -323,7 +323,7 @@ namespace noaa
 
     void NOAADSBDemodModule::drawUI()
     {
-        ImGui::Begin("NOAA DSB Demodulator", NULL);
+        ImGui::Begin("NOAA DSB Demodulator", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         // Constellation
