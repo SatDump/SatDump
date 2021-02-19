@@ -25,6 +25,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  src-core/*.cpp
                                      src-core/modules/common/viterbi_lib/tab.c 
                                      src-core/modules/common/viterbi_lib/viterbi.c 
                                      src-core/modules/common/aec/*.c
+                                     src-core/pipe.c
 )
 
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
@@ -94,3 +95,5 @@ target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
 # GLFW3
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(satdump-ui PRIVATE glfw)
+
+target_link_libraries(satdump-ui PRIVATE airspy fftw3)

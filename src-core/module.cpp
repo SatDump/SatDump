@@ -12,6 +12,16 @@ std::vector<std::string> ProcessingModule::getOutputs()
     return d_output_files;
 }
 
+void ProcessingModule::setInputType(ModuleDataType type)
+{
+    input_data_type = type;
+}
+
+void ProcessingModule::setOutputType(ModuleDataType type)
+{
+    output_data_type = type;
+}
+
 void ProcessingModule::drawUI()
 {
 }

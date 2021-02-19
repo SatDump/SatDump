@@ -46,6 +46,9 @@ void Pipeline::run(std::string input_file,
 
             std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](stepC == 0 ? input_file : lastFiles[0], output_directory + "/" + name, final_parameters);
 
+            module->setInputType(DATA_FILE);
+            module->setOutputType(DATA_FILE);
+
             if (ui)
             {
                 uiCallListMutex->lock();
