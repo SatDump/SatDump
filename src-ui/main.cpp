@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
             else if (livedemod)
             {
                 ImGui::SetNextWindowPos({0, 0});
-                ImGui::SetNextWindowSize({(float)wwidth, (float)wheight / 2});
+                ImGui::SetNextWindowSize({(float)wwidth, (float)wheight - 265});
                 airspySource->drawUI();
-                ImGui::SetNextWindowPos({0, wheight / 2});
-                ImGui::SetNextWindowSize({(float)wwidth, (float)wheight / 2});
+                ImGui::SetNextWindowPos({0, (float)wheight - 265});
+                ImGui::SetNextWindowSize({(float)wwidth, (float)265});
                 demodModule->drawUI();
             }
             else
