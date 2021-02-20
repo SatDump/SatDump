@@ -74,6 +74,7 @@ std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
 {
     return {DATA_FILE, DATA_STREAM};
 }
+
 std::vector<ModuleDataType> QPSKDemodModule::getOutputTypes()
 {
     return {DATA_FILE};

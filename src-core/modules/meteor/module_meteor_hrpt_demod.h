@@ -84,6 +84,9 @@ namespace meteor
         ~METEORHRPTDemodModule();
         void process();
         void drawUI();
+        void getInputType();
+        std::vector<ModuleDataType> getInputTypes();
+        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();

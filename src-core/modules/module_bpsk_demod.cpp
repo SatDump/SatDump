@@ -64,6 +64,16 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
     rec_pipe = new libdsp::Pipe<std::complex<float>>(d_buffer_size * 10);
 }
 
+std::vector<ModuleDataType> BPSKDemodModule::getInputTypes()
+{
+    return {DATA_FILE, DATA_STREAM};
+}
+
+std::vector<ModuleDataType> BPSKDemodModule::getOutputTypes()
+{
+    return {DATA_FILE};
+}
+
 BPSKDemodModule::~BPSKDemodModule()
 {
     delete[] in_buffer;
@@ -89,8 +99,13 @@ BPSKDemodModule::~BPSKDemodModule()
 
 void BPSKDemodModule::process()
 {
-    filesize = getFilesize(d_input_file);
-    data_in = std::ifstream(d_input_file, std::ios::binary);
+    if (input_data_type == DATA_FILE)
+        filesize = getFilesize(d_input_file);
+    else
+        filesize = 0;
+
+    if (input_data_type == DATA_FILE)
+        data_in = std::ifstream(d_input_file, std::ios::binary);
     data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
     d_output_files.push_back(d_output_file_hint + ".soft");
 
@@ -179,16 +194,24 @@ void BPSKDemodModule::process()
 void BPSKDemodModule::fileThreadFunction()
 {
     libdsp::DCBlocker dcB(320, true);
-    while (!data_in.eof())
+    int gotten;
+    while (input_data_type == DATA_STREAM ? true : !data_in.eof())
     {
         // Get baseband, possibly convert to F32
         if (f32)
         {
-            data_in.read((char *)in_buffer, d_buffer_size * sizeof(std::complex<float>));
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)in_buffer, d_buffer_size * sizeof(std::complex<float>));
+            else
+                gotten = input_fifo->pop((uint8_t *)in_buffer, d_buffer_size, sizeof(std::complex<float>));
         }
         else if (i16)
         {
-            data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
+            else
+                gotten = input_fifo->pop((uint8_t *)buffer_i16, d_buffer_size, sizeof(int16_t) * 2);
+
             for (int i = 0; i < d_buffer_size; i++)
             {
                 using namespace std::complex_literals;
@@ -197,7 +220,11 @@ void BPSKDemodModule::fileThreadFunction()
         }
         else if (i8)
         {
-            data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
+            else
+                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(int8_t) * 2);
+
             for (int i = 0; i < d_buffer_size; i++)
             {
                 using namespace std::complex_literals;
@@ -206,7 +233,11 @@ void BPSKDemodModule::fileThreadFunction()
         }
         else if (w8)
         {
-            data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
+            else
+                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(uint8_t) * 2);
+
             for (int i = 0; i < d_buffer_size; i++)
             {
                 float imag = (buffer_u8[i * 2] - 127) * 0.004f;
@@ -216,12 +247,15 @@ void BPSKDemodModule::fileThreadFunction()
             }
         }
 
-        progress = data_in.tellg();
+        if (input_data_type == DATA_FILE)
+            progress = data_in.tellg();
+        else
+            progress = 0;
 
         if (d_dc_block)
-            dcB.work(in_buffer, d_buffer_size, in_buffer);
+            dcB.work(in_buffer, input_data_type == DATA_FILE ? d_buffer_size : gotten, in_buffer);
 
-        in_pipe->push(in_buffer, d_buffer_size);
+        in_pipe->push(in_buffer, input_data_type == DATA_FILE ? d_buffer_size : gotten);
     }
 }
 
