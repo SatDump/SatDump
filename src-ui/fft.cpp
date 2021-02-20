@@ -19,6 +19,7 @@ SDRSource::SDRSource(int frequency, int samplerate, std::shared_ptr<satdump::Pip
     d_frequency = frequency;
     d_output_pipe = output_pipe;
     logger->info("Using freq " + std::to_string(frequency));
+    std::fill(&fft_buffer[0], &fft_buffer[2048], 0);
 }
 
 void SDRSource::startSDR()
