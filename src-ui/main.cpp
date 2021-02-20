@@ -40,6 +40,7 @@ int input_level_id = -1;
 int baseband_type_option = 2;
 
 char samplerate[100];
+char frequency[100];
 std::string baseband_format;
 bool dc_block;
 
@@ -340,7 +341,7 @@ int main(int argc, char *argv[])
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Samplerate");
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::InputText("", samplerate, 100);
+                        ImGui::InputText("  ", samplerate, 100);
 
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
@@ -370,6 +371,12 @@ int main(int argc, char *argv[])
                         ImGui::Text("DC Block");
                         ImGui::TableSetColumnIndex(1);
                         ImGui::Checkbox("DC Block", &dc_block);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Frequency (Mhz)");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::InputText("   ", frequency, 100);
 
                         ImGui::EndTable();
                     }
@@ -437,7 +444,7 @@ int main(int argc, char *argv[])
                             demodModule->setOutputType(DATA_FILE);
                             demodModule->input_fifo = std::make_shared<satdump::Pipe>();
 
-                            airspySource = std::make_shared<SDRSource>(std::stoi(samplerate), demodModule->input_fifo);
+                            airspySource = std::make_shared<SDRSource>(std::stof(frequency) * 1e6, std::stoi(samplerate), demodModule->input_fifo);
 
                             demodThread = std::thread([&]() {
                                 logger->info("Start processing...");

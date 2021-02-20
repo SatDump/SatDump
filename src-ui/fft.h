@@ -17,13 +17,14 @@ private:
     float fft_buffer[2048];
 
     int d_samplerate;
+    int d_frequency;
 
     std::shared_ptr<satdump::Pipe> d_output_pipe;
     std::thread fft_thread;
     void fftFun();
 
 public:
-    SDRSource(int samplerate, std::shared_ptr<satdump::Pipe> output_pipe);
+    SDRSource(int frequency, int samplerate, std::shared_ptr<satdump::Pipe> output_pipe);
     void drawUI();
     void startSDR();
 };

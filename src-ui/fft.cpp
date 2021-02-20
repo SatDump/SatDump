@@ -13,10 +13,12 @@ static int _rx_callback(airspy_transfer *t)
     return 0;
 };
 
-SDRSource::SDRSource(int samplerate, std::shared_ptr<satdump::Pipe> output_pipe)
+SDRSource::SDRSource(int frequency, int samplerate, std::shared_ptr<satdump::Pipe> output_pipe)
 {
     d_samplerate = samplerate;
+    d_frequency = frequency;
     d_output_pipe = output_pipe;
+    logger->info("Using freq " + std::to_string(frequency));
 }
 
 void SDRSource::startSDR()
@@ -30,7 +32,7 @@ void SDRSource::startSDR()
 
     airspy_set_sample_type(dev, AIRSPY_SAMPLE_FLOAT32_IQ);
     airspy_set_samplerate(dev, d_samplerate);
-    airspy_set_freq(dev, 1701.3e6);
+    airspy_set_freq(dev, d_frequency);
     airspy_set_rf_bias(dev, bias);
     airspy_set_linearity_gain(dev, gain);
 
