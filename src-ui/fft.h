@@ -6,6 +6,7 @@
 #include <dsp/pipe.h>
 #include <complex>
 #include <thread>
+#include <functional>
 
 class SDRSource
 {
@@ -27,4 +28,5 @@ public:
     SDRSource(int frequency, int samplerate, std::shared_ptr<satdump::Pipe> output_pipe);
     void drawUI();
     void startSDR();
+    std::function<void()> stopFuction;
 };

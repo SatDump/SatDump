@@ -1,350 +1,464 @@
 {
     "noaa_dsb": {
-        "baseband": {},
-        "frames": {
-            "noaa_dsb_demod": {
-                "buffer_size": "8192"
+        "name": "NOAA DSB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "frames": {
+                "noaa_dsb_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "products": {
+                "noaa_hirs": {}
             }
-        },
-        "products": {
-            "noaa_hirs": {}
         }
     },
     "meteor_m2_lrpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "72000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.6",
-                "rrc_taps": "361",
-                "costas_bw": "0.004",
-                "buffer_size": "8192"
+        "name": "METEOR M2 LRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "72000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.6",
+                    "rrc_taps": "361",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "meteor_lrpt_decoder": {
+                    "diff_decode": "0"
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {}
             }
-        },
-        "cadu": {
-            "meteor_lrpt_decoder": {
-                "diff_decode": "0"
-            }
-        },
-        "products": {
-            "meteor_msumr_lrpt": {}
         }
     },
     "meteor_m2-x_lrpt": {
-        "baseband": {},
-        "soft": {
-            "oqpsk_demod": {
-                "symbolrate": "72000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.6",
-                "rrc_taps": "361",
-                "costas_bw": "0.004",
-                "clock_gain_omega": "2.5e-7",
-                "clock_mu": "0.5",
-                "clock_gain_mu": "0.001",
-                "clock_omega_relative_limit": "0.005",
-                "dc_block": "0",
-                "buffer_size": "8192"
+        "name": "METEOR M2-x LRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": "72000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.6",
+                    "rrc_taps": "361",
+                    "costas_bw": "0.004",
+                    "clock_gain_omega": "2.5e-7",
+                    "clock_mu": "0.5",
+                    "clock_gain_mu": "0.001",
+                    "clock_omega_relative_limit": "0.005",
+                    "dc_block": "0",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "meteor_lrpt_decoder": {
+                    "diff_decode": "1"
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {}
             }
-        },
-        "cadu": {
-            "meteor_lrpt_decoder": {
-                "diff_decode": "1"
-            }
-        },
-        "products": {
-            "meteor_msumr_lrpt": {}
         }
     },
     "metop_ahrpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "2333333",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.002",
-                "buffer_size": "8192"
-            }
-        },
-        "cadu": {
-            "metop_ahrpt_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.170",
-                "soft_symbols": "1"
-            }
-        },
-        "products": {
-            "metop_avhrr": {},
-            "metop_mhs": {},
-            "metop_amsu": {},
-            "metop_iasi": {
-                "write_all": "0"
+        "name": "MetOp AHRPT",
+        "live": true,
+        "frequencies": [
+            1701.3
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2333333",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
             },
-            "metop_gome": {
-                "write_all": "0"
+            "cadu": {
+                "metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                }
             }
         }
     },
     "fengyun3_ab_ahrpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "2800000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.002",
-                "buffer_size": "8192"
+        "name": "FengYun-3 A/B AHRPT",
+        "live": true,
+        "frequencies": [
+            1704.5
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
             }
-        },
-        "cadu": {
-            "fengyun_ahrpt_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.170",
-                "soft_symbols": "1",
-                "invert_second_viterbi": "0"
-            }
-        },
-        "products": {
-            "fengyun_virr": {}
         }
     },
     "fengyun3_c_ahrpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "2600000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.002",
-                "buffer_size": "8192"
+        "name": "FengYun-3 C AHRPT",
+        "live": true,
+        "frequencies": [
+            1701.4
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2600000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
             }
-        },
-        "cadu": {
-            "fengyun_ahrpt_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.170",
-                "soft_symbols": "1",
-                "invert_second_viterbi": "0"
-            }
-        },
-        "products": {
-            "fengyun_virr": {}
         }
     },
     "fengyun3_abc_mpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "18700000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.35",
-                "rrc_taps": "31",
-                "costas_bw": "0.0063",
-                "buffer_size": "8192"
+        "name": "FengYun-3 A/B/C MPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "18700000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_mpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.150",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersi1": {}
             }
-        },
-        "cadu": {
-            "fengyun_mpt_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.150",
-                "soft_symbols": "1",
-                "invert_second_viterbi": "1"
-            }
-        },
-        "products": {
-            "fengyun_mersi1": {}
         }
     },
     "fengyun3_d_ahrpt": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "30000000",
-                "agc_rate": "0.00001",
-                "rrc_alpha": "0.35",
-                "rrc_taps": "31",
-                "costas_bw": "0.0063",
-                "buffer_size": "8192"
+        "name": "FengYun-3 D AHRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "30000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersi2": {}
             }
-        },
-        "cadu": {
-            "fengyun_ahrpt_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.170",
-                "soft_symbols": "1",
-                "invert_second_viterbi": "1"
-            }
-        },
-        "products": {
-            "fengyun_mersi2": {}
         }
     },
     "aqua_db": {
-        "baseband": {},
-        "soft": {
-            "oqpsk_demod": {
-                "symbolrate": "7500000",
-                "agc_rate": "0.1",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.006",
-                "clock_gain_omega": "0.8",
-                "clock_mu": "0.9",
-                "clock_gain_mu": "0.037",
-                "clock_omega_relative_limit": "0.0001",
-                "dc_block": "1",
-                "buffer_size": "8192"
-            }
-        },
-        "cadu": {
-            "aqua_db_decoder": {}
-        },
-        "products": {
-            "eos_modis": {
-                "terra_mode": "0"
+        "name": "Aqua DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": "7500000",
+                    "agc_rate": "0.1",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.006",
+                    "clock_gain_omega": "0.8",
+                    "clock_mu": "0.9",
+                    "clock_gain_mu": "0.037",
+                    "clock_omega_relative_limit": "0.0001",
+                    "dc_block": "1",
+                    "buffer_size": "8192"
+                }
             },
-            "aqua_airs": {},
-            "aqua_ceres": {},
-            "aqua_amsu": {}
+            "cadu": {
+                "aqua_db_decoder": {}
+            },
+            "products": {
+                "eos_modis": {
+                    "terra_mode": "0"
+                },
+                "aqua_airs": {},
+                "aqua_ceres": {},
+                "aqua_amsu": {}
+            }
         }
     },
     "noaa_hrpt": {
-        "baseband": {},
-        "frames": {
-            "noaa_hrpt_demod": {
-                "buffer_size": "8192"
+        "name": "NOAA HRPT",
+        "live": true,
+        "frequencies": [
+            1707,
+            1698,
+            1702.5
+        ],
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "frames": {
+                "noaa_hrpt_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "products": {
+                "noaa_avhrr": {}
             }
-        },
-        "products": {
-            "noaa_avhrr": {}
         }
     },
     "meteor_hrpt": {
-        "baseband": {},
-        "dem": {
-            "meteor_hrpt_demod": {
-                "buffer_size": "8192"
+        "name": "METEOR HRPT",
+        "live": true,
+        "frequencies": [
+            1700
+        ],
+        "samplerate": 3e3,
+        "work": {
+            "baseband": {},
+            "dem": {
+                "meteor_hrpt_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "meteor_hrpt_decoder": {}
+            },
+            "products": {
+                "meteor_msumr": {},
+                "meteor_mtvza": {}
             }
-        },
-        "cadu": {
-            "meteor_hrpt_decoder": {}
-        },
-        "products": {
-            "meteor_msumr": {},
-            "meteor_mtvza": {}
         }
     },
     "npp_hrd": {
-        "baseband": {},
-        "soft": {
-            "qpsk_demod": {
-                "symbolrate": "15000000",
-                "agc_rate": "0.0001f",
-                "rrc_alpha": "0.7",
-                "rrc_taps": "31",
-                "costas_bw": "0.001",
-                "buffer_size": "8192"
-            }
-        },
-        "cadu": {
-            "npp_hrd_decoder": {
-                "viterbi_outsync_after": "5",
-                "viterbi_ber_thresold": "0.170",
-                "soft_symbols": "1"
-            }
-        },
-        "products": {
-            "jpss_viirs": {
-                "npp_mode": "1"
+        "name": "Suomi NPP / JPSS-1 HRD",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "15000000",
+                    "agc_rate": "0.0001f",
+                    "rrc_alpha": "0.7",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.001",
+                    "buffer_size": "8192"
+                }
             },
-            "jpss_atms": {
-                "npp_mode": "1"
+            "cadu": {
+                "npp_hrd_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "jpss_viirs": {
+                    "npp_mode": "1"
+                },
+                "jpss_atms": {
+                    "npp_mode": "1"
+                }
             }
         }
     },
     "proba1_dump": {
-        "baseband": {},
-        "soft": {
-            "bpsk_demod": {
-                "symbolrate": "2000000",
-                "agc_rate": "0.000001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.004",
-                "buffer_size": "8192"
+        "name": "Proba-1 Dump",
+        "live": true,
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "2000000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "proba_s_decoder": {
+                    "derandomize": "0"
+                }
+            },
+            "products": {
+                "proba_chris": {},
+                "proba_hrc": {}
             }
-        },
-        "cadu": {
-            "proba_s_decoder": {
-                "derandomize": "0"
-            }
-        },
-        "products": {
-            "proba_chris": {},
-            "proba_hrc": {}
         }
     },
     "proba2_dump": {
-        "baseband": {},
-        "soft": {
-            "bpsk_demod": {
-                "symbolrate": "2000000",
-                "agc_rate": "0.000001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.004",
-                "buffer_size": "8192"
+        "name": "Proba-2 Dump",
+        "live": true,
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "2000000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "proba_s_decoder": {
+                    "derandomize": "0"
+                }
+            },
+            "products": {
+                "proba_swap": {}
             }
-        },
-        "cadu": {
-            "proba_s_decoder": {
-                "derandomize": "0"
-            }
-        },
-        "products": {
-            "proba_swap": {}
         }
     },
     "probav_s_dump": {
-        "baseband": {},
-        "soft": {
-            "bpsk_demod": {
-                "symbolrate": "1919000",
-                "agc_rate": "0.000001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.004",
-                "buffer_size": "8192"
-            }
-        },
-        "cadu": {
-            "proba_s_decoder": {
-                "derandomize": "1"
+        "name": "Proba-V S-Band Dump",
+        "live": true,
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "1919000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "proba_s_decoder": {
+                    "derandomize": "1"
+                }
             }
         }
     },
     "elektro_rdas": {
-        "baseband": {},
-        "soft": {
-            "bpsk_demod": {
-                "symbolrate": "30720000",
-                "agc_rate": "0.000001",
-                "rrc_alpha": "0.5",
-                "rrc_taps": "31",
-                "costas_bw": "0.03",
-                "buffer_size": "8192"
+        "name": "ELEKTRO-L RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "30720000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.03",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "elektro_rdas_decoder": {}
+            },
+            "products": {
+                "elektro_msugs": {}
             }
-        },
-        "cadu": {
-            "elektro_rdas_decoder": {}
-        },
-        "products": {
-            "elektro_msugs": {}
         }
     }
 }

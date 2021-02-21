@@ -3,6 +3,7 @@
 #include <string>
 #include "module.h"
 #include <mutex>
+#include <vector>
 
 struct PipelineModule
 {
@@ -19,6 +20,11 @@ struct PipelineStep
 struct Pipeline
 {
     std::string name;
+    std::string readable_name;
+    bool live;
+    std::vector<float> frequencies;
+    long default_samplerate;
+
     std::vector<PipelineStep> steps;
     void run(std::string input_file,
              std::string output_directory,
@@ -28,3 +34,7 @@ struct Pipeline
              std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr,
              std::shared_ptr<std::mutex> uiCallListMutex = nullptr);
 };
+
+extern std::vector<Pipeline> pipelines;
+
+void loadPipelines(std::string filepath);

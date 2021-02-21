@@ -60,42 +60,7 @@ int main(int argc, char *argv[])
 
     registerModules();
 
-    std::vector<Pipeline> pipelines;
-
-    {
-        std::ifstream iFstream("../pipelines.json");
-        nlohmann::ordered_json jsonObj;
-        iFstream >> jsonObj;
-        iFstream.close();
-
-        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
-        {
-            Pipeline newPipeline;
-            newPipeline.name = pipelineConfig.key();
-            //logger->info(newPipeline.name);
-
-            for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value().items())
-            {
-                PipelineStep newStep;
-                newStep.level_name = pipelineStep.key();
-                //logger->warn(newStep.level_name);
-
-                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
-                {
-                    PipelineModule newModule;
-                    newModule.module_name = pipelineModule.key();
-                    newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
-                    //logger->debug(newModule.module_name);
-
-                    newStep.modules.push_back(newModule);
-                }
-
-                newPipeline.steps.push_back(newStep);
-            }
-
-            pipelines.push_back(newPipeline);
-        }
-    }
+    loadPipelines("../pipelines.json");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)

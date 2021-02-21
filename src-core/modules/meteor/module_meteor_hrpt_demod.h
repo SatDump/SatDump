@@ -43,7 +43,7 @@ namespace meteor
         libdsp::Pipe<float> *mov_pipe;
         libdsp::Pipe<float> *rec_pipe;
 
-        bool agcRun, rrcRun, pllRun, movRun, recRun;
+        std::atomic<bool> agcRun, rrcRun, pllRun, movRun, recRun;
 
         // Int16 buffer
         int16_t *buffer_i16;

@@ -131,10 +131,10 @@ void QPSKDemodModule::process()
     recThread = std::thread(&QPSKDemodModule::clockrecoveryThreadFunction, this);
 
     int dat_size = 0;
-    while (input_data_type == DATA_STREAM ? true : !data_in.eof())
+    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
     {
         dat_size = rec_pipe->pop(rec_buffer2, d_buffer_size);
-
+        logger->info(dat_size);
         if (dat_size <= 0)
             continue;
 
@@ -155,46 +155,10 @@ void QPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
-    data_out.close();
-    data_in.close();
-
-    // Exit all threads... Without causing a race condition!
-    agcRun = rrcRun = pllRun = recRun = false;
-
-    in_pipe->~Pipe();
-
     if (fileThread.joinable())
         fileThread.join();
 
     logger->debug("FILE OK");
-
-    agc_pipe->~Pipe();
-
-    if (agcThread.joinable())
-        agcThread.join();
-
-    logger->debug("AGC OK");
-
-    rrc_pipe->~Pipe();
-
-    if (rrcThread.joinable())
-        rrcThread.join();
-
-    logger->debug("RRC OK");
-
-    pll_pipe->~Pipe();
-
-    if (pllThread.joinable())
-        pllThread.join();
-
-    logger->debug("PLL OK");
-
-    rec_pipe->~Pipe();
-
-    if (recThread.joinable())
-        recThread.join();
-
-    logger->debug("REC OK");
 }
 
 #include <dsp/dc_blocker.h>
@@ -203,7 +167,7 @@ void QPSKDemodModule::fileThreadFunction()
 {
     libdsp::DCBlocker dcB(320, true);
     int gotten;
-    while (input_data_type == DATA_STREAM ? true : !data_in.eof())
+    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
     {
         // Get baseband, possibly convert to F32
         if (f32)
@@ -265,6 +229,44 @@ void QPSKDemodModule::fileThreadFunction()
 
         in_pipe->push(in_buffer, input_data_type == DATA_FILE ? d_buffer_size : gotten);
     }
+
+    if (input_data_type == DATA_FILE)
+        data_in.close();
+
+    // Exit all threads... Without causing a race condition!
+    agcRun = rrcRun = pllRun = recRun = false;
+
+    in_pipe->~Pipe();
+
+    agc_pipe->~Pipe();
+
+    if (agcThread.joinable())
+        agcThread.join();
+
+    logger->debug("AGC OK");
+
+    rrc_pipe->~Pipe();
+
+    if (rrcThread.joinable())
+        rrcThread.join();
+
+    logger->debug("RRC OK");
+
+    pll_pipe->~Pipe();
+
+    if (pllThread.joinable())
+        pllThread.join();
+
+    logger->debug("PLL OK");
+
+    rec_pipe->~Pipe();
+
+    if (recThread.joinable())
+        recThread.join();
+
+    logger->debug("REC OK");
+
+    data_out.close();
 }
 
 void QPSKDemodModule::agcThreadFunction()

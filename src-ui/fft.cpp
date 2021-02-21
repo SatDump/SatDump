@@ -78,8 +78,8 @@ void SDRSource::fftFun()
                 float y = buffer_fft_out[2048 / 2 + i].imag();
                 float z = sqrt(x * x + y * y);
 
-                fftb[i] = z * scale;
-                fftb[2048 / 2 + i] = c * scale;
+                fftb[i] = z * 4.0f * scale;
+                fftb[2048 / 2 + i] = c * 4.0f * scale;
             }
 
             for (int i = 0; i < 2048; i++)
@@ -105,7 +105,7 @@ void SDRSource::drawUI()
 
     ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {ImGui::GetWindowWidth() - 3, ImGui::GetWindowHeight() - 64});
 
-    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 80);
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 100);
     if (ImGui::SliderInt("Gain", &gain, 0, 22))
     {
         airspy_set_linearity_gain(dev, gain);
@@ -113,13 +113,20 @@ void SDRSource::drawUI()
 
     ImGui::SameLine();
 
-    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 80);
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 100);
     ImGui::SliderFloat("Scale", &scale, 0, 22);
 
     ImGui::SameLine();
     if (ImGui::Checkbox("Bias", &bias))
     {
         airspy_set_rf_bias(dev, bias);
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Stop"))
+    {
+        airspy_stop_rx(dev);
+        stopFuction();
     }
 
     ImGui::End();

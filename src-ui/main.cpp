@@ -6,7 +6,7 @@
 #include "module.h"
 #include <signal.h>
 #include <filesystem>
-#include "nlohmann/json.hpp"
+
 #include <fstream>
 #include "process.h"
 #include <thread>
@@ -25,8 +25,6 @@ std::shared_ptr<std::mutex> uiCallListMutex;
 
 std::thread processThread;
 
-std::vector<Pipeline> pipelines;
-
 std::string downlink_pipeline;
 std::string input_level;
 std::string input_file;
@@ -40,7 +38,8 @@ int input_level_id = -1;
 int baseband_type_option = 2;
 
 char samplerate[100];
-char frequency[100];
+int frequency_id = 0;
+float frequency;
 std::string baseband_format;
 bool dc_block;
 
@@ -112,40 +111,7 @@ int main(int argc, char *argv[])
 
     registerModules();
 
-    {
-        std::ifstream iFstream("../pipelines.json");
-        nlohmann::ordered_json jsonObj;
-        iFstream >> jsonObj;
-        iFstream.close();
-
-        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
-        {
-            Pipeline newPipeline;
-            newPipeline.name = pipelineConfig.key();
-            //logger->info(newPipeline.name);
-
-            for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value().items())
-            {
-                PipelineStep newStep;
-                newStep.level_name = pipelineStep.key();
-                //logger->warn(newStep.level_name);
-
-                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
-                {
-                    PipelineModule newModule;
-                    newModule.module_name = pipelineModule.key();
-                    newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
-                    //logger->debug(newModule.module_name);
-
-                    newStep.modules.push_back(newModule);
-                }
-
-                newPipeline.steps.push_back(newStep);
-            }
-
-            pipelines.push_back(newPipeline);
-        }
-    }
+    loadPipelines("../pipelines.json");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)
@@ -247,221 +213,378 @@ int main(int argc, char *argv[])
             {
                 ImGui::SetNextWindowPos({0, 0});
                 ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                ImGui::Begin("Select task", NULL, NOWINDOW_FLAGS);
+                ImGui::Begin("Main Window", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoTitleBar);
 
-                ImGui::BeginGroup();
+                if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
                 {
-                    std::string names;
-
-                    for (int i = 0; i < pipelines.size(); i++)
+                    if (ImGui::BeginTabItem("Offline processing"))
                     {
-                        names += pipelines[i].name + '\0';
-                    }
-
-                    ImGui::Text("Pipeline      : ");
-                    ImGui::SameLine();
-
-                    if (ImGui::Combo("", &pipeline_id, names.c_str()))
-                    {
-                        downlink_pipeline = pipelines[pipeline_id].name;
-                    }
-                    // ImGui::EndCombo();
-                }
-                ImGui::EndGroup();
-
-                ImGui::BeginGroup();
-                {
-                    ImGui::Text("Input Level : ");
-                    ImGui::SameLine();
-
-                    // logger->info(names);
-
-                    std::string names; // = "baseband\0";
-
-                    for (int i = 0; i < pipelines[pipeline_id].steps.size(); i++)
-                    {
-                        names += pipelines[pipeline_id].steps[i].level_name + '\0';
-                    }
-
-                    if (ImGui::Combo(" ", &input_level_id, names.c_str()))
-                    {
-                        input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
-                    }
-                }
-                ImGui::EndGroup();
-
-                ImGui::BeginGroup();
-                {
-                    ImGui::Text("Input File : ");
-                    ImGui::SameLine();
-
-                    if (ImGui::Button("Select Input"))
-                    {
-                        logger->debug("Opening file dialog");
-                        //ImGuiFileDialog::Instance()->OpenDialog("input_file_dialog", "Open input file", ".*", ".");
-                        auto result = pfd::open_file("Open input file", ".", {".*"}, false);
-                        while (result.ready(1000))
+                        ImGui::BeginGroup();
                         {
-                        }
+                            std::string names;
 
-                        if (result.result().size() > 0)
-                            input_file = result.result()[0];
-                        logger->debug("Dir " + input_file);
-                    }
-                }
-                ImGui::EndGroup();
-
-                ImGui::BeginGroup();
-                {
-                    ImGui::Text("Output dir : ");
-                    ImGui::SameLine();
-
-                    if (ImGui::Button("Select Output"))
-                    {
-                        logger->debug("Opening file dialog");
-                        auto result = pfd::select_folder("Open output directory", ".");
-                        while (result.ready(1000))
-                        {
-                        }
-
-                        if (result.result().size() > 0)
-                            output_file = result.result();
-                        logger->debug("Dir " + output_file);
-                    }
-                }
-                ImGui::EndGroup();
-
-                ImGui::BeginGroup();
-                {
-                    ImGui::Text("Parameters : ");
-
-                    if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_Borders))
-                    {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Samplerate");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::InputText("  ", samplerate, 100);
-
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Baseband Type");
-                        ImGui::TableSetColumnIndex(1);
-                        if (ImGui::Combo("", &baseband_type_option, "f32\0i16\0i8\0w8\0"))
-                        {
-                            switch (baseband_type_option)
+                            for (int i = 0; i < pipelines.size(); i++)
                             {
-                            case 0:
-                                baseband_format = "f32";
-                                break;
-                            case 1:
-                                baseband_format = "i16";
-                                break;
-                            case 2:
-                                baseband_format = "i8";
-                                break;
-                            case 3:
-                                baseband_format = "w8";
-                                break;
+                                names += pipelines[i].readable_name + '\0';
+                            }
+
+                            ImGui::Text("Pipeline      : ");
+                            ImGui::SameLine();
+
+                            if (ImGui::Combo("##pipeline", &pipeline_id, names.c_str()))
+                            {
+                                downlink_pipeline = pipelines[pipeline_id].name;
+                            }
+                            // ImGui::EndCombo();
+                        }
+                        ImGui::EndGroup();
+
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::Text("Input Level : ");
+                            ImGui::SameLine();
+
+                            // logger->info(names);
+
+                            std::string names; // = "baseband\0";
+
+                            if (pipeline_id != -1)
+                                for (int i = 0; i < pipelines[pipeline_id].steps.size(); i++)
+                                {
+                                    names += pipelines[pipeline_id].steps[i].level_name + '\0';
+                                }
+
+                            if (ImGui::Combo("##input_level", &input_level_id, names.c_str()))
+                            {
+                                input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
                             }
                         }
+                        ImGui::EndGroup();
 
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("DC Block");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Checkbox("DC Block", &dc_block);
-
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Frequency (Mhz)");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::InputText("   ", frequency, 100);
-
-                        ImGui::EndTable();
-                    }
-                }
-                ImGui::EndGroup();
-
-                ImGui::BeginGroup();
-                {
-                    if (ImGui::Button("Start"))
-                    {
-                        logger->debug("Starting...");
-
-                        parameters.emplace("samplerate", std::string(samplerate));
-
-                        parameters.emplace("baseband_format", baseband_format);
-
-                        parameters.emplace("dc_block", dc_block ? "1" : "0");
-
-                        processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
-                        //showStartup = false;
-                    }
-
-                    ImGui::SameLine();
-
-                    if (ImGui::Button("Live"))
-                    {
-                        logger->debug("Starting livedemod...");
-
-                        if (!std::filesystem::exists(output_file))
-                            std::filesystem::create_directory(output_file);
-
-                        logger->info(downlink_pipeline);
-
-                        std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                                          pipelines.end(),
-                                                                          [](const Pipeline &e) {
-                                                                              return e.name == downlink_pipeline;
-                                                                          });
-
-                        if (it != pipelines.end())
+                        ImGui::BeginGroup();
                         {
+                            ImGui::Text("Input File : ");
+                            ImGui::SameLine();
 
-                            parameters.emplace("samplerate", std::string(samplerate));
+                            if (ImGui::Button("Select Input"))
+                            {
+                                logger->debug("Opening file dialog");
+                                auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+                                while (result.ready(1000))
+                                {
+                                }
 
-                            parameters.emplace("baseband_format", baseband_format);
+                                if (result.result().size() > 0)
+                                    input_file = result.result()[0];
+                                logger->debug("Dir " + input_file);
+                            }
 
-                            parameters.emplace("dc_block", dc_block ? "1" : "0");
+                            ImGui::SameLine();
+                            ImGui::Text(input_file.c_str());
+                        }
+                        ImGui::EndGroup();
 
-                            std::map<std::string, std::string> final_parameters = it->steps[1].modules[0].parameters;
-                            for (const std::pair<std::string, std::string> &param : parameters)
-                                if (final_parameters.count(param.first) > 0)
-                                    final_parameters[param.first] = param.second;
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::Text("Output dir : ");
+                            ImGui::SameLine();
+
+                            if (ImGui::Button("Select Output"))
+                            {
+                                logger->debug("Opening file dialog");
+                                auto result = pfd::select_folder("Open output directory", ".");
+                                while (result.ready(1000))
+                                {
+                                }
+
+                                if (result.result().size() > 0)
+                                    output_file = result.result();
+                                logger->debug("Dir " + output_file);
+                            }
+
+                            ImGui::SameLine();
+                            ImGui::Text(output_file.c_str());
+                        }
+                        ImGui::EndGroup();
+
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::Text("Parameters : ");
+
+                            if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_Borders))
+                            {
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text("Samplerate (Hz / SPS)");
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::InputText("  ", samplerate, 100);
+
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text("Baseband Type");
+                                ImGui::TableSetColumnIndex(1);
+                                if (ImGui::Combo("", &baseband_type_option, "f32\0i16\0i8\0w8\0"))
+                                {
+                                    switch (baseband_type_option)
+                                    {
+                                    case 0:
+                                        baseband_format = "f32";
+                                        break;
+                                    case 1:
+                                        baseband_format = "i16";
+                                        break;
+                                    case 2:
+                                        baseband_format = "i8";
+                                        break;
+                                    case 3:
+                                        baseband_format = "w8";
+                                        break;
+                                    }
+                                }
+
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text("DC Block");
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::Checkbox("DC Block", &dc_block);
+
+                                ImGui::EndTable();
+                            }
+                        }
+                        ImGui::EndGroup();
+
+                        ImGui::BeginGroup();
+                        {
+                            if (ImGui::Button("Start"))
+                            {
+                                logger->debug("Starting...");
+
+                                parameters.emplace("samplerate", std::string(samplerate));
+
+                                parameters.emplace("baseband_format", baseband_format);
+
+                                parameters.emplace("dc_block", dc_block ? "1" : "0");
+
+                                processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
+                                //showStartup = false;
+                            }
+                        }
+                        ImGui::EndGroup();
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("Live processing"))
+                    {
+                        ImGui::BeginGroup();
+                        {
+                            std::string names;
+
+                            std::map<int, std::string> id_table;
+
+                            for (int i = 0, y = 0; i < pipelines.size(); i++)
+                            {
+                                if (pipelines[i].live)
+                                {
+                                    names += pipelines[i].readable_name + '\0';
+                                    id_table.insert({y++, pipelines[i].name});
+                                }
+                            }
+
+                            ImGui::Text("Pipeline      : ");
+                            ImGui::SameLine();
+
+                            if (ImGui::Combo("##pipeline", &pipeline_id, names.c_str()))
+                            {
+                                downlink_pipeline = id_table[pipeline_id];
+                                std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                                                  pipelines.end(),
+                                                                                  [](const Pipeline &e) {
+                                                                                      return e.name == downlink_pipeline;
+                                                                                  });
+                                std::memcpy(samplerate, std::to_string(it->default_samplerate).c_str(), std::to_string(it->default_samplerate).length());
+                                frequency = it->frequencies[frequency_id];
+                            }
+                            // ImGui::EndCombo();
+                        }
+                        ImGui::EndGroup();
+
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::Text("Output dir : ");
+                            ImGui::SameLine();
+
+                            if (ImGui::Button("Select Output"))
+                            {
+                                logger->debug("Opening file dialog");
+                                auto result = pfd::select_folder("Open output directory", ".");
+                                while (result.ready(1000))
+                                {
+                                }
+
+                                if (result.result().size() > 0)
+                                    output_file = result.result();
+                                logger->debug("Dir " + output_file);
+                            }
+
+                            ImGui::SameLine();
+                            ImGui::Text(output_file.c_str());
+                        }
+                        ImGui::EndGroup();
+
+                        ImGui::Separator();
+
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::Text("Frequency : ");
+                            ImGui::SameLine();
+
+                            // logger->info(names);
+
+                            std::string names; // = "baseband\0";
+
+                            std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                                              pipelines.end(),
+                                                                              [](const Pipeline &e) {
+                                                                                  return e.name == downlink_pipeline;
+                                                                              });
+
+                            if (it != pipelines.end())
+                                for (int i = 0; i < it->frequencies.size(); i++)
+                                {
+                                    names += std::to_string(it->frequencies[i]) + " Mhz" + '\0';
+                                }
+
+                            if (ImGui::Combo("##frequency", &frequency_id, names.c_str()))
+                            {
+                                frequency = it->frequencies[frequency_id];
+                            }
+
+                            ImGui::Checkbox("DC Block", &dc_block);
+
+                            ImGui::Text("Samplerate (Hz / SPS)");
+                            ImGui::SameLine();
+                            ImGui::InputText("##samplerate", samplerate, 100);
+
+                            if (ImGui::Button("Start"))
+                            {
+                                logger->debug("Starting livedemod...");
+
+                                if (!std::filesystem::exists(output_file))
+                                    std::filesystem::create_directory(output_file);
+
+                                logger->info(downlink_pipeline);
+
+                                std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                                                  pipelines.end(),
+                                                                                  [](const Pipeline &e) {
+                                                                                      return e.name == downlink_pipeline;
+                                                                                  });
+
+                                if (it != pipelines.end())
+                                {
+
+                                    parameters.emplace("samplerate", std::string(samplerate));
+
+                                    parameters.emplace("baseband_format", "f32");
+
+                                    parameters.emplace("dc_block", dc_block ? "1" : "0");
+
+                                    std::map<std::string, std::string> final_parameters = it->steps[1].modules[0].parameters;
+                                    for (const std::pair<std::string, std::string> &param : parameters)
+                                        if (final_parameters.count(param.first) > 0)
+                                            final_parameters[param.first] = param.second;
+                                        else
+                                            final_parameters.emplace(param.first, param.second);
+
+                                    logger->debug("Parameters :");
+                                    for (const std::pair<std::string, std::string> &param : final_parameters)
+                                        logger->debug("   - " + param.first + " : " + param.second);
+
+                                    demodModule = modules_registry[it->steps[1]
+                                                                       .modules[0]
+                                                                       .module_name]("", output_file + "/" + it->name, final_parameters);
+
+                                    demodModule->setInputType(DATA_STREAM);
+                                    demodModule->setOutputType(DATA_FILE);
+                                    demodModule->input_fifo = std::make_shared<satdump::Pipe>();
+                                    demodModule->input_active = true;
+
+                                    airspySource = std::make_shared<SDRSource>((float)frequency * 1e6, std::stoi(samplerate), demodModule->input_fifo);
+
+                                    demodThread = std::thread([&]() {
+                                        logger->info("Start processing...");
+                                        demodModule->process();
+                                    });
+
+                                    airspySource->stopFuction = [&]() {
+                                        logger->info("Stop live");
+                                        demodModule->input_active = false;
+                                        demodModule->input_fifo->~Pipe();
+                                        logger->info("Pipe OK");
+                                        if (demodThread.joinable())
+                                            demodThread.join();
+                                        logger->info("Stopped");
+                                        demodThread.~thread();
+                                        livedemod = false;
+                                        logger->info("Done");
+                                    };
+
+                                    airspySource->startSDR();
+
+                                    livedemod = true;
+                                }
                                 else
-                                    final_parameters.emplace(param.first, param.second);
-
-                            logger->debug("Parameters :");
-                            for (const std::pair<std::string, std::string> &param : final_parameters)
-                                logger->debug("   - " + param.first + " : " + param.second);
-
-                            demodModule = modules_registry[it->steps[1]
-                                                               .modules[0]
-                                                               .module_name]("", output_file + "/" + it->name, final_parameters);
-
-                            demodModule->setInputType(DATA_STREAM);
-                            demodModule->setOutputType(DATA_FILE);
-                            demodModule->input_fifo = std::make_shared<satdump::Pipe>();
-
-                            airspySource = std::make_shared<SDRSource>(std::stof(frequency) * 1e6, std::stoi(samplerate), demodModule->input_fifo);
-
-                            demodThread = std::thread([&]() {
-                                logger->info("Start processing...");
-                                demodModule->process();
-                            });
-
-                            airspySource->startSDR();
-
-                            livedemod = true;
+                                {
+                                    logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+                                }
+                            }
                         }
-                        else
-                        {
-                            logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-                        }
+                        ImGui::EndGroup();
+
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("Credits"))
+                    {
+                        ImGui::SetCursorPos({(float)wwidth / 2 - 250, (float)wheight / 2 - 90});
+                        ImGui::BeginGroup();
+
+                        ImGui::BeginGroup();
+                        ImGui::Text("Libraries :");
+                        ImGui::BulletText("libfmt");
+                        ImGui::BulletText("spdlog");
+                        ImGui::BulletText("libsathelper");
+                        ImGui::BulletText("libaec");
+                        ImGui::BulletText("libpng");
+                        ImGui::BulletText("libjpeg");
+                        ImGui::BulletText("libfftw3");
+                        ImGui::BulletText("libcorrect");
+                        ImGui::BulletText("libairspy");
+                        ImGui::BulletText("ImGui");
+                        ImGui::EndGroup();
+
+                        ImGui::SameLine();
+
+                        ImGui::BeginGroup();
+                        ImGui::Text("Contributors :");
+                        ImGui::BulletText("Tomi HA6NAB");
+                        ImGui::BulletText("ZbychuButItWasTaken");
+                        ImGui::BulletText("Arved MØKDS");
+                        ImGui::BulletText("Ryzerth");
+                        ImGui::EndGroup();
+
+                        ImGui::SameLine();
+
+                        ImGui::BeginGroup();
+                        ImGui::Text("Others :");
+                        ImGui::BulletText("GNU Radio");
+                        ImGui::BulletText("OpenSatellite Project");
+                        ImGui::BulletText("Martin Blaho");
+                        ImGui::EndGroup();
+
+                        ImGui::EndGroup();
+                        ImGui::EndTabItem();
                     }
                 }
-                ImGui::EndGroup();
+                ImGui::EndTabBar();
 
                 ImGui::End();
             }

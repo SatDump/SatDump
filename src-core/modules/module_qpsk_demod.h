@@ -42,7 +42,7 @@ protected:
     libdsp::Pipe<std::complex<float>> *pll_pipe;
     libdsp::Pipe<std::complex<float>> *rec_pipe;
 
-    bool agcRun, rrcRun, pllRun, recRun;
+    std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 
     // Int16 buffer
     int16_t *buffer_i16;

@@ -41,6 +41,7 @@ public:
 public:
     std::shared_ptr<satdump::Pipe> input_fifo;
     std::shared_ptr<satdump::Pipe> output_fifo;
+    std::atomic<bool> input_active = false;
 
 public:
     static std::string getID();

@@ -1,6 +1,10 @@
 #include "pipeline.h"
 #include "logger.h"
 #include "module.h"
+#include "nlohmann/json.hpp"
+#include <fstream>
+
+std::vector<Pipeline> pipelines;
 
 void Pipeline::run(std::string input_file,
                    std::string output_directory,
@@ -65,11 +69,55 @@ void Pipeline::run(std::string input_file,
                 uiCallListMutex->unlock();
             }
 
+            //module.reset();
+
             std::vector<std::string> newfiles = module->getOutputs();
             files.insert(files.end(), newfiles.begin(), newfiles.end());
         }
 
         lastFiles = files;
         stepC++;
+    }
+}
+
+void loadPipelines(std::string filepath)
+{
+    logger->info("Loading pipelines from file " + filepath);
+
+    std::ifstream iFstream(filepath);
+    nlohmann::ordered_json jsonObj;
+    iFstream >> jsonObj;
+    iFstream.close();
+
+    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
+    {
+        Pipeline newPipeline;
+        newPipeline.name = pipelineConfig.key();
+        newPipeline.readable_name = pipelineConfig.value()["name"];
+        newPipeline.live = pipelineConfig.value()["live"];
+        newPipeline.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<float>>();
+        newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
+        //logger->info(newPipeline.name);
+
+        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value()["work"].items())
+        {
+            PipelineStep newStep;
+            newStep.level_name = pipelineStep.key();
+            //logger->warn(newStep.level_name);
+
+            for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
+            {
+                PipelineModule newModule;
+                newModule.module_name = pipelineModule.key();
+                newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
+                //logger->debug(newModule.module_name);
+
+                newStep.modules.push_back(newModule);
+            }
+
+            newPipeline.steps.push_back(newStep);
+        }
+
+        pipelines.push_back(newPipeline);
     }
 }

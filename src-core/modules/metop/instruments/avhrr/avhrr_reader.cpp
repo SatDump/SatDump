@@ -1,4 +1,5 @@
 #include "avhrr_reader.h"
+#include "logger.h"
 
 namespace metop
 {
@@ -19,7 +20,7 @@ namespace metop
             int pos = 14; // AVHRR Data, eg, User Data Field
 
             // Convert into 10-bits values
-            for (int i = 0; i < 2048 * 6; i += 4)
+            for (int i = 0; i < 2048 * 5; i += 4)
             {
                 avhrrBuffer[i] = (packet.payload[pos + 0] << 2) | (packet.payload[pos + 1] >> 6);
                 avhrrBuffer[i + 1] = ((packet.payload[pos + 1] % 64) << 4) | (packet.payload[pos + 2] >> 4);

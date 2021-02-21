@@ -40,7 +40,7 @@ namespace noaa
         libdsp::Pipe<float> *pll_pipe;
         libdsp::Pipe<float> *rec_pipe;
 
-        bool agcRun, rrcRun, pllRun, recRun;
+        std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 
         // Int16 buffer
         int16_t *buffer_i16;
