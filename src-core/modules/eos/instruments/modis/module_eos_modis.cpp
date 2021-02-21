@@ -1,8 +1,8 @@
 #include "module_eos_modis.h"
 #include <fstream>
 #include "modis_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -47,7 +47,7 @@ namespace eos
             time_t lastTime = 0;
 
             // Read buffer
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             // Counters
             uint64_t modis_cadu = 0, ccsds = 0, modis_ccsds = 0;
@@ -65,7 +65,7 @@ namespace eos
                 std::vector<uint32_t> coarseCounts;
 
                 std::ifstream data_in_tmp(d_input_file, std::ios::binary);
-                libccsds::Demuxer ccsdsDemuxer;
+                ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer;
 
                 while (!data_in_tmp.eof())
                 {
@@ -73,7 +73,7 @@ namespace eos
                     data_in_tmp.read((char *)&cadu, 1024);
 
                     // Parse this transport frame
-                    libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                    ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                     // Right channel? (VCID 30/42 is MODIS)
                     if (vcdu.vcid == (terra ? 42 : 30))
@@ -81,10 +81,10 @@ namespace eos
                         modis_cadu++;
 
                         // Demux
-                        std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                        std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                         // Push into processor (filtering APID 64)
-                        for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                         {
                             if (pkt.header.apid == 64)
                             {
@@ -120,7 +120,7 @@ namespace eos
 
             logger->info("Demultiplexing and deframing...");
 
-            libccsds::Demuxer ccsdsDemuxer;
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer;
 
             MODISReader reader;
             reader.common_day = common_day;
@@ -132,7 +132,7 @@ namespace eos
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 30/42 is MODIS)
                 if (vcdu.vcid == (terra ? 42 : 30))
@@ -140,13 +140,13 @@ namespace eos
                     modis_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 64)
                         {

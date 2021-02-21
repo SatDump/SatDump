@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
     // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(800, 400, "SatDump", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1000, 600, "SatDump", NULL, NULL);
     if (window == NULL)
     {
         logger->critical("Could not init GLFW Window");

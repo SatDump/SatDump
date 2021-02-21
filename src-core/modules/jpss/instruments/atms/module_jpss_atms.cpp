@@ -1,8 +1,8 @@
 #include "module_jpss_atms.h"
 #include <fstream>
 #include "atms_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -43,12 +43,12 @@ namespace jpss
             logger->info("Demultiplexing and deframing...");
 
             // Read buffer
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             // Counters
             uint64_t atms_cadu = 0, ccsds = 0, atms_ccsds = 0;
 
-            libccsds::Demuxer ccsdsDemuxer = libccsds::Demuxer(mpdu_size, false);
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer = ccsds::ccsds_1_0_1024::Demuxer(mpdu_size, false);
 
             ATMSReader reader;
 
@@ -58,7 +58,7 @@ namespace jpss
                 data_in.read((char *)&cadu, cadu_size);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 1 is ATMS)
                 if (vcdu.vcid == 1)
@@ -66,13 +66,13 @@ namespace jpss
                     atms_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 528)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 528)
                         {

@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <vector>
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_1024
     {
         // Struct representing a CCSDS Header
         struct CCSDSHeader
@@ -34,4 +34,4 @@ namespace proba
         CCSDSHeader parseCCSDSHeader(uint8_t *header);
 
     } // namespace libccsds
-} // namespace proba
+}

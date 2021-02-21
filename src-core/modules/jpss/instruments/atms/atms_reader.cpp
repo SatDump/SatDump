@@ -13,7 +13,7 @@ namespace jpss
             inScan = false;
         }
 
-        void ATMSReader::work(libccsds::CCSDSPacket &packet)
+        void ATMSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() < 55)

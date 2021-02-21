@@ -12,7 +12,7 @@ namespace metop
             lines = 0;
         }
 
-        void IASIIMGReader::work(libccsds::CCSDSPacket &packet)
+        void IASIIMGReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 6196)
                 return;

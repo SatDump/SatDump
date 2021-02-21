@@ -59,9 +59,6 @@ else()
 endif()
 target_link_libraries(satdump_core PUBLIC PNG::PNG)
 
-find_library(CCSDS_LIBRARY ccsds REQUIRED)
-target_link_libraries(satdump_core PUBLIC ${CCSDS_LIBRARY})
-
 
 
 

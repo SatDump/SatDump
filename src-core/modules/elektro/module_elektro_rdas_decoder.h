@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "modules/common/deframer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <dsp/random.h>
 
 namespace elektro
@@ -14,7 +14,7 @@ namespace elektro
         // Read buffer
         int8_t *buffer;
 
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         std::ifstream data_in;
         std::ofstream data_out;

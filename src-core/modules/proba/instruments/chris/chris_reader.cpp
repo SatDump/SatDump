@@ -54,7 +54,7 @@ namespace proba
             delete[] tempChannelBuffer;
         }
 
-        void CHRISImageParser::work(libccsds::CCSDSPacket &packet, int &ch)
+        void CHRISImageParser::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet, int &ch)
         {
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
@@ -153,7 +153,7 @@ namespace proba
             modeMarkers.push_back(mode_marker);
         }
 
-        void CHRISReader::work(libccsds::CCSDSPacket &packet)
+        void CHRISReader::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 11538)
                 return;

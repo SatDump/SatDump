@@ -1,8 +1,8 @@
 #include "module_aqua_ceres.h"
 #include <fstream>
 #include "ceres_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -32,12 +32,12 @@ namespace aqua
             time_t lastTime = 0;
 
             // Read buffer
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             // Counters
             uint64_t ceres_cadu = 0, ccsds = 0, modis_ccsds = 0;
 
-            libccsds::Demuxer ccsdsDemuxer1, ccsdsDemuxer2;
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer1, ccsdsDemuxer2;
 
             CERESReader reader1, reader2;
 
@@ -49,7 +49,7 @@ namespace aqua
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 10-15 is CERES)
                 if (vcdu.vcid == 10)
@@ -57,13 +57,13 @@ namespace aqua
                     ceres_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer1.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer1.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 141)
                         {
@@ -77,13 +77,13 @@ namespace aqua
                     ceres_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer2.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer2.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 157)
                         {

@@ -4,7 +4,7 @@
 #include <complex>
 #include <future>
 #include "mpt_viterbi.h"
-#include "modules/common/deframer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <fstream>
 
 namespace fengyun
@@ -48,7 +48,7 @@ namespace fengyun
         std::atomic<size_t> progress;
 
         FengyunMPTViterbi viterbi1, viterbi2;
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
 

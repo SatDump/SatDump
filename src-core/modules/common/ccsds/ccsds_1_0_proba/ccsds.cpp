@@ -3,9 +3,9 @@
 #include <cmath>
 #include <cstring>
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         CCSDSHeader::CCSDSHeader()
         {

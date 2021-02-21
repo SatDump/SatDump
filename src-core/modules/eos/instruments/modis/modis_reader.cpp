@@ -40,7 +40,7 @@ namespace eos
             return result;
         }
 
-        void MODISReader::processDayPacket(libccsds::CCSDSPacket &packet, MODISHeader &header)
+        void MODISReader::processDayPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header)
         {
             // Filter out calibration packets
             if (header.type_flag == 1 || header.earth_frame_data_count > 1354 || header.mirror_side > 1)
@@ -153,7 +153,7 @@ namespace eos
             }
         }
 
-        void MODISReader::processNightPacket(libccsds::CCSDSPacket &packet, MODISHeader &header)
+        void MODISReader::processNightPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header)
         {
             // Filter out calibration packets
             if (header.type_flag == 1 || header.earth_frame_data_count > 1354 || header.mirror_side > 1)
@@ -188,7 +188,7 @@ namespace eos
 
         int i = 0;
 
-        void MODISReader::work(libccsds::CCSDSPacket &packet)
+        void MODISReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() < 10)

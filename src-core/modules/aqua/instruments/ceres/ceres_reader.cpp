@@ -12,7 +12,7 @@ namespace aqua
             lines = 0;
         }
 
-        void CERESReader::work(libccsds::CCSDSPacket &packet)
+        void CERESReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() != 6988)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/proba/ccsds/ccsds.h"
+#include "modules/common/ccsds/ccsds_1_0_proba/ccsds.h"
 
 #define cimg_use_png
 #define cimg_display 0
@@ -36,7 +36,7 @@ namespace proba
             CHRISImageParser(int &count, std::string &outputfolder, std::vector<std::string> &a_images);
             ~CHRISImageParser();
             void save();
-            void work(libccsds::CCSDSPacket &packet, int &ch);
+            void work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet, int &ch);
         };
 
         class CHRISReader
@@ -49,7 +49,7 @@ namespace proba
         public:
             std::vector<std::string> all_images;
             CHRISReader(std::string &outputfolder);
-            void work(libccsds::CCSDSPacket &packet);
+            void work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet);
             void save();
         };
     } // namespace chris

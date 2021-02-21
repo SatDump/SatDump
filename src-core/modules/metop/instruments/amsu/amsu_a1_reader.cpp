@@ -11,7 +11,7 @@ namespace metop
             lines = 0;
         }
 
-        void AMSUA1Reader::work(libccsds::CCSDSPacket &packet)
+        void AMSUA1Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 2096)
                 return;

@@ -1,12 +1,10 @@
 #include "module_meteor_msumr_lrpt.h"
 #include <fstream>
 #include "modules/meteor/simpledeframer.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
 #include <cstring>
 #include "lrpt_msumr_reader.h"
 
@@ -35,9 +33,9 @@ namespace meteor
 
             time_t lastTime = 0;
 
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
-            libccsds::Demuxer ccsds_demuxer(882, true);
+            ccsds::ccsds_1_0_1024::Demuxer ccsds_demuxer(882, true);
 
             lrpt::MSUMRReader msureader;
 
@@ -47,12 +45,12 @@ namespace meteor
             {
                 data_in.read((char *)&cadu, 1024);
 
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 if (vcdu.vcid == 5)
                 {
-                    std::vector<libccsds::CCSDSPacket> frames = ccsds_demuxer.work(cadu);
-                    for (libccsds::CCSDSPacket pkt : frames)
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> frames = ccsds_demuxer.work(cadu);
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket pkt : frames)
                     {
                         msureader.work(pkt);
                     }

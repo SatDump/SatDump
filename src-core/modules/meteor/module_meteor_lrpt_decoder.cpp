@@ -3,7 +3,7 @@
 #include "modules/common/sathelper/reedsolomon.h"
 #include "modules/common/sathelper/correlator.h"
 #include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/derandomizer.h"
+#include "modules/common/sathelper/derandomizer.h"
 #include "modules/common/differential/nrzm.h"
 #include "imgui/imgui.h"
 
@@ -72,7 +72,7 @@ namespace meteor
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::PhaseShift phaseShift;
-        SatHelper::DeRandomizer derand;
+        sathelper::Derandomizer derand;
         sathelper::ReedSolomon reedSolomon;
 
         bool iqinv;
@@ -155,7 +155,7 @@ namespace meteor
                     diff::nrzm_decode(frameBuffer, FRAME_SIZE);
 
                 // Derandomize that frame
-                derand.DeRandomize(&frameBuffer[4], FRAME_SIZE - 4);
+                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
 
                 // RS Correction
                 for (int i = 0; i < 4; i++)

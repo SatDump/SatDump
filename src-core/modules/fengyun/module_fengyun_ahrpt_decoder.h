@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <future>
-#include "modules/common/deframer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include "ahrpt_viterbi.h"
 #include <fstream>
 
@@ -48,7 +48,7 @@ namespace fengyun
         std::atomic<size_t> progress;
 
         FengyunAHRPTViterbi viterbi1, viterbi2;
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
 

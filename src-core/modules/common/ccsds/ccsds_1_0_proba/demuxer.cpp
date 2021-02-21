@@ -5,9 +5,9 @@
 
 #define HEADER_LENGTH 6
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         Demuxer::Demuxer(int mpdu_data_size, bool hasInsertZone) : MPDU_DATA_SIZE(mpdu_data_size),
                                                                    HAS_INSERT_ZONE(hasInsertZone)

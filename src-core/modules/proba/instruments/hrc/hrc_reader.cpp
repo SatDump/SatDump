@@ -40,7 +40,7 @@ namespace proba
             return r;
         }
 
-        void HRCReader::work(libccsds::CCSDSPacket &packet)
+        void HRCReader::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 21458)
                 return;

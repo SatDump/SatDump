@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include "viterbi.h"
-#include "modules/common/deframer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <fstream>
 
 namespace npp
@@ -31,7 +31,7 @@ namespace npp
         std::atomic<size_t> progress;
 
         HRDViterbi viterbi;
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
 

@@ -2,11 +2,10 @@
 
 #include <vector>
 #include "ccsds.h"
-#include "cadu.h"
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         /*
         Simple CCSDS demuxer building CCSDS frames from CADUs. 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/proba/ccsds/ccsds.h"
+#include "modules/common/ccsds/ccsds_1_0_proba/ccsds.h"
 #include <fstream>
 #include <map>
 
@@ -18,7 +18,7 @@ namespace proba
         public:
             std::vector<std::string> all_images;
             SWAPReader(std::string &outputfolder);
-            void work(libccsds::CCSDSPacket &packet);
+            void work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet);
             void save();
         };
     } // namespace swap

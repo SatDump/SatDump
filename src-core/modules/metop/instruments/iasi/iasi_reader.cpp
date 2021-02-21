@@ -25,7 +25,7 @@ namespace metop
             unsigned char b;
         };
 
-        void IASIReader::work(libccsds::CCSDSPacket &packet)
+        void IASIReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 8954)
                 return;

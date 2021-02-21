@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ccsds/ccsds.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/ccsds.h"
 #include <cmath>
 #include <map>
 #define cimg_use_png
@@ -13,7 +13,7 @@ namespace eos
     {
         struct MODISHeader
         {
-            MODISHeader(libccsds::CCSDSPacket &pkt)
+            MODISHeader(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt)
             {
                 day_count = pkt.payload[0] << 8 | pkt.payload[1];
                 coarse_time = pkt.payload[2] << 24 | pkt.payload[3] << 16 | pkt.payload[4] << 8 | pkt.payload[5];
@@ -48,13 +48,13 @@ namespace eos
             unsigned short *channels1000m[31];
             unsigned short *channels500m[5];
             unsigned short *channels250m[2];
-            void processDayPacket(libccsds::CCSDSPacket &packet, MODISHeader &header);
-            void processNightPacket(libccsds::CCSDSPacket &packet, MODISHeader &header);
+            void processDayPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header);
+            void processNightPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header);
 
         public:
             MODISReader();
             int day_count, night_count, lines;
-            void work(libccsds::CCSDSPacket &packet);
+            void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getImage250m(int channel);
             cimg_library::CImg<unsigned short> getImage500m(int channel);
             cimg_library::CImg<unsigned short> getImage1000m(int channel);

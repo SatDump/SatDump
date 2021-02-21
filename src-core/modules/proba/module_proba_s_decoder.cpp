@@ -3,7 +3,7 @@
 #include "modules/common/sathelper/reedsolomon.h"
 #include "modules/common/sathelper/correlator.h"
 #include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/derandomizer.h"
+#include "modules/common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 #include <cmath>
 
@@ -49,7 +49,7 @@ namespace proba
 
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
-        SatHelper::DeRandomizer derand;
+        sathelper::Derandomizer derand;
         sathelper::ReedSolomon reedSolomon;
 
         // Other buffers
@@ -103,7 +103,7 @@ namespace proba
                 if (derandomize)
                 {
                     // Derandomize that frame
-                    derand.DeRandomize(&frameBuffer[4], FRAME_SIZE - 4);
+                    derand.work(&frameBuffer[4], FRAME_SIZE - 4);
                 }
 
                 // RS Correction

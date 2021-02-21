@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <cmath>
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         // Parse MPDU from CADU
         MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone)

@@ -2,8 +2,8 @@
 #include <fstream>
 #include "amsu_a1_reader.h"
 #include "amsu_a2_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -33,13 +33,13 @@ namespace aqua
             time_t lastTime = 0;
 
             // Read buffer
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             // Counters
             uint64_t amsu_cadu = 0, ccsds = 0, amsu1_ccsds = 0, amsu2_ccsds = 0;
 
-            libccsds::Demuxer ccsdsDemuxer1 = libccsds::Demuxer();
-            libccsds::Demuxer ccsdsDemuxer2 = libccsds::Demuxer();
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer1 = ccsds::ccsds_1_0_1024::Demuxer();
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer2 = ccsds::ccsds_1_0_1024::Demuxer();
 
             // Readers
             AMSUA1Reader a1reader;
@@ -53,7 +53,7 @@ namespace aqua
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 20 / 25 is AMSU)
                 if (vcdu.vcid == 20)
@@ -61,13 +61,13 @@ namespace aqua
                     amsu_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer1.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer1.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 261 || pkt.header.apid == 262)
                         {
@@ -82,13 +82,13 @@ namespace aqua
                     amsu_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer2.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer2.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 290)
                         {

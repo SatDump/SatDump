@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <cmath>
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         // Parse VCDU from CADU
         VCDU parseVCDU(uint8_t *cadu)

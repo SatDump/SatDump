@@ -1,11 +1,6 @@
 #pragma once
 
 #include "module.h"
-#include <complex>
-#include <dsp/agc.h>
-#include <dsp/fir_filter.h>
-#include <dsp/costas_loop.h>
-#include <dsp/clock_recovery_mm.h>
 
 namespace meteor
 {

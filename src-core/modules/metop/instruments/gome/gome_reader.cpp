@@ -63,7 +63,7 @@ namespace metop
         int band_starts[6] = {0, 659, 0, 71, 0, 0};
         int band_ends[6] = {658, 1023, 70, 1023, 1023, 1023};
 
-        void GOMEReader::work(libccsds::CCSDSPacket &packet)
+        void GOMEReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 18732)
                 return;

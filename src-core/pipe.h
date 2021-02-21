@@ -30,6 +30,7 @@ namespace satdump
             _pipe(fifo_handles, buffer_size * 10, 'b');
 #else
             pipe(fifo_handles);
+            buffer_size = buffer_size; // Remove an annoying warning
 #endif
         }
         // Close everything

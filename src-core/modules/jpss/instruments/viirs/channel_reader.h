@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ccsds/ccsds.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/ccsds.h"
 #include <cmath>
 #include "packets.h"
 #include <vector>
@@ -26,7 +26,7 @@ namespace jpss
             std::vector<Segment> segments;
             Channel channelSettings;
             VIIRSReader(Channel &ch);
-            void feed(libccsds::CCSDSPacket &packet);
+            void feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             void process();
             void differentialDecode(VIIRSReader &channelSource, int deci);
             cimg_library::CImg<unsigned short> getImage();

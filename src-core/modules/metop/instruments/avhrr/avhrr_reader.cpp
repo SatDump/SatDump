@@ -12,7 +12,7 @@ namespace metop
             lines = 0;
         }
 
-        void AVHRRReader::work(libccsds::CCSDSPacket &packet)
+        void AVHRRReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 12960)
                 return;

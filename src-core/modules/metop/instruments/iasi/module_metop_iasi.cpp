@@ -2,8 +2,8 @@
 #include <fstream>
 #include "iasi_imaging_reader.h"
 #include "iasi_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -33,13 +33,13 @@ namespace metop
 
             time_t lastTime = 0;
 
-            libccsds::Demuxer ccsdsDemuxer(882, true);
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer(882, true);
 
             IASIReader iasireader;
             IASIIMGReader iasireader_img;
 
             uint64_t iasi_cadu = 0, ccsds = 0, iasi_ccsds = 0;
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             logger->info("Demultiplexing and deframing...");
 
@@ -49,7 +49,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 10 is IASI)
                 if (vcdu.vcid == 10)
@@ -57,13 +57,13 @@ namespace metop
                     iasi_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 150)
                         {

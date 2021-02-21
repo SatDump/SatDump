@@ -3,8 +3,8 @@
 #include "channel_reader.h"
 #include "channel_correlator.h"
 #include "viirs_defrag.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -45,12 +45,12 @@ namespace jpss
             logger->info("Demultiplexing and deframing...");
 
             // Read buffer
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             // Counters
             uint64_t vcidFrames = 0, virr_cadu = 0, ccsds_frames = 0;
 
-            libccsds::Demuxer ccsdsDemux = libccsds::Demuxer(mpdu_size, false);
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemux = ccsds::ccsds_1_0_1024::Demuxer(mpdu_size, false);
 
             // Readers for all APIDs
             VIIRSReader reader_m4(VIIRSChannels[800]),
@@ -86,18 +86,18 @@ namespace jpss
                 vcidFrames++;
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 30 is MODIS)
                 if (vcdu.vcid == 16)
                 {
                     virr_cadu++;
 
-                    std::vector<libccsds::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
 
                     ccsds_frames += ccsds2.size();
 
-                    for (libccsds::CCSDSPacket &pkt : ccsds2)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsds2)
                     {
                         // Moderate resolution channels
                         reader_m4.feed(pkt);

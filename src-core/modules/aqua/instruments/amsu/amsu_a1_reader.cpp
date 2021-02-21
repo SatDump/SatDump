@@ -11,7 +11,7 @@ namespace aqua
             lines = 0;
         }
 
-        void AMSUA1Reader::work(libccsds::CCSDSPacket &packet)
+        void AMSUA1Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // First part of the scan
             if (packet.header.apid == 261)

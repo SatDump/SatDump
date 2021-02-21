@@ -2,11 +2,10 @@
 
 #include <cstdint>
 #include <vector>
-#include "cadu.h"
 
-namespace proba
+namespace ccsds
 {
-    namespace libccsds
+    namespace ccsds_1_0_proba
     {
         // Struct representing a VCDU
         struct VCDU

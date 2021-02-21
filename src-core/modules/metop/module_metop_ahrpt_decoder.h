@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/deframer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include "modules/common/sathelper/reedsolomon.h"
 #include "viterbi.h"
 #include <fstream>
@@ -32,7 +32,7 @@ namespace metop
 
         MetopViterbi viterbi;
         sathelper::ReedSolomon reedSolomon;
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
 

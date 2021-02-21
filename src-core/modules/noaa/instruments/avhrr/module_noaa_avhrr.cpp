@@ -1,8 +1,6 @@
 #include "module_noaa_avhrr.h"
 #include <fstream>
 #include "avhrr_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
 #include "logger.h"
 #include <filesystem>
 

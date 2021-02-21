@@ -1,8 +1,8 @@
 #include "module_metop_avhrr.h"
 #include <fstream>
 #include "avhrr_reader.h"
-#include <ccsds/demuxer.h>
-#include <ccsds/vcdu.h>
+#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -31,10 +31,10 @@ namespace metop
 
             time_t lastTime = 0;
 
-            libccsds::Demuxer ccsdsDemuxer(882, true);
+            ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer(882, true);
             AVHRRReader reader;
             uint64_t avhrr_cadu = 0, ccsds = 0, avhrr_ccsds = 0;
-            libccsds::CADU cadu;
+            uint8_t cadu[1024];
 
             logger->info("Demultiplexing and deframing...");
 
@@ -44,7 +44,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                libccsds::VCDU vcdu = libccsds::parseVCDU(cadu);
+                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 30/42 is MODIS)
                 if (vcdu.vcid == 9)
@@ -52,13 +52,13 @@ namespace metop
                     avhrr_cadu++;
 
                     // Demux
-                    std::vector<libccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 103 and 104)
-                    for (libccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 103 || pkt.header.apid == 104)
                         {

@@ -1,8 +1,8 @@
 #include "module_proba_swap.h"
 #include <fstream>
 #include "swap_reader.h"
-#include "modules/proba/ccsds/demuxer.h"
-#include "modules/proba/ccsds/vcdu.h"
+#include "modules/common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include "modules/common/ccsds/ccsds_1_0_proba/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 
@@ -39,7 +39,7 @@ namespace proba
             uint8_t buffer[1279];
 
             // CCSDS Demuxer
-            libccsds::Demuxer ccsdsDemuxer(1103, false);
+            ccsds::ccsds_1_0_proba::Demuxer ccsdsDemuxer(1103, false);
 
             SWAPReader swap_reader(directory);
 
@@ -50,15 +50,15 @@ namespace proba
                 // Read buffer
                 data_in.read((char *)buffer, 1279);
 
-                int vcid = libccsds::parseVCDU(buffer).vcid;
+                int vcid = ccsds::ccsds_1_0_proba::parseVCDU(buffer).vcid;
 
                 if (vcid == 3)
                 {
-                    std::vector<libccsds::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
+                    std::vector<ccsds::ccsds_1_0_proba::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
 
                     if (pkts.size() > 0)
                     {
-                        for (libccsds::CCSDSPacket pkt : pkts)
+                        for (ccsds::ccsds_1_0_proba::CCSDSPacket pkt : pkts)
                         {
                             if (pkt.header.apid == 2047)
                                 continue;
