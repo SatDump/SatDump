@@ -300,7 +300,7 @@
         "frequencies": [
             1700
         ],
-        "samplerate": 3e3,
+        "samplerate": 3e6,
         "work": {
             "baseband": {},
             "dem": {
