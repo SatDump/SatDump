@@ -76,7 +76,7 @@ namespace jpss
                                 for (int y = 0; y < channelSettings.zoneWidth[i] * channelSettings.oversampleZone[i]; y++)
                                 {
 #ifdef _WIN32
-                                    body.detectors[i].decompressedPayload[y] = = ((body.detectors[i].decompressedPayload[y] & 0xff) << 8) | ((body.detectors[i].decompressedPayload[y] & 0xff00) >> 8);
+                                    body.detectors[i].decompressedPayload[y] = ((body.detectors[i].decompressedPayload[y] & 0xff) << 8) | ((body.detectors[i].decompressedPayload[y] & 0xff00) >> 8);
 #else
                                     body.detectors[i].decompressedPayload[y] = __builtin_bswap16(body.detectors[i].decompressedPayload[y]);
 #endif
