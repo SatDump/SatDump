@@ -20,11 +20,13 @@ namespace proba
                                                                                                                                                     viterbi(ENCODED_FRAME_SIZE / 2)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
     }
 
     ProbaSDecoderModule::~ProbaSDecoderModule()
     {
         delete[] buffer;
+        delete[] buffer_;
     }
 
     void ProbaSDecoderModule::process()

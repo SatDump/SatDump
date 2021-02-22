@@ -16,7 +16,7 @@ namespace terra
 
         void shiftWithConstantSize(uint8_t *arr, int pos, int length);
 
-        uint8_t *buffer;
+        uint8_t *buffer, *buffer_2;
 
         std::ifstream data_in;
         std::ofstream data_out;

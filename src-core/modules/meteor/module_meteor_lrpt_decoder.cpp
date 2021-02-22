@@ -20,11 +20,13 @@ namespace meteor
                                                                                                                                                             viterbi(ENCODED_FRAME_SIZE / 2)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
     }
 
     METEORLRPTDecoderModule::~METEORLRPTDecoderModule()
     {
         delete[] buffer;
+        delete[] buffer_2;
     }
 
     void METEORLRPTDecoderModule::process()
@@ -132,8 +134,7 @@ namespace meteor
                 {
                     shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
                     uint32_t offset = ENCODED_FRAME_SIZE - pos;
-                    uint8_t buffer_2[pos];
-
+                    
                     data_in.read((char *)buffer_2, pos);
 
                     for (int i = offset; i < ENCODED_FRAME_SIZE; i++)
