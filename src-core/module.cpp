@@ -5,6 +5,7 @@ ProcessingModule::ProcessingModule(std::string input_file, std::string output_fi
                                                                                                                                           d_output_file_hint(output_file_hint),
                                                                                                                                           d_parameters(parameters)
 {
+    input_active = false;
 }
 
 std::vector<std::string> ProcessingModule::getOutputs()

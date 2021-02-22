@@ -1,4 +1,4 @@
-#include "process.h"
+#include "processing.h"
 #include "logger.h"
 #include "style.h"
 #include "gl.h"
@@ -8,7 +8,7 @@
 #include <filesystem>
 
 #include <fstream>
-#include "process.h"
+#include "processing.h"
 #include <thread>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include <memory>
 #include "module.h"
 #include "pipeline.h"
 
