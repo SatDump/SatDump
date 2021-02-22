@@ -12,7 +12,7 @@
 #include <thread>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"
-//#include "portable-file-dialogs.h"
+#include "portable-file-dialogs.h"
 #include "fft.h"
 
 static void glfw_error_callback(int error, const char *description)
@@ -269,13 +269,13 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Input"))
                             {
                                 logger->debug("Opening file dialog");
-                               /* auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+                                auto result = pfd::open_file("Open input file", ".", {".*"}, false);
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    input_file = result.result()[0];*/
+                                    input_file = result.result()[0];
                                 logger->debug("Dir " + input_file);
                             }
 
@@ -292,13 +292,13 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                /*auto result = pfd::select_folder("Open output directory", ".");
+                                auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();*/
+                                    output_file = result.result();
                                 logger->debug("Dir " + output_file);
                             }
 
@@ -415,13 +415,13 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                /*auto result = pfd::select_folder("Open output directory", ".");
+                                auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();*/
+                                    output_file = result.result();
                                 logger->debug("Dir " + output_file);
                             }
 
