@@ -15,7 +15,7 @@
 
 namespace npp
 {
-    HRDViterbi::HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after)
+    HRDViterbi::HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size)
         : d_sync_check(sync_check),
           d_ber_threshold(ber_threshold),
           d_insync_after(insync_after),

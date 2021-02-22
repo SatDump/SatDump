@@ -67,7 +67,7 @@ namespace npp
         float d_ber_threshold;
         bool switchInv;
 
-        HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after);
+        HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size);
         ~HRDViterbi();
 
         unsigned char &getState();
