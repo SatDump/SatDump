@@ -15,13 +15,20 @@
 
 namespace fengyun
 {
-    FengyunMPTViterbi::FengyunMPTViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after)
+    FengyunMPTViterbi::FengyunMPTViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size)
         : d_sync_check(sync_check),
           d_ber_threshold(ber_threshold),
           d_insync_after(insync_after),
           d_outsync_after(outsync_after),
           d_reset_after(reset_after)
     {
+        insymbols_interleaved_depunctured = new unsigned char[buffer_size * 4];
+        decoded_data = new unsigned char[buffer_size];
+        encoded_data = new unsigned char[buffer_size * 2];
+
+        input_symbols_buffer_I_ph = new unsigned char[buffer_size];
+        input_symbols_buffer_Q_ph = new unsigned char[buffer_size];
+
         float RATE = 1 / 2; //0.5
         float ebn0 = 12;    //12
         float esn0 = RATE * pow(10.0, ebn0 / 10);
@@ -38,6 +45,11 @@ namespace fengyun
      */
     FengyunMPTViterbi::~FengyunMPTViterbi()
     {
+        delete[] insymbols_interleaved_depunctured;
+        delete[] decoded_data;
+        delete[] encoded_data;
+        delete[] input_symbols_buffer_I_ph;
+        delete[] input_symbols_buffer_Q_ph;
     }
 
     //*****************************************************************************
@@ -95,11 +107,8 @@ namespace fengyun
     {
 
         unsigned char viterbi_in[4];
-        unsigned char insymbols_interleaved_depunctured[symsnr * 4];
-        unsigned char decoded_data[symsnr]; //viterbi decoded data buffer  [symsnr is many more as necessary]
         unsigned int decoded_data_count = 0;
         unsigned char *p_decoded_data = &decoded_data[0]; //pointer to viterbi decoded data
-        unsigned char encoded_data[symsnr * 2];           //encoded data buffer
         unsigned int difference_count;                    //count of diff. between reencoded data and input symbols
         float ber;
         unsigned char symbol_count = 0;
@@ -157,8 +166,6 @@ namespace fengyun
     {
         unsigned char *out = &output[0];
         int ninputs = size;
-        unsigned char input_symbols_buffer_I_ph[ninputs]; //buffer for phase moved symbols I
-        unsigned char input_symbols_buffer_Q_ph[ninputs]; //buffer for phase moved symbols Q
         unsigned int chan_len;
 
         //translate all complex insymbols to char and save these to input_symbols_buffer's I and Q
