@@ -84,7 +84,6 @@ namespace terra
                 {
                     shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
                     uint32_t offset = ENCODED_FRAME_SIZE - pos;
-                    uint8_t buffer_2[pos];
 
                     data_in.read((char *)buffer_2, pos);
 
