@@ -273,6 +273,29 @@
             }
         }
     },
+    "terra_db": {
+        "name": "Terra DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "terra_db_demod": {
+                    "dc_block": "0",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "terra_db_decoder": {}
+            },
+            "products": {
+                "eos_modis": {
+                    "terra_mode": "1"
+                }
+            }
+        }
+    },
     "noaa_hrpt": {
         "name": "NOAA HRPT",
         "live": true,

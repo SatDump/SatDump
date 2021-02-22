@@ -77,6 +77,9 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/elektro/module_elektro_rdas_decoder.h"
 #include "modules/elektro/instruments/msugs/module_elektro_msugs.h"
 
+#include "modules/terra/module_terra_db_demod.h"
+#include "modules/terra/module_terra_db_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -127,6 +130,9 @@ void registerModules()
 
     modules_registry.emplace(elektro::ElektroRDASDecoderModule::getID(), elektro::ElektroRDASDecoderModule::getInstance);
     modules_registry.emplace(elektro::msugs::ELEKTROMSUGSDecoderModule::getID(), elektro::msugs::ELEKTROMSUGSDecoderModule::getInstance);
+
+    modules_registry.emplace(terra::TerraDBDemodModule::getID(), terra::TerraDBDemodModule::getInstance);
+    modules_registry.emplace(terra::TerraDBDecoderModule::getID(), terra::TerraDBDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
