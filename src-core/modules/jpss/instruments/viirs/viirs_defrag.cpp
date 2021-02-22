@@ -30,7 +30,7 @@ namespace jpss
                     int arraySize = channelSettings.totalWidth == 4064 ? 12 : 10;
 
                     // Stretch it to fill the black parts
-                    unsigned short heightSegBuffer[arraySize];
+                    unsigned short *heightSegBuffer = new unsigned short[arraySize];
                     for (int y = 0; y < channelSettings.zoneWidth[0]; y++)
                     {
                         for (int u = 0; u < arraySize; u++)
@@ -47,6 +47,7 @@ namespace jpss
                         for (int u = 0; u < 15; u++)
                             imageData[((i * segmentHeight + u) * imageWidth) + det5pos + y] = heightSegBuffer[(int)(u * (arraySize / 15.0f))];
                     }
+                    delete[] heightSegBuffer;
                 }
             }
             // Imaging bands
@@ -61,7 +62,7 @@ namespace jpss
                     int arraySize = 28;
 
                     // Stretch it to fill the black parts
-                    unsigned short heightSegBuffer[arraySize];
+                    unsigned short *heightSegBuffer = new unsigned short[arraySize];
                     for (int y = 0; y < channelSettings.zoneWidth[1]; y++)
                     {
                         for (int u = 0; u < arraySize; u++)
@@ -102,6 +103,7 @@ namespace jpss
                         for (int u = 0; u < 31; u++)
                             imageData[((i * segmentHeight + u) * imageWidth) + det5pos + y] = heightSegBuffer[(int)(u * (arraySize / 31.0f))];
                     }
+                    delete[] heightSegBuffer;
                 }
             }
         }
