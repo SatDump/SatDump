@@ -9,6 +9,9 @@
 
 #ifdef MEMORY_OP_X86
 //#include <immintrin.h>
+#ifndef _MSC_VER
+#include <intrin.h>
+#endif
 
 #define FMA3 (1 << 12)
 #define SSE (1 << 26)
