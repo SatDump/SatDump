@@ -2,6 +2,7 @@
 #include <dsp/fir_gen.h>
 #include "logger.h"
 #include "imgui/imgui.h"
+#include <dsp/dc_blocker.h>
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -149,8 +150,6 @@ namespace terra
 
         logger->debug("FILE OK");
     }
-
-#include <dsp/dc_blocker.h>
 
     void TerraDBDemodModule::fileThreadFunction()
     {

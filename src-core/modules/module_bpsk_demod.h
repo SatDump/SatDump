@@ -80,7 +80,6 @@ public:
     ~BPSKDemodModule();
     void process();
     void drawUI();
-    void getInputType();
     std::vector<ModuleDataType> getInputTypes();
     std::vector<ModuleDataType> getOutputTypes();
 
