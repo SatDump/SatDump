@@ -26,7 +26,7 @@ namespace proba
     ProbaSDecoderModule::~ProbaSDecoderModule()
     {
         delete[] buffer;
-        delete[] buffer_;
+        delete[] buffer_2;
     }
 
     void ProbaSDecoderModule::process()
