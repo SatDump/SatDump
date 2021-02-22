@@ -9,7 +9,7 @@
 
 #ifdef MEMORY_OP_X86
 //#include <immintrin.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
 #include <intrin.h>
 #endif
 
