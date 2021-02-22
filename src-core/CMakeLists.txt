@@ -14,11 +14,6 @@ target_include_directories(satdump_core PUBLIC .)
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
-# Spdlog
-find_package(Spdlog REQUIRED)
-target_include_directories(satdump_core PUBLIC ${SPDLOG_INCLUDE_DIR})
-target_link_libraries(satdump_core PUBLIC Spdlog::Spdlog)
-
 # LibDSP
 find_library(DSP_LIBRARY dsp REQUIRED)
 target_link_libraries(satdump_core PUBLIC ${DSP_LIBRARY})
