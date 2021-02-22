@@ -41,7 +41,7 @@
 //#define notdef
 #include <stdlib.h>
 #include <stdio.h>
-#define _USE_MATH_DEFINE
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 /* Normal function integrated from -Inf to x. Range: 0-1 */
