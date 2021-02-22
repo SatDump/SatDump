@@ -134,7 +134,7 @@ void QPSKDemodModule::process()
     while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
     {
         dat_size = rec_pipe->pop(rec_buffer2, d_buffer_size);
-        logger->info(dat_size);
+
         if (dat_size <= 0)
             continue;
 
