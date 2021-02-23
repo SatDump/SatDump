@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0.0)
 
-file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp)
+file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
 
 add_executable(satdump-ui ${SatDump_ui_CPPS})
 target_include_directories(satdump-ui PUBLIC src-ui src-core)

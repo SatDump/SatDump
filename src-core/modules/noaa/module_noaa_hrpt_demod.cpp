@@ -54,11 +54,11 @@ namespace noaa
         buffer_u8 = new uint8_t[d_buffer_size * 2];
 
         // Init FIFOs
-        in_pipe = new libdsp::Pipe<std::complex<float>>(d_buffer_size * 10);
-        agc_pipe = new libdsp::Pipe<std::complex<float>>(d_buffer_size * 10);
-        pll_pipe = new libdsp::Pipe<float>(d_buffer_size * 10);
-        rrc_pipe = new libdsp::Pipe<float>(d_buffer_size * 10);
-        rec_pipe = new libdsp::Pipe<float>(d_buffer_size * 10);
+        in_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
+        agc_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
+        pll_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
+        rrc_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
+        rec_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
     }
 
     std::vector<ModuleDataType> NOAAHRPTDemodModule::getInputTypes()
@@ -124,7 +124,7 @@ namespace noaa
         int dat_size = 0;
         while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
         {
-            dat_size = rec_pipe->pop(rec_buffer2, d_buffer_size);
+            dat_size = rec_pipe->read(rec_buffer2, d_buffer_size);
 
             if (dat_size <= 0)
                 continue;
@@ -217,7 +217,7 @@ namespace noaa
 
             progress = data_in.tellg();
 
-            in_pipe->push(in_buffer, d_buffer_size);
+            in_pipe->write(in_buffer, d_buffer_size);
         }
 
         if (input_data_type == DATA_FILE)
@@ -226,30 +226,34 @@ namespace noaa
         // Exit all threads... Without causing a race condition!
         agcRun = rrcRun = pllRun = recRun = false;
 
-        in_pipe->~Pipe();
+        in_pipe->stopWriter();
+        in_pipe->stopReader();
 
-        agc_pipe->~Pipe();
+        agc_pipe->stopWriter();
 
         if (agcThread.joinable())
             agcThread.join();
 
         logger->debug("AGC OK");
 
-        pll_pipe->~Pipe();
+        agc_pipe->stopReader();
+        pll_pipe->stopWriter();
 
         if (pllThread.joinable())
             pllThread.join();
 
         logger->debug("PLL OK");
 
-        rrc_pipe->~Pipe();
+        pll_pipe->stopReader();
+        rrc_pipe->stopWriter();
 
         if (rrcThread.joinable())
             rrcThread.join();
 
         logger->debug("RRC OK");
 
-        rec_pipe->~Pipe();
+        rrc_pipe->stopReader();
+        rec_pipe->stopWriter();
 
         if (recThread.joinable())
             recThread.join();
@@ -257,6 +261,8 @@ namespace noaa
         logger->debug("REC OK");
 
         data_out.close();
+
+        rec_pipe->stopReader();
     }
 
     void NOAAHRPTDemodModule::agcThreadFunction()
@@ -264,7 +270,7 @@ namespace noaa
         int gotten;
         while (agcRun)
         {
-            gotten = in_pipe->pop(in_buffer2, d_buffer_size);
+            gotten = in_pipe->read(in_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
@@ -272,7 +278,7 @@ namespace noaa
             /// AGC
             agc->work(in_buffer2, gotten, agc_buffer);
 
-            agc_pipe->push(agc_buffer, gotten);
+            agc_pipe->write(agc_buffer, gotten);
         }
     }
 
@@ -281,7 +287,7 @@ namespace noaa
         int gotten;
         while (pllRun)
         {
-            gotten = agc_pipe->pop(agc_buffer2, d_buffer_size);
+            gotten = agc_pipe->read(agc_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
@@ -289,7 +295,7 @@ namespace noaa
             // Costas loop, frequency offset recovery
             pll->work(agc_buffer2, gotten, pll_buffer);
 
-            pll_pipe->push(pll_buffer, gotten);
+            pll_pipe->write(pll_buffer, gotten);
         }
     }
 
@@ -298,7 +304,7 @@ namespace noaa
         int gotten;
         while (rrcRun)
         {
-            gotten = pll_pipe->pop(pll_buffer2, d_buffer_size);
+            gotten = pll_pipe->read(pll_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
@@ -306,7 +312,7 @@ namespace noaa
             // Root-raised-cosine filtering
             int out = rrc->work(pll_buffer2, gotten, rrc_buffer);
 
-            rrc_pipe->push(rrc_buffer, out);
+            rrc_pipe->write(rrc_buffer, out);
         }
     }
 
@@ -315,7 +321,7 @@ namespace noaa
         int gotten;
         while (recRun)
         {
-            gotten = rrc_pipe->pop(rrc_buffer2, d_buffer_size);
+            gotten = rrc_pipe->read(rrc_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
@@ -332,7 +338,7 @@ namespace noaa
                 logger->error(e.what());
             }
 
-            rec_pipe->push(rec_buffer, recovered_size);
+            rec_pipe->write(rec_buffer, recovered_size);
         }
     }
 

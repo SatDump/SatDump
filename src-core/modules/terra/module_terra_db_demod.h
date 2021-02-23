@@ -6,7 +6,7 @@
 #include <dsp/fir_filter.h>
 #include <dsp/costas_loop.h>
 #include <dsp/clock_recovery_mm.h>
-#include <dsp/pipe.h>
+#include "modules/buffer.h"
 #include <thread>
 #include <fstream>
 
@@ -32,11 +32,11 @@ namespace terra
         int8_t *sym_buffer;
 
         // All FIFOs we use along the way
-        libdsp::Pipe<std::complex<float>> *in_pipe;
-        libdsp::Pipe<std::complex<float>> *agc_pipe;
-        libdsp::Pipe<std::complex<float>> *rrc_pipe;
-        libdsp::Pipe<std::complex<float>> *pll_pipe;
-        libdsp::Pipe<std::complex<float>> *rec_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> in_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> agc_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> rrc_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> pll_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> rec_pipe;
 
         std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 

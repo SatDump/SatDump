@@ -7,7 +7,7 @@
 #include <dsp/carrier_pll_psk.h>
 #include <dsp/clock_recovery_mm.h>
 #include "dsb_deframer.h"
-#include <dsp/pipe.h>
+#include "modules/buffer.h"
 #include <thread>
 #include <fstream>
 #include "modules/common/repack_bits_byte.h"
@@ -40,11 +40,11 @@ namespace noaa
         std::vector<uint8_t> defra_buf;
 
         // All FIFOs we use along the way
-        libdsp::Pipe<std::complex<float>> *in_pipe;
-        libdsp::Pipe<std::complex<float>> *agc_pipe;
-        libdsp::Pipe<float> *rrc_pipe;
-        libdsp::Pipe<float> *pll_pipe;
-        libdsp::Pipe<float> *rec_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> in_pipe;
+        std::shared_ptr<RingBuffer<std::complex<float>>> agc_pipe;
+        std::shared_ptr<RingBuffer<float>> rrc_pipe;
+        std::shared_ptr<RingBuffer<float>> pll_pipe;
+        std::shared_ptr<RingBuffer<float>> rec_pipe;
 
         std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 

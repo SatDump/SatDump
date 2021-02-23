@@ -97,6 +97,7 @@ void loadPipelines(std::string filepath)
         newPipeline.live = pipelineConfig.value()["live"];
         newPipeline.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<float>>();
         newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
+        newPipeline.default_baseband_type = pipelineConfig.value()["baseband_type"];
         //logger->info(newPipeline.name);
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value()["work"].items())

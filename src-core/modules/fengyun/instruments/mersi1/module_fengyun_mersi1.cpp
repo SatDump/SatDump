@@ -6,6 +6,7 @@
 #include "mersi_250m_reader.h"
 #include "mersi_1000m_reader.h"
 #include "mersi_correlator.h"
+#include "imgui/imgui.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -20,7 +21,7 @@ namespace fengyun
 
         void FengyunMERSI1DecoderModule::process()
         {
-            size_t filesize = getFilesize(d_input_file);
+            filesize = getFilesize(d_input_file);
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-1";
@@ -132,10 +133,12 @@ namespace fengyun
                     }
                 }
 
+                progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
@@ -396,6 +399,15 @@ namespace fengyun
 
             logger->info("Channel 20 (synced for composites)...");
             WRITE_IMAGE(mersiCorrelator->image20, directory + "/MERSI1-SYNCED-20.png");
+        }
+
+        void FengyunMERSI1DecoderModule::drawUI()
+        {
+            ImGui::Begin("FengYun MERSI-1 Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string FengyunMERSI1DecoderModule::getID()

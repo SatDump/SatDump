@@ -24,6 +24,7 @@ struct Pipeline
     bool live;
     std::vector<float> frequencies;
     long default_samplerate;
+    std::string default_baseband_type;
 
     std::vector<PipelineStep> steps;
     void run(std::string input_file,

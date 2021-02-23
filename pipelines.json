@@ -4,6 +4,7 @@
         "live": false,
         "frequencies": [],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "frames": {
@@ -21,6 +22,7 @@
         "live": false,
         "frequencies": [],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -48,6 +50,7 @@
         "live": false,
         "frequencies": [],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -82,6 +85,7 @@
             1701.3
         ],
         "samplerate": 6e6,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -121,6 +125,7 @@
             1704.5
         ],
         "samplerate": 6e6,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -153,6 +158,7 @@
             1701.4
         ],
         "samplerate": 6e6,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -182,7 +188,8 @@
         "name": "FengYun-3 A/B/C MPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 30e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -212,7 +219,8 @@
         "name": "FengYun-3 D AHRPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 45e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -242,7 +250,8 @@
         "name": "Aqua DB",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 15e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -277,7 +286,8 @@
         "name": "Terra DB",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 45e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -305,6 +315,7 @@
             1702.5
         ],
         "samplerate": 3e6,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "frames": {
@@ -324,6 +335,7 @@
             1700
         ],
         "samplerate": 3e6,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "dem": {
@@ -344,7 +356,8 @@
         "name": "Suomi NPP / JPSS-1 HRD",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 25e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -381,6 +394,7 @@
             2235
         ],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -411,6 +425,7 @@
             2235
         ],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -440,6 +455,7 @@
             2235
         ],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -464,6 +480,7 @@
         "live": false,
         "frequencies": [],
         "samplerate": 0,
+        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

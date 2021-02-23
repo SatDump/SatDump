@@ -34,17 +34,17 @@ namespace sathelper
         this->BER = 0;
         this->calculateErrors = true;
 
-        if (Extensions::hasSSE4)
-        {
 #ifndef __MINGW32__
 #ifdef MEMORY_OP_X86
+        if (Extensions::hasSSE4)
+        {
             viterbi = correct_convolutional_sse_create(2, 7, new uint16_t[2]{(uint16_t)polyA, (uint16_t)polyB});
             this->_encode = &Viterbi27::encode_sse4;
             this->_decode = &Viterbi27::decode_sse4;
-#endif
-#endif
         }
         else
+#endif
+#endif
         {
             viterbi = correct_convolutional_create(2, 7, new uint16_t[2]{(uint16_t)polyA, (uint16_t)polyB});
             this->_encode = &Viterbi27::encode_generic;

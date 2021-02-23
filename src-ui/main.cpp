@@ -12,7 +12,7 @@
 #include <thread>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"
-#include "portable-file-dialogs.h"
+#include "tinyfiledialogs/tinyfiledialogs.h"
 #include "fft.h"
 
 static void glfw_error_callback(int error, const char *description)
@@ -29,7 +29,7 @@ std::string downlink_pipeline;
 std::string input_level;
 std::string input_file;
 std::string output_level = "products";
-std::string output_file;
+std::string output_file = "live_test";
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;
@@ -234,6 +234,24 @@ int main(int argc, char *argv[])
                             if (ImGui::Combo("##pipeline", &pipeline_id, names.c_str()))
                             {
                                 downlink_pipeline = pipelines[pipeline_id].name;
+                                std::memcpy(samplerate, std::to_string(pipelines[pipeline_id].default_samplerate).c_str(), std::to_string(pipelines[pipeline_id].default_samplerate).length());
+
+                                if (pipelines[pipeline_id].default_baseband_type == "f32")
+                                {
+                                    baseband_type_option = 0;
+                                }
+                                else if (pipelines[pipeline_id].default_baseband_type == "i8")
+                                {
+                                    baseband_type_option = 2;
+                                }
+                                else if (pipelines[pipeline_id].default_baseband_type == "i16")
+                                {
+                                    baseband_type_option = 1;
+                                }
+                                else if (pipelines[pipeline_id].default_baseband_type == "w8")
+                                {
+                                    baseband_type_option = 4;
+                                }
                             }
                             // ImGui::EndCombo();
                         }
@@ -269,13 +287,23 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Input"))
                             {
                                 logger->debug("Opening file dialog");
-                                auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+                                /* auto result = pfd::open_file("Open input file", ".", {".*"}, false);
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    input_file = result.result()[0];
+                                    input_file = result.result()[0];*/
+                                char const *result = tinyfd_openFileDialog("Open input file", // NULL or ""
+                                                                           NULL,               // NULL or ""
+                                                                           0,                 // 0 (2 in the following example)
+                                                                           NULL,              // NULL or char const * lFilterPatterns[2]={"*.png","*.jpg"};
+                                                                           "",                // NULL or "image files"
+                                                                           0);                // 0
+                                                                                              // in case of multiple files, the separator is |
+                                                                                              // returns NULL on cancel
+                                if (result != NULL)
+                                    input_file = result;
                                 logger->debug("Dir " + input_file);
                             }
 
@@ -292,13 +320,19 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                auto result = pfd::select_folder("Open output directory", ".");
+                                /*auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();
+                                    output_file = result.result();*/
+                                char const *result = tinyfd_selectFolderDialog(
+                                    "Open output directory", // NULL or ""
+                                    NULL);                    // NULL or ""
+                                // returns NULL on cancel
+                                if (result != NULL)
+                                    output_file = result;
                                 logger->debug("Dir " + output_file);
                             }
 
@@ -415,13 +449,13 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                auto result = pfd::select_folder("Open output directory", ".");
+                                /*auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();
+                                    output_file = result.result();*/
                                 logger->debug("Dir " + output_file);
                             }
 

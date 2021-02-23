@@ -5,6 +5,7 @@
 #include "virr_deframer.h"
 #include "virr_reader.h"
 #include "xfr.h"
+#include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
 
@@ -21,7 +22,7 @@ namespace fengyun
 
         void FengyunVIRRDecoderModule::process()
         {
-            size_t filesize = getFilesize(d_input_file);
+            filesize = getFilesize(d_input_file);
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/VIRR";
@@ -67,10 +68,12 @@ namespace fengyun
                     }
                 }
 
+                progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
@@ -224,6 +227,15 @@ namespace fengyun
                 image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
             }
             WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
+        }
+
+        void FengyunVIRRDecoderModule::drawUI()
+        {
+            ImGui::Begin("FengYun VIRR Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string FengyunVIRRDecoderModule::getID()
