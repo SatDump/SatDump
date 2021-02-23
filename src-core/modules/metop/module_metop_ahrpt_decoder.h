@@ -6,6 +6,8 @@
 #include "modules/common/sathelper/reedsolomon.h"
 #include "viterbi.h"
 #include <fstream>
+#include "modules/buffer.h"
+#include <thread>
 
 namespace metop
 {
@@ -18,9 +20,15 @@ namespace metop
 
         int sw;
 
-        uint8_t *viterbi_out;
-        std::complex<float> *sym_buffer;
+        uint8_t *viterbi_out, *viterbi_out1;
+        std::complex<float> *sym_buffer, *sym_buffer1;
         int8_t *soft_buffer;
+
+        std::shared_ptr<RingBuffer<std::complex<float>>> file_pipe;
+        std::shared_ptr<RingBuffer<uint8_t>> viterbi_pipe;
+
+        std::thread viterbiThread;
+        std::thread deframerThread;
 
         // Work buffers
         uint8_t rsWorkBuffer[255];
@@ -36,11 +44,16 @@ namespace metop
 
         int errors[4];
 
+        bool viterbiShouldRun, deframerShouldRun;
+        void viterbiThreadFunc();
+        void deframerThreadFunc();
+
         // UI Stuff
         float ber_history[200];
 
     public:
         MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~MetOpAHRPTDecoderModule();
         void process();
         void drawUI();
 

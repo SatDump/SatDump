@@ -17,8 +17,22 @@ namespace metop
                                                                                                                                                             viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
+        viterbi_out1 = new uint8_t[BUFFER_SIZE];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
+        sym_buffer1 = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
+
+        file_pipe = std::make_shared<RingBuffer<std::complex<float>>>(BUFFER_SIZE);
+        viterbi_pipe = std::make_shared<RingBuffer<uint8_t>>(BUFFER_SIZE);
+    }
+
+    MetOpAHRPTDecoderModule::~MetOpAHRPTDecoderModule()
+    {
+        delete[] viterbi_out;
+        delete[] viterbi_out1;
+        delete[] sym_buffer;
+        delete[] sym_buffer1;
+        delete[] soft_buffer;
     }
 
     void MetOpAHRPTDecoderModule::process()
@@ -30,6 +44,11 @@ namespace metop
 
         logger->info("Using input symbols " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".cadu");
+
+        deframerShouldRun = viterbiShouldRun = true;
+
+        deframerThread = std::thread(&MetOpAHRPTDecoderModule::deframerThreadFunc, this);
+        viterbiThread = std::thread(&MetOpAHRPTDecoderModule::viterbiThreadFunc, this);
 
         time_t lastTime = 0;
 
@@ -52,14 +71,61 @@ namespace metop
                 data_in.read((char *)sym_buffer, sizeof(std::complex<float>) * BUFFER_SIZE);
             }
 
-            // Push into Viterbi
-            int num_samp = viterbi.work(sym_buffer, BUFFER_SIZE, viterbi_out);
+            file_pipe->write(sym_buffer, BUFFER_SIZE);
 
+            progress = data_in.tellg();
+
+            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+            {
+                lastTime = time(NULL);
+                std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
+                std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
+            }
+        }
+
+        deframerShouldRun = viterbiShouldRun = false;
+
+        file_pipe->stopWriter();
+        file_pipe->stopReader();
+
+        if (viterbiThread.joinable())
+            viterbiThread.join();
+
+        viterbi_pipe->stopWriter();
+        viterbi_pipe->stopReader();
+
+        if (deframerThread.joinable())
+            deframerThread.join();
+
+        data_in.close();
+    }
+
+    void MetOpAHRPTDecoderModule::viterbiThreadFunc()
+    {
+        while (viterbiShouldRun)
+        {
+            file_pipe->read(sym_buffer1, BUFFER_SIZE);
+
+            // Push into Viterbi
+            int num_samp = viterbi.work(sym_buffer1, BUFFER_SIZE, viterbi_out);
+
+            viterbi_pipe->write(viterbi_out, num_samp);
+        }
+
+        data_out.close();
+    }
+
+    void MetOpAHRPTDecoderModule::deframerThreadFunc()
+    {
+        while (deframerShouldRun)
+        {
+            int num_samp = viterbi_pipe->read(viterbi_out1, BUFFER_SIZE);
             // Reconstruct into bytes and write to output file
             if (num_samp > 0)
             {
                 // Deframe / derand
-                std::vector<std::array<uint8_t, CADU_SIZE>> frames = deframer.work(viterbi_out, num_samp);
+                std::vector<std::array<uint8_t, CADU_SIZE>> frames = deframer.work(viterbi_out1, num_samp);
 
                 if (frames.size() > 0)
                 {
@@ -79,20 +145,9 @@ namespace metop
                     }
                 }
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
-                std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
-            }
         }
 
         data_out.close();
-        data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
