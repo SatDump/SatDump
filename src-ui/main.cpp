@@ -33,7 +33,7 @@ std::string output_file;
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;
-int input_level_id = -1;
+int input_level_id = 0;
 
 int baseband_type_option = 2;
 
@@ -45,10 +45,14 @@ bool dc_block;
 
 bool livedemod = false;
 
+char error_message[100];
+
 std::thread demodThread;
 
 int main(int argc, char *argv[])
 {
+    std::fill(error_message, &error_message[0], 0);
+
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
 
@@ -253,6 +257,8 @@ int main(int argc, char *argv[])
                                     baseband_type_option = 4;
                                 }
                                 baseband_format = pipelines[pipeline_id].default_baseband_type;
+
+                                input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
                             }
                             // ImGui::EndCombo();
                         }
@@ -394,15 +400,39 @@ int main(int argc, char *argv[])
                             {
                                 logger->debug("Starting...");
 
-                                parameters.emplace("samplerate", std::string(samplerate));
+                                if (input_file == "")
+                                {
+                                    sprintf(error_message, "Please select an input file!");
+                                }
+                                else if (output_file == "")
+                                {
+                                    sprintf(error_message, "Please select an output file!");
+                                }
+                                else if (downlink_pipeline == "")
+                                {
+                                    sprintf(error_message, "Please select a pipeline!");
+                                }
+                                else if (input_level == "")
+                                {
+                                    sprintf(error_message, "Please select an input level!");
+                                }
+                                else
+                                {
 
-                                parameters.emplace("baseband_format", baseband_format);
+                                    parameters.emplace("samplerate", std::string(samplerate));
 
-                                parameters.emplace("dc_block", dc_block ? "1" : "0");
+                                    parameters.emplace("baseband_format", baseband_format);
 
-                                processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
-                                //showStartup = false;
+                                    parameters.emplace("dc_block", dc_block ? "1" : "0");
+
+                                    processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
+                                    //showStartup = false;
+                                }
                             }
+
+                            ImGui::SameLine();
+
+                            ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
                         }
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
