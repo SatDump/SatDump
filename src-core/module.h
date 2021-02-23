@@ -35,7 +35,7 @@ public:
     void setInputType(ModuleDataType type);
     void setOutputType(ModuleDataType type);
     virtual void process() = 0;
-    virtual void drawUI();
+    virtual void drawUI() = 0;
     std::vector<std::string> getOutputs();
 
 public:

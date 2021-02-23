@@ -5,6 +5,7 @@
 #include "modules/common/ccsds/ccsds_1_0_proba/vcdu.h"
 #include "logger.h"
 #include <filesystem>
+#include "imgui/imgui.h"
 
 #define WRITE_IMAGE_LOCAL(image, path)         \
     image.save_png(std::string(path).c_str()); \
@@ -23,7 +24,7 @@ namespace proba
 
         void ProbaSWAPDecoderModule::process()
         {
-            size_t filesize = getFilesize(d_input_file);
+            filesize = getFilesize(d_input_file);
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SWAP";
@@ -71,10 +72,12 @@ namespace proba
                     }
                 }
 
+                progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
@@ -83,6 +86,15 @@ namespace proba
             swap_reader.save();
 
             d_output_files = swap_reader.all_images;
+        }
+
+        void ProbaSWAPDecoderModule::drawUI()
+        {
+            ImGui::Begin("Proba-2 SWAP Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string ProbaSWAPDecoderModule::getID()

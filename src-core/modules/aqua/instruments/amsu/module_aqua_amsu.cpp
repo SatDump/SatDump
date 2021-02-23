@@ -6,6 +6,7 @@
 #include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
+#include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
 
@@ -155,6 +156,15 @@ namespace aqua
                 imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
+        }
+
+        void AquaAMSUDecoderModule::drawUI()
+        {
+            ImGui::Begin("Aqua AMSU Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string AquaAMSUDecoderModule::getID()

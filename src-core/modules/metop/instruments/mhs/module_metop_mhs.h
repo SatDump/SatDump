@@ -9,10 +9,13 @@ namespace metop
         class MetOpMHSDecoderModule : public ProcessingModule
         {
         protected:
-        
+            std::atomic<size_t> filesize;
+            std::atomic<size_t> progress;
+
         public:
             MetOpMHSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
+            void drawUI();
 
         public:
             static std::string getID();

@@ -1,11 +1,6 @@
 #pragma once
 
 #include "module.h"
-#include <complex>
-#include <dsp/agc.h>
-#include <dsp/fir_filter.h>
-#include <dsp/costas_loop.h>
-#include <dsp/clock_recovery_mm.h>
 
 namespace meteor
 {
@@ -14,10 +9,13 @@ namespace meteor
         class METEORMSUMRLRPTDecoderModule : public ProcessingModule
         {
         protected:
-        
+            std::atomic<size_t> filesize;
+            std::atomic<size_t> progress;
+
         public:
             METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
+            void drawUI();
 
         public:
             static std::string getID();

@@ -5,6 +5,7 @@
 #include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
+#include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
 
@@ -21,7 +22,7 @@ namespace aqua
 
         void AquaCERESDecoderModule::process()
         {
-            size_t filesize = getFilesize(d_input_file);
+            filesize = getFilesize(d_input_file);
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CERES";
@@ -93,10 +94,12 @@ namespace aqua
                     }
                 }
 
+                progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)data_in.tellg() / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
@@ -173,6 +176,15 @@ namespace aqua
                 imageAll2.draw_image(image_shortwave2.width() + image_longwave2.width(), 0, 0, 0, image_total2);
             }
             WRITE_IMAGE(imageAll2, directory + "/CERES2-ALL.png");
+        }
+
+        void AquaCERESDecoderModule::drawUI()
+        {
+            ImGui::Begin("Aqua CERES Decoder", NULL, NOWINDOW_FLAGS);
+
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+
+            ImGui::End();
         }
 
         std::string AquaCERESDecoderModule::getID()
