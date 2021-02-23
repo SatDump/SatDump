@@ -29,7 +29,7 @@ std::string downlink_pipeline;
 std::string input_level;
 std::string input_file;
 std::string output_level = "products";
-std::string output_file = "live_test";
+std::string output_file;
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;
@@ -252,6 +252,7 @@ int main(int argc, char *argv[])
                                 {
                                     baseband_type_option = 4;
                                 }
+                                baseband_format = pipelines[pipeline_id].default_baseband_type;
                             }
                             // ImGui::EndCombo();
                         }
@@ -295,7 +296,7 @@ int main(int argc, char *argv[])
                                 if (result.result().size() > 0)
                                     input_file = result.result()[0];*/
                                 char const *result = tinyfd_openFileDialog("Open input file", // NULL or ""
-                                                                           NULL,               // NULL or ""
+                                                                           NULL,              // NULL or ""
                                                                            0,                 // 0 (2 in the following example)
                                                                            NULL,              // NULL or char const * lFilterPatterns[2]={"*.png","*.jpg"};
                                                                            "",                // NULL or "image files"
@@ -329,7 +330,7 @@ int main(int argc, char *argv[])
                                     output_file = result.result();*/
                                 char const *result = tinyfd_selectFolderDialog(
                                     "Open output directory", // NULL or ""
-                                    NULL);                    // NULL or ""
+                                    NULL);                   // NULL or ""
                                 // returns NULL on cancel
                                 if (result != NULL)
                                     output_file = result;
