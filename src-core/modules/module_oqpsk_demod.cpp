@@ -18,7 +18,8 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_gain_omega(std::stof(parameters["clock_gain_omega"])),
                                                                                                                                           d_clock_mu(std::stof(parameters["clock_mu"])),
                                                                                                                                           d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
-                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"]))
+                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
+                                                                                                                                          d_const_scale(std::stof(parameters["constellation_scale"]))
 {
     if (parameters["baseband_format"] == "i16")
     {
@@ -128,8 +129,8 @@ void OQPSKDemodModule::process()
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec_buffer2[i].imag() * 50);
-            sym_buffer[i * 2 + 1] = clamp(rec_buffer2[i].real() * 50);
+            sym_buffer[i * 2] = clamp(rec_buffer2[i].imag() * d_const_scale);
+            sym_buffer[i * 2 + 1] = clamp(rec_buffer2[i].real() * d_const_scale);
         }
 
         data_out.write((char *)sym_buffer, dat_size * 2);
@@ -359,7 +360,7 @@ std::string OQPSKDemodModule::getID()
 
 std::vector<std::string> OQPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "constellation_scale", "baseband_format"};
 }
 
 std::shared_ptr<ProcessingModule> OQPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

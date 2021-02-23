@@ -65,6 +65,7 @@
                     "clock_gain_mu": "0.001",
                     "clock_omega_relative_limit": "0.005",
                     "dc_block": "0",
+                    "constellation_scale": "50",
                     "buffer_size": "8192"
                 }
             },
@@ -266,6 +267,7 @@
                     "clock_gain_mu": "0.037",
                     "clock_omega_relative_limit": "0.0001",
                     "dc_block": "1",
+                    "constellation_scale": "100",
                     "buffer_size": "8192"
                 }
             },

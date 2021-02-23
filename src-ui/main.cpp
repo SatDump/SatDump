@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
     registerModules();
 
-    loadPipelines("../pipelines.json");
+    loadPipelines("pipelines.json");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    style::setDarkStyle("..");
+    style::setDarkStyle(".");
 
     if (processing)
         processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });

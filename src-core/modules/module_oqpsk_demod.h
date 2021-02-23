@@ -30,6 +30,7 @@ protected:
     const float d_loop_bw;
     const int d_buffer_size;
     const bool d_dc_block;
+    const float d_const_scale;
 
     const float d_clock_gain_omega;
     const float d_clock_mu;
