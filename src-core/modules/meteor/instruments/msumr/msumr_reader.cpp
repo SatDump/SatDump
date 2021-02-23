@@ -11,6 +11,12 @@ namespace meteor
             lines = 0;
         }
 
+        MSUMRReader::~MSUMRReader()
+        {
+            for (int i = 0; i < 6; i++)
+                delete[] channels[i];
+        }
+
         void MSUMRReader::work(uint8_t *buffer)
         {
             // Convert into 10-bits values

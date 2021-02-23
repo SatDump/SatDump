@@ -12,6 +12,12 @@ namespace aqua
             lines = 0;
         }
 
+        CERESReader::~CERESReader()
+        {
+            for (int i = 0; i < 3; i++)
+                delete[] channels[i];
+        }
+
         void CERESReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // Filter out bad packets

@@ -17,6 +17,7 @@ namespace noaa
 
         public:
             AVHRRReader();
+            ~AVHRRReader();
             int lines;
             void work(uint16_t *buffer);
             cimg_library::CImg<unsigned short> getChannel(int channel);

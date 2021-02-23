@@ -12,6 +12,11 @@ namespace metop
             lines = 0;
         }
 
+        IASIIMGReader::~IASIIMGReader()
+        {
+            delete[] ir_channel;
+        }
+
         void IASIIMGReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 6196)

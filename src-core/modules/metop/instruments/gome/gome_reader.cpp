@@ -15,6 +15,14 @@ namespace metop
             lines = 0;
         }
 
+        GOMEReader::~GOMEReader()
+        {
+            for (int i = 0; i < 6144; i++)
+            {
+                delete[] channels[i];
+            }
+        }
+
         std::vector<uint16_t> repackBitsIASI(uint8_t *in, int dst_bits, int skip, int lengthToConvert)
         {
             std::vector<uint16_t> result;

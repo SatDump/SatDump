@@ -13,6 +13,12 @@ namespace jpss
             inScan = false;
         }
 
+        ATMSReader::~ATMSReader()
+        {
+            for (int i = 0; i < 22; i++)
+                delete[] channels[i];
+        }
+
         void ATMSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // Filter out bad packets

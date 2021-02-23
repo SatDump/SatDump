@@ -18,6 +18,7 @@ namespace fengyun
 
         public:
             VIRRReader();
+            ~VIRRReader();
             int lines;
             void work(std::vector<uint8_t> &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);

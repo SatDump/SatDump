@@ -12,6 +12,12 @@ namespace metop
             lines = 0;
         }
 
+        AVHRRReader::~AVHRRReader()
+        {
+            for (int i = 0; i < 5; i++)
+                delete[] channels[i];
+        }
+
         void AVHRRReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 12960)

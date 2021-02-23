@@ -23,6 +23,13 @@ namespace npp
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
     }
 
+    NPPHRDDecoderModule::~NPPHRDDecoderModule()
+    {
+        delete[] viterbi_out;
+        delete[] sym_buffer;
+        delete[] soft_buffer;
+    }
+
     void NPPHRDDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);

@@ -24,6 +24,11 @@ namespace jpss
             lines = 0;
         }
 
+        VIIRSReader::VIIRSReader(Channel &ch)
+        {
+            delete[] imageBuffer;
+        }
+
         void VIIRSReader::feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.header.apid != channelSettings.apid)

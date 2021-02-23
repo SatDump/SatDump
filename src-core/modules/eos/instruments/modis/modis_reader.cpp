@@ -23,6 +23,16 @@ namespace eos
             night_count = 0;
         }
 
+        MODISReader::~MODISReader()
+        {
+            for (int i = 0; i < 31; i++)
+                delete[] channels1000m[i];
+            for (int i = 0; i < 5; i++)
+                delete[] channels500m[i];
+            for (int i = 0; i < 2; i++)
+                delete[] channels250m[i];
+        }
+
         std::vector<uint16_t> bytesTo12bits(std::vector<uint8_t> &in, int offset, int skip, int lengthToConvert)
         {
             std::vector<uint16_t> result;

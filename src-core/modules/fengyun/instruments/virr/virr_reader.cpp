@@ -12,6 +12,12 @@ namespace fengyun
             lines = 0;
         }
 
+        VIRRReader::~VIRRReader()
+        {
+            for (int i = 0; i < 10; i++)
+                delete[] channels[i];
+        }
+
         void VIRRReader::work(std::vector<uint8_t> &packet)
         {
             if (packet.size() < 12960)

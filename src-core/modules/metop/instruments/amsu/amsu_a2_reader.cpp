@@ -11,6 +11,12 @@ namespace metop
             lines = 0;
         }
 
+        AMSUA2Reader::~AMSUA2Reader()
+        {
+            for (int i = 0; i < 2; i++)
+                delete[] channels[i];
+        }
+
         void AMSUA2Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1136)

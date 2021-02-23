@@ -11,6 +11,12 @@ namespace aqua
             lines = 0;
         }
 
+        AMSUA1Reader::~AMSUA1Reader()
+        {
+            for (int i = 0; i < 13; i++)
+                delete[] channels[i];
+        }
+
         void AMSUA1Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             // First part of the scan

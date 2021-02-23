@@ -11,6 +11,12 @@ namespace metop
             lines = 0;
         }
 
+        MHSReader::~MHSReader()
+        {
+            for (int i = 0; i < 5; i++)
+                delete[] channels[i];
+        }
+
         void MHSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1302)

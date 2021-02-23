@@ -53,6 +53,7 @@ namespace eos
 
         public:
             MODISReader();
+            ~MODISReader();
             int day_count, night_count, lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getImage250m(int channel);

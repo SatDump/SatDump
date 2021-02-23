@@ -18,6 +18,18 @@ namespace aqua
             lines = 0;
         }
 
+        AIRSReader::~AIRSReader()
+        {
+            for (int i = 0; i < 2666; i++)
+            {
+                delete[] channels[i];
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                delete[] hd_channels[i];
+            }
+        }
+
         void AIRSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 4280)

@@ -10,6 +10,12 @@ namespace noaa
                 channels[i] = new unsigned short[10000 * 2048];
         }
 
+        AVHRRReader::~AVHRRReader()
+        {
+            for (int i = 0; i < 5; i++)
+                delete[] channels[i];
+        }
+
         void AVHRRReader::work(uint16_t *buffer)
         {
             int pos = 750; // AVHRR Data

@@ -21,6 +21,15 @@ namespace meteor
                 }
             }
 
+            MSUMRReader::~MSUMRReader()
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    delete[] channels[i];
+                    delete[] segments[i];
+                }
+            }
+
             void MSUMRReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
             {
                 //if (packet.payload.size() - 1 != packet.header.packet_length)
@@ -63,7 +72,7 @@ namespace meteor
 
                 uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43 * 14) + mcuNumber / 14;
 
-                if(id >= 200000)
+                if (id >= 200000)
                     return;
 
                 if (lastSeg[currentChannel] < id)

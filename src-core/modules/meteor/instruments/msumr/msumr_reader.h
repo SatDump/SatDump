@@ -18,6 +18,7 @@ namespace meteor
 
         public:
             MSUMRReader();
+            ~MSUMRReader();
             int lines;
             void work(uint8_t *buffer);
             cimg_library::CImg<unsigned short> getChannel(int channel);

@@ -32,6 +32,19 @@ namespace fengyun
         diff_out = new uint8_t[BUFFER_SIZE];
     }
 
+    FengyunAHRPTDecoderModule::~FengyunAHRPTDecoderModule()
+    {
+        delete[] viterbi_out;
+        delete[] sym_buffer;
+        delete[] soft_buffer;
+        delete[] viterbi1_out;
+        delete[] viterbi2_out;
+        delete[] iSamples;
+        delete[] qSamples;
+        delete[] diff_in;
+        delete[] diff_out;
+    }
+
     void FengyunAHRPTDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);

@@ -17,6 +17,7 @@ namespace aqua
 
         public:
             CERESReader();
+            ~CERESReader();
             int lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getImage(int channel);

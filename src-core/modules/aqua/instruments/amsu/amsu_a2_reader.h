@@ -18,6 +18,7 @@ namespace aqua
 
         public:
             AMSUA2Reader();
+            ~AMSUA2Reader();
             int lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);

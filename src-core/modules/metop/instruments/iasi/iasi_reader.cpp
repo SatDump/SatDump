@@ -14,6 +14,14 @@ namespace metop
             lines = 0;
         }
 
+        IASIReader::~IASIReader()
+        {
+            for (int i = 0; i < 8461; i++)
+            {
+                delete[] channels[i];
+            }
+        }
+
         struct unsigned_int16
         {
             operator unsigned short(void) const

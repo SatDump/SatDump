@@ -26,6 +26,7 @@ namespace jpss
             std::vector<Segment> segments;
             Channel channelSettings;
             VIIRSReader(Channel &ch);
+            ~VIIRSReader();
             void feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             void process();
             void differentialDecode(VIIRSReader &channelSource, int deci);
