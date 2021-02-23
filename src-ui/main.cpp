@@ -33,7 +33,7 @@ std::string output_file;
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;
-int input_level_id = 0;
+int input_level_id = -1;
 
 int baseband_type_option = 2;
 
@@ -258,6 +258,7 @@ int main(int argc, char *argv[])
                                 }
                                 baseband_format = pipelines[pipeline_id].default_baseband_type;
 
+                                input_level_id = 0;
                                 input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
                             }
                             // ImGui::EndCombo();
@@ -487,6 +488,12 @@ int main(int argc, char *argv[])
 
                                 if (result.result().size() > 0)
                                     output_file = result.result();*/
+                                char const *result = tinyfd_selectFolderDialog(
+                                    "Open output directory", // NULL or ""
+                                    NULL);                   // NULL or ""
+                                // returns NULL on cancel
+                                if (result != NULL)
+                                    output_file = result;
                                 logger->debug("Dir " + output_file);
                             }
 
@@ -533,75 +540,98 @@ int main(int argc, char *argv[])
                             {
                                 logger->debug("Starting livedemod...");
 
-                                if (!std::filesystem::exists(output_file))
-                                    std::filesystem::create_directory(output_file);
-
-                                logger->info(downlink_pipeline);
-
-                                std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                                                  pipelines.end(),
-                                                                                  [](const Pipeline &e) {
-                                                                                      return e.name == downlink_pipeline;
-                                                                                  });
-
-                                if (it != pipelines.end())
+                                if (output_file == "")
                                 {
-
-                                    parameters.emplace("samplerate", std::string(samplerate));
-
-                                    parameters.emplace("baseband_format", "f32");
-
-                                    parameters.emplace("dc_block", dc_block ? "1" : "0");
-
-                                    std::map<std::string, std::string> final_parameters = it->steps[1].modules[0].parameters;
-                                    for (const std::pair<std::string, std::string> &param : parameters)
-                                        if (final_parameters.count(param.first) > 0)
-                                            final_parameters[param.first] = param.second;
-                                        else
-                                            final_parameters.emplace(param.first, param.second);
-
-                                    logger->debug("Parameters :");
-                                    for (const std::pair<std::string, std::string> &param : final_parameters)
-                                        logger->debug("   - " + param.first + " : " + param.second);
-
-                                    demodModule = modules_registry[it->steps[1]
-                                                                       .modules[0]
-                                                                       .module_name]("", output_file + "/" + it->name, final_parameters);
-
-                                    demodModule->setInputType(DATA_STREAM);
-                                    demodModule->setOutputType(DATA_FILE);
-                                    demodModule->input_fifo = std::make_shared<satdump::Pipe>();
-                                    demodModule->input_active = true;
-
-                                    airspySource = std::make_shared<SDRSource>((float)frequency * 1e6, std::stoi(samplerate), demodModule->input_fifo);
-
-                                    demodThread = std::thread([&]() {
-                                        logger->info("Start processing...");
-                                        demodModule->process();
-                                    });
-
-                                    airspySource->stopFuction = [&]() {
-                                        logger->info("Stop live");
-                                        demodModule->input_active = false;
-                                        demodModule->input_fifo->~Pipe();
-                                        logger->info("Pipe OK");
-                                        if (demodThread.joinable())
-                                            demodThread.join();
-                                        logger->info("Stopped");
-                                        demodThread.~thread();
-                                        livedemod = false;
-                                        logger->info("Done");
-                                    };
-
-                                    airspySource->startSDR();
-
-                                    livedemod = true;
+                                    sprintf(error_message, "Please select an output file!");
+                                }
+                                else if (downlink_pipeline == "")
+                                {
+                                    sprintf(error_message, "Please select a pipeline!");
+                                }
+                                else if (frequency <= 0)
+                                {
+                                    sprintf(error_message, "Please select a frequency!");
+                                }
+                                else if (samplerate <= 0)
+                                {
+                                    sprintf(error_message, "Please select a samplerate!");
                                 }
                                 else
                                 {
-                                    logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+                                    if (!std::filesystem::exists(output_file))
+                                        std::filesystem::create_directory(output_file);
+
+                                    logger->info(downlink_pipeline);
+
+                                    std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                                                      pipelines.end(),
+                                                                                      [](const Pipeline &e) {
+                                                                                          return e.name == downlink_pipeline;
+                                                                                      });
+
+                                    if (it != pipelines.end())
+                                    {
+
+                                        parameters.emplace("samplerate", std::string(samplerate));
+
+                                        parameters.emplace("baseband_format", "f32");
+
+                                        parameters.emplace("dc_block", dc_block ? "1" : "0");
+
+                                        std::map<std::string, std::string> final_parameters = it->steps[1].modules[0].parameters;
+                                        for (const std::pair<std::string, std::string> &param : parameters)
+                                            if (final_parameters.count(param.first) > 0)
+                                                final_parameters[param.first] = param.second;
+                                            else
+                                                final_parameters.emplace(param.first, param.second);
+
+                                        logger->debug("Parameters :");
+                                        for (const std::pair<std::string, std::string> &param : final_parameters)
+                                            logger->debug("   - " + param.first + " : " + param.second);
+
+                                        demodModule = modules_registry[it->steps[1]
+                                                                           .modules[0]
+                                                                           .module_name]("", output_file + "/" + it->name, final_parameters);
+
+                                        demodModule->setInputType(DATA_STREAM);
+                                        demodModule->setOutputType(DATA_FILE);
+                                        demodModule->input_fifo = std::make_shared<satdump::Pipe>();
+                                        demodModule->input_active = true;
+
+                                        airspySource = std::make_shared<SDRSource>((float)frequency * 1e6, std::stoi(samplerate), demodModule->input_fifo);
+
+                                        demodThread = std::thread([&]() {
+                                            logger->info("Start processing...");
+                                            demodModule->process();
+                                        });
+
+                                        airspySource->stopFuction = [&]() {
+                                            logger->info("Stop live");
+                                            demodModule->input_active = false;
+                                            demodModule->input_fifo->~Pipe();
+                                            logger->info("Pipe OK");
+                                            if (demodThread.joinable())
+                                                demodThread.join();
+                                            logger->info("Stopped");
+                                            demodThread.~thread();
+                                            livedemod = false;
+                                            logger->info("Done");
+                                        };
+
+                                        airspySource->startSDR();
+
+                                        livedemod = true;
+                                    }
+                                    else
+                                    {
+                                        logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+                                    }
                                 }
                             }
+
+                            ImGui::SameLine();
+
+                            ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
                         }
                         ImGui::EndGroup();
 
