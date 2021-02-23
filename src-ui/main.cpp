@@ -14,6 +14,7 @@
 #include "imgui/imgui_flags.h"
 #include "tinyfiledialogs/tinyfiledialogs.h"
 #include "fft.h"
+#include "modules/common/ctpl/ctpl_stl.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -23,7 +24,7 @@ static void glfw_error_callback(int error, const char *description)
 std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;
 std::shared_ptr<std::mutex> uiCallListMutex;
 
-std::thread processThread;
+ctpl::thread_pool processThreadPool(4);
 
 std::string downlink_pipeline;
 std::string input_level;
@@ -46,8 +47,6 @@ bool dc_block;
 bool livedemod = false;
 
 char error_message[100];
-
-std::thread demodThread;
 
 int main(int argc, char *argv[])
 {
@@ -167,7 +166,7 @@ int main(int argc, char *argv[])
     style::setDarkStyle("..");
 
     if (processing)
-        processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
+        processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
     std::shared_ptr<SDRSource> airspySource;
     std::shared_ptr<ProcessingModule> demodModule;
@@ -254,7 +253,7 @@ int main(int argc, char *argv[])
                                 }
                                 else if (pipelines[pipeline_id].default_baseband_type == "w8")
                                 {
-                                    baseband_type_option = 4;
+                                    baseband_type_option = 3;
                                 }
                                 baseband_format = pipelines[pipeline_id].default_baseband_type;
 
@@ -426,7 +425,7 @@ int main(int argc, char *argv[])
 
                                     parameters.emplace("dc_block", dc_block ? "1" : "0");
 
-                                    processThread = std::thread(&process, downlink_pipeline, input_level, input_file, output_level, output_file, parameters);
+                                    processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
                                     //showStartup = false;
                                 }
                             }
@@ -600,20 +599,18 @@ int main(int argc, char *argv[])
 
                                         airspySource = std::make_shared<SDRSource>((float)frequency * 1e6, std::stoi(samplerate), demodModule->input_fifo);
 
-                                        demodThread = std::thread([&]() {
-                                            logger->info("Start processing...");
-                                            demodModule->process();
-                                        });
+                                        processThreadPool.push([&](int) { logger->info("Start processing...");
+                                            demodModule->process(); });
 
                                         airspySource->stopFuction = [&]() {
                                             logger->info("Stop live");
                                             demodModule->input_active = false;
                                             demodModule->input_fifo->~Pipe();
                                             logger->info("Pipe OK");
-                                            if (demodThread.joinable())
-                                                demodThread.join();
+                                            //if (demodThread.joinable())
+                                            //    demodThread.join();
                                             logger->info("Stopped");
-                                            demodThread.~thread();
+                                            //demodThread.~thread();
                                             livedemod = false;
                                             logger->info("Done");
                                         };
@@ -653,6 +650,7 @@ int main(int argc, char *argv[])
                         ImGui::BulletText("libfftw3");
                         ImGui::BulletText("libcorrect");
                         ImGui::BulletText("libairspy");
+                        ImGui::BulletText("tinyfiledialogs");
                         ImGui::BulletText("ImGui");
                         ImGui::EndGroup();
 
@@ -708,6 +706,9 @@ int main(int argc, char *argv[])
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    if (processThread.joinable())
-        processThread.join();
+    for (int i = 0; i < processThreadPool.size(); i++)
+    {
+        if (processThreadPool.get_thread(i).joinable())
+            processThreadPool.get_thread(i).join();
+    }
 }
