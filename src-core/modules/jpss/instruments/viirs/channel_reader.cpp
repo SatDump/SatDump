@@ -24,7 +24,7 @@ namespace jpss
             lines = 0;
         }
 
-        VIIRSReader::VIIRSReader(Channel &ch)
+        VIIRSReader::~VIIRSReader()
         {
             delete[] imageBuffer;
         }
