@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <string.h>
 
-#define RING_BUF_SZ 100000000
+#define RING_BUF_SZ 1000000
 
 //namespace dsp
 //{
