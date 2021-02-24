@@ -1,6 +1,5 @@
 #include "modis_reader.h"
 
-#include <iostream>
 #include <map>
 
 #define DAY_GROUP 0b000
@@ -169,9 +168,11 @@ namespace eos
             if (header.type_flag == 1 || header.earth_frame_data_count > 1354 || header.mirror_side > 1)
                 return;
 
-            int position = header.earth_frame_data_count;
+            //std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
 
-            if (position == 0 && packet.header.sequence_flag == 1 && lastScanCount != header.scan_count)
+            int position = header.earth_frame_data_count - 1;
+
+            if (position == 0 && lastScanCount != header.scan_count)
             {
                 lines += 10;
             }
