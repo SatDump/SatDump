@@ -706,6 +706,8 @@ int main(int argc, char *argv[])
     glfwDestroyWindow(window);
     glfwTerminate();
 
+    processThreadPool.stop();
+
     for (int i = 0; i < processThreadPool.size(); i++)
     {
         if (processThreadPool.get_thread(i).joinable())
