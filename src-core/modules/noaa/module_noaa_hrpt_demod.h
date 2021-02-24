@@ -67,8 +67,6 @@ namespace noaa
 
         std::vector<uint8_t> getBytes(uint8_t *bits, int length);
 
-        void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points);
-
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 

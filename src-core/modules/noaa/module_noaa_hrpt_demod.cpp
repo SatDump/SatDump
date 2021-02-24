@@ -2,6 +2,7 @@
 #include <dsp/fir_gen.h>
 #include "logger.h"
 #include "imgui/imgui.h"
+#include <volk/volk.h>
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -129,7 +130,7 @@ namespace noaa
             if (dat_size <= 0)
                 continue;
 
-            volk_32f_binary_slicer_8i_generic((int8_t *)bits_buffer, rec_buffer2, dat_size);
+            volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec_buffer2, dat_size);
 
             std::vector<uint16_t> frames = def->work(bits_buffer, dat_size);
 
@@ -356,8 +357,8 @@ namespace noaa
 
             for (int i = 0; i < 2048; i++)
             {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 50) % 200,
-                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 6) % 200),
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 90) % 200,
+                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 15) % 200),
                                            2,
                                            ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
             }
@@ -417,24 +418,5 @@ namespace noaa
         }
 
         return bytesToRet;
-    }
-
-    void NOAAHRPTDemodModule::volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, unsigned int num_points)
-    {
-        int8_t *cPtr = cVector;
-        const float *aPtr = aVector;
-        unsigned int number = 0;
-
-        for (number = 0; number < num_points; number++)
-        {
-            if (*aPtr++ >= 0)
-            {
-                *cPtr++ = 1;
-            }
-            else
-            {
-                *cPtr++ = 0;
-            }
-        }
     }
 } // namespace noaa

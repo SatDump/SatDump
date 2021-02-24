@@ -20,13 +20,12 @@ namespace jpss
             channelSettings = ch;
             foundData = false;
             currentSegment = 0;
-            imageBuffer = new unsigned short[80000 * channelSettings.totalWidth];
+            imageBuffer = std::shared_ptr<unsigned short[]>(new unsigned short[80000 * channelSettings.totalWidth]);
             lines = 0;
         }
 
         VIIRSReader::~VIIRSReader()
         {
-            delete[] imageBuffer;
         }
 
         void VIIRSReader::feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
@@ -201,7 +200,7 @@ namespace jpss
                 }
             }
 
-            cimg_library::CImg<unsigned short> image = cimg_library::CImg<unsigned short>(imageBuffer, channelSettings.totalWidth, lines);
+            cimg_library::CImg<unsigned short> image = cimg_library::CImg<unsigned short>(imageBuffer.get(), channelSettings.totalWidth, lines);
 
             if (channelSettings.invert)
                 for (int i = 0; i < image.height() * image.width(); i++)

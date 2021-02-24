@@ -7,6 +7,7 @@
 #define cimg_use_png
 #define cimg_display 0
 #include "CImg.h"
+#include <memory>
 
 namespace jpss
 {
@@ -19,7 +20,7 @@ namespace jpss
             bool foundData;
             uint16_t endSequenceCount;
             int currentSegment;
-            unsigned short *imageBuffer;
+            std::shared_ptr<unsigned short[]> imageBuffer;
             int lines;
 
         public:

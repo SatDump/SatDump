@@ -7,6 +7,8 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      modules/common/aec/*.c
 )
 
+find_package(PkgConfig)
+
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
 
@@ -30,6 +32,11 @@ target_link_libraries(satdump_core PUBLIC ${JPEG_LIBRARY})
 find_package(fmt REQUIRED)
 target_include_directories(satdump_core PUBLIC ${fmt_INCLUDE_DIRS})
 target_link_libraries(satdump_core PUBLIC fmt::fmt)
+
+# FMT
+pkg_check_modules(VOLK REQUIRED volk)
+target_include_directories(satdump_core PUBLIC ${volk_INCLUDE_DIRS})
+target_link_libraries(satdump_core PUBLIC volk)
 
 # LibPNG
 if(WIN32 AND NOT MINGW)
