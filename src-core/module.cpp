@@ -53,6 +53,7 @@ std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::strin
 #include "modules/aqua/instruments/ceres/module_aqua_ceres.h"
 
 #include "modules/eos/instruments/modis/module_eos_modis.h"
+#include "modules/eos/instruments/modis/module_eos_modis_extractor.h"
 
 #include "modules/noaa/module_noaa_hrpt_demod.h"
 #include "modules/noaa/module_noaa_dsb_demod.h"
@@ -107,6 +108,7 @@ void registerModules()
     modules_registry.emplace(aqua::ceres::AquaCERESDecoderModule::getID(), aqua::ceres::AquaCERESDecoderModule::getInstance);
 
     modules_registry.emplace(eos::modis::EOSMODISDecoderModule::getID(), eos::modis::EOSMODISDecoderModule::getInstance);
+    modules_registry.emplace(eos::modis::EOSMODISExtractorModule::getID(), eos::modis::EOSMODISExtractorModule::getInstance);
 
     modules_registry.emplace(noaa::NOAAHRPTDemodModule::getID(), noaa::NOAAHRPTDemodModule::getInstance);
     modules_registry.emplace(noaa::NOAADSBDemodModule::getID(), noaa::NOAADSBDemodModule::getInstance);

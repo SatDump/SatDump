@@ -275,6 +275,9 @@
                 "aqua_db_decoder": {}
             },
             "products": {
+                "eos_modis_extractor": {
+                    "terra_mode": "0"
+                },
                 "eos_modis": {
                     "terra_mode": "0"
                 },
@@ -302,6 +305,9 @@
                 "terra_db_decoder": {}
             },
             "products": {
+                "eos_modis_extractor": {
+                    "terra_mode": "1"
+                },
                 "eos_modis": {
                     "terra_mode": "1"
                 }
