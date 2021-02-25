@@ -30,7 +30,7 @@ std::string downlink_pipeline;
 std::string input_level;
 std::string input_file;
 std::string output_level = "products";
-std::string output_file;
+std::string output_file = "livetest";
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;

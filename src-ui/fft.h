@@ -19,6 +19,7 @@ private:
 
     int d_samplerate;
     int d_frequency;
+    char frequency[100];
 
     std::shared_ptr<satdump::Pipe> d_output_pipe;
     std::thread fft_thread;

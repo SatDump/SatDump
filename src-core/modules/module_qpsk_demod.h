@@ -10,6 +10,8 @@
 #include <thread>
 #include <fstream>
 #include <atomic>
+#include "dsp/stream.h"
+#include "dsp/filter.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
@@ -36,11 +38,11 @@ protected:
     int8_t *sym_buffer;
 
     // All FIFOs we use along the way
-    std::shared_ptr<RingBuffer<std::complex<float>>> in_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> agc_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> rrc_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> pll_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> rec_pipe;
+    dsp::stream<std::complex<float>> in_pipe;
+    dsp::stream<std::complex<float>> agc_pipe;
+    dsp::stream<std::complex<float>> rrc_pipe;
+    dsp::stream<std::complex<float>> pll_pipe;
+    dsp::stream<std::complex<float>> rec_pipe;
 
     std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 

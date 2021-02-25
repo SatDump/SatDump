@@ -31,6 +31,10 @@ void SDRSource::startSDR()
 
     logger->info("Opened Airspy device!");
 
+    std::fill(frequency, &frequency[100], 0);
+
+    std::memcpy(frequency, std::to_string(d_frequency / 1e6).c_str(), std::to_string(d_frequency / 1e6).length());
+
     airspy_set_sample_type(dev, AIRSPY_SAMPLE_FLOAT32_IQ);
     airspy_set_samplerate(dev, d_samplerate);
     airspy_set_freq(dev, d_frequency);
@@ -105,7 +109,20 @@ void SDRSource::drawUI()
 
     ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {ImGui::GetWindowWidth() - 3, ImGui::GetWindowHeight() - 64});
 
-    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 100);
+    ImGui::SetNextItemWidth(100);
+    ImGui::InputText("MHz", frequency, 100);
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Set"))
+    {
+        d_frequency = std::stoi(frequency) * 1e6;
+        airspy_set_freq(dev, d_frequency);
+    }
+
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 165);
     if (ImGui::SliderInt("Gain", &gain, 0, 22))
     {
         airspy_set_linearity_gain(dev, gain);
@@ -113,7 +130,7 @@ void SDRSource::drawUI()
 
     ImGui::SameLine();
 
-    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 100);
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0 - 165);
     ImGui::SliderFloat("Scale", &scale, 0, 22);
 
     ImGui::SameLine();
