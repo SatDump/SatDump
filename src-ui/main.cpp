@@ -551,7 +551,7 @@ int main(int argc, char *argv[])
                                 {
                                     sprintf(error_message, "Please select a frequency!");
                                 }
-                                else if (samplerate <= 0)
+                                else if (std::stoi(samplerate) <= 0)
                                 {
                                     sprintf(error_message, "Please select a samplerate!");
                                 }
