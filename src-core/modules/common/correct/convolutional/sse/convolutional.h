@@ -1,5 +1,5 @@
 #ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
+//#ifdef MEMORY_OP_X86
 #include "../convolutional.h"
 #include "lookup.h"
 // BIG HEAPING TODO sort out the include mess
@@ -15,5 +15,5 @@ struct correct_convolutional_sse {
     correct_convolutional base_conv;
     oct_lookup_t oct_lookup;
 };
-#endif
+//#endif
 #endif

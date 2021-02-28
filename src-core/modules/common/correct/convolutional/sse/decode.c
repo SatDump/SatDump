@@ -1,5 +1,5 @@
 #ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
+//#ifdef MEMORY_OP_X86
 #include "convolutional.h"
 
 static void convolutional_sse_decode_inner(correct_convolutional_sse *sse_conv, unsigned int sets,
@@ -319,5 +319,5 @@ ssize_t correct_convolutional_sse_decode_soft(correct_convolutional_sse *conv, c
 
     return _convolutional_sse_decode(conv, num_encoded_bits, num_encoded_bytes, msg, encoded);
 }
-#endif
+//#endif
 #endif

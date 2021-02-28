@@ -1,5 +1,5 @@
 #ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
+//#ifdef MEMORY_OP_X86
 #include "lookup.h"
 
 quad_lookup_t quad_lookup_create(unsigned int rate,
@@ -183,5 +183,5 @@ void oct_lookup_fill_distance_sse(oct_lookup_t octs, distance_t *distances) {
     }
 }
 */
-#endif
+//#endif
 #endif

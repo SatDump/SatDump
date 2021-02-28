@@ -1,5 +1,5 @@
 #ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
+//#ifdef MEMORY_OP_X86
 #include "../lookup.h"
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -65,5 +65,5 @@ static inline void oct_lookup_fill_distance(oct_lookup_t octs, distance_t *dista
         pairs[i*4 + 2] = distances[i_5] << 16 | distances[i_4];
     }
 }
-#endif
+//#endif
 #endif

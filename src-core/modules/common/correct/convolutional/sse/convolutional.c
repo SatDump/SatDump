@@ -1,5 +1,5 @@
 #ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
+//#ifdef MEMORY_OP_X86
 #include "convolutional.h"
 
 correct_convolutional_sse *correct_convolutional_sse_create(size_t rate,
@@ -21,5 +21,5 @@ void correct_convolutional_sse_destroy(correct_convolutional_sse *conv) {
     _correct_convolutional_teardown(&conv->base_conv);
     free(conv);
 }
-#endif
+//#endif
 #endif
