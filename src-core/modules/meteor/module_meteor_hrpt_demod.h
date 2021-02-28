@@ -27,21 +27,15 @@ namespace meteor
         const int d_samplerate;
         const int d_buffer_size;
 
-        std::complex<float> *in_buffer, *in_buffer2;
-        std::complex<float> *agc_buffer, *agc_buffer2;
-        std::complex<float> *rrc_buffer, *rrc_buffer2;
-        float *pll_buffer, *pll_buffer2;
-        float *mov_buffer, *mov_buffer2;
-        float *rec_buffer, *rec_buffer2;
         uint8_t *bits_buffer;
 
         // All FIFOs we use along the way
-        std::shared_ptr<RingBuffer<std::complex<float>>> in_pipe;
-        std::shared_ptr<RingBuffer<std::complex<float>>> agc_pipe;
-        std::shared_ptr<RingBuffer<std::complex<float>>> rrc_pipe;
-        std::shared_ptr<RingBuffer<float>> pll_pipe;
-        std::shared_ptr<RingBuffer<float>> mov_pipe;
-        std::shared_ptr<RingBuffer<float>> rec_pipe;
+       dsp::stream<std::complex<float>> in_pipe;
+       dsp::stream<std::complex<float>> agc_pipe;
+       dsp::stream<std::complex<float>> rrc_pipe;
+       dsp::stream<float> pll_pipe;
+       dsp::stream<float> mov_pipe;
+       dsp::stream<float> rec_pipe;
 
         std::atomic<bool> agcRun, rrcRun, pllRun, movRun, recRun;
 

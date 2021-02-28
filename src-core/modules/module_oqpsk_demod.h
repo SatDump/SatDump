@@ -37,19 +37,15 @@ protected:
     const float d_clock_gain_mu;
     const float d_clock_omega_relative_limit;
 
-    std::complex<float> *in_buffer, *in_buffer1, *in_buffer2;
-    std::complex<float> *agc_buffer, *agc_buffer2;
-    std::complex<float> *rrc_buffer, *rrc_buffer2;
-    std::complex<float> *pll_buffer, *pll_buffer1, *pll_buffer2;
-    std::complex<float> *rec_buffer, *rec_buffer2;
+    std::complex<float> *pll_buffer;
     int8_t *sym_buffer;
 
     // All FIFOs we use along the way
-    std::shared_ptr<RingBuffer<std::complex<float>>> in_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> agc_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> rrc_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> pll_pipe;
-    std::shared_ptr<RingBuffer<std::complex<float>>> rec_pipe;
+    dsp::stream<std::complex<float>> in_pipe;
+    dsp::stream<std::complex<float>> agc_pipe;
+    dsp::stream<std::complex<float>> rrc_pipe;
+    dsp::stream<std::complex<float>> pll_pipe;
+    dsp::stream<std::complex<float>> rec_pipe;
 
     std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 

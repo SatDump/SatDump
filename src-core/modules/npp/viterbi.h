@@ -1,79 +1,60 @@
 #pragma once
 
-#include <complex>
-
-#define TestBitsLen 1024
+#ifndef __MINGW32__
+#ifdef MEMORY_OP_X86
+#define TEST_BITS_LENGTH 1024
 
 extern "C"
 {
-#include "modules/common/viterbi_lib/viterbi.h"
+#include "modules/common/correct/correct.h"
+//#ifndef __MINGW32__
+//#ifdef MEMORY_OP_X86
+#include "modules/common/correct/correct-sse.h"
+//#endif
+//#endif
 }
+
+#include "modules/common/sathelper/packetfixer.h"
 
 namespace npp
 {
-    class HRDViterbi
+    class HRDViterbi2
     {
     private:
-        bool d_sync_check;
-        //float d_ber_threshold;
-        int d_insync_after;
-        int d_outsync_after;
-        int d_reset_after;
+        int d_buffer_size;
+        float d_ber_thresold;
+        int d_state;
+        bool d_first;
 
-        float ber_calc1(struct viterbi_state *state0, struct viterbi_state *state1, unsigned int symsnr, unsigned char *insymbols_I, unsigned char *insymbols_Q);
-        void phase_move_two(unsigned char phase_state, unsigned int symsnr, unsigned char *in_I, unsigned char *in_Q, unsigned char *out_I, unsigned char *out_Q);
+        correct_convolutional_sse *correct_viterbi_ber;
+        correct_convolutional *correct_viterbi;
+        
+        correct_convolutional *conv;
 
-        void do_reset();
-        void enter_idle();
-        void enter_synced();
+        float d_bers[2][4];
+        float d_ber;
 
-        int d_mettab[2][256]; //metric table for continuous decoder
+        uint8_t d_ber_test_soft_buffer[TEST_BITS_LENGTH];
+        uint8_t d_ber_decoded_buffer[TEST_BITS_LENGTH];
+        uint8_t d_ber_decoded_soft_buffer[TEST_BITS_LENGTH];
+        uint8_t d_ber_encoded_buffer[TEST_BITS_LENGTH];
+        float getBER(uint8_t *input);
 
-        struct viterbi_state d_state0[64]; //main viterbi decoder state 0 memory
-        struct viterbi_state d_state1[64]; //main viterbi decoder state 1 memory
+        sathelper::PhaseShift d_phase_shift;
+        bool d_iq_inv;
+        sathelper::PacketFixer phaseShifter;
 
-        unsigned char d_viterbi_in[4];
-        bool d_viterbi_enable;
-        unsigned int d_shift, d_shift_main_decoder;
-        unsigned int d_phase;
-        bool d_valid_ber_found;
-
-        unsigned char d_bits, d_sym_count;
-        bool d_even_symbol_last, d_curr_is_even, d_even_symbol;
-
-        struct viterbi_state d_00_st0[64];
-        struct viterbi_state d_00_st1[64];
-
-        struct viterbi_state d_180_st0[64];
-        struct viterbi_state d_180_st1[64];
-
-        float d_ber[4][8];
-        unsigned int d_chan_len;            //BER test input syms
-        unsigned char d_valid_packet_count; //count packets with valid BER
-        unsigned char d_invalid_packet_count;
-        unsigned char d_state;
-
-    private:
-        unsigned char *insymbols_interleaved_depunctured;
-        unsigned char *decoded_data; //viterbi decoded data buffer  [symsnr is many more as necessary]
-        unsigned char *encoded_data; //encoded data buffer
-
-        unsigned char *input_symbols_buffer_I;    //buffer for to char translated input symbols I
-        unsigned char *input_symbols_buffer_Q;    //buffer for to char translated input symbols Q
-        unsigned char *input_symbols_buffer_I_ph; //buffer for phase moved symbols I
-        unsigned char *input_symbols_buffer_Q_ph; //buffer for phase moved symbols Q
+        uint8_t *fixed_soft_packet;
+        uint8_t *output_buffer;
 
     public:
-        float d_ber_threshold;
-        bool switchInv;
+        HRDViterbi2(float ber_threshold, int buffer_size);
+        ~HRDViterbi2();
 
-        HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size);
-        ~HRDViterbi();
-
-        unsigned char &getState();
-
-        int work(std::complex<float> *in, size_t size, uint8_t *output);
-
+        int work(uint8_t *input, size_t size, uint8_t *output);
         float ber();
+        int getState();
     };
 } // namespace npp
+#endif
+#endif

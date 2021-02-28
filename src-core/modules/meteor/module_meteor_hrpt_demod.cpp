@@ -38,31 +38,11 @@ namespace meteor
         rec = std::make_shared<libdsp::ClockRecoveryMMFF>(((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
 
         // Buffers
-        in_buffer = new std::complex<float>[d_buffer_size];
-        in_buffer2 = new std::complex<float>[d_buffer_size];
-        agc_buffer = new std::complex<float>[d_buffer_size];
-        agc_buffer2 = new std::complex<float>[d_buffer_size];
-        rrc_buffer = new std::complex<float>[d_buffer_size];
-        rrc_buffer2 = new std::complex<float>[d_buffer_size];
-        pll_buffer = new float[d_buffer_size];
-        pll_buffer2 = new float[d_buffer_size];
-        mov_buffer = new float[d_buffer_size];
-        mov_buffer2 = new float[d_buffer_size];
-        rec_buffer = new float[d_buffer_size];
-        rec_buffer2 = new float[d_buffer_size];
         bits_buffer = new uint8_t[d_buffer_size * 10];
 
         buffer_i16 = new int16_t[d_buffer_size * 2];
         buffer_i8 = new int8_t[d_buffer_size * 2];
         buffer_u8 = new uint8_t[d_buffer_size * 2];
-
-        // Init FIFOs
-        in_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-        agc_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-        rrc_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-        pll_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
-        mov_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
-        rec_pipe = std::make_shared<RingBuffer<float>>(d_buffer_size);
     }
 
     std::vector<ModuleDataType> METEORHRPTDemodModule::getInputTypes()
@@ -77,26 +57,10 @@ namespace meteor
 
     METEORHRPTDemodModule::~METEORHRPTDemodModule()
     {
-        delete[] in_buffer;
-        delete[] in_buffer2;
-        delete[] agc_buffer;
-        delete[] agc_buffer2;
-        delete[] rrc_buffer;
-        delete[] rrc_buffer2;
-        delete[] pll_buffer;
-        delete[] pll_buffer2;
-        delete[] rec_buffer;
-        delete[] rec_buffer2;
-        delete[] mov_buffer;
-        delete[] mov_buffer2;
         delete[] bits_buffer;
         delete[] buffer_i16;
         delete[] buffer_i8;
         delete[] buffer_u8;
-        //delete[] rrc_pipe;
-        //delete[] agc_pipe;
-        //delete[] pll_pipe;
-        //delete[] rec_pipe;
     }
 
     void METEORHRPTDemodModule::process()
@@ -130,14 +94,16 @@ namespace meteor
         int dat_size = 0;
         while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
         {
-            dat_size = rec_pipe->read(rec_buffer2, d_buffer_size);
+            dat_size = rec_pipe.read(); //->read(rec_buffer2, d_buffer_size);
 
             if (dat_size <= 0)
                 continue;
 
-            volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec_buffer2, dat_size);
+            volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec_pipe.readBuf, dat_size);
 
             std::vector<uint8_t> bytes = getBytes(bits_buffer, dat_size);
+
+            rec_pipe.flush();
 
             data_out.write((char *)&bytes[0], bytes.size());
 
@@ -165,9 +131,9 @@ namespace meteor
             if (f32)
             {
                 if (input_data_type == DATA_FILE)
-                    data_in.read((char *)in_buffer, d_buffer_size * sizeof(std::complex<float>));
+                    data_in.read((char *)in_pipe.writeBuf, d_buffer_size * sizeof(std::complex<float>));
                 else
-                    gotten = input_fifo->pop((uint8_t *)in_buffer, d_buffer_size, sizeof(std::complex<float>));
+                    gotten = input_fifo->pop((uint8_t *)in_pipe.writeBuf, d_buffer_size, sizeof(std::complex<float>));
             }
             else if (i16)
             {
@@ -179,7 +145,7 @@ namespace meteor
                 for (int i = 0; i < d_buffer_size; i++)
                 {
                     using namespace std::complex_literals;
-                    in_buffer[i] = (float)buffer_i16[i * 2] + (float)buffer_i16[i * 2 + 1] * 1if;
+                    in_pipe.writeBuf[i] = (float)buffer_i16[i * 2] + (float)buffer_i16[i * 2 + 1] * 1if;
                 }
             }
             else if (i8)
@@ -192,7 +158,7 @@ namespace meteor
                 for (int i = 0; i < d_buffer_size; i++)
                 {
                     using namespace std::complex_literals;
-                    in_buffer[i] = (float)buffer_i8[i * 2] + (float)buffer_i8[i * 2 + 1] * 1if;
+                    in_pipe.writeBuf[i] = (float)buffer_i8[i * 2] + (float)buffer_i8[i * 2 + 1] * 1if;
                 }
             }
             else if (w8)
@@ -207,7 +173,7 @@ namespace meteor
                     float imag = (buffer_u8[i * 2] - 127) * 0.004f;
                     float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
                     using namespace std::complex_literals;
-                    in_buffer[i] = real + imag * 1if;
+                    in_pipe.writeBuf[i] = real + imag * 1if;
                 }
             }
 
@@ -216,7 +182,7 @@ namespace meteor
             else
                 progress = 0;
 
-            in_pipe->write(in_buffer, d_buffer_size);
+            in_pipe.swap(d_buffer_size); //->write(in_buffer, d_buffer_size);
         }
 
         if (input_data_type == DATA_FILE)
@@ -225,42 +191,42 @@ namespace meteor
         // Exit all threads... Without causing a race condition!
         agcRun = rrcRun = pllRun = recRun = movRun = false;
 
-        in_pipe->stopWriter();
-        in_pipe->stopReader();
+        in_pipe.stopWriter();
+        in_pipe.stopReader();
 
-        agc_pipe->stopWriter();
+        agc_pipe.stopWriter();
 
         if (agcThread.joinable())
             agcThread.join();
 
         logger->debug("AGC OK");
 
-        agc_pipe->stopReader();
-        rrc_pipe->stopWriter();
+        agc_pipe.stopReader();
+        rrc_pipe.stopWriter();
 
         if (rrcThread.joinable())
             rrcThread.join();
 
         logger->debug("RRC OK");
 
-        rrc_pipe->stopReader();
-        pll_pipe->stopWriter();
+        rrc_pipe.stopReader();
+        pll_pipe.stopWriter();
 
         if (pllThread.joinable())
             pllThread.join();
 
         logger->debug("PLL OK");
 
-        pll_pipe->stopReader();
-        mov_pipe->stopWriter();
+        pll_pipe.stopReader();
+        mov_pipe.stopWriter();
 
         if (movThread.joinable())
             movThread.join();
 
         logger->debug("MOW OK");
 
-        mov_pipe->stopReader();
-        rec_pipe->stopWriter();
+        mov_pipe.stopReader();
+        rec_pipe.stopWriter();
 
         if (recThread.joinable())
             recThread.join();
@@ -269,7 +235,7 @@ namespace meteor
 
         data_out.close();
 
-        rec_pipe->stopReader();
+        rec_pipe.stopReader();
     }
 
     void METEORHRPTDemodModule::agcThreadFunction()
@@ -277,15 +243,16 @@ namespace meteor
         int gotten;
         while (agcRun)
         {
-            gotten = in_pipe->read(in_buffer2, d_buffer_size);
+            gotten = in_pipe.read(); //->read(in_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
 
             /// AGC
-            agc->work(in_buffer2, gotten, agc_buffer);
+            agc->work(in_pipe.readBuf, gotten, agc_pipe.writeBuf);
 
-            agc_pipe->write(agc_buffer, gotten);
+            in_pipe.flush();
+            agc_pipe.swap(gotten); //->write(agc_buffer, gotten);
         }
     }
 
@@ -294,15 +261,16 @@ namespace meteor
         int gotten;
         while (rrcRun)
         {
-            gotten = agc_pipe->read(agc_buffer2, d_buffer_size);
+            gotten = agc_pipe.read(); //->read(agc_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
 
             // Root-raised-cosine filtering
-            int out = rrc->work(agc_buffer2, gotten, rrc_buffer);
+            int out = rrc->work(agc_pipe.readBuf, gotten, rrc_pipe.writeBuf);
 
-            rrc_pipe->write(rrc_buffer, out);
+            agc_pipe.flush();
+            rrc_pipe.swap(out); //->write(rrc_buffer, out);
         }
     }
 
@@ -311,15 +279,16 @@ namespace meteor
         int gotten;
         while (pllRun)
         {
-            gotten = rrc_pipe->read(rrc_buffer2, d_buffer_size);
+            gotten = rrc_pipe.read(); //->read(rrc_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
 
             // Costas loop, frequency offset recovery
-            pll->work(rrc_buffer2, gotten, pll_buffer);
+            pll->work(rrc_pipe.readBuf, gotten, pll_pipe.writeBuf);
 
-            pll_pipe->write(pll_buffer, gotten);
+            rrc_pipe.flush();
+            pll_pipe.swap(gotten); //->write(pll_buffer, gotten);
         }
     }
 
@@ -328,15 +297,16 @@ namespace meteor
         int gotten;
         while (movRun)
         {
-            gotten = pll_pipe->read(pll_buffer2, d_buffer_size);
+            gotten = pll_pipe.read(); //->read(pll_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
 
             // Clock recovery
-            int out = mov->work(pll_buffer2, gotten, mov_buffer);
+            int out = mov->work(pll_pipe.readBuf, gotten, mov_pipe.writeBuf);
 
-            mov_pipe->write(mov_buffer, out);
+            pll_pipe.flush();
+            mov_pipe.swap(out); //->write(mov_buffer, out);
         }
     }
 
@@ -345,7 +315,7 @@ namespace meteor
         int gotten;
         while (recRun)
         {
-            gotten = mov_pipe->read(mov_buffer2, d_buffer_size);
+            gotten = mov_pipe.read(); //->read(mov_buffer2, d_buffer_size);
 
             if (gotten <= 0)
                 continue;
@@ -355,14 +325,15 @@ namespace meteor
             try
             {
                 // Clock recovery
-                recovered_size = rec->work(mov_buffer2, gotten, rec_buffer);
+                recovered_size = rec->work(mov_pipe.readBuf, gotten, rec_pipe.writeBuf);
             }
             catch (std::runtime_error &e)
             {
                 logger->error(e.what());
             }
 
-            rec_pipe->write(rec_buffer, recovered_size);
+            mov_pipe.flush();
+            rec_pipe.swap(recovered_size); //->write(rec_buffer, recovered_size);
         }
     }
 
@@ -379,7 +350,7 @@ namespace meteor
 
             for (int i = 0; i < 2048; i++)
             {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_buffer2[i] * 90) % 200,
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_pipe.readBuf[i] * 90) % 200,
                                                   ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 15) % 200),
                                            2,
                                            ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));

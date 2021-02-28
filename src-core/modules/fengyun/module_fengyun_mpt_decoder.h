@@ -37,7 +37,7 @@ namespace fengyun
 
         int v1, v2;
 
-        int shift = 0, diffin = 0;
+        int diffin = 0;
 
         // Diff decoder input and output
         uint8_t *diff_in, *diff_out;

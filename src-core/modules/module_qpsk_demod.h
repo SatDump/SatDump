@@ -10,8 +10,6 @@
 #include <thread>
 #include <fstream>
 #include <atomic>
-#include "dsp/stream.h"
-#include "dsp/filter.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
@@ -30,11 +28,6 @@ protected:
     const int d_buffer_size;
     const bool d_dc_block;
 
-    std::complex<float> *in_buffer, *in_buffer2;
-    std::complex<float> *agc_buffer, *agc_buffer2;
-    std::complex<float> *rrc_buffer, *rrc_buffer2;
-    std::complex<float> *pll_buffer, *pll_buffer2;
-    std::complex<float> *rec_buffer, *rec_buffer2;
     int8_t *sym_buffer;
 
     // All FIFOs we use along the way

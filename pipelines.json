@@ -206,9 +206,8 @@
             "cadu": {
                 "fengyun_mpt_decoder": {
                     "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.150",
-                    "soft_symbols": "1",
-                    "invert_second_viterbi": "1"
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
                 }
             },
             "products": {

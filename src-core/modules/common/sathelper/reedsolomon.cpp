@@ -10,7 +10,7 @@
 
 extern "C"
 {
-#include <correct.h>
+#include "modules/common/correct/reed-solomon.h"
 }
 
 namespace sathelper

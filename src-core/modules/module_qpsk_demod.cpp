@@ -46,28 +46,10 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
     rec = std::make_shared<libdsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
 
     // Buffers
-    in_buffer = new std::complex<float>[d_buffer_size];
-    in_buffer2 = new std::complex<float>[d_buffer_size];
-    agc_buffer = new std::complex<float>[d_buffer_size];
-    agc_buffer2 = new std::complex<float>[d_buffer_size];
-    rrc_buffer = new std::complex<float>[d_buffer_size];
-    rrc_buffer2 = new std::complex<float>[d_buffer_size];
-    pll_buffer = new std::complex<float>[d_buffer_size];
-    pll_buffer2 = new std::complex<float>[d_buffer_size];
-    rec_buffer = new std::complex<float>[d_buffer_size];
-    rec_buffer2 = new std::complex<float>[d_buffer_size];
     sym_buffer = new int8_t[d_buffer_size * 2];
-
     buffer_i16 = new int16_t[d_buffer_size * 2];
     buffer_i8 = new int8_t[d_buffer_size * 2];
     buffer_u8 = new uint8_t[d_buffer_size * 2];
-
-    // Init FIFOs
-    //in_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-    //rrc_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-    //agc_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-    //pll_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
-    //rec_pipe = std::make_shared<RingBuffer<std::complex<float>>>(d_buffer_size);
 }
 
 std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
@@ -82,25 +64,10 @@ std::vector<ModuleDataType> QPSKDemodModule::getOutputTypes()
 
 QPSKDemodModule::~QPSKDemodModule()
 {
-    delete[] in_buffer;
-    delete[] in_buffer2;
-    delete[] agc_buffer;
-    delete[] agc_buffer2;
-    delete[] rrc_buffer;
-    delete[] rrc_buffer2;
-    delete[] pll_buffer;
-    delete[] pll_buffer2;
-    delete[] rec_buffer;
-    delete[] rec_buffer2;
     delete[] sym_buffer;
     delete[] buffer_i16;
     delete[] buffer_i8;
     delete[] buffer_u8;
-    //delete[] in_pipe;
-    //delete[] rrc_pipe;
-    //delete[] agc_pipe;
-    //delete[] pll_pipe;
-    //delete[] rec_pipe;
 }
 
 void QPSKDemodModule::process()
@@ -144,6 +111,8 @@ void QPSKDemodModule::process()
             sym_buffer[i * 2 + 1] = clamp(rec_pipe.readBuf[i].real() * 100);
         }
 
+        rec_pipe.flush();
+
         data_out.write((char *)sym_buffer, dat_size * 2);
 
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -151,8 +120,6 @@ void QPSKDemodModule::process()
             lastTime = time(NULL);
             logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
         }
-
-        rec_pipe.flush();
     }
 
     logger->info("Demodulation finished");

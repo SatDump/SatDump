@@ -211,17 +211,7 @@ namespace fengyun
             }
             else
             {
-                //second check BER of NO SHIFTed data for 0 and 90 degree rotation
-                d_ber[1][0] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph + 1, input_symbols_buffer_Q_ph + 1);
-                if (d_ber[1][0] < d_ber_threshold)
-                {
-                    d_shift = 1;
-                }
-                //all ber >> threshold, wait for next data chunk
-                else
-                {
-                    d_valid_ber_found = false;
-                }
+                d_valid_ber_found = false;
             }
 
             if (d_valid_ber_found == true)
@@ -260,10 +250,6 @@ namespace fengyun
             if (d_shift == 0)
             {
                 d_ber[0][0] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
-            }
-            else
-            {
-                d_ber[0][0] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph + 1, input_symbols_buffer_Q_ph + 1);
             }
 
             if (d_ber[0][0] > d_ber_threshold)
@@ -367,19 +353,18 @@ namespace fengyun
 
     float FengyunMPTViterbi::ber()
     {
-        if (d_state == ST_SYNCED)
-            return d_ber[0][0];
-        else
-        {
-            float ber;
-            for (int s = 0; s < 2; s++)
-            {
-                if (ber > d_ber[s][0])
-                {
-                    ber = d_ber[s][0];
-                }
-            }
-            return ber;
-        }
+        //if (d_state == ST_SYNCED)
+        return d_ber[0][0];
+        //else
+        //{
+        //    float ber;
+        //    for (int s = 0; s < 2; s++)
+        //    {
+        //        if (ber > d_ber[s][0])
+        //        {
+        //            ber = d_ber[s][0];
+        //        }
+        //    }
+        //    return ber;
     }
 } // namespace fengyun

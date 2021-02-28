@@ -5,10 +5,7 @@
 
 #define TestBitsLen 1024
 
-extern "C"
-{
 #include "modules/common/viterbi_lib/viterbi.h"
-}
 
 namespace metop
 {
