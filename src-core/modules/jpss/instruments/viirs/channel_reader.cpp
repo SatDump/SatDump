@@ -20,7 +20,7 @@ namespace jpss
             channelSettings = ch;
             foundData = false;
             currentSegment = 0;
-            imageBuffer = std::shared_ptr<unsigned short[]>(new unsigned short[80000 * channelSettings.totalWidth]);
+            imageBuffer = std::shared_ptr<unsigned short>(new unsigned short[80000 * channelSettings.totalWidth], [](unsigned short *p) { delete[] p; });
             lines = 0;
         }
 
@@ -168,22 +168,22 @@ namespace jpss
 
                                 // Cleanup garbage data on the edges, Moderate channels
                                 if (channelSettings.zoneHeight == 15 && (det == 0 || det == 5) && (y == 0 || y == 1 || y == 14))
-                                    std::fill(&imageBuffer[lines * channelSettings.totalWidth + offset], &imageBuffer[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
+                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
                                 else if (channelSettings.zoneHeight == 15 && (det == 1 || det == 4) && y == 0)
-                                    std::fill(&imageBuffer[lines * channelSettings.totalWidth + offset], &imageBuffer[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
+                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
                                 // Cleanup garbage data on the edges, Imaging channels
                                 else if (channelSettings.zoneHeight == 31 && (det == 0 || det == 5) && (y == 0 || y == 1 || y == 2 || y == 3 || y == 30 || y == 29 || y == 28))
-                                    std::fill(&imageBuffer[lines * channelSettings.totalWidth + offset], &imageBuffer[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
+                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
                                 else if (channelSettings.zoneHeight == 31 && (det == 1 || det == 4) && (y == 0 || y == 1 || y == 30))
-                                    std::fill(&imageBuffer[lines * channelSettings.totalWidth + offset], &imageBuffer[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
+                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
                                 // Write actual data
                                 else
-                                    std::memcpy(&imageBuffer[lines * channelSettings.totalWidth + offset], body.detectors[det].decompressedPayload, channelSettings.zoneWidth[det] * 2);
+                                    std::memcpy(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], body.detectors[det].decompressedPayload, channelSettings.zoneWidth[det] * 2);
                             }
                             else
                             {
                                 // It's not? Fill it with zeros
-                                std::fill(&imageBuffer[lines * channelSettings.totalWidth + offset], &imageBuffer[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
+                                std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
                             }
 
                             // Compute next offset
@@ -192,7 +192,7 @@ namespace jpss
                     }
                     else
                     {
-                        std::fill(&imageBuffer[lines * channelSettings.totalWidth + 0], &imageBuffer[lines * channelSettings.totalWidth + channelSettings.totalWidth - 1], 0);
+                        std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + 0], &imageBuffer.get()[lines * channelSettings.totalWidth + channelSettings.totalWidth - 1], 0);
                     }
 
                     // Next line!

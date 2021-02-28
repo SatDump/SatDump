@@ -20,7 +20,7 @@ namespace jpss
             bool foundData;
             uint16_t endSequenceCount;
             int currentSegment;
-            std::shared_ptr<unsigned short[]> imageBuffer;
+            std::shared_ptr<unsigned short> imageBuffer;
             int lines;
 
         public:
