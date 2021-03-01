@@ -1,21 +1,8 @@
-#ifndef __MINGW32__
-#ifdef MEMORY_OP_X86
 #include "viterbi.h"
-#include "modules/common/sathelper/correlator.h"
-#include <cstring>
-extern "C"
-{
-#include "modules/common/correct/convolutional/convolutional.h"
 
-    void _convolutional_decode_init(correct_convolutional *conv,
-                                    unsigned int min_traceback,
-                                    unsigned int traceback_length,
-                                    unsigned int renormalize_interval);
-    void convolutional_decode_inner(correct_convolutional *sse_conv, unsigned int sets,
-                                    const uint8_t *soft);
-}
 #define ST_IDLE 0
-#define ST_SYNCED 1
+#define ST_SYNCING 1
+#define ST_SYNCED 2
 
 #define ST_PHASE_0 0
 #define ST_PHASE_1 1
@@ -26,182 +13,439 @@ extern "C"
 #define ST_PHASE_6 6
 #define ST_PHASE_7 7
 
-#define _VITERBI27_POLYA 0x4F
-#define _VITERBI27_POLYB 0x6D
-
-#include "logger.h"
-
 namespace npp
 {
-    HRDViterbi2::HRDViterbi2(float ber_threshold, int buffer_size) : d_ber_thresold(ber_threshold),
-                                                                     d_state(ST_IDLE),
-                                                                     d_buffer_size(buffer_size),
-                                                                     d_first(true)
+    HRDViterbi::HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size)
+        : d_sync_check(sync_check),
+          d_ber_threshold(ber_threshold),
+          d_insync_after(insync_after),
+          d_outsync_after(outsync_after),
+          d_reset_after(reset_after)
     {
-        correct_viterbi_ber = correct_convolutional_sse_create(2, 7, new uint16_t[2]{(uint16_t)_VITERBI27_POLYA, (uint16_t)_VITERBI27_POLYB});
-        correct_viterbi = correct_convolutional_create(2, 7, new uint16_t[2]{(uint16_t)_VITERBI27_POLYA, (uint16_t)_VITERBI27_POLYB});
-        conv = correct_viterbi; //&correct_viterbi->base_conv;
-        if (!conv->has_init_decode)
-        {
-            uint64_t max_error_per_input = conv->rate * soft_max;
-            unsigned int renormalize_interval = distance_max / max_error_per_input;
-            _convolutional_decode_init(conv, 5 * conv->order, 15 * conv->order, renormalize_interval);
-        }
+        insymbols_interleaved_depunctured = new unsigned char[buffer_size * 4];
+        decoded_data = new unsigned char[buffer_size];
+        encoded_data = new unsigned char[buffer_size * 2];
 
-        fixed_soft_packet = new uint8_t[buffer_size + 1024];
-        output_buffer = new uint8_t[(buffer_size + 1024) / 16];
+        input_symbols_buffer_I = new unsigned char[buffer_size];
+        input_symbols_buffer_Q = new unsigned char[buffer_size];
+        input_symbols_buffer_I_ph = new unsigned char[buffer_size];
+        input_symbols_buffer_Q_ph = new unsigned char[buffer_size];
+
+        float RATE = 1 / 2; //0.5
+        float ebn0 = 12;    //12
+        float esn0 = RATE * pow(10.0, ebn0 / 10);
+        gen_met(d_mettab, 100, esn0, 0.0, 256);
+
+        do_reset();
+        enter_idle();
+
+        switchInv = false;
     }
 
-    HRDViterbi2::~HRDViterbi2()
+    /*
+     * Our virtual destructor.
+     */
+    HRDViterbi::~HRDViterbi()
     {
-        delete[] fixed_soft_packet;
-        delete[] output_buffer;
+        delete[] insymbols_interleaved_depunctured;
+        delete[] decoded_data;
+        delete[] encoded_data;
+        delete[] input_symbols_buffer_I_ph;
+        delete[] input_symbols_buffer_Q_ph;
+        delete[] input_symbols_buffer_I;
+        delete[] input_symbols_buffer_Q;
     }
 
-    float HRDViterbi2::getBER(uint8_t *input)
+    //*****************************************************************************
+    //    DO DECODER RESET TO ZERO STATE
+    //*****************************************************************************
+    void HRDViterbi::do_reset()
     {
-        correct_convolutional_sse_decode_soft(correct_viterbi_ber, input, TEST_BITS_LENGTH, d_ber_decoded_buffer);
-        correct_convolutional_sse_encode(correct_viterbi_ber, d_ber_decoded_buffer, TEST_BITS_LENGTH / 16, d_ber_encoded_buffer);
+        d_valid_packet_count = 0;
+        d_invalid_packet_count = 0;
+        //d_chan_len = TestBitsLen;
 
-        // Convert to soft bits
-        for (int i = 0; i * 8 < TEST_BITS_LENGTH; i++)
+        viterbi_chunks_init(d_state0); //main viterbi decoder state memory
+        viterbi_chunks_init(d_00_st0);
+        viterbi_chunks_init(d_180_st0);
+        enter_idle();
+    }
+    //#############################################################################
+
+    //*****************************************************************************
+    //    ENTER idle state
+    //*****************************************************************************
+    void HRDViterbi::enter_idle()
+    {
+        d_state = ST_IDLE;
+        d_valid_packet_count = 0;
+        d_shift = 0;
+        d_curr_is_even = true;
+        d_bits = 0;
+        d_sym_count = 0;
+        d_valid_ber_found = true;
+        d_viterbi_enable = false;
+        d_invalid_packet_count = 0;
+        d_shift_main_decoder = 0;
+    }
+    //#############################################################################
+
+    //*****************************************************************************
+    //    ENTER synced state
+    //*****************************************************************************
+    void HRDViterbi::enter_synced()
+    {
+        d_state = ST_SYNCED;
+        d_invalid_packet_count = 0;
+        d_viterbi_enable = true;
+    }
+
+    //*****************************************************************************
+    //    VITERBI DECODER, calculate BER between hard input bits and decode-encoded bits
+    //*****************************************************************************
+    float HRDViterbi::ber_calc1(
+        struct viterbi_state *state0, //state 0 viterbi decoder
+        struct viterbi_state *state1, //state 1 viterbi decoder
+        unsigned int symsnr,
+        unsigned char *insymbols_I, unsigned char *insymbols_Q)
+    {
+
+        unsigned char viterbi_in[4];
+        unsigned int decoded_data_count = 0;
+        unsigned char *p_decoded_data = &decoded_data[0]; //pointer to viterbi decoded data
+        unsigned int difference_count;                    //count of diff. between reencoded data and input symbols
+        float ber;
+        unsigned char symbol_count = 0;
+        unsigned int bits = 0;
+
+        //decode test packet of incoming symbols
+        //depuncturing is included here
+        for (unsigned int i = 0; i < symsnr; i++)
         {
-            uint8_t d = d_ber_encoded_buffer[i];
-            for (int z = 7; z >= 0; z--)
+            viterbi_in[bits % 4] = switchInv ? -insymbols_I[i] : insymbols_I[i];
+            insymbols_interleaved_depunctured[bits] = switchInv ? -insymbols_Q[i] : insymbols_I[i];
+            bits++;
+            viterbi_in[bits % 4] = switchInv ? insymbols_Q[i] : -insymbols_Q[i];
+            insymbols_interleaved_depunctured[bits] = switchInv ? insymbols_I[i] : -insymbols_Q[i];
+
+            if ((bits % 4) == 3)
             {
-                d_ber_decoded_soft_buffer[i * 8 + (7 - z)] = 0 - ((d & (1 << z)) == 0);
+                // Every fourth symbol, perform butterfly operation
+                viterbi_butterfly2(viterbi_in, d_mettab, state0, state1);
+                // Every sixteenth symbol, read out a byte
+                if (bits % 16 == 11)
+                {
+                    viterbi_get_output(state0, p_decoded_data++);
+                    decoded_data_count++;
+                }
             }
+            bits++;
+            symbol_count++;
         }
 
-        float errors = 0;
-        for (int i = 0; i < TEST_BITS_LENGTH; i++)
+        //now we have decoded and we will reencode and compare difference between input symbols and reencoded data
+        encode(&encoded_data[0], &decoded_data[1], decoded_data_count - 1, 0);
+
+        // compare
+        difference_count = 0;
+        bits = 0;
+        for (unsigned int k = 0; k < decoded_data_count; k++)
         {
-            errors += (float)sathelper::Correlator::hardCorrelate(input[i], ~d_ber_decoded_soft_buffer[i]);
+            difference_count += ((insymbols_interleaved_depunctured[k] > 128) != (encoded_data[k]));
+            bits++;
         }
 
-        return (errors / ((float)TEST_BITS_LENGTH * 2.0f)) * 10.0f;
+        //calculate BER
+
+        ber = float(difference_count) / float(bits);
+
+        return ber;
     }
 
-    int HRDViterbi2::work(uint8_t *input, size_t size, uint8_t *output)
+    //*****************************************************************************
+    //    VITERBI DECODER, two states symbols phase moving, 0 and 90 degree
+    //*****************************************************************************
+    void HRDViterbi::phase_move_two(unsigned char phase_state, unsigned int symsnr, unsigned char *in_I, unsigned char *in_Q, unsigned char *out_I, unsigned char *out_Q)
     {
-        int data_size_out = 0;
+        switch (phase_state)
+        {
+
+        case ST_PHASE_0: //nothing is changed
+            for (unsigned int ii = 0; ii < symsnr; ii++)
+            {
+                out_I[ii] = in_I[ii];
+                out_Q[ii] = in_Q[ii];
+            }
+            break;
+
+        case ST_PHASE_1: // rotate 90degree
+            for (unsigned int ii = 0; ii < symsnr; ii++)
+            {
+                out_I[ii] = in_Q[ii];
+                out_Q[ii] = ~in_I[ii]; //out_Q[ii] = -in_I[ii];
+            }
+            break;
+
+        default:
+            throw std::runtime_error("Viterbi decoder: bad phase state\n");
+        }
+    }
+
+    //*****************************************************************************
+    //    VITERBI DECODER, GENERAL WORK FUNCTION
+    //
+    //*****************************************************************************
+    int HRDViterbi::work(std::complex<float> *in_syms, size_t size, uint8_t *output)
+    {
+        unsigned char *out = &output[0];
+        int ninputs = size;
+        unsigned int chan_len;
+
+        //translate all complex insymbols to char and save these to input_symbols_buffer's I and Q
+        float sample;
+        for (unsigned int i = 0; i < ninputs; i++)
+        {
+            // Translate and clip [-1.0..1.0] to [28..228]
+            sample = in_syms[i].real() * 127.0 + 128.0;
+            if (sample > 255.0)
+                sample = 255.0;
+            else if (sample < 0.0)
+                sample = 0.0;
+            input_symbols_buffer_I[i] = (unsigned char)(floor(sample));
+
+            sample = in_syms[i].imag() * 127.0 + 128.0;
+            if (sample > 255.0)
+                sample = 255.0;
+            else if (sample < 0.0)
+                sample = 0.0;
+            input_symbols_buffer_Q[i] = (unsigned char)(floor(sample));
+        }
+
+        //check data chunk, even or odd syms count
+        if (ninputs % 2 == 0)
+        {
+            d_curr_is_even = true; //first bit in next processed input syms paket will be even.
+        }
+        else
+        {
+            d_curr_is_even = false;
+        }
 
         switch (d_state)
         {
+        //ST_IDLE is waiting for valid BER measured on incoming data
         case ST_IDLE:
-        {
-            // Test without IQ Inversion
-            for (int ph = 0; ph < 2; ph++)
+            //first check BER of NO SHIFTed data for 0 and 90 degree rotation
+            d_valid_ber_found = true;
+
+            for (unsigned char st = 0; st < 2; st++)
             {
-                std::memcpy(d_ber_test_soft_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_soft_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
-                d_bers[0][ph] = getBER(d_ber_test_soft_buffer);
+                phase_move_two(st, TestBitsLen, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+                d_ber[0][st] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+                //printf("Viterbi decoder :noshift  PH%i:  d_ber %4f  \n", st, d_ber[0][st]);
             }
 
-            // Test with IQ Inversion
-            for (int ph = 0; ph < 2; ph++)
+            if (d_ber[0][0] < d_ber_threshold)
             {
-                std::memcpy(d_ber_test_soft_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_soft_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, true);
-                d_bers[1][ph] = getBER(d_ber_test_soft_buffer);
+                d_phase = 0;
+                d_shift = 0;
             }
-
-            for (int s = 0; s < 2; s++)
+            else if (d_ber[0][1] < d_ber_threshold)
             {
-                for (int p = 0; p < 2; p++)
+                d_phase = 1;
+                d_shift = 0;
+            }
+            else
+            {
+                //second check BER of NO SHIFTed data for 0 and 90 degree rotation
+                for (unsigned char st = 0; st < 2; st++)
                 {
-                    if (d_ber_thresold > d_bers[s][p])
+                    phase_move_two(st, TestBitsLen, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+                    d_ber[1][st] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph + 1, input_symbols_buffer_Q_ph + 1);
+                    //printf("Viterbi decoder : shifted PH%i:  d_ber %4f  \n", st, d_ber[1][st]);
+                }
+                if (d_ber[1][0] < d_ber_threshold)
+                {
+                    d_shift = 1;
+                    d_phase = 0;
+                }
+                else if (d_ber[1][1] < d_ber_threshold)
+                {
+                    d_phase = 1;
+                    d_shift = 1;
+                }
+                //all ber >> threshold, wait for next data chunk
+                else
+                {
+                    d_valid_ber_found = false;
+                    //printf("Viterbi decoder : ST_IDLE: NO VALID BER found,  waiting for next  packet of symbols\n");
+                }
+            }
+
+            if (d_valid_ber_found == true)
+            {
+                enter_synced();
+                if (d_shift == 0)
+                {
+                    if (d_curr_is_even == false)
                     {
-                        d_ber = d_bers[s][p];
-                        d_iq_inv = s;
-                        d_phase_shift = (sathelper::PhaseShift)p;
-                        d_state = ST_SYNCED;
+                        d_shift_main_decoder = 1;
+                    }
+                    else
+                    {
+                        d_shift_main_decoder = 0;
+                    }
+                }
+                else
+                {
+                    if (d_curr_is_even == false)
+                    {
+                        d_shift_main_decoder = 0;
+                    }
+                    else
+                    {
+                        d_shift_main_decoder = 1;
                     }
                 }
             }
-        }
-        break;
 
+            break;
+
+        //ST_SYNCED check BER on incoming data if eneble, activate main decoder decode all incoming data
         case ST_SYNCED:
-        {
-            // Decode
-            std::memcpy(fixed_soft_packet, input, size);
-            phaseShifter.fixPacket(fixed_soft_packet, size, d_phase_shift, d_iq_inv);
 
-            //conv
-            //data_size_out = 1 + (int)correct_convolutional_sse_decode_soft(correct_viterbi, fixed_soft_packet, size, output);
-            //logger->info(data_size_out);
-            //std::memcpy(output, &output_buffer[1024 / 16], size / 16);
-            //std::memcpy(fixed_soft_packet, &fixed_soft_packet[d_buffer_size], 1024);
-
-            //data_size_out = size / 16;
-
-            size_t sets = (size) / conv->rate;
-            // XXX fix this vvvvvv
-            size_t decoded_len_bytes = size / 16;
-            bit_writer_reconfigure(conv->bit_writer, output, decoded_len_bytes);
-
-            //error_buffer_reset(conv->errors);
-            //history_buffer_reset(conv->history_buffer);
-
-            if (d_first)
+            if (d_shift == 0)
             {
-                // no outputs are generated during warmup
-                convolutional_decode_warmup(conv, sets, fixed_soft_packet);
-
-                //convolutional_decode_tail(conv, sets, fixed_soft_packet);
-                d_first = false;
+                phase_move_two(d_phase, TestBitsLen, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+                d_ber[0][0] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+            }
+            else
+            {
+                phase_move_two(d_phase, TestBitsLen, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+                d_ber[0][0] = ber_calc1(d_00_st0, d_00_st1, TestBitsLen, input_symbols_buffer_I_ph + 1, input_symbols_buffer_Q_ph + 1);
             }
 
-            convolutional_decode_inner(correct_viterbi, sets, fixed_soft_packet);
-
-            history_buffer_flush(conv->history_buffer, conv->bit_writer);
-
-            data_size_out = bit_writer_length(conv->bit_writer);
-
-            // Check BER
-            d_ber = (d_ber + getBER(fixed_soft_packet)) / 2.0f;
-
-            // Check we're still in sync!
-            if (d_ber_thresold < d_ber)
+            if (d_ber[0][0] > d_ber_threshold)
             {
-                d_state = ST_IDLE;
+                d_invalid_packet_count++;
+                //printf("Viterbi decoder : ST_SYNCED: Chunk Nr %i BER = %4f and exceed d_ber_threshold = %4f \n", d_invalid_packet_count, d_ber[0][0], d_ber_threshold);
+                if (d_invalid_packet_count > d_outsync_after)
+                {
+                    //printf("Viterbi decoder : ST_SYNCED: switch to ST_IDLE >> enter_idle()\n");
+                    enter_idle();
+                }
             }
-        }
-        break;
+            else
+            {
+                d_invalid_packet_count = 0;
+                d_viterbi_enable = true; //!!!
+            }
+
+            break;
 
         default:
-            break;
+            throw std::runtime_error("Viterbi decoder: bad state\n");
         }
 
-        return data_size_out;
-    }
-
-    float HRDViterbi2::ber()
-    {
-        if (d_state == ST_SYNCED)
-            return d_ber;
+        //is this data chunk even or odd? determine if shift in next chunk will be apply
+        if (d_shift == 0)
+        {
+            if (d_curr_is_even == false)
+            { //lichy
+                d_shift = 1;
+            }
+            else
+            { //sudy
+                d_shift = 0;
+            }
+        }
         else
         {
-            float ber = 10;
+            if (d_curr_is_even == false)
+            { //lichy
+                d_shift = 0;
+            }
+            else
+            { //sudy
+                d_shift = 1;
+            }
+        }
+
+        //****************************
+        //from here start main decoder
+        //****************************
+        // depuncturing is included
+        if (d_viterbi_enable == true)
+        {
+            phase_move_two(d_phase, ninputs, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+
+            unsigned int out_byte_count = 0;
+
+            for (unsigned int i = d_shift_main_decoder; i < ninputs; i++)
+            {
+
+                d_even_symbol = true;
+                d_viterbi_in[d_bits % 4] = switchInv ? -input_symbols_buffer_Q_ph[i] : input_symbols_buffer_I_ph[i];
+                d_bits++;
+                d_viterbi_in[d_bits % 4] = switchInv ? input_symbols_buffer_I_ph[i] : -input_symbols_buffer_Q_ph[i];
+                if ((d_bits % 4) == 3)
+                {
+                    // Every fourth symbol, perform butterfly operation
+                    viterbi_butterfly2(d_viterbi_in, d_mettab, d_state0, d_state1);
+                    // Every sixteenth symbol, read out a byte
+                    if (d_bits % 16 == 11)
+                    {
+                        viterbi_get_output(d_state0, out++);
+                        out_byte_count++;
+                    }
+                }
+                d_bits++;
+                d_sym_count++;
+            }
+            d_shift_main_decoder = 0; //no shift next time
+
+            if (d_sym_count % 2 == 0)
+            {
+                d_even_symbol = true; //first bit in next processed input syms paket will be even.
+            }
+            else
+            {
+                d_even_symbol = false;
+            }
+
+            //consume_each(ninputs);
+            return (out_byte_count);
+        }
+        else
+        {
+            //consume_each(ninputs);
+            return (0);
+        }
+    }
+
+    unsigned char &HRDViterbi::getState()
+    {
+        return d_state;
+    }
+
+    float HRDViterbi::ber()
+    {
+        if (d_state == ST_SYNCED)
+            return d_ber[0][0];
+        else
+        {
+            float ber;
             for (int s = 0; s < 2; s++)
             {
                 for (int p = 0; p < 2; p++)
                 {
-                    if (ber > d_bers[s][p])
+                    if (ber > d_ber[s][p])
                     {
-                        ber = d_bers[s][p];
+                        ber = d_ber[s][p];
                     }
                 }
             }
             return ber;
         }
     }
-
-    int HRDViterbi2::getState()
-    {
-        return d_state;
-    }
 } // namespace npp
-#endif
-#endif
