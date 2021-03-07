@@ -3,9 +3,9 @@
 #include "module.h"
 #include <complex>
 #include <dsp/agc.h>
-#include <dsp/fir_filter.h>
+#include "modules/common/dsp/fir_filter.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
 #include <dsp/costas_loop.h>
-#include <dsp/clock_recovery_mm.h>
 #include "modules/buffer.h"
 #include <thread>
 #include <fstream>
@@ -16,9 +16,9 @@ namespace terra
     {
     protected:
         std::shared_ptr<libdsp::AgcCC> agc;
-        std::shared_ptr<libdsp::FIRFilterCCF> rrc;
+        std::shared_ptr<dsp::FIRFilterCCF> rrc;
         std::shared_ptr<libdsp::CostasLoop> pll;
-        std::shared_ptr<libdsp::ClockRecoveryMMCC> rec;
+        std::shared_ptr<dsp::ClockRecoveryMMCC> rec;
 
         const int d_samplerate;
         const int d_buffer_size;

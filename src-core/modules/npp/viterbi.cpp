@@ -383,7 +383,6 @@ namespace npp
 
             for (unsigned int i = d_shift_main_decoder; i < ninputs; i++)
             {
-
                 d_even_symbol = true;
                 d_viterbi_in[d_bits % 4] = switchInv ? -input_symbols_buffer_Q_ph[i] : input_symbols_buffer_I_ph[i];
                 d_bits++;

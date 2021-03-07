@@ -41,10 +41,10 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
     // Init DSP blocks
     dcb = std::make_shared<libdsp::DCBlocker>(1024, true);
     agc = std::make_shared<libdsp::AgcCC>(d_agc_rate, 1.0f, 1.0f, 65536);
-    rrc = std::make_shared<libdsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+    rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<libdsp::CostasLoop>(d_loop_bw, 4);
     del = std::make_shared<DelayOneImag>();
-    rec = std::make_shared<libdsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+    rec = std::make_shared<dsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 
     // Buffers
     pll_buffer = new std::complex<float>[d_buffer_size];

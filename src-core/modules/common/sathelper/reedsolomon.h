@@ -11,7 +11,7 @@
 
 extern "C"
 {
-#include "modules/common/correct/correct.h"
+#include <correct.h>
 }
 
 namespace sathelper

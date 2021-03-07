@@ -33,9 +33,9 @@ namespace terra
 
         // Init DSP blocks
         agc = std::make_shared<libdsp::AgcCC>(1e-3, 1.0f, 1.0f, 65536);
-        rrc = std::make_shared<libdsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, 13.125e6 * 2, 0.5f, 31));
+        rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, 13.125e6 * 2, 0.5f, 31));
         pll = std::make_shared<libdsp::CostasLoop>(0.0063, 2);
-        rec = std::make_shared<libdsp::ClockRecoveryMMCC>(((float)d_samplerate / (float)13.125e6) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.005f);
+        rec = std::make_shared<dsp::ClockRecoveryMMCC>(((float)d_samplerate / (float)13.125e6) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.005f);
 
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];

@@ -13,6 +13,10 @@
 #define ST_PHASE_6 6
 #define ST_PHASE_7 7
 
+#include <fstream>
+
+//std::ofstream fileTest("test.soft");
+
 namespace metop
 {
     MetopViterbi::MetopViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size)
@@ -422,6 +426,11 @@ namespace metop
         {
 
             phase_move_two(d_phase, ninputs, input_symbols_buffer_I, input_symbols_buffer_Q, input_symbols_buffer_I_ph, input_symbols_buffer_Q_ph);
+
+           // for(int i = d_shift_main_decoder; i < ninputs; i++) {
+           //     fileTest.put(input_symbols_buffer_I_ph[i]);
+           //     fileTest.put(input_symbols_buffer_Q_ph[i]);
+           // }
 
             unsigned int out_byte_count = 0;
 

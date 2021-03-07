@@ -3,9 +3,9 @@
 #include "module.h"
 #include <complex>
 #include <dsp/agc.h>
-#include <dsp/fir_filter.h>
+#include "modules/common/dsp/fir_filter.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
 #include <dsp/carrier_pll_psk.h>
-#include <dsp/clock_recovery_mm.h>
 #include "noaa_deframer.h"
 #include "modules/buffer.h"
 #include <thread>
@@ -19,8 +19,8 @@ namespace noaa
     protected:
         std::shared_ptr<libdsp::AgcCC> agc;
         std::shared_ptr<libdsp::BPSKCarrierPLL> pll;
-        std::shared_ptr<libdsp::FIRFilterFFF> rrc;
-        std::shared_ptr<libdsp::ClockRecoveryMMFF> rec;
+        std::shared_ptr<dsp::FIRFilterFFF> rrc;
+        std::shared_ptr<dsp::ClockRecoveryMMFF> rec;
         std::shared_ptr<NOAADeframer> def;
 
         const int d_samplerate;

@@ -34,8 +34,8 @@ namespace noaa
         // Init DSP blocks
         agc = std::make_shared<libdsp::AgcCC>(1e-3f, 1.0f, 1.0f, 65536);
         pll = std::make_shared<libdsp::BPSKCarrierPLL>(0.01f, powf(0.01, 2) / 4.0f, 3.0f * M_PI * 100e3 / (float)d_samplerate);
-        rrc = std::make_shared<libdsp::FIRFilterFFF>(1, libdsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, (float)8320, 0.5, 1023));
-        rec = std::make_shared<libdsp::ClockRecoveryMMFF>(((float)d_samplerate / (float)8320) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01, 100e-6);
+        rrc = std::make_shared<dsp::FIRFilterFFF>(1, libdsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, (float)8320, 0.5, 1023));
+        rec = std::make_shared<dsp::ClockRecoveryMMFF>(((float)d_samplerate / (float)8320) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01, 100e-6);
         rep = std::make_shared<RepackBitsByte>();
         def = std::make_shared<DSBDeframer>();
 

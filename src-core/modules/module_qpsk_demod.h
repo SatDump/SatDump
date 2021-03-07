@@ -3,9 +3,9 @@
 #include "module.h"
 #include <complex>
 #include <dsp/agc.h>
-#include <dsp/fir_filter.h>
+#include "modules/common/dsp/fir_filter.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
 #include <dsp/costas_loop.h>
-#include <dsp/clock_recovery_mm.h>
 #include "buffer.h"
 #include <thread>
 #include <fstream>
@@ -15,9 +15,9 @@ class QPSKDemodModule : public ProcessingModule
 {
 protected:
     std::shared_ptr<libdsp::AgcCC> agc;
-    std::shared_ptr<libdsp::FIRFilterCCF> rrc;
+    std::shared_ptr<dsp::FIRFilterCCF> rrc;
     std::shared_ptr<libdsp::CostasLoop> pll;
-    std::shared_ptr<libdsp::ClockRecoveryMMCC> rec;
+    std::shared_ptr<dsp::ClockRecoveryMMCC> rec;
 
     const float d_agc_rate;
     const int d_samplerate;

@@ -3,10 +3,10 @@
 #include "module.h"
 #include <complex>
 #include <dsp/agc.h>
-#include <dsp/fir_filter.h>
+#include "modules/common/dsp/fir_filter.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
 #include <dsp/costas_loop.h>
 #include <dsp/dc_blocker.h>
-#include <dsp/clock_recovery_mm.h>
 #include "common/delay_one_imag.h"
 #include "buffer.h"
 #include <thread>
@@ -17,10 +17,10 @@ class OQPSKDemodModule : public ProcessingModule
 protected:
     std::shared_ptr<libdsp::DCBlocker> dcb;
     std::shared_ptr<libdsp::AgcCC> agc;
-    std::shared_ptr<libdsp::FIRFilterCCF> rrc;
+    std::shared_ptr<dsp::FIRFilterCCF> rrc;
     std::shared_ptr<libdsp::CostasLoop> pll;
     std::shared_ptr<DelayOneImag> del;
-    std::shared_ptr<libdsp::ClockRecoveryMMCC> rec;
+    std::shared_ptr<dsp::ClockRecoveryMMCC> rec;
 
     const float d_agc_rate;
     const int d_samplerate;

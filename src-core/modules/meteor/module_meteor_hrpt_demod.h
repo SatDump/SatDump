@@ -3,9 +3,9 @@
 #include "module.h"
 #include <complex>
 #include <dsp/agc.h>
-#include <dsp/fir_filter.h>
+#include "modules/common/dsp/fir_filter.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
 #include <dsp/carrier_pll_psk.h>
-#include <dsp/clock_recovery_mm.h>
 #include <dsp/moving_average.h>
 #include "modules/buffer.h"
 #include <thread>
@@ -19,10 +19,10 @@ namespace meteor
     {
     protected:
         std::shared_ptr<libdsp::AgcCC> agc;
-        std::shared_ptr<libdsp::FIRFilterCCF> rrc;
+        std::shared_ptr<dsp::FIRFilterCCF> rrc;
         std::shared_ptr<libdsp::BPSKCarrierPLL> pll;
         std::shared_ptr<libdsp::MovingAverageFF> mov;
-        std::shared_ptr<libdsp::ClockRecoveryMMFF> rec;
+        std::shared_ptr<dsp::ClockRecoveryMMFF> rec;
 
         const int d_samplerate;
         const int d_buffer_size;

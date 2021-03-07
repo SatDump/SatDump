@@ -6,7 +6,6 @@ include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
 file(GLOB_RECURSE SatDump_core_CPPS  *.cpp 
-                                     modules/common/correct/*.c 
                                      modules/common/aec/*.c
 )
 
@@ -43,8 +42,8 @@ find_library(DSP_LIBRARY dsp REQUIRED)
 target_link_libraries(satdump_core PUBLIC ${DSP_LIBRARY})
 
 # LibCorrect
-#find_library(CORRECT_LIBRARY correct REQUIRED)
-#target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
+find_library(CORRECT_LIBRARY correct REQUIRED)
+target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
 
 # LibJpeg
 find_library(JPEG_LIBRARY jpeg REQUIRED)

@@ -32,10 +32,10 @@ namespace meteor
 
         // Init DSP blocks
         agc = std::make_shared<libdsp::AgcCC>(0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-        rrc = std::make_shared<libdsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
+        rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
         pll = std::make_shared<libdsp::BPSKCarrierPLL>(0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
         mov = std::make_shared<libdsp::MovingAverageFF>(round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / round(((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
-        rec = std::make_shared<libdsp::ClockRecoveryMMFF>(((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
+        rec = std::make_shared<dsp::ClockRecoveryMMFF>(((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
 
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
