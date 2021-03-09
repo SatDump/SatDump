@@ -24,10 +24,10 @@ jobs:
       run: sudo apt install libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev libairspy-dev libfmt-dev build-essential cmake pkgconf libjpeg-dev libpng-dev
 
     - name: Build libcorrect
-      run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && make install
+      run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install
 
     - name: Build libdsp
-      run: git clone https://github.com/altillimity/libdsp.git && cd libdsp && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && make install
+      run: git clone https://github.com/altillimity/libdsp.git && cd libdsp && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
