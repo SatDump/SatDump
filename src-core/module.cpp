@@ -34,6 +34,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_qpsk_demod.h"
 #include "modules/module_oqpsk_demod.h"
 #include "modules/module_bpsk_demod.h"
+#include "modules/module_fsk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
@@ -83,12 +84,15 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/terra/module_terra_db_demod.h"
 #include "modules/terra/module_terra_db_decoder.h"
 
+#include "modules/falcon/module_falcon_tlm_decoder.h"
+
 void registerModules()
 {
     // Register modules
     modules_registry.emplace(QPSKDemodModule::getID(), QPSKDemodModule::getInstance);
     modules_registry.emplace(OQPSKDemodModule::getID(), OQPSKDemodModule::getInstance);
     modules_registry.emplace(BPSKDemodModule::getID(), BPSKDemodModule::getInstance);
+    modules_registry.emplace(FSKDemodModule::getID(), FSKDemodModule::getInstance);
 
     modules_registry.emplace(metop::MetOpAHRPTDecoderModule::getID(), metop::MetOpAHRPTDecoderModule::getInstance);
     modules_registry.emplace(metop::avhrr::MetOpAVHRRDecoderModule::getID(), metop::avhrr::MetOpAVHRRDecoderModule::getInstance);
@@ -137,6 +141,8 @@ void registerModules()
 
     modules_registry.emplace(terra::TerraDBDemodModule::getID(), terra::TerraDBDemodModule::getInstance);
     modules_registry.emplace(terra::TerraDBDecoderModule::getID(), terra::TerraDBDecoderModule::getInstance);
+
+    modules_registry.emplace(falcon::FalconTLMDecoderModule::getID(), falcon::FalconTLMDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

@@ -507,5 +507,27 @@
                 "elektro_msugs": {}
             }
         }
+    },
+    "falcon9_tlm": {
+        "name": "Falcon 9 S-Band TLM",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "fsk_demod": {
+                    "symbolrate": "3572000",
+                    "agc_rate": "0.000001",
+                    "lpf_cutoff": "2000000",
+                    "lpf_transition_width": "250000",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "falcon_tlm_decoder": {}
+            }
+        }
     }
 }
