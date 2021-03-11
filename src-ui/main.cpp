@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
 
                 //ImGui::End();
             }
+#ifndef _MSC_VER
             else if (livedemod)
             {
                 ImGui::SetNextWindowPos({0, 0});
@@ -212,6 +213,7 @@ int main(int argc, char *argv[])
                 ImGui::SetNextWindowSize({(float)wwidth, (float)265});
                 demodModule->drawUI();
             }
+#endif
             else
             {
                 ImGui::SetNextWindowPos({0, 0});
@@ -439,6 +441,7 @@ int main(int argc, char *argv[])
                     }
                     if (ImGui::BeginTabItem("Live processing"))
                     {
+#ifndef _MSC_VER
                         ImGui::BeginGroup();
                         {
                             std::string names;
@@ -633,6 +636,7 @@ int main(int argc, char *argv[])
                         ImGui::EndGroup();
 
                         ImGui::EndTabItem();
+#endif
                     }
                     if (ImGui::BeginTabItem("Credits"))
                     {

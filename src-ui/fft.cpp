@@ -1,3 +1,4 @@
+#ifndef _MSC_VER
 #include "fft.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
@@ -148,3 +149,4 @@ void SDRSource::drawUI()
 
     ImGui::End();
 }
+#endif

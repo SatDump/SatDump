@@ -1,3 +1,4 @@
+#ifndef _MSC_VER
 #pragma once
 #include <memory>
 #include "pipe.h"
@@ -31,3 +32,4 @@ public:
     void startSDR();
     std::function<void()> stopFuction;
 };
+#endif
