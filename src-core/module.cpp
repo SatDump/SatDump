@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "module.h"
 #include "logger.h"
 
@@ -28,7 +29,7 @@ void ProcessingModule::drawUI()
 }
 
 // Registry
-std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
+SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
 
 #include "modules/module_qpsk_demod.h"
 #include "modules/module_oqpsk_demod.h"

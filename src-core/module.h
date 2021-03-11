@@ -8,6 +8,7 @@
 #include <atomic>
 #include "imgui/imgui_flags.h"
 #include "pipe.h"
+#include "dll_export.h"
 
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \
@@ -49,6 +50,6 @@ public:
     static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
 };
 
-extern std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
+SATDUMP_DLL extern std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
 
 void registerModules();

@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "logger.h"
 #include <iostream>
 #include <spdlog/spdlog.h>
@@ -7,7 +8,7 @@
 // Logger and sinks. We got a console sink and file sink
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt> file_sink;
-std::shared_ptr<spdlog::logger> logger;
+SATDUMP_DLL std::shared_ptr<spdlog::logger> logger;
 
 void initLogger()
 {

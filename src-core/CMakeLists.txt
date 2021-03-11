@@ -14,25 +14,6 @@ find_package(PkgConfig)
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
 
-if(NOT CMAKE_CROSSCOMPILING)
-  # Check if host machine can compile with SSE 4.1 intrinsic
-  cmake_push_check_state(RESET)
-  set(CMAKE_REQUIRED_DEFINITIONS -march=native)
-  check_c_source_compiles("
-    #include <x86intrin.h>
-    int main() {
-      __m128i a;
-      __m128i b;
-      __m128i c = _mm_min_epu16(a, b);
-      return 0;
-    }" HAVE_SSE)
-  cmake_pop_check_state()
-endif()
-
-if(HAVE_SSE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.1")
-endif()
-
 # Threads
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)

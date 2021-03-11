@@ -4,6 +4,7 @@
 #include "module.h"
 #include <mutex>
 #include <vector>
+#include "dll_export.h"
 
 struct PipelineModule
 {
@@ -36,6 +37,6 @@ struct Pipeline
              std::shared_ptr<std::mutex> uiCallListMutex = nullptr);
 };
 
-extern std::vector<Pipeline> pipelines;
+SATDUMP_DLL extern std::vector<Pipeline> pipelines;
 
 void loadPipelines(std::string filepath);

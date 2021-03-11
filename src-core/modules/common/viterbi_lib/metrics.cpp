@@ -47,6 +47,10 @@
 #define M_SQRT2 1.41421356237309504880 /* sqrt(2) */
 #endif
 
+#ifndef M_LOG2E
+#define M_LOG2E 2.71828182845904523536
+#endif
+
 /* Normal function integrated from -Inf to x. Range: 0-1 */
 #define normal(x) (0.5 + 0.5 * erf((x) / M_SQRT2))
 

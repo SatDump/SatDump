@@ -32,7 +32,7 @@ struct viterbi_state
 	long metric;		/* Cumulative metric to this state */
 };
 
-int gen_met(int mettab[2][256], /* Metric table */
+void gen_met(int mettab[2][256], /* Metric table */
 			int amp,			/* Signal amplitude */
 			double esn0,		/* Es/N0 ratio in dB */
 			double bias,		/* Metric bias */

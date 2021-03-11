@@ -2,9 +2,10 @@
 
 #include <spdlog/spdlog.h>
 #include <memory>
+#include "dll_export.h"
 
 // Main logger instance
-extern std::shared_ptr<spdlog::logger> logger;
+SATDUMP_DLL extern std::shared_ptr<spdlog::logger> logger;
 
 // Initialize the logger
 void initLogger();

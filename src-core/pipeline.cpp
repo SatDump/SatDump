@@ -1,10 +1,11 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "pipeline.h"
 #include "logger.h"
 #include "module.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
 
-std::vector<Pipeline> pipelines;
+SATDUMP_DLL std::vector<Pipeline> pipelines;
 
 void Pipeline::run(std::string input_file,
                    std::string output_directory,
