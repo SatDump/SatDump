@@ -1,5 +1,5 @@
 #include "module_fsk_demod.h"
-#include <dsp/fir_gen.h>
+#include "modules/common/dsp/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -33,7 +33,7 @@ FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_h
 
     // Init DSP blocks
     agc = std::make_shared<libdsp::AgcCC>(0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-    lpf = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width));
+    lpf = std::make_shared<dsp::FIRFilterCCF>(1, dsp::firgen::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width));
     qua = std::make_shared<dsp::QuadratureDemod>(1.0f);
     rec = std::make_shared<dsp::ClockRecoveryMMFF>((float)d_samplerate / (float)d_symbolrate, 0.25f * 0.175f * 0.175f, 0.5f, 0.175f, 0.005f);
 
