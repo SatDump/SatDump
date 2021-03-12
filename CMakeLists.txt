@@ -22,7 +22,12 @@ else()
     set(CMAKE_CXX_FLAGS "-Wall")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+endif()
+
+if(MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    include_directories(vcpkg/installed/x64-windows/include)
+    link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
 project (SatDump)
