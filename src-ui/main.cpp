@@ -168,8 +168,10 @@ int main(int argc, char *argv[])
     if (processing)
         processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
+#ifndef _MSC_VER
     std::shared_ptr<SDRSource> airspySource;
     std::shared_ptr<ProcessingModule> demodModule;
+#endif
 
     // Main loop
     while (!glfwWindowShouldClose(window))
