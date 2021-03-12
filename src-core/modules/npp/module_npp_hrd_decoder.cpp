@@ -16,7 +16,7 @@ namespace npp
                                                                                                                                                     d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
                                                                                                                                                     d_soft_symbols(std::stoi(parameters["soft_symbols"])),
                                                                                                                                                     sw(0),
-                                                                                                                                                    zviterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
+                                                                                                                                                    viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
                                                                                                                                                     //viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
