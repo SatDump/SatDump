@@ -118,7 +118,7 @@ namespace falcon
                     // If we filled the buffer, output it
                     if (--wroteBits == 0)
                     {
-                        frameBuffer[wroteBytes] = outBuffer;// ^ d_rantab[wroteBytes];
+                        frameBuffer[wroteBytes] = outBuffer; // ^ d_rantab[wroteBytes];
                         wroteBytes++;
                         wroteBits = 8;
                     }
@@ -158,6 +158,18 @@ namespace falcon
                         errors = 0;
                         sep_errors = 0;
                         good = 0;
+                        bit_inversion = false;
+                    }
+                    else if (shifter == CADU_ASM_INV)
+                    {
+                        numFrames++;
+                        writeFrame = true;
+                        state = THRESOLD_STATE_1;
+                        //skip = 1024 * 8;
+                        errors = 0;
+                        sep_errors = 0;
+                        good = 0;
+                        bit_inversion = true;
                     }
                 }
                 // State 1 : Each header is expect 1024 bytes away. Only 6 mistmatches tolerated.
