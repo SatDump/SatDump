@@ -15,10 +15,12 @@
 #include "modules/common/dsp/new/fir.h"
 #include "modules/common/dsp/new/costas_loop.h"
 #include "modules/common/dsp/new/clock_recovery_mm.h"
+#include "modules/common/dsp/new/file_source.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
 protected:
+    std::shared_ptr<dsp::FileSourceBlock> file_source;
     std::shared_ptr<dsp::AGCBlock> agc;
     std::shared_ptr<dsp::CCFIRBlock> rrc;
     std::shared_ptr<dsp::CostasLoopBlock> pll;
@@ -34,9 +36,6 @@ protected:
     const bool d_dc_block;
 
     int8_t *sym_buffer;
-
-    // All FIFOs we use along the way
-    dsp::stream<std::complex<float>> in_pipe;
 
     // Int16 buffer
     int16_t *buffer_i16;
@@ -56,11 +55,6 @@ protected:
         return x;
     }
 
-    void fileThreadFunction();
-
-    std::thread fileThread;
-
-    std::ifstream data_in;
     std::ofstream data_out;
 
     std::atomic<size_t> filesize;

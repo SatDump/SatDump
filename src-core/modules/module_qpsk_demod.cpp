@@ -40,7 +40,9 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
     }
 
     // Init DSP blocks
-    agc = std::make_shared<dsp::AGCBlock>(in_pipe, d_agc_rate, 1.0f, 1.0f, 65536);
+    dsp::stream<void> dummystream;
+    file_source = std::make_shared<dsp::FileSourceBlock>(dummystream, d_input_file, dsp::BasebandType::INTEGER_16, d_buffer_size);
+    agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
@@ -73,12 +75,12 @@ QPSKDemodModule::~QPSKDemodModule()
 void QPSKDemodModule::process()
 {
     if (input_data_type == DATA_FILE)
-        filesize = getFilesize(d_input_file);
+        filesize = file_source->getFilesize();
     else
         filesize = 0;
 
-    if (input_data_type == DATA_FILE)
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+    //if (input_data_type == DATA_FILE)
+    //    data_in = std::ifstream(d_input_file, std::ios::binary);
 
     data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
     d_output_files.push_back(d_output_file_hint + ".soft");
@@ -90,14 +92,14 @@ void QPSKDemodModule::process()
     time_t lastTime = 0;
 
     // Start
-    fileThread = std::thread(&QPSKDemodModule::fileThreadFunction, this);
+    file_source->start();
     agc->start();
     rrc->start();
     pll->start();
     rec->start();
 
     int dat_size = 0;
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
+    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
     {
         dat_size = rec->output_stream.read();
 
@@ -114,6 +116,7 @@ void QPSKDemodModule::process()
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
+        progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -123,93 +126,12 @@ void QPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
-    if (fileThread.joinable())
-        fileThread.join();
-
-    logger->debug("FILE OK");
-}
-
-#include <dsp/dc_blocker.h>
-
-void QPSKDemodModule::fileThreadFunction()
-{
-    libdsp::DCBlocker dcB(320, true);
-    int gotten;
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
-    {
-        // Get baseband, possibly convert to F32
-        if (f32)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)in_pipe.writeBuf, d_buffer_size * sizeof(std::complex<float>));
-            else
-                gotten = input_fifo->pop((uint8_t *)in_pipe.writeBuf, d_buffer_size, sizeof(std::complex<float>));
-        }
-        else if (i16)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i16, d_buffer_size, sizeof(int16_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i16[i * 2] + (float)buffer_i16[i * 2 + 1] * 1if;
-            }
-        }
-        else if (i8)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(int8_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i8[i * 2] + (float)buffer_i8[i * 2 + 1] * 1if;
-            }
-        }
-        else if (w8)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(uint8_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                float imag = (buffer_u8[i * 2] - 127) * 0.004f;
-                float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = real + imag * 1if;
-            }
-        }
-
-        if (input_data_type == DATA_FILE)
-            progress = data_in.tellg();
-        else
-            progress = 0;
-
-        if (d_dc_block)
-            dcB.work(in_pipe.writeBuf, input_data_type == DATA_FILE ? d_buffer_size : gotten, in_pipe.writeBuf);
-
-        in_pipe.swap(d_buffer_size);
-    }
-
-    if (input_data_type == DATA_FILE)
-        data_in.close();
-
-    // Exit all threads... Without causing a race condition!
-    in_pipe.stopWriter();
-
+    // Stop
+    file_source->stop();
     agc->stop();
     rrc->stop();
     pll->stop();
     rec->stop();
-
-    data_out.close();
 }
 
 void QPSKDemodModule::drawUI()
