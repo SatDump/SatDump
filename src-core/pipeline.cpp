@@ -21,7 +21,7 @@ void Pipeline::run(std::string input_file,
 
     int stepC = 0;
 
-    bool foundLevel;
+    bool foundLevel = false;
 
     for (PipelineStep &step : steps)
     {
