@@ -1,5 +1,5 @@
 #include "module_noaa_hrpt_demod.h"
-#include <dsp/fir_gen.h>
+#include "modules/common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -17,7 +17,7 @@ namespace noaa
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
         agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 0.002e-3f, 1.0f, 0.5f / 32768.0f, 65536);
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01f, 2) / 4.0f, (3.0f * M_PI * 100e3f) / (float)d_samplerate);
-        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, libdsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
+        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
         rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
         def = std::make_shared<NOAADeframer>();
 
