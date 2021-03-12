@@ -4,7 +4,7 @@
 #include "modules/common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 8192 * 10
 
 // Returns the asked bit!
 template <typename T>
@@ -81,12 +81,14 @@ namespace falcon
                 for (std::array<uint8_t, CADU_SIZE> cadu : frameBuffer)
                 {
                     // RS Correction
-                 //   for (int i = 0; i < 5; i++)
-                 //   {
-                 //       reedSolomon.deinterleave(&cadu[4], rsWorkBuffer, i, 5);
-                 //       errors[i] = reedSolomon.decode_rs8(rsWorkBuffer);
-                 //       reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
-                 //   }
+                    for (int i = 0; i < 5; i++)
+                    {
+                        reedSolomon.deinterleave(&cadu[4], rsWorkBuffer, i, 5);
+                        errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
+                        reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
+                    }
+
+                    derand.work(&cadu[4], CADU_SIZE);
 
                     data_out.write((char *)&cadu, CADU_SIZE);
                 }
@@ -154,7 +156,7 @@ namespace falcon
                     ImGui::TextColored(colorSynced, "SYNCED");
             }
 
-            /*ImGui::Spacing();
+            ImGui::Spacing();
 
             ImGui::Button("Reed-Solomon", {200, 20});
             {
@@ -170,7 +172,7 @@ namespace falcon
                     else
                         ImGui::TextColored(colorSynced, "%i ", i);
                 }
-            }*/
+            }
         }
         ImGui::EndGroup();
 

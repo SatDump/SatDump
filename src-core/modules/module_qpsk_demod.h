@@ -11,13 +11,18 @@
 #include <fstream>
 #include <atomic>
 
+#include "modules/common/dsp/new/agc.h"
+#include "modules/common/dsp/new/fir.h"
+#include "modules/common/dsp/new/costas_loop.h"
+#include "modules/common/dsp/new/clock_recovery_mm.h"
+
 class QPSKDemodModule : public ProcessingModule
 {
 protected:
-    std::shared_ptr<libdsp::AgcCC> agc;
-    std::shared_ptr<dsp::FIRFilterCCF> rrc;
-    std::shared_ptr<libdsp::CostasLoop> pll;
-    std::shared_ptr<dsp::ClockRecoveryMMCC> rec;
+    std::shared_ptr<dsp::AGCBlock> agc;
+    std::shared_ptr<dsp::CCFIRBlock> rrc;
+    std::shared_ptr<dsp::CostasLoopBlock> pll;
+    std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
 
     const float d_agc_rate;
     const int d_samplerate;
@@ -32,12 +37,6 @@ protected:
 
     // All FIFOs we use along the way
     dsp::stream<std::complex<float>> in_pipe;
-    dsp::stream<std::complex<float>> agc_pipe;
-    dsp::stream<std::complex<float>> rrc_pipe;
-    dsp::stream<std::complex<float>> pll_pipe;
-    dsp::stream<std::complex<float>> rec_pipe;
-
-    std::atomic<bool> agcRun, rrcRun, pllRun, recRun;
 
     // Int16 buffer
     int16_t *buffer_i16;
@@ -58,12 +57,8 @@ protected:
     }
 
     void fileThreadFunction();
-    void agcThreadFunction();
-    void rrcThreadFunction();
-    void pllThreadFunction();
-    void clockrecoveryThreadFunction();
 
-    std::thread fileThread, agcThread, rrcThread, pllThread, recThread;
+    std::thread fileThread;
 
     std::ifstream data_in;
     std::ofstream data_out;

@@ -118,7 +118,7 @@ namespace falcon
                     // If we filled the buffer, output it
                     if (--wroteBits == 0)
                     {
-                        frameBuffer[wroteBytes] = outBuffer ^ d_rantab[wroteBytes];
+                        frameBuffer[wroteBytes] = outBuffer;// ^ d_rantab[wroteBytes];
                         wroteBytes++;
                         wroteBits = 8;
                     }

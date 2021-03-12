@@ -40,10 +40,10 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
     }
 
     // Init DSP blocks
-    agc = std::make_shared<libdsp::AgcCC>(d_agc_rate, 1.0f, 1.0f, 65536);
-    rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
-    pll = std::make_shared<libdsp::CostasLoop>(d_loop_bw, 4);
-    rec = std::make_shared<dsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    agc = std::make_shared<dsp::AGCBlock>(in_pipe, d_agc_rate, 1.0f, 1.0f, 65536);
+    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+    pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
 
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
@@ -89,29 +89,28 @@ void QPSKDemodModule::process()
 
     time_t lastTime = 0;
 
-    agcRun = rrcRun = pllRun = recRun = true;
-
+    // Start
     fileThread = std::thread(&QPSKDemodModule::fileThreadFunction, this);
-    agcThread = std::thread(&QPSKDemodModule::agcThreadFunction, this);
-    rrcThread = std::thread(&QPSKDemodModule::rrcThreadFunction, this);
-    pllThread = std::thread(&QPSKDemodModule::pllThreadFunction, this);
-    recThread = std::thread(&QPSKDemodModule::clockrecoveryThreadFunction, this);
+    agc->start();
+    rrc->start();
+    pll->start();
+    rec->start();
 
     int dat_size = 0;
     while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
     {
-        dat_size = rec_pipe.read(); //rec_pipe->read(rec_buffer2, d_buffer_size);
+        dat_size = rec->output_stream.read();
 
         if (dat_size <= 0)
             continue;
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec_pipe.readBuf[i].imag() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec_pipe.readBuf[i].real() * 100);
+            sym_buffer[i * 2] = clamp(rec->output_stream.readBuf[i].imag() * 100);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream.readBuf[i].real() * 100);
         }
 
-        rec_pipe.flush();
+        rec->output_stream.flush();
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
@@ -197,133 +196,20 @@ void QPSKDemodModule::fileThreadFunction()
             dcB.work(in_pipe.writeBuf, input_data_type == DATA_FILE ? d_buffer_size : gotten, in_pipe.writeBuf);
 
         in_pipe.swap(d_buffer_size);
-        //in_pipe->write(in_buffer, input_data_type == DATA_FILE ? d_buffer_size : gotten);
     }
 
     if (input_data_type == DATA_FILE)
         data_in.close();
 
     // Exit all threads... Without causing a race condition!
-    agcRun = rrcRun = pllRun = recRun = false;
-
     in_pipe.stopWriter();
-    in_pipe.stopReader();
 
-    agc_pipe.stopWriter();
-
-    if (agcThread.joinable())
-        agcThread.join();
-
-    logger->debug("AGC OK");
-
-    agc_pipe.stopReader();
-    rrc_pipe.stopWriter();
-
-    if (rrcThread.joinable())
-        rrcThread.join();
-
-    logger->debug("RRC OK");
-
-    rrc_pipe.stopReader();
-    pll_pipe.stopWriter();
-
-    if (pllThread.joinable())
-        pllThread.join();
-
-    logger->debug("PLL OK");
-
-    pll_pipe.stopReader();
-    rec_pipe.stopWriter();
-
-    if (recThread.joinable())
-        recThread.join();
-
-    logger->debug("REC OK");
+    agc->stop();
+    rrc->stop();
+    pll->stop();
+    rec->stop();
 
     data_out.close();
-
-    rec_pipe.stopReader();
-}
-
-void QPSKDemodModule::agcThreadFunction()
-{
-    int gotten;
-    while (agcRun)
-    {
-        gotten = in_pipe.read(); //->read(in_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        /// AGC
-        agc->work(in_pipe.readBuf, gotten, agc_pipe.writeBuf);
-
-        in_pipe.flush();
-        agc_pipe.swap(gotten); //->write(agc_buffer, gotten);
-    }
-}
-
-void QPSKDemodModule::rrcThreadFunction()
-{
-    int gotten;
-    while (rrcRun)
-    {
-        gotten = agc_pipe.read(); //->read(agc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Root-raised-cosine filtering
-        int out = rrc->work(agc_pipe.readBuf, gotten, rrc_pipe.writeBuf);
-
-        agc_pipe.flush();
-        rrc_pipe.swap(out); //->write(rrc_buffer, out);
-    }
-}
-
-void QPSKDemodModule::pllThreadFunction()
-{
-    int gotten;
-    while (pllRun)
-    {
-        gotten = rrc_pipe.read(); //->read(rrc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Costas loop, frequency offset recovery
-        pll->work(rrc_pipe.readBuf, gotten, pll_pipe.writeBuf);
-
-        rrc_pipe.flush();
-        pll_pipe.swap(gotten); //->write(pll_buffer, gotten);
-    }
-}
-
-void QPSKDemodModule::clockrecoveryThreadFunction()
-{
-    int gotten;
-    while (recRun)
-    {
-        gotten = pll_pipe.read(); //->read(pll_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        int recovered_size = 0;
-
-        try
-        {
-            // Clock recovery
-            recovered_size = rec->work(pll_pipe.readBuf, gotten, rec_pipe.writeBuf);
-        }
-        catch (std::runtime_error &e)
-        {
-            logger->error(e.what());
-        }
-
-        pll_pipe.flush();
-        rec_pipe.swap(recovered_size); //->write(rec_buffer, recovered_size);
-    }
 }
 
 void QPSKDemodModule::drawUI()
