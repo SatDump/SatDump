@@ -10,11 +10,13 @@
 #include "modules/common/dsp/costas_loop.h"
 #include "modules/common/dsp/clock_recovery_mm.h"
 #include "modules/common/dsp/file_source.h"
+#include "modules/common/dsp/dc_blocker.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
 protected:
     std::shared_ptr<dsp::FileSourceBlock> file_source;
+    std::shared_ptr<dsp::DCBlockerBlock> dcb;
     std::shared_ptr<dsp::AGCBlock> agc;
     std::shared_ptr<dsp::CCFIRBlock> rrc;
     std::shared_ptr<dsp::CostasLoopBlock> pll;

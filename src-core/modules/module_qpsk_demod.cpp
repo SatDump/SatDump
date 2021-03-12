@@ -24,7 +24,9 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
 {
     // Init DSP blocks
     file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
-    agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+    if (d_dc_block)
+        dcb = std::make_shared<dsp::DCBlockerBlock>(file_source->output_stream, 1024, true);
+    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
@@ -69,6 +71,8 @@ void QPSKDemodModule::process()
 
     // Start
     file_source->start();
+    if (d_dc_block)
+        dcb->start();
     agc->start();
     rrc->start();
     pll->start();
@@ -104,6 +108,8 @@ void QPSKDemodModule::process()
 
     // Stop
     file_source->stop();
+    if (d_dc_block)
+        dcb->stop();
     agc->stop();
     rrc->stop();
     pll->stop();
