@@ -1,7 +1,7 @@
 #include "module_falcon_tlm_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon.h"
 #include "modules/common/sathelper/derandomizer.h"
+#include "reedsolomon.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192 * 10
@@ -40,7 +40,7 @@ namespace falcon
 
         time_t lastTime = 0;
 
-        sathelper::ReedSolomon reedSolomon;
+        ReedSolomon reedSolomon;
         sathelper::Derandomizer derand;
 
         // Final buffer after decoding
