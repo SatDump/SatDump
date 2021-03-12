@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+option(NOGUI "Disable building the GUI" OFF)
+
 if(APPLE)
     include_directories(/usr/local/include)
     include_directories(/usr/local/opt/jpeg-turbo/include)
@@ -34,5 +36,9 @@ project (SatDump)
 
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
+
+if (NOT NOGUI)
 add_subdirectory(src-ui)
+endif ()
+
 add_subdirectory(src-testing)
