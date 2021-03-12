@@ -24,8 +24,6 @@ namespace dsp
         delete[] buffer_u8;
 
         d_input_file.close();
-
-        Block::~Block();
     }
 
     void FileSourceBlock::work()
