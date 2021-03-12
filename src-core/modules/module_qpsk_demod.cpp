@@ -22,26 +22,8 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
-    if (parameters["baseband_format"] == "i16")
-    {
-        i16 = true;
-    }
-    else if (parameters["baseband_format"] == "i8")
-    {
-        i8 = true;
-    }
-    else if (parameters["baseband_format"] == "f32")
-    {
-        f32 = true;
-    }
-    else if (parameters["baseband_format"] == "w8")
-    {
-        w8 = true;
-    }
-
     // Init DSP blocks
-    dsp::stream<void> dummystream;
-    file_source = std::make_shared<dsp::FileSourceBlock>(dummystream, d_input_file, dsp::BasebandType::INTEGER_16, d_buffer_size);
+    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
     agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
@@ -49,9 +31,6 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
 
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
-    buffer_i16 = new int16_t[d_buffer_size * 2];
-    buffer_i8 = new int8_t[d_buffer_size * 2];
-    buffer_u8 = new uint8_t[d_buffer_size * 2];
 }
 
 std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
@@ -67,9 +46,6 @@ std::vector<ModuleDataType> QPSKDemodModule::getOutputTypes()
 QPSKDemodModule::~QPSKDemodModule()
 {
     delete[] sym_buffer;
-    delete[] buffer_i16;
-    delete[] buffer_i8;
-    delete[] buffer_u8;
 }
 
 void QPSKDemodModule::process()
@@ -101,18 +77,18 @@ void QPSKDemodModule::process()
     int dat_size = 0;
     while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
     {
-        dat_size = rec->output_stream.read();
+        dat_size = rec->output_stream->read();
 
         if (dat_size <= 0)
             continue;
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream.readBuf[i].imag() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream.readBuf[i].real() * 100);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * 100);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * 100);
         }
 
-        rec->output_stream.flush();
+        rec->output_stream->flush();
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
@@ -132,6 +108,8 @@ void QPSKDemodModule::process()
     rrc->stop();
     pll->stop();
     rec->stop();
+
+    data_out.close();
 }
 
 void QPSKDemodModule::drawUI()

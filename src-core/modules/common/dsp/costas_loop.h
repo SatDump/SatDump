@@ -12,6 +12,6 @@ namespace dsp
         void work();
 
     public:
-        CostasLoopBlock(dsp::stream<std::complex<float>> &input, float loop_bw, unsigned int order);
+        CostasLoopBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float loop_bw, unsigned int order);
     };
 }

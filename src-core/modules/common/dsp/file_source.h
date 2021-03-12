@@ -15,9 +15,13 @@ namespace dsp
         WAV_8
     };
 
-    class FileSourceBlock : public Block<void, std::complex<float>>
+    BasebandType BasebandTypeFromString(std::string type);
+
+    class FileSourceBlock : public Block<uint8_t, std::complex<float>>
     {
     private:
+        dsp::stream<uint8_t> dummystream;
+
         std::ifstream d_input_file;
         const BasebandType d_type;
         std::atomic<size_t> d_filesize;
@@ -34,7 +38,7 @@ namespace dsp
         uint8_t *buffer_u8;
 
     public:
-        FileSourceBlock(dsp::stream<void> &input, std::string file, BasebandType type, int buffer_size);
+        FileSourceBlock(std::string file, BasebandType type, int buffer_size);
         ~FileSourceBlock();
         size_t getFilesize();
         size_t getPosition();

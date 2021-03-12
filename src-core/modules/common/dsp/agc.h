@@ -12,6 +12,6 @@ namespace dsp
         void work();
 
     public:
-        AGCBlock(dsp::stream<std::complex<float>> &input, float agc_rate, float reference, float gain, float max_gain);
+        AGCBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float agc_rate, float reference, float gain, float max_gain);
     };
 }

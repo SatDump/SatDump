@@ -2,20 +2,14 @@
 
 #include "module.h"
 #include <complex>
-#include <dsp/agc.h>
-#include "modules/common/dsp/fir_filter.h"
-#include "modules/common/dsp/clock_recovery_mm.h"
-#include <dsp/costas_loop.h>
-#include "buffer.h"
 #include <thread>
 #include <fstream>
 #include <atomic>
-
-#include "modules/common/dsp/new/agc.h"
-#include "modules/common/dsp/new/fir.h"
-#include "modules/common/dsp/new/costas_loop.h"
-#include "modules/common/dsp/new/clock_recovery_mm.h"
-#include "modules/common/dsp/new/file_source.h"
+#include "modules/common/dsp/agc.h"
+#include "modules/common/dsp/fir.h"
+#include "modules/common/dsp/costas_loop.h"
+#include "modules/common/dsp/clock_recovery_mm.h"
+#include "modules/common/dsp/file_source.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
@@ -36,15 +30,6 @@ protected:
     const bool d_dc_block;
 
     int8_t *sym_buffer;
-
-    // Int16 buffer
-    int16_t *buffer_i16;
-    // Int8 buffer
-    int8_t *buffer_i8;
-    // Uint8 buffer
-    uint8_t *buffer_u8;
-
-    bool f32 = false, i16 = false, i8 = false, w8 = false;
 
     int8_t clamp(float x)
     {

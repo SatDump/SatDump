@@ -1,7 +1,7 @@
 #pragma once
 
 #include "block.h"
-#include "modules/common/dsp/fir_filter.h"
+#include "lib/fir_filter.h"
 
 namespace dsp
 {
@@ -12,7 +12,7 @@ namespace dsp
         void work();
 
     public:
-        CCFIRBlock(dsp::stream<std::complex<float>> &input, int decimation, std::vector<float> taps);
+        CCFIRBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, int decimation, std::vector<float> taps);
     };
 
     class FFFIRBlock : public Block<float, float>
@@ -22,6 +22,6 @@ namespace dsp
         void work();
 
     public:
-        FFFIRBlock(dsp::stream<float> &input, int decimation, std::vector<float> taps);
+        FFFIRBlock(std::shared_ptr<dsp::stream<float>> input, int decimation, std::vector<float> taps);
     };
 }

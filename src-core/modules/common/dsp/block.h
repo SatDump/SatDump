@@ -2,6 +2,7 @@
 
 #include "modules/buffer.h"
 #include <thread>
+#include <memory>
 
 namespace dsp
 {
@@ -12,6 +13,7 @@ namespace dsp
         std::thread d_thread;
         bool should_run;
         virtual void work() = 0;
+        bool d_got_input;
         void run()
         {
             while (should_run)
@@ -19,12 +21,14 @@ namespace dsp
         }
 
     public:
-        dsp::stream<IN_T> &input_stream;
-        dsp::stream<OUT_T> output_stream;
+        std::shared_ptr<dsp::stream<IN_T>> input_stream;
+        std::shared_ptr<dsp::stream<OUT_T>> output_stream;
 
     public:
-        Block(dsp::stream<IN_T> &input) : input_stream(input)
+        Block(std::shared_ptr<dsp::stream<IN_T>> input) : input_stream(input)
         {
+            d_got_input = true;
+            output_stream = std::make_shared<dsp::stream<OUT_T>>();
         }
         ~Block()
         {
@@ -38,8 +42,9 @@ namespace dsp
         {
             should_run = false;
 
-            input_stream.stopReader();
-            output_stream.stopWriter();
+            if (d_got_input)
+                input_stream->stopReader();
+            output_stream->stopWriter();
 
             if (d_thread.joinable())
                 d_thread.join();

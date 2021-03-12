@@ -21,58 +21,32 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
                                                                                                                                           d_const_scale(std::stof(parameters["constellation_scale"]))
 {
-    if (parameters["baseband_format"] == "i16")
-    {
-        i16 = true;
-    }
-    else if (parameters["baseband_format"] == "i8")
-    {
-        i8 = true;
-    }
-    else if (parameters["baseband_format"] == "f32")
-    {
-        f32 = true;
-    }
-    else if (parameters["baseband_format"] == "w8")
-    {
-        w8 = true;
-    }
-
     // Init DSP blocks
-    dcb = std::make_shared<libdsp::DCBlocker>(1024, true);
-    agc = std::make_shared<libdsp::AgcCC>(d_agc_rate, 1.0f, 1.0f, 65536);
-    rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
-    pll = std::make_shared<libdsp::CostasLoop>(d_loop_bw, 4);
-    del = std::make_shared<DelayOneImag>();
-    rec = std::make_shared<dsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+    if (d_dc_block)
+        dcb = std::make_shared<dsp::DCBlockerBlock>(file_source->output_stream, 1024, true);
+    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+    pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
+    del = std::make_shared<dsp::DelayOneImagBlock>(pll->output_stream);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(del->output_stream, (float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 
     // Buffers
-    pll_buffer = new std::complex<float>[d_buffer_size];
     sym_buffer = new int8_t[d_buffer_size * 2];
-
-    buffer_i16 = new int16_t[d_buffer_size * 2];
-    buffer_i8 = new int8_t[d_buffer_size * 2];
-    buffer_u8 = new uint8_t[d_buffer_size * 2];
 }
 
 OQPSKDemodModule::~OQPSKDemodModule()
 {
-    delete[] pll_buffer;
     delete[] sym_buffer;
-    delete[] buffer_i16;
-    delete[] buffer_i8;
-    delete[] buffer_u8;
-    //delete[] in_pipe;
-    //delete[] rrc_pipe;
-    //delete[] agc_pipe;
-    //delete[] pll_pipe;
-    //delete[] rec_pipe;
 }
 
 void OQPSKDemodModule::process()
 {
-    filesize = getFilesize(d_input_file);
-    data_in = std::ifstream(d_input_file, std::ios::binary);
+    if (input_data_type == DATA_FILE)
+        filesize = file_source->getFilesize();
+    else
+        filesize = 0;
+
     data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
     d_output_files.push_back(d_output_file_hint + ".soft");
 
@@ -82,32 +56,35 @@ void OQPSKDemodModule::process()
 
     time_t lastTime = 0;
 
-    agcRun = rrcRun = pllRun = recRun = true;
-
-    fileThread = std::thread(&OQPSKDemodModule::fileThreadFunction, this);
-    agcThread = std::thread(&OQPSKDemodModule::agcThreadFunction, this);
-    rrcThread = std::thread(&OQPSKDemodModule::rrcThreadFunction, this);
-    pllThread = std::thread(&OQPSKDemodModule::pllThreadFunction, this);
-    recThread = std::thread(&OQPSKDemodModule::clockrecoveryThreadFunction, this);
+    // Start
+    file_source->start();
+    if (d_dc_block)
+        dcb->start();
+    agc->start();
+    rrc->start();
+    pll->start();
+    del->start();
+    rec->start();
 
     int dat_size = 0;
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
+    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
     {
-        dat_size = rec_pipe.read(); //->read(rec_buffer2, d_buffer_size);
+        dat_size = rec->output_stream->read(); //->read(rec_buffer2, d_buffer_size);
 
         if (dat_size <= 0)
             continue;
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec_pipe.readBuf[i].imag() * d_const_scale);
-            sym_buffer[i * 2 + 1] = clamp(rec_pipe.readBuf[i].real() * d_const_scale);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * d_const_scale);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * d_const_scale);
         }
 
-        rec_pipe.flush();
+        rec->output_stream->flush();
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
+        progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -117,190 +94,17 @@ void OQPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
-    if (fileThread.joinable())
-        fileThread.join();
-
-    logger->debug("FILE OK");
-}
-
-void OQPSKDemodModule::fileThreadFunction()
-{
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
-    {
-        // Get baseband, possibly convert to F32
-        if (f32)
-        {
-            data_in.read((char *)in_pipe.writeBuf, d_buffer_size * sizeof(std::complex<float>));
-        }
-        else if (i16)
-        {
-            data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i16[i * 2] + (float)buffer_i16[i * 2 + 1] * 1if;
-            }
-        }
-        else if (i8)
-        {
-            data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i8[i * 2] + (float)buffer_i8[i * 2 + 1] * 1if;
-            }
-        }
-        else if (w8)
-        {
-            data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                float imag = (buffer_u8[i * 2] - 127) * 0.004f;
-                float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = real + imag * 1if;
-            }
-        }
-
-        progress = data_in.tellg();
-
-        if (d_dc_block)
-            dcb->work(in_pipe.writeBuf, d_buffer_size, in_pipe.writeBuf);
-        else
-            std::memcpy(in_pipe.writeBuf, in_pipe.writeBuf, d_buffer_size * sizeof(std::complex<float>));
-
-        in_pipe.swap(d_buffer_size); //->write(in_buffer1, d_buffer_size);
-        //pipe_push(in_pipe_producer, in_buffer1, d_buffer_size);
-    }
-
-    if (input_data_type == DATA_FILE)
-        data_in.close();
-
-    // Exit all threads... Without causing a race condition!
-    agcRun = rrcRun = pllRun = recRun = false;
-
-    in_pipe.stopWriter();
-    in_pipe.stopReader();
-
-    agc_pipe.stopWriter();
-
-    if (agcThread.joinable())
-        agcThread.join();
-
-    logger->debug("AGC OK");
-
-    agc_pipe.stopReader();
-    rrc_pipe.stopWriter();
-
-    if (rrcThread.joinable())
-        rrcThread.join();
-
-    logger->debug("RRC OK");
-
-    rrc_pipe.stopReader();
-    pll_pipe.stopWriter();
-
-    if (pllThread.joinable())
-        pllThread.join();
-
-    logger->debug("PLL OK");
-
-    pll_pipe.stopReader();
-    rec_pipe.stopWriter();
-
-    if (recThread.joinable())
-        recThread.join();
-
-    logger->debug("REC OK");
+    // Stop
+    file_source->stop();
+    if (d_dc_block)
+        dcb->stop();
+    agc->stop();
+    rrc->stop();
+    pll->stop();
+    del->stop();
+    rec->stop();
 
     data_out.close();
-
-    rec_pipe.stopReader();
-}
-
-void OQPSKDemodModule::agcThreadFunction()
-{
-    int gotten;
-    while (agcRun)
-    {
-        gotten = in_pipe.read(); //->read(in_buffer2, d_buffer_size);
-        //gotten = pipe_pop(in_pipe_consumer, in_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        /// AGC
-        agc->work(in_pipe.readBuf, gotten, agc_pipe.writeBuf);
-
-        in_pipe.flush();
-        agc_pipe.swap(gotten); //->write(agc_buffer, gotten);
-    }
-}
-
-void OQPSKDemodModule::rrcThreadFunction()
-{
-    int gotten;
-    while (rrcRun)
-    {
-        gotten = agc_pipe.read(); //->read(agc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Root-raised-cosine filtering
-        int out = rrc->work(agc_pipe.readBuf, gotten, rrc_pipe.writeBuf);
-
-        agc_pipe.flush();
-        rrc_pipe.swap(out); //->write(rrc_buffer, out);
-    }
-}
-
-void OQPSKDemodModule::pllThreadFunction()
-{
-    int gotten;
-    while (pllRun)
-    {
-        gotten = rrc_pipe.read(); //->read(rrc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Costas loop, frequency offset recovery
-        pll->work(rrc_pipe.readBuf, gotten, pll_buffer);
-
-        // Delay I by 1 sample
-        del->work(pll_buffer, gotten, pll_pipe.writeBuf);
-
-        rrc_pipe.flush();
-        pll_pipe.swap(gotten); //->write(pll_buffer1, gotten);
-    }
-}
-
-void OQPSKDemodModule::clockrecoveryThreadFunction()
-{
-    int gotten;
-    while (recRun)
-    {
-        gotten = pll_pipe.read(); //->read(pll_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        int recovered_size = 0;
-
-        try
-        {
-            // Clock recovery
-            recovered_size = rec->work(pll_pipe.readBuf, gotten, rec_pipe.writeBuf);
-        }
-        catch (std::runtime_error &e)
-        {
-            logger->error(e.what());
-        }
-
-        pll_pipe.flush();
-        rec_pipe.swap(recovered_size); //->write(rec_buffer, recovered_size);
-    }
 }
 
 void OQPSKDemodModule::drawUI()

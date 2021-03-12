@@ -16,35 +16,15 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
-    if (parameters["baseband_format"] == "i16")
-    {
-        i16 = true;
-    }
-    else if (parameters["baseband_format"] == "i8")
-    {
-        i8 = true;
-    }
-    else if (parameters["baseband_format"] == "f32")
-    {
-        f32 = true;
-    }
-    else if (parameters["baseband_format"] == "w8")
-    {
-        w8 = true;
-    }
-
     // Init DSP blocks
-    agc = std::make_shared<libdsp::AgcCC>(d_agc_rate, 1.0f, 1.0f, 65536);
-    rrc = std::make_shared<dsp::FIRFilterCCF>(1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
-    pll = std::make_shared<libdsp::CostasLoop>(d_loop_bw, 2);
-    rec = std::make_shared<dsp::ClockRecoveryMMCC>((float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+    agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+    pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
 
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
-
-    buffer_i16 = new int16_t[d_buffer_size * 2];
-    buffer_i8 = new int8_t[d_buffer_size * 2];
-    buffer_u8 = new uint8_t[d_buffer_size * 2];
 }
 
 std::vector<ModuleDataType> BPSKDemodModule::getInputTypes()
@@ -60,25 +40,18 @@ std::vector<ModuleDataType> BPSKDemodModule::getOutputTypes()
 BPSKDemodModule::~BPSKDemodModule()
 {
     delete[] sym_buffer;
-    delete[] buffer_i16;
-    delete[] buffer_i8;
-    delete[] buffer_u8;
-    //delete[] in_pipe;
-    //delete[] rrc_pipe;
-    //delete[] agc_pipe;
-    //delete[] pll_pipe;
-    //delete[] rec_pipe;
 }
 
 void BPSKDemodModule::process()
 {
     if (input_data_type == DATA_FILE)
-        filesize = getFilesize(d_input_file);
+        filesize = file_source->getFilesize();
     else
         filesize = 0;
 
-    if (input_data_type == DATA_FILE)
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+    // if (input_data_type == DATA_FILE)
+    //     data_in = std::ifstream(d_input_file, std::ios::binary);
+
     data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
     d_output_files.push_back(d_output_file_hint + ".soft");
 
@@ -88,31 +61,31 @@ void BPSKDemodModule::process()
 
     time_t lastTime = 0;
 
-    agcRun = rrcRun = pllRun = recRun = true;
-
-    fileThread = std::thread(&BPSKDemodModule::fileThreadFunction, this);
-    agcThread = std::thread(&BPSKDemodModule::agcThreadFunction, this);
-    rrcThread = std::thread(&BPSKDemodModule::rrcThreadFunction, this);
-    pllThread = std::thread(&BPSKDemodModule::pllThreadFunction, this);
-    recThread = std::thread(&BPSKDemodModule::clockrecoveryThreadFunction, this);
+    // Start
+    file_source->start();
+    agc->start();
+    rrc->start();
+    pll->start();
+    rec->start();
 
     int dat_size = 0;
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
+    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
     {
-        dat_size = rec_pipe.read(); //->read(rec_buffer2, d_buffer_size);
+        dat_size = rec->output_stream->read();
 
         if (dat_size <= 0)
             continue;
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i] = clamp(rec_pipe.readBuf[i].real() * 50);
+            sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real() * 50);
         }
 
-        rec_pipe.flush();
+        rec->output_stream->flush();
 
         data_out.write((char *)sym_buffer, dat_size);
 
+        progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -122,205 +95,14 @@ void BPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
-    if (fileThread.joinable())
-        fileThread.join();
-
-    logger->debug("FILE OK");
-}
-
-#include <dsp/dc_blocker.h>
-
-void BPSKDemodModule::fileThreadFunction()
-{
-    libdsp::DCBlocker dcB(320, true);
-    int gotten;
-    while (input_data_type == DATA_STREAM ? input_active.load() : !data_in.eof())
-    {
-        // Get baseband, possibly convert to F32
-        if (f32)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)in_pipe.writeBuf, d_buffer_size * sizeof(std::complex<float>));
-            else
-                gotten = input_fifo->pop((uint8_t *)in_pipe.writeBuf, d_buffer_size, sizeof(std::complex<float>));
-        }
-        else if (i16)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i16, d_buffer_size, sizeof(int16_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i16[i * 2] + (float)buffer_i16[i * 2 + 1] * 1if;
-            }
-        }
-        else if (i8)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(int8_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = (float)buffer_i8[i * 2] + (float)buffer_i8[i * 2 + 1] * 1if;
-            }
-        }
-        else if (w8)
-        {
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
-            else
-                gotten = input_fifo->pop((uint8_t *)buffer_i8, d_buffer_size, sizeof(uint8_t) * 2);
-
-            for (int i = 0; i < d_buffer_size; i++)
-            {
-                float imag = (buffer_u8[i * 2] - 127) * 0.004f;
-                float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
-                using namespace std::complex_literals;
-                in_pipe.writeBuf[i] = real + imag * 1if;
-            }
-        }
-
-        if (input_data_type == DATA_FILE)
-            progress = data_in.tellg();
-        else
-            progress = 0;
-
-        if (d_dc_block)
-            dcB.work(in_pipe.writeBuf, input_data_type == DATA_FILE ? d_buffer_size : gotten, in_pipe.writeBuf);
-
-        in_pipe.swap(d_buffer_size); //->write(in_buffer, input_data_type == DATA_FILE ? d_buffer_size : gotten);
-    }
-
-    if (input_data_type == DATA_FILE)
-        data_in.close();
-
-    // Exit all threads... Without causing a race condition!
-    agcRun = rrcRun = pllRun = recRun = false;
-
-    in_pipe.stopWriter();
-    in_pipe.stopReader();
-
-    agc_pipe.stopWriter();
-
-    if (agcThread.joinable())
-        agcThread.join();
-
-    logger->debug("AGC OK");
-
-    agc_pipe.stopReader();
-    rrc_pipe.stopWriter();
-
-    if (rrcThread.joinable())
-        rrcThread.join();
-
-    logger->debug("RRC OK");
-
-    rrc_pipe.stopReader();
-    pll_pipe.stopWriter();
-
-    if (pllThread.joinable())
-        pllThread.join();
-
-    logger->debug("PLL OK");
-
-    pll_pipe.stopReader();
-    rec_pipe.stopWriter();
-
-    if (recThread.joinable())
-        recThread.join();
-
-    logger->debug("REC OK");
+    // Stop
+    file_source->stop();
+    agc->stop();
+    rrc->stop();
+    pll->stop();
+    rec->stop();
 
     data_out.close();
-
-    rec_pipe.stopReader();
-}
-
-void BPSKDemodModule::agcThreadFunction()
-{
-    int gotten;
-    while (agcRun)
-    {
-        gotten = in_pipe.read(); //->read(in_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        /// AGC
-        agc->work(in_pipe.readBuf, gotten, agc_pipe.writeBuf);
-
-        in_pipe.flush();
-        agc_pipe.swap(gotten); //->write(agc_buffer, gotten);
-    }
-}
-
-void BPSKDemodModule::rrcThreadFunction()
-{
-    int gotten;
-    while (rrcRun)
-    {
-        gotten = agc_pipe.read(); //->read(agc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Root-raised-cosine filtering
-        int out = rrc->work(agc_pipe.readBuf, gotten, rrc_pipe.writeBuf);
-
-        agc_pipe.flush();
-        rrc_pipe.swap(out); //->write(rrc_buffer, out);
-    }
-}
-
-void BPSKDemodModule::pllThreadFunction()
-{
-    int gotten;
-    while (pllRun)
-    {
-        gotten = rrc_pipe.read(); //->read(rrc_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        // Costas loop, frequency offset recovery
-        pll->work(rrc_pipe.readBuf, gotten, pll_pipe.writeBuf);
-
-        rrc_pipe.flush();
-        pll_pipe.swap(gotten); //->write(pll_buffer, gotten);
-    }
-}
-
-void BPSKDemodModule::clockrecoveryThreadFunction()
-{
-    int gotten;
-    while (recRun)
-    {
-        gotten = pll_pipe.read(); //->read(pll_buffer2, d_buffer_size);
-
-        if (gotten <= 0)
-            continue;
-
-        int recovered_size = 0;
-
-        try
-        {
-            // Clock recovery
-            recovered_size = rec->work(pll_pipe.readBuf, gotten, rec_pipe.writeBuf);
-        }
-        catch (std::runtime_error &e)
-        {
-            logger->error(e.what());
-        }
-
-        pll_pipe.flush();
-        rec_pipe.swap(recovered_size); //->write(rec_buffer, recovered_size);
-    }
 }
 
 void BPSKDemodModule::drawUI()
@@ -336,8 +118,8 @@ void BPSKDemodModule::drawUI()
 
         for (int i = 0; i < 2048; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec_pipe.readBuf[i].real() * 50) % 200,
-                                              ImGui::GetCursorScreenPos().y + (int)(100 + rec_pipe.readBuf[i].imag() * 50) % 200),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec->output_stream->readBuf[i].real() * 50) % 200,
+                                              ImGui::GetCursorScreenPos().y + (int)(100 + rec->output_stream->readBuf[i].imag() * 50) % 200),
                                        2,
                                        ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
         }
