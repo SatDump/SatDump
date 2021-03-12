@@ -54,7 +54,7 @@
 
 // Set version number of the library.
 #ifndef cimg_version
-#define cimg_version 296
+#define cimg_version 297
 
 /*-----------------------------------------------------------
  #
@@ -480,6 +480,17 @@ extern "C" {
 #undef uint64
 #undef int64
 }
+#endif
+
+// Configure HEIF support
+// (https://github.com/strukturag/libheif)
+//
+// Define 'cimg_use_heif' to enable HEIF support.
+//
+// HEIF library may be used to get a native support of '.heic' and '.avif' files.
+// (see method 'CImg<T>::load_heif()').
+#ifdef cimg_use_heif
+#include <libheif/heif_cxx.h>
 #endif
 
 // Configure LibMINC2 support.
@@ -23386,7 +23397,9 @@ namespace cimg_library_suffixed {
       static double mp_display_memory(_cimg_math_parser& mp) {
         cimg::unused(mp);
         std::fputc('\n',cimg::output());
-        mp.mem.display("[" cimg_appname "_math_parser] Memory snapshot");
+        CImg<charT> title(128);
+        cimg_snprintf(title,title._width,"%s (%u)","[" cimg_appname "_math_parser] Memory snapshot",mp.mem._width);
+        mp.mem.display(title);
         return cimg::type<double>::nan();
       }
 
@@ -51450,6 +51463,7 @@ namespace cimg_library_suffixed {
         else if (!cimg::strcasecmp(ext,"csv") ||
                  !cimg::strcasecmp(ext,"dlm") ||
                  !cimg::strcasecmp(ext,"txt")) load_dlm(filename);
+        else if (!cimg::strcasecmp(ext,"pdf")) load_pdf_external(filename);
 
         // 2D binary formats
         else if (!cimg::strcasecmp(ext,"bmp")) load_bmp(filename);
@@ -51479,6 +51493,8 @@ namespace cimg_library_suffixed {
                  !cimg::strcasecmp(ext,"raf") ||
                  !cimg::strcasecmp(ext,"srf")) load_dcraw_external(filename);
         else if (!cimg::strcasecmp(ext,"gif")) load_gif_external(filename);
+        else if (!cimg::strcasecmp(ext,"heic") ||
+                 !cimg::strcasecmp(ext,"avif")) load_heif(filename);
 
         // 3D binary formats
         else if (!cimg::strcasecmp(ext,"dcm") ||
@@ -51518,6 +51534,7 @@ namespace cimg_library_suffixed {
                  !cimg::strcasecmp(ext,"qt") ||
                  !cimg::strcasecmp(ext,"rm") ||
                  !cimg::strcasecmp(ext,"vob") ||
+                 !cimg::strcasecmp(ext,"webm") ||
                  !cimg::strcasecmp(ext,"wmv") ||
                  !cimg::strcasecmp(ext,"xvid") ||
                  !cimg::strcasecmp(ext,"mpeg")) load_video(filename);
@@ -52351,6 +52368,15 @@ namespace cimg_library_suffixed {
         } else { colormax = D; D = 1; }
       }
       std::fgetc(nfile);
+
+      if (filename) { // Check that dimensions specified in file does not exceed the buffer dimension
+        const cimg_int64 siz = cimg::fsize(filename);
+        if (W*H*D>siz)
+          throw CImgIOException(_cimg_instance
+                                "load_pnm(): Specified image dimensions in file '%s' exceed file size.",
+                                cimg_instance,
+                                filename);
+      }
 
       switch (ppm_type) {
       case 1 : { // 2D B&W ascii
@@ -54203,6 +54229,69 @@ namespace cimg_library_suffixed {
       return CImgList<T>().load_gif_external(filename).get_append(axis,align);
     }
 
+    //! Load image from a HEIC file.
+    /**
+       \param filename Filename, as a C-string.
+    **/
+    CImg<T>& load_heif(const char *const filename) {
+      return _load_heif(filename);
+    }
+
+    //! Load image from a HEIC file \newinstance.
+    static CImg<T> get_load_heif(const char *const filename) {
+      return CImg<T>().load_heif(filename);
+    }
+
+    CImg<T>& _load_heif(const char *const filename) {
+#ifndef cimg_use_heif
+      throw CImgArgumentException(_cimg_instance
+                                  "load_heif(): Specified filename is (null).",
+                                  cimg_instance);
+      return load_other(filename);
+#else
+      try {
+        heif::Context ctx;
+        ctx.read_from_file(filename);
+
+        heif::ImageHandle handle = ctx.get_primary_image_handle();
+        const heif::Image image =
+          handle.decode_image(heif_colorspace_RGB,handle.has_alpha_channel()?heif_chroma_interleaved_RGBA:
+                              heif_chroma_interleaved_RGB);
+        const int
+          W = image.get_width(heif_channel_interleaved),
+          H = image.get_height(heif_channel_interleaved),
+          S = handle.has_alpha_channel()?4:3;
+        assign(W,H,1,S);
+
+        int stride;
+        const unsigned char *const buffer = image.get_plane(heif_channel_interleaved,&stride);
+        T *ptr_r = _data, *ptr_g = data(0,0,0,1), *ptr_b = data(0,0,0,2), *ptr_a = S>3?data(0,0,0,3):0;
+        cimg_forY(*this,y) {
+          const unsigned char *ptrs = buffer + y*stride;
+          if (ptr_a) cimg_forX(*this,x) { // RGBA
+              *(ptr_r++) = (T)*(ptrs++);
+              *(ptr_g++) = (T)*(ptrs++);
+              *(ptr_b++) = (T)*(ptrs++);
+              *(ptr_a++) = (T)*(ptrs++);
+            }
+          else cimg_forX(*this,x) { // RGB
+              *(ptr_r++) = (T)*(ptrs++);
+              *(ptr_g++) = (T)*(ptrs++);
+              *(ptr_b++) = (T)*(ptrs++);
+            }
+        }
+      } catch (const heif::Error& e) {
+        throw CImgInstanceException(_cimg_instance
+                                    "load_heif(): Unable to decode image: %s",
+                                    cimg_instance,
+                                    e.get_message().c_str());
+      } catch (...) {
+        throw;
+      }
+      return *this;
+#endif
+    }
+
     //! Load image using GraphicsMagick's external tool 'gm'.
     /**
        \param filename Filename, as a C-string.
@@ -54432,6 +54521,63 @@ namespace cimg_library_suffixed {
     //! Load image from a DICOM file, using XMedcon's external tool 'medcon' \newinstance.
     static CImg<T> get_load_medcon_external(const char *const filename) {
       return CImg<T>().load_medcon_external(filename);
+    }
+
+    //! Load image from a .pdf file.
+    /**
+       \param filename Filename, as a C-string.
+       \param resolution Image resolution.
+    **/
+    CImg<T>& load_pdf_external(const char *const filename, const unsigned int resolution=400) {
+      if (!filename)
+        throw CImgArgumentException(_cimg_instance
+                                    "load_pdf_external(): Specified filename is (null).",
+                                    cimg_instance);
+      CImg<charT> command(1024), filename_tmp(256);
+      std::FILE *file = 0;
+      const CImg<charT> s_filename = CImg<charT>::string(filename)._system_strescape();
+#if cimg_OS==1
+      cimg_snprintf(command,command._width,"gs -q -dNOPAUSE -sDEVICE=ppmraw -o - -r%u \"%s\"",
+                    resolution,s_filename.data());
+      file = popen(command,"r");
+      if (file) {
+        const unsigned int omode = cimg::exception_mode();
+        cimg::exception_mode(0);
+        try { load_pnm(file); } catch (...) {
+          pclose(file);
+          cimg::exception_mode(omode);
+          throw CImgIOException(_cimg_instance
+                                "load_pdf_external(): Failed to load file '%s' with external command 'gs'.",
+                                cimg_instance,
+                                filename);
+        }
+        pclose(file);
+        return *this;
+      }
+#endif
+      do {
+        cimg_snprintf(filename_tmp,filename_tmp._width,"%s%c%s.ppm",
+                      cimg::temporary_path(),cimg_file_separator,cimg::filenamerand());
+        if ((file=cimg::std_fopen(filename_tmp,"rb"))!=0) cimg::fclose(file);
+      } while (file);
+      cimg_snprintf(command,command._width,"gs -q -dNOPAUSE -sDEVICE=ppmraw -o \"%s\" -r%u \"%s\"",
+                    CImg<charT>::string(filename_tmp)._system_strescape().data(),resolution,s_filename.data());
+      cimg::system(command,"gs");
+      if (!(file=cimg::std_fopen(filename_tmp,"rb"))) {
+        cimg::fclose(cimg::fopen(filename,"r"));
+        throw CImgIOException(_cimg_instance
+                              "load_pdf_external(): Failed to load file '%s' with external command 'gs'.",
+                              cimg_instance,
+                              filename);
+      } else cimg::fclose(file);
+      load_pnm(filename_tmp);
+      std::remove(filename_tmp);
+      return *this;
+    }
+
+    //! Load image from a .pdf file \newinstance.
+    static CImg<T> get_load_pdf_external(const char *const filename, const unsigned int resolution=400) {
+      return CImg<T>().load_pdf_external(filename,resolution);
     }
 
     //! Load image from a RAW Color Camera file, using external tool 'dcraw'.
@@ -55877,6 +56023,7 @@ namespace cimg_library_suffixed {
                !cimg::strcasecmp(ext,"qt") ||
                !cimg::strcasecmp(ext,"rm") ||
                !cimg::strcasecmp(ext,"vob") ||
+               !cimg::strcasecmp(ext,"webm") ||
                !cimg::strcasecmp(ext,"wmv") ||
                !cimg::strcasecmp(ext,"xvid") ||
                !cimg::strcasecmp(ext,"mpeg")) return save_video(fn);
@@ -60835,6 +60982,7 @@ namespace cimg_library_suffixed {
                  !cimg::strcasecmp(ext,"qt") ||
                  !cimg::strcasecmp(ext,"rm") ||
                  !cimg::strcasecmp(ext,"vob") ||
+                 !cimg::strcasecmp(ext,"webm") ||
                  !cimg::strcasecmp(ext,"wmv") ||
                  !cimg::strcasecmp(ext,"xvid") ||
                  !cimg::strcasecmp(ext,"mpeg")) load_video(filename);
@@ -62161,6 +62309,7 @@ namespace cimg_library_suffixed {
                !cimg::strcasecmp(ext,"qt") ||
                !cimg::strcasecmp(ext,"rm") ||
                !cimg::strcasecmp(ext,"vob") ||
+               !cimg::strcasecmp(ext,"webm") ||
                !cimg::strcasecmp(ext,"wmv") ||
                !cimg::strcasecmp(ext,"xvid") ||
                !cimg::strcasecmp(ext,"mpeg")) return save_video(fn);
@@ -62209,6 +62358,7 @@ namespace cimg_library_suffixed {
           !cimg::strcasecmp(ext,"qt") ||
           !cimg::strcasecmp(ext,"rm") ||
           !cimg::strcasecmp(ext,"vob") ||
+          !cimg::strcasecmp(ext,"webm") ||
           !cimg::strcasecmp(ext,"wmv") ||
           !cimg::strcasecmp(ext,"xvid") ||
           !cimg::strcasecmp(ext,"mpeg")) return true;
@@ -62779,7 +62929,7 @@ namespace cimg_library_suffixed {
                                       "save_video(): Frame [0] is an empty image.",
                                       cimglist_instance);
         const char
-          *const _codec = codec && *codec?codec:cimg_OS==2?"mpeg":"fmp4",
+          *const _codec = codec && *codec?codec:"h264",
           codec0 = cimg::uppercase(_codec[0]),
           codec1 = _codec[0]?cimg::uppercase(_codec[1]):0,
           codec2 = _codec[1]?cimg::uppercase(_codec[2]):0,
@@ -62858,7 +63008,9 @@ namespace cimg_library_suffixed {
 
       const char
         *const ext = cimg::split_filename(filename),
-        *const _codec = codec?codec:!cimg::strcasecmp(ext,"flv")?"flv":"mpeg2video";
+        *const _codec = codec?codec:
+        !cimg::strcasecmp(ext,"flv")?"flv":
+        !cimg::strcasecmp(ext,"mp4")?"h264":"mpeg2video";
 
       CImg<charT> command(1024), filename_tmp(256), filename_tmp2(256);
       CImgList<charT> filenames;
@@ -62880,7 +63032,8 @@ namespace cimg_library_suffixed {
         if (_data[l]._depth>1 || _data[l]._spectrum!=3) _data[l].get_resize(-100,-100,1,3).save_pnm(filename_tmp2);
         else _data[l].save_pnm(filename_tmp2);
       }
-      cimg_snprintf(command,command._width,"\"%s\" -i \"%s_%%6d.ppm\" -vcodec %s -b %uk -r %u -y \"%s\"",
+      cimg_snprintf(command,command._width,
+                    "\"%s\" -i \"%s_%%6d.ppm\" -pix_fmt yuv420p -vcodec %s -b %uk -r %u -y \"%s\"",
                     cimg::ffmpeg_path(),
                     CImg<charT>::string(filename_tmp)._system_strescape().data(),
                     _codec,bitrate,fps,
