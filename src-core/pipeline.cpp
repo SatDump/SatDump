@@ -36,7 +36,7 @@ void Pipeline::run(std::string input_file,
 
         std::vector<std::string> files;
 
-        for (PipelineModule &modStep : step.modules)
+        for (PipelineModule modStep : step.modules)
         {
             std::map<std::string, std::string> final_parameters = modStep.parameters;
             for (const std::pair<std::string, std::string> &param : parameters)
