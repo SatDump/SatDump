@@ -16,8 +16,8 @@ namespace npp
                                                                                                                                                     d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
                                                                                                                                                     d_soft_symbols(std::stoi(parameters["soft_symbols"])),
                                                                                                                                                     sw(0),
-                                                                                                                                                    //viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
-                                                                                                                                                    viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE * 2)
+                                                                                                                                                    zviterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
+                                                                                                                                                    //viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
@@ -69,7 +69,7 @@ namespace npp
             }
 
             // Perform Viterbi decoding
-            vout = viterbi.work((uint8_t *)soft_buffer, BUFFER_SIZE * 2, viterbi_out);
+            vout = viterbi.work(sym_buffer, BUFFER_SIZE, viterbi_out);
             //vout = viterbi.work((uint8_t*)soft_buffer, BUFFER_SIZE, viterbi_out);
 
             // Perform differential decoding

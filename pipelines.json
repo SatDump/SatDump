@@ -379,8 +379,8 @@
             },
             "cadu": {
                 "npp_hrd_decoder": {
-                    "viterbi_outsync_after": "500",
-                    "viterbi_ber_thresold": "0.220",
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"
                 }
             },
