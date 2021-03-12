@@ -14,12 +14,11 @@ extern "C"
 #include <correct.h>
 }
 
-namespace sathelper
+namespace falcon
 {
     class ReedSolomon
     {
     private:
-        bool copyParityToOutput;
         correct_reed_solomon *rs;
 
     public:
@@ -39,4 +38,4 @@ namespace sathelper
 
         ~ReedSolomon();
     };
-} // namespace sathelper
+}

@@ -8,7 +8,7 @@
 #include "reedsolomon.h"
 #include <cstring>
 
-namespace sathelper
+namespace falcon
 {
 
     unsigned char ToDualBasis[256] = {0x00, 0x7b, 0xaf, 0xd4, 0x99, 0xe2, 0x36, 0x4d, 0xfa, 0x81, 0x55, 0x2e, 0x63, 0x18, 0xcc, 0xb7, 0x86, 0xfd, 0x29, 0x52, 0x1f,
@@ -37,7 +37,7 @@ namespace sathelper
 
     ReedSolomon::ReedSolomon()
     {
-        this->rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 112, 11, 32);
+        this->rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 120, 11, 16);
     }
 
     ReedSolomon::~ReedSolomon()
@@ -74,7 +74,7 @@ namespace sathelper
         {
             err = 0;
             // Calculate wrong bytes
-            for (int i = 0; i < 223; i++)
+            for (int i = 0; i < 239; i++)
             {
                 if ((data[i] ^ odata[i]) != 0)
                 {
@@ -101,4 +101,4 @@ namespace sathelper
             output[i * I + pos] = data[i];
         }
     }
-} // namespace sathelper
+}
