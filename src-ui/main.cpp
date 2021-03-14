@@ -12,7 +12,7 @@
 #include <thread>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"
-#include "tinyfiledialogs/tinyfiledialogs.h"
+#include "portable-file-dialogs.h"
 #include "fft.h"
 #include "modules/common/ctpl/ctpl_stl.h"
 
@@ -298,23 +298,14 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Input"))
                             {
                                 logger->debug("Opening file dialog");
-                                /* auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+                                auto result = pfd::open_file("Open input file", ".", {".*"}, false);
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    input_file = result.result()[0];*/
-                                char const *result = tinyfd_openFileDialog("Open input file", // NULL or ""
-                                                                           NULL,              // NULL or ""
-                                                                           0,                 // 0 (2 in the following example)
-                                                                           NULL,              // NULL or char const * lFilterPatterns[2]={"*.png","*.jpg"};
-                                                                           "",                // NULL or "image files"
-                                                                           0);                // 0
-                                                                                              // in case of multiple files, the separator is |
-                                                                                              // returns NULL on cancel
-                                if (result != NULL)
-                                    input_file = result;
+                                    input_file = result.result()[0];
+
                                 logger->debug("Dir " + input_file);
                             }
 
@@ -331,19 +322,14 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                /*auto result = pfd::select_folder("Open output directory", ".");
+                                auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();*/
-                                char const *result = tinyfd_selectFolderDialog(
-                                    "Open output directory", // NULL or ""
-                                    NULL);                   // NULL or ""
-                                // returns NULL on cancel
-                                if (result != NULL)
-                                    output_file = result;
+                                    output_file = result.result();
+
                                 logger->debug("Dir " + output_file);
                             }
 
@@ -485,19 +471,14 @@ int main(int argc, char *argv[])
                             if (ImGui::Button("Select Output"))
                             {
                                 logger->debug("Opening file dialog");
-                                /*auto result = pfd::select_folder("Open output directory", ".");
+                                auto result = pfd::select_folder("Open output directory", ".");
                                 while (result.ready(1000))
                                 {
                                 }
 
                                 if (result.result().size() > 0)
-                                    output_file = result.result();*/
-                                char const *result = tinyfd_selectFolderDialog(
-                                    "Open output directory", // NULL or ""
-                                    NULL);                   // NULL or ""
-                                // returns NULL on cancel
-                                if (result != NULL)
-                                    output_file = result;
+                                    output_file = result.result();
+
                                 logger->debug("Dir " + output_file);
                             }
 
