@@ -5,7 +5,7 @@
  *      Author: Lucas teske
  */
 
-#include "reedsolomon.h"
+#include "reedsolomon_233.h"
 #include <cstring>
 
 namespace sathelper

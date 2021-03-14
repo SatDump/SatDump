@@ -85,6 +85,9 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/terra/module_terra_db_decoder.h"
 
 #include "modules/falcon/module_falcon_tlm_decoder.h"
+#include "modules/falcon/module_falcon_decoder.h"
+
+#include "modules/smap/module_smap_s_decoder.h"
 
 void registerModules()
 {
@@ -143,6 +146,9 @@ void registerModules()
     modules_registry.emplace(terra::TerraDBDecoderModule::getID(), terra::TerraDBDecoderModule::getInstance);
 
     modules_registry.emplace(falcon::FalconTLMDecoderModule::getID(), falcon::FalconTLMDecoderModule::getInstance);
+    modules_registry.emplace(falcon::FalconDecoderModule::getID(), falcon::FalconDecoderModule::getInstance);
+
+    modules_registry.emplace(smap::SMAPSDecoderModule::getID(), smap::SMAPSDecoderModule::getInstance);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

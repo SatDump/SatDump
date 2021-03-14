@@ -14,15 +14,15 @@ extern "C"
 #include <correct.h>
 }
 
-namespace falcon
+namespace sathelper
 {
-    class ReedSolomon
+    class ReedSolomon239
     {
     private:
         correct_reed_solomon *rs;
 
     public:
-        ReedSolomon();
+        ReedSolomon239();
 
         // CCSDS standard (255,223) RS codec with dual-basis symbol representation
         uint32_t decode_ccsds(uint8_t *data);
@@ -36,6 +36,6 @@ namespace falcon
         // Interleave by I
         void interleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t I);
 
-        ~ReedSolomon();
+        ~ReedSolomon239();
     };
 }

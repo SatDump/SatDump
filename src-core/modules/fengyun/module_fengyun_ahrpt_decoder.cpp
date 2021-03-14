@@ -1,6 +1,6 @@
 #include "module_fengyun_ahrpt_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon.h"
+#include "modules/common/sathelper/reedsolomon_233.h"
 #include "diff.h"
 #include "modules/common/ctpl/ctpl_stl.h"
 #include "modules/metop/instruments/iasi/utils.h"

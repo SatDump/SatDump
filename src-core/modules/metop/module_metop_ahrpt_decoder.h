@@ -3,7 +3,6 @@
 #include "module.h"
 #include <complex>
 #include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
-#include "modules/common/sathelper/reedsolomon.h"
 #include "viterbi.h"
 #include <fstream>
 
@@ -31,7 +30,6 @@ namespace metop
         std::atomic<size_t> progress;
 
         MetopViterbi viterbi;
-        sathelper::ReedSolomon reedSolomon;
         ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];

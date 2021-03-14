@@ -6,9 +6,9 @@
 #include "modules/common/ccsds/ccsds_1_0_proba/deframer.h"
 #include <dsp/random.h>
 
-namespace falcon
+namespace smap
 {
-    class FalconTLMDecoderModule : public ProcessingModule
+    class SMAPSDecoderModule : public ProcessingModule
     {
     protected:
         // Read buffer
@@ -28,8 +28,8 @@ namespace falcon
         libdsp::Random rng;
 
     public:
-        FalconTLMDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-        ~FalconTLMDecoderModule();
+        SMAPSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~SMAPSDecoderModule();
         void process();
         void drawUI();
 
