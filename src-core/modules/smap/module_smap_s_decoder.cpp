@@ -1,8 +1,9 @@
-#include "module_falcon_tlm_decoder.h"
+#include "module_smap_s_decoder.h"
 #include "logger.h"
 #include "modules/common/sathelper/derandomizer.h"
-#include "modules/common/sathelper/reedsolomon_239.h"
 #include "imgui/imgui.h"
+#include "modules/common/differential/nrzm.h"
+#include "modules/common/sathelper/reedsolomon_239.h"
 
 #define BUFFER_SIZE 8192 * 10
 
@@ -16,19 +17,19 @@ inline bool getBit(T data, int bit)
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-namespace falcon
+namespace smap
 {
-    FalconTLMDecoderModule::FalconTLMDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    SMAPSDecoderModule::SMAPSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
 
-    FalconTLMDecoderModule::~FalconTLMDecoderModule()
+    SMAPSDecoderModule::~SMAPSDecoderModule()
     {
         delete[] buffer;
     }
 
-    void FalconTLMDecoderModule::process()
+    void SMAPSDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -42,6 +43,7 @@ namespace falcon
 
         sathelper::ReedSolomon239 reedSolomon;
         sathelper::Derandomizer derand;
+        diff::NRZMDiff diff;
 
         // Final buffer after decoding
         uint8_t finalBuffer[BUFFER_SIZE];
@@ -72,6 +74,8 @@ namespace falcon
                 }
             }
 
+            diff.decode(finalBuffer, BUFFER_SIZE);
+
             // Deframe that! (Integrated derand)
             std::vector<std::array<uint8_t, CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
 
@@ -88,10 +92,9 @@ namespace falcon
                         reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
                     }
 
-                    derand.work(&cadu[4], CADU_SIZE);
+                    derand.work(&cadu[4], CADU_SIZE - 4);
 
-                    if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
-                        data_out.write((char *)&cadu, CADU_SIZE);
+                    data_out.write((char *)&cadu, CADU_SIZE);
                 }
             }
 
@@ -113,9 +116,9 @@ namespace falcon
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void FalconTLMDecoderModule::drawUI()
+    void SMAPSDecoderModule::drawUI()
     {
-        ImGui::Begin("Falcon 9 TLM Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("SMAP S-Band Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
@@ -182,18 +185,18 @@ namespace falcon
         ImGui::End();
     }
 
-    std::string FalconTLMDecoderModule::getID()
+    std::string SMAPSDecoderModule::getID()
     {
-        return "falcon_tlm_decoder";
+        return "smap_s_decoder";
     }
 
-    std::vector<std::string> FalconTLMDecoderModule::getParameters()
+    std::vector<std::string> SMAPSDecoderModule::getParameters()
     {
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> FalconTLMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> SMAPSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
     {
-        return std::make_shared<FalconTLMDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<SMAPSDecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace falcon
+} // namespace smap

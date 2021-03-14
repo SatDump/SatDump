@@ -1,6 +1,6 @@
 #include "module_terra_db_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon.h"
+#include "modules/common/sathelper/reedsolomon_233.h"
 #include "modules/common/sathelper/correlator.h"
 #include "modules/common/sathelper/packetfixer.h"
 #include "modules/common/sathelper/derandomizer.h"

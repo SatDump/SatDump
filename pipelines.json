@@ -527,6 +527,32 @@
             },
             "cadu": {
                 "falcon_tlm_decoder": {}
+            },
+            "products": {
+                "falcon_decoder": {}
+            }
+        }
+    },
+    "smap_s_link": {
+        "name": "SMAP S-Band Link",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 0,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "590000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.04",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "smap_s_decoder": {}
             }
         }
     }

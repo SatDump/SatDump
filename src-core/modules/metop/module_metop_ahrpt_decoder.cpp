@@ -1,4 +1,5 @@
 #include "module_metop_ahrpt_decoder.h"
+#include "modules/common/sathelper/reedsolomon_233.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -39,6 +40,8 @@ namespace metop
         logger->info("Decoding to " + d_output_file_hint + ".cadu");
 
         time_t lastTime = 0;
+
+        sathelper::ReedSolomon reedSolomon;
 
         while (!data_in.eof())
         {
