@@ -20,7 +20,7 @@ namespace jpss
             channelSettings = ch;
             foundData = false;
             currentSegment = 0;
-            imageBuffer = std::shared_ptr<unsigned short>(new unsigned short[80000 * channelSettings.totalWidth], [](unsigned short *p) { delete[] p; });
+            imageBuffer = std::shared_ptr<unsigned short>(new unsigned short[20000 * channelSettings.totalWidth], [](unsigned short *p) { delete[] p; });
             lines = 0;
         }
 

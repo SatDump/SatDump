@@ -230,8 +230,11 @@ namespace jpss
                 int offset = 88;
                 for (int i = 0; i < 6; i++)
                 {
-                    detectors[i] = Detector(&payload[offset], payload.size() - offset, offset);
-                    offset += detectors[i].checksum_offset + 8;
+                    if (offset < payload.size())
+                    {
+                        detectors[i] = Detector(&payload[offset], payload.size() - offset, offset);
+                        offset += detectors[i].checksum_offset + 8;
+                    }
                 }
             }
 
