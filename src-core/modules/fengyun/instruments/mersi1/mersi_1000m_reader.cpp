@@ -7,12 +7,14 @@ namespace fengyun
         MERSI1000Reader::MERSI1000Reader()
         {
             imageBuffer = new unsigned short[20000 * 2048];
+            mersiLineBuffer = new unsigned short[40960];
             frames = 0;
         }
 
         MERSI1000Reader::~MERSI1000Reader()
         {
             delete[] imageBuffer;
+            delete[] mersiLineBuffer;
         }
 
         void MERSI1000Reader::pushFrame(std::vector<uint8_t> &data)
