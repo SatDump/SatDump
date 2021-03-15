@@ -26,11 +26,11 @@ std::shared_ptr<std::mutex> uiCallListMutex;
 
 ctpl::thread_pool processThreadPool(4);
 
-std::string downlink_pipeline;
-std::string input_level;
-std::string input_file;
+std::string downlink_pipeline = "";
+std::string input_level = "";
+std::string input_file = "";
 std::string output_level = "products";
-std::string output_file = "livetest";
+std::string output_file = "";
 std::map<std::string, std::string> parameters;
 
 int pipeline_id = -1;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     if (processing)
         processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
-#ifndef _MSC_VER
+#if FALSE
     std::shared_ptr<SDRSource> airspySource;
     std::shared_ptr<ProcessingModule> demodModule;
 #endif
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 
                 //ImGui::End();
             }
-#ifndef _MSC_VER
+#if FALSE
             else if (livedemod)
             {
                 ImGui::SetNextWindowPos({0, 0});
@@ -429,7 +429,10 @@ int main(int argc, char *argv[])
                     }
                     if (ImGui::BeginTabItem("Live processing"))
                     {
-#ifndef _MSC_VER
+
+                        ImGui::Text("Live support is currently being rewritten, and does not work on Windows yet. If you really need it, please stick to an older version.");
+
+#if FALSE
                         ImGui::BeginGroup();
                         {
                             std::string names;

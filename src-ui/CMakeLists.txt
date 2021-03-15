@@ -16,7 +16,7 @@ target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
 if(MSVC)
     target_link_libraries(satdump-ui PRIVATE glew32.dll)
     target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
-    target_link_libraries(satdump-ui PUBLIC airspy.dll)
+    #target_link_libraries(satdump-ui PUBLIC airspy.dll)
     target_link_libraries(satdump-ui PUBLIC fftw3.dll)
 else()
     # Glew
@@ -32,8 +32,8 @@ else()
     target_link_libraries(satdump-ui PRIVATE glfw)
 
     # Airspy
-    find_library(AIRSPY_LIBRARY airspy REQUIRED)
-    target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+    #find_library(AIRSPY_LIBRARY airspy REQUIRED)
+    #target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
 
     # FFTW3
     find_library(FFT_LIBRARY fftw3 REQUIRED)

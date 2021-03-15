@@ -1,4 +1,4 @@
-#ifndef _MSC_VER
+#if FALSE
 #include "fft.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
