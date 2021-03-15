@@ -59,8 +59,14 @@ else()
     target_link_libraries(satdump_core PUBLIC PNG::PNG)
 
     # FFTW3
-    find_package(FFTW3f CONFIG REQUIRED)
-    target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
+    if(APPLE) 
+      set(FFTW3f_DIR /usr/local/lib/cmake/fftw3)
+      find_package(FFTW3f CONFIG REQUIRED)
+      target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
+    else()  
+      find_package(FFTW3f CONFIG REQUIRED)
+      target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
 
-    target_link_libraries(satdump_core PUBLIC stdc++fs)
+      target_link_libraries(satdump_core PUBLIC stdc++fs)
+    endif()
 endif()
