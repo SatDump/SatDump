@@ -44,7 +44,18 @@ satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate
 satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
 ```
 
-Live processing, to process data directly while receiving it with your SDR is supported, but currently being re-written... So please wait!
+Live processing, to process data directly while receiving it with your SDR is supported, but currently being re-written... So please wait! 
+
+### Notes on Falcon-9 Camera processing
+
+The resulting .mxf file should be readable by software such as VLC, but as it may contain errors, VLC turned out not to be the best at handling this.
+I personally got my bests results with GStreamer, using the following command :   
+
+`gst-launch-1.0 filesrc location="camera.mxf" ! decodebin ! videoconvert ! avimux name=mux ! filesink location=camera.avi`
+
+And then converting to mp4 with   
+
+`ffmpeg -i camera.avi camera.mp4`
 
 # Building / Installing
 
