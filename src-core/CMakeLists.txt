@@ -65,7 +65,7 @@ else()
         target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
     else()  
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
-        target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
+        target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
     endif()
 
     target_link_libraries(satdump_core PUBLIC stdc++fs)
