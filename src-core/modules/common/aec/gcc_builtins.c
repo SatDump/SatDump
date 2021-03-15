@@ -1,5 +1,6 @@
 /*
     MSVC lacks some builtin functions GCC has
+    From https://gist.github.com/pps83/3210a2f980fd02bb2ba2e5a1fc4a2ef0
 */
 #ifdef _MSC_VER
 #include <intrin.h>
