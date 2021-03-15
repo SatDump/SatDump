@@ -1,4 +1,4 @@
-#ifndef _MSC_VER
+#if FALSE
 #pragma once
 #include <memory>
 #include "pipe.h"
