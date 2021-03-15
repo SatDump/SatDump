@@ -3,6 +3,7 @@
 */
 #ifdef _MSC_VER
 #include <intrin.h>
+#include <stdint.h>
 
 int __builtin_ctz(unsigned x) {
     unsigned long ret;
