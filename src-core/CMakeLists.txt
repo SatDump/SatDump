@@ -59,8 +59,8 @@ else()
     target_link_libraries(satdump_core PUBLIC PNG::PNG)
 
     # FFTW3
-    find_package(FFTW3f CONFIG REQUIRED)
-    target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
+    pkg_check_modules(FFTW3 REQUIRED fftw3f)
+    target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
 
     target_link_libraries(satdump_core PUBLIC stdc++fs)
 endif()

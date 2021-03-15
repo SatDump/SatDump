@@ -75,9 +75,9 @@ namespace falcon
                                   ((uint64_t)pkt.payload[6]) << 24 | ((uint64_t)pkt.payload[7]) << 16 |
                                   ((uint64_t)pkt.payload[8]) << 8 | ((uint64_t)pkt.payload[9]);
 
-                if (marker == 0x01123201042E1403 && pkt.payload.size() >= 967.0)
+                if (marker == 0x01123201042E1403 && pkt.payload.size() >= 965.0)
                 {
-                    video_out.write((char *)&pkt.payload[25], 967.0 - 25);
+                    video_out.write((char *)&pkt.payload[25], 965.0 - 25);
                 }
                 else if (marker == 0x0117FE0800320303 || marker == 0x0112FA0800320303)
                 {
