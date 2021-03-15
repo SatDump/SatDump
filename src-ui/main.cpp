@@ -620,9 +620,8 @@ int main(int argc, char *argv[])
                             ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
                         }
                         ImGui::EndGroup();
-
-                        ImGui::EndTabItem();
 #endif
+                        ImGui::EndTabItem();
                     }
                     if (ImGui::BeginTabItem("Credits"))
                     {

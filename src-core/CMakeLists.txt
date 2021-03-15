@@ -25,6 +25,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC fmt.dll)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
+    target_link_libraries(satdump-ui PUBLIC fftw3f.dll)
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 else()
     # LibDSP
@@ -56,6 +57,10 @@ else()
         find_package(PNG REQUIRED)
     endif()
     target_link_libraries(satdump_core PUBLIC PNG::PNG)
+
+    # FFTW3
+    find_package(FFTW3f CONFIG REQUIRED)
+    target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
 
     target_link_libraries(satdump_core PUBLIC stdc++fs)
 endif()
