@@ -14,7 +14,7 @@ namespace fengyun
         {
         private:
             unsigned short *imageBuffer;
-            unsigned short mersiLineBuffer[40960];
+            unsigned short *mersiLineBuffer;
             int frames;
             uint8_t byteBufShift[3];
 
