@@ -17,7 +17,7 @@ namespace dsp
         {
             d_out = d_rec.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
         }
-        catch (std::runtime_error &e)
+        catch (std::exception &e)
         {
             logger->error(e.what());
         }
