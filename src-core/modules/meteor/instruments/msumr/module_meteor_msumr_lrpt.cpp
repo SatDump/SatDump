@@ -107,6 +107,8 @@ namespace meteor
                 cimg_library::CImg<unsigned short> image2 = msureader.getChannel(1, correlated[0], correlated[1], correlated[2]);
                 cimg_library::CImg<unsigned short> image3 = msureader.getChannel(2, correlated[0], correlated[1], correlated[2]);
 
+                // Check if channel 3 is empty and proceed if it has data
+                if (!msureader.getChannel(2).size() == 0) {
                 logger->info("321 Composite...");
                 cimg_library::CImg<unsigned short> image321(image1.width(), image2.height(), 1, 3);
                 {
@@ -118,6 +120,7 @@ namespace meteor
                 image321.equalize(1000);
                 image321.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
+                }
             }
         }
 
