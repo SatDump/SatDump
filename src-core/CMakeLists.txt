@@ -60,13 +60,13 @@ else()
 
     # FFTW3
     if(APPLE) 
-      set(FFTW3f_DIR /usr/local/lib/cmake/fftw3)
-      find_package(FFTW3f CONFIG REQUIRED)
-      target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
+        set(FFTW3f_DIR /usr/local/lib/cmake/fftw3)
+        find_package(FFTW3f CONFIG REQUIRED)
+        target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
     else()  
-      find_package(FFTW3f CONFIG REQUIRED)
-      target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
-
-      target_link_libraries(satdump_core PUBLIC stdc++fs)
+        pkg_check_modules(FFTW3 REQUIRED fftw3f)
+        target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
     endif()
+
+    target_link_libraries(satdump_core PUBLIC stdc++fs)
 endif()
