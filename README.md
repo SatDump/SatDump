@@ -19,7 +19,7 @@ Otherwise, here's roughly how SatDump works :
 - You start SatDump (UI for an user interface), select the pipeline and input format & folder
 - You start processing, and SatDump will do everything required to get down to useful data
 
-Support baseband formats are :
+Supported baseband formats are :
 - i16 - Signed 16-bits integer
 - i8 - Signed 8-bits integer
 - f32 - Raw complex 32-bits float
