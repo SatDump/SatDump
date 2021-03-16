@@ -88,7 +88,7 @@ namespace falcon
                         reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
                     }
 
-                    derand.work(&cadu[4], CADU_SIZE);
+                    derand.work(&cadu[4], CADU_SIZE - 4);
 
                     if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
                         data_out.write((char *)&cadu, CADU_SIZE);
