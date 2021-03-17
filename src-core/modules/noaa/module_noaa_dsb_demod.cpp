@@ -72,6 +72,8 @@ namespace noaa
 
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
+            rec->output_stream->flush();
+
             bytes_out = rep->work(bits_buffer, dat_size, bytes_buffer);
 
             defra_buf.insert(defra_buf.end(), &bytes_buffer[0], &bytes_buffer[bytes_out]);
@@ -96,6 +98,7 @@ namespace noaa
                 }
             }
 
+            progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);

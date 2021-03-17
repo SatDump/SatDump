@@ -77,12 +77,13 @@ namespace meteor
 
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
-            std::vector<uint8_t> bytes = getBytes(bits_buffer, dat_size);
-
             rec->output_stream->flush();
+
+            std::vector<uint8_t> bytes = getBytes(bits_buffer, dat_size);
 
             data_out.write((char *)&bytes[0], bytes.size());
 
+            progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
