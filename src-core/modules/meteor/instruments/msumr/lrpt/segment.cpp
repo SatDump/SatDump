@@ -19,7 +19,8 @@ namespace meteor
 
             Segment::Segment(uint8_t *data, int length)
             {
-                buffer = new bool[length * 8];
+                //buffer = new bool[length * 8];
+                buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p) { delete[] p; });
 
                 if (length - 14 <= 0)
                 {
@@ -52,21 +53,21 @@ namespace meteor
 
             Segment::~Segment()
             {
-                delete[] buffer;
+                //delete[] buffer;
             }
 
             void Segment::decode(uint8_t *data, int length)
             {
                 //std::cout << "START " << length << std::endl;
                 //std::cout << "DC SEGBUFLEN " << length << std::endl;
-                convertToArray(buffer, data, length);
+                convertToArray(buffer.get(), data, length);
                 length = length * 8;
                 std::array<int64_t, 64> qTable = GetQuantizationTable((float)QF);
                 int64_t lastDC = 0;
 
                 //std::cout << "START2" << std::endl;
 
-                bool *buf = &buffer[0];
+                bool *buf = &buffer.get()[0];
 
                 for (int i = 0; i < 14; i++)
                 {

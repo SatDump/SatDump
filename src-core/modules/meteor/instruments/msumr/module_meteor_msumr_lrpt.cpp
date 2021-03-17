@@ -78,9 +78,17 @@ namespace meteor
             for (int channel = 0; channel < 6; channel++)
             {
                 logger->info("Channel " + std::to_string(channel + 1) + "...");
-                WRITE_IMAGE(msureader.getChannel(channel), directory + "/MSU-MR-" + std::to_string(channel + 1) + ".png");
+                if (msureader.getChannel(channel).size() > 0)
+                {
+                    WRITE_IMAGE(msureader.getChannel(channel), directory + "/MSU-MR-" + std::to_string(channel + 1) + ".png");
+                }
+                else
+                {
+                    logger->info("Channel empty, skipped.");
+                }
             }
 
+            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0)
             {
                 std::array<int32_t, 3> correlated = msureader.correlateChannels(0, 1);
 
@@ -100,6 +108,7 @@ namespace meteor
                 WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
             }
 
+            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
             {
                 std::array<int32_t, 3> correlated = msureader.correlateChannels(0, 1, 2);
 
@@ -108,7 +117,6 @@ namespace meteor
                 cimg_library::CImg<unsigned short> image3 = msureader.getChannel(2, correlated[0], correlated[1], correlated[2]);
 
                 // Check if channel 3 is empty and proceed if it has data
-                if (!msureader.getChannel(2).size() == 0) {
                 logger->info("321 Composite...");
                 cimg_library::CImg<unsigned short> image321(image1.width(), image2.height(), 1, 3);
                 {
@@ -120,7 +128,6 @@ namespace meteor
                 image321.equalize(1000);
                 image321.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
-                }
             }
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 namespace meteor
 {
@@ -11,7 +12,7 @@ namespace meteor
             class Segment
             {
             private:
-                bool *buffer;
+                std::shared_ptr<bool> buffer;
 
             public:
                 uint16_t day_time;
