@@ -76,6 +76,8 @@ namespace noaa
 
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
+            rec->output_stream->flush();
+
             std::vector<uint16_t> frames = def->work(bits_buffer, dat_size);
 
             // Count frames
@@ -85,6 +87,7 @@ namespace noaa
             if (frames.size() > 0)
                 data_out.write((char *)&frames[0], frames.size() * sizeof(uint16_t));
 
+            progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
