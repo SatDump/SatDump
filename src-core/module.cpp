@@ -31,6 +31,8 @@ void ProcessingModule::drawUI()
 // Registry
 SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
 
+#define REGISTER_MODULE(module) modules_registry.emplace(module::getID(), module::getInstance)
+
 #include "modules/module_qpsk_demod.h"
 #include "modules/module_oqpsk_demod.h"
 #include "modules/module_bpsk_demod.h"
@@ -89,66 +91,88 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/smap/module_smap_s_decoder.h"
 
+#include "modules/oceansat/module_oceansat2_db_decoder.h"
+#include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
+
 void registerModules()
 {
     // Register modules
-    modules_registry.emplace(QPSKDemodModule::getID(), QPSKDemodModule::getInstance);
-    modules_registry.emplace(OQPSKDemodModule::getID(), OQPSKDemodModule::getInstance);
-    modules_registry.emplace(BPSKDemodModule::getID(), BPSKDemodModule::getInstance);
-    modules_registry.emplace(FSKDemodModule::getID(), FSKDemodModule::getInstance);
 
-    modules_registry.emplace(metop::MetOpAHRPTDecoderModule::getID(), metop::MetOpAHRPTDecoderModule::getInstance);
-    modules_registry.emplace(metop::avhrr::MetOpAVHRRDecoderModule::getID(), metop::avhrr::MetOpAVHRRDecoderModule::getInstance);
-    modules_registry.emplace(metop::mhs::MetOpMHSDecoderModule::getID(), metop::mhs::MetOpMHSDecoderModule::getInstance);
-    modules_registry.emplace(metop::iasi::MetOpIASIDecoderModule::getID(), metop::iasi::MetOpIASIDecoderModule::getInstance);
-    modules_registry.emplace(metop::amsu::MetOpAMSUDecoderModule::getID(), metop::amsu::MetOpAMSUDecoderModule::getInstance);
-    modules_registry.emplace(metop::gome::MetOpGOMEDecoderModule::getID(), metop::gome::MetOpGOMEDecoderModule::getInstance);
+    // Demods
+    REGISTER_MODULE(QPSKDemodModule);
+    REGISTER_MODULE(OQPSKDemodModule);
+    REGISTER_MODULE(BPSKDemodModule);
+    REGISTER_MODULE(FSKDemodModule);
 
-    modules_registry.emplace(fengyun::FengyunAHRPTDecoderModule::getID(), fengyun::FengyunAHRPTDecoderModule::getInstance);
-    modules_registry.emplace(fengyun::FengyunMPTDecoderModule::getID(), fengyun::FengyunMPTDecoderModule::getInstance);
-    modules_registry.emplace(fengyun::virr::FengyunVIRRDecoderModule::getID(), fengyun::virr::FengyunVIRRDecoderModule::getInstance);
-    modules_registry.emplace(fengyun::mersi1::FengyunMERSI1DecoderModule::getID(), fengyun::mersi1::FengyunMERSI1DecoderModule::getInstance);
-    modules_registry.emplace(fengyun::mersi2::FengyunMERSI2DecoderModule::getID(), fengyun::mersi2::FengyunMERSI2DecoderModule::getInstance);
+    // MetOp
+    REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
+    REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
+    REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
+    REGISTER_MODULE(metop::iasi::MetOpIASIDecoderModule);
+    REGISTER_MODULE(metop::amsu::MetOpAMSUDecoderModule);
+    REGISTER_MODULE(metop::gome::MetOpGOMEDecoderModule);
 
-    modules_registry.emplace(aqua::AquaDBDecoderModule::getID(), aqua::AquaDBDecoderModule::getInstance);
-    modules_registry.emplace(aqua::airs::AquaAIRSDecoderModule::getID(), aqua::airs::AquaAIRSDecoderModule::getInstance);
-    modules_registry.emplace(aqua::amsu::AquaAMSUDecoderModule::getID(), aqua::amsu::AquaAMSUDecoderModule::getInstance);
-    modules_registry.emplace(aqua::ceres::AquaCERESDecoderModule::getID(), aqua::ceres::AquaCERESDecoderModule::getInstance);
+    // FengYun-3
+    REGISTER_MODULE(fengyun::FengyunAHRPTDecoderModule);
+    REGISTER_MODULE(fengyun::FengyunMPTDecoderModule);
+    REGISTER_MODULE(fengyun::virr::FengyunVIRRDecoderModule);
+    REGISTER_MODULE(fengyun::mersi1::FengyunMERSI1DecoderModule);
+    REGISTER_MODULE(fengyun::mersi2::FengyunMERSI2DecoderModule);
 
-    modules_registry.emplace(eos::modis::EOSMODISDecoderModule::getID(), eos::modis::EOSMODISDecoderModule::getInstance);
-    modules_registry.emplace(eos::modis::EOSMODISExtractorModule::getID(), eos::modis::EOSMODISExtractorModule::getInstance);
+    // Aqua
+    REGISTER_MODULE(aqua::AquaDBDecoderModule);
+    REGISTER_MODULE(aqua::airs::AquaAIRSDecoderModule);
+    REGISTER_MODULE(aqua::amsu::AquaAMSUDecoderModule);
+    REGISTER_MODULE(aqua::ceres::AquaCERESDecoderModule);
 
-    modules_registry.emplace(noaa::NOAAHRPTDemodModule::getID(), noaa::NOAAHRPTDemodModule::getInstance);
-    modules_registry.emplace(noaa::NOAADSBDemodModule::getID(), noaa::NOAADSBDemodModule::getInstance);
-    modules_registry.emplace(noaa::avhrr::NOAAAVHRRDecoderModule::getID(), noaa::avhrr::NOAAAVHRRDecoderModule::getInstance);
+    // EOS
+    REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
+    REGISTER_MODULE(eos::modis::EOSMODISExtractorModule);
 
-    modules_registry.emplace(meteor::METEORHRPTDemodModule::getID(), meteor::METEORHRPTDemodModule::getInstance);
-    modules_registry.emplace(meteor::METEORHRPTDecoderModule::getID(), meteor::METEORHRPTDecoderModule::getInstance);
-    modules_registry.emplace(meteor::METEORLRPTDecoderModule::getID(), meteor::METEORLRPTDecoderModule::getInstance);
-    modules_registry.emplace(meteor::msumr::METEORMSUMRDecoderModule::getID(), meteor::msumr::METEORMSUMRDecoderModule::getInstance);
-    modules_registry.emplace(meteor::msumr::METEORMSUMRLRPTDecoderModule::getID(), meteor::msumr::METEORMSUMRLRPTDecoderModule::getInstance);
-    modules_registry.emplace(meteor::mtvza::METEORMTVZADecoderModule::getID(), meteor::mtvza::METEORMTVZADecoderModule::getInstance);
+    // NOAA
+    REGISTER_MODULE(noaa::NOAAHRPTDemodModule);
+    REGISTER_MODULE(noaa::NOAADSBDemodModule);
+    REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
 
-    modules_registry.emplace(npp::NPPHRDDecoderModule::getID(), npp::NPPHRDDecoderModule::getInstance);
+    // METEOR
+    REGISTER_MODULE(meteor::METEORHRPTDemodModule);
+    REGISTER_MODULE(meteor::METEORHRPTDecoderModule);
+    REGISTER_MODULE(meteor::METEORLRPTDecoderModule);
+    REGISTER_MODULE(meteor::msumr::METEORMSUMRDecoderModule);
+    REGISTER_MODULE(meteor::msumr::METEORMSUMRLRPTDecoderModule);
+    REGISTER_MODULE(meteor::mtvza::METEORMTVZADecoderModule);
 
-    modules_registry.emplace(jpss::atms::JPSSATMSDecoderModule::getID(), jpss::atms::JPSSATMSDecoderModule::getInstance);
-    modules_registry.emplace(jpss::viirs::JPSSVIIRSDecoderModule::getID(), jpss::viirs::JPSSVIIRSDecoderModule::getInstance);
+    // S-NPP
+    REGISTER_MODULE(npp::NPPHRDDecoderModule);
 
-    modules_registry.emplace(proba::ProbaSDecoderModule::getID(), proba::ProbaSDecoderModule::getInstance);
-    modules_registry.emplace(proba::swap::ProbaSWAPDecoderModule::getID(), proba::swap::ProbaSWAPDecoderModule::getInstance);
-    modules_registry.emplace(proba::chris::ProbaCHRISDecoderModule::getID(), proba::chris::ProbaCHRISDecoderModule::getInstance);
-    modules_registry.emplace(proba::hrc::ProbaHRCDecoderModule::getID(), proba::hrc::ProbaHRCDecoderModule::getInstance);
+    // JPSS
+    REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
+    REGISTER_MODULE(jpss::viirs::JPSSVIIRSDecoderModule);
 
-    modules_registry.emplace(elektro::ElektroRDASDecoderModule::getID(), elektro::ElektroRDASDecoderModule::getInstance);
-    modules_registry.emplace(elektro::msugs::ELEKTROMSUGSDecoderModule::getID(), elektro::msugs::ELEKTROMSUGSDecoderModule::getInstance);
+    // Proba
+    REGISTER_MODULE(proba::ProbaSDecoderModule);
+    REGISTER_MODULE(proba::swap::ProbaSWAPDecoderModule);
+    REGISTER_MODULE(proba::chris::ProbaCHRISDecoderModule);
+    REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
 
-    modules_registry.emplace(terra::TerraDBDemodModule::getID(), terra::TerraDBDemodModule::getInstance);
-    modules_registry.emplace(terra::TerraDBDecoderModule::getID(), terra::TerraDBDecoderModule::getInstance);
+    // ELEKTRO
+    REGISTER_MODULE(elektro::ElektroRDASDecoderModule);
+    REGISTER_MODULE(elektro::msugs::ELEKTROMSUGSDecoderModule);
 
-    modules_registry.emplace(falcon::FalconTLMDecoderModule::getID(), falcon::FalconTLMDecoderModule::getInstance);
-    modules_registry.emplace(falcon::FalconDecoderModule::getID(), falcon::FalconDecoderModule::getInstance);
+    // Terra
+    REGISTER_MODULE(terra::TerraDBDemodModule);
+    REGISTER_MODULE(terra::TerraDBDecoderModule);
 
-    modules_registry.emplace(smap::SMAPSDecoderModule::getID(), smap::SMAPSDecoderModule::getInstance);
+    // Falcon
+    REGISTER_MODULE(falcon::FalconTLMDecoderModule);
+    REGISTER_MODULE(falcon::FalconDecoderModule);
+
+    // SMAP
+    REGISTER_MODULE(smap::SMAPSDecoderModule);
+
+    // Oceansat
+    REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);
+    REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

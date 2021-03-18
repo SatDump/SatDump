@@ -573,6 +573,12 @@
                     "costas_bw": "0.01",
                     "buffer_size": "8192"
                 }
+            },
+            "frames": {
+                "oceansat2_db_decoder": {}
+            },
+            "products": {
+                "oceansat_ocm": {}
             }
         }
     }
