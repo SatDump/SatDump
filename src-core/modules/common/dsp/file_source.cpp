@@ -46,7 +46,7 @@ namespace dsp
             case INTEGER_8:
                 d_input_file.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
                 for (int i = 0; i < d_buffer_size; i++)
-                    output_stream->writeBuf[i] = std::complex<float>(buffer_i8[i * 2], (float)buffer_i8[i * 2 + 1]);
+                    output_stream->writeBuf[i] = std::complex<float>(buffer_i8[i * 2] * 0.004f, (float)buffer_i8[i * 2 + 1] * 0.004f);
                 break;
 
             case WAV_8:
