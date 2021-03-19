@@ -76,19 +76,19 @@ namespace dsp
         }
     }
 
-    size_t FileSourceBlock::getFilesize(std::string filepath)
+    uint64_t FileSourceBlock::getFilesize(std::string filepath)
     {
         std::ifstream file(filepath, std::ios::binary | std::ios::ate);
-        std::size_t fileSize = file.tellg();
+        std::uint64_t fileSize = file.tellg();
         file.close();
         return fileSize;
     }
 
-    size_t FileSourceBlock::getFilesize()
+    uint64_t FileSourceBlock::getFilesize()
     {
         return d_filesize;
     }
-    size_t FileSourceBlock::getPosition()
+    uint64_t FileSourceBlock::getPosition()
     {
         return d_progress;
     }
