@@ -65,6 +65,8 @@ namespace oceansat
             cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
             cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
             cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
+            cimg_library::CImg<unsigned short> image7 = reader.getChannel(6);
+            cimg_library::CImg<unsigned short> image8 = reader.getChannel(7);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/OCM-1.png");
@@ -84,29 +86,53 @@ namespace oceansat
             logger->info("Channel 6...");
             WRITE_IMAGE(image6, directory + "/OCM-6.png");
 
-            logger->info("221 Composite...");
-            cimg_library::CImg<unsigned short> image221(6020, reader.lines, 1, 3);
+            logger->info("Channel 7...");
+            WRITE_IMAGE(image7, directory + "/OCM-7.png");
+
+            logger->info("Channel 8...");
+            WRITE_IMAGE(image8, directory + "/OCM-8.png");
+
+            logger->info("642 Composite...");
             {
-                image221.draw_image(0, 0, 0, 0, image2);
-                image221.draw_image(0, 0, 0, 1, image2);
-                image221.draw_image(0, 0, 0, 2, image1);
+                cimg_library::CImg<unsigned short> image642(4072, reader.lines, 1, 3);
+                {
+                    image642.draw_image(0, 0, 0, 0, image6);
+                    image642.draw_image(0, 0, 0, 1, image4);
+                    image642.draw_image(0, 0, 0, 2, image2);
+                }
+                WRITE_IMAGE(image642, directory + "/OCM-RGB-642.png");
+                image642.equalize(1000);
+                image642.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image642, directory + "/OCM-RGB-642-EQU.png");
             }
-            WRITE_IMAGE(image221, directory + "/OCM-RGB-221.png");
-            image221.equalize(1000);
-            image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image221, directory + "/OCM-RGB-221-EQU.png");
 
             logger->info("654 Composite...");
-            cimg_library::CImg<unsigned short> image654(6020, reader.lines, 1, 3);
             {
-                image654.draw_image(0, 0, 0, 0, image6);
-                image654.draw_image(0, 0, 0, 1, image5);
-                image654.draw_image(0, 0, 0, 2, image4);
+                cimg_library::CImg<unsigned short> image654(4072, reader.lines, 1, 3);
+                {
+                    image654.draw_image(0, 0, 0, 0, image6);
+                    image654.draw_image(0, 0, 0, 1, image5);
+                    image654.draw_image(0, 0, 0, 2, image4);
+                }
+                WRITE_IMAGE(image654, directory + "/OCM-RGB-654.png");
+                image654.equalize(1000);
+                image654.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU.png");
             }
-            WRITE_IMAGE(image654, directory + "/OCM-RGB-654.png");
-            image654.equalize(1000);
-            image654.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU.png");
+
+            logger->info("754 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image754(4072, reader.lines, 1, 3);
+                {
+                    image754.draw_image(0, 0, 0, 0, image7);
+                    image754.draw_image(0, 0, 0, 1, image5);
+                    image754.draw_image(0, 0, 0, 2, image4);
+                }
+                WRITE_IMAGE(image754, directory + "/OCM-RGB-754.png");
+                image754.equalize(1000);
+                image754.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image754, directory + "/OCM-RGB-754-EQU.png");
+            }
         }
 
         void OceansatOCMDecoderModule::drawUI()
