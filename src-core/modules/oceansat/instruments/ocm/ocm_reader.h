@@ -13,7 +13,8 @@ namespace oceansat
         class OCMReader
         {
         private:
-            unsigned short *channels[6];
+            unsigned short *channels[8];
+            unsigned short *lineBuffer;
 
         public:
             OCMReader();
