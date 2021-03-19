@@ -24,12 +24,12 @@ namespace dsp
 
         std::ifstream d_input_file;
         const BasebandType d_type;
-        std::atomic<size_t> d_filesize;
-        std::atomic<size_t> d_progress;
+        std::atomic<uint64_t> d_filesize;
+        std::atomic<uint64_t> d_progress;
         const int d_buffer_size;
         std::atomic<bool> d_eof;
         void work();
-        size_t getFilesize(std::string filepath);
+        uint64_t getFilesize(std::string filepath);
         // Int16 buffer
         int16_t *buffer_i16;
         // Int8 buffer
@@ -40,8 +40,8 @@ namespace dsp
     public:
         FileSourceBlock(std::string file, BasebandType type, int buffer_size);
         ~FileSourceBlock();
-        size_t getFilesize();
-        size_t getPosition();
+        uint64_t getFilesize();
+        uint64_t getPosition();
         bool eof();
     };
 }

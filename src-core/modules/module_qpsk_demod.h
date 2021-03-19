@@ -44,8 +44,8 @@ protected:
 
     std::ofstream data_out;
 
-    std::atomic<size_t> filesize;
-    std::atomic<size_t> progress;
+    std::atomic<uint64_t> filesize;
+    std::atomic<uint64_t> progress;
 
 public:
     QPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

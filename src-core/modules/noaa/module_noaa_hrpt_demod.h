@@ -36,8 +36,8 @@ namespace noaa
 
         std::vector<uint8_t> getBytes(uint8_t *bits, int length);
 
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         int frame_count = 0;
 
