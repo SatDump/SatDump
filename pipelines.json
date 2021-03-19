@@ -400,7 +400,7 @@
         "frequencies": [
             2235
         ],
-        "samplerate": 0,
+        "samplerate": 4e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -431,7 +431,7 @@
         "frequencies": [
             2235
         ],
-        "samplerate": 0,
+        "samplerate": 4e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -461,7 +461,7 @@
         "frequencies": [
             2235
         ],
-        "samplerate": 0,
+        "samplerate": 4e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -486,7 +486,7 @@
         "name": "ELEKTRO-L RDAS",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 45e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -512,7 +512,7 @@
         "name": "Falcon 9 S-Band TLM",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 6e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -537,7 +537,7 @@
         "name": "SMAP S-Band Link",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
+        "samplerate": 3e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -560,7 +560,7 @@
         "name": "OceanSat-2 DB",
         "live": false,
         "frequencies": [],
-        "samplerate": 60e6,
+        "samplerate": 35e6,
         "baseband_type": "w8",
         "work": {
             "baseband": {},
