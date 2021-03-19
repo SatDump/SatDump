@@ -83,6 +83,7 @@ namespace terra
 
             data_out.write((char *)sym_buffer, dat_size);
 
+            progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
