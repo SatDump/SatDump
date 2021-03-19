@@ -1,6 +1,7 @@
 #include "module_fengyun_ahrpt_decoder.h"
 #include "logger.h"
 #include "modules/common/sathelper/reedsolomon_233.h"
+#include "modules/common/sathelper/packetfixer.h"
 #include "diff.h"
 #include "modules/common/ctpl/ctpl_stl.h"
 #include "modules/metop/instruments/iasi/utils.h"
@@ -68,6 +69,12 @@ namespace fengyun
         // Multithreading stuff
         ctpl::thread_pool viterbi_pool(2);
 
+        // Tests
+        sathelper::PhaseShift shift = sathelper::DEG_0;
+        sathelper::PacketFixer shifter;
+        bool iq_invert = false;
+        int noSyncRuns = 0, viterbiNoSyncRun = 0;
+
         while (!data_in.eof())
         {
 
@@ -75,6 +82,8 @@ namespace fengyun
             if (d_soft_symbols)
             {
                 data_in.read((char *)soft_buffer, BUFFER_SIZE * 2);
+
+                shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE * 2, shift, iq_invert);
 
                 // Convert to hard symbols from soft symbols. We may want to work with soft only later?
                 for (int i = 0; i < BUFFER_SIZE; i++)
@@ -98,14 +107,7 @@ namespace fengyun
                 std::complex<float> iS = sym_buffer[i * 2 + shift].imag() + sym_buffer[i * 2 + 1 + shift].imag() * 1if;
                 std::complex<float> qS = sym_buffer[i * 2 + shift].real() + sym_buffer[i * 2 + 1 + shift].real() * 1if;
                 iSamples[inI++] = iS;
-                if (d_invert_second_viterbi)
-                {
-                    qSamples[inQ++] = -qS; //FY3C
-                }
-                else
-                {
-                    qSamples[inQ++] = qS; // FY3B
-                }
+                qSamples[inQ++] = d_invert_second_viterbi ? -qS : qS; //FY3C
             }
 
             // Run Viterbi!
@@ -132,73 +134,18 @@ namespace fengyun
                         }
                     }
                 }
+                viterbiNoSyncRun = 0;
             }
-            else
+
+            if (viterbi1.getState() == 0 || viterbi1.getState() == 0)
             {
-                if (shift)
-                {
-                    shift = 0;
-                }
-                else
-                {
-                    shift = 1;
-                }
+                viterbiNoSyncRun++;
 
-                inI = 0;
-                inQ = 0;
-
-                // Deinterleave I & Q for the 2 Viterbis
-                for (int i = 0; i < BUFFER_SIZE / 2; i++)
-                {
-                    using namespace std::complex_literals;
-                    std::complex<float> iS = sym_buffer[i * 2 + shift].imag() + sym_buffer[i * 2 + 1 + shift].imag() * 1if;
-                    std::complex<float> qS = sym_buffer[i * 2 + shift].real() + sym_buffer[i * 2 + 1 + shift].real() * 1if;
-                    iSamples[inI++] = iS;
-                    if (d_invert_second_viterbi)
-                    {
-                        qSamples[inQ++] = -qS; //FY3C
-                    }
+                if (viterbiNoSyncRun == 10)
+                    if (shift == sathelper::DEG_0)
+                        shift = sathelper::DEG_90;
                     else
-                    {
-                        qSamples[inQ++] = qS; // FY3B
-                    }
-                }
-                // Run Viterbi!
-                v1_fut = viterbi_pool.push([&](int) { v1 = viterbi1.work(qSamples, inQ, viterbi1_out); });
-                v2_fut = viterbi_pool.push([&](int) { v2 = viterbi2.work(iSamples, inI, viterbi2_out); });
-                v1_fut.get();
-                v2_fut.get();
-
-                diffin = 0;
-
-                // Interleave and pack output into 2 bits chunks
-                if (v1 > 0 || v2 > 0)
-                {
-                    if (v1 == v2)
-                    {
-                        uint8_t bit1, bit2;
-                        for (int y = 0; y < v1; y++)
-                        {
-                            for (int i = 7; i >= 0; i--)
-                            {
-                                bit1 = getBit<uint8_t>(viterbi1_out[y], i);
-                                bit2 = getBit<uint8_t>(viterbi2_out[y], i);
-                                diff_in[diffin++] = bit2 << 1 | bit1;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (shift)
-                    {
-                        shift = 0;
-                    }
-                    else
-                    {
-                        shift = 1;
-                    }
-                }
+                        shift = sathelper::DEG_0;
             }
 
             // Perform differential decoding
@@ -234,6 +181,19 @@ namespace fengyun
                         //data_out_total += CADU_SIZE;
                         data_out.write((char *)&cadu, CADU_SIZE);
                     }
+                }
+
+                if (deframer.getState() == 0)
+                    noSyncRuns++;
+                else
+                {
+                    noSyncRuns = 0;
+                    viterbiNoSyncRun = 0;
+                }
+                if (noSyncRuns == 10)
+                {
+                    iq_invert = !iq_invert;
+                    noSyncRuns = 0;
                 }
             }
 
