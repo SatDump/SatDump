@@ -7,6 +7,7 @@
 #include "mersi_1000m_reader.h"
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
+#include "modules/common/bowtie.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -15,7 +16,8 @@ namespace fengyun
 {
     namespace mersi2
     {
-        FengyunMERSI2DecoderModule::FengyunMERSI2DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        FengyunMERSI2DecoderModule::FengyunMERSI2DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                                      bowtie(std::stoi(parameters["correct_bowtie"]))
         {
         }
 
@@ -162,6 +164,12 @@ namespace fengyun
 
             logger->info("Writing images.... (Can take a while)");
 
+            // BowTie values
+            const float alpha = 1.0 / 1.6;
+            const float beta = 0.58333; //1.0 - alpha;
+            const long scanHeight_250 = 40;
+            const long scanHeight_1000 = 10;
+
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
@@ -299,43 +307,65 @@ namespace fengyun
 
             // Output a few nice composites as well
             logger->info("221 Composite...");
-            cimg_library::CImg<unsigned short> image221(8192, mersiCorrelator->image1.height(), 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                tempImage2.equalize(1000);
-                tempImage1.equalize(1000);
-                image221.draw_image(0, 0, 0, 0, tempImage2);
-                image221.draw_image(0, 0, 0, 1, tempImage2);
-                image221.draw_image(7, 0, 0, 2, tempImage1);
+                cimg_library::CImg<unsigned short> image221(8192, mersiCorrelator->image1.height(), 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
+                    tempImage2.equalize(1000);
+                    tempImage1.equalize(1000);
+                    image221.draw_image(0, 0, 0, 0, tempImage2);
+                    image221.draw_image(0, 0, 0, 1, tempImage2);
+                    image221.draw_image(7, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image221 = bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image221, directory + "/MERSI2-RGB-221.png");
             }
-            WRITE_IMAGE(image221, directory + "/MERSI2-RGB-221.png");
 
             logger->info("341 Composite...");
-            cimg_library::CImg<unsigned short> image341(8192, mersiCorrelator->image1.height(), 1, 3);
-            image341.draw_image(24, 0, 0, 0, mersiCorrelator->image3);
-            image341.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
-            image341.draw_image(24, 0, 0, 2, mersiCorrelator->image1);
-            WRITE_IMAGE(image341, directory + "/MERSI2-RGB-341.png");
+            {
+                cimg_library::CImg<unsigned short> image341(8192, mersiCorrelator->image1.height(), 1, 3);
+                image341.draw_image(24, 0, 0, 0, mersiCorrelator->image3);
+                image341.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
+                image341.draw_image(24, 0, 0, 2, mersiCorrelator->image1);
+
+                if (bowtie)
+                    image341 = bowtie::correctGenericBowTie(image341, 3, scanHeight_250, alpha, beta);
+
+                WRITE_IMAGE(image341, directory + "/MERSI2-RGB-341.png");
+            }
 
             logger->info("441 Composite...");
-            cimg_library::CImg<unsigned short> image441(8192, mersiCorrelator->image1.height(), 1, 3);
-            image441.draw_image(0, 0, 0, 0, mersiCorrelator->image4);
-            image441.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
-            image441.draw_image(21, 0, 0, 2, mersiCorrelator->image1);
-            WRITE_IMAGE(image441, directory + "/MERSI2-RGB-441.png");
+            {
+                cimg_library::CImg<unsigned short> image441(8192, mersiCorrelator->image1.height(), 1, 3);
+                image441.draw_image(0, 0, 0, 0, mersiCorrelator->image4);
+                image441.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
+                image441.draw_image(21, 0, 0, 2, mersiCorrelator->image1);
+
+                if (bowtie)
+                    image441 = bowtie::correctGenericBowTie(image441, 3, scanHeight_250, alpha, beta);
+
+                WRITE_IMAGE(image441, directory + "/MERSI2-RGB-441.png");
+            }
 
             logger->info("321 Composite...");
-            cimg_library::CImg<unsigned short> image321(8192, mersiCorrelator->image1.height(), 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                tempImage3.equalize(1000);
-                tempImage2.equalize(1000);
-                tempImage1.equalize(1000);
-                image321.draw_image(8, 0, 0, 0, tempImage3);
-                image321.draw_image(0, 0, 0, 1, tempImage2);
-                image321.draw_image(8, 0, 0, 2, tempImage1);
+                cimg_library::CImg<unsigned short> image321(8192, mersiCorrelator->image1.height(), 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
+                    tempImage3.equalize(1000);
+                    tempImage2.equalize(1000);
+                    tempImage1.equalize(1000);
+                    image321.draw_image(8, 0, 0, 0, tempImage3);
+                    image321.draw_image(0, 0, 0, 1, tempImage2);
+                    image321.draw_image(8, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image321 = bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image321, directory + "/MERSI2-RGB-321.png");
             }
-            WRITE_IMAGE(image321, directory + "/MERSI2-RGB-321.png");
 
             /*logger->info("321 Composite..." );
              cimg_library::CImg<unsigned short> image321t(8192, std::max(image3.height(), std::max(image2.height(), image3.height())), 1, 3);
@@ -351,123 +381,139 @@ namespace fengyun
                WRITE_IMAGE(image321t, directory + "/MERSI2-RGB-654.png");*/
 
             logger->info("3(24)1 Composite...");
-            cimg_library::CImg<unsigned short> image3241(8192, mersiCorrelator->image1.height(), 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage4 = mersiCorrelator->image4, tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                tempImage4.equalize(1000);
-                tempImage3.equalize(1000);
-                tempImage2.equalize(1000);
-                tempImage1.equalize(1000);
-                // Correct for offset... Kinda bad
-                image3241.draw_image(25, 0, 0, 0, tempImage3);
-                image3241.draw_image(17, 0, 0, 1, tempImage2, 0.93f + 0.5f);
-                image3241.draw_image(0, 0, 0, 1, tempImage4, 0.57f);
-                image3241.draw_image(26, 0, 0, 2, tempImage1);
+                cimg_library::CImg<unsigned short> image3241(8192, mersiCorrelator->image1.height(), 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage4 = mersiCorrelator->image4, tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
+                    tempImage4.equalize(1000);
+                    tempImage3.equalize(1000);
+                    tempImage2.equalize(1000);
+                    tempImage1.equalize(1000);
+                    // Correct for offset... Kinda bad
+                    image3241.draw_image(25, 0, 0, 0, tempImage3);
+                    image3241.draw_image(17, 0, 0, 1, tempImage2, 0.93f + 0.5f);
+                    image3241.draw_image(0, 0, 0, 1, tempImage4, 0.57f);
+                    image3241.draw_image(26, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image3241 = bowtie::correctGenericBowTie(image3241, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image3241, directory + "/MERSI2-RGB-3(24)1.png");
             }
-            WRITE_IMAGE(image3241, directory + "/MERSI2-RGB-3(24)1.png");
 
             logger->info("17.19.18 Composite...");
-            cimg_library::CImg<unsigned short> image171918(2048, mersiCorrelator->image17.height(), 1, 3);
-            image171918.draw_image(2, 0, 0, 0, mersiCorrelator->image17);
-            image171918.draw_image(0, 0, 0, 1, mersiCorrelator->image19);
-            image171918.draw_image(7, 0, 0, 2, mersiCorrelator->image18);
-            image171918.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image171918, directory + "/MERSI2-RGB-18.19.17.png");
+            {
+                cimg_library::CImg<unsigned short> image171918(2048, mersiCorrelator->image17.height(), 1, 3);
+                image171918.draw_image(2, 0, 0, 0, mersiCorrelator->image17);
+                image171918.draw_image(0, 0, 0, 1, mersiCorrelator->image19);
+                image171918.draw_image(7, 0, 0, 2, mersiCorrelator->image18);
+                image171918.normalize(0, std::numeric_limits<unsigned char>::max());
+
+                if (bowtie)
+                    image171918 = bowtie::correctGenericBowTie(image171918, 3, scanHeight_1000, alpha, beta);
+
+                WRITE_IMAGE(image171918, directory + "/MERSI2-RGB-18.19.17.png");
+            }
 
             logger->info("9.12.11 Composite...");
-            cimg_library::CImg<unsigned short> image91211(2048, mersiCorrelator->image11.height(), 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage9 = mersiCorrelator->image9, tempImage11 = mersiCorrelator->image11, tempImage12 = mersiCorrelator->image12;
-                tempImage9.equalize(1000);
-                for (unsigned short &px : tempImage9)
-                    px = std::numeric_limits<unsigned short>::max() - px;
-                tempImage12.equalize(1000);
-                for (unsigned short &px : tempImage12)
-                    px = std::numeric_limits<unsigned short>::max() - px;
-                tempImage11.equalize(1000);
-                for (unsigned short &px : tempImage11)
-                    px = std::numeric_limits<unsigned short>::max() - px;
-                image91211.draw_image(11, 0, 0, 0, tempImage9);
-                image91211.draw_image(0, 0, 0, 1, tempImage12);
-                image91211.draw_image(0, 0, 0, 2, tempImage11);
+                cimg_library::CImg<unsigned short> image91211(2048, mersiCorrelator->image11.height(), 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage9 = mersiCorrelator->image9, tempImage11 = mersiCorrelator->image11, tempImage12 = mersiCorrelator->image12;
+                    tempImage9.equalize(1000);
+                    for (unsigned short &px : tempImage9)
+                        px = std::numeric_limits<unsigned short>::max() - px;
+                    tempImage12.equalize(1000);
+                    for (unsigned short &px : tempImage12)
+                        px = std::numeric_limits<unsigned short>::max() - px;
+                    tempImage11.equalize(1000);
+                    for (unsigned short &px : tempImage11)
+                        px = std::numeric_limits<unsigned short>::max() - px;
+                    image91211.draw_image(11, 0, 0, 0, tempImage9);
+                    image91211.draw_image(0, 0, 0, 1, tempImage12);
+                    image91211.draw_image(0, 0, 0, 2, tempImage11);
+
+                    if (bowtie)
+                        image91211 = bowtie::correctGenericBowTie(image91211, 3, scanHeight_1000, alpha, beta);
+                }
+                WRITE_IMAGE(image91211, directory + "/MERSI2-RGB-9.12.11.png");
             }
-            WRITE_IMAGE(image91211, directory + "/MERSI2-RGB-9.12.11.png");
 
             // Write synced channels
             logger->info("Channel 1 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image1, directory + "/MERSI2-SYNCED-1.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image1, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image1), directory + "/MERSI2-SYNCED-1.png");
 
             logger->info("Channel 2 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image2, directory + "/MERSI2-SYNCED-2.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image2, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image2), directory + "/MERSI2-SYNCED-2.png");
 
             logger->info("Channel 3 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image3, directory + "/MERSI2-SYNCED-3.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image3, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image3), directory + "/MERSI2-SYNCED-3.png");
 
             logger->info("Channel 4 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image4, directory + "/MERSI2-SYNCED-4.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image4, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image4), directory + "/MERSI2-SYNCED-4.png");
 
             logger->info("Channel 5 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image5, directory + "/MERSI2-SYNCED-5.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image5, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image5), directory + "/MERSI2-SYNCED-5.png");
 
             logger->info("Channel 6 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image6, directory + "/MERSI2-SYNCED-6.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image6, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image6), directory + "/MERSI2-SYNCED-6.png");
 
             logger->info("Channel 7 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image7, directory + "/MERSI2-SYNCED-7.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image7, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image7), directory + "/MERSI2-SYNCED-7.png");
 
             logger->info("Channel 8 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image8, directory + "/MERSI2-SYNCED-8.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image8, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image8), directory + "/MERSI2-SYNCED-8.png");
 
             logger->info("Channel 9 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image9, directory + "/MERSI2-SYNCED-9.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image9, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image9), directory + "/MERSI2-SYNCED-9.png");
 
             logger->info("Channel 10 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image10, directory + "/MERSI2-SYNCED-10.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image10, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image10), directory + "/MERSI2-SYNCED-10.png");
 
             logger->info("Channel 11 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image11, directory + "/MERSI2-SYNCED-11.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image11, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image11), directory + "/MERSI2-SYNCED-11.png");
 
             logger->info("Channel 12 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image12, directory + "/MERSI2-SYNCED-12.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image12, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image12), directory + "/MERSI2-SYNCED-12.png");
 
             logger->info("Channel 13 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image13, directory + "/MERSI2-SYNCED-13.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image13, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image13), directory + "/MERSI2-SYNCED-13.png");
 
             logger->info("Channel 14 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image14, directory + "/MERSI2-SYNCED-14.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image14, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image14), directory + "/MERSI2-SYNCED-14.png");
 
             logger->info("Channel 15 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image15, directory + "/MERSI2-SYNCED-15.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image15, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image15), directory + "/MERSI2-SYNCED-15.png");
 
             logger->info("Channel 16 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image16, directory + "/MERSI2-SYNCED-16.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image16, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image16), directory + "/MERSI2-SYNCED-16.png");
 
             logger->info("Channel 17 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image17, directory + "/MERSI2-SYNCED-17.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image17, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image17), directory + "/MERSI2-SYNCED-17.png");
 
             logger->info("Channel 18 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image18, directory + "/MERSI2-SYNCED-18.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image18, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image18), directory + "/MERSI2-SYNCED-18.png");
 
             logger->info("Channel 19 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image19, directory + "/MERSI2-SYNCED-19.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image19, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image19), directory + "/MERSI2-SYNCED-19.png");
 
             logger->info("Channel 20 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image20, directory + "/MERSI2-SYNCED-20.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image20, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image20), directory + "/MERSI2-SYNCED-20.png");
 
             logger->info("Channel 21 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image21, directory + "/MERSI2-SYNCED-21.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image21, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image21), directory + "/MERSI2-SYNCED-21.png");
 
             logger->info("Channel 22 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image22, directory + "/MERSI2-SYNCED-22.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image22, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image22), directory + "/MERSI2-SYNCED-22.png");
 
             logger->info("Channel 23 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image23, directory + "/MERSI2-SYNCED-23.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image23, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image23), directory + "/MERSI2-SYNCED-23.png");
 
             logger->info("Channel 24 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image24, directory + "/MERSI2-SYNCED-24.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image24, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image24), directory + "/MERSI2-SYNCED-24.png");
 
             logger->info("Channel 25 (synced for composites)...");
-            mersiCorrelator->WRITE_IMAGE(image25, directory + "/MERSI2-SYNCED-25.png");
+            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image25, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image25), directory + "/MERSI2-SYNCED-25.png");
         }
 
         void FengyunMERSI2DecoderModule::drawUI()
@@ -486,7 +532,7 @@ namespace fengyun
 
         std::vector<std::string> FengyunMERSI2DecoderModule::getParameters()
         {
-            return {};
+            return {"correct_bowtie"};
         }
 
         std::shared_ptr<ProcessingModule> FengyunMERSI2DecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

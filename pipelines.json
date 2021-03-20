@@ -211,7 +211,9 @@
                 }
             },
             "products": {
-                "fengyun_mersi1": {}
+                "fengyun_mersi1": {
+                    "correct_bowtie": "1"
+                }
             }
         }
     },
@@ -242,7 +244,9 @@
                 }
             },
             "products": {
-                "fengyun_mersi2": {}
+                "fengyun_mersi2": {
+                    "correct_bowtie": "1"
+                }
             }
         }
     },
@@ -278,7 +282,8 @@
                     "terra_mode": "0"
                 },
                 "eos_modis": {
-                    "terra_mode": "0"
+                    "terra_mode": "0",
+                    "correct_bowtie": "1"
                 },
                 "aqua_airs": {},
                 "aqua_ceres": {},
@@ -308,7 +313,8 @@
                     "terra_mode": "1"
                 },
                 "eos_modis": {
-                    "terra_mode": "1"
+                    "terra_mode": "1",
+                    "correct_bowtie": "1"
                 }
             }
         }
