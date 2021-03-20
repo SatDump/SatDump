@@ -2,12 +2,12 @@
 #include <fstream>
 #include "channel_reader.h"
 #include "channel_correlator.h"
-#include "viirs_defrag.h"
 #include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "modules/common/bowtie.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -287,34 +287,38 @@ namespace jpss
             cimg_library::CImg<unsigned short> image_dnb_mgs = reader_dnb_mgs.getImage();
             cimg_library::CImg<unsigned short> image_dnb_lgs = reader_dnb_lgs.getImage();
 
+            // BowTie values
+            const float alpha = 1.0 / 2.2;
+            const float beta = 0.58333; //1.0 - alpha;
+
             // Defrag, to correct those lines on the edges...
             logger->info("Defragmenting...");
-            defragChannel(image_m1, reader_m1.channelSettings);
-            defragChannel(image_m2, reader_m2.channelSettings);
-            defragChannel(image_m3, reader_m3.channelSettings);
-            defragChannel(image_m4, reader_m4.channelSettings);
-            defragChannel(image_m5, reader_m5.channelSettings);
-            defragChannel(image_m6, reader_m6.channelSettings);
-            defragChannel(image_m7, reader_m7.channelSettings);
-            defragChannel(image_m8, reader_m8.channelSettings);
-            defragChannel(image_m9, reader_m9.channelSettings);
-            defragChannel(image_m10, reader_m10.channelSettings);
-            defragChannel(image_m11, reader_m11.channelSettings);
-            defragChannel(image_m12, reader_m12.channelSettings);
-            defragChannel(image_m13, reader_m13.channelSettings);
-            defragChannel(image_m14, reader_m14.channelSettings);
-            defragChannel(image_m15, reader_m15.channelSettings);
-            defragChannel(image_m16, reader_m16.channelSettings);
+            image_m1 = bowtie::correctGenericBowTie(image_m1, 1, reader_m1.channelSettings.zoneHeight, alpha, beta);
+            image_m2 = bowtie::correctGenericBowTie(image_m2, 1, reader_m2.channelSettings.zoneHeight, alpha, beta);
+            image_m3 = bowtie::correctGenericBowTie(image_m3, 1, reader_m3.channelSettings.zoneHeight, alpha, beta);
+            image_m4 = bowtie::correctGenericBowTie(image_m4, 1, reader_m4.channelSettings.zoneHeight, alpha, beta);
+            image_m5 = bowtie::correctGenericBowTie(image_m5, 1, reader_m5.channelSettings.zoneHeight, alpha, beta);
+            image_m6 = bowtie::correctGenericBowTie(image_m6, 1, reader_m6.channelSettings.zoneHeight, alpha, beta);
+            image_m7 = bowtie::correctGenericBowTie(image_m7, 1, reader_m7.channelSettings.zoneHeight, alpha, beta);
+            image_m8 = bowtie::correctGenericBowTie(image_m8, 1, reader_m8.channelSettings.zoneHeight, alpha, beta);
+            image_m9 = bowtie::correctGenericBowTie(image_m9, 1, reader_m9.channelSettings.zoneHeight, alpha, beta);
+            image_m10 = bowtie::correctGenericBowTie(image_m10, 1, reader_m10.channelSettings.zoneHeight, alpha, beta);
+            image_m11 = bowtie::correctGenericBowTie(image_m11, 1, reader_m11.channelSettings.zoneHeight, alpha, beta);
+            image_m12 = bowtie::correctGenericBowTie(image_m12, 1, reader_m12.channelSettings.zoneHeight, alpha, beta);
+            image_m13 = bowtie::correctGenericBowTie(image_m13, 1, reader_m13.channelSettings.zoneHeight, alpha, beta);
+            image_m14 = bowtie::correctGenericBowTie(image_m14, 1, reader_m14.channelSettings.zoneHeight, alpha, beta);
+            image_m15 = bowtie::correctGenericBowTie(image_m15, 1, reader_m15.channelSettings.zoneHeight, alpha, beta);
+            image_m16 = bowtie::correctGenericBowTie(image_m16, 1, reader_m16.channelSettings.zoneHeight, alpha, beta);
 
-            defragChannel(image_i1, reader_i1.channelSettings);
-            defragChannel(image_i2, reader_i2.channelSettings);
-            defragChannel(image_i3, reader_i3.channelSettings);
-            defragChannel(image_i4, reader_i4.channelSettings);
-            defragChannel(image_i5, reader_i5.channelSettings);
+            image_i1 = bowtie::correctGenericBowTie(image_i1, 1, reader_i1.channelSettings.zoneHeight, alpha, beta);
+            image_i2 = bowtie::correctGenericBowTie(image_i2, 1, reader_i2.channelSettings.zoneHeight, alpha, beta);
+            image_i3 = bowtie::correctGenericBowTie(image_i3, 1, reader_i3.channelSettings.zoneHeight, alpha, beta);
+            image_i4 = bowtie::correctGenericBowTie(image_i4, 1, reader_i4.channelSettings.zoneHeight, alpha, beta);
+            image_i5 = bowtie::correctGenericBowTie(image_i5, 1, reader_i5.channelSettings.zoneHeight, alpha, beta);
 
-            defragChannel(image_dnb, reader_dnb.channelSettings);
-            defragChannel(image_dnb_lgs, reader_dnb_lgs.channelSettings);
-            defragChannel(image_dnb_mgs, reader_dnb_mgs.channelSettings);
+            image_dnb = bowtie::correctGenericBowTie(image_dnb, 1, reader_dnb.channelSettings.zoneHeight, alpha, beta);
+            image_dnb_lgs = bowtie::correctGenericBowTie(image_dnb_lgs, 1, reader_dnb_lgs.channelSettings.zoneHeight, alpha, beta);
+            image_dnb_mgs = bowtie::correctGenericBowTie(image_dnb_mgs, 1, reader_dnb_mgs.channelSettings.zoneHeight, alpha, beta);
 
             // Correct mirrored channels
             image_i1.mirror('x');
@@ -539,8 +543,8 @@ namespace jpss
                     std::pair<VIIRSReader, VIIRSReader> correlatedChannels = correlateChannels(reader_i1, reader_i2);
                     cimg_library::CImg<unsigned short> tempImage2 = correlatedChannels.second.getImage(), tempImage1 = correlatedChannels.first.getImage();
                     image221 = cimg_library::CImg<unsigned short>(6400, tempImage1.height(), 1, 3);
-                    defragChannel(tempImage2, std::get<0>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage1, std::get<1>(correlatedChannels).channelSettings);
+                    tempImage2 = bowtie::correctGenericBowTie(tempImage2, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage1 = bowtie::correctGenericBowTie(tempImage1, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     image221.draw_image(0, 0, 0, 0, tempImage2);
                     image221.draw_image(0, 0, 0, 1, tempImage2);
                     image221.draw_image(0, 0, 0, 2, tempImage1);
@@ -558,9 +562,9 @@ namespace jpss
                     std::tuple<VIIRSReader, VIIRSReader, VIIRSReader> correlatedChannels = correlateThreeChannels(reader_i1, reader_i2, reader_i3);
                     cimg_library::CImg<unsigned short> tempImage2 = std::get<0>(correlatedChannels).getImage(), tempImage1 = std::get<1>(correlatedChannels).getImage(), tempImage3 = std::get<2>(correlatedChannels).getImage();
                     image321 = cimg_library::CImg<unsigned short>(6400, tempImage1.height(), 1, 3);
-                    defragChannel(tempImage2, std::get<0>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage1, std::get<1>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage3, std::get<2>(correlatedChannels).channelSettings);
+                    tempImage2 = bowtie::correctGenericBowTie(tempImage2, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage1 = bowtie::correctGenericBowTie(tempImage1, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage3 = bowtie::correctGenericBowTie(tempImage3, 1, std::get<2>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     image321.draw_image(0, 0, 0, 0, tempImage3);
                     image321.draw_image(0, 0, 0, 1, tempImage1);
                     image321.draw_image(0, 0, 0, 2, tempImage2);
@@ -578,9 +582,9 @@ namespace jpss
                     std::tuple<VIIRSReader, VIIRSReader, VIIRSReader> correlatedChannels = correlateThreeChannels(reader_m4, reader_m5, reader_m3);
                     cimg_library::CImg<unsigned short> tempImage4 = std::get<0>(correlatedChannels).getImage(), tempImage5 = std::get<1>(correlatedChannels).getImage(), tempImage3 = std::get<2>(correlatedChannels).getImage();
                     image453 = cimg_library::CImg<unsigned short>(3200, tempImage5.height(), 1, 3);
-                    defragChannel(tempImage5, std::get<1>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage4, std::get<0>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage3, std::get<2>(correlatedChannels).channelSettings);
+                    tempImage5 = bowtie::correctGenericBowTie(tempImage5, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage4 = bowtie::correctGenericBowTie(tempImage4, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage3 = bowtie::correctGenericBowTie(tempImage3, 1, std::get<2>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage5.equalize(1000);
                     tempImage4.equalize(1000);
                     tempImage3.equalize(1000);
@@ -600,9 +604,9 @@ namespace jpss
                     std::tuple<VIIRSReader, VIIRSReader, VIIRSReader> correlatedChannels = correlateThreeChannels(reader_m4, reader_m5, reader_m3);
                     cimg_library::CImg<unsigned short> tempImage4 = std::get<0>(correlatedChannels).getImage(), tempImage5 = std::get<1>(correlatedChannels).getImage(), tempImage3 = std::get<2>(correlatedChannels).getImage();
                     image543 = cimg_library::CImg<unsigned short>(3200, tempImage5.height(), 1, 3);
-                    defragChannel(tempImage5, std::get<1>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage4, std::get<0>(correlatedChannels).channelSettings);
-                    defragChannel(tempImage3, std::get<2>(correlatedChannels).channelSettings);
+                    tempImage5 = bowtie::correctGenericBowTie(tempImage5, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage4 = bowtie::correctGenericBowTie(tempImage4, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImage3 = bowtie::correctGenericBowTie(tempImage3, 1, std::get<2>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage5.equalize(1000);
                     tempImage4.equalize(1000);
                     tempImage3.equalize(1000);
@@ -622,8 +626,8 @@ namespace jpss
                     std::pair<VIIRSReader, VIIRSReader> correlatedChannels = correlateChannels(reader_m16, reader_dnb);
                     cimg_library::CImg<unsigned short> tempImage5 = std::get<0>(correlatedChannels).getImage(), tempImageDNB = std::get<1>(correlatedChannels).getImage();
 
-                    defragChannel(tempImage5, std::get<0>(correlatedChannels).channelSettings);
-                    defragChannel(tempImageDNB, std::get<1>(correlatedChannels).channelSettings);
+                    tempImage5 = bowtie::correctGenericBowTie(tempImage5, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
+                    tempImageDNB = bowtie::correctGenericBowTie(tempImageDNB, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
 
                     tempImageDNB.resize(tempImage5.width(), tempImage5.height());
 
