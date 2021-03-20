@@ -14,14 +14,14 @@ namespace aqua
     CCSDS Values to use throughout the whole program
 */
 
-#define CADU_SIZE 1024
-#define CADU_ASM_SIZE 4
-#define CADU_ASM 0x1ACFFC1D
-#define CADU_ASM_INV 0xE53003E2
-#define CADU_ASM_1 0x1A
-#define CADU_ASM_2 0xCF
-#define CADU_ASM_3 0xFC
-#define CADU_ASM_4 0x1D
+    const int CADU_SIZE = 1024;
+    const int CADU_ASM_SIZE = 4;
+    const uint32_t CADU_ASM = 0x1ACFFC1D;
+    const uint32_t CADU_ASM_INV = 0xE53003E2;
+    const uint8_t CADU_ASM_1 = 0x1A;
+    const uint8_t CADU_ASM_2 = 0xCF;
+    const uint8_t CADU_ASM_3 = 0xFC;
+    const uint8_t CADU_ASM_4 = 0x1D;
 
     class CADUDeframer
     {
@@ -52,6 +52,6 @@ namespace aqua
         // Return state
         int getState();
         // Perform deframing
-        std::vector<std::array<uint8_t, CADU_SIZE>> work(uint8_t *input, size_t size);
+        std::vector<std::array<uint8_t, CADU_SIZE>> work(uint8_t *input, int size);
     };
 } // namespace aqua

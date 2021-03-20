@@ -8,20 +8,8 @@
 
 namespace dsp
 {
-    class untyped_steam
-    {
-    public:
-        virtual bool swap(int size) { return false; }
-        virtual int read() { return -1; }
-        virtual void flush() {}
-        virtual void stopWriter() {}
-        virtual void clearWriteStop() {}
-        virtual void stopReader() {}
-        virtual void clearReadStop() {}
-    };
-
     template <class T>
-    class stream : public untyped_steam
+    class stream
     {
     public:
         stream()
