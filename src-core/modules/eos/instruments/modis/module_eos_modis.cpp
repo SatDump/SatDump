@@ -6,6 +6,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "modules/common/bowtie.h"
 
 #define BUFFER_SIZE 8192
 
@@ -31,7 +32,8 @@ namespace eos
     namespace modis
     {
         EOSMODISDecoderModule::EOSMODISDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            terra(std::stoi(parameters["terra_mode"]))
+                                                                                                                                                            terra(std::stoi(parameters["terra_mode"])),
+                                                                                                                                                            bowtie(std::stoi(parameters["correct_bowtie"]))
         {
         }
 
@@ -184,9 +186,20 @@ namespace eos
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            // BowTie values
+            const float alpha = 1.0 / 1.8;
+            const float beta = 0.58333;
+            const long scanHeight_250 = 40;
+            const long scanHeight_500 = 20;
+            const long scanHeight_1000 = 10;
+
             for (int i = 0; i < 2; i++)
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage250m(i);
+
+                if (bowtie)
+                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
+
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 1) + ".png");
             }
@@ -194,6 +207,10 @@ namespace eos
             for (int i = 0; i < 5; i++)
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage500m(i);
+
+                if (bowtie)
+                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
+
                 logger->info("Channel " + std::to_string(i + 3) + "...");
                 WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 3) + ".png");
             }
@@ -201,6 +218,10 @@ namespace eos
             for (int i = 0; i < 31; i++)
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage1000m(i);
+
+                if (bowtie)
+                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+
                 if (i < 5)
                 {
                     logger->info("Channel " + std::to_string(i + 8) + "...");
@@ -235,44 +256,59 @@ namespace eos
 
             // Output a few nice composites as well
             logger->info("221 Composite...");
-            cimg_library::CImg<unsigned short> image221(1354 * 4, reader.lines * 4, 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
-                tempImage2.equalize(1000);
-                tempImage1.equalize(1000);
-                image221.draw_image(0, 0, 0, 0, tempImage2);
-                image221.draw_image(0, 0, 0, 1, tempImage2);
-                image221.draw_image(0, 0, 0, 2, tempImage1);
+                cimg_library::CImg<unsigned short> image221(1354 * 4, reader.lines * 4, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
+                    tempImage2.equalize(1000);
+                    tempImage1.equalize(1000);
+                    image221.draw_image(0, 0, 0, 0, tempImage2);
+                    image221.draw_image(0, 0, 0, 1, tempImage2);
+                    image221.draw_image(0, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image221 = bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
             }
-            WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
 
             logger->info("121 Composite...");
-            cimg_library::CImg<unsigned short> image121(1354 * 4, reader.lines * 4, 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
-                tempImage2.equalize(1000);
-                tempImage1.equalize(1000);
-                image121.draw_image(0, 0, 0, 0, tempImage1);
-                image121.draw_image(0, 0, 0, 1, tempImage2);
-                image121.draw_image(0, 0, 0, 2, tempImage1);
+                cimg_library::CImg<unsigned short> image121(1354 * 4, reader.lines * 4, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
+                    tempImage2.equalize(1000);
+                    tempImage1.equalize(1000);
+                    image121.draw_image(0, 0, 0, 0, tempImage1);
+                    image121.draw_image(0, 0, 0, 1, tempImage2);
+                    image121.draw_image(0, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image121 = bowtie::correctGenericBowTie(image121, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
             }
-            WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
 
             logger->info("143 Composite...");
-            cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage4 = reader.getImage500m(1), tempImage3 = reader.getImage500m(0), tempImage1 = reader.getImage250m(0);
-                tempImage4.equalize(1000);
-                tempImage3.equalize(1000);
-                tempImage1.equalize(1000);
-                image143.draw_image(0, 0, 0, 0, tempImage1);
-                tempImage3.resize(tempImage3.width() * 2, tempImage3.height() * 2);
-                tempImage4.resize(tempImage4.width() * 2, tempImage4.height() * 2);
-                image143.draw_image(0, 0, 0, 1, tempImage4);
-                image143.draw_image(0, 0, 0, 2, tempImage3);
-                image143.equalize(1000);
+                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage4 = reader.getImage500m(1), tempImage3 = reader.getImage500m(0), tempImage1 = reader.getImage250m(0);
+                    tempImage4.equalize(1000);
+                    tempImage3.equalize(1000);
+                    tempImage1.equalize(1000);
+                    image143.draw_image(0, 0, 0, 0, tempImage1);
+                    tempImage3.resize(tempImage3.width() * 2, tempImage3.height() * 2);
+                    tempImage4.resize(tempImage4.width() * 2, tempImage4.height() * 2);
+                    image143.draw_image(0, 0, 0, 1, tempImage4);
+                    image143.draw_image(0, 0, 0, 2, tempImage3);
+                    image143.equalize(1000);
+
+                    if (bowtie)
+                        image143 = bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
             }
-            WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
         }
 
         void EOSMODISDecoderModule::drawUI()
@@ -291,7 +327,7 @@ namespace eos
 
         std::vector<std::string> EOSMODISDecoderModule::getParameters()
         {
-            return {"terra_mode"};
+            return {"terra_mode", "correct_bowtie"};
         }
 
         std::shared_ptr<ProcessingModule> EOSMODISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

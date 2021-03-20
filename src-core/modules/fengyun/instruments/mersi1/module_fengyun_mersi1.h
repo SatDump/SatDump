@@ -11,6 +11,7 @@ namespace fengyun
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
+            bool bowtie;
         
         public:
             FengyunMERSI1DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

@@ -10,6 +10,7 @@ namespace eos
         {
         protected:
             bool terra;
+            bool bowtie;
 
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
