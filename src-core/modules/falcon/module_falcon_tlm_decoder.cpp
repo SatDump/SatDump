@@ -73,12 +73,12 @@ namespace falcon
             }
 
             // Deframe that! (Integrated derand)
-            std::vector<std::array<uint8_t, CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
+            std::vector<std::array<uint8_t, ccsds::ccsds_1_0_proba::CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
 
             // If we found frames, write them out
             if (frameBuffer.size() > 0)
             {
-                for (std::array<uint8_t, CADU_SIZE> cadu : frameBuffer)
+                for (std::array<uint8_t, ccsds::ccsds_1_0_proba::CADU_SIZE> cadu : frameBuffer)
                 {
                     // RS Correction
                     for (int i = 0; i < 5; i++)
@@ -88,10 +88,10 @@ namespace falcon
                         reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
                     }
 
-                    derand.work(&cadu[4], CADU_SIZE - 4);
+                    derand.work(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
 
                     if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
-                        data_out.write((char *)&cadu, CADU_SIZE);
+                        data_out.write((char *)&cadu, ccsds::ccsds_1_0_proba::CADU_SIZE);
                 }
             }
 

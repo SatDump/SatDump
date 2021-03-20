@@ -78,12 +78,12 @@ namespace npp
             if (vout > 0)
             {
                 // Deframe (and derand)
-                std::vector<std::array<uint8_t, CADU_SIZE>> frames = deframer.work(viterbi_out, vout);
+                std::vector<std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE>> frames = deframer.work(viterbi_out, vout);
 
                 // if we found frame, write them
                 if (frames.size() > 0)
                 {
-                    for (std::array<uint8_t, CADU_SIZE> cadu : frames)
+                    for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
                     {
                         // RS Correction
                         for (int i = 0; i < 4; i++)
@@ -94,8 +94,8 @@ namespace npp
                         }
 
                         // Write it out
-                        //data_out_total += CADU_SIZE;
-                        data_out.write((char *)&cadu, CADU_SIZE);
+                        //data_out_total += ccsds::ccsds_1_0_1024::CADU_SIZE;
+                        data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
                     }
                 }
             }
