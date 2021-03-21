@@ -576,8 +576,8 @@ namespace jpss
                     image221.draw_image(0, 0, 0, 0, tempImage2);
                     image221.draw_image(0, 0, 0, 1, tempImage2);
                     image221.draw_image(0, 0, 0, 2, tempImage1);
-                    //image221.equalize(1000);
                     image221.mirror('x');
+                    image221.equalize(1000);
                     image::white_balance(image221);
                 }
                 WRITE_IMAGE(image221, directory + "/VIIRS-RGB-I221.png");
@@ -598,6 +598,7 @@ namespace jpss
                     image321.draw_image(0, 0, 0, 1, tempImage1);
                     image321.draw_image(0, 0, 0, 2, tempImage2);
                     image321.mirror('x');
+                    image321.equalize(1000);
                     image::white_balance(image321);
                 }
                 WRITE_IMAGE(image321, directory + "/VIIRS-RGB-I312.png");
