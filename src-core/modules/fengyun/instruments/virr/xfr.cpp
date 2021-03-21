@@ -91,9 +91,9 @@ XFR loadXFRFromFile(std::string path)
     std::string currentLine;
     int lineCount = 0;
 
-    float r1, r2, r3;
-    float g1, g2, g3;
-    float b1, b2, b3;
+    float r1 = 0, r2 = 0, r3 = 0;
+    float g1 = 0, g2 = 0, g3 = 0;
+    float b1 = 0, b2 = 0, b3 = 0;
 
     while (std::getline(xfrFile, currentLine))
     {

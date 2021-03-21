@@ -22,7 +22,7 @@ namespace meteor
 				int zlen;
 			};
 
-			static float qTable[64] = {
+			const float qTable[64] = {
 				16,
 				11,
 				10,
@@ -89,7 +89,7 @@ namespace meteor
 				99,
 			};
 
-			static int64_t Zigzag[64] = {
+			const int64_t Zigzag[64] = {
 				0,
 				1,
 				5,
@@ -156,7 +156,7 @@ namespace meteor
 				63,
 			};
 
-			static dc_t dcCategories[12] = {
+			const dc_t dcCategories[12] = {
 				{{false, false}, 0},
 				{{false, true, false}, 1},
 				{{false, true, true}, 2},
@@ -171,7 +171,7 @@ namespace meteor
 				{{true, true, true, true, true, true, true, true, false}, 11},
 			};
 
-			static ac_t acCategories[162] = {
+			const ac_t acCategories[162] = {
 				{{true, false, true, false}, 0, 0},
 				{{false, false}, 1, 0},
 				{{false, true}, 2, 0},

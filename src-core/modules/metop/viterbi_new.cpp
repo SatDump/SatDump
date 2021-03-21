@@ -9,13 +9,13 @@ namespace metop
 {
     MetopViterbi2::MetopViterbi2(float ber_threshold, int outsync_after, int buffer_size) : d_ber_thresold(ber_threshold),
                                                                                             d_outsync_after(outsync_after),
-                                                                                            d_state(ST_IDLE),
-                                                                                            d_outsinc(0),
                                                                                             d_buffer_size(buffer_size),
+                                                                                            d_outsinc(0),
+                                                                                            d_state(ST_IDLE),
                                                                                             d_first(true),
-                                                                                            cc_decoder_in((d_buffer_size / 2.0f) * 1.5f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                             cc_decoder_in_ber((TEST_BITS_LENGTH * 1.5f) / 2.0f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                             cc_encoder_in_ber((TEST_BITS_LENGTH * 1.5f) / 2.0f, 7, 2, {79, 109}, 0, CC_STREAMING, false),
+                                                                                            cc_decoder_in((d_buffer_size / 2.0f) * 1.5f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                             //depunc_ber(3, 110),
                                                                                             depunc(3, 110)
     {
@@ -60,7 +60,7 @@ namespace metop
         return (errors / ((float)TEST_BITS_LENGTH * 1.5f * 2.0f)) * 2.0f;
     }
 
-    int MetopViterbi2::work(uint8_t *input, size_t size, uint8_t *output)
+    int MetopViterbi2::work(uint8_t *input, int size, uint8_t *output)
     {
         int data_size_out = 0;
 

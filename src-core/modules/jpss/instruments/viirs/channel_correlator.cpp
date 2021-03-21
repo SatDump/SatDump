@@ -10,11 +10,11 @@ namespace jpss
             VIIRSReader segments1_out(segments1.channelSettings), segments2_out(segments2.channelSettings);
 
             // Check all segments, only pushing commons ones
-            for (int i = 0; i < segments1.segments.size(); i++)
+            for (int i = 0; i < (int)segments1.segments.size(); i++)
             {
                 Segment &seg1 = segments1.segments[i];
 
-                for (int y = 0; y < segments2.segments.size(); y++)
+                for (int y = 0; y < (int)segments2.segments.size(); y++)
                 {
                     Segment &seg2 = segments2.segments[y];
 
@@ -36,17 +36,17 @@ namespace jpss
             VIIRSReader segments1_out(segments1.channelSettings), segments2_out(segments2.channelSettings), segments3_out(segments3.channelSettings);
 
             // Check all segments, only pushing commons ones
-            for (int i = 0; i < segments1.segments.size(); i++)
+            for (int i = 0; i < (int)segments1.segments.size(); i++)
             {
                 Segment &seg1 = segments1.segments[i];
 
-                for (int y = 0; y < segments2.segments.size(); y++)
+                for (int y = 0; y < (int)segments2.segments.size(); y++)
                 {
                     Segment &seg2 = segments2.segments[y];
 
                     if (seg1.header.time_start_of_scan == seg2.header.time_start_of_scan)
                     {
-                        for (int y = 0; y < segments3.segments.size(); y++)
+                        for (int y = 0; y < (int)segments3.segments.size(); y++)
                         {
                             Segment &seg3 = segments3.segments[y];
 

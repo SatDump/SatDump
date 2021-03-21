@@ -105,7 +105,7 @@ namespace jpss
         struct Detector
         {
             // Based on weatherdump
-            void bitSlicer(uint8_t *data, int &len, int fillsize)
+            void bitSlicer(int &len, int fillsize)
             {
                 int bits = 0, bytes = 0;
 
@@ -127,7 +127,7 @@ namespace jpss
             {
             }
 
-            Detector(uint8_t *data, int size, int &offset)
+            Detector(uint8_t *data, int size)
             {
                 if (size < 88)
                     return;
@@ -147,7 +147,7 @@ namespace jpss
 
                 std::memcpy(data_payload, &data[4], data_payload_size);
 
-                bitSlicer(data_payload, data_payload_size, fill_data);
+                bitSlicer(data_payload_size, fill_data);
 
                 if (size - checksum_offset > 8)
                 {
@@ -230,9 +230,9 @@ namespace jpss
                 int offset = 88;
                 for (int i = 0; i < 6; i++)
                 {
-                    if (offset < payload.size())
+                    if (offset < (int)payload.size())
                     {
-                        detectors[i] = Detector(&payload[offset], payload.size() - offset, offset);
+                        detectors[i] = Detector(&payload[offset], payload.size() - offset);
                         offset += detectors[i].checksum_offset + 8;
                     }
                 }

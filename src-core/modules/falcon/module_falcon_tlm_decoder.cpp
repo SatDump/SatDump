@@ -47,7 +47,7 @@ namespace falcon
         uint8_t finalBuffer[BUFFER_SIZE];
 
         // Bits => Bytes stuff
-        uint8_t byteShifter;
+        uint8_t byteShifter = 0;
         int inByteShifter = 0;
         int byteShifted = 0;
 
