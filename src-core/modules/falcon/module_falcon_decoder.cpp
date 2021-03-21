@@ -52,9 +52,9 @@ namespace falcon
         d_output_files.push_back(directory + "/sftmm1c_debug.txt");
         logger->info("Decoding to " + directory + "/sftmm1c_debug.txt");
 
-        data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
-        logger->info("Decoding to " + d_output_file_hint + ".frm");
+        //  data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
+        //  d_output_files.push_back(d_output_file_hint + ".frm");
+        //  logger->info("Decoding to " + d_output_file_hint + ".frm");
 
         time_t lastTime = 0;
 
@@ -81,35 +81,45 @@ namespace falcon
                 }
                 else if (marker == 0x0117FE0800320303 || marker == 0x0112FA0800320303)
                 {
+                    pkt.payload[pkt.payload.size() - 1] = 0;
+                    pkt.payload[pkt.payload.size() - 2] = 0;
                     gps_debug_out << std::string((char *)&pkt.payload[25]) << std::endl;
                 }
                 else if (marker == 0x0112220100620303)
                 {
+                    pkt.payload[pkt.payload.size() - 1] = 0;
+                    pkt.payload[pkt.payload.size() - 2] = 0;
                     sfc1a_debug << std::string((char *)&pkt.payload[25]) << std::endl;
                 }
                 else if (marker == 0x0112520100620303)
                 {
+                    pkt.payload[pkt.payload.size() - 1] = 0;
+                    pkt.payload[pkt.payload.size() - 2] = 0;
                     sftmm1a_debug << std::string((char *)&pkt.payload[25]) << std::endl;
                 }
                 else if (marker == 0x0112520100620303)
                 {
+                    pkt.payload[pkt.payload.size() - 1] = 0;
+                    pkt.payload[pkt.payload.size() - 2] = 0;
                     sftmm1b_debug << std::string((char *)&pkt.payload[25]) << std::endl;
                 }
                 else if (marker == 0x0112720100620303)
                 {
+                    pkt.payload[pkt.payload.size() - 1] = 0;
+                    pkt.payload[pkt.payload.size() - 2] = 0;
                     sftmm1c_debug << std::string((char *)&pkt.payload[25]) << std::endl;
                 }
 
-                if (marker == 0x0012FA08D0480108)
-                {
-                    // logger->info(pkt.payload.size());
+                // if (marker == 0x0012FA08D0480108)
+                // {
+                // logger->info(pkt.payload.size());
 
-                    data_out.put(0x1a);
-                    data_out.put(0xcf);
-                    data_out.put(0xfc);
-                    data_out.put(0x1d);
-                    data_out.write((char *)pkt.payload.data(), pkt.payload.size());
-                }
+                //     data_out.put(0x1a);
+                //     data_out.put(0xcf);
+                //      data_out.put(0xfc);
+                //      data_out.put(0x1d);
+                //      data_out.write((char *)pkt.payload.data(), pkt.payload.size());
+                // }
             }
             progress = data_in.tellg();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -126,7 +136,7 @@ namespace falcon
         sftmm1b_debug.close();
         sftmm1c_debug.close();
 
-        data_out.close();
+        //data_out.close();
         data_in.close();
     }
 
