@@ -161,7 +161,8 @@ int main(int argc, char *argv[])
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 120");
+    if (!ImGui_ImplOpenGL3_Init("#version 150"))
+        ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
     style::setDarkStyle(".");
 
