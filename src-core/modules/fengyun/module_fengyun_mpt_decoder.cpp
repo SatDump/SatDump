@@ -141,10 +141,12 @@ namespace fengyun
                 viterbiNoSyncRun++;
 
                 if (viterbiNoSyncRun == 10)
+                {
                     if (shift == sathelper::DEG_0)
                         shift = sathelper::DEG_90;
                     else
                         shift = sathelper::DEG_0;
+                }
             }
 
             // Perform differential decoding

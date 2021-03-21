@@ -42,7 +42,6 @@ namespace meteor
 
         int frame_count = 0;
 
-        int dat_size = 0;
         while (!data_in.eof())
         {
             data_in.read((char *)read_buffer, BUFFER_SIZE);

@@ -10,7 +10,7 @@ namespace fengyun
     {
     private:
         bool d_sync_check;
-        //float d_ber_threshold;
+        float d_ber_threshold;
         int d_insync_after;
         int d_outsync_after;
         int d_reset_after;
@@ -57,7 +57,6 @@ namespace fengyun
         unsigned char *input_symbols_buffer_Q_ph; //buffer for phase moved symbols Q
 
     public:
-        float d_ber_threshold;
         bool switchInv;
 
         FengyunMPTViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size);

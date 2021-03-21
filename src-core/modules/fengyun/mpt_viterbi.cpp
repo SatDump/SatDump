@@ -166,11 +166,10 @@ namespace fengyun
     {
         unsigned char *out = &output[0];
         int ninputs = size;
-        unsigned int chan_len;
 
         //translate all complex insymbols to char and save these to input_symbols_buffer's I and Q
         float sample;
-        for (unsigned int i = 0; i < ninputs; i++)
+        for (int i = 0; i < ninputs; i++)
         {
             // Translate and clip [-1.0..1.0] to [28..228]
             sample = in_syms[i].real() * 127.0 + 128.0;
@@ -304,7 +303,7 @@ namespace fengyun
         {
             unsigned int out_byte_count = 0;
 
-            for (unsigned int i = d_shift_main_decoder; i < ninputs; i++)
+            for (int i = d_shift_main_decoder; i < ninputs; i++)
             {
 
                 d_even_symbol = true;

@@ -41,9 +41,9 @@ namespace metop
     {
     private:
         // Settings
-        const int d_buffer_size;
-        const int d_outsync_after;
         const float d_ber_thresold;
+        const int d_outsync_after;
+        const int d_buffer_size;
 
         // Variables
         int d_outsinc;
@@ -53,7 +53,7 @@ namespace metop
         float d_ber;
 
         // BER Decoders
-       // gr::fec::depuncture_bb_impl depunc_ber;
+        // gr::fec::depuncture_bb_impl depunc_ber;
         gr::fec::code::cc_decoder_impl cc_decoder_in_ber;
         gr::fec::code::cc_encoder_impl cc_encoder_in_ber;
 
@@ -103,7 +103,7 @@ namespace metop
         MetopViterbi2(float ber_threshold, int outsync_after, int buffer_size);
         ~MetopViterbi2();
 
-        int work(uint8_t *input, size_t size, uint8_t *output);
+        int work(uint8_t *input, int size, uint8_t *output);
         float ber();
         int getState();
     };

@@ -150,14 +150,14 @@ namespace meteor
             {
                 for (int i = 0; i < length; i++)
                 {
-                    soft[0 + 8 * i] = buf[i] >> 7 & 0x01 == 0x01;
-                    soft[1 + 8 * i] = buf[i] >> 6 & 0x01 == 0x01;
-                    soft[2 + 8 * i] = buf[i] >> 5 & 0x01 == 0x01;
-                    soft[3 + 8 * i] = buf[i] >> 4 & 0x01 == 0x01;
-                    soft[4 + 8 * i] = buf[i] >> 3 & 0x01 == 0x01;
-                    soft[5 + 8 * i] = buf[i] >> 2 & 0x01 == 0x01;
-                    soft[6 + 8 * i] = buf[i] >> 1 & 0x01 == 0x01;
-                    soft[7 + 8 * i] = buf[i] >> 0 & 0x01 == 0x01;
+                    soft[0 + 8 * i] = buf[i] >> 7 & (0x01 == 0x01);
+                    soft[1 + 8 * i] = buf[i] >> 6 & (0x01 == 0x01);
+                    soft[2 + 8 * i] = buf[i] >> 5 & (0x01 == 0x01);
+                    soft[3 + 8 * i] = buf[i] >> 4 & (0x01 == 0x01);
+                    soft[4 + 8 * i] = buf[i] >> 3 & (0x01 == 0x01);
+                    soft[5 + 8 * i] = buf[i] >> 2 & (0x01 == 0x01);
+                    soft[6 + 8 * i] = buf[i] >> 1 & (0x01 == 0x01);
+                    soft[7 + 8 * i] = buf[i] >> 0 & (0x01 == 0x01);
                 }
             }
         } // namespace lrpt

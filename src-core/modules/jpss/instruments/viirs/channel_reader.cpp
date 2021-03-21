@@ -112,7 +112,7 @@ namespace jpss
         void VIIRSReader::differentialDecode(VIIRSReader &channelSource, int deci)
         {
             // Differential decoding between 2 channels
-            for (int segment_number = 0; segment_number < std::min(channelSource.segments.size(), segments.size()); segment_number++)
+            for (int segment_number = 0; segment_number < std::min<int>(channelSource.segments.size(), segments.size()); segment_number++)
             {
                 Segment &segInit = channelSource.segments[segment_number];
                 Segment &segCurrent = segments[segment_number];
