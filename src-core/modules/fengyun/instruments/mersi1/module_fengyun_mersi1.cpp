@@ -8,6 +8,7 @@
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
 #include "modules/common/bowtie.h"
+#include "modules/common/image.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
