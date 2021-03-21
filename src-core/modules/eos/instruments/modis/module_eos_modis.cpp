@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "modules/common/bowtie.h"
+#include "modules/common/image.h"
 
 #define BUFFER_SIZE 8192
 
@@ -260,16 +261,18 @@ namespace eos
                 cimg_library::CImg<unsigned short> image221(1354 * 4, reader.lines * 4, 1, 3);
                 {
                     cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
-                    tempImage2.equalize(1000);
-                    tempImage1.equalize(1000);
                     image221.draw_image(0, 0, 0, 0, tempImage2);
                     image221.draw_image(0, 0, 0, 1, tempImage2);
                     image221.draw_image(0, 0, 0, 2, tempImage1);
+
+                    image::white_balance(image221);
 
                     if (bowtie)
                         image221 = bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
+                image221.equalize(1000);
+                WRITE_IMAGE(image221, directory + "/MODIS-RGB-221-EQU.png");
             }
 
             logger->info("121 Composite...");
@@ -291,23 +294,25 @@ namespace eos
 
             logger->info("143 Composite...");
             {
-                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3);
+                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3), pre_wb;
                 {
                     cimg_library::CImg<unsigned short> tempImage4 = reader.getImage500m(1), tempImage3 = reader.getImage500m(0), tempImage1 = reader.getImage250m(0);
-                    tempImage4.equalize(1000);
-                    tempImage3.equalize(1000);
-                    tempImage1.equalize(1000);
                     image143.draw_image(0, 0, 0, 0, tempImage1);
                     tempImage3.resize(tempImage3.width() * 2, tempImage3.height() * 2);
                     tempImage4.resize(tempImage4.width() * 2, tempImage4.height() * 2);
                     image143.draw_image(0, 0, 0, 1, tempImage4);
                     image143.draw_image(0, 0, 0, 2, tempImage3);
-                    image143.equalize(1000);
+                    pre_wb = image143;
+                    image::white_balance(image143);
 
                     if (bowtie)
                         image143 = bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
+                image143.equalize(1000);
+                WRITE_IMAGE(image143, directory + "/MODIS-RGB-143-EQU.png");
+                pre_wb.equalize(1000);
+                WRITE_IMAGE(pre_wb, directory + "/MODIS-RGB-143-EQURAW.png");
             }
         }
 
