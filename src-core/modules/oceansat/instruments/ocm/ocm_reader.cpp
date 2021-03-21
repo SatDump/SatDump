@@ -8,7 +8,7 @@ namespace oceansat
         OCMReader::OCMReader()
         {
             for (int i = 0; i < 8; i++)
-                channels[i] = new unsigned short[10000 * 4072];
+                channels[i] = new unsigned short[20000 * 4072];
             lineBuffer = new unsigned short[4072 * 10];
             lines = 0;
         }
