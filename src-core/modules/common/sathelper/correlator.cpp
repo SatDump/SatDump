@@ -260,24 +260,31 @@ namespace sathelper
                         {
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 7:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 6:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 5:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 4:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 3:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 2:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
+                            [[fallthrough]];
                         case 1:
                             tmpCorrelationPtr[c] += (uint32_t)Correlator::hardCorrelate(data[i + k], wordsPtr[c][k]);
                             c++;
@@ -299,6 +306,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 7:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -307,6 +315,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 6:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -315,6 +324,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 5:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -323,6 +333,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 4:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -331,6 +342,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 3:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -339,6 +351,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 2:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {
@@ -347,6 +360,7 @@ namespace sathelper
                             tmpCorrelationPtr[c] = 0;
                         }
                         c++;
+                        [[fallthrough]];
                     case 1:
                         if (tmpCorrelationPtr[c] > correlationPtr[c])
                         {

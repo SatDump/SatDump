@@ -5,7 +5,7 @@ DelayOneImag::DelayOneImag()
     lastSamp = 0;
 }
 
-void DelayOneImag::work(std::complex<float> *in, size_t length, std::complex<float> *out)
+void DelayOneImag::work(std::complex<float> *in, int length, std::complex<float> *out)
 {
     for (int i = 0; i < length; i++)
     {

@@ -23,7 +23,7 @@ namespace diff
 
     void nrzm_decode(uint8_t *data, int length)
     {
-        uint8_t mask, lastBit;
+        uint8_t mask, lastBit = 0;
         for (int i = 0; i < length; i++)
         {
             mask = ((data[i] >> 1) & 0x7F) | (lastBit << 7);

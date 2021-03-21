@@ -16,6 +16,6 @@ namespace dsp
         void set_gain(float gain) { d_gain = gain; }
         float gain() const { return d_gain; }
 
-        size_t work(std::complex<float> *in, size_t length, float *out);
+        int work(std::complex<float> *in, int length, float *out);
     };
 }; // namespace libdsp

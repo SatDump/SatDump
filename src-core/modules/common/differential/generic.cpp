@@ -14,7 +14,7 @@ namespace diff
 
         unsigned modulus = d_modulus;
 
-        for (int i = 0; i < tmp_.size() - 2; i++)
+        for (int i = 0; i < (int)tmp_.size() - 2; i++)
         {
             out[i] = (input[i] - input[i - 1]) % modulus;
         }

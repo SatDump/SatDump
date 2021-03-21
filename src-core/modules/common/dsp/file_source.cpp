@@ -107,5 +107,7 @@ namespace dsp
             return COMPLEX_FLOAT_32;
         else if (type == "w8")
             return WAV_8;
+        else
+            return COMPLEX_FLOAT_32;
     }
 }

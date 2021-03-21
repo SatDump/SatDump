@@ -52,7 +52,7 @@ namespace ccsds
             // Return state
             int getState();
             // Perform deframing
-            std::vector<std::array<uint8_t, CADU_SIZE>> work(uint8_t *input, size_t size);
+            std::vector<std::array<uint8_t, CADU_SIZE>> work(uint8_t *input, int size);
         };
     }
 }

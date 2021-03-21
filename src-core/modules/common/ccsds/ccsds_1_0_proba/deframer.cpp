@@ -56,7 +56,7 @@ namespace ccsds
             return state;
         }
 
-        std::vector<std::array<uint8_t, CADU_SIZE>> CADUDeframer::work(uint8_t *input, size_t size)
+        std::vector<std::array<uint8_t, CADU_SIZE>> CADUDeframer::work(uint8_t *input, int size)
         {
             // Output buffer
             std::vector<std::array<uint8_t, CADU_SIZE>> frames;

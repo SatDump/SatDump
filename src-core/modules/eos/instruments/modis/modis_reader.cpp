@@ -32,7 +32,7 @@ namespace eos
                 delete[] channels250m[i];
         }
 
-        std::vector<uint16_t> bytesTo12bits(std::vector<uint8_t> &in, int offset, int skip, int lengthToConvert)
+        std::vector<uint16_t> bytesTo12bits(std::vector<uint8_t> &in, int offset, int lengthToConvert)
         {
             std::vector<uint16_t> result;
             int pos = offset;
@@ -52,7 +52,7 @@ namespace eos
         void MODISReader::processDayPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header)
         {
             // Filter out calibration packets
-            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 || header.mirror_side > 1)
+            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
                 return;
 
             //std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
@@ -69,7 +69,7 @@ namespace eos
             if (packet.header.sequence_flag == 1)
             {
                 // Contains IFOVs 1-5
-                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 1, 500);
+                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 500);
 
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
@@ -116,7 +116,7 @@ namespace eos
             else if (packet.header.sequence_flag == 2)
             {
                 // Contains IFOVs 6-10
-                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 1, 500);
+                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 500);
 
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
@@ -165,7 +165,7 @@ namespace eos
         void MODISReader::processNightPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet, MODISHeader &header)
         {
             // Filter out calibration packets
-            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 || header.mirror_side > 1)
+            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
                 return;
 
             //std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
@@ -179,7 +179,7 @@ namespace eos
 
             lastScanCount = header.scan_count;
 
-            std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 1, 200);
+            std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 200);
 
             // 28 1000m channels
             for (int i = 0; i < 16; i++)
