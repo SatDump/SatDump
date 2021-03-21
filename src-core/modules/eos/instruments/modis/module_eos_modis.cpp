@@ -294,24 +294,34 @@ namespace eos
 
             logger->info("143 Composite...");
             {
-                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3), pre_wb;
+                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3), pre_wb(1354 * 4, reader.lines * 4, 1, 3);
                 {
                     cimg_library::CImg<unsigned short> tempImage4 = reader.getImage500m(1), tempImage3 = reader.getImage500m(0), tempImage1 = reader.getImage250m(0);
-                    image143.draw_image(0, 0, 0, 0, tempImage1);
                     tempImage3.resize(tempImage3.width() * 2, tempImage3.height() * 2);
                     tempImage4.resize(tempImage4.width() * 2, tempImage4.height() * 2);
+
+                    image143.draw_image(0, 0, 0, 0, tempImage1);
                     image143.draw_image(0, 0, 0, 1, tempImage4);
                     image143.draw_image(0, 0, 0, 2, tempImage3);
-                    pre_wb = image143;
+
+                    tempImage1.equalize(1000);
+                    tempImage4.equalize(1000);
+                    tempImage3.equalize(1000);
+                    pre_wb.draw_image(0, 0, 0, 0, tempImage1);
+                    pre_wb.draw_image(0, 0, 0, 1, tempImage4);
+                    pre_wb.draw_image(0, 0, 0, 2, tempImage3);
+
                     image::white_balance(image143);
 
                     if (bowtie)
+                    {
                         image143 = bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
+                        pre_wb = bowtie::correctGenericBowTie(pre_wb, 3, scanHeight_250, alpha, beta);
+                    }
                 }
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
                 image143.equalize(1000);
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143-EQU.png");
-                pre_wb.equalize(1000);
                 WRITE_IMAGE(pre_wb, directory + "/MODIS-RGB-143-EQURAW.png");
             }
         }
