@@ -13,7 +13,7 @@ namespace dsp
     {
     }
 
-    size_t QuadratureDemod::work(std::complex<float> *in, size_t length, float *out)
+    int QuadratureDemod::work(std::complex<float> *in, int length, float *out)
     {
         volk::vector<std::complex<float>> tmp(length);
         volk_32fc_x2_multiply_conjugate_32fc(&tmp[0], &in[1], &in[0], length);

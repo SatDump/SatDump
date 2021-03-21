@@ -102,7 +102,7 @@ namespace dsp
                 ii = 0;
         }
 
-        if (ii <= tmp_in.size())
+        if (ii <= (int)tmp_in.size())
             tmp_in.erase(tmp_in.begin(), tmp_in.begin() + ii);
         else
             throw std::out_of_range("ii out of bounds! Something is probably very wrong.");

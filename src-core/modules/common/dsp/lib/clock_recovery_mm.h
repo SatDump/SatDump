@@ -91,11 +91,11 @@ namespace dsp
 
     private:
         float d_mu;                   // fractional sample position [0.0, 1.0]
-        float d_gain_mu;              // gain for adjusting mu
         float d_omega;                // nominal frequency
         float d_gain_omega;           // gain for adjusting omega
         float d_omega_relative_limit; // used to compute min and max omega
         float d_omega_mid;            // average omega
+        float d_gain_mu;              // gain for adjusting mu
         float d_omega_lim;            // actual omega clipping limit
 
         float d_last_sample;

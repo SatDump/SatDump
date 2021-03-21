@@ -1,6 +1,6 @@
 #include "repack_bits_byte.h"
 
-size_t RepackBitsByte::work(uint8_t *in, size_t length, uint8_t *out)
+int RepackBitsByte::work(uint8_t *in, int length, uint8_t *out)
 {
     int oo = 0;
 

@@ -4,7 +4,7 @@
 
 namespace dsp
 {
-    fir_filter_ccf::fir_filter_ccf(int decimation, const std::vector<float> &taps) : d_output(1)
+    fir_filter_ccf::fir_filter_ccf(int /*decimation*/, const std::vector<float> &taps) : d_output(1)
     {
         d_align = volk_get_alignment();
         d_naligned = std::max((size_t)1, d_align / sizeof(std::complex<float>));
@@ -79,7 +79,7 @@ namespace dsp
         }
     }
 
-    fir_filter_fff::fir_filter_fff(int decimation, const std::vector<float> &taps) : d_output(1)
+    fir_filter_fff::fir_filter_fff(int /*decimation*/, const std::vector<float> &taps) : d_output(1)
     {
         d_align = volk_get_alignment();
         d_naligned = std::max((size_t)1, d_align / sizeof(float));

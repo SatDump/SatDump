@@ -52,7 +52,7 @@ namespace aqua
         uint8_t finalBuffer[(BUFFER_SIZE / 8)];
 
         // Bits => Bytes stuff
-        uint8_t byteShifter;
+        uint8_t byteShifter = 0;
         int inByteShifter = 0;
         int inFinalByteBuffer;
 

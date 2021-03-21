@@ -10,5 +10,5 @@ private:
     int inByteToWrite = 0;
 
 public:
-    size_t work(uint8_t *in, size_t length, uint8_t *out);
+    int work(uint8_t *in, int length, uint8_t *out);
 };

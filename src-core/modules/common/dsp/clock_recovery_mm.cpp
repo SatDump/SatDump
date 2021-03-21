@@ -12,7 +12,7 @@ namespace dsp
         int nsamples = input_stream->read();
         if (nsamples <= 0)
             return;
-        int d_out;
+        int d_out = 0;
         try
         {
             d_out = d_rec.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
@@ -34,7 +34,7 @@ namespace dsp
         int nsamples = input_stream->read();
         if (nsamples <= 0)
             return;
-        int d_out;
+        int d_out = 0;
         try
         {
             d_out = d_rec.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
