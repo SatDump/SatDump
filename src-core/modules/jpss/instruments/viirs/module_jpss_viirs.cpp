@@ -8,6 +8,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "modules/common/bowtie.h"
+#include "modules/common/image.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -288,8 +289,8 @@ namespace jpss
             cimg_library::CImg<unsigned short> image_dnb_lgs = reader_dnb_lgs.getImage();
 
             // BowTie values
-            const float alpha = 1.0 / 2.2;
-            const float beta = 0.58333; //1.0 - alpha;
+            const float alpha = 1.0 / 1.9;
+            const float beta = 0.52333; //1.0 - alpha;
 
             // Defrag, to correct those lines on the edges...
             logger->info("Defragmenting...");
@@ -381,6 +382,33 @@ namespace jpss
             image_dnb.equalize(1000);
             image_dnb_lgs.equalize(1000);
             image_dnb_mgs.equalize(1000);
+
+            logger->info("White balancing all channels...");
+            image::white_balance(image_i1, 0.05f, 1);
+            image::white_balance(image_i2, 0.05f, 1);
+            image::white_balance(image_i3, 0.05f, 1);
+            image::white_balance(image_i4, 0.05f, 1);
+            image::white_balance(image_i5, 0.05f, 1);
+
+            image::white_balance(image_m1, 0.05f, 1);
+            image::white_balance(image_m2, 0.05f, 1);
+            image::white_balance(image_m3, 0.05f, 1);
+            image::white_balance(image_m4, 0.05f, 1);
+            image::white_balance(image_m6, 0.05f, 1);
+            image::white_balance(image_m7, 0.05f, 1);
+            image::white_balance(image_m8, 0.05f, 1);
+            image::white_balance(image_m9, 0.05f, 1);
+            image::white_balance(image_m10, 0.05f, 1);
+            image::white_balance(image_m11, 0.05f, 1);
+            image::white_balance(image_m12, 0.05f, 1);
+            image::white_balance(image_m13, 0.05f, 1);
+            image::white_balance(image_m14, 0.05f, 1);
+            image::white_balance(image_m15, 0.05f, 1);
+            image::white_balance(image_m16, 0.05f, 1);
+
+            image::white_balance(image_dnb, 0.05f, 1);
+            image::white_balance(image_dnb_lgs, 0.05f, 1);
+            image::white_balance(image_dnb_mgs, 0.05f, 1);
 
             // Takes a while so we say how we're doing
 
@@ -548,8 +576,9 @@ namespace jpss
                     image221.draw_image(0, 0, 0, 0, tempImage2);
                     image221.draw_image(0, 0, 0, 1, tempImage2);
                     image221.draw_image(0, 0, 0, 2, tempImage1);
-                    image221.equalize(1000);
+                    //image221.equalize(1000);
                     image221.mirror('x');
+                    image::white_balance(image221);
                 }
                 WRITE_IMAGE(image221, directory + "/VIIRS-RGB-I221.png");
             }
@@ -568,8 +597,8 @@ namespace jpss
                     image321.draw_image(0, 0, 0, 0, tempImage3);
                     image321.draw_image(0, 0, 0, 1, tempImage1);
                     image321.draw_image(0, 0, 0, 2, tempImage2);
-                    image321.equalize(1000);
                     image321.mirror('x');
+                    image::white_balance(image321);
                 }
                 WRITE_IMAGE(image321, directory + "/VIIRS-RGB-I312.png");
             }
@@ -592,6 +621,7 @@ namespace jpss
                     image453.draw_image(0, 0, 0, 1, tempImage5);
                     image453.draw_image(0, 0, 0, 2, tempImage3);
                     image453.mirror('x');
+                    image::white_balance(image453);
                 }
                 WRITE_IMAGE(image453, directory + "/VIIRS-RGB-M453.png");
             }
@@ -614,6 +644,7 @@ namespace jpss
                     image543.draw_image(0, 0, 0, 1, tempImage4);
                     image543.draw_image(0, 0, 0, 2, tempImage3);
                     image543.mirror('x');
+                    image::white_balance(image543);
                 }
                 WRITE_IMAGE(image543, directory + "/VIIRS-RGB-M543.png");
             }
