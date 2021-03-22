@@ -24,6 +24,8 @@ namespace spacex
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
+        bool qpsk;
+
         // UI Stuff
         libdsp::Random rng;
 
