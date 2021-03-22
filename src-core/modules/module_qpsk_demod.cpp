@@ -22,17 +22,21 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
+    // Buffers
+    sym_buffer = new int8_t[d_buffer_size * 2];
+}
+
+void QPSKDemodModule::init()
+{
     // Init DSP blocks
-    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+    if (input_data_type == DATA_FILE)
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     if (d_dc_block)
-        dcb = std::make_shared<dsp::DCBlockerBlock>(file_source->output_stream, 1024, true);
-    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+        dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
+    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream), d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
-
-    // Buffers
-    sym_buffer = new int8_t[d_buffer_size * 2];
 }
 
 std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
@@ -57,9 +61,6 @@ void QPSKDemodModule::process()
     else
         filesize = 0;
 
-    //if (input_data_type == DATA_FILE)
-    //    data_in = std::ifstream(d_input_file, std::ios::binary);
-
     data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
     d_output_files.push_back(d_output_file_hint + ".soft");
 
@@ -70,7 +71,8 @@ void QPSKDemodModule::process()
     time_t lastTime = 0;
 
     // Start
-    file_source->start();
+    if (input_data_type == DATA_FILE)
+        file_source->start();
     if (d_dc_block)
         dcb->start();
     agc->start();
@@ -79,7 +81,7 @@ void QPSKDemodModule::process()
     rec->start();
 
     int dat_size = 0;
-    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+    while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
     {
         dat_size = rec->output_stream->read();
 
@@ -96,7 +98,8 @@ void QPSKDemodModule::process()
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
-        progress = file_source->getPosition();
+        if (input_data_type == DATA_FILE)
+            progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -107,7 +110,8 @@ void QPSKDemodModule::process()
     logger->info("Demodulation finished");
 
     // Stop
-    file_source->stop();
+    if (input_data_type == DATA_FILE)
+        file_source->stop();
     if (d_dc_block)
         dcb->stop();
     agc->stop();
