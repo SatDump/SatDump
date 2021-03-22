@@ -1,6 +1,7 @@
 #include "module_spacex_decoder.h"
 #include "logger.h"
 #include "modules/common/sathelper/derandomizer.h"
+#include "modules/common/sathelper/packetfixer.h"
 #include "modules/common/sathelper/reedsolomon_239.h"
 #include "imgui/imgui.h"
 
@@ -18,7 +19,8 @@ size_t getFilesize(std::string filepath);
 
 namespace spacex
 {
-    SpaceXDecoderModule::SpaceXDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    SpaceXDecoderModule::SpaceXDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                    qpsk(std::stoi(parameters["qpsk"]))
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
@@ -51,10 +53,19 @@ namespace spacex
         int inByteShifter = 0;
         int byteShifted = 0;
 
+        // PacketFixer
+        sathelper::PacketFixer fixer;
+        int unsynced_run = 0;
+        int ph = sathelper::DEG_0;
+        bool swap = false;
+
         while (!data_in.eof())
         {
             // Read buffer
             data_in.read((char *)buffer, BUFFER_SIZE);
+
+            if (qpsk)
+                fixer.fixPacket((uint8_t *)buffer, BUFFER_SIZE, (sathelper::PhaseShift)ph, swap);
 
             // Group symbols into bytes now, I channel
             inByteShifter = 0;
@@ -69,6 +80,28 @@ namespace spacex
                 {
                     finalBuffer[byteShifted++] = byteShifter;
                     inByteShifter = 0;
+                }
+            }
+
+            if (qpsk)
+            {
+                if (deframer.getState() == 0)
+                {
+                    unsynced_run++;
+                    if (unsynced_run == 10)
+                    {
+                        ph++;
+                        if (ph == 4)
+                        {
+                            ph = 0;
+                            swap = !swap;
+                        }
+                        unsynced_run = 0;
+                    }
+                }
+                else
+                {
+                    unsynced_run = 0;
                 }
             }
 
@@ -189,7 +222,7 @@ namespace spacex
 
     std::vector<std::string> SpaceXDecoderModule::getParameters()
     {
-        return {};
+        return {"qpsk"};
     }
 
     std::shared_ptr<ProcessingModule> SpaceXDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
