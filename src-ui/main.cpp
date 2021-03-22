@@ -10,6 +10,7 @@
 #include "init.h"
 #include "processing.h"
 #include "offline.h"
+#include "live.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -163,7 +164,11 @@ int main(int argc, char *argv[])
                     }
                     if (ImGui::BeginTabItem("Live processing"))
                     {
+#ifdef BUILD_LIVE
+                        renderLiveProcessing();
+#else
                         ImGui::Text("Live support is currently being rewritten, and does not work on Windows yet. If you really need it, please stick to an older version.");
+#endif
                         ImGui::EndTabItem();
                     }
                     if (ImGui::BeginTabItem("Credits"))

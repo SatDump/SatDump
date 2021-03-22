@@ -1,3 +1,4 @@
+#include "offline.h"
 #include "imgui/imgui.h"
 #include "global.h"
 #include "pipeline.h"

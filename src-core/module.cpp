@@ -24,6 +24,10 @@ void ProcessingModule::setOutputType(ModuleDataType type)
     output_data_type = type;
 }
 
+void ProcessingModule::init()
+{
+}
+
 void ProcessingModule::drawUI()
 {
 }
