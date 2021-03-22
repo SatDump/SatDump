@@ -7,7 +7,6 @@
 #include <memory>
 #include <atomic>
 #include "imgui/imgui_flags.h"
-#include "pipe.h"
 #include "dll_export.h"
 
 #define WRITE_IMAGE(image, path)               \
@@ -16,8 +15,9 @@
 
 enum ModuleDataType
 {
-    DATA_STREAM,
-    DATA_FILE
+    DATA_STREAM, // Generic data, for which a circular buffer will be used
+    DATA_DSP_STREAM, // DSP Data using the specialized buffer and complex floats
+    DATA_FILE, // Just generic data from a file
 };
 
 class ProcessingModule
@@ -40,8 +40,8 @@ public:
     std::vector<std::string> getOutputs();
 
 public:
-    std::shared_ptr<satdump::Pipe> input_fifo;
-    std::shared_ptr<satdump::Pipe> output_fifo;
+    //std::shared_ptr<satdump::Pipe> input_fifo;
+    //std::shared_ptr<satdump::Pipe> output_fifo;
     std::atomic<bool> input_active;
 
 public:
