@@ -532,7 +532,7 @@
                 }
             },
             "cadu": {
-                "falcon_tlm_decoder": {}
+                "spacex_tlm_decoder": {}
             },
             "products": {
                 "falcon_decoder": {}

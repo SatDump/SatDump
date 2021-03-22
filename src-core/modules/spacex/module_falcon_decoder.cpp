@@ -7,7 +7,7 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-namespace falcon
+namespace spacex
 {
     FalconDecoderModule::FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
@@ -66,9 +66,9 @@ namespace falcon
             // Read buffer
             data_in.read((char *)cadu, 1279);
 
-            std::vector<FalconPacket> frames = demux.work(cadu);
+            std::vector<SpaceXPacket> frames = demux.work(cadu);
 
-            for (FalconPacket pkt : frames)
+            for (SpaceXPacket pkt : frames)
             {
                 uint64_t marker = ((uint64_t)pkt.payload[2]) << 56 | ((uint64_t)pkt.payload[3]) << 48 |
                                   ((uint64_t)pkt.payload[4]) << 40 | ((uint64_t)pkt.payload[5]) << 32 |

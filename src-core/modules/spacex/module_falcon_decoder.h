@@ -5,7 +5,7 @@
 #include <fstream>
 #include <dsp/random.h>
 
-namespace falcon
+namespace spacex
 {
     class FalconDecoderModule : public ProcessingModule
     {

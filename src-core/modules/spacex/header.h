@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <vector>
 
-namespace falcon
+namespace spacex
 {
     // Struct representing a M-PDU
-    struct FalconHeader
+    struct SpaceXHeader
     {
         uint32_t frame_counter;
         uint16_t first_header_pointer;
@@ -14,5 +14,5 @@ namespace falcon
     };
 
     // Parse MPDU from CADU
-    FalconHeader parseHeader(uint8_t *cadu);
+    SpaceXHeader parseHeader(uint8_t *cadu);
 } // namespace proba
