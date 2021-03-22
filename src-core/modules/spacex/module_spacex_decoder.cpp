@@ -1,4 +1,4 @@
-#include "module_falcon_tlm_decoder.h"
+#include "module_spacex_decoder.h"
 #include "logger.h"
 #include "modules/common/sathelper/derandomizer.h"
 #include "modules/common/sathelper/reedsolomon_239.h"
@@ -16,19 +16,19 @@ inline bool getBit(T data, int bit)
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-namespace falcon
+namespace spacex
 {
-    FalconTLMDecoderModule::FalconTLMDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    SpaceXDecoderModule::SpaceXDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
 
-    FalconTLMDecoderModule::~FalconTLMDecoderModule()
+    SpaceXDecoderModule::~SpaceXDecoderModule()
     {
         delete[] buffer;
     }
 
-    void FalconTLMDecoderModule::process()
+    void SpaceXDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -113,9 +113,9 @@ namespace falcon
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void FalconTLMDecoderModule::drawUI()
+    void SpaceXDecoderModule::drawUI()
     {
-        ImGui::Begin("Falcon 9 TLM Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("SpaceX TLM Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
@@ -182,18 +182,18 @@ namespace falcon
         ImGui::End();
     }
 
-    std::string FalconTLMDecoderModule::getID()
+    std::string SpaceXDecoderModule::getID()
     {
-        return "falcon_tlm_decoder";
+        return "spacex_tlm_decoder";
     }
 
-    std::vector<std::string> FalconTLMDecoderModule::getParameters()
+    std::vector<std::string> SpaceXDecoderModule::getParameters()
     {
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> FalconTLMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> SpaceXDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
     {
-        return std::make_shared<FalconTLMDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<SpaceXDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace falcon

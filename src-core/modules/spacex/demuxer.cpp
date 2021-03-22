@@ -3,7 +3,7 @@
 #include "header.h"
 #include <cstring>
 
-namespace falcon
+namespace spacex
 {
     Demuxer::Demuxer()
 
@@ -59,11 +59,11 @@ namespace falcon
         remainingPacketLength = 0;
     };
 
-    std::vector<FalconPacket> Demuxer::work(uint8_t *cadu)
+    std::vector<SpaceXPacket> Demuxer::work(uint8_t *cadu)
     {
         ccsdsBuffer.clear(); // Clear buffer from previous run
 
-        FalconHeader mpdu = parseHeader(cadu); // Parse M-PDU Header
+        SpaceXHeader mpdu = parseHeader(cadu); // Parse M-PDU Header
 
         //logger->trace(mpdu.first_header_pointer);
 

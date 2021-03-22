@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <vector>
 
-namespace falcon
+namespace spacex
 {
     // Struct representing
-    struct FalconPacket
+    struct SpaceXPacket
     {
         int length;
         std::vector<uint8_t> payload;

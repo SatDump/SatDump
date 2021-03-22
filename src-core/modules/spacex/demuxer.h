@@ -3,7 +3,7 @@
 #include <vector>
 #include "frame.h"
 
-namespace falcon
+namespace spacex
 {
     /*
         Simple CCSDS demuxer building CCSDS frames from CADUs. 
@@ -15,8 +15,8 @@ namespace falcon
         const int MPDU_DATA_SIZE = 1191;
 
     private:
-        FalconPacket currentPacket;                                                                 // Current CCSDS
-        std::vector<FalconPacket> ccsdsBuffer;                                                      // Buffer to store what we're working on
+        SpaceXPacket currentPacket;                                                                 // Current CCSDS
+        std::vector<SpaceXPacket> ccsdsBuffer;                                                      // Buffer to store what we're working on
         void pushPacket();                                                                          // We're done with it, end it
         void abortPacket();                                                                         // Abort this one!
         void readPacket(uint8_t *h);                                                                // Start a new packet
@@ -28,6 +28,6 @@ namespace falcon
 
     public:
         Demuxer();
-        std::vector<FalconPacket> work(uint8_t *cadu); // Main function
+        std::vector<SpaceXPacket> work(uint8_t *cadu); // Main function
     };
 } // namespace proba
