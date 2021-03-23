@@ -7,10 +7,19 @@
 #include "portable-file-dialogs.h"
 #include "processing.h"
 #include <filesystem>
+#include "sdr/sdr.h"
 
 #ifdef BUILD_LIVE
 
 int device_id = 0;
+
+std::vector<std::string> devices;
+
+void initLive()
+{
+    initSDRs();
+    devices = getAllDevices();
+}
 
 void renderLiveProcessing()
 {
@@ -78,18 +87,12 @@ void renderLiveProcessing()
         ImGui::Text("Device : ");
         ImGui::SameLine();
         {
-            std::string names = ""; // = "baseband\0";
-            //std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-            //                                                  pipelines.end(),
-            ///                                                  [](const Pipeline &e) {
-            //                                                      return e.name == downlink_pipeline;
-            //                                                  });
+            std::string names; // = "baseband\0";
 
-            //if (it != pipelines.end())
-            //     for (int i = 0; i < it->frequencies.size(); i++)
-            //     {
-            //        names += std::to_string(it->frequencies[i]) + " Mhz" + '\0';
-            //    }
+            for (int i = 0; i < devices.size(); i++)
+            {
+                names += devices[i] + "" + '\0';
+            }
 
             if (ImGui::Combo("##device", &device_id, names.c_str()))
             {

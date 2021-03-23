@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0.0)
 file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
 
 add_executable(satdump-ui ${SatDump_ui_CPPS})
-target_include_directories(satdump-ui PUBLIC src-ui src-core)
+target_include_directories(satdump-ui PUBLIC . src-core)
 
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core)
@@ -33,4 +33,8 @@ else()
     # Airspy
     #find_library(AIRSPY_LIBRARY airspy REQUIRED)
     #target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+
+    # HackRF
+    #find_library(HACKRF_LIBRARY hackrf REQUIRED)
+    #target_link_libraries(satdump-ui PUBLIC ${HACKRF_LIBRARY})
 endif()
