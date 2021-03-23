@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
 
     initSatdump();
 
+#ifdef BUILD_LIVE
+    initLive();
+#endif
+
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
