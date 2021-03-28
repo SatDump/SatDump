@@ -507,10 +507,36 @@
                 }
             },
             "cadu": {
-                "elektro_rdas_decoder": {}
+                "elektro_arktika_rdas_decoder": {}
             },
             "products": {
-                "elektro_msugs": {}
+                "elektro_arktika_msugs": {}
+            }
+        }
+    },
+    "arktika_rdas": {
+        "name": "ARKTIKA-M RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "30720000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.03",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "elektro_arktika_rdas_decoder": {}
+            },
+            "products": {
+                "elektro_arktika_msugs": {}
             }
         }
     },

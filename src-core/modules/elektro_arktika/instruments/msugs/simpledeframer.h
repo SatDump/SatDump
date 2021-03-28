@@ -24,5 +24,5 @@ private:
 
 public:
     SimpleDeframer();
-    std::vector<std::vector<uint8_t>> work(std::vector<uint8_t> &data);
+    std::vector<std::vector<uint8_t>> work(uint8_t *data, int length);
 };

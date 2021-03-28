@@ -5,7 +5,7 @@
 #define cimg_display 0
 #include "CImg.h"
 
-namespace elektro
+namespace elektro_arktika
 {
     namespace msugs
     {
@@ -23,4 +23,4 @@ namespace elektro
             cimg_library::CImg<unsigned short> getImage();
         };
     } // namespace msugs
-} // namespace elektro
+} // namespace elektro_arktika

@@ -1,6 +1,6 @@
 #include "msu_vis_reader.h"
 
-namespace elektro
+namespace elektro_arktika
 {
     namespace msugs
     {
@@ -33,10 +33,8 @@ namespace elektro
             // Deinterleave and load into our image buffer
             for (int i = 0; i < 6004; i++)
             {
-                uint16_t pixel = msuLineBuffer[i * 2];
-                uint16_t pixel2 = msuLineBuffer[i * 2 + 1];
-                imageBuffer[frames * 12008 + i] = pixel * 60;
-                imageBuffer[frames * 12008 + 6000 + i] = pixel2 * 60;
+                imageBuffer[frames * 12008 + i] = msuLineBuffer[i * 2 + 0] * 60;
+                imageBuffer[frames * 12008 + 6000 + i] = msuLineBuffer[i * 2 + 1] * 60;
             }
 
             frames++;
@@ -47,4 +45,4 @@ namespace elektro
             return cimg_library::CImg<unsigned short>(&imageBuffer[0], 12008, frames);
         }
     } // namespace msugs
-} // namespace elektro
+} // namespace elektro_arktika

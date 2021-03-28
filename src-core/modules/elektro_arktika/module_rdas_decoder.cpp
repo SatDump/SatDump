@@ -1,4 +1,4 @@
-#include "module_elektro_rdas_decoder.h"
+#include "module_rdas_decoder.h"
 #include "logger.h"
 #include "modules/common/differential/nrzm.h"
 #include "imgui/imgui.h"
@@ -15,19 +15,19 @@ inline bool getBit(T data, int bit)
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-namespace elektro
+namespace elektro_arktika
 {
-    ElektroRDASDecoderModule::ElektroRDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    RDASDecoderModule::RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
 
-    ElektroRDASDecoderModule::~ElektroRDASDecoderModule()
+    RDASDecoderModule::~RDASDecoderModule()
     {
         delete[] buffer;
     }
 
-    void ElektroRDASDecoderModule::process()
+    void RDASDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -103,9 +103,9 @@ namespace elektro
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void ElektroRDASDecoderModule::drawUI()
+    void RDASDecoderModule::drawUI()
     {
-        ImGui::Begin("ELEKTRO RDS Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("ELEKTRO / ARKTIKA RDAS Decoder", NULL, NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
@@ -154,18 +154,18 @@ namespace elektro
         ImGui::End();
     }
 
-    std::string ElektroRDASDecoderModule::getID()
+    std::string RDASDecoderModule::getID()
     {
-        return "elektro_rdas_decoder";
+        return "elektro_arktika_rdas_decoder";
     }
 
-    std::vector<std::string> ElektroRDASDecoderModule::getParameters()
+    std::vector<std::string> RDASDecoderModule::getParameters()
     {
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> ElektroRDASDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> RDASDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
     {
-        return std::make_shared<ElektroRDASDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<RDASDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace elektro

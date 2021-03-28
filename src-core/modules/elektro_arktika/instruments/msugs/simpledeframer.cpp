@@ -32,14 +32,15 @@ void SimpleDeframer<SYNC_T, SYNC_SIZE, FRAME_SIZE, ASM_SYNC>::pushBit(uint8_t bi
 }
 
 template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC>
-std::vector<std::vector<uint8_t>> SimpleDeframer<SYNC_T, SYNC_SIZE, FRAME_SIZE, ASM_SYNC>::work(std::vector<uint8_t> &data)
+std::vector<std::vector<uint8_t>> SimpleDeframer<SYNC_T, SYNC_SIZE, FRAME_SIZE, ASM_SYNC>::work(uint8_t *data, int length)
 {
     // Output buffer
     std::vector<std::vector<uint8_t>> framesOut;
 
     // Loop in all bytes
-    for (uint8_t &byte : data)
+    for (int ii = 0; ii < length; ii++)
     {
+        uint8_t byte = data[ii];
         // Loop in all bits!
         for (int i = 7; i >= 0; i--)
         {
