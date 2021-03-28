@@ -3,11 +3,11 @@
 #include "module.h"
 #include <fstream>
 
-namespace elektro
+namespace elektro_arktika
 {
     namespace msugs
     {
-        class ELEKTROMSUGSDecoderModule : public ProcessingModule
+        class MSUGSDecoderModule : public ProcessingModule
         {
         protected:
             std::ifstream data_in;
@@ -15,7 +15,7 @@ namespace elektro
             std::atomic<size_t> progress;
 
         public:
-            ELEKTROMSUGSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            MSUGSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
             void drawUI();
 
@@ -25,4 +25,4 @@ namespace elektro
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         };
     } // namespace msugs
-} // namespace elektro
+} // namespace elektro_arktika

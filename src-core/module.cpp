@@ -84,8 +84,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/proba/instruments/chris/module_proba_chris.h"
 #include "modules/proba/instruments/hrc/module_proba_hrc.h"
 
-#include "modules/elektro/module_elektro_rdas_decoder.h"
-#include "modules/elektro/instruments/msugs/module_elektro_msugs.h"
+#include "modules/elektro_arktika/module_rdas_decoder.h"
+#include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
 
 #include "modules/terra/module_terra_db_demod.h"
 #include "modules/terra/module_terra_db_decoder.h"
@@ -160,8 +160,8 @@ void registerModules()
     REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
 
     // ELEKTRO
-    REGISTER_MODULE(elektro::ElektroRDASDecoderModule);
-    REGISTER_MODULE(elektro::msugs::ELEKTROMSUGSDecoderModule);
+    REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
+    REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);

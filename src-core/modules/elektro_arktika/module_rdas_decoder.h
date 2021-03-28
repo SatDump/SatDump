@@ -6,9 +6,9 @@
 #include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <dsp/random.h>
 
-namespace elektro
+namespace elektro_arktika
 {
-    class ElektroRDASDecoderModule : public ProcessingModule
+    class RDASDecoderModule : public ProcessingModule
     {
     protected:
         // Read buffer
@@ -25,8 +25,8 @@ namespace elektro
         libdsp::Random rng;
 
     public:
-        ElektroRDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-        ~ElektroRDASDecoderModule();
+        RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~RDASDecoderModule();
         void process();
         void drawUI();
 
@@ -35,4 +35,4 @@ namespace elektro
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     };
-} // namespace elektro
+} // namespace elektro_arktika
