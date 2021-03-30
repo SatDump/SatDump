@@ -43,6 +43,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_fsk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
+#include "modules/metop/module_new_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
 #include "modules/metop/instruments/mhs/module_metop_mhs.h"
 #include "modules/metop/instruments/iasi/module_metop_iasi.h"
@@ -75,6 +76,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/meteor/instruments/mtvza/module_meteor_mtvza.h"
 
 #include "modules/npp/module_npp_hrd_decoder.h"
+#include "modules/npp/module_new_npp_hrd_decoder.h"
 
 #include "modules/jpss/instruments/atms/module_jpss_atms.h"
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
@@ -110,6 +112,7 @@ void registerModules()
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
+    REGISTER_MODULE(metop::NewMetOpAHRPTDecoderModule);
     REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
     REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
     REGISTER_MODULE(metop::iasi::MetOpIASIDecoderModule);
@@ -148,6 +151,7 @@ void registerModules()
 
     // S-NPP
     REGISTER_MODULE(npp::NPPHRDDecoderModule);
+    REGISTER_MODULE(npp::NewNPPHRDDecoderModule);
 
     // JPSS
     REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);

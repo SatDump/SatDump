@@ -13,17 +13,19 @@ namespace metop
                                                                                             d_outsinc(0),
                                                                                             d_state(ST_IDLE),
                                                                                             d_first(true),
-                                                                                            cc_decoder_in_ber((TEST_BITS_LENGTH * 1.5f) / 2.0f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
-                                                                                            cc_encoder_in_ber((TEST_BITS_LENGTH * 1.5f) / 2.0f, 7, 2, {79, 109}, 0, CC_STREAMING, false),
-                                                                                            cc_decoder_in((d_buffer_size / 2.0f) * 1.5f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
-                                                                                            //depunc_ber(3, 110),
+                                                                                            cc_decoder_in_ber(TEST_BITS_LENGTH * 1.5f / 2.0f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
+                                                                                            cc_encoder_in_ber(TEST_BITS_LENGTH * 1.5f / 2.0f, 7, 2, {79, 109}, 0, CC_STREAMING, false),
+                                                                                            cc_decoder_in(8192 * 1.5, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
+                                                                                            depunc_ber(3, 110),
                                                                                             depunc(3, 110)
     {
         fixed_soft_packet = new uint8_t[buffer_size];
         converted_buffer = new uint8_t[buffer_size];
-        reorg_buffer = new uint8_t[buffer_size];
-        depunc_buffer = new uint8_t[buffer_size * 2];
-        output_buffer = new uint8_t[buffer_size * 2];
+        reorg_buffer = new uint8_t[buffer_size * 2];
+        depunc_buffer = new uint8_t[buffer_size * 4];
+        output_buffer = new uint8_t[buffer_size * 4];
+        d_skip = 0;
+        d_skip_perm = 0;
     }
 
     MetopViterbi2::~MetopViterbi2()
@@ -47,100 +49,92 @@ namespace metop
             d_ber_input_reorg_buffer[i * 4 + 3] = d_ber_input_buffer[i * 4 + 2];
         }
 
-        gr::fec::depuncture_bb_impl depunc_ber(3, 110);
         depunc_ber.general_work(TEST_BITS_LENGTH, d_ber_input_reorg_buffer, d_ber_input_buffer_depunc);
 
         cc_decoder_in_ber.generic_work(d_ber_input_buffer_depunc, d_ber_decoded_buffer);
         cc_encoder_in_ber.generic_work(d_ber_decoded_buffer, d_ber_encoded_buffer);
 
         float errors = 0;
-        for (int i = 0; i < TEST_BITS_LENGTH * 1.5; i++)
-            errors += (d_ber_input_buffer_depunc[i] > 0) != (d_ber_encoded_buffer[i] > 0);
+        for (int i = 0; i < TEST_BITS_LENGTH * 1.5f; i++)
+            if (i % 3 != 2)
+                errors += (d_ber_input_buffer_depunc[i] > 0) != (d_ber_encoded_buffer[i] > 0);
 
-        return (errors / ((float)TEST_BITS_LENGTH * 1.5f * 2.0f)) * 2.0f;
+        return (errors / ((float)TEST_BITS_LENGTH * 1.0f)) * 4.0f;
     }
 
     int MetopViterbi2::work(uint8_t *input, int size, uint8_t *output)
     {
         int data_size_out = 0;
 
-        switch (d_state)
-        {
-        case ST_IDLE:
+        if (d_state == ST_IDLE)
         {
             // Test without IQ Inversion
             for (int ph = 0; ph < 2; ph++)
             {
-                std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
-                d_bers[0][ph] = getBER(d_ber_test_buffer);
-            }
-
-            // Test with IQ Inversion
-            for (int ph = 0; ph < 2; ph++)
-            {
-                std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, true);
-                d_bers[1][ph] = getBER(d_ber_test_buffer);
-            }
-
-            for (int s = 0; s < 2; s++)
-            {
-                for (int p = 0; p < 2; p++)
+                for (int of = 0; of < 2; of++)
                 {
-                    if (d_ber_thresold > d_bers[s][p])
+                    std::memcpy(d_ber_test_buffer, &input[of * 2], TEST_BITS_LENGTH);
+                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
+                    d_bers[of][ph] = getBER(d_ber_test_buffer);
+                }
+            }
+
+            for (int p = 0; p < 2; p++)
+            {
+                for (int o = 0; o < 2; o++)
+                {
+                    if (d_ber_thresold > d_bers[o][p])
                     {
-                        d_ber = d_bers[s][p];
-                        d_iq_inv = s;
-                        d_phase_shift = (sathelper::PhaseShift)p;
+                        d_ber = d_bers[o][p];
+                        d_iq_inv = 1;
+                        d_phase_shift = (sathelper::PhaseShift)(p + 1);
                         d_state = ST_SYNCED;
+                        d_skip = o * 2;
+                        d_skip_perm = o * 2;
+                        //logger->debug("SYNCED");
+                        //logger->info(std::to_string(p) + "," + std::to_string(o) + " - " + std::to_string(d_bers[o][p]));
+                        reorg.clear();
+                        //depunc.clear(); // DELETE IF UNUSED!!!!!
                     }
+                    //logger->info(std::to_string(p) + "," + std::to_string(o) + " - " + std::to_string(d_bers[o][p]));
                 }
             }
         }
-        break;
 
-        case ST_SYNCED:
+        if (d_state == ST_SYNCED)
         {
             // Decode
-            std::memcpy(fixed_soft_packet, input, size);
-            phaseShifter.fixPacket(fixed_soft_packet, size, d_phase_shift, d_iq_inv);
+            std::memcpy(fixed_soft_packet, &input[d_skip], size - d_skip);
+            phaseShifter.fixPacket(fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
 
-            char_array_to_uchar((char *)fixed_soft_packet, converted_buffer, size);
+            char_array_to_uchar((char *)fixed_soft_packet, converted_buffer, size - d_skip);
 
-            for (int i = 0; i < size / 4; i++)
-            {
-                reorg_buffer[i * 4 + 0] = converted_buffer[i * 4 + 0];
-                reorg_buffer[i * 4 + 1] = converted_buffer[i * 4 + 1];
-                reorg_buffer[i * 4 + 2] = converted_buffer[i * 4 + 3];
-                reorg_buffer[i * 4 + 3] = converted_buffer[i * 4 + 2];
-            }
+            int reorg_out = reorg.work(converted_buffer, size - d_skip, reorg_buffer);
 
-            depunc.general_work(size, reorg_buffer, depunc_buffer);
+            int depunc_out = depunc.general_work(reorg_out, reorg_buffer, depunc_buffer);
 
-            cc_decoder_in.generic_work(depunc_buffer, output);
+            int output_size = cc_decoder_in.continuous_work(depunc_buffer, depunc_out, output_buffer);
 
-            data_size_out = repacker.work(output, size * 1.5 / 2, output);
+            data_size_out = repacker.work(output_buffer, output_size, output);
+
+            d_skip = 0;
 
             // Check BER
+            std::memcpy(fixed_soft_packet, &input[d_skip_perm], TEST_BITS_LENGTH);
+            phaseShifter.fixPacket(fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
             d_ber = getBER(fixed_soft_packet);
 
             // Check we're still in sync!
             if (d_ber_thresold < d_ber)
             {
                 d_outsinc++;
-                if (d_outsinc == d_outsync_after)
+                if (d_outsinc >= /*d_outsync_after*/ 10)
                     d_state = ST_IDLE;
             }
             else
             {
                 d_outsinc = 0;
             }
-        }
-        break;
-
-        default:
-            break;
         }
 
         return data_size_out;
@@ -153,13 +147,13 @@ namespace metop
         else
         {
             float ber = 10;
-            for (int s = 0; s < 2; s++)
+            for (int p = 0; p < 2; p++)
             {
-                for (int p = 0; p < 2; p++)
+                for (int o = 0; o < 2; o++)
                 {
-                    if (ber > d_bers[s][p])
+                    if (ber > d_bers[o][p])
                     {
-                        ber = d_bers[s][p];
+                        ber = d_bers[o][p];
                     }
                 }
             }

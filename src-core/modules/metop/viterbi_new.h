@@ -8,32 +8,36 @@
 #include "modules/viterbi/depuncture_bb_impl.h"
 #include "modules/common/repack_bits_byte.h"
 
-/*class SymbolReorg
+class SymbolReorg
 {
 private:
-    // volk::vector<uint8_t> d_buffer_reorg;
+    volk::vector<uint8_t> d_buffer_reorg;
 
 public:
     int work(uint8_t *in, int size, uint8_t *out)
     {
-        //d_buffer_reorg.insert(d_buffer_reorg.end(), &in[0], &in[size]);
+        d_buffer_reorg.insert(d_buffer_reorg.end(), &in[0], &in[size]);
         int size_out = 0;
-        int to_process = size / 4;
+        int to_process = d_buffer_reorg.size() / 4;
 
         for (int i = 0; i < to_process; i++)
         {
-            out[size_out++] = in[i * 4 + 0];
-            out[size_out++] = in[i * 4 + 2];
-            out[size_out++] = in[i * 4 + 1];
-            out[size_out++] = in[i * 4 + 3];
+            out[size_out++] = d_buffer_reorg[i * 4 + 0];
+            out[size_out++] = d_buffer_reorg[i * 4 + 1];
+            out[size_out++] = d_buffer_reorg[i * 4 + 3];
+            out[size_out++] = d_buffer_reorg[i * 4 + 2];
         }
 
-        //d_buffer_reorg.erase(d_buffer_reorg.begin(), d_buffer_reorg.begin() + to_process * 4);
+        d_buffer_reorg.erase(d_buffer_reorg.begin(), d_buffer_reorg.begin() + to_process * 4);
 
         //   consume_each(std::lround((1.0 / relative_rate()) * noutput_items));
         return size_out;
     }
-};*/
+
+    void clear() {
+        d_buffer_reorg.clear();
+    }
+};
 
 namespace metop
 {
@@ -53,7 +57,7 @@ namespace metop
         float d_ber;
 
         // BER Decoders
-        // gr::fec::depuncture_bb_impl depunc_ber;
+        gr::fec::depuncture_bb_impl depunc_ber;
         gr::fec::code::cc_decoder_impl cc_decoder_in_ber;
         gr::fec::code::cc_encoder_impl cc_encoder_in_ber;
 
@@ -68,6 +72,7 @@ namespace metop
         // Current phase status
         sathelper::PhaseShift d_phase_shift;
         bool d_iq_inv;
+        int d_skip, d_skip_perm;
         sathelper::PacketFixer phaseShifter;
 
         // Work buffers
@@ -80,6 +85,7 @@ namespace metop
         // Main decoder
         gr::fec::code::cc_decoder_impl cc_decoder_in;
         gr::fec::depuncture_bb_impl depunc;
+        SymbolReorg reorg;
 
         // Repacker
         RepackBitsByte repacker;

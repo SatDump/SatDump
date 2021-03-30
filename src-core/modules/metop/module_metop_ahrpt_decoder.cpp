@@ -17,7 +17,7 @@ namespace metop
                                                                                                                                                             sw(0),
                                                                                                                                                             viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
     {
-        viterbi_out = new uint8_t[BUFFER_SIZE];
+        viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
     }

@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     uint8_t ber_decode_buffer[TEST_SIZE];
     uint8_t ber_encode_buffer[TEST_SIZE * 2];*/
 
-    std::ifstream data_in("test.soft", std::ios::binary);
-    std::ofstream data_out("test.bin", std::ios::binary);
+    std::ifstream data_in("test.bin2", std::ios::binary);
+    std::ofstream data_out("test.b2", std::ios::binary);
 
     while (!data_in.eof())
     {
