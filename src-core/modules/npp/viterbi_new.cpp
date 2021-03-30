@@ -19,7 +19,8 @@ namespace npp
         fixed_soft_packet = new uint8_t[buffer_size];
         viterbi_in = new uint8_t[buffer_size];
         convert_buffer = new float[buffer_size];
-        output_buffer = new uint8_t[buffer_size / 2];
+        output_buffer = new uint8_t[buffer_size * 2];
+        d_ber = 0;
     }
 
     HRDViterbi2::~HRDViterbi2()
@@ -40,16 +41,14 @@ namespace npp
         for (int i = 0; i < TEST_BITS_LENGTH; i++)
             errors += (d_ber_input_buffer[i] > 0) != (d_ber_encoded_buffer[i] > 0);
 
-        return (errors / ((float)TEST_BITS_LENGTH * 2.0f)) * 10.0f;
+        return (errors / ((float)TEST_BITS_LENGTH * 2.0f)) * 4.0f;
     }
 
     int HRDViterbi2::work(uint8_t *input, size_t size, uint8_t *output)
     {
         int data_size_out = 0;
 
-        switch (d_state)
-        {
-        case ST_IDLE:
+        if (d_state == ST_IDLE)
         {
             // Test without IQ Inversion
             for (int ph = 0; ph < 2; ph++)
@@ -81,9 +80,8 @@ namespace npp
                 }
             }
         }
-        break;
 
-        case ST_SYNCED:
+        if (d_state == ST_SYNCED)
         {
             // Decode
             std::memcpy(fixed_soft_packet, input, size);
@@ -91,9 +89,9 @@ namespace npp
 
             char_array_to_uchar((char *)fixed_soft_packet, viterbi_in, size);
 
-            int output_size = cc_decoder_in.continuous_work(viterbi_in, size, output);
+            int output_size = cc_decoder_in.continuous_work(viterbi_in, size, output_buffer);
 
-            data_size_out = repacker.work(output, output_size, output);
+            data_size_out = repacker.work(output_buffer, output_size, output);
 
             // Check BER
             d_ber = getBER(fixed_soft_packet);
@@ -102,18 +100,13 @@ namespace npp
             if (d_ber_thresold < d_ber)
             {
                 d_outsinc++;
-                if (d_outsinc == d_outsync_after)
+                if (d_outsinc >= /*d_outsync_after*/ 10)
                     d_state = ST_IDLE;
             }
             else
             {
                 d_outsinc = 0;
             }
-        }
-        break;
-
-        default:
-            break;
         }
 
         return data_size_out;
