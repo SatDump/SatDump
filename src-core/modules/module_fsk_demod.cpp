@@ -14,16 +14,19 @@ FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_h
                                                                                                                                       d_lpf_cutoff(std::stoi(parameters["lpf_cutoff"])),
                                                                                                                                       d_lpf_transition_width(std::stoi(parameters["lpf_transition_width"]))
 {
+    // Buffers
+    sym_buffer = new int8_t[d_buffer_size * 10];
+}
+
+void FSKDemodModule::init()
+{
     // Init DSP blocks
     if (input_data_type == DATA_FILE)
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
     lpf = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width, dsp::fft::window::WIN_KAISER));
     qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf->output_stream, 1.0f);
     rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(qua->output_stream, (float)d_samplerate / (float)d_symbolrate, powf(0.01f, 2) / 4.0f, 0.5f, 0.01, 100e-6f);
-
-    // Buffers
-    sym_buffer = new int8_t[d_buffer_size * 10];
 }
 
 std::vector<ModuleDataType> FSKDemodModule::getInputTypes()
