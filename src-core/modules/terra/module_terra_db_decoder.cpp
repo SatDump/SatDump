@@ -160,9 +160,9 @@ namespace terra
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void TerraDBDecoderModule::drawUI()
+    void TerraDBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Terra DB Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("Terra DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber = viterbi.GetPercentBER() / 100.0f;
 

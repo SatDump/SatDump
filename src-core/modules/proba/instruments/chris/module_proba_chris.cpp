@@ -89,9 +89,9 @@ namespace proba
             d_output_files = chris_reader.all_images;
         }
 
-        void ProbaCHRISDecoderModule::drawUI()
+        void ProbaCHRISDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Proba-1 CHRIS Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("Proba-1 CHRIS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

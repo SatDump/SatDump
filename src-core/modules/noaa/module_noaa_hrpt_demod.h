@@ -48,7 +48,7 @@ namespace noaa
         NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~NOAAHRPTDemodModule();
         void process();
-        void drawUI();
+        void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();
         std::vector<ModuleDataType> getOutputTypes();
 

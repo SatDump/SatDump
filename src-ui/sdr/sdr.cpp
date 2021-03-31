@@ -2,8 +2,9 @@
 
 #ifdef BUILD_LIVE
 
-SDRDevice::SDRDevice()
+SDRDevice::SDRDevice(uint64_t id)
 {
+    output_stream = std::make_shared<dsp::stream<std::complex<float>>>();
 }
 
 void SDRDevice::start()
@@ -22,31 +23,55 @@ void SDRDevice::init()
 {
 }
 
-std::vector<std::string> SDRDevice::getDevices()
+void SDRDevice::setFrequency(int frequency)
 {
-    std::vector<std::string> results;
+    d_frequency = frequency;
+}
+
+void SDRDevice::setSamplerate(int samplerate)
+{
+    d_samplerate = samplerate;
+}
+
+int SDRDevice::getFrequency()
+{
+    return d_frequency;
+}
+
+int SDRDevice::getSamplerate()
+{
+    return d_samplerate;
+}
+
+std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRDevice::getDevices()
+{
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
     return results;
 }
 
 #include "airspy.h"
-#include "hackrf.h"
 
 void initSDRs()
 {
     SDRAirspy::init();
-    SDRHackRF::init();
 }
 
-std::vector<std::string> getAllDevices()
+std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 {
-    std::vector<std::string> results;
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
-    std::vector<std::string> airspy_results = SDRAirspy::getDevices();
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspy_results = SDRAirspy::getDevices();
     results.insert(results.end(), airspy_results.begin(), airspy_results.end());
 
-    std::vector<std::string> hackrf_results = SDRHackRF::getDevices();
-    results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
-
     return results;
+}
+
+std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
+{
+    sdr_device_type type = std::get<1>(devList[num]);
+    uint64_t id = std::get<2>(devList[num]);
+
+    if (type == AIRSPY)
+        return std::make_shared<SDRAirspy>(id);
 }
 #endif

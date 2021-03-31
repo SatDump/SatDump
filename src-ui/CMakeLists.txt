@@ -33,8 +33,4 @@ else()
     # Airspy
     #find_library(AIRSPY_LIBRARY airspy REQUIRED)
     #target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
-
-    # HackRF
-    #find_library(HACKRF_LIBRARY hackrf REQUIRED)
-    #target_link_libraries(satdump-ui PUBLIC ${HACKRF_LIBRARY})
 endif()

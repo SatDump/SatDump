@@ -136,9 +136,9 @@ namespace metop
             WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321-EQU.png");
         }
 
-        void MetOpAVHRRDecoderModule::drawUI()
+        void MetOpAVHRRDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp AVHRR Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("MetOp AVHRR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

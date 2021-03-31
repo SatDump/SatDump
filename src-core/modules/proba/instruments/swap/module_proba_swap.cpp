@@ -88,9 +88,9 @@ namespace proba
             d_output_files = swap_reader.all_images;
         }
 
-        void ProbaSWAPDecoderModule::drawUI()
+        void ProbaSWAPDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Proba-2 SWAP Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("Proba-2 SWAP Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

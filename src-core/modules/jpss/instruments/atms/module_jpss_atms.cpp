@@ -380,9 +380,9 @@ namespace jpss
             WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
         }
 
-        void JPSSATMSDecoderModule::drawUI()
+        void JPSSATMSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("JPSS ATMS Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("JPSS ATMS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

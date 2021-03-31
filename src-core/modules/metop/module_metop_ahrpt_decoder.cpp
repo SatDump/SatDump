@@ -109,9 +109,9 @@ namespace metop
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void MetOpAHRPTDecoderModule::drawUI()
+    void MetOpAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("MetOp AHRPT Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber = viterbi.ber();
 

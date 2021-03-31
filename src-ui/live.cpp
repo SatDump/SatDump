@@ -1,4 +1,6 @@
 #include "live.h"
+
+#ifdef BUILD_LIVE
 #include "imgui/imgui.h"
 #include "global.h"
 #include "pipeline.h"
@@ -8,12 +10,14 @@
 #include "processing.h"
 #include <filesystem>
 #include "sdr/sdr.h"
-
-#ifdef BUILD_LIVE
+#include "live_run.h"
+#include "sdr/sdr.h"
+std::shared_ptr<SDRDevice> radio;
+std::vector<std::shared_ptr<ProcessingModule>> liveModules;
 
 int device_id = 0;
 
-std::vector<std::string> devices;
+std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devices;
 
 void initLive()
 {
@@ -91,7 +95,7 @@ void renderLiveProcessing()
 
             for (int i = 0; i < devices.size(); i++)
             {
-                names += devices[i] + "" + '\0';
+                names += std::get<0>(devices[i]) + "" + '\0';
             }
 
             if (ImGui::Combo("##device", &device_id, names.c_str()))
@@ -170,16 +174,32 @@ void renderLiveProcessing()
 
                     parameters.emplace("dc_block", dc_block ? "1" : "0");
 
-                    std::map<std::string, std::string> final_parameters = it->steps[1].modules[0].parameters;
-                    for (const std::pair<std::string, std::string> &param : parameters)
-                        if (final_parameters.count(param.first) > 0)
-                            final_parameters[param.first] = param.second;
-                        else
-                            final_parameters.emplace(param.first, param.second);
+                    for (std::pair<int, int> currentModule : it->live_cfg)
+                    {
+                        std::map<std::string, std::string> final_parameters = it->steps[currentModule.first].modules[currentModule.second].parameters;
+                        for (const std::pair<std::string, std::string> &param : parameters)
+                            if (final_parameters.count(param.first) > 0)
+                                final_parameters[param.first] = param.second;
+                            else
+                                final_parameters.emplace(param.first, param.second);
 
-                    logger->debug("Parameters :");
-                    for (const std::pair<std::string, std::string> &param : final_parameters)
-                        logger->debug("   - " + param.first + " : " + param.second);
+                        logger->debug("Parameters :");
+                        for (const std::pair<std::string, std::string> &param : final_parameters)
+                            logger->debug("   - " + param.first + " : " + param.second);
+
+                        liveModules.push_back(modules_registry[it->steps[currentModule.first]
+                                                                   .modules[currentModule.second]
+                                                                   .module_name]("", output_file + "/" + it->name, final_parameters));
+                    }
+
+                    logger->debug("Starting SDR...");
+                    radio = getDeviceByID(devices, device_id);
+                    radio->setFrequency(frequency * 1e6);
+                    radio->setSamplerate(std::stoi(samplerate));
+                    radio->start();
+                    startRealLive();
+
+                    live_processing = true;
                 }
                 else
                 {

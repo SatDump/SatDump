@@ -219,9 +219,9 @@ namespace fengyun
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void FengyunAHRPTDecoderModule::drawUI()
+    void FengyunAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("FengYun AHRPT Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("FengYun AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber1 = viterbi1.ber();
         float ber2 = viterbi2.ber();

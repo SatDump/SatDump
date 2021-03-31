@@ -211,9 +211,9 @@ namespace meteor
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void METEORLRPTDecoderModule::drawUI()
+    void METEORLRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR LRPT Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber = viterbi.GetPercentBER() / 100.0f;
 

@@ -678,9 +678,9 @@ namespace jpss
             }
         }
 
-        void JPSSVIIRSDecoderModule::drawUI()
+        void JPSSVIIRSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("JPSS VIIRS Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("JPSS VIIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

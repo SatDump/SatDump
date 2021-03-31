@@ -95,9 +95,9 @@ namespace noaa
             WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
         }
 
-        void NOAAAVHRRDecoderModule::drawUI()
+        void NOAAAVHRRDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("NOAA AVHRR Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("NOAA AVHRR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

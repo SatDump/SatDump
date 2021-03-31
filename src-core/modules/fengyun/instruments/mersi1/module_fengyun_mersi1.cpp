@@ -443,9 +443,9 @@ namespace fengyun
             WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image20, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image20), directory + "/MERSI1-SYNCED-20.png");
         }
 
-        void FengyunMERSI1DecoderModule::drawUI()
+        void FengyunMERSI1DecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MERSI-1 Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("FengYun MERSI-1 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

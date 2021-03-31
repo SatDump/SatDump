@@ -113,9 +113,9 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
         }
 
-        void MetOpMHSDecoderModule::drawUI()
+        void MetOpMHSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp MHS Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("MetOp MHS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

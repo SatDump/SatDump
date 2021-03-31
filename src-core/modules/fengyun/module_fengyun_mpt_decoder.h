@@ -60,7 +60,7 @@ namespace fengyun
         FengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~FengyunMPTDecoderModule();
         void process();
-        void drawUI();
+        void drawUI(bool window);
 
     public:
         static std::string getID();

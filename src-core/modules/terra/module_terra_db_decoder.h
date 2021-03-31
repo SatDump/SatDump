@@ -39,7 +39,7 @@ namespace terra
         TerraDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~TerraDBDecoderModule();
         void process();
-        void drawUI();
+        void drawUI(bool window);
 
     public:
         static std::string getID();

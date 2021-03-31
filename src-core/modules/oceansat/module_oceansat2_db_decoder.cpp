@@ -129,9 +129,9 @@ namespace oceansat
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void Oceansat2DBDecoderModule::drawUI()
+    void Oceansat2DBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Oceansat-2 DB Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("Oceansat-2 DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::BeginGroup();
         {

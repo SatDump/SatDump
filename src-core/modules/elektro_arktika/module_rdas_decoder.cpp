@@ -103,9 +103,9 @@ namespace elektro_arktika
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void RDASDecoderModule::drawUI()
+    void RDASDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("ELEKTRO / ARKTIKA RDAS Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("ELEKTRO / ARKTIKA RDAS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::BeginGroup();
         {

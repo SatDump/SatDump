@@ -146,9 +146,9 @@ namespace spacex
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void SpaceXDecoderModule::drawUI()
+    void SpaceXDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("SpaceX TLM Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("SpaceX TLM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::BeginGroup();
         {

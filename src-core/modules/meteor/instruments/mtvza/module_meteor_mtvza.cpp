@@ -98,9 +98,9 @@ namespace meteor
             WRITE_IMAGE(imageAll, directory + "/MTVZA-ALL.png");
         }
 
-        void METEORMTVZADecoderModule::drawUI()
+        void METEORMTVZADecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("METEOR MTVZA Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("METEOR MTVZA Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

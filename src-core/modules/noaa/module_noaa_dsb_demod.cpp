@@ -123,9 +123,9 @@ namespace noaa
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void NOAADSBDemodModule::drawUI()
+    void NOAADSBDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA DSB Demodulator", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA DSB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::BeginGroup();
         // Constellation

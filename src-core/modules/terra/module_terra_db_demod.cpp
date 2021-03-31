@@ -103,9 +103,9 @@ namespace terra
         data_out.close();
     }
 
-    void TerraDBDemodModule::drawUI()
+    void TerraDBDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("Terra DB Demodulator", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("Terra DB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         // Constellation
         {
