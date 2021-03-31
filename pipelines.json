@@ -82,6 +82,16 @@
     "metop_ahrpt": {
         "name": "MetOp AHRPT",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [
             1701.3
         ],
@@ -122,6 +132,12 @@
     "fengyun3_ab_ahrpt": {
         "name": "FengYun-3 A/B AHRPT",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             1704.5
         ],
@@ -155,6 +171,12 @@
     "fengyun3_c_ahrpt": {
         "name": "FengYun-3 C AHRPT",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             1701.4
         ],
@@ -322,6 +344,12 @@
     "noaa_hrpt": {
         "name": "NOAA HRPT",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             1707,
             1698,
@@ -344,6 +372,12 @@
     "meteor_hrpt": {
         "name": "METEOR HRPT",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             1700
         ],
@@ -403,6 +437,12 @@
     "proba1_dump": {
         "name": "Proba-1 Dump",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             2235
         ],
@@ -434,6 +474,12 @@
     "proba2_dump": {
         "name": "Proba-2 Dump",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             2235
         ],
@@ -464,6 +510,12 @@
     "probav_s_dump": {
         "name": "Proba-V S-Band Dump",
         "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [
             2235
         ],

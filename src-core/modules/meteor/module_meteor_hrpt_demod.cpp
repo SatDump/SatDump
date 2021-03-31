@@ -13,21 +13,25 @@ namespace meteor
                                                                                                                                                         d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"]))
     {
-        // Init DSP blocks
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
-        agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
-        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(rrc->output_stream, 0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
-        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / round(((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
-
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
     }
 
+    void METEORHRPTDemodModule::init()
+    {
+        // Init DSP blocks
+        if (input_data_type == DATA_FILE)
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+        agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
+        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(rrc->output_stream, 0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
+        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / round(((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
+    }
+
     std::vector<ModuleDataType> METEORHRPTDemodModule::getInputTypes()
     {
-        return {DATA_FILE, DATA_STREAM};
+        return {DATA_FILE, DATA_DSP_STREAM};
     }
 
     std::vector<ModuleDataType> METEORHRPTDemodModule::getOutputTypes()
@@ -60,7 +64,8 @@ namespace meteor
         time_t lastTime = 0;
 
         // Start
-        file_source->start();
+        if (input_data_type == DATA_FILE)
+            file_source->start();
         agc->start();
         rrc->start();
         pll->start();
@@ -68,9 +73,9 @@ namespace meteor
         rec->start();
 
         int dat_size = 0;
-        while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
         {
-            dat_size = rec->output_stream->read(); //->read(rec_buffer2, d_buffer_size);
+            dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
                 continue;
@@ -83,7 +88,8 @@ namespace meteor
 
             data_out.write((char *)&bytes[0], bytes.size());
 
-            progress = file_source->getPosition();
+            if (input_data_type == DATA_FILE)
+                progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -94,7 +100,8 @@ namespace meteor
         logger->info("Demodulation finished");
 
         // Stop
-        file_source->stop();
+        if (input_data_type == DATA_FILE)
+            file_source->stop();
         agc->stop();
         rrc->stop();
         pll->stop();
@@ -106,7 +113,7 @@ namespace meteor
 
     void METEORHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
+        ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // Constellation
         {
