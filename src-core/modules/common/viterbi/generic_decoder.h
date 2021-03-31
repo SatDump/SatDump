@@ -8,22 +8,16 @@
  *
  */
 
-#ifndef INCLUDED_FEC_GENERIC_DECODER_H
-#define INCLUDED_FEC_GENERIC_DECODER_H
+#pragma once
 
-//#include <gnuradio/fec/api.h>
-//#include <gnuradio/logger.h>
-//#include <boost/format.hpp>
 #include <memory>
 #include <string>
 #include <volk/volk_alloc.hh>
 
-namespace gr
+namespace fec
 {
-    namespace fec
-    {
 
-        /*!
+       /*!
  * \brief Parent class for FECAPI objects.
  *
  * \ingroup error_coding_blk
@@ -49,39 +43,39 @@ namespace gr
  * \sa gr::fec::code::cc_decoder
  * \sa gr::fec::code::ccsds_decoder
  */
-        class generic_decoder
-        {
-        protected:
-            //gr::logger_ptr d_logger;
-            volk::vector<uint8_t> d_buffer;
+       class generic_decoder
+       {
+       protected:
+              //gr::logger_ptr d_logger;
+              volk::vector<uint8_t> d_buffer;
 
-        public:
-            friend class decoder;
-            virtual void generic_work(void *inbuffer, void *outbuffer) = 0;
-            int continuous_work(uint8_t *in, int size, uint8_t *out);
-            static int base_unique_id;
-            int my_id;
-            int unique_id();
-            std::string d_name;
-            //std::string alias() { return (boost::format("%s%d") % d_name % unique_id()).str(); }
+       public:
+              friend class decoder;
+              virtual void generic_work(void *inbuffer, void *outbuffer) = 0;
+              int continuous_work(uint8_t *in, int size, uint8_t *out);
+              static int base_unique_id;
+              int my_id;
+              int unique_id();
+              std::string d_name;
+              //std::string alias() { return (boost::format("%s%d") % d_name % unique_id()).str(); }
 
-        public:
-            typedef std::shared_ptr<generic_decoder> sptr;
+       public:
+              typedef std::shared_ptr<generic_decoder> sptr;
 
-            generic_decoder(void){};
-            generic_decoder(std::string name);
-            virtual ~generic_decoder();
+              generic_decoder(void){};
+              generic_decoder(std::string name);
+              virtual ~generic_decoder();
 
-            /*!
+              /*!
      * Returns the rate of the code. For every r input bits, there
      * is 1 output bit, so the rate is 1/r. Used for setting things
      * like the encoder block's relative rate.
      *
      * This function MUST be reimplemented by the child class.
      */
-            virtual double rate() = 0;
+              virtual double rate() = 0;
 
-            /*!
+              /*!
      * Returns the input size in items that the decoder object uses
      * to decode a full frame. Often, this number is the number of
      * bits per frame if the input format is unpacked. If the block
@@ -90,9 +84,9 @@ namespace gr
      *
      * The child class MUST implement this function.
      */
-            virtual int get_input_size() = 0;
+              virtual int get_input_size() = 0;
 
-            /*!
+              /*!
      * Returns the output size in items that the decoder object
      * produces after decoding a full frame. Often, this number is
      * the number of bits in the outputted frame if the input format
@@ -103,9 +97,9 @@ namespace gr
      *
      * The child class MUST implement this function.
      */
-            virtual int get_output_size() = 0;
+              virtual int get_output_size() = 0;
 
-            /*!
+              /*!
      * Sets up history for the decoder when the decoder is required
      * to look ahead in the data stream in order to finish
      * its processing.
@@ -113,9 +107,9 @@ namespace gr
      * The child class MAY implement this function. If not
      * reimplemented, it returns 0.
      */
-            virtual int get_history();
+              virtual int get_history();
 
-            /*!
+              /*!
      * Some decoders require the input items to float around a
      * particular soft value. We can set that floating value by
      * setting this value to return some non-zero number.
@@ -127,9 +121,9 @@ namespace gr
      * The child class MAY implement this function. If not
      * reimplemented, it returns 0.
      */
-            virtual float get_shift();
+              virtual float get_shift();
 
-            /*!
+              /*!
      * Sets the size of an input item, as in the size of a char or
      * float item.
      *
@@ -137,9 +131,9 @@ namespace gr
      * reimplemented, it returns sizeof(float) as the decoders
      * typically expect floating point input types.
      */
-            virtual int get_input_item_size();
+              virtual int get_input_item_size();
 
-            /*!
+              /*!
      * Sets the size of an output item, as in the size of a char or
      * float item.
      *
@@ -147,9 +141,9 @@ namespace gr
      * reimplemented, it returns sizeof(char) as the decoders
      * typically expect to produce bits or bytes.
      */
-            virtual int get_output_item_size();
+              virtual int get_output_item_size();
 
-            /*!
+              /*!
      * Set up a conversion type required to setup the data properly
      * for this decoder. The decoder itself will not implement the
      * conversion and expects an external wrapper (e.g.,
@@ -173,9 +167,9 @@ namespace gr
      * The child class SHOULD implement this function. If not
      * reimplemented, it returns "none".
      */
-            virtual const char *get_input_conversion();
+              virtual const char *get_input_conversion();
 
-            /*!
+              /*!
      * Set up a conversion type required to understand the output
      * style of this decoder. Generally, follow-on processing
      * expects unpacked bits, so we specify the conversion type here
@@ -194,51 +188,48 @@ namespace gr
      * The child class SHOULD implement this function. If not
      * reimplemented, it returns "none".
      */
-            virtual const char *get_output_conversion();
+              virtual const char *get_output_conversion();
 
-            /*!
+              /*!
      * Updates the size of a decoded frame.
      *
      * The child class MUST implement this function and interpret
      * how the \p frame_size information affects the block's
      * behavior. It should also provide bounds checks.
      */
-            virtual bool set_frame_size(unsigned int frame_size) = 0;
+              virtual bool set_frame_size(unsigned int frame_size) = 0;
 
-            /*!
+              /*!
      * Get repetitions to decode.
      *
      * The child class should implement this function and return the
      * number of iterations required to decode.
      */
-            virtual float get_iterations() { return -1; }
-        };
+              virtual float get_iterations() { return -1; }
+       };
 
-        /*! see generic_decoder::get_output_size() */
-        int get_decoder_output_size(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_output_size() */
+       int get_decoder_output_size(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_input_size() */
-        int get_decoder_input_size(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_input_size() */
+       int get_decoder_input_size(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_shift() */
-        float get_shift(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_shift() */
+       float get_shift(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_history() */
-        int get_history(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_history() */
+       int get_history(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_input_item_size() */
-        int get_decoder_input_item_size(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_input_item_size() */
+       int get_decoder_input_item_size(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_output_item_size() */
-        int get_decoder_output_item_size(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_output_item_size() */
+       int get_decoder_output_item_size(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_input_conversion() */
-        const char *get_decoder_input_conversion(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_input_conversion() */
+       const char *get_decoder_input_conversion(generic_decoder::sptr my_decoder);
 
-        /*! see generic_decoder::get_output_conversion() */
-        const char *get_decoder_output_conversion(generic_decoder::sptr my_decoder);
+       /*! see generic_decoder::get_output_conversion() */
+       const char *get_decoder_output_conversion(generic_decoder::sptr my_decoder);
 
-    } /* namespace fec */
-} /* namespace gr */
-
-#endif /* INCLUDED_FEC_GENRIC_DECODER_H */
+} /* namespace fec */

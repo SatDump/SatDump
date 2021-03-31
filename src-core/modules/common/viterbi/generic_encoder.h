@@ -8,47 +8,37 @@
  *
  */
 
-#ifndef INCLUDED_FEC_GENERIC_ENCODER_H
-#define INCLUDED_FEC_GENERIC_ENCODER_H
+#pragma once
 
-//#include <gnuradio/block.h>
-//#include <gnuradio/fec/api.h>
-//#include <gnuradio/logger.h>
 #include <memory>
 #include <string>
 
-namespace gr
+namespace fec
 {
-    namespace fec
-    {
 
-        class generic_encoder
-        {
-        protected:
-            //gr::logger_ptr d_logger;
+       class generic_encoder
+       {
+       public:
+              friend class encoder;
+              virtual void generic_work(void *in_buffer, void *out_buffer) = 0;
+              static int base_unique_id;
+              int my_id;
+              int unique_id();
+              std::string d_name;
 
-        public:
-            friend class encoder;
-            virtual void generic_work(void *in_buffer, void *out_buffer) = 0;
-            static int base_unique_id;
-            int my_id;
-            int unique_id();
-            std::string d_name;
-            // std::string alias() { return (boost::format("%s%d") % d_name % unique_id()).str(); }
+       public:
+              typedef std::shared_ptr<generic_encoder> sptr;
 
-        public:
-            typedef std::shared_ptr<generic_encoder> sptr;
-
-            /*!
+              /*!
      * Returns the rate of the code. For every 1 input bit, there
      * are r output bits, so the rate is 1/r. Used for setting
      * things like the encoder block's relative rate.
      *
      * This function MUST be reimplemented by the child class.
      */
-            virtual double rate() = 0;
+              virtual double rate() = 0;
 
-            /*!
+              /*!
      * Returns the input size in items that the encoder object uses
      * to encode a full frame. Often, this number is the number of
      * bits per frame if the input format is unpacked. If the block
@@ -57,9 +47,9 @@ namespace gr
      *
      * The child class MUST implement this function.
      */
-            virtual int get_input_size() = 0;
+              virtual int get_input_size() = 0;
 
-            /*!
+              /*!
      * Returns the output size in items that the encoder object
      * produces after encoding a full frame. Often, this number is
      * the number of bits in the outputted frame if the input format
@@ -70,9 +60,9 @@ namespace gr
      *
      * The child class MUST implement this function.
      */
-            virtual int get_output_size() = 0;
+              virtual int get_output_size() = 0;
 
-            /*!
+              /*!
      * Set up a conversion type required to setup the data properly
      * for this encoder. The encoder itself will not implement the
      * conversion and expects an external wrapper (e.g.,
@@ -91,9 +81,9 @@ namespace gr
      * The child class MAY implement this function. If not
      * reimplemented, it returns "none".
      */
-            virtual const char *get_input_conversion();
+              virtual const char *get_input_conversion();
 
-            /*!
+              /*!
      * Set up a conversion type required to understand the output
      * style of this encoder. Generally an encoder will produce
      * unpacked bytes with a bit set in the LSB.
@@ -108,35 +98,31 @@ namespace gr
      * The child class MAY implement this function. If not
      * reimplemented, it returns "none".
      */
-            virtual const char *get_output_conversion();
+              virtual const char *get_output_conversion();
 
-            /*!
+              /*!
      * Updates the size of the frame to encode.
      *
      * The child class MUST implement this function and interpret
      * how the \p frame_size information affects the block's
      * behavior. It should also provide bounds checks.
      */
-            virtual bool set_frame_size(unsigned int frame_size) = 0;
+              virtual bool set_frame_size(unsigned int frame_size) = 0;
 
-            generic_encoder(void){};
-            generic_encoder(std::string name);
-            virtual ~generic_encoder();
-        };
+              generic_encoder(void){};
+              generic_encoder(std::string name);
+              virtual ~generic_encoder();
+       };
 
-        /*! see generic_encoder::get_output_size() */
-        int get_encoder_output_size(generic_encoder::sptr my_encoder);
+       /*! see generic_encoder::get_output_size() */
+       int get_encoder_output_size(generic_encoder::sptr my_encoder);
 
-        /*! see generic_encoder::get_input_size() */
-        int get_encoder_input_size(generic_encoder::sptr my_encoder);
+       /*! see generic_encoder::get_input_size() */
+       int get_encoder_input_size(generic_encoder::sptr my_encoder);
 
-        /*! see generic_encoder::get_input_conversion() */
-        const char *get_encoder_input_conversion(generic_encoder::sptr my_encoder);
+       /*! see generic_encoder::get_input_conversion() */
+       const char *get_encoder_input_conversion(generic_encoder::sptr my_encoder);
 
-        /*! see generic_encoder::get_output_conversion() */
-        const char *get_encoder_output_conversion(generic_encoder::sptr my_encoder);
-
-    } /* namespace fec */
-} /* namespace gr */
-
-#endif /* INCLUDED_FEC_GENERIC_ENCODER_H */
+       /*! see generic_encoder::get_output_conversion() */
+       const char *get_encoder_output_conversion(generic_encoder::sptr my_encoder);
+} /* namespace fec */

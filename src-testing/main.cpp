@@ -13,9 +13,9 @@
 #include <iostream>
 #include <fstream>
 #include "modules/common/sathelper/packetfixer.h"
-#include "modules/viterbi/cc_decoder_impl.h"
-#include "modules/viterbi/cc_encoder_impl.h"
-#include "modules/viterbi/depuncture_bb_impl.h"
+#include "modules/common/viterbi/cc_decoder_impl.h"
+#include "modules/common/viterbi/cc_encoder_impl.h"
+#include "modules/common/viterbi/depuncture_bb_impl.h"
 #include "modules/common/repack_bits_byte.h"
 
 void char_array_to_uchar(const char *in, unsigned char *out, int nsamples)
@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
     uint8_t output_buffer[BUFFER_SIZE * 2];
     uint8_t byte_buffer[BUFFER_SIZE * 2];
 
-    gr::fec::depuncture_bb_impl depunc(3, 110);
-    gr::fec::code::cc_decoder_impl cc_decoder(8192, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false);
+    fec::depuncture_bb_impl depunc(3, 110);
+    fec::code::cc_decoder_impl cc_decoder(8192, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false);
     RepackBitsByte repacker;
 
     /*gr::fec::depuncture_bb_impl depunc_ber(3, 110);

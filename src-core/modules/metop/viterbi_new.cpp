@@ -1,6 +1,6 @@
 #include "viterbi_new.h"
 #include <cstring>
-#include "logger.h"
+#include "modules/common/utils.h"
 
 #define ST_IDLE 0
 #define ST_SYNCED 1
@@ -91,12 +91,8 @@ namespace metop
                         d_state = ST_SYNCED;
                         d_skip = o * 2;
                         d_skip_perm = o * 2;
-                        //logger->debug("SYNCED");
-                        //logger->info(std::to_string(p) + "," + std::to_string(o) + " - " + std::to_string(d_bers[o][p]));
                         reorg.clear();
-                        //depunc.clear(); // DELETE IF UNUSED!!!!!
                     }
-                    //logger->info(std::to_string(p) + "," + std::to_string(o) + " - " + std::to_string(d_bers[o][p]));
                 }
             }
         }

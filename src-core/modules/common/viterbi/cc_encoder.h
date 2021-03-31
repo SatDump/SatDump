@@ -8,20 +8,19 @@
  *
  */
 
-#ifndef INCLUDED_FEC_CC_ENCODER_H
-#define INCLUDED_FEC_CC_ENCODER_H
+#pragma once
 
-//#include <gnuradio/fec/api.h>
 #include "cc_common.h"
 #include "generic_encoder.h"
 #include <map>
 #include <string>
 
-namespace gr {
-namespace fec {
-namespace code {
+namespace fec
+{
+    namespace code
+    {
 
-/*!
+        /*!
  * \brief Convolutional Code Encoding class.
  * \ingroup error_coding_blk
  *
@@ -81,10 +80,10 @@ namespace code {
  * that is more highly optimized for just those specific
  * settings.
  */
-class cc_encoder : virtual public generic_encoder
-{
-public:
-    /*!
+        class cc_encoder : virtual public generic_encoder
+        {
+        public:
+            /*!
      * Build a convolutional code encoding FEC API object.
      *
      * \param frame_size Number of bits per frame; must be > 1. If using in the
@@ -126,31 +125,28 @@ public:
      * \param padded true if the encoded frame should be padded
      *               to the nearest byte.
      */
-    static generic_encoder::sptr make(int frame_size,
-                                      int k,
-                                      int rate,
-                                      std::vector<int> polys,
-                                      int start_state = 0,
-                                      cc_mode_t mode = CC_STREAMING,
-                                      bool padded = false);
+            static generic_encoder::sptr make(int frame_size,
+                                              int k,
+                                              int rate,
+                                              std::vector<int> polys,
+                                              int start_state = 0,
+                                              cc_mode_t mode = CC_STREAMING,
+                                              bool padded = false);
 
-    /*!
+            /*!
      * Sets the uncoded frame size to \p frame_size. If \p
      * frame_size is greater than the value given to the
      * constructor, the frame size will be capped by that initial
      * value and this function will return false. Otherwise, it
      * returns true.
      */
-    bool set_frame_size(unsigned int frame_size) override = 0;
+            bool set_frame_size(unsigned int frame_size) override = 0;
 
-    /*!
+            /*!
      * Returns the coding rate of this encoder.
      */
-    double rate() override = 0;
-};
+            double rate() override = 0;
+        };
 
-} /* namespace code */
+    } /* namespace code */
 } /* namespace fec */
-} /* namespace gr */
-
-#endif /* INCLUDED_FEC_CC_ENCODER_H */

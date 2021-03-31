@@ -1,5 +1,6 @@
 #include "viterbi_new.h"
 #include <cstring>
+#include "modules/common/utils.h"
 
 #define ST_IDLE 0
 #define ST_SYNCED 1
@@ -12,13 +13,12 @@ namespace npp
                                                                                         d_outsinc(0),
                                                                                         d_buffer_size(buffer_size),
                                                                                         d_first(true),
-                                                                                        cc_decoder_in(8192, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
+                                                                                        cc_decoder_in(buffer_size / 2, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                         cc_decoder_in_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                         cc_encoder_in_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}, 0, CC_STREAMING, false)
     {
         fixed_soft_packet = new uint8_t[buffer_size];
         viterbi_in = new uint8_t[buffer_size];
-        convert_buffer = new float[buffer_size];
         output_buffer = new uint8_t[buffer_size * 2];
         d_ber = 0;
     }
@@ -27,7 +27,6 @@ namespace npp
     {
         delete[] fixed_soft_packet;
         delete[] viterbi_in;
-        delete[] convert_buffer;
         delete[] output_buffer;
     }
 
@@ -50,20 +49,15 @@ namespace npp
 
         if (d_state == ST_IDLE)
         {
-            // Test without IQ Inversion
-            for (int ph = 0; ph < 2; ph++)
+            // Test 90 deg shifts with & without I/Q inversion
+            for (int sh = 0; sh < 2; sh++)
             {
-                std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
-                d_bers[0][ph] = getBER(d_ber_test_buffer);
-            }
-
-            // Test with IQ Inversion
-            for (int ph = 0; ph < 2; ph++)
-            {
-                std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
-                phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, true);
-                d_bers[1][ph] = getBER(d_ber_test_buffer);
+                for (int ph = 0; ph < 2; ph++)
+                {
+                    std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
+                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, sh);
+                    d_bers[sh][ph] = getBER(d_ber_test_buffer);
+                }
             }
 
             for (int s = 0; s < 2; s++)
