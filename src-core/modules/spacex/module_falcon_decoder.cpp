@@ -140,9 +140,9 @@ namespace spacex
         data_in.close();
     }
 
-    void FalconDecoderModule::drawUI()
+    void FalconDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Falcon 9 Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("Falcon 9 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

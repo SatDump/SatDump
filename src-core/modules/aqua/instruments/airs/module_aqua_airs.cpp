@@ -150,9 +150,9 @@ namespace aqua
             WRITE_IMAGE(image321, directory + "/AIRS-HD-RGB-321.png");
         }
 
-        void AquaAIRSDecoderModule::drawUI()
+        void AquaAIRSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Aqua AIRS Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("Aqua AIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

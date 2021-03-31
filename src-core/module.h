@@ -38,12 +38,12 @@ public:
     void setOutputType(ModuleDataType type);
     virtual void init();
     virtual void process() = 0;
-    virtual void drawUI() = 0;
+    virtual void drawUI(bool window) = 0;
     std::vector<std::string> getOutputs();
 
 public:
-    //std::shared_ptr<satdump::Pipe> input_fifo;
-    //std::shared_ptr<satdump::Pipe> output_fifo;
+    std::shared_ptr<RingBuffer<uint8_t>> input_fifo;
+    std::shared_ptr<RingBuffer<uint8_t>> output_fifo;
     std::shared_ptr<dsp::stream<std::complex<float>>> input_stream;
     std::shared_ptr<dsp::stream<std::complex<float>>> output_stream;
     std::atomic<bool> input_active;

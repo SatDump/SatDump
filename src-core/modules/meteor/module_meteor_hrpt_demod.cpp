@@ -104,9 +104,9 @@ namespace meteor
         data_out.close();
     }
 
-    void METEORHRPTDemodModule::drawUI()
+    void METEORHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Demodulator", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         // Constellation
         {

@@ -11,6 +11,7 @@
 #include "processing.h"
 #include "offline.h"
 #include "live.h"
+#include "live_run.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -149,10 +150,16 @@ int main(int argc, char *argv[])
                 {
                     ImGui::SetNextWindowPos({0, 0});
                     ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                    module->drawUI();
+                    module->drawUI(false);
                 }
                 uiCallListMutex->unlock();
             }
+#ifdef BUILD_LIVE
+            else if (live_processing)
+            {
+                renderLive();
+            }
+#endif
             else
             {
                 ImGui::SetNextWindowPos({0, 0});

@@ -28,7 +28,7 @@ namespace elektro_arktika
         RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~RDASDecoderModule();
         void process();
-        void drawUI();
+        void drawUI(bool window);
 
     public:
         static std::string getID();

@@ -28,7 +28,7 @@ void ProcessingModule::init()
 {
 }
 
-void ProcessingModule::drawUI()
+void ProcessingModule::drawUI(bool window)
 {
 }
 

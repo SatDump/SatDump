@@ -15,7 +15,7 @@ namespace meteor
         public:
             METEORMTVZADecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
-            void drawUI();
+            void drawUI(bool window);
 
         public:
             static std::string getID();

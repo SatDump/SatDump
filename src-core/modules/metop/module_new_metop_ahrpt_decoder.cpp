@@ -19,6 +19,16 @@ namespace metop
         soft_buffer = new int8_t[BUFFER_SIZE];
     }
 
+    std::vector<ModuleDataType> NewMetOpAHRPTDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> NewMetOpAHRPTDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     NewMetOpAHRPTDecoderModule::~NewMetOpAHRPTDecoderModule()
     {
         delete[] viterbi_out;
@@ -27,7 +37,10 @@ namespace metop
 
     void NewMetOpAHRPTDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
         data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
@@ -39,10 +52,13 @@ namespace metop
 
         sathelper::ReedSolomon reedSolomon;
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
-            data_in.read((char *)soft_buffer, BUFFER_SIZE);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)soft_buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
 
             // Perform Viterbi decoding
             int num_samp = viterbi.work((uint8_t *)soft_buffer, BUFFER_SIZE, viterbi_out);
@@ -71,7 +87,8 @@ namespace metop
                 }
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -83,16 +100,17 @@ namespace metop
         }
 
         data_out.close();
-        data_in.close();
+        if (output_data_type == DATA_FILE)
+            data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void NewMetOpAHRPTDecoderModule::drawUI()
+    void NewMetOpAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("MetOp AHRPT Decoder", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber = viterbi.ber();
 

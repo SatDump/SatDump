@@ -129,9 +129,9 @@ namespace meteor
             WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
         }
 
-        void METEORMSUMRDecoderModule::drawUI()
+        void METEORMSUMRDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("METEOR MSU-MR Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("METEOR MSU-MR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

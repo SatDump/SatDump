@@ -229,9 +229,9 @@ namespace fengyun
             WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
         }
 
-        void FengyunVIRRDecoderModule::drawUI()
+        void FengyunVIRRDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun VIRR Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("FengYun VIRR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

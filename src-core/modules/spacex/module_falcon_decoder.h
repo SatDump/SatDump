@@ -19,7 +19,7 @@ namespace spacex
         FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~FalconDecoderModule();
         void process();
-        void drawUI();
+        void drawUI(bool window);
 
     public:
         static std::string getID();

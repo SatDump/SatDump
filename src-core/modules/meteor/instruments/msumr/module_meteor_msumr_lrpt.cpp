@@ -131,9 +131,9 @@ namespace meteor
             }
         }
 
-        void METEORMSUMRLRPTDecoderModule::drawUI()
+        void METEORMSUMRLRPTDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("METEOR MSU-MR LRPT Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("METEOR MSU-MR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

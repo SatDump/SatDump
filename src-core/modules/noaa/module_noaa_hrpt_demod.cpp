@@ -107,9 +107,9 @@ namespace noaa
         data_out.close();
     }
 
-    void NOAAHRPTDemodModule::drawUI()
+    void NOAAHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA HRPT Demodulator", NULL, NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         ImGui::BeginGroup();
         // Constellation

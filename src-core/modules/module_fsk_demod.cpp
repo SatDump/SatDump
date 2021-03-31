@@ -103,9 +103,9 @@ void FSKDemodModule::process()
     data_out.close();
 }
 
-void FSKDemodModule::drawUI()
+void FSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("FSK Demodulator", NULL, NOWINDOW_FLAGS);
+    ImGui::Begin("FSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
     // Constellation
     {

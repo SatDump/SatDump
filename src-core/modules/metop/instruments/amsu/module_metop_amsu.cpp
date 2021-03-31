@@ -137,9 +137,9 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
         }
 
-        void MetOpAMSUDecoderModule::drawUI()
+        void MetOpAMSUDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp AMSU Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("MetOp AMSU Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

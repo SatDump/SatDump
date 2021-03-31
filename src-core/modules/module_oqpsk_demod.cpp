@@ -107,9 +107,9 @@ void OQPSKDemodModule::process()
     data_out.close();
 }
 
-void OQPSKDemodModule::drawUI()
+void OQPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("OQPSK Demodulator", NULL, NOWINDOW_FLAGS);
+    ImGui::Begin("OQPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
     // Constellation
     {

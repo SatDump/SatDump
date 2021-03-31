@@ -178,9 +178,9 @@ namespace aqua
             WRITE_IMAGE(imageAll2, directory + "/CERES2-ALL.png");
         }
 
-        void AquaCERESDecoderModule::drawUI()
+        void AquaCERESDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Aqua CERES Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("Aqua CERES Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

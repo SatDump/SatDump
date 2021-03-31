@@ -111,9 +111,9 @@ void BPSKDemodModule::process()
     data_out.close();
 }
 
-void BPSKDemodModule::drawUI()
+void BPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("BPSK Demodulator", NULL, NOWINDOW_FLAGS);
+    ImGui::Begin("BPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
 
     // Constellation
     {

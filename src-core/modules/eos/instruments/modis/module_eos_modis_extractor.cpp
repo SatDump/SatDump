@@ -101,9 +101,9 @@ namespace eos
             logger->info("MODIS CCSDS Frames     : " + std::to_string(modis_ccsds));
         }
 
-        void EOSMODISExtractorModule::drawUI()
+        void EOSMODISExtractorModule::drawUI(bool window)
         {
-            ImGui::Begin("EOS MODIS Extractor", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("EOS MODIS Extractor", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

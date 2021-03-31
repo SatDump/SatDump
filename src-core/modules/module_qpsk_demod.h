@@ -52,7 +52,7 @@ public:
     ~QPSKDemodModule();
     void init();
     void process();
-    void drawUI();
+    void drawUI(bool window);
     std::vector<ModuleDataType> getInputTypes();
     std::vector<ModuleDataType> getOutputTypes();
 

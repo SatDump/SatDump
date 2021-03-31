@@ -11,15 +11,17 @@ private:
     struct airspy_device *dev;
     int gain = 10;
     bool bias = false;
-    int d_samplerate;
-    int d_frequency;
+    char frequency[100];
+
+    static int _rx_callback(airspy_transfer *t);
 
 public:
-    SDRAirspy();
+    SDRAirspy(uint64_t id = 0);
     void start();
     void stop();
     void drawUI();
     static void init();
-    static std::vector<std::string> getDevices();
+    virtual void setFrequency(int frequency);
+    static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
 #endif

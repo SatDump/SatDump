@@ -160,9 +160,9 @@ namespace proba
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void ProbaSDecoderModule::drawUI()
+    void ProbaSDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Proba S-Band Decoder", NULL);
+        ImGui::Begin("Proba S-Band Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
         float ber = viterbi.GetPercentBER() / 100.0f;
 

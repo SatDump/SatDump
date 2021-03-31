@@ -123,9 +123,9 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
         }
 
-        void MetOpGOMEDecoderModule::drawUI()
+        void MetOpGOMEDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp GOME Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("MetOp GOME Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

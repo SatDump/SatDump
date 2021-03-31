@@ -136,9 +136,9 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
         }
 
-        void MetOpIASIDecoderModule::drawUI()
+        void MetOpIASIDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp IASI Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("MetOp IASI Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

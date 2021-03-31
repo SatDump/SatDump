@@ -135,9 +135,9 @@ namespace oceansat
             }
         }
 
-        void OceansatOCMDecoderModule::drawUI()
+        void OceansatOCMDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Oceansat OCM Decoder", NULL, NOWINDOW_FLAGS);
+            ImGui::Begin("Oceansat OCM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
