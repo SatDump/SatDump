@@ -31,6 +31,6 @@ else()
     target_link_libraries(satdump-ui PRIVATE glfw)
 
     # Airspy
-    find_library(AIRSPY_LIBRARY airspy REQUIRED)
-    target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+    #find_library(AIRSPY_LIBRARY airspy REQUIRED)
+    #target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
 endif()
