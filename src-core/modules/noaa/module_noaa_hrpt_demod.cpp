@@ -13,21 +13,25 @@ namespace noaa
                                                                                                                                                     d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                     d_buffer_size(std::stoi(parameters["buffer_size"]))
     {
-        // Init DSP blocks
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
-        agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 0.002e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01f, 2) / 4.0f, (3.0f * M_PI * 100e3f) / (float)d_samplerate);
-        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
-        def = std::make_shared<NOAADeframer>();
-
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
     }
 
+    void NOAAHRPTDemodModule::init()
+    {
+        // Init DSP blocks
+        if (input_data_type == DATA_FILE)
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+        agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.002e-3f, 1.0f, 0.5f / 32768.0f, 65536);
+        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01f, 2) / 4.0f, (3.0f * M_PI * 100e3f) / (float)d_samplerate);
+        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
+        def = std::make_shared<NOAADeframer>();
+    }
+
     std::vector<ModuleDataType> NOAAHRPTDemodModule::getInputTypes()
     {
-        return {DATA_FILE, DATA_STREAM};
+        return {DATA_FILE, DATA_DSP_STREAM};
     }
 
     std::vector<ModuleDataType> NOAAHRPTDemodModule::getOutputTypes()
@@ -60,14 +64,15 @@ namespace noaa
         time_t lastTime = 0;
 
         // Start
-        file_source->start();
+        if (input_data_type == DATA_FILE)
+            file_source->start();
         agc->start();
         pll->start();
         rrc->start();
         rec->start();
 
         int dat_size = 0;
-        while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
         {
             dat_size = rec->output_stream->read();
 
@@ -87,7 +92,8 @@ namespace noaa
             if (frames.size() > 0)
                 data_out.write((char *)&frames[0], frames.size() * sizeof(uint16_t));
 
-            progress = file_source->getPosition();
+            if (input_data_type == DATA_FILE)
+                progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -98,7 +104,8 @@ namespace noaa
         logger->info("Demodulation finished");
 
         // Stop
-        file_source->stop();
+        if (input_data_type == DATA_FILE)
+            file_source->stop();
         agc->stop();
         pll->stop();
         rrc->stop();
@@ -109,7 +116,7 @@ namespace noaa
 
     void NOAAHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
+        ImGui::Begin("NOAA HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         // Constellation
