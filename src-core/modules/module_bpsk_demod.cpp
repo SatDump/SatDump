@@ -17,10 +17,11 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
     // Init DSP blocks
-    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+    if (input_data_type == DATA_FILE)
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
     if (d_dc_block)
-        dcb = std::make_shared<dsp::DCBlockerBlock>(file_source->output_stream, 1024, true);
-    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+        dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
+    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream), d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
@@ -64,7 +65,8 @@ void BPSKDemodModule::process()
     time_t lastTime = 0;
 
     // Start
-    file_source->start();
+    if (input_data_type == DATA_FILE)
+        file_source->start();
     if (d_dc_block)
         dcb->start();
     agc->start();
@@ -73,7 +75,7 @@ void BPSKDemodModule::process()
     rec->start();
 
     int dat_size = 0;
-    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+    while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
     {
         dat_size = rec->output_stream->read();
 
@@ -89,7 +91,8 @@ void BPSKDemodModule::process()
 
         data_out.write((char *)sym_buffer, dat_size);
 
-        progress = file_source->getPosition();
+        if (input_data_type == DATA_FILE)
+            progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -100,7 +103,8 @@ void BPSKDemodModule::process()
     logger->info("Demodulation finished");
 
     // Stop
-    file_source->stop();
+    if (input_data_type == DATA_FILE)
+        file_source->stop();
     if (d_dc_block)
         dcb->stop();
     agc->stop();
@@ -113,7 +117,7 @@ void BPSKDemodModule::process()
 
 void BPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("BPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
+    ImGui::Begin("BPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
     // Constellation
     {

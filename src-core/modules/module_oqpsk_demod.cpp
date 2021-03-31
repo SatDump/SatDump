@@ -22,10 +22,11 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_const_scale(std::stof(parameters["constellation_scale"]))
 {
     // Init DSP blocks
-    file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+    if (input_data_type == DATA_FILE)
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     if (d_dc_block)
-        dcb = std::make_shared<dsp::DCBlockerBlock>(file_source->output_stream, 1024, true);
-    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : file_source->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+        dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
+    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream), d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
     del = std::make_shared<dsp::DelayOneImagBlock>(pll->output_stream);
@@ -33,6 +34,16 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
 
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
+}
+
+std::vector<ModuleDataType> OQPSKDemodModule::getInputTypes()
+{
+    return {DATA_FILE, DATA_DSP_STREAM};
+}
+
+std::vector<ModuleDataType> OQPSKDemodModule::getOutputTypes()
+{
+    return {DATA_FILE};
 }
 
 OQPSKDemodModule::~OQPSKDemodModule()
@@ -57,7 +68,8 @@ void OQPSKDemodModule::process()
     time_t lastTime = 0;
 
     // Start
-    file_source->start();
+    if (input_data_type == DATA_FILE)
+        file_source->start();
     if (d_dc_block)
         dcb->start();
     agc->start();
@@ -67,9 +79,9 @@ void OQPSKDemodModule::process()
     rec->start();
 
     int dat_size = 0;
-    while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+    while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
     {
-        dat_size = rec->output_stream->read(); //->read(rec_buffer2, d_buffer_size);
+        dat_size = rec->output_stream->read();
 
         if (dat_size <= 0)
             continue;
@@ -84,7 +96,8 @@ void OQPSKDemodModule::process()
 
         data_out.write((char *)sym_buffer, dat_size * 2);
 
-        progress = file_source->getPosition();
+        if (input_data_type == DATA_FILE)
+            progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -95,7 +108,8 @@ void OQPSKDemodModule::process()
     logger->info("Demodulation finished");
 
     // Stop
-    file_source->stop();
+    if (input_data_type == DATA_FILE)
+        file_source->stop();
     if (d_dc_block)
         dcb->stop();
     agc->stop();
@@ -109,7 +123,7 @@ void OQPSKDemodModule::process()
 
 void OQPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("OQPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
+    ImGui::Begin("OQPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
     // Constellation
     {
