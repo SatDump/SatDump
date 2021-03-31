@@ -8,28 +8,27 @@
  *
  */
 
-#ifndef INCLUDED_FEC_CC_DECODER_H
-#define INCLUDED_FEC_CC_DECODER_H
+#pragma once
 
-//#include <gnuradio/fec/api.h>
 #include "cc_common.h"
 #include "generic_decoder.h"
 #include <map>
 #include <string>
 
-namespace gr {
-namespace fec {
-namespace code {
+namespace fec
+{
+    namespace code
+    {
 
-typedef void (*conv_kernel)(unsigned char* Y,
-                            unsigned char* X,
-                            unsigned char* syms,
-                            unsigned char* dec,
-                            unsigned int framebits,
-                            unsigned int excess,
-                            unsigned char* Branchtab);
+        typedef void (*conv_kernel)(unsigned char *Y,
+                                    unsigned char *X,
+                                    unsigned char *syms,
+                                    unsigned char *dec,
+                                    unsigned int framebits,
+                                    unsigned int excess,
+                                    unsigned char *Branchtab);
 
-/*!
+        /*!
  * \brief Convolutional Code Decoding class.
  * \ingroup error_coding_blk
  *
@@ -86,10 +85,10 @@ typedef void (*conv_kernel)(unsigned char* Y,
  * \li   109: b(1101101) --> 1 + x   + x^3 + x^4 + x^6
  * \li   79:  b(1001111) --> 1 + x^3 + x^4 + x^5 + x^6
  */
-class cc_decoder : virtual public generic_decoder
-{
-public:
-    /*!
+        class cc_decoder : virtual public generic_decoder
+        {
+        public:
+            /*!
      * Build a convolutional code decoding FEC API object.
      *
      * \param frame_size Number of bits per frame. If using in the
@@ -105,32 +104,29 @@ public:
      * \param padded true if the encoded frame is padded
      *               to the nearest byte.
      */
-    static generic_decoder::sptr make(int frame_size,
-                                      int k,
-                                      int rate,
-                                      std::vector<int> polys,
-                                      int start_state = 0,
-                                      int end_state = -1,
-                                      cc_mode_t mode = CC_STREAMING,
-                                      bool padded = false);
+            static generic_decoder::sptr make(int frame_size,
+                                              int k,
+                                              int rate,
+                                              std::vector<int> polys,
+                                              int start_state = 0,
+                                              int end_state = -1,
+                                              cc_mode_t mode = CC_STREAMING,
+                                              bool padded = false);
 
-    /*!
+            /*!
      * Sets the uncoded frame size to \p frame_size. If \p
      * frame_size is greater than the value given to the
      * constructor, the frame size will be capped by that initial
      * value and this function will return false. Otherwise, it
      * returns true.
      */
-    bool set_frame_size(unsigned int frame_size) override = 0;
+            bool set_frame_size(unsigned int frame_size) override = 0;
 
-    /*!
+            /*!
      * Returns the coding rate of this encoder.
      */
-    double rate() override = 0;
-};
+            double rate() override = 0;
+        };
 
-} /* namespace code */
+    } /* namespace code */
 } /* namespace fec */
-} /* namespace gr */
-
-#endif /* INCLUDED_FEC_CC_DECODER_H */
