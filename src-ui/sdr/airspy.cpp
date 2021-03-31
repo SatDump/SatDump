@@ -59,15 +59,12 @@ void SDRAirspy::drawUI()
         airspy_set_freq(dev, d_frequency);
     }
 
-    ImGui::SameLine();
-
     ImGui::SetNextItemWidth(200);
     if (ImGui::SliderInt("Gain", &gain, 0, 22))
     {
         airspy_set_linearity_gain(dev, gain);
     }
 
-    ImGui::SameLine();
     if (ImGui::Checkbox("Bias", &bias))
     {
         airspy_set_rf_bias(dev, bias);
