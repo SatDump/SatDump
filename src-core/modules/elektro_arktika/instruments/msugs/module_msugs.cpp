@@ -41,8 +41,9 @@ namespace elektro_arktika
 
             SimpleDeframer<uint64_t, 64, 121680, 0x0218a7a392dd9abf> deframerVIS1, deframerVIS2, deframerVIS3;
             SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf> deframerIR;
+            SimpleDeframer<uint64_t, 24, 1680, 0xa6007c> deframerUnknown;
 
-            std::ofstream datatest("data.bin");
+            //std::ofstream data_unknown(directory + "/data_unknown.bin");
 
             MSUVISReader vis1_reader, vis2_reader, vis3_reader;
             MSUIRReader infr_reader;
@@ -87,7 +88,19 @@ namespace elektro_arktika
                         infr_reader.pushFrame(&frame[0]);
                 }
 
-                // datatest.write((char *)&cadu[12], 10); // 0xa6007c ASM, no idea what that is yet
+                // Unknown additional data, 0xa6007c ASM 1680-bits frames
+                /*{
+                    // datatest.write((char *)&cadu[12], 10); // , no idea what that is yet
+                    std::vector<std::vector<uint8_t>> frames = deframerUnknown.work(&cadu[12], 10);
+                    infr_frames += frames.size();
+                    for (std::vector<uint8_t> &frame : frames)
+                    {
+                        int marker = (frame[3] >> 1) & 0b111;
+                        //logger->error(marker);
+                        if (marker == 5) // 0, 2, 3, 4, 5
+                            data_unknown.write((char *)frame.data(), frame.size());
+                    }
+                }*/
 
                 progress = data_in.tellg();
 
@@ -98,7 +111,7 @@ namespace elektro_arktika
                 }
             }
 
-            datatest.close();
+            //data_unknown.close();
 
             data_in.close();
 
@@ -134,7 +147,7 @@ namespace elektro_arktika
 
         void MSUGSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("ELEKTRO / ARKTIKA MSU-GS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("ELEKTRO / ARKTIKA MSU-GS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

@@ -116,3 +116,5 @@ std::vector<std::vector<uint8_t>> SimpleDeframer<SYNC_T, SYNC_SIZE, FRAME_SIZE, 
 // Build this template for MSU-GS data
 template class SimpleDeframer<uint64_t, 64, 121680, 0x0218a7a392dd9abf>;
 template class SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf>;
+// Whatever that is
+template class SimpleDeframer<uint64_t, 24, 1680, 0xa6007c>;
