@@ -22,6 +22,7 @@ struct Pipeline
 {
     std::string name;
     std::string readable_name;
+    std::string category;
     bool live;
     std::vector<float> frequencies;
     long default_samplerate;
@@ -39,5 +40,8 @@ struct Pipeline
 };
 
 SATDUMP_DLL extern std::vector<Pipeline> pipelines;
+SATDUMP_DLL extern std::vector<std::string> pipeline_categories;
 
 void loadPipelines(std::string filepath);
+std::vector<Pipeline> getPipelinesInCategory(std::string category);
+Pipeline getPipelineInCategoryFromId(std::string category, int id);

@@ -1,0 +1,214 @@
+{
+    "metop_ahrpt": {
+        "name": "MetOp AHRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.3
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2333333",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                }
+            }
+        }
+    },
+    "fengyun3_ab_ahrpt": {
+        "name": "FengYun-3 A/B AHRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1704.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
+            }
+        }
+    },
+    "fengyun3_c_ahrpt": {
+        "name": "FengYun-3 C AHRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.4
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2600000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
+            }
+        }
+    },
+    "noaa_hrpt": {
+        "name": "NOAA HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1707,
+            1698,
+            1702.5
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "frames": {
+                "noaa_hrpt_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "products": {
+                "noaa_avhrr": {}
+            }
+        }
+    },
+    "meteor_hrpt": {
+        "name": "METEOR HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1700
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "dem": {
+                "meteor_hrpt_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "meteor_hrpt_decoder": {}
+            },
+            "products": {
+                "meteor_msumr": {},
+                "meteor_mtvza": {}
+            }
+        }
+    },
+    "saral_l_band": {
+        "name": "Saral L-Band",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "saral_decoder": {}
+            },
+            "products": {
+                "saral_argos": {}
+            }
+        }
+    }
+}

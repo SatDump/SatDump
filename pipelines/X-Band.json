@@ -1,0 +1,249 @@
+{
+    "fengyun3_abc_mpt": {
+        "name": "FengYun-3 A/B/C MPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 30e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "18700000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_mpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersi1": {
+                    "correct_bowtie": "1"
+                }
+            }
+        }
+    },
+    "fengyun3_d_ahrpt": {
+        "name": "FengYun-3 D AHRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "30000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersi2": {
+                    "correct_bowtie": "1"
+                }
+            }
+        }
+    },
+    "aqua_db": {
+        "name": "Aqua DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 15e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": "7500000",
+                    "agc_rate": "0.1",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.006",
+                    "clock_gain_omega": "0.8",
+                    "clock_mu": "0.9",
+                    "clock_gain_mu": "0.037",
+                    "clock_omega_relative_limit": "0.0001",
+                    "dc_block": "1",
+                    "constellation_scale": "100",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "aqua_db_decoder": {}
+            },
+            "products": {
+                "eos_modis_extractor": {
+                    "terra_mode": "0"
+                },
+                "eos_modis": {
+                    "terra_mode": "0",
+                    "correct_bowtie": "1"
+                },
+                "aqua_airs": {},
+                "aqua_ceres": {},
+                "aqua_amsu": {}
+            }
+        }
+    },
+    "terra_db": {
+        "name": "Terra DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "terra_db_demod": {
+                    "dc_block": "0",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "terra_db_decoder": {}
+            },
+            "products": {
+                "eos_modis_extractor": {
+                    "terra_mode": "1"
+                },
+                "eos_modis": {
+                    "terra_mode": "1",
+                    "correct_bowtie": "1"
+                }
+            }
+        }
+    },
+    "npp_hrd": {
+        "name": "Suomi NPP / JPSS-1 HRD",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 25e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "15000000",
+                    "agc_rate": "0.0001f",
+                    "rrc_alpha": "0.7",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.001",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "npp_hrd_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "jpss_viirs": {
+                    "npp_mode": "1"
+                },
+                "jpss_atms": {
+                    "npp_mode": "1"
+                }
+            }
+        }
+    },
+    "elektro_rdas": {
+        "name": "ELEKTRO-L RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "30720000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.03",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "elektro_arktika_rdas_decoder": {}
+            },
+            "products": {
+                "elektro_arktika_msugs": {}
+            }
+        }
+    },
+    "arktika_rdas": {
+        "name": "ARKTIKA-M RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "30720000",
+                    "agc_rate": "0.000001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.03",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "elektro_arktika_rdas_decoder": {}
+            },
+            "products": {
+                "elektro_arktika_msugs": {}
+            }
+        }
+    },
+    "oceansat2_db": {
+        "name": "OceanSat-2 DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 35e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "21226000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.8",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.01",
+                    "buffer_size": "8192"
+                }
+            },
+            "frames": {
+                "oceansat2_db_decoder": {}
+            },
+            "products": {
+                "oceansat_ocm": {}
+            }
+        }
+    }
+}
