@@ -43,7 +43,7 @@ namespace elektro_arktika
             SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf> deframerIR;
             SimpleDeframer<uint64_t, 24, 1680, 0xa6007c> deframerUnknown;
 
-            //std::ofstream data_unknown(directory + "/data_unknown.bin");
+            //std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
 
             MSUVISReader vis1_reader, vis2_reader, vis3_reader;
             MSUIRReader infr_reader;

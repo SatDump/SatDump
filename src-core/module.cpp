@@ -101,6 +101,9 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/oceansat/module_oceansat2_db_decoder.h"
 #include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
 
+#include "modules/saral/module_saral_decoder.h"
+#include "modules/saral/argos/module_saral_argos.h"
+
 void registerModules()
 {
     // Register modules
@@ -183,6 +186,10 @@ void registerModules()
     // Oceansat
     REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);
     REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
+
+    // Saral
+    REGISTER_MODULE(saral::SaralDecoderModule);
+    REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
