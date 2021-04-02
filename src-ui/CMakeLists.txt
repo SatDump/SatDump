@@ -5,6 +5,10 @@ file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
 add_executable(satdump-ui ${SatDump_ui_CPPS})
 target_include_directories(satdump-ui PUBLIC . src-core)
 
+if(BUILD_LIVE)
+    add_compile_definitions(BUILD_LIVE="1")
+endif()
+
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core)
 
@@ -16,7 +20,9 @@ target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
 if(MSVC)
     target_link_libraries(satdump-ui PRIVATE glew32.dll)
     target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
-    #target_link_libraries(satdump-ui PUBLIC airspy.dll)
+    if(BUILD_LIVE)
+        target_link_libraries(satdump-ui PUBLIC airspy.dll)
+    endif()
 else()
     # Glew
     find_package(GLEW REQUIRED)
@@ -30,7 +36,9 @@ else()
     find_package(glfw3 CONFIG REQUIRED)
     target_link_libraries(satdump-ui PRIVATE glfw)
 
-    # Airspy
-    #find_library(AIRSPY_LIBRARY airspy REQUIRED)
-    #target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+    if(BUILD_LIVE)
+        # Airspy
+        find_library(AIRSPY_LIBRARY airspy REQUIRED)
+        target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+    endif()
 endif()
