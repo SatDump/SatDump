@@ -187,8 +187,16 @@
     },
     "saral_l_band": {
         "name": "Saral L-Band",
-        "live": false,
-        "frequencies": [],
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1698.4
+        ],
         "samplerate": 3e6,
         "baseband_type": "i16",
         "work": {
