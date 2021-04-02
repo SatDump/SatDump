@@ -13,9 +13,29 @@ void renderOfflineProcessing()
     {
         std::string names;
 
-        for (int i = 0; i < pipelines.size(); i++)
+        for (int i = 0; i < pipeline_categories.size(); i++)
         {
-            names += pipelines[i].readable_name + '\0';
+            names += pipeline_categories[i] + '\0';
+        }
+
+        ImGui::Text("Category    : ");
+        ImGui::SameLine();
+
+        if (ImGui::Combo("##category", &category_id, names.c_str()))
+        {
+        }
+    }
+    ImGui::EndGroup();
+
+    std::vector<Pipeline> catPipelines = getPipelinesInCategory(pipeline_categories[category_id]);
+
+    ImGui::BeginGroup();
+    {
+        std::string names;
+
+        for (int i = 0; i < catPipelines.size(); i++)
+        {
+            names += catPipelines[i].readable_name + '\0';
         }
 
         ImGui::Text("Pipeline      : ");
@@ -23,31 +43,31 @@ void renderOfflineProcessing()
 
         if (ImGui::Combo("##pipeline", &pipeline_id, names.c_str()))
         {
-            downlink_pipeline = pipelines[pipeline_id].name;
-            std::memcpy(samplerate, std::to_string(pipelines[pipeline_id].default_samplerate).c_str(), std::to_string(pipelines[pipeline_id].default_samplerate).length());
+            downlink_pipeline = catPipelines[pipeline_id].name;
+            std::memcpy(samplerate, std::to_string(catPipelines[pipeline_id].default_samplerate).c_str(), std::to_string(catPipelines[pipeline_id].default_samplerate).length());
 
-            if (pipelines[pipeline_id].default_baseband_type == "f32")
+            if (catPipelines[pipeline_id].default_baseband_type == "f32")
             {
                 baseband_type_option = 0;
             }
-            else if (pipelines[pipeline_id].default_baseband_type == "i8")
+            else if (catPipelines[pipeline_id].default_baseband_type == "i8")
             {
                 baseband_type_option = 2;
             }
-            else if (pipelines[pipeline_id].default_baseband_type == "i16")
+            else if (catPipelines[pipeline_id].default_baseband_type == "i16")
             {
                 baseband_type_option = 1;
             }
-            else if (pipelines[pipeline_id].default_baseband_type == "w8")
+            else if (catPipelines[pipeline_id].default_baseband_type == "w8")
             {
                 baseband_type_option = 3;
             }
-            baseband_format = pipelines[pipeline_id].default_baseband_type;
+            baseband_format = catPipelines[pipeline_id].default_baseband_type;
 
             input_level_id = 0;
-            input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
+
+            input_level = catPipelines[pipeline_id].steps[input_level_id].level_name;
         }
-        // ImGui::EndCombo();
     }
     ImGui::EndGroup();
 
@@ -61,14 +81,14 @@ void renderOfflineProcessing()
         std::string names; // = "baseband\0";
 
         if (pipeline_id != -1)
-            for (int i = 0; i < pipelines[pipeline_id].steps.size(); i++)
+            for (int i = 0; i < catPipelines[pipeline_id].steps.size(); i++)
             {
-                names += pipelines[pipeline_id].steps[i].level_name + '\0';
+                names += catPipelines[pipeline_id].steps[i].level_name + '\0';
             }
 
         if (ImGui::Combo("##input_level", &input_level_id, names.c_str()))
         {
-            input_level = pipelines[pipeline_id].steps[input_level_id].level_name;
+            input_level = catPipelines[pipeline_id].steps[input_level_id].level_name;
         }
     }
     ImGui::EndGroup();

@@ -17,6 +17,7 @@ extern std::map<std::string, std::string> parameters;
 
 //extern bool processing;
 
+extern int category_id;
 extern int pipeline_id;
 extern int input_level_id;
 

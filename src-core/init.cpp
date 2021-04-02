@@ -16,7 +16,7 @@ void initSatdump()
 
     registerModules();
 
-    loadPipelines("pipelines.json");
+    loadPipelines("pipelines");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)

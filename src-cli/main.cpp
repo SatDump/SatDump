@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
     registerModules();
 
-    loadPipelines("pipelines.json");
+    loadPipelines("pipelines");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)

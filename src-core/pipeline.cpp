@@ -4,8 +4,10 @@
 #include "module.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
+#include <filesystem>
 
 SATDUMP_DLL std::vector<Pipeline> pipelines;
+SATDUMP_DLL std::vector<std::string> pipeline_categories;
 
 void Pipeline::run(std::string input_file,
                    std::string output_directory,
@@ -83,7 +85,7 @@ void Pipeline::run(std::string input_file,
     }
 }
 
-void loadPipelines(std::string filepath)
+void loadPipeline(std::string filepath, std::string category)
 {
     logger->info("Loading pipelines from file " + filepath);
 
@@ -103,6 +105,7 @@ void loadPipelines(std::string filepath)
         newPipeline.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<float>>();
         newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
         newPipeline.default_baseband_type = pipelineConfig.value()["baseband_type"];
+        newPipeline.category = category;
         //logger->info(newPipeline.name);
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value()["work"].items())
@@ -126,4 +129,45 @@ void loadPipelines(std::string filepath)
 
         pipelines.push_back(newPipeline);
     }
+}
+
+void loadPipelines(std::string filepath)
+{
+    std::vector<std::pair<std::string, std::string>> pipelinesToLoad;
+
+    std::filesystem::recursive_directory_iterator pipelinesIterator(filepath);
+    std::error_code iteratorError;
+    while (pipelinesIterator != std::filesystem::recursive_directory_iterator())
+    {
+        if (!std::filesystem::is_directory(pipelinesIterator->path()))
+        {
+            if (pipelinesIterator->path().filename().string().find(".json") != std::string::npos)
+            {
+                logger->trace("Found pipeline file " + pipelinesIterator->path().relative_path().string());
+                pipelinesToLoad.push_back({pipelinesIterator->path().relative_path().string(), pipelinesIterator->path().stem().string()});
+            }
+        }
+
+        pipelinesIterator.increment(iteratorError);
+        if (iteratorError)
+            logger->critical(iteratorError.message());
+    }
+
+    for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
+    {
+        loadPipeline(pipeline.first, pipeline.second);
+        pipeline_categories.push_back(pipeline.second);
+    }
+}
+
+std::vector<Pipeline> getPipelinesInCategory(std::string category)
+{
+    std::vector<Pipeline> catPipelines;
+    std::copy_if(pipelines.begin(), pipelines.end(), std::back_inserter(catPipelines), [=](Pipeline p) { return p.category == category; });
+    return catPipelines;
+}
+
+Pipeline getPipelineInCategoryFromId(std::string category, int id)
+{
+    return getPipelinesInCategory(category)[id];
 }

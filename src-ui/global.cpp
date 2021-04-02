@@ -14,8 +14,9 @@ std::map<std::string, std::string> parameters;
 
 //bool processing = false;
 
+int category_id = 0;
 int pipeline_id = -1;
-int input_level_id = -1;
+int input_level_id = 0;
 
 int baseband_type_option = 2;
 
