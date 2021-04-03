@@ -104,6 +104,9 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/saral/module_saral_decoder.h"
 #include "modules/saral/argos/module_saral_argos.h"
 
+#include "modules/goes_gvar/module_gvar_decoder.h"
+#include "modules/goes_gvar/module_gvar_image_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -190,6 +193,10 @@ void registerModules()
     // Saral
     REGISTER_MODULE(saral::SaralDecoderModule);
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
+
+    // GOES - GVAR
+    REGISTER_MODULE(goes_gvar::GVARDecoderModule);
+    REGISTER_MODULE(goes_gvar::GVARImageDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

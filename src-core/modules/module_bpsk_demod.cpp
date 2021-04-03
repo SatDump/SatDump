@@ -16,28 +16,31 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
 {
+    // Buffers
+    sym_buffer = new int8_t[d_buffer_size * 2];
+}
+
+void BPSKDemodModule::init()
+{
     // Init DSP blocks
     if (input_data_type == DATA_FILE)
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     if (d_dc_block)
         dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
     agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream), d_agc_rate, 1.0f, 1.0f, 65536);
     rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, libdsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, (float)d_samplerate / (float)d_symbolrate, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
-
-    // Buffers
-    sym_buffer = new int8_t[d_buffer_size * 2];
 }
 
 std::vector<ModuleDataType> BPSKDemodModule::getInputTypes()
 {
-    return {DATA_FILE, DATA_STREAM};
+    return {DATA_FILE, DATA_DSP_STREAM};
 }
 
 std::vector<ModuleDataType> BPSKDemodModule::getOutputTypes()
 {
-    return {DATA_FILE};
+    return {DATA_FILE, DATA_STREAM};
 }
 
 BPSKDemodModule::~BPSKDemodModule()
@@ -55,8 +58,11 @@ void BPSKDemodModule::process()
     // if (input_data_type == DATA_FILE)
     //     data_in = std::ifstream(d_input_file, std::ios::binary);
 
-    data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
-    d_output_files.push_back(d_output_file_hint + ".soft");
+    if (output_data_type == DATA_FILE)
+    {
+        data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
+        d_output_files.push_back(d_output_file_hint + ".soft");
+    }
 
     logger->info("Using input baseband " + d_input_file);
     logger->info("Demodulating to " + d_output_file_hint + ".soft");
@@ -89,10 +95,14 @@ void BPSKDemodModule::process()
 
         rec->output_stream->flush();
 
-        data_out.write((char *)sym_buffer, dat_size);
+        if (output_data_type == DATA_FILE)
+            data_out.write((char *)sym_buffer, dat_size);
+        else
+            output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
+
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -112,7 +122,8 @@ void BPSKDemodModule::process()
     pll->stop();
     rec->stop();
 
-    data_out.close();
+    if (output_data_type == DATA_FILE)
+        data_out.close();
 }
 
 void BPSKDemodModule::drawUI(bool window)

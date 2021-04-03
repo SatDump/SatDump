@@ -49,6 +49,7 @@ protected:
 public:
     BPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     ~BPSKDemodModule();
+    void init();
     void process();
     void drawUI(bool window);
     std::vector<ModuleDataType> getInputTypes();
