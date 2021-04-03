@@ -21,6 +21,12 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
                                                                                                                                           d_const_scale(std::stof(parameters["constellation_scale"]))
 {
+    // Buffers
+    sym_buffer = new int8_t[d_buffer_size * 2];
+}
+
+void OQPSKDemodModule::init()
+{
     // Init DSP blocks
     if (input_data_type == DATA_FILE)
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
@@ -31,9 +37,6 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
     del = std::make_shared<dsp::DelayOneImagBlock>(pll->output_stream);
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(del->output_stream, (float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
-
-    // Buffers
-    sym_buffer = new int8_t[d_buffer_size * 2];
 }
 
 std::vector<ModuleDataType> OQPSKDemodModule::getInputTypes()
