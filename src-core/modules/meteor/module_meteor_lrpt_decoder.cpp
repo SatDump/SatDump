@@ -87,18 +87,8 @@ namespace meteor
             // Read buffer
             data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
 
-            // Correlate less if we're locked to go faster
-            if (!locked)
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-            {
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE / 64);
-                if (correlator.getHighestCorrelationPosition() != 0)
-                {
-                    correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-                    if (correlator.getHighestCorrelationPosition() > 30)
-                        locked = false;
-                }
-            }
+            // Correlate
+            correlator.correlate(buffer, ENCODED_FRAME_SIZE);
 
             // Correlator statistics
             cor = correlator.getHighestCorrelation();
@@ -134,7 +124,7 @@ namespace meteor
                 {
                     shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
                     uint32_t offset = ENCODED_FRAME_SIZE - pos;
-                    
+
                     data_in.read((char *)buffer_2, pos);
 
                     for (int i = offset; i < ENCODED_FRAME_SIZE; i++)
@@ -167,22 +157,14 @@ namespace meteor
                 }
 
                 // Write it out if it's not garbage
-                if (cor > 50)
-                    locked = true;
-
-                if (locked)
+                if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
                 {
-                    //data_out_total += FRAME_SIZE;
                     data_out.put(0x1a);
                     data_out.put(0xcf);
                     data_out.put(0xfc);
                     data_out.put(0x1d);
                     data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
                 }
-            }
-            else
-            {
-                locked = false;
             }
 
             progress = data_in.tellg();
@@ -213,7 +195,7 @@ namespace meteor
 
     void METEORLRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.GetPercentBER() / 100.0f;
 
