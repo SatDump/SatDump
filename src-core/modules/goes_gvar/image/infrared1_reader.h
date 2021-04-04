@@ -9,10 +9,12 @@ namespace goes_gvar
 {
     class InfraredReader1
     {
-    private:
+    public:
         unsigned short *imageBuffer1;
         unsigned short *imageBuffer2;
         unsigned short *imageLineBuffer;
+
+    private:
         uint8_t byteBufShift[5];
         bool *goodLines;
 

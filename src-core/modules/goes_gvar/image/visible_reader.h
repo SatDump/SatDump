@@ -9,9 +9,11 @@ namespace goes_gvar
 {
     class VisibleReader
     {
-    private:
+    public:
         unsigned short *imageBuffer;
         unsigned short *imageLineBuffer;
+
+    private:
         uint8_t byteBufShift[5];
         bool *goodLines;
 
