@@ -40,16 +40,12 @@ namespace dsp
 
             case INTEGER_16:
                 d_input_file.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
-                for (int i = 0; i < d_buffer_size; i++)
-                    output_stream->writeBuf[i] = std::complex<float>(buffer_i16[i * 2] * 0.00004f, (float)buffer_i16[i * 2 + 1] * 0.00004f);
-                // volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)buffer_i16, 1.0f / 0.00004f, d_buffer_size * 2);
+                volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)buffer_i16, 1.0f / 0.00004f, d_buffer_size * 2);
                 break;
 
             case INTEGER_8:
                 d_input_file.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
-                for (int i = 0; i < d_buffer_size; i++)
-                    output_stream->writeBuf[i] = std::complex<float>(buffer_i8[i * 2] * 0.004f, (float)buffer_i8[i * 2 + 1] * 0.004f);
-                // volk_8i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int8_t *)buffer_i8, 1.0f / 0.004f, d_buffer_size * 2);
+                volk_8i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int8_t *)buffer_i8, 1.0f / 0.004f, d_buffer_size * 2);
                 break;
 
             case WAV_8:
