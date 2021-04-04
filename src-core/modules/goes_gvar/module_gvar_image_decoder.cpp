@@ -15,7 +15,7 @@ namespace goes_gvar
 {
     std::string GVARImageDecoderModule::getGvarFilename(std::tm *timeReadable, int channel)
     {
-        std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                              // Satellite name and channel
+        std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
                                    std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
@@ -251,10 +251,39 @@ namespace goes_gvar
     {
         ImGui::Begin("GVAR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
+        // This is outer crap...
+        ImGui::BeginGroup();
+        {
+            ImDrawList *draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                     ImColor::HSV(0, 0, 0));
+
+            for (int i = 0; i < 200; i++)
+            {
+                for (int ii = 0; ii < 200; ii++)
+                {
+                    float value = infraredImageReader1.imageBuffer1[(i * ((1354 * 2) / 200)) * 5206 + (ii * (5206 / 200))] / 65535.0f;
+                    draw_list->AddCircleFilled({ImGui::GetCursorScreenPos().x + ii, ImGui::GetCursorScreenPos().y + i}, 1, ImColor::HSV(359.0 / 360.0, 0, 1, value), 4);
+                }
+            }
+
+            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+        }
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
         ImGui::BeginGroup();
         {
             ImGui::Button("Full Disk Progress", {200, 20});
-            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200, 20));
+            ImGui::Text("State : ");
+            ImGui::SameLine();
+            if (writingImage)
+                ImGui::TextColored(colorSynced, "Writing images...");
+            else
+                ImGui::TextColored(colorSyncing, "Receiving...");
         }
         ImGui::EndGroup();
 
