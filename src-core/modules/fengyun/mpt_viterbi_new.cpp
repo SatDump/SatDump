@@ -54,7 +54,7 @@ namespace fengyun
             // Test without IQ Inversion
             for (int sh = 0; sh < 2; sh++)
             {
-                for (int ph = 0; ph < 4; ph++)
+                for (int ph = 0; ph < 2; ph++)
                 {
                     std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
                     phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, sh);
@@ -64,7 +64,7 @@ namespace fengyun
 
             for (int s = 0; s < 2; s++)
             {
-                for (int p = 0; p < 4; p++)
+                for (int p = 0; p < 2; p++)
                 {
                     if (d_ber_thresold > d_bers[s][p])
                     {
@@ -73,7 +73,7 @@ namespace fengyun
                         d_phase_shift = (sathelper::PhaseShift)p;
                         d_state = ST_SYNCED;
                     }
-                    logger->info(std::to_string(s) + "," + std::to_string(p) + " - " + std::to_string(d_bers[s][p]));
+                    //logger->info(std::to_string(s) + "," + std::to_string(p) + " - " + std::to_string(d_bers[s][p]));
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace fengyun
             float ber = 10;
             for (int s = 0; s < 2; s++)
             {
-                for (int p = 0; p < 4; p++)
+                for (int p = 0; p < 2; p++)
                 {
                     if (ber > d_bers[s][p])
                     {
