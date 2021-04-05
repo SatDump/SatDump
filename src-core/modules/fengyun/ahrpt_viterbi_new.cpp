@@ -94,7 +94,7 @@ namespace fengyun
                         d_skip_perm = o * 2;
                         // reorg.clear();
                     }
-                    logger->info(std::to_string(s) + "," + std::to_string(p) + " - " + std::to_string(d_bers[s][p]));
+                    logger->info(std::to_string(o) + "," + std::to_string(p) + " - " + std::to_string(d_bers[o][p]));
                 }
             }
         }
