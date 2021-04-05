@@ -19,7 +19,8 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_mu(std::stof(parameters["clock_mu"])),
                                                                                                                                           d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
                                                                                                                                           d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
-                                                                                                                                          d_const_scale(std::stof(parameters["constellation_scale"]))
+                                                                                                                                          d_const_scale(std::stof(parameters["constellation_scale"])),
+                                                                                                                                          d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];

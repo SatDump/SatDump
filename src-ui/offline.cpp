@@ -182,6 +182,12 @@ void renderOfflineProcessing()
             ImGui::TableSetColumnIndex(1);
             ImGui::Checkbox("DC Block", &dc_block);
 
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("IQ Swap (baseband file)");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Checkbox("IQ Swap", &iq_swap);
+
             ImGui::EndTable();
         }
     }
@@ -217,6 +223,7 @@ void renderOfflineProcessing()
                 parameters.emplace("baseband_format", baseband_format);
 
                 parameters.emplace("dc_block", dc_block ? "1" : "0");
+                parameters.emplace("iq_swap", iq_swap ? "1" : "0");
 
                 processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
                 //showStartup = false;

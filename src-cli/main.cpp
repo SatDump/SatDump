@@ -45,6 +45,16 @@ int main(int argc, char *argv[])
                     parameters.emplace("baseband_format", argv[i + 1]); // The next value in the array is your value
                     i++;                                                // Move to the next flag
                 }
+                else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
+                {
+                    parameters.emplace("dc_block", argv[i + 1]); // The next value in the array is your value
+                    i++;                                         // Move to the next flag
+                }
+                else if (strcmp(argv[i], "-iq_swap") == 0) // This is your parameter name
+                {
+                    parameters.emplace("iq_swap", argv[i + 1]); // The next value in the array is your value
+                    i++;                                        // Move to the next flag
+                }
             }
         }
     }

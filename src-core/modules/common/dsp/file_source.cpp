@@ -3,7 +3,7 @@
 
 namespace dsp
 {
-    FileSourceBlock::FileSourceBlock(std::string file, BasebandType type, int buffer_size) : Block(nullptr), d_type(type), d_buffer_size(buffer_size)
+    FileSourceBlock::FileSourceBlock(std::string file, BasebandType type, int buffer_size, bool iq_swap) : Block(nullptr), d_type(type), d_buffer_size(buffer_size), d_iq_swap(iq_swap)
     {
         d_filesize = getFilesize(file);
         d_progress = 0;
@@ -60,6 +60,14 @@ namespace dsp
 
             default:
                 break;
+            }
+
+            if (d_iq_swap)
+            {
+                for (int i = 0; i < d_buffer_size; i++)
+                {
+                    output_stream->writeBuf[i] = std::complex<float>(output_stream->writeBuf[i].imag(), output_stream->writeBuf[i].real());
+                }
             }
 
             output_stream->swap(d_buffer_size);

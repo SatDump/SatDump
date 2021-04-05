@@ -1,3 +1,5 @@
+#pragma once
+
 #include <complex>
 
 #define TestBitsLen 1024

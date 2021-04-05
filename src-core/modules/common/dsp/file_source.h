@@ -27,6 +27,7 @@ namespace dsp
         std::atomic<uint64_t> d_filesize;
         std::atomic<uint64_t> d_progress;
         const int d_buffer_size;
+        const bool d_iq_swap;
         std::atomic<bool> d_eof;
         void work();
         uint64_t getFilesize(std::string filepath);
@@ -38,7 +39,7 @@ namespace dsp
         uint8_t *buffer_u8;
 
     public:
-        FileSourceBlock(std::string file, BasebandType type, int buffer_size);
+        FileSourceBlock(std::string file, BasebandType type, int buffer_size, bool iq_swap = false);
         ~FileSourceBlock();
         uint64_t getFilesize();
         uint64_t getPosition();

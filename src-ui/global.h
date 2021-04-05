@@ -28,6 +28,7 @@ extern int frequency_id;
 extern float frequency;
 extern std::string baseband_format;
 extern bool dc_block;
+extern bool iq_swap;
 
 extern bool livedemod;
 

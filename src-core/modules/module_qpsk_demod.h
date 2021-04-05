@@ -30,6 +30,7 @@ protected:
     const float d_loop_bw;
     const int d_buffer_size;
     const bool d_dc_block;
+    const bool d_iq_swap;
 
     int8_t *sym_buffer;
 

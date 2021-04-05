@@ -1,10 +1,10 @@
-#include "module_new_fengyun_ahrpt_decoder.h"
+#include "module_new_fengyun_mpt_decoder.h"
 #include "logger.h"
 #include "modules/common/sathelper/reedsolomon_233.h"
 #include "modules/common/sathelper/packetfixer.h"
 #include "diff.h"
-#include "modules/common/ctpl/ctpl_stl.h"
 #include "modules/metop/instruments/iasi/utils.h"
+#include "modules/common/ctpl/ctpl_stl.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192 * 4
@@ -14,26 +14,28 @@ size_t getFilesize(std::string filepath);
 
 namespace fengyun
 {
-    NewFengyunAHRPTDecoderModule::NewFengyunAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                                      d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
-                                                                                                                                                                      d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
-                                                                                                                                                                      d_invert_second_viterbi(std::stoi(parameters["invert_second_viterbi"])),
-                                                                                                                                                                      viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
-                                                                                                                                                                      viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
+    NewFengyunMPTDecoderModule::NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                                  d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
+                                                                                                                                                                  d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
+                                                                                                                                                                  d_soft_symbols(std::stoi(parameters["soft_symbols"])),
+                                                                                                                                                                  viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
+                                                                                                                                                                  viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
+        sym_buffer = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
         viterbi1_out = new uint8_t[BUFFER_SIZE];
         viterbi2_out = new uint8_t[BUFFER_SIZE];
-        iSamples = new uint8_t[BUFFER_SIZE];
-        qSamples = new uint8_t[BUFFER_SIZE];
+        iSamples = new int8_t[BUFFER_SIZE];
+        qSamples = new int8_t[BUFFER_SIZE];
         diff_in = new uint8_t[BUFFER_SIZE];
         diff_out = new uint8_t[BUFFER_SIZE];
     }
 
-    NewFengyunAHRPTDecoderModule::~NewFengyunAHRPTDecoderModule()
+    NewFengyunMPTDecoderModule::~NewFengyunMPTDecoderModule()
     {
         delete[] viterbi_out;
+        delete[] sym_buffer;
         delete[] soft_buffer;
         delete[] viterbi1_out;
         delete[] viterbi2_out;
@@ -43,7 +45,7 @@ namespace fengyun
         delete[] diff_out;
     }
 
-    void NewFengyunAHRPTDecoderModule::process()
+    void NewFengyunMPTDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -75,9 +77,24 @@ namespace fengyun
         while (!data_in.eof())
         {
 
-            data_in.read((char *)soft_buffer, BUFFER_SIZE);
+            // Read a buffer
+            if (d_soft_symbols)
+            {
+                data_in.read((char *)soft_buffer, BUFFER_SIZE);
 
-            shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE, shift, iq_invert);
+                shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE, shift, iq_invert);
+
+                // Convert to hard symbols from soft symbols. We may want to work with soft only later?
+                for (int i = 0; i < BUFFER_SIZE; i++)
+                {
+                    using namespace std::complex_literals;
+                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 1] / 127.0f) + ((float)soft_buffer[i * 2] / 127.0f) * 1if;
+                }
+            }
+            else
+            {
+                data_in.read((char *)sym_buffer, sizeof(std::complex<float>) * BUFFER_SIZE);
+            }
 
             inI = 0;
             inQ = 0;
@@ -86,12 +103,12 @@ namespace fengyun
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
                 iSamples[inI++] = soft_buffer[i * 2 + 0];
-                qSamples[inQ++] = d_invert_second_viterbi ? -soft_buffer[i * 2 + 1] : soft_buffer[i * 2 + 1]; //FY3C
+                qSamples[inQ++] = -soft_buffer[i * 2 + 1]; //FY3C
             }
 
             // Run Viterbi!
-            v1_fut = viterbi_pool.push([&](int) { v1 = viterbi1.work(qSamples, inQ, viterbi1_out); });
-            v2_fut = viterbi_pool.push([&](int) { v2 = viterbi2.work(iSamples, inI, viterbi2_out); });
+            v1_fut = viterbi_pool.push([&](int) { v1 = viterbi1.work((uint8_t *)qSamples, inQ, viterbi1_out); });
+            v2_fut = viterbi_pool.push([&](int) { v2 = viterbi2.work((uint8_t *)iSamples, inI, viterbi2_out); });
             v1_fut.get();
             v2_fut.get();
 
@@ -120,12 +137,16 @@ namespace fengyun
             {
                 viterbiNoSyncRun++;
 
-                if (viterbiNoSyncRun == 10)
+                if (viterbiNoSyncRun >= 10)
                 {
-                    if (shift == sathelper::DEG_0)
-                        shift = sathelper::DEG_90;
-                    else
+                    //if (shift == sathelper::DEG_0)
+                    //     shift = sathelper::DEG_90;
+                    // else
+                    //    shift = sathelper::DEG_0;
+                    shift = (sathelper::PhaseShift)(shift + 1);
+                    if (shift > 3)
                         shift = sathelper::DEG_0;
+                    logger->debug("SHIFT " + std::to_string(shift));
                 }
             }
 
@@ -165,16 +186,19 @@ namespace fengyun
                 }
 
                 if (deframer.getState() == 0)
+                {
                     noSyncRuns++;
+                }
                 else
                 {
                     noSyncRuns = 0;
                     viterbiNoSyncRun = 0;
                 }
-                if (noSyncRuns == 10)
+                if (noSyncRuns >= 10)
                 {
                     iq_invert = !iq_invert;
                     noSyncRuns = 0;
+                    logger->debug("SWAP");
                 }
             }
 
@@ -198,9 +222,9 @@ namespace fengyun
     const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
     const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
-    void NewFengyunAHRPTDecoderModule::drawUI(bool window)
+    void NewFengyunMPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("FengYun AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("FengYun MPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber1 = viterbi1.ber();
         float ber2 = viterbi2.ber();
@@ -216,8 +240,8 @@ namespace fengyun
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100) % 200,
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100) % 200),
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + sym_buffer[i].real() * 100) % 200,
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 + sym_buffer[i].imag() * 100) % 200),
                                                2,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
@@ -313,18 +337,18 @@ namespace fengyun
         ImGui::End();
     }
 
-    std::string NewFengyunAHRPTDecoderModule::getID()
+    std::string NewFengyunMPTDecoderModule::getID()
     {
-        return "new_fengyun_ahrpt_decoder";
+        return "new_fengyun_mpt_decoder";
     }
 
-    std::vector<std::string> NewFengyunAHRPTDecoderModule::getParameters()
+    std::vector<std::string> NewFengyunMPTDecoderModule::getParameters()
     {
-        return {"viterbi_outsync_after", "viterbi_ber_thresold", "invert_second_viterbi"};
+        return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols", "invert_second_viterbi"};
     }
 
-    std::shared_ptr<ProcessingModule> NewFengyunAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NewFengyunMPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
     {
-        return std::make_shared<NewFengyunAHRPTDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<NewFengyunMPTDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace fengyun
