@@ -9,7 +9,7 @@
 
 namespace fengyun
 {
-    class NewFengyunMPTDecoderModule : public ProcessingModule
+    class NewFengyunAHRPTDecoderModule : public ProcessingModule
     {
     protected:
         int d_viterbi_outsync_after;
@@ -51,8 +51,8 @@ namespace fengyun
         float ber_history2[200];
 
     public:
-        NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-        ~NewFengyunMPTDecoderModule();
+        NewFengyunAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~NewFengyunAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
 
