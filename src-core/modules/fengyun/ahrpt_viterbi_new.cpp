@@ -1,6 +1,7 @@
 #include "ahrpt_viterbi_new.h"
 #include <cstring>
 #include "modules/common/utils.h"
+#include "logger.h"
 
 #define ST_IDLE 0
 #define ST_SYNCED 1
