@@ -147,7 +147,8 @@
             "baseband": {},
             "frames": {
                 "noaa_hrpt_demod": {
-                    "buffer_size": "8192"
+                    "buffer_size": "8192",
+                    "deframer_thresold": "0"
                 }
             },
             "products": {

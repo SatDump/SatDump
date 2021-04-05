@@ -18,6 +18,27 @@
 
 namespace noaa
 {
+    template <typename T>
+    inline bool getBit(T &data, int &bit)
+    {
+        return (data >> bit) & 1;
+    }
+
+    // Compare 2 32-bits values bit per bit
+    int checkSyncMarker(uint64_t marker, uint64_t totest)
+    {
+        int errors = 0;
+        for (int i = 59; i >= 0; i--)
+        {
+            bool markerBit, testBit;
+            markerBit = getBit<uint64_t>(marker, i);
+            testBit = getBit<uint64_t>(totest, i);
+            if (markerBit != testBit)
+                errors++;
+        }
+        return errors;
+    }
+
     void NOAADeframer::enter_idle()
     {
         d_state = ST_IDLE;
@@ -31,8 +52,9 @@ namespace noaa
         d_word = 0;
     }
 
-    NOAADeframer::NOAADeframer()
+    NOAADeframer::NOAADeframer(int thresold)
     {
+        d_thresold = thresold;
         d_mid_bit = true;
         d_last_bit = 0;
         enter_idle();
@@ -56,7 +78,8 @@ namespace noaa
                 case ST_IDLE:
                     d_shifter = (d_shifter << 1) | bit; // MSB transmitted first
 
-                    if ((d_shifter & 0x0FFFFFFFFFFFFFFFLL) == HRPT_MINOR_FRAME_SYNC)
+                    //if ((d_shifter & 0x0FFFFFFFFFFFFFFFLL) == HRPT_MINOR_FRAME_SYNC)
+                    if (checkSyncMarker(d_shifter & 0x0FFFFFFFFFFFFFFFLL, HRPT_MINOR_FRAME_SYNC) <= d_thresold)
                     {
                         out.push_back(HRPT_SYNC1);
                         out.push_back(HRPT_SYNC2);

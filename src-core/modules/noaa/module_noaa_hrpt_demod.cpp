@@ -26,7 +26,7 @@ namespace noaa
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01f, 2) / 4.0f, (3.0f * M_PI * 100e3f) / (float)d_samplerate);
         rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
         rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
-        def = std::make_shared<NOAADeframer>();
+        def = std::make_shared<NOAADeframer>(std::stoi(d_parameters["deframer_thresold"]));
     }
 
     std::vector<ModuleDataType> NOAAHRPTDemodModule::getInputTypes()
@@ -165,7 +165,7 @@ namespace noaa
 
     std::vector<std::string> NOAAHRPTDemodModule::getParameters()
     {
-        return {"samplerate", "buffer_size", "baseband_format"};
+        return {"samplerate", "buffer_size", "baseband_format", "deframer_thresold"};
     }
 
     std::shared_ptr<ProcessingModule> NOAAHRPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
