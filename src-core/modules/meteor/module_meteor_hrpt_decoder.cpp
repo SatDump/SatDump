@@ -19,19 +19,30 @@ namespace meteor
         manchester_buffer = new uint8_t[BUFFER_SIZE];
     }
 
+    std::vector<ModuleDataType> METEORHRPTDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> METEORHRPTDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     METEORHRPTDecoderModule::~METEORHRPTDecoderModule()
     {
         delete[] manchester_buffer;
         delete[] read_buffer;
-        //delete[] agc_pipe;
-        //delete[] pll_pipe;
-        //delete[] rec_pipe;
     }
 
     void METEORHRPTDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -42,9 +53,13 @@ namespace meteor
 
         int frame_count = 0;
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            data_in.read((char *)read_buffer, BUFFER_SIZE);
+            // Read a buffer
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)read_buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)read_buffer, BUFFER_SIZE);
 
             manchesterDecoder(read_buffer, BUFFER_SIZE, manchester_buffer);
 
@@ -62,7 +77,8 @@ namespace meteor
                 }
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -75,7 +91,8 @@ namespace meteor
         logger->info("Decoding finished");
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
@@ -84,7 +101,7 @@ namespace meteor
 
     void METEORHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+        ImGui::Begin("METEOR HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
