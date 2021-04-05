@@ -32,6 +32,7 @@ protected:
     const int d_buffer_size;
     const bool d_dc_block;
     const float d_const_scale;
+    const bool d_iq_swap;
 
     const float d_clock_gain_omega;
     const float d_clock_mu;

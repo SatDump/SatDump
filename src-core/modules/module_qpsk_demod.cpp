@@ -20,7 +20,8 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_rrc_taps(std::stoi(parameters["rrc_taps"])),
                                                                                                                                         d_loop_bw(std::stof(parameters["costas_bw"])),
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                        d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0)
+                                                                                                                                        d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
+                                                                                                                                        d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
@@ -131,7 +132,7 @@ void QPSKDemodModule::process()
 
 void QPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("QPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS );
+    ImGui::Begin("QPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
     // Constellation
     {

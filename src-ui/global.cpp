@@ -25,6 +25,7 @@ int frequency_id = 0;
 float frequency;
 std::string baseband_format;
 bool dc_block;
+bool iq_swap;
 
 bool livedemod = false;
 
