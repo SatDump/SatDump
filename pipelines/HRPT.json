@@ -1,14 +1,10 @@
 {
     "metop_ahrpt": {
         "name": "MetOp AHRPT",
-        "live": true,
+        "live": false,
         "live_cfg": [
             [
                 1,
-                0
-            ],
-            [
-                2,
                 0
             ]
         ],
@@ -49,9 +45,59 @@
             }
         }
     },
+    "metop_ahrpt_live": {
+        "name": "MetOp AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.3
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2333333",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                }
+            }
+        }
+    },
     "fengyun3_ab_ahrpt": {
         "name": "FengYun-3 A/B AHRPT",
-        "live": true,
+        "live": false,
         "live_cfg": [
             [
                 1,
@@ -88,9 +134,52 @@
             }
         }
     },
+    "fengyun3_ab_ahrpt_live": {
+        "name": "FengYun-3 A/B AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1704.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
+            }
+        }
+    },
     "fengyun3_c_ahrpt": {
         "name": "FengYun-3 C AHRPT",
-        "live": true,
+        "live": false,
         "live_cfg": [
             [
                 1,
@@ -116,6 +205,49 @@
             },
             "cadu": {
                 "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {}
+            }
+        }
+    },
+    "fengyun3_c_ahrpt_live": {
+        "name": "FengYun-3 C AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.4
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2600000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1",
