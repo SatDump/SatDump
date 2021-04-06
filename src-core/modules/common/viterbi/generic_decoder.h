@@ -58,6 +58,10 @@ namespace fec
               int unique_id();
               std::string d_name;
               //std::string alias() { return (boost::format("%s%d") % d_name % unique_id()).str(); }
+              void clear()
+              {
+                     d_buffer.clear();
+              }
 
        public:
               typedef std::shared_ptr<generic_decoder> sptr;

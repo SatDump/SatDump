@@ -36,5 +36,10 @@ namespace fec
         void forecast(int noutput_items, int &ninput_items_required);
 
         volk::vector<uint8_t> d_buffer;
+
+        void clear()
+        {
+            d_buffer.clear();
+        }
     };
 } /* namespace fec */

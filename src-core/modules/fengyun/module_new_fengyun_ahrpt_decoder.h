@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <future>
-#include "mpt_viterbi_new.h"
+#include "ahrpt_viterbi_new.h"
 #include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <fstream>
 
@@ -15,6 +15,7 @@ namespace fengyun
         int d_viterbi_outsync_after;
         float d_viterbi_ber_threasold;
         bool d_soft_symbols;
+        bool d_invert_second_viterbi;
 
         uint8_t *viterbi_out;
         int8_t *soft_buffer;
@@ -29,7 +30,7 @@ namespace fengyun
         // A few buffers for processing
         int8_t *iSamples, *qSamples;
 
-        int v1, v2;
+        int vout;
 
         int diffin = 0;
 
@@ -41,7 +42,7 @@ namespace fengyun
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
-        MPTViterbi2 viterbi1, viterbi2;
+        DualAHRPTViterbi2 viterbi;
         ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
@@ -55,6 +56,8 @@ namespace fengyun
         ~NewFengyunAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
+        std::vector<ModuleDataType> getInputTypes();
+        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();

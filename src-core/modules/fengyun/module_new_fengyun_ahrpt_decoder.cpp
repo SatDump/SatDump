@@ -18,8 +18,8 @@ namespace fengyun
                                                                                                                                                                       d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
                                                                                                                                                                       d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
                                                                                                                                                                       d_soft_symbols(std::stoi(parameters["soft_symbols"])),
-                                                                                                                                                                      viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
-                                                                                                                                                                      viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
+                                                                                                                                                                      viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
+                                                                                                                                                                      d_invert_second_viterbi(std::stoi(parameters["invert_second_viterbi"]))
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
@@ -29,6 +29,16 @@ namespace fengyun
         qSamples = new int8_t[BUFFER_SIZE];
         diff_in = new uint8_t[BUFFER_SIZE];
         diff_out = new uint8_t[BUFFER_SIZE];
+    }
+
+    std::vector<ModuleDataType> NewFengyunAHRPTDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> NewFengyunAHRPTDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
     }
 
     NewFengyunAHRPTDecoderModule::~NewFengyunAHRPTDecoderModule()
@@ -45,8 +55,12 @@ namespace fengyun
 
     void NewFengyunAHRPTDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -69,9 +83,13 @@ namespace fengyun
         bool iq_invert = false;
         int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            data_in.read((char *)soft_buffer, BUFFER_SIZE);
+            // Read a buffer
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)soft_buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
 
             shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE, sathelper::DEG_0, iq_invert);
 
@@ -79,19 +97,18 @@ namespace fengyun
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
                 iSamples[i] = soft_buffer[(i + shift) * 2 + 0];
-                qSamples[i] = ~soft_buffer[(i + shift) * 2 + 1]; // Second is inverted
+                qSamples[i] = d_invert_second_viterbi ? ~soft_buffer[(i + shift) * 2 + 1] : soft_buffer[(i + shift) * 2 + 1]; // Second may be inverted, FY-3C, FY-3D...
             }
 
             // Run Viterbi!
-            v1 = viterbi1.work((uint8_t *)qSamples, BUFFER_SIZE / 2, viterbi1_out);
-            v2 = viterbi2.work((uint8_t *)iSamples, BUFFER_SIZE / 2, viterbi2_out);
+            vout = viterbi.work((uint8_t *)qSamples, (uint8_t *)iSamples, BUFFER_SIZE / 2, viterbi1_out, viterbi2_out);
 
             diffin = 0;
 
             // Interleave and pack output into 2 bits chunks
-            if (v1 > 0 && v2 > 0)
+            if (vout > 0)
             {
-                for (int y = 0; y < std::min<int>(v1, v2); y++)
+                for (int y = 0; y < vout; y++)
                 {
                     for (int i = 7; i >= 0; i--)
                     {
@@ -102,7 +119,7 @@ namespace fengyun
                 viterbiNoSyncRun = 0;
             }
 
-            if (viterbi1.getState() == 0 || viterbi1.getState() == 0)
+            if (viterbi.getState() == 0)
             {
                 viterbiNoSyncRun++;
 
@@ -112,6 +129,7 @@ namespace fengyun
                         shift = 1;
                     else
                         shift = 0;
+                    viterbiNoSyncRun = 0;
                 }
             }
 
@@ -166,20 +184,22 @@ namespace fengyun
                 }
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                std::string viterbi1_state = viterbi1.getState() == 0 ? "NOSYNC" : "SYNCED";
-                std::string viterbi2_state = viterbi2.getState() == 0 ? "NOSYNC" : "SYNCED";
+                std::string viterbi1_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
+                std::string viterbi2_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi 1 : " + viterbi1_state + " BER : " + std::to_string(viterbi1.ber()) + ", Viterbi 2 : " + viterbi2_state + " BER : " + std::to_string(viterbi2.ber()) + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi 1 : " + viterbi1_state + " BER : " + std::to_string(viterbi.ber1()) + ", Viterbi 2 : " + viterbi2_state + " BER : " + std::to_string(viterbi.ber2()) + ", Deframer : " + deframer_state);
             }
         }
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
@@ -190,8 +210,8 @@ namespace fengyun
     {
         ImGui::Begin("New FengYun AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-        float ber1 = viterbi1.ber();
-        float ber2 = viterbi2.ber();
+        float ber1 = viterbi.ber1();
+        float ber2 = viterbi.ber2();
 
         ImGui::BeginGroup();
         {
@@ -242,14 +262,14 @@ namespace fengyun
 
                 ImGui::SameLine();
 
-                if (viterbi1.getState() == 0)
+                if (viterbi.getState() == 0)
                     ImGui::TextColored(colorNosync, "NOSYNC");
                 else
                     ImGui::TextColored(colorSynced, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi1.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber1).c_str());
+                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber1).c_str());
 
                 std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
@@ -263,14 +283,14 @@ namespace fengyun
 
                 ImGui::SameLine();
 
-                if (viterbi2.getState() == 0)
+                if (viterbi.getState() == 0)
                     ImGui::TextColored(colorNosync, "NOSYNC");
                 else
                     ImGui::TextColored(colorSynced, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi2.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber2).c_str());
+                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber2).c_str());
 
                 std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
