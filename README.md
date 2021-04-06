@@ -44,7 +44,7 @@ satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate
 satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
 ```
 
-Live processing, to process data directly while receiving it with your SDR is supported, but currently being re-written... So please wait! 
+Live processing is now supported (but WIP) on all platform, currently only with AIRSPY support. You will have to enable it manually when building with -DBUILD_LIVE=ON.
 
 ### Notes on Falcon-9 Camera processing
 
@@ -126,7 +126,7 @@ cd satdump
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j4
-ln -s ../pipelines.json . # Symlink pipelines so it can run
+ln -s ../pipelines . # Symlink pipelines so it can run
 ln -s ../Ro* . # Symlink fonts for the GUI version so it can run
 
 # Run (if you want!)
