@@ -10,38 +10,7 @@
 
 namespace fengyun
 {
-    /*class SymbolReorg
-    {
-    private:
-        volk::vector<uint8_t> d_buffer_reorg;
-
-    public:
-        int work(uint8_t *in, int size, uint8_t *out)
-        {
-            d_buffer_reorg.insert(d_buffer_reorg.end(), &in[0], &in[size]);
-            int size_out = 0;
-            int to_process = d_buffer_reorg.size() / 4;
-
-            for (int i = 0; i < to_process; i++)
-            {
-                out[size_out++] = d_buffer_reorg[i * 4 + 0];
-                out[size_out++] = d_buffer_reorg[i * 4 + 1];
-                out[size_out++] = d_buffer_reorg[i * 4 + 3];
-                out[size_out++] = d_buffer_reorg[i * 4 + 2];
-            }
-
-            d_buffer_reorg.erase(d_buffer_reorg.begin(), d_buffer_reorg.begin() + to_process * 4);
-
-            return size_out;
-        }
-
-        void clear()
-        {
-            d_buffer_reorg.clear();
-        }
-    };*/
-
-    class AHRPTViterbi2
+    class DualAHRPTViterbi2
     {
     private:
         // Settings
@@ -52,9 +21,9 @@ namespace fengyun
         // Variables
         int d_outsinc;
         int d_state;
-        bool d_first;
-        float d_bers[2][2];
-        float d_ber;
+        bool syncedstate[2];
+        float d_bers[2][4][2];
+        float d_ber[2];
 
         // BER Decoders
         fec::depuncture_bb_impl depunc_ber;
@@ -64,28 +33,29 @@ namespace fengyun
         // BER Buffers
         uint8_t d_ber_test_buffer[TEST_BITS_LENGTH];
         uint8_t d_ber_input_buffer[TEST_BITS_LENGTH];
-        uint8_t d_ber_input_reorg_buffer[TEST_BITS_LENGTH];
         uint8_t d_ber_input_buffer_depunc[TEST_BITS_LENGTH * 2]; // 1.5
         uint8_t d_ber_decoded_buffer[TEST_BITS_LENGTH * 2];
         uint8_t d_ber_encoded_buffer[TEST_BITS_LENGTH * 2]; // 1.5
 
         // Current phase status
-        sathelper::PhaseShift d_phase_shift;
-        bool d_iq_inv;
-        int d_skip, d_skip_perm;
+        sathelper::PhaseShift d_phase_shift[2];
+        bool d_iq_inv[2];
+        int d_skip[2], d_skip_perm[2];
         sathelper::PacketFixer phaseShifter;
 
         // Work buffers
-        uint8_t *fixed_soft_packet;
-        uint8_t *converted_buffer;
-        //uint8_t *reorg_buffer;
-        uint8_t *depunc_buffer;
-        uint8_t *output_buffer;
+        uint8_t *fixed_soft_packet1;
+        uint8_t *converted_buffer1;
+        uint8_t *depunc_buffer1;
+        uint8_t *output_buffer1;
+        uint8_t *fixed_soft_packet2;
+        uint8_t *converted_buffer2;
+        uint8_t *depunc_buffer2;
+        uint8_t *output_buffer2;
 
         // Main decoder
-        fec::code::cc_decoder_impl cc_decoder_in;
-        fec::depuncture_bb_impl depunc;
-        //SymbolReorg reorg;
+        fec::code::cc_decoder_impl cc_decoder_in1, cc_decoder_in2;
+        fec::depuncture_bb_impl depunc1, depunc2;
 
         // Repacker
         RepackBitsByte repacker;
@@ -93,11 +63,12 @@ namespace fengyun
         float getBER(uint8_t *input);
 
     public:
-        AHRPTViterbi2(float ber_threshold, int outsync_after, int buffer_size);
-        ~AHRPTViterbi2();
+        DualAHRPTViterbi2(float ber_threshold, int outsync_after, int buffer_size);
+        ~DualAHRPTViterbi2();
 
-        int work(uint8_t *input, int size, uint8_t *output);
-        float ber();
+        int work(uint8_t *input1, uint8_t *input2, int size, uint8_t *output1, uint8_t *output2);
+        float ber1();
+        float ber2();
         int getState();
     };
 } // namespace npp
