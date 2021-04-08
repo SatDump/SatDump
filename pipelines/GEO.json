@@ -42,5 +42,49 @@
                 }
             }
         }
+    },
+    "fengyun_svissr": {
+        "name": "FengYun-2 S-VISSR",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1687.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "660000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.02",
+                    "buffer_size": "8192"
+                }
+            },
+            "svissr": {
+                "fengyun_svissr_decoder": {}
+            },
+            "products": {
+                "fengyun_svissr_image_decoder": {
+                    "satname": "FY-2x"
+                }
+            }
+        }
     }
 }
