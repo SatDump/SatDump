@@ -18,8 +18,11 @@ static void glfw_error_callback(int error, const char *description)
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
 }
 
+void bindImageTextureFunctions();
+
 int main(int argc, char *argv[])
 {
+    bindImageTextureFunctions();
     std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
