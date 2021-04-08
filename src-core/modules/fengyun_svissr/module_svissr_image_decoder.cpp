@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "modules/common/differential/nrzs.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_image.h"
 #include <filesystem>
 
 #define FRAME_SIZE 44356
@@ -89,6 +90,12 @@ namespace fengyun_svissr
     SVISSRImageDecoderModule::~SVISSRImageDecoderModule()
     {
         delete[] frame;
+
+        if (textureID != -1)
+        {
+            delete[] textureBuffer;
+            deleteImageTexture(textureID);
+        }
     }
 
     void SVISSRImageDecoderModule::process()
@@ -231,26 +238,20 @@ namespace fengyun_svissr
 
     void SVISSRImageDecoderModule::drawUI(bool window)
     {
+        if (textureID == -1)
+        {
+            textureID = makeImageTexture();
+            textureBuffer = new uint32_t[2501 * 2291];
+        }
+
         ImGui::Begin("S-VISSR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // This is outer crap...
         ImGui::BeginGroup();
         {
-            ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
-                                     ImColor::HSV(0, 0, 0));
-
-            for (int i = 0; i < 200; i++)
-            {
-                for (int ii = 0; ii < 200; ii++)
-                {
-                    float value = vissrImageReader.imageBufferIR1[(i * (2501 / 200)) * 2291 + (ii * (2291 / 200))] / 65535.0f;
-                    draw_list->AddCircleFilled({ImGui::GetCursorScreenPos().x + ii, ImGui::GetCursorScreenPos().y + i}, 1, ImColor::HSV(359.0 / 360.0, 0, 1, value), 4);
-                }
-            }
-
-            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+            ushort_to_rgba(vissrImageReader.imageBufferIR1, textureBuffer, 2501 * 2291);
+            updateImageTexture(textureID, textureBuffer, 2291, 2501);
+            ImGui::Image((void *)(intptr_t)textureID, {200, 200});
         }
         ImGui::EndGroup();
 

@@ -45,6 +45,10 @@ namespace goes_gvar
         std::string getGvarFilename(std::tm *timeReadable, int channel);
         void writeImages(std::string directory);
 
+        // UI Stuff
+        unsigned int textureID = -1;
+        uint32_t *textureBuffer;
+
     public:
         GVARImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~GVARImageDecoderModule();

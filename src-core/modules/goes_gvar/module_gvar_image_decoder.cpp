@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include "gvar_deframer.h"
 #include "gvar_derand.h"
+#include "imgui/imgui_image.h"
 #include <filesystem>
 
 #define FRAME_SIZE 32786
@@ -90,6 +91,12 @@ namespace goes_gvar
     GVARImageDecoderModule::~GVARImageDecoderModule()
     {
         delete[] frame;
+
+        if (textureID != -1)
+        {
+            delete[] textureBuffer;
+            deleteImageTexture(textureID);
+        }
     }
 
     void GVARImageDecoderModule::process()
@@ -249,26 +256,20 @@ namespace goes_gvar
 
     void GVARImageDecoderModule::drawUI(bool window)
     {
+        if (textureID == -1)
+        {
+            textureID = makeImageTexture();
+            textureBuffer = new uint32_t[1354 * 2 * 5206];
+        }
+
         ImGui::Begin("GVAR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // This is outer crap...
         ImGui::BeginGroup();
         {
-            ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
-                                     ImColor::HSV(0, 0, 0));
-
-            for (int i = 0; i < 200; i++)
-            {
-                for (int ii = 0; ii < 200; ii++)
-                {
-                    float value = infraredImageReader1.imageBuffer1[(i * ((1354 * 2) / 200)) * 5206 + (ii * (5206 / 200))] / 65535.0f;
-                    draw_list->AddCircleFilled({ImGui::GetCursorScreenPos().x + ii, ImGui::GetCursorScreenPos().y + i}, 1, ImColor::HSV(359.0 / 360.0, 0, 1, value), 4);
-                }
-            }
-
-            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+            ushort_to_rgba(infraredImageReader1.imageBuffer1, textureBuffer, 5206 * 1354 * 2);
+            updateImageTexture(textureID, textureBuffer, 5206, 1354 * 2);
+            ImGui::Image((void *)(intptr_t)textureID, {200, 200});
         }
         ImGui::EndGroup();
 
