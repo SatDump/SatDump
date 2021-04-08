@@ -26,6 +26,10 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
+    target_link_libraries(satdump_core PUBLIC libavcodec.dll)
+    target_link_libraries(satdump_core PUBLIC libavformat.dll)
+    target_link_libraries(satdump_core PUBLIC libavutil.dll)
+    target_link_libraries(satdump_core PUBLIC libavfilter.dll)
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 else()
     # LibDSP
@@ -45,10 +49,26 @@ else()
     target_include_directories(satdump_core PUBLIC ${fmt_INCLUDE_DIRS})
     target_link_libraries(satdump_core PUBLIC fmt::fmt)
 
-    # FMT
+    # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
     target_include_directories(satdump_core PUBLIC ${volk_INCLUDE_DIRS})
     target_link_libraries(satdump_core PUBLIC volk)
+
+    # libavcodec
+    find_library(AVCODEC_LIBRARY avcodec REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${AVCODEC_LIBRARY})
+
+    # libavformat
+    find_library(AVFORMAT_LIBRARY avformat REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${AVFORMAT_LIBRARY})
+
+    # libavutil
+    find_library(AVUTIL_LIBRARY avutil REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${AVUTIL_LIBRARY})
+
+    # libavfilter
+    find_library(AVFILTER_LIBRARY avfilter REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${AVFILTER_LIBRARY})
 
     # LibPNG
     if(WIN32 AND NOT MINGW)
@@ -69,5 +89,7 @@ else()
         target_link_libraries(satdump_core PUBLIC stdc++fs)
     endif()
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
     
 endif()

@@ -20,7 +20,7 @@ if(APPLE)
 endif()
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -DUSE_VIDEO_ENCODER")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 else()
