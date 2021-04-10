@@ -34,7 +34,7 @@ namespace fengyun
             // Read buffer
             uint8_t buffer[1024];
 
-            logger->info("Demultiplexing and deframing...");
+            logger->info("Demultiplexing and deframing... (WIP!)");
 
             // Demuxer
             ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer = ccsds::ccsds_1_0_1024::Demuxer(882, true);
@@ -84,7 +84,7 @@ namespace fengyun
 
             logger->info("VCID 12 Frames         : " + std::to_string(vcidFrames));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds_frames));
-            //logger->info("ERM Lines              : " + std::to_string(erm_reader.lines));
+            logger->info("MWHS Lines             : " + std::to_string(mwhs_reader.lines));
 
             logger->info("Writing images.... (Can take a while)");
 
@@ -112,7 +112,7 @@ namespace fengyun
 
         void FengyunMWHSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MWHS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("FengYun MWHS Decoder (WIP!)", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
