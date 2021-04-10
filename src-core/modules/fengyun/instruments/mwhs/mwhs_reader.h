@@ -9,27 +9,29 @@
 
 namespace fengyun
 {
-    namespace erm
+    namespace mwhs
     {
-        class ERMImage
+        class MWHSImage
         {
         public:
-            unsigned short imageData[151 * 32];
+            unsigned short channels[6][98 * 32];
             int mk = -1;
             int lastMkMatch;
         };
 
-        class ERMReader
+        class MWHSReader
         {
         private:
-            std::vector<ERMImage> imageVector;
+            std::vector<MWHSImage> imageVector;
+            uint8_t byteBufShift[3];
+            unsigned short lineBuf[1000];
 
         public:
-            ERMReader();
-            ~ERMReader();
+            MWHSReader();
+            ~MWHSReader();
             int lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getChannel();
+            cimg_library::CImg<unsigned short> getChannel(int channel);
         };
     }
 }

@@ -58,6 +58,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/fengyun/instruments/mersi1/module_fengyun_mersi1.h"
 #include "modules/fengyun/instruments/mersi2/module_fengyun_mersi2.h"
 #include "modules/fengyun/instruments/erm/module_fengyun_erm.h"
+#include "modules/fengyun/instruments/mwhs/module_fengyun_mwhs.h"
 
 #include "modules/aqua/module_aqua_db_decoder.h"
 #include "modules/aqua/instruments/airs/module_aqua_airs.h"
@@ -140,6 +141,7 @@ void registerModules()
     REGISTER_MODULE(fengyun::mersi1::FengyunMERSI1DecoderModule);
     REGISTER_MODULE(fengyun::mersi2::FengyunMERSI2DecoderModule);
     REGISTER_MODULE(fengyun::erm::FengyunERMDecoderModule);
+    REGISTER_MODULE(fengyun::mwhs::FengyunMWHSDecoderModule);
 
     // Aqua
     REGISTER_MODULE(aqua::AquaDBDecoderModule);
