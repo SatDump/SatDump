@@ -41,7 +41,8 @@ namespace fengyun
 
             // Reader
             MWHSReader mwhs_reader;
-            std::ofstream frames("test.bin");
+            //std::ofstream frames("test.bin");
+            
             while (!data_in.eof())
             {
                 // Read buffer
@@ -64,8 +65,8 @@ namespace fengyun
                         if (pkt.header.apid == 16)
                         {
                             //logger->debug("SIZE " + std::to_string(pkt.payload.size()));
-                            if ((pkt.payload[350] & 2) == 0)
-                                frames.write((char *)pkt.payload.data(), 1018);
+                            //if ((pkt.payload[350] & 2) == 0)
+                            //    frames.write((char *)pkt.payload.data(), 1018);
                             mwhs_reader.work(pkt);
                         }
                     }
