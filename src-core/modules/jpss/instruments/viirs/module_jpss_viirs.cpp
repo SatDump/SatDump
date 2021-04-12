@@ -147,39 +147,6 @@ namespace jpss
             logger->info("VCID 16 Frames         : " + std::to_string(vcidFrames));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds_frames));
 
-            // Process them all
-            logger->info("Decompressing and decoding channels... (Can take a while)");
-
-            // Moderate resolution channels
-            reader_m4.process();
-            reader_m5.process();
-            reader_m3.process();
-            reader_m2.process();
-            reader_m1.process();
-            reader_m6.process();
-            reader_m7.process();
-            reader_m9.process();
-            reader_m10.process();
-            reader_m8.process();
-            reader_m11.process();
-            reader_m13.process();
-            reader_m12.process();
-            reader_m16.process();
-            reader_m15.process();
-            reader_m14.process();
-
-            // Imaging channels
-            reader_i1.process();
-            reader_i2.process();
-            reader_i3.process();
-            reader_i4.process();
-            reader_i5.process();
-
-            // DNB channels
-            reader_dnb.process();
-            reader_dnb_mgs.process();
-            reader_dnb_lgs.process();
-
             // Differential decoding for M5, M3, M2, M1
             logger->info("Diff M5...");
             {
@@ -317,9 +284,10 @@ namespace jpss
             image_i4 = bowtie::correctGenericBowTie(image_i4, 1, reader_i4.channelSettings.zoneHeight, alpha, beta);
             image_i5 = bowtie::correctGenericBowTie(image_i5, 1, reader_i5.channelSettings.zoneHeight, alpha, beta);
 
-            image_dnb = bowtie::correctGenericBowTie(image_dnb, 1, reader_dnb.channelSettings.zoneHeight, alpha, beta);
-            image_dnb_lgs = bowtie::correctGenericBowTie(image_dnb_lgs, 1, reader_dnb_lgs.channelSettings.zoneHeight, alpha, beta);
-            image_dnb_mgs = bowtie::correctGenericBowTie(image_dnb_mgs, 1, reader_dnb_mgs.channelSettings.zoneHeight, alpha, beta);
+            // DNB has no Bowtie
+            //image_dnb = bowtie::correctGenericBowTie(image_dnb, 1, reader_dnb.channelSettings.zoneHeight, alpha, beta);
+            //image_dnb_lgs = bowtie::correctGenericBowTie(image_dnb_lgs, 1, reader_dnb_lgs.channelSettings.zoneHeight, alpha, beta);
+            //image_dnb_mgs = bowtie::correctGenericBowTie(image_dnb_mgs, 1, reader_dnb_mgs.channelSettings.zoneHeight, alpha, beta);
 
             // Correct mirrored channels
             image_i1.mirror('x');
@@ -352,66 +320,7 @@ namespace jpss
             for (int i = 0; i < image_dnb_night.height() * image_dnb_night.width(); i++)
                 image_dnb_night.data()[i] *= 15;
 
-            // Histogram equalization so it doesn't look like crap
-            logger->info("Equalizing imaging channels...");
-            image_i1.equalize(1000);
-            image_i2.equalize(1000);
-            image_i3.equalize(1000);
-            image_i4.equalize(1000);
-            image_i5.equalize(1000);
-
-            logger->info("Equalizing moderate channels...");
-            image_m1.equalize(1000);
-            image_m2.equalize(1000);
-            image_m3.equalize(1000);
-            image_m4.equalize(1000);
-            image_m5.equalize(1000);
-            image_m6.equalize(1000);
-            image_m7.equalize(1000);
-            image_m8.equalize(1000);
-            image_m9.equalize(1000);
-            image_m10.equalize(1000);
-            image_m11.equalize(1000);
-            image_m12.equalize(1000);
-            image_m13.equalize(1000);
-            image_m14.equalize(1000);
-            image_m15.equalize(1000);
-            image_m16.equalize(1000);
-
-            logger->info("Equalizing DNB channels...");
-            image_dnb.equalize(1000);
-            image_dnb_lgs.equalize(1000);
-            image_dnb_mgs.equalize(1000);
-
-            logger->info("White balancing all channels...");
-            image::white_balance(image_i1, 0.05f, 1);
-            image::white_balance(image_i2, 0.05f, 1);
-            image::white_balance(image_i3, 0.05f, 1);
-            image::white_balance(image_i4, 0.05f, 1);
-            image::white_balance(image_i5, 0.05f, 1);
-
-            image::white_balance(image_m1, 0.05f, 1);
-            image::white_balance(image_m2, 0.05f, 1);
-            image::white_balance(image_m3, 0.05f, 1);
-            image::white_balance(image_m4, 0.05f, 1);
-            image::white_balance(image_m6, 0.05f, 1);
-            image::white_balance(image_m7, 0.05f, 1);
-            image::white_balance(image_m8, 0.05f, 1);
-            image::white_balance(image_m9, 0.05f, 1);
-            image::white_balance(image_m10, 0.05f, 1);
-            image::white_balance(image_m11, 0.05f, 1);
-            image::white_balance(image_m12, 0.05f, 1);
-            image::white_balance(image_m13, 0.05f, 1);
-            image::white_balance(image_m14, 0.05f, 1);
-            image::white_balance(image_m15, 0.05f, 1);
-            image::white_balance(image_m16, 0.05f, 1);
-
-            image::white_balance(image_dnb, 0.05f, 1);
-            image::white_balance(image_dnb_lgs, 0.05f, 1);
-            image::white_balance(image_dnb_mgs, 0.05f, 1);
-
             // Takes a while so we say how we're doing
-
             if (image_m1.height() > 0)
             {
                 logger->info("Channel M1...");
@@ -542,6 +451,9 @@ namespace jpss
             {
                 logger->info("Channel DNB...");
                 WRITE_IMAGE(image_dnb, directory + "/VIIRS-DNB.png");
+                image_dnb.equalize(1000);
+                image_dnb.normalize(0, 65535);
+                WRITE_IMAGE(image_dnb, directory + "/VIIRS-DNB-EQU.png");
             }
 
             if (image_dnb_night.height() > 0)
@@ -577,10 +489,11 @@ namespace jpss
                     image221.draw_image(0, 0, 0, 1, tempImage2);
                     image221.draw_image(0, 0, 0, 2, tempImage1);
                     image221.mirror('x');
-                    image221.equalize(1000);
                     image::white_balance(image221);
                 }
                 WRITE_IMAGE(image221, directory + "/VIIRS-RGB-I221.png");
+                image221.equalize(1000);
+                WRITE_IMAGE(image221, directory + "/VIIRS-RGB-I221-EQU.png");
             }
 
             if (image_i1.height() > 0 && image_i2.height() > 0 && image_i3.height() > 0)
@@ -598,10 +511,11 @@ namespace jpss
                     image321.draw_image(0, 0, 0, 1, tempImage1);
                     image321.draw_image(0, 0, 0, 2, tempImage2);
                     image321.mirror('x');
-                    image321.equalize(1000);
                     image::white_balance(image321);
                 }
                 WRITE_IMAGE(image321, directory + "/VIIRS-RGB-I312.png");
+                image321.equalize(1000);
+                WRITE_IMAGE(image321, directory + "/VIIRS-RGB-I321-EQU.png");
             }
 
             if (image_m4.height() > 0 && image_m5.height() > 0 && image_m3.height() > 0)
@@ -615,9 +529,6 @@ namespace jpss
                     tempImage5 = bowtie::correctGenericBowTie(tempImage5, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage4 = bowtie::correctGenericBowTie(tempImage4, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage3 = bowtie::correctGenericBowTie(tempImage3, 1, std::get<2>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
-                    tempImage5.equalize(1000);
-                    tempImage4.equalize(1000);
-                    tempImage3.equalize(1000);
                     image453.draw_image(0, 0, 0, 0, tempImage4);
                     image453.draw_image(0, 0, 0, 1, tempImage5);
                     image453.draw_image(0, 0, 0, 2, tempImage3);
@@ -625,6 +536,8 @@ namespace jpss
                     image::white_balance(image453);
                 }
                 WRITE_IMAGE(image453, directory + "/VIIRS-RGB-M453.png");
+                image453.equalize(1000);
+                WRITE_IMAGE(image453, directory + "/VIIRS-RGB-M453-EQU.png");
             }
 
             if (image_m4.height() > 0 && image_m5.height() > 0 && image_m3.height() > 0)
@@ -638,9 +551,6 @@ namespace jpss
                     tempImage5 = bowtie::correctGenericBowTie(tempImage5, 1, std::get<1>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage4 = bowtie::correctGenericBowTie(tempImage4, 1, std::get<0>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
                     tempImage3 = bowtie::correctGenericBowTie(tempImage3, 1, std::get<2>(correlatedChannels).channelSettings.zoneHeight, alpha, beta);
-                    tempImage5.equalize(1000);
-                    tempImage4.equalize(1000);
-                    tempImage3.equalize(1000);
                     image543.draw_image(0, 0, 0, 0, tempImage5);
                     image543.draw_image(0, 0, 0, 1, tempImage4);
                     image543.draw_image(0, 0, 0, 2, tempImage3);
@@ -648,6 +558,8 @@ namespace jpss
                     image::white_balance(image543);
                 }
                 WRITE_IMAGE(image543, directory + "/VIIRS-RGB-M543.png");
+                image543.equalize(1000);
+                WRITE_IMAGE(image543, directory + "/VIIRS-RGB-M543-EQU.png");
             }
 
             if (image_dnb.height() > 0 && image_m16.height() > 0)
@@ -680,7 +592,7 @@ namespace jpss
 
         void JPSSVIIRSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("JPSS VIIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("JPSS VIIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
