@@ -51,16 +51,6 @@ namespace jpss
                 BodyPacket body(packet);
 
                 if (body.detector <= channelSettings.zoneHeight)
-                    segments[currentSegment - 1].body[body.detector] = body;
-            }
-        }
-
-        void VIIRSReader::process()
-        {
-            for (Segment &seg : segments)
-            {
-                // Decompress everything
-                for (BodyPacket &body : seg.body)
                 {
                     if (!body.empty)
                     {
@@ -105,6 +95,8 @@ namespace jpss
                             }
                         }
                     }
+
+                    segments[currentSegment - 1].body[body.detector] = body;
                 }
             }
         }
@@ -117,7 +109,7 @@ namespace jpss
                 Segment &segInit = channelSource.segments[segment_number];
                 Segment &segCurrent = segments[segment_number];
 
-                for (int body_number = 0; body_number < 31; body_number++)
+                for (int body_number = 0; body_number < 32; body_number++)
                 {
                     BodyPacket &bodyInit = segInit.body[body_number / deci];
                     BodyPacket &bodyCurrent = segCurrent.body[body_number];
@@ -149,9 +141,6 @@ namespace jpss
 
                 for (int y = 0; y < channelSettings.zoneHeight; y++)
                 {
-                    //if(y == 0 || y == 1 || y == 1 || y == 14)
-                    //    continue;
-
                     BodyPacket &body = seg.body[y];
 
                     if (!body.empty)
@@ -163,22 +152,7 @@ namespace jpss
                             // Check if this detector is valid
                             if (body.detectors[det].data_payload_size > 8 && (body.detectors[det].sync_word == body.sync_word_pattern || body.detectors[det].sync_word == 0xC000FFEE))
                             {
-                                //for (int z = 0; z < channelSettings.zoneWidth[det]; z++)
-                                //    body.detectors[det].decompressedPayload[z] *= 4.0f;
-
-                                // Cleanup garbage data on the edges, Moderate channels
-                                if (channelSettings.zoneHeight == 15 && (det == 0 || det == 5) && (y == 0 || y == 1 || y == 14))
-                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
-                                else if (channelSettings.zoneHeight == 15 && (det == 1 || det == 4) && y == 0)
-                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
-                                // Cleanup garbage data on the edges, Imaging channels
-                                else if (channelSettings.zoneHeight == 31 && (det == 0 || det == 5) && (y == 0 || y == 1 || y == 2 || y == 3 || y == 30 || y == 29 || y == 28))
-                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
-                                else if (channelSettings.zoneHeight == 31 && (det == 1 || det == 4) && (y == 0 || y == 1 || y == 30))
-                                    std::fill(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], &imageBuffer.get()[lines * channelSettings.totalWidth + offset + channelSettings.zoneWidth[det] - 1], 0);
-                                // Write actual data
-                                else
-                                    std::memcpy(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], body.detectors[det].decompressedPayload, channelSettings.zoneWidth[det] * 2);
+                                std::memcpy(&imageBuffer.get()[lines * channelSettings.totalWidth + offset], body.detectors[det].decompressedPayload, channelSettings.zoneWidth[det] * 2);
                             }
                             else
                             {
@@ -199,6 +173,10 @@ namespace jpss
                     lines++;
                 }
             }
+
+            // Scale bit depth
+            for (int i = 0; i < channelSettings.totalWidth * lines; i++)
+                imageBuffer.get()[i] *= channelSettings.scale;
 
             cimg_library::CImg<unsigned short> image = cimg_library::CImg<unsigned short>(imageBuffer.get(), channelSettings.totalWidth, lines);
 

@@ -29,7 +29,6 @@ namespace jpss
             VIIRSReader(Channel &ch);
             ~VIIRSReader();
             void feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
-            void process();
             void differentialDecode(VIIRSReader &channelSource, int deci);
             cimg_library::CImg<unsigned short> getImage();
         };
