@@ -69,7 +69,7 @@ namespace eos
             if (packet.header.sequence_flag == 1)
             {
                 // Contains IFOVs 1-5
-                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 500);
+                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 542);
 
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
@@ -78,11 +78,11 @@ namespace eos
                     {
                         for (int y = 0; y < 4; y++)
                         {
-                            channels250m[c][((lines + 9) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[0 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 8) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[83 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 7) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[166 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 6) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[249 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 5) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[332 + (c * 16) + (i * 4) + y] * 15;
+                            channels250m[c][((lines + 9) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[0 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 8) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[83 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 7) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[166 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 6) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[249 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 5) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[332 + (c * 16) + (i * 4) + y] * 16;
                         }
                     }
                 }
@@ -94,11 +94,11 @@ namespace eos
                     {
                         for (int y = 0; y < 2; y++)
                         {
-                            channels500m[c][((lines + 9) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[32 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 8) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[115 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 7) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[198 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 6) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[281 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 5) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[364 + (c * 4) + (i * 2) + y] * 15;
+                            channels500m[c][((lines + 9) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[32 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 8) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[115 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 7) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[198 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 6) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[281 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 5) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[364 + (c * 4) + (i * 2) + y] * 16;
                         }
                     }
                 }
@@ -106,17 +106,17 @@ namespace eos
                 // 28 1000m channels
                 for (int i = 0; i < 31; i++)
                 {
-                    channels1000m[i][(lines + 9) * 1354 + position] = values[52 + i] * 15;
-                    channels1000m[i][(lines + 8) * 1354 + position] = values[135 + i] * 15;
-                    channels1000m[i][(lines + 7) * 1354 + position] = values[218 + i] * 15;
-                    channels1000m[i][(lines + 6) * 1354 + position] = values[301 + i] * 15;
-                    channels1000m[i][(lines + 5) * 1354 + position] = values[384 + i] * 15;
+                    channels1000m[i][(lines + 9) * 1354 + position] = values[52 + i] * 16;
+                    channels1000m[i][(lines + 8) * 1354 + position] = values[135 + i] * 16;
+                    channels1000m[i][(lines + 7) * 1354 + position] = values[218 + i] * 16;
+                    channels1000m[i][(lines + 6) * 1354 + position] = values[301 + i] * 16;
+                    channels1000m[i][(lines + 5) * 1354 + position] = values[384 + i] * 16;
                 }
             }
             else if (packet.header.sequence_flag == 2)
             {
                 // Contains IFOVs 6-10
-                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 500);
+                std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 542);
 
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
@@ -125,11 +125,11 @@ namespace eos
                     {
                         for (int y = 0; y < 4; y++)
                         {
-                            channels250m[c][((lines + 4) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[0 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 3) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[83 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 2) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[166 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 1) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[249 + (c * 16) + (i * 4) + y] * 15;
-                            channels250m[c][((lines + 0) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[332 + (c * 16) + (i * 4) + y] * 15;
+                            channels250m[c][((lines + 4) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[0 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 3) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[83 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 2) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[166 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 1) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[249 + (c * 16) + (i * 4) + y] * 16;
+                            channels250m[c][((lines + 0) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = values[332 + (c * 16) + (i * 4) + y] * 16;
                         }
                     }
                 }
@@ -141,11 +141,11 @@ namespace eos
                     {
                         for (int y = 0; y < 2; y++)
                         {
-                            channels500m[c][((lines + 4) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[32 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 3) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[115 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 2) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[198 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 1) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[281 + (c * 4) + (i * 2) + y] * 15;
-                            channels500m[c][((lines + 0) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[364 + (c * 4) + (i * 2) + y] * 15;
+                            channels500m[c][((lines + 4) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[32 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 3) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[115 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 2) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[198 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 1) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[281 + (c * 4) + (i * 2) + y] * 16;
+                            channels500m[c][((lines + 0) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = values[364 + (c * 4) + (i * 2) + y] * 16;
                         }
                     }
                 }
@@ -153,11 +153,11 @@ namespace eos
                 // 28 1000m channels
                 for (int i = 0; i < 31; i++)
                 {
-                    channels1000m[i][(lines + 4) * 1354 + position] = values[52 + i] * 15;
-                    channels1000m[i][(lines + 3) * 1354 + position] = values[135 + i] * 15;
-                    channels1000m[i][(lines + 2) * 1354 + position] = values[218 + i] * 15;
-                    channels1000m[i][(lines + 1) * 1354 + position] = values[301 + i] * 15;
-                    channels1000m[i][(lines + 0) * 1354 + position] = values[384 + i] * 15;
+                    channels1000m[i][(lines + 4) * 1354 + position] = values[52 + i] * 16;
+                    channels1000m[i][(lines + 3) * 1354 + position] = values[135 + i] * 16;
+                    channels1000m[i][(lines + 2) * 1354 + position] = values[218 + i] * 16;
+                    channels1000m[i][(lines + 1) * 1354 + position] = values[301 + i] * 16;
+                    channels1000m[i][(lines + 0) * 1354 + position] = values[384 + i] * 16;
                 }
             }
         }
@@ -179,21 +179,21 @@ namespace eos
 
             lastScanCount = header.scan_count;
 
-            std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 200);
+            std::vector<uint16_t> values = bytesTo12bits(packet.payload, 12, 254);
 
             // 28 1000m channels
             for (int i = 0; i < 16; i++)
             {
-                channels1000m[14 + i][(lines + 9) * 1354 + position] = values[0 + i] * 15;
-                channels1000m[14 + i][(lines + 8) * 1354 + position] = values[17 + i] * 15;
-                channels1000m[14 + i][(lines + 7) * 1354 + position] = values[34 + i] * 15;
-                channels1000m[14 + i][(lines + 6) * 1354 + position] = values[51 + i] * 15;
-                channels1000m[14 + i][(lines + 5) * 1354 + position] = values[68 + i] * 15;
-                channels1000m[14 + i][(lines + 4) * 1354 + position] = values[85 + i] * 15;
-                channels1000m[14 + i][(lines + 3) * 1354 + position] = values[102 + i] * 15;
-                channels1000m[14 + i][(lines + 2) * 1354 + position] = values[119 + i] * 15;
-                channels1000m[14 + i][(lines + 1) * 1354 + position] = values[136 + i] * 15;
-                channels1000m[14 + i][(lines + 0) * 1354 + position] = values[153 + i] * 15;
+                channels1000m[14 + i][(lines + 9) * 1354 + position] = values[0 + i] * 16;
+                channels1000m[14 + i][(lines + 8) * 1354 + position] = values[17 + i] * 16;
+                channels1000m[14 + i][(lines + 7) * 1354 + position] = values[34 + i] * 16;
+                channels1000m[14 + i][(lines + 6) * 1354 + position] = values[51 + i] * 16;
+                channels1000m[14 + i][(lines + 5) * 1354 + position] = values[68 + i] * 16;
+                channels1000m[14 + i][(lines + 4) * 1354 + position] = values[85 + i] * 16;
+                channels1000m[14 + i][(lines + 3) * 1354 + position] = values[102 + i] * 16;
+                channels1000m[14 + i][(lines + 2) * 1354 + position] = values[119 + i] * 16;
+                channels1000m[14 + i][(lines + 1) * 1354 + position] = values[136 + i] * 16;
+                channels1000m[14 + i][(lines + 0) * 1354 + position] = values[153 + i] * 16;
             }
         }
 
