@@ -22,22 +22,6 @@ namespace oceansat
 
         void OCMReader::work(uint8_t *buffer)
         {
-            // This is VERY bad... Gotta rewrite later.
-            /* for (int i = 0; i < 4072; i++)
-            {
-                std::vector<uint16_t> channelss = repackBits(&buffer[1889 + (i + 964) * 15], 12, 5 + 12, 12 * 9);
-                channels[0][lines * 4072 + i] = channelss[0] * 12;
-                channels[1][lines * 4072 + i] = channelss[1] * 12;
-                channels[2][lines * 4072 + i] = channelss[2] * 12;
-                channels[3][lines * 4072 + i] = channelss[3] * 12;
-                channels[4][lines * 4072 + i] = channelss[4] * 12;
-                channels[5][lines * 4072 + i] = channelss[5] * 12;
-                channels[6][lines * 4072 + i] = channelss[6] * 12;
-                channels[7][lines * 4072 + i] = channelss[7] * 12;
-            }
-            // channels[channel][lines * 2048 + i] = pixel * 60;
-*/
-
             int pos = 1889 + 964 * 15 + 2; // OCM Data position, found through a bit viewer
 
             // Convert into 12-bits values
@@ -50,14 +34,14 @@ namespace oceansat
 
             for (int i = 0; i < 4072; i += 1)
             {
-                channels[0][lines * 4072 + i] = lineBuffer[i * 10 + 0] * 12;
-                channels[1][lines * 4072 + i] = lineBuffer[i * 10 + 1] * 12;
-                channels[2][lines * 4072 + i] = lineBuffer[i * 10 + 2] * 12;
-                channels[3][lines * 4072 + i] = lineBuffer[i * 10 + 3] * 12;
-                channels[4][lines * 4072 + i] = lineBuffer[i * 10 + 4] * 12;
-                channels[5][lines * 4072 + i] = lineBuffer[i * 10 + 5] * 12;
-                channels[6][lines * 4072 + i] = lineBuffer[i * 10 + 6] * 12;
-                channels[7][lines * 4072 + i] = lineBuffer[i * 10 + 7] * 12;
+                channels[0][lines * 4072 + i] = lineBuffer[i * 10 + 0] * 16;
+                channels[1][lines * 4072 + i] = lineBuffer[i * 10 + 1] * 16;
+                channels[2][lines * 4072 + i] = lineBuffer[i * 10 + 2] * 16;
+                channels[3][lines * 4072 + i] = lineBuffer[i * 10 + 3] * 16;
+                channels[4][lines * 4072 + i] = lineBuffer[i * 10 + 4] * 16;
+                channels[5][lines * 4072 + i] = lineBuffer[i * 10 + 5] * 16;
+                channels[6][lines * 4072 + i] = lineBuffer[i * 10 + 6] * 16;
+                channels[7][lines * 4072 + i] = lineBuffer[i * 10 + 7] * 16;
             }
 
             // Frame counter
