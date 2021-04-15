@@ -2659,7 +2659,7 @@ class exception : public std::exception
     }
 
     template<typename BasicJsonType>
-    static std::string diagnostics(const BasicJsonType& leaf_element)
+    static std::string diagnostics(const BasicJsonType& /*leaf_element*/) // Disabled as I don't use that
     {
 #if JSON_DIAGNOSTICS
         std::vector<std::string> tokens;

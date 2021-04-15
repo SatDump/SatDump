@@ -92,7 +92,7 @@ namespace goes_gvar
     {
         delete[] frame;
 
-        if (textureID != -1)
+        if (textureID != 0)
         {
             delete[] textureBuffer;
             deleteImageTexture(textureID);
@@ -153,7 +153,7 @@ namespace goes_gvar
                     approx_progess = round(((float)counter / 1353.0f) * 1000.0f) / 10.0f;
 
                     // Process it!
-                    infraredImageReader1.pushFrame(frame, block_number, counter);
+                    infraredImageReader1.pushFrame(frame, counter);
                 }
                 // IR Channels 3-4 (Reader 2)
                 else if (block_number == 2)
@@ -166,7 +166,7 @@ namespace goes_gvar
                         continue;
 
                     // Process it!
-                    infraredImageReader2.pushFrame(frame, block_number, counter);
+                    infraredImageReader2.pushFrame(frame, counter);
                 }
                 // VIS 1
                 else if (block_number >= 3 && block_number <= 10)
@@ -256,7 +256,7 @@ namespace goes_gvar
 
     void GVARImageDecoderModule::drawUI(bool window)
     {
-        if (textureID == -1)
+        if (textureID == 0)
         {
             textureID = makeImageTexture();
             textureBuffer = new uint32_t[1354 * 2 * 5206];

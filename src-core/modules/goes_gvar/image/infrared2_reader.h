@@ -23,7 +23,7 @@ namespace goes_gvar
         InfraredReader2();
         ~InfraredReader2();
         void startNewFullDisk();
-        void pushFrame(uint8_t *data, int block, int counter);
+        void pushFrame(uint8_t *data, int counter);
         cimg_library::CImg<unsigned short> getImage1();
         cimg_library::CImg<unsigned short> getImage2();
     };

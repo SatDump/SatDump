@@ -28,7 +28,7 @@ namespace goes_gvar
         std::fill(&goodLines[0], &goodLines[HEIGHT], false);
     }
 
-    void InfraredReader1::pushFrame(uint8_t *data, int block, int counter)
+    void InfraredReader1::pushFrame(uint8_t *data, int counter)
     {
         // Get the current mode. Shifted?
         bool status = data[8 + 30 + 3] >> 4 & 1;

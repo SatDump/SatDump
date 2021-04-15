@@ -91,7 +91,7 @@ namespace fengyun_svissr
     {
         delete[] frame;
 
-        if (textureID != -1)
+        if (textureID != 0)
         {
             delete[] textureBuffer;
             deleteImageTexture(textureID);
@@ -238,7 +238,7 @@ namespace fengyun_svissr
 
     void SVISSRImageDecoderModule::drawUI(bool window)
     {
-        if (textureID == -1)
+        if (textureID == 0)
         {
             textureID = makeImageTexture();
             textureBuffer = new uint32_t[2501 * 2291];
