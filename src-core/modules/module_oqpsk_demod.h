@@ -29,8 +29,8 @@ protected:
     const float d_rrc_alpha;
     const int d_rrc_taps;
     const float d_loop_bw;
-    const int d_buffer_size;
     const bool d_dc_block;
+    const int d_buffer_size;
     const float d_const_scale;
     const bool d_iq_swap;
 

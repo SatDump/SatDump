@@ -18,8 +18,8 @@ namespace fengyun
                                                                                                                                                                       d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
                                                                                                                                                                       d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
                                                                                                                                                                       d_soft_symbols(std::stoi(parameters["soft_symbols"])),
-                                                                                                                                                                      viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
-                                                                                                                                                                      d_invert_second_viterbi(std::stoi(parameters["invert_second_viterbi"]))
+                                                                                                                                                                      d_invert_second_viterbi(std::stoi(parameters["invert_second_viterbi"])),
+                                                                                                                                                                      viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];

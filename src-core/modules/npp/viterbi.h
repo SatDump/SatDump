@@ -69,7 +69,7 @@ namespace npp
 
         unsigned char &getState();
 
-        int work(std::complex<float> *in, size_t size, uint8_t *output);
+        int work(std::complex<float> *in, int size, uint8_t *output);
 
         float ber();
     };

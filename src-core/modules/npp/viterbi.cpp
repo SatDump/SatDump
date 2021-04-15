@@ -17,10 +17,10 @@ namespace npp
 {
     HRDViterbi::HRDViterbi(bool sync_check, float ber_threshold, int insync_after, int outsync_after, int reset_after, int buffer_size)
         : d_sync_check(sync_check),
-          d_ber_threshold(ber_threshold),
           d_insync_after(insync_after),
           d_outsync_after(outsync_after),
-          d_reset_after(reset_after)
+          d_reset_after(reset_after),
+          d_ber_threshold(ber_threshold)
     {
         insymbols_interleaved_depunctured = new unsigned char[buffer_size * 4];
         decoded_data = new unsigned char[buffer_size];
@@ -195,15 +195,14 @@ namespace npp
     //    VITERBI DECODER, GENERAL WORK FUNCTION
     //
     //*****************************************************************************
-    int HRDViterbi::work(std::complex<float> *in_syms, size_t size, uint8_t *output)
+    int HRDViterbi::work(std::complex<float> *in_syms, int size, uint8_t *output)
     {
         unsigned char *out = &output[0];
         int ninputs = size;
-        unsigned int chan_len;
 
         //translate all complex insymbols to char and save these to input_symbols_buffer's I and Q
         float sample;
-        for (unsigned int i = 0; i < ninputs; i++)
+        for (int i = 0; i < ninputs; i++)
         {
             // Translate and clip [-1.0..1.0] to [28..228]
             sample = in_syms[i].real() * 127.0 + 128.0;
@@ -381,7 +380,7 @@ namespace npp
 
             unsigned int out_byte_count = 0;
 
-            for (unsigned int i = d_shift_main_decoder; i < ninputs; i++)
+            for (int i = d_shift_main_decoder; i < ninputs; i++)
             {
                 d_even_symbol = true;
                 d_viterbi_in[d_bits % 4] = switchInv ? -input_symbols_buffer_Q_ph[i] : input_symbols_buffer_I_ph[i];
@@ -433,7 +432,7 @@ namespace npp
             return d_ber[0][0];
         else
         {
-            float ber;
+            float ber = 10;
             for (int s = 0; s < 2; s++)
             {
                 for (int p = 0; p < 2; p++)

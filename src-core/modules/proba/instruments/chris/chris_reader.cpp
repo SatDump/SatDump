@@ -54,7 +54,7 @@ namespace proba
             delete[] tempChannelBuffer;
         }
 
-        void CHRISImageParser::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet, int &ch)
+        void CHRISImageParser::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet, int & /*ch*/)
         {
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
@@ -259,7 +259,7 @@ namespace proba
             WRITE_IMAGE_LOCAL(image13169, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png");
         }
 
-        void CHRISImageParser::writeAllCompos(cimg_library::CImg<unsigned short> &img)
+        void CHRISImageParser::writeAllCompos(cimg_library::CImg<unsigned short> & /*img*/)
         {
             /*logger->info("Dumping all 63 channels... (Temporary!)");
             cimg_library::CImg<unsigned short> imgs[63];

@@ -90,7 +90,7 @@ namespace fengyun
             int line = 0;
 
             // Reconstitute the image. Works "OK", not perfect...
-            for (int cnt = 0; cnt < imageVector.size(); cnt++)
+            for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
             {
                 // Count 0s on the side
                 //int zeros = 0;

@@ -77,14 +77,14 @@ namespace fec
     {
         d_buffer.insert(d_buffer.end(), &in[0], &in[size]);
 
-        if (d_buffer.size() < get_input_size())
+        if ((int)d_buffer.size() < get_input_size())
             return 0;
 
         int outsize = 0;
         uint8_t *input_ptr = d_buffer.data();
         uint8_t *output_ptr = out;
 
-        while (d_buffer.size() >= get_input_size())
+        while ((int)d_buffer.size() >= get_input_size())
         {
             generic_work(input_ptr, output_ptr);
 

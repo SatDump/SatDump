@@ -26,9 +26,9 @@ namespace fengyun
         float d_ber[2];
 
         // BER Decoders
-        fec::depuncture_bb_impl depunc_ber;
         fec::code::cc_decoder_impl cc_decoder_in_ber;
         fec::code::cc_encoder_impl cc_encoder_in_ber;
+        fec::depuncture_bb_impl depunc_ber;
 
         // BER Buffers
         uint8_t d_ber_test_buffer[TEST_BITS_LENGTH];

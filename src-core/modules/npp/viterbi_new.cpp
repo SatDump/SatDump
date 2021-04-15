@@ -7,15 +7,15 @@
 
 namespace npp
 {
-    HRDViterbi2::HRDViterbi2(float ber_threshold, int outsync_after, int buffer_size) : d_ber_thresold(ber_threshold),
+    HRDViterbi2::HRDViterbi2(float ber_threshold, int outsync_after, int buffer_size) : d_buffer_size(buffer_size),
                                                                                         d_outsync_after(outsync_after),
-                                                                                        d_state(ST_IDLE),
+                                                                                        d_ber_thresold(ber_threshold),
                                                                                         d_outsinc(0),
-                                                                                        d_buffer_size(buffer_size),
+                                                                                        d_state(ST_IDLE),
                                                                                         d_first(true),
-                                                                                        cc_decoder_in(buffer_size / 2, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                         cc_decoder_in_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
-                                                                                        cc_encoder_in_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}, 0, CC_STREAMING, false)
+                                                                                        cc_encoder_in_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}, 0, CC_STREAMING, false),
+                                                                                        cc_decoder_in(buffer_size / 2, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false)
     {
         fixed_soft_packet = new uint8_t[buffer_size];
         viterbi_in = new uint8_t[buffer_size];

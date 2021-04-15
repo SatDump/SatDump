@@ -24,7 +24,7 @@ namespace noaa
             {
                 for (int i = 0; i < 2048; i++)
                 {
-                    uint16_t pixel = buffer[750 + channel + i * 5];
+                    uint16_t pixel = buffer[pos + channel + i * 5];
                     channels[channel][lines * 2048 + i] = pixel * 60;
                 }
             }

@@ -15,9 +15,9 @@ namespace fengyun
                                                                                                     d_state(ST_IDLE),
                                                                                                     cc_decoder_in_ber(TEST_BITS_LENGTH * 1.5f / 2.0f, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                                     cc_encoder_in_ber(TEST_BITS_LENGTH * 1.5f / 2.0f, 7, 2, {79, 109}, 0, CC_STREAMING, false),
+                                                                                                    depunc_ber(3, 110),
                                                                                                     cc_decoder_in1(8192 * 1.5, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
                                                                                                     cc_decoder_in2(8192 * 1.5, 7, 2, {79, 109}, 0, -1, CC_STREAMING, false),
-                                                                                                    depunc_ber(3, 110),
                                                                                                     depunc1(3, 110),
                                                                                                     depunc2(3, 110)
     {

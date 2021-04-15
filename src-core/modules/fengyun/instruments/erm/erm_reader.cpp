@@ -35,7 +35,6 @@ namespace fengyun
 
                 for (int i = 0; i < 151; i++)
                 {
-                    int line_number = (lines * 16) + counter * 4 + (counter % 4);
                     imageVector[imageVector.size() - 1].imageData[counter * 151 + i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
                     pos += 2;
                 }
@@ -60,7 +59,7 @@ namespace fengyun
             int line = 0;
 
             // Reconstitute the image. Works "OK", not perfect...
-            for (int cnt = 0; cnt < imageVector.size(); cnt++)
+            for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
             {
                 for (int i = 0; i < 4; i++)
                 {

@@ -330,7 +330,7 @@ namespace fec
      */
 
             d += tailsize * d_decision_t_size; /* Look past tail */
-            int retval;
+            int retval = 0;
             int dif = tailsize - (d_k - 1);
             decision_t dec;
             while (nbits-- > d_frame_size - (d_k - 1))
