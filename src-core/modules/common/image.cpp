@@ -1,4 +1,6 @@
 #include "image.h"
+#include <jpeglib.h>
+#include <stdexcept>
 
 namespace image
 {
@@ -42,5 +44,67 @@ namespace image
                 image[band_number * width * height + i] = balanced;
             }
         }
+    }
+
+    static void libjpeg_error_func(j_common_ptr cinfo)
+    {
+        jpeg_destroy(cinfo);
+        throw std::runtime_error("Bad JPEG Data");
+    }
+
+    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length)
+    {
+        cimg_library::CImg<unsigned short> img;
+        unsigned char *jpeg_decomp = NULL;
+
+        try
+        {
+            // Huge thanks to https://gist.github.com/PhirePhly/3080633
+            jpeg_error_mgr jerr;
+            jpeg_decompress_struct cinfo;
+
+            // Init
+            cinfo.err = jpeg_std_error(&jerr);
+            jerr.error_exit = libjpeg_error_func;
+            jpeg_create_decompress(&cinfo);
+
+            // Parse and start decompressing
+            jpeg_mem_src(&cinfo, data, length);
+            jpeg_read_header(&cinfo, FALSE);
+            jpeg_start_decompress(&cinfo);
+
+            // Init output buffer
+            jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height];
+
+            // Decompress
+            while (cinfo.output_scanline < cinfo.output_height)
+            {
+                unsigned char *buffer_array[1];
+                buffer_array[0] = jpeg_decomp + (cinfo.output_scanline) * cinfo.image_width;
+                jpeg_read_scanlines(&cinfo, buffer_array, 1);
+            }
+
+            // Cleanup
+            jpeg_finish_decompress(&cinfo);
+            jpeg_destroy_decompress(&cinfo);
+
+            // Init CImg image
+            img = cimg_library::CImg<unsigned short>(cinfo.image_width, cinfo.image_height, 1, 1);
+
+            // Copy over
+            for (int i = 0; i < (int)cinfo.image_width * cinfo.image_height; i++)
+                img[i] = jpeg_decomp[i];
+
+            // Free memory
+            delete[] jpeg_decomp;
+        }
+        catch (std::runtime_error &e)
+        {
+            // Free memory
+            delete[] jpeg_decomp;
+            return img;
+        }
+
+        return img;
     }
 }
