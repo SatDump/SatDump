@@ -1,6 +1,7 @@
 #include "image.h"
 #include <jpeglib.h>
 #include <stdexcept>
+#include "logger.h"
 
 namespace image
 {
@@ -50,6 +51,7 @@ namespace image
     {
         jpeg_destroy(cinfo);
         throw std::runtime_error("Bad JPEG Data");
+        logger->info("FAIL");
     }
 
     cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length)
