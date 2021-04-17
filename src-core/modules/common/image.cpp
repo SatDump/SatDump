@@ -54,7 +54,6 @@ namespace image
 
     static void libjpeg_error_func(j_common_ptr cinfo)
     {
-        jpeg_destroy(cinfo);
         longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
