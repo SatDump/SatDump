@@ -55,9 +55,6 @@ void BPSKDemodModule::process()
     else
         filesize = 0;
 
-    // if (input_data_type == DATA_FILE)
-    //     data_in = std::ifstream(d_input_file, std::ios::binary);
-
     if (output_data_type == DATA_FILE)
     {
         data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
