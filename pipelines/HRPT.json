@@ -363,5 +363,35 @@
                 "saral_argos": {}
             }
         }
+    },
+    "yunhai_ahrpt": {
+        "name": "Yunhai AHRPT - Encrypted",
+        "live": false,
+        "frequencies": [
+            1704
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "4000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            }
+        }
     }
 }
