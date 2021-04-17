@@ -36,7 +36,7 @@ namespace meteor
 
     std::vector<ModuleDataType> METEORHRPTDemodModule::getOutputTypes()
     {
-        return {DATA_FILE};
+        return {DATA_FILE, DATA_STREAM};
     }
 
     METEORHRPTDemodModule::~METEORHRPTDemodModule()
@@ -54,8 +54,11 @@ namespace meteor
         //if (input_data_type == DATA_FILE)
         //    data_in = std::ifstream(d_input_file, std::ios::binary);
 
-        data_out = std::ofstream(d_output_file_hint + ".dem", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".dem");
+        if (output_data_type == DATA_FILE)
+        {
+            data_out = std::ofstream(d_output_file_hint + ".dem", std::ios::binary);
+            d_output_files.push_back(d_output_file_hint + ".dem");
+        }
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".dem");
@@ -86,7 +89,10 @@ namespace meteor
 
             std::vector<uint8_t> bytes = getBytes(bits_buffer, dat_size);
 
-            data_out.write((char *)&bytes[0], bytes.size());
+            if (output_data_type == DATA_FILE)
+                data_out.write((char *)&bytes[0], bytes.size());
+            else
+                output_fifo->write((uint8_t *)&bytes[0], bytes.size());
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -108,7 +114,8 @@ namespace meteor
         mov->stop();
         rec->stop();
 
-        data_out.close();
+        if (output_data_type == DATA_FILE)
+            data_out.close();
     }
 
     void METEORHRPTDemodModule::drawUI(bool window)
