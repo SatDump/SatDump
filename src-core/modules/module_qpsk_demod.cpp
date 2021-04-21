@@ -25,6 +25,7 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
+    snr = 0;
 }
 
 void QPSKDemodModule::init()
@@ -92,6 +93,10 @@ void QPSKDemodModule::process()
         if (dat_size <= 0)
             continue;
 
+        // Estimate SNR, only on part of the samples to limit CPU usage
+        snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
+        snr = snr_estimator.snr();
+
         for (int i = 0; i < dat_size; i++)
         {
             sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * 100);
@@ -110,7 +115,7 @@ void QPSKDemodModule::process()
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
         }
     }
 
@@ -130,10 +135,15 @@ void QPSKDemodModule::process()
         data_out.close();
 }
 
+const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
 void QPSKDemodModule::drawUI(bool window)
 {
     ImGui::Begin("QPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
+    ImGui::BeginGroup();
     // Constellation
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -151,6 +161,25 @@ void QPSKDemodModule::drawUI(bool window)
 
         ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
     }
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+
+    ImGui::BeginGroup();
+    {
+        ImGui::Button("Signal", {200, 20});
+        {
+            ImGui::Text("SNR (dB) : ");
+            ImGui::SameLine();
+            ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, std::to_string(snr).c_str());
+
+            std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
+            snr_history[200 - 1] = snr;
+
+            ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200, 50));
+        }
+    }
+    ImGui::EndGroup();
 
     ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
