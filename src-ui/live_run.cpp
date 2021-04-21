@@ -87,6 +87,10 @@ void processFFT(int)
 
 void startRealLive()
 {
+#ifdef _WIN32
+    logger->info("Setting process priority to Realtime");
+    SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+#endif
     // 1
     moduleStream = std::make_shared<dsp::stream<std::complex<float>>>();
     processThreadPool.push(processFFT);
