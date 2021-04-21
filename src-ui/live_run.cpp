@@ -6,6 +6,7 @@
 #include <cstring>
 #include "logger.h"
 #include <volk/volk_alloc.hh>
+#include "modules/common/dsp/file_source.h"
 
 #ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
@@ -30,6 +31,9 @@ void processFFT(int)
     std::complex<float> buffer_fft_out[FFT_BUFFER_SIZE];
 
     fftwf_plan p = fftwf_plan_dft_1d(FFT_BUFFER_SIZE, (fftwf_complex *)sample_buffer, (fftwf_complex *)buffer_fft_out, FFTW_FORWARD, FFTW_ESTIMATE);
+
+    //dsp::FileSourceBlock files("/home/alan/Downloads/10-36-51_1701300000Hz.wav", dsp::BasebandType::INTEGER_16, 8192);
+    //files.start();
 
     while (1)
     {
