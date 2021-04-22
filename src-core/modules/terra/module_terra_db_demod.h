@@ -9,6 +9,7 @@
 #include "modules/common/dsp/costas_loop.h"
 #include "modules/common/dsp/clock_recovery_mm.h"
 #include "modules/common/dsp/file_source.h"
+#include "modules/common/snr_estimator.h"
 
 namespace terra
 {
@@ -40,6 +41,12 @@ namespace terra
 
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
+
+        M2M4SNREstimator snr_estimator;
+        float snr;
+
+        // UI Stuff
+        float snr_history[200];
 
     public:
         TerraDBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
