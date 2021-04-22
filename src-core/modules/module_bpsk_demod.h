@@ -10,6 +10,7 @@
 #include "modules/common/dsp/clock_recovery_mm.h"
 #include "modules/common/dsp/file_source.h"
 #include "modules/common/dsp/dc_blocker.h"
+#include "modules/common/snr_estimator.h"
 
 class BPSKDemodModule : public ProcessingModule
 {
@@ -45,6 +46,12 @@ protected:
 
     std::atomic<uint64_t> filesize;
     std::atomic<uint64_t> progress;
+
+    M2M4SNREstimator snr_estimator;
+    float snr;
+
+    // UI Stuff
+    float snr_history[200];
 
 public:
     BPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

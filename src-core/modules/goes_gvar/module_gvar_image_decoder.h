@@ -46,7 +46,7 @@ namespace goes_gvar
         void writeImages(std::string directory);
 
         // UI Stuff
-        unsigned int textureID = -1;
+        unsigned int textureID = 0;
         uint32_t *textureBuffer;
 
     public:
