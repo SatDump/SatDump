@@ -113,6 +113,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/fengyun_svissr/module_svissr_decoder.h"
 #include "modules/fengyun_svissr/module_svissr_image_decoder.h"
 
+#include "modules/jason3/module_jason3_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -210,6 +212,9 @@ void registerModules()
     // FengYun2 - S-VISSR
     REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
     REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
+
+    // Jason-3
+    REGISTER_MODULE(jason3::Jason3DecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
