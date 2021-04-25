@@ -127,5 +127,28 @@
                 "smap_s_decoder": {}
             }
         }
+    },
+    "jason3_link": {
+        "name": "Jason-3 S-Band Link",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "838000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.7",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.001",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "jason3_decoder": {}
+            }
+        }
     }
 }
