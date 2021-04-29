@@ -239,13 +239,8 @@ namespace goes_gvar
             image5 = visibleImageReader.getImage();
 
             // Write those
-            imageSavingThreadPool->push([directory, this](int) {
-                writeImages(directory);
-            });
+            writeImages(directory);
         }
-
-        while (writingImage)
-            std::this_thread::sleep_for(std::chrono::seconds(1));
 
         imageSavingThreadPool->stop();
     }
