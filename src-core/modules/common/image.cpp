@@ -103,7 +103,7 @@ namespace image
         img = cimg_library::CImg<unsigned short>(cinfo.image_width, cinfo.image_height, 1, 1);
 
         // Copy over
-        for (int i = 0; i < (int)cinfo.image_width * cinfo.image_height; i++)
+        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
             img[i] = jpeg_decomp[i];
 
         // Free memory

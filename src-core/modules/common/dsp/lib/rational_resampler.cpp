@@ -143,7 +143,7 @@ namespace dsp
         int count = 0;
 
         int i = 0;
-        while (count < tmp_.size())
+        while (count < (int)tmp_.size())
         {
             out[i++] = d_firs[ctr].filter(in);
             ctr += this->decimation();
