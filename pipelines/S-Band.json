@@ -148,6 +148,9 @@
             },
             "cadu": {
                 "jason3_decoder": {}
+            },
+            "products": {
+                "jason3_poseidon": {}
             }
         }
     }
