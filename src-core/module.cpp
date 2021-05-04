@@ -115,6 +115,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/fengyun_svissr/module_svissr_image_decoder.h"
 
 #include "modules/jason3/module_jason3_decoder.h"
+#include "modules/jason3/instruments/poseidon/module_jason3_poseidon.h"
 
 void registerModules()
 {
@@ -217,6 +218,7 @@ void registerModules()
 
     // Jason-3
     REGISTER_MODULE(jason3::Jason3DecoderModule);
+    REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
