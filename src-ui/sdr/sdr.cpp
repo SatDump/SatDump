@@ -50,6 +50,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRDevice::getDe
 }
 
 #include "airspy.h"
+#include "rtlsdr.h"
 
 void initSDRs()
 {
@@ -63,6 +64,9 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspy_results = SDRAirspy::getDevices();
     results.insert(results.end(), airspy_results.begin(), airspy_results.end());
 
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> rtlsdr_results = SDRRtlSdr::getDevices();
+    results.insert(results.end(), rtlsdr_results.begin(), rtlsdr_results.end());
+
     return results;
 }
 
@@ -73,5 +77,7 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 
     if (type == AIRSPY)
         return std::make_shared<SDRAirspy>(id);
+    if (type == RTLSDR)
+        return std::make_shared<SDRRtlSdr>(id);
 }
 #endif

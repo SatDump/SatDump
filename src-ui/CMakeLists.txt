@@ -29,6 +29,7 @@ if(MSVC)
     target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
     if(BUILD_LIVE)
         target_link_libraries(satdump-ui PUBLIC airspy.dll)
+        target_link_libraries(satdump-ui PUBLIC rtlsdr.dll)
     endif()
 else()
     # Glew
@@ -47,6 +48,10 @@ else()
         # Airspy
         find_library(AIRSPY_LIBRARY airspy REQUIRED)
         target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
+
+        # RTL-SDR
+        find_library(RTLSDR_LIBRARY rtlsdr REQUIRED)
+        target_link_libraries(satdump-ui PUBLIC ${RTLSDR_LIBRARY})
     endif()
 endif()
 
