@@ -2,6 +2,10 @@
 #include "utils.h"
 #include "fast_atan2f.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
+
 #define M_TWOPI (2 * M_PI)
 
 namespace dsp
