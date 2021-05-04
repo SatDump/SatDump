@@ -7,7 +7,8 @@
 #ifdef BUILD_LIVE
 enum sdr_device_type
 {
-    AIRSPY
+    AIRSPY,
+    RTLSDR
 };
 
 class SDRDevice
