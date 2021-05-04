@@ -133,6 +133,8 @@ void loadPipeline(std::string filepath, std::string category)
 
 void loadPipelines(std::string filepath)
 {
+    logger->info("Loading pipelines from " + filepath);
+    
     std::vector<std::pair<std::string, std::string>> pipelinesToLoad;
 
     std::filesystem::recursive_directory_iterator pipelinesIterator(filepath);
