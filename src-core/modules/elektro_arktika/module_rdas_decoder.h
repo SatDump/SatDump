@@ -4,7 +4,7 @@
 #include <complex>
 #include <fstream>
 #include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 
 namespace elektro_arktika
 {
@@ -22,7 +22,7 @@ namespace elektro_arktika
         std::atomic<size_t> progress;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

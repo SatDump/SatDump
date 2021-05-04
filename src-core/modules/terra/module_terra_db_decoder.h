@@ -4,7 +4,7 @@
 #include <complex>
 #include "modules/common/sathelper/viterbi27.h"
 #include <fstream>
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 
 namespace terra
 {
@@ -33,7 +33,7 @@ namespace terra
         float ber_history[200];
         float cor_history[200];
 
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         TerraDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

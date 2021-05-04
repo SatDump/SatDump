@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 
 namespace goes_gvar
 {
@@ -19,7 +19,7 @@ namespace goes_gvar
         std::atomic<size_t> progress;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         GVARDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

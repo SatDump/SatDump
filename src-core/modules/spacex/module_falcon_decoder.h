@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 
 namespace spacex
 {
