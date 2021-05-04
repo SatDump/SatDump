@@ -4,7 +4,7 @@
 #include <complex>
 #include <fstream>
 #include "modules/common/ccsds/ccsds_1_0_proba/deframer.h"
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 
 namespace spacex
 {
@@ -27,7 +27,7 @@ namespace spacex
         bool qpsk;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         SpaceXDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

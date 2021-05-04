@@ -2,12 +2,6 @@
 
 #include "module.h"
 #include <complex>
-#include <dsp/agc.h>
-#include <dsp/fir_filter.h>
-#include <dsp/carrier_pll_psk.h>
-#include <dsp/clock_recovery_mm.h>
-#include <dsp/moving_average.h>
-#include <dsp/pipe.h>
 #include <thread>
 #include <fstream>
 #include "deframer.h"

@@ -2,6 +2,11 @@
 #include "logger.h"
 #include "module.h"
 #include "pipeline.h"
+#include <filesystem>
+
+#ifndef RESOURCES_PATH
+#define RESOURCES_PATH "./"
+#endif
 
 void initSatdump()
 {
@@ -16,7 +21,10 @@ void initSatdump()
 
     registerModules();
 
-    loadPipelines("pipelines");
+    if (std::filesystem::exists("pipelines"))
+        loadPipelines("pipelines");
+    else
+        loadPipelines((std::string)RESOURCES_PATH + "pipelines");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)

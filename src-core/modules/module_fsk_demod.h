@@ -4,7 +4,7 @@
 #include <complex>
 #include <thread>
 #include <fstream>
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 #include "modules/common/dsp/agc.h"
 #include "modules/common/dsp/fir.h"
 #include "modules/common/dsp/quadrature_demod.h"
@@ -43,7 +43,7 @@ protected:
     std::atomic<uint64_t> progress;
 
     // UI Stuff
-    libdsp::Random rng;
+    dsp::Random rng;
 
 public:
     FSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

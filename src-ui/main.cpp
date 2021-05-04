@@ -12,6 +12,11 @@
 #include "offline.h"
 #include "live.h"
 #include "live_run.h"
+#include <filesystem>
+
+#ifndef RESOURCES_PATH
+#define RESOURCES_PATH "./"
+#endif
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -131,7 +136,10 @@ int main(int argc, char *argv[])
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
-    style::setDarkStyle(".");
+    if (std::filesystem::exists("Roboto-Medium.ttf"))
+        style::setDarkStyle(".");
+    else
+        style::setDarkStyle((std::string)RESOURCES_PATH);
 
     if (processing)
         processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });

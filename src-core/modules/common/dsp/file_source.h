@@ -1,7 +1,6 @@
 #pragma once
 
 #include "block.h"
-#include <dsp/agc.h>
 #include <fstream>
 #include <atomic>
 

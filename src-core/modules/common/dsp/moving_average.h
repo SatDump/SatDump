@@ -1,14 +1,14 @@
 #pragma once
 
 #include "block.h"
-#include <dsp/moving_average.h>
+#include "lib/moving_average.h"
 
 namespace dsp
 {
     class CCMovingAverageBlock : public Block<std::complex<float>, std::complex<float>>
     {
     private:
-        libdsp::MovingAverageCC d_mov;
+        dsp::MovingAverageCC d_mov;
         void work();
 
     public:
@@ -18,7 +18,7 @@ namespace dsp
     class FFMovingAverageBlock : public Block<float, float>
     {
     private:
-        libdsp::MovingAverageFF d_mov;
+        dsp::MovingAverageFF d_mov;
         void work();
 
     public:

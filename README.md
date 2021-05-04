@@ -69,7 +69,7 @@ From there, just run either satdump-ui.exe or satdump.exe (CLI) and everything w
 If you really want to build it yourself on Windows, you will need some version of the [MSVC compiler](https://visualstudio.microsoft.com/downloads/) (with C++ 17), [CMake](https://cmake.org/download/) and [Git](https://gitforwindows.org/).  
 Some knowledge of using VCPKG and building with CMake is assumed.
 
-As dependencies that are not included in [VCPKG](https://github.com/Microsoft/vcpkg), you will need to build [VOLK](https://github.com/gnuradio/volk), [libcorrect](https://github.com/quiet/libcorrect) and [libdsp](https://github.com/altillimity/libdsp). Otherwise, you will also need libpng, libjpeg, libfftw3 and fmt for the core, and additionally glew and glfw3 for the UI version.
+As dependencies that are not included in [VCPKG](https://github.com/Microsoft/vcpkg), you will need to build [VOLK](https://github.com/gnuradio/volk) and [libcorrect](https://github.com/quiet/libcorrect). Otherwise, you will also need libpng, libjpeg, libfftw3 and fmt for the core, and additionally glew and glfw3 for the UI version.
 
 VCPK is expected to be in the root of SatDump's git directory in the build system. 
 
@@ -93,7 +93,7 @@ Note : Mingw builds are NOT supported, VOLK will not work.
 ### Linux (or MacOS)
 
 On Linux (or MacOS), building from source is recommended and no build are currently provided.
-In the same way as Windows, [libcorrect](https://github.com/quiet/libcorrect) and [libdsp](https://github.com/altillimity/libdsp) are most likely not in your package manager and will have to be built from source.
+In the same way as Windows, [libcorrect](https://github.com/quiet/libcorrect) is most likely not in your package manager and will have to be built from source.
 
 Here are some generic Debian build instructions.
 
@@ -109,16 +109,6 @@ make -j4
 sudo make install
 cd ../..
 rm -rf libcorrect
-
-# Build and install libdsp
-git clone https://github.com/altillimity/libdsp.git
-cd libdsp
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
-sudo make install
-cd ../..
-rm -rf libdsp
 
 # Finally, SatDump
 git clone https://github.com/altillimity/satdump.git

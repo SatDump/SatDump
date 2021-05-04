@@ -1,14 +1,14 @@
 #pragma once
 
 #include "block.h"
-#include <dsp/dc_blocker.h>
+#include "lib/dc_blocker.h"
 
 namespace dsp
 {
     class DCBlockerBlock : public Block<std::complex<float>, std::complex<float>>
     {
     private:
-        libdsp::DCBlocker d_blocker;
+        dsp::DCBlocker d_blocker;
         void work();
 
     public:

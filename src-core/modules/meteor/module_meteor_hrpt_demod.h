@@ -5,7 +5,7 @@
 #include <thread>
 #include <fstream>
 #include "deframer.h"
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 #include "modules/common/dsp/agc.h"
 #include "modules/common/dsp/fir.h"
 #include "modules/common/dsp/moving_average.h"
@@ -41,7 +41,7 @@ namespace meteor
         std::atomic<size_t> progress;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

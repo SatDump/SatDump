@@ -5,6 +5,13 @@ file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
 add_executable(satdump-ui ${SatDump_ui_CPPS})
 target_include_directories(satdump-ui PUBLIC . src-core)
 
+# Set the resources path
+if(MSVC)
+    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
+else()
+    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
+endif()
+
 if(BUILD_LIVE)
     add_compile_definitions(BUILD_LIVE="1")
 endif()
@@ -42,3 +49,5 @@ else()
         target_link_libraries(satdump-ui PUBLIC ${AIRSPY_LIBRARY})
     endif()
 endif()
+
+install(TARGETS satdump-ui DESTINATION bin)

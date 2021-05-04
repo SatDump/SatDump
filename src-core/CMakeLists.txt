@@ -14,6 +14,13 @@ find_package(PkgConfig)
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
 
+# Set the resources path
+if(MSVC)
+    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
+else()
+    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
+endif()
+
 # Threads
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
@@ -28,10 +35,6 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 else()
-    # LibDSP
-    find_library(DSP_LIBRARY dsp REQUIRED)
-    target_link_libraries(satdump_core PUBLIC ${DSP_LIBRARY})
-
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
     target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
@@ -68,6 +71,6 @@ else()
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
         target_link_libraries(satdump_core PUBLIC stdc++fs)
     endif()
-
-    
 endif()
+
+install(TARGETS satdump_core DESTINATION lib)

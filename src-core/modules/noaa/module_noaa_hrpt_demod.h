@@ -4,7 +4,7 @@
 #include <complex>
 #include <thread>
 #include <fstream>
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 #include "modules/common/dsp/agc.h"
 #include "modules/common/dsp/fir.h"
 #include "modules/common/dsp/clock_recovery_mm.h"
@@ -42,7 +42,7 @@ namespace noaa
         int frame_count = 0;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

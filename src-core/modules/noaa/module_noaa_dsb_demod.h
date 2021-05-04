@@ -2,11 +2,10 @@
 
 #include "module.h"
 #include <complex>
-#include <dsp/agc.h>
 #include <thread>
 #include <fstream>
 #include "modules/common/repack_bits_byte.h"
-#include <dsp/random.h>
+#include "modules/common/dsp/lib/random.h"
 #include "modules/common/dsp/agc.h"
 #include "modules/common/dsp/fir.h"
 #include "modules/common/dsp/costas_loop.h"
@@ -44,7 +43,7 @@ namespace noaa
         std::atomic<uint64_t> progress;
 
         // UI Stuff
-        libdsp::Random rng;
+        dsp::Random rng;
 
     public:
         NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
