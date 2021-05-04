@@ -21,7 +21,7 @@ void initSatdump()
 
     registerModules();
 
-    if (std::filesystem::exists("pipelines"))
+    if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
         loadPipelines("pipelines");
     else
         loadPipelines((std::string)RESOURCES_PATH + "pipelines");
