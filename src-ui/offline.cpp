@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "portable-file-dialogs.h"
 #include "processing.h"
+#include "settings.h"
 
 void renderOfflineProcessing()
 {
@@ -198,6 +199,12 @@ void renderOfflineProcessing()
         if (ImGui::Button("Start"))
         {
             logger->debug("Starting...");
+
+            // Save settings
+            //{
+            //    settings["offline_pipeline_id"] = pipeline_id;
+            //    saveSettings();
+            //}
 
             if (input_file == "")
             {
