@@ -3,6 +3,7 @@
 #include "module.h"
 #include "pipeline.h"
 #include <filesystem>
+#include "settings.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -25,6 +26,11 @@ void initSatdump()
         loadPipelines("pipelines");
     else
         loadPipelines((std::string)RESOURCES_PATH + "pipelines");
+
+    //if (std::filesystem::exists("settings.json"))
+    //    loadSettings("settings.json");
+    //else
+    //    loadSettings((std::string)RESOURCES_PATH + "settings.json");
 
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)

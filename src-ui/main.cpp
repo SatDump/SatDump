@@ -13,6 +13,7 @@
 #include "live.h"
 #include "live_run.h"
 #include <filesystem>
+#include "settings.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -91,6 +92,12 @@ int main(int argc, char *argv[])
 #ifdef BUILD_LIVE
     initLive();
 #endif
+
+    // Load last settings
+    //{
+    //    if (settings.contains("offline_pipeline_id"))
+    //        pipeline_id = settings["offline_pipeline_id"].get<int>();
+    //}
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -240,4 +247,6 @@ int main(int argc, char *argv[])
         if (processThreadPool.get_thread(i).joinable())
             processThreadPool.get_thread(i).join();
     }
+
+    logger->info("Exiting!");
 }
