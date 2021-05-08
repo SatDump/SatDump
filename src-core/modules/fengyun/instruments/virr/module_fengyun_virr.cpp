@@ -212,6 +212,8 @@ namespace fengyun
                 image197truecolorxfr.draw_image(-2, 0, 0, 2, tempImage7);
             }
             WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR.png");
+            image197truecolorxfr.equalize(1000);
+            WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-EQU.png");
 
             logger->info("197 Night XFR Composite... (by ZbychuButItWasTaken)");
             cimg_library::CImg<unsigned short> image197nightxfr(2048, reader.lines, 1, 3);
@@ -227,6 +229,8 @@ namespace fengyun
                 image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
             }
             WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
+            image197nightxfr.equalize(1000);
+            WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT_EQU.png");
         }
 
         void FengyunVIRRDecoderModule::drawUI(bool window)

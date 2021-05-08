@@ -292,7 +292,9 @@
                 }
             },
             "products": {
-                "noaa_avhrr": {}
+                "noaa_avhrr": {},
+                "noaa_extractor": {},
+                "noaa_hirs": {}
             }
         }
     },
@@ -391,6 +393,55 @@
                     "soft_symbols": "1",
                     "invert_second_viterbi": "0"
                 }
+            }
+        }
+    },
+    "noaa_tip": {
+        "name": "NOAA TIP",
+        "live": false,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1707,
+            1698,
+            1702.5
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "frames": {},
+            "products": {
+                "noaa_hirs": {}
+            }
+        }
+    },
+    "noaa_aip": {
+        "name": "NOAA AIP",
+        "live": false,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1707,
+            1698,
+            1702.5
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "frames": {},
+            "products": {
+                "noaa_mhs": {},
+                "noaa_amsu": {}
             }
         }
     }
