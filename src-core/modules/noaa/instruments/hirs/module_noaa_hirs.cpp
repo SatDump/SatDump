@@ -67,7 +67,7 @@ namespace noaa
                 equcompo.draw_image((i%5)*56, ((int)i/5)*hirsreader.line, image);
             }
             WRITE_IMAGE(compo, directory + "/HIRS-ALL.png");
-            WRITE_IMAGE(compo, directory + "/HIRS-ALL-EQU.png");
+            WRITE_IMAGE(equcompo, directory + "/HIRS-ALL-EQU.png");
         }
 
         void NOAAHIRSDecoderModule::drawUI(bool window)
