@@ -51,6 +51,7 @@ namespace noaa
             logger->info("HIRS Lines:" + std::to_string(hirsreader.line));
             
             cimg_library::CImg<unsigned short> compo = cimg_library::CImg(280, 4 * hirsreader.line, 1, 1);
+            cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(280, 4 * hirsreader.line, 1, 1);
 
             for (int i = 0; i < 20; i++)
             {
@@ -61,8 +62,12 @@ namespace noaa
                 WRITE_IMAGE(image, directory + "/HIRS-" + std::to_string(i + 1) + ".png");
                 //logger->debug(std::to_string(i)+" ," + std::to_string(hirsreader.line));
                 compo.draw_image((i%5)*56, ((int)i/5)*hirsreader.line, image);
+                image.equalize(1000);
+                WRITE_IMAGE(image, directory + "/HIRS-" + std::to_string(i + 1) + "-EQU.png");
+                equcompo.draw_image((i%5)*56, ((int)i/5)*hirsreader.line, image);
             }
-            WRITE_IMAGE(compo, directory + "/compo.png");
+            WRITE_IMAGE(compo, directory + "/HIRS-ALL.png");
+            WRITE_IMAGE(compo, directory + "/HIRS-ALL-EQU.png");
         }
 
         void NOAAHIRSDecoderModule::drawUI(bool window)
