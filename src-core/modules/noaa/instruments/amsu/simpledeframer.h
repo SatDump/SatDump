@@ -7,7 +7,6 @@
 #include <vector>
 #include <array>
 #include <cstdint>
-#include "ccsds.h"
 
 template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC>
 class SimpleDeframer
