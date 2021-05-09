@@ -125,9 +125,9 @@ namespace metop
 
         void MetOpGOMEDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp GOME Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("MetOp GOME Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

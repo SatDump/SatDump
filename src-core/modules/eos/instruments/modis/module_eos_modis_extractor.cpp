@@ -79,7 +79,7 @@ namespace eos
                             modis_ccsds++;
                             std::fill(&ccsds_modis[0], &ccsds_modis[642], 0);
                             std::memcpy(&ccsds_modis[0], pkt.header.raw, 6);
-                            std::memcpy(&ccsds_modis[6], pkt.payload.data(), std::min<size_t>(pkt.payload.size(), 642));
+                            std::memcpy(&ccsds_modis[6], pkt.payload.data(), std::min<size_t>(pkt.payload.size(), 636));
                             data_out.write((char *)ccsds_modis, 642);
                         }
                     }
@@ -95,6 +95,7 @@ namespace eos
             }
 
             data_in.close();
+            data_out.close();
 
             logger->info("VCID 30 (MODIS) Frames : " + std::to_string(modis_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));
@@ -103,9 +104,9 @@ namespace eos
 
         void EOSMODISExtractorModule::drawUI(bool window)
         {
-            ImGui::Begin("EOS MODIS Extractor", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("EOS MODIS Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

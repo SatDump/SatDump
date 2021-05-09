@@ -104,7 +104,7 @@ namespace meteor
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Deframer", {200, 20});
+            ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -120,7 +120,7 @@ namespace meteor
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

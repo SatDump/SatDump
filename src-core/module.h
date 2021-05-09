@@ -13,6 +13,7 @@
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \
     d_output_files.push_back(path);
+#define UITO_C_STR(input) "%s", std::to_string(input).c_str()
 
 enum ModuleDataType
 {
@@ -57,3 +58,5 @@ public:
 SATDUMP_DLL extern std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
 
 void registerModules();
+
+SATDUMP_DLL extern float ui_scale; // UI Scaling factor, for DPI scaling

@@ -518,9 +518,9 @@ namespace fengyun
 
         void FengyunMERSI2DecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MERSI-2 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("FengYun MERSI-2 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

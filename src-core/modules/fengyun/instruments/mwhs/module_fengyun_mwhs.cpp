@@ -42,7 +42,7 @@ namespace fengyun
             // Reader
             MWHSReader mwhs_reader;
             //std::ofstream frames("test.bin");
-            
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -115,7 +115,7 @@ namespace fengyun
         {
             ImGui::Begin("FengYun MWHS Decoder (WIP!)", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

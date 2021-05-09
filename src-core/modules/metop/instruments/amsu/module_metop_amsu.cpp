@@ -139,9 +139,9 @@ namespace metop
 
         void MetOpAMSUDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp AMSU Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("MetOp AMSU Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

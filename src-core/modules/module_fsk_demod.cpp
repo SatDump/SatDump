@@ -115,21 +115,21 @@ void FSKDemodModule::drawUI(bool window)
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                 ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                 ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                  ImColor::HSV(0, 0, 0));
 
         for (int i = 0; i < 2048; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec->output_stream->readBuf[i] * 45) % 200,
-                                              ImGui::GetCursorScreenPos().y + (int)(100 + rng.gasdev() * 15) % 200),
-                                       2,
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + rec->output_stream->readBuf[i] * 45 * ui_scale) % int(200 * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 15) % int(200 * ui_scale)),
+                                       2 * ui_scale,
                                        ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
         }
 
-        ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+        ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
     }
 
-    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
     ImGui::End();
 }

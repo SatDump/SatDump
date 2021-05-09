@@ -10,10 +10,12 @@
 extern "C"
 {
 #include <correct.h>
+#ifndef __ANDROID__
 #ifndef __MINGW32__
 #ifndef _MSC_VER
 #ifdef MEMORY_OP_X86
 #include <correct-sse.h>
+#endif
 #endif
 #endif
 #endif
@@ -36,6 +38,7 @@ namespace sathelper
         this->BER = 0;
         this->calculateErrors = true;
 
+#ifndef __ANDROID__
 #ifndef __MINGW32__
 #ifndef _MSC_VER
 #ifdef MEMORY_OP_X86
@@ -46,6 +49,7 @@ namespace sathelper
             this->_decode = &Viterbi27::decode_sse4;
         }
         else
+#endif
 #endif
 #endif
 #endif
@@ -69,6 +73,7 @@ namespace sathelper
 
     void Viterbi27::encode_sse4(uint8_t *input, uint8_t *output)
     {
+#ifndef __ANDROID__
 #ifndef __MINGW32__
 #ifndef _MSC_VER
 #ifdef MEMORY_OP_X86
@@ -90,10 +95,12 @@ namespace sathelper
 #endif
 #endif
 #endif
+#endif
     }
 
     void Viterbi27::decode_sse4(uint8_t *input, uint8_t *output)
     {
+#ifndef __ANDROID__
 #ifndef __MINGW32__
 #ifndef _MSC_VER
 #ifdef MEMORY_OP_X86
@@ -103,6 +110,7 @@ namespace sathelper
             this->encode_sse4(output, this->checkDataPointer);
             this->BER = Viterbi27::calculateError(input, this->checkDataPointer, this->frameBits * 2);
         }
+#endif
 #endif
 #endif
 #endif

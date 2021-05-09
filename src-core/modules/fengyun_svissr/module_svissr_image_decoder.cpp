@@ -251,7 +251,7 @@ namespace fengyun_svissr
         {
             ushort_to_rgba(vissrImageReader.imageBufferIR1, textureBuffer, 2501 * 2291);
             updateImageTexture(textureID, textureBuffer, 2291, 2501);
-            ImGui::Image((void *)(intptr_t)textureID, {200, 200});
+            ImGui::Image((void *)(intptr_t)textureID, {200 * ui_scale, 200 * ui_scale});
         }
         ImGui::EndGroup();
 
@@ -259,8 +259,8 @@ namespace fengyun_svissr
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Full Disk Progress", {200, 20});
-            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200, 20));
+            ImGui::Button("Full Disk Progress", {200 * ui_scale, 20 * ui_scale});
+            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
             ImGui::Text("State : ");
             ImGui::SameLine();
             if (backwardScan)
@@ -277,7 +277,7 @@ namespace fengyun_svissr
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

@@ -120,18 +120,18 @@ namespace terra
         {
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                     ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                      ImColor::HSV(0, 0, 0));
 
             for (int i = 0; i < 2048; i++)
             {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + rec->output_stream->readBuf[i].real() * 50) % 200,
-                                                  ImGui::GetCursorScreenPos().y + (int)(100 + rec->output_stream->readBuf[i].imag() * 50) % 200),
-                                           2,
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + rec->output_stream->readBuf[i].real() * 50 * ui_scale) % int(200 * ui_scale),
+                                                  ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rec->output_stream->readBuf[i].imag() * 50 * ui_scale) % int(200 * ui_scale)),
+                                           2 * ui_scale,
                                            ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
             }
 
-            ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+            ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
         }
         ImGui::EndGroup();
 
@@ -139,21 +139,21 @@ namespace terra
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Signal", {200, 20});
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("SNR (dB) : ");
                 ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, std::to_string(snr).c_str());
+                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
 
                 std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
                 snr_history[200 - 1] = snr;
 
-                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

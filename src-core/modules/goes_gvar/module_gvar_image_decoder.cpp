@@ -264,7 +264,7 @@ namespace goes_gvar
         {
             ushort_to_rgba(infraredImageReader1.imageBuffer1, textureBuffer, 5206 * 1354 * 2);
             updateImageTexture(textureID, textureBuffer, 5206, 1354 * 2);
-            ImGui::Image((void *)(intptr_t)textureID, {200, 200});
+            ImGui::Image((void *)(intptr_t)textureID, {200 * ui_scale, 200 * ui_scale});
         }
         ImGui::EndGroup();
 
@@ -272,8 +272,8 @@ namespace goes_gvar
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Full Disk Progress", {200, 20});
-            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200, 20));
+            ImGui::Button("Full Disk Progress", {200 * ui_scale, 20 * ui_scale});
+            ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
             ImGui::Text("State : ");
             ImGui::SameLine();
             if (writingImage)
@@ -283,7 +283,7 @@ namespace goes_gvar
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

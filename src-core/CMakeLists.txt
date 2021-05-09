@@ -34,6 +34,21 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
+elseif(ANDROID)
+    # LibCorrect
+    target_link_libraries(satdump_core PUBLIC correct)
+
+    # LibJpeg
+    target_link_libraries(satdump_core PUBLIC jpeg)
+
+    # VOLK
+    target_link_libraries(satdump_core PUBLIC volk cpufeatures m log)
+
+    # LibPNG
+    target_link_libraries(satdump_core PUBLIC png zlib)
+
+    # FFTW3
+    # Currently not mandatory
 else()
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
