@@ -8,6 +8,7 @@ namespace noaa
         {
             for (int i = 0; i < 5; i++)
                 channels[i] = new unsigned short[10000 * 2048];
+            lines = 0;
         }
 
         AVHRRReader::~AVHRRReader()

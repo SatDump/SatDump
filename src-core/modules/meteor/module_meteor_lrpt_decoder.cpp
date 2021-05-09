@@ -6,6 +6,10 @@
 #include "modules/common/sathelper/derandomizer.h"
 #include "modules/common/differential/nrzm.h"
 #include "imgui/imgui.h"
+#include "modules/common/viterbi/cc_decoder_impl.h"
+#include "modules/common/repack_bits_byte.h"
+#include "modules/common/utils.h"
+#include "modules/common/correlator.h"
 
 #define FRAME_SIZE 1024
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2
@@ -20,13 +24,11 @@ namespace meteor
                                                                                                                                                             viterbi(ENCODED_FRAME_SIZE / 2)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
-        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
     }
 
     METEORLRPTDecoderModule::~METEORLRPTDecoderModule()
     {
         delete[] buffer;
-        delete[] buffer_2;
     }
 
     void METEORLRPTDecoderModule::process()
@@ -42,129 +44,85 @@ namespace meteor
         time_t lastTime = 0;
 
         // Correlator
-        sathelper::Correlator correlator;
-
-        if (diff_decode)
-        {
-            // All differentially encoded sync words
-            correlator.addWord((uint64_t)0xfc4ef4fd0cc2df89);
-            correlator.addWord((uint64_t)0x56275254a66b45ec);
-            correlator.addWord((uint64_t)0x03b10b02f33d2076);
-            correlator.addWord((uint64_t)0xa9d8adab5994ba89);
-
-            correlator.addWord((uint64_t)0xfc8df8fe0cc1ef46);
-            correlator.addWord((uint64_t)0xa91ba1a859978adc);
-            correlator.addWord((uint64_t)0x03720701f33e1089);
-            correlator.addWord((uint64_t)0x56e45e57a6687546);
-        }
-        else
-        {
-            // All  encoded sync words
-            correlator.addWord((uint64_t)0xfca2b63db00d9794);
-            correlator.addWord((uint64_t)0x56fbd394daa4c1c2);
-            correlator.addWord((uint64_t)0x035d49c24ff2686b);
-            correlator.addWord((uint64_t)0xa9042c6b255b3e3d);
-
-            correlator.addWord((uint64_t)0xfc51793e700e6b68);
-            correlator.addWord((uint64_t)0xa9f7e368e558c2c1);
-            correlator.addWord((uint64_t)0x03ae86c18ff19497);
-            correlator.addWord((uint64_t)0x56081c971aa73d3e);
-        }
+        Correlator correlator(QPSK, diff_decode ? 0xfc4ef4fd0cc2df89 : 0xfca2b63db00d9794);
 
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
-        sathelper::PhaseShift phaseShift;
         sathelper::Derandomizer derand;
         sathelper::ReedSolomon reedSolomon;
 
-        bool iqinv;
-
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
+        uint8_t bufferh[FRAME_SIZE * 8];
+        uint8_t bufferu[ENCODED_FRAME_SIZE];
+
+        phase_t phase;
+        bool swap;
+
+        // Vectors are inverted
+        fec::code::cc_decoder_impl cc_decoder_in(ENCODED_FRAME_SIZE / 2, 7, 2, {-79, -109}, 0, -1, CC_STREAMING, false);
+        diff::NRZMDiff diff;
 
         while (!data_in.eof())
         {
             // Read buffer
             data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
 
-            // Correlate
-            correlator.correlate(buffer, ENCODED_FRAME_SIZE);
+            int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
 
-            // Correlator statistics
-            cor = correlator.getHighestCorrelation();
-            uint32_t word = correlator.getCorrelationWordNumber();
-            uint32_t pos = correlator.getHighestCorrelationPosition();
-
-            if (cor > 10)
+            if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
-                iqinv = (word / 4) > 0;
-                switch (word % 4)
+                std::memmove(buffer, &buffer[pos], pos);
+                data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+            }
+
+            // Correct phase ambiguity
+            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+
+            // Viterbi
+            viterbi.decode(buffer, frameBuffer); // This gotta get removed ASAP... Gotta write a wrapper for the other one
+
+            char_array_to_uchar((char *)buffer, bufferu, ENCODED_FRAME_SIZE);
+            cc_decoder_in.generic_work(bufferu, bufferh);
+
+            // Repack
+            int inbuf = 0, inbyte = 0;
+            uint8_t shifter = 0;
+            for (int i = 0; i < ENCODED_FRAME_SIZE / 2; i++)
+            {
+                shifter = shifter << 1 | bufferh[i];
+                inbuf++;
+
+                if (inbuf == 8)
                 {
-                case 0:
-                    phaseShift = sathelper::PhaseShift::DEG_0;
-                    break;
-
-                case 1:
-                    phaseShift = sathelper::PhaseShift::DEG_90;
-                    break;
-
-                case 2:
-                    phaseShift = sathelper::PhaseShift::DEG_180;
-                    break;
-
-                case 3:
-                    phaseShift = sathelper::PhaseShift::DEG_270;
-                    break;
-
-                default:
-                    break;
+                    frameBuffer[inbyte] = shifter;
+                    inbuf = 0;
+                    inbyte++;
                 }
+            }
 
-                if (pos != 0)
-                {
-                    shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
-                    uint32_t offset = ENCODED_FRAME_SIZE - pos;
+            if (diff_decode)
+                diff.decode(frameBuffer, FRAME_SIZE);
 
-                    data_in.read((char *)buffer_2, pos);
+            // Derandomize that frame
+            derand.work(&frameBuffer[4], FRAME_SIZE - 4);
 
-                    for (int i = offset; i < ENCODED_FRAME_SIZE; i++)
-                    {
-                        buffer[i] = buffer_2[i - offset];
-                    }
-                }
-                else
-                {
-                }
+            // RS Correction
+            for (int i = 0; i < 4; i++)
+            {
+                reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 4);
+                errors[i] = reedSolomon.decode_rs8(rsWorkBuffer);
+                reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 4);
+            }
 
-                // Correct phase ambiguity
-                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, phaseShift, iqinv);
-
-                // Viterbi
-                viterbi.decode(buffer, frameBuffer);
-
-                if (diff_decode)
-                    diff::nrzm_decode(frameBuffer, FRAME_SIZE);
-
-                // Derandomize that frame
-                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
-
-                // RS Correction
-                for (int i = 0; i < 4; i++)
-                {
-                    reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 4);
-                    errors[i] = reedSolomon.decode_rs8(rsWorkBuffer);
-                    reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 4);
-                }
-
-                // Write it out if it's not garbage
-                if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
-                {
-                    data_out.put(0x1a);
-                    data_out.put(0xcf);
-                    data_out.put(0xfc);
-                    data_out.put(0x1d);
-                    data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
-                }
+            // Write it out if it's not garbage
+            if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
+            {
+                data_out.put(0x1a);
+                data_out.put(0xcf);
+                data_out.put(0xfc);
+                data_out.put(0x1d);
+                data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
             }
 
             progress = data_in.tellg();
@@ -179,14 +137,6 @@ namespace meteor
 
         data_out.close();
         data_in.close();
-    }
-
-    void METEORLRPTDecoderModule::shiftWithConstantSize(uint8_t *arr, int pos, int length)
-    {
-        for (int i = 0; i < length - pos; i++)
-        {
-            arr[i] = arr[pos + i];
-        }
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);

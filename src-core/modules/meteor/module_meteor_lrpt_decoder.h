@@ -15,9 +15,7 @@ namespace meteor
         // Work buffers
         uint8_t rsWorkBuffer[255];
 
-        void shiftWithConstantSize(uint8_t *arr, int pos, int length);
-
-        uint8_t *buffer, *buffer_2;
+        uint8_t *buffer;
 
         std::ifstream data_in;
         std::ofstream data_out;
@@ -26,7 +24,7 @@ namespace meteor
 
         bool locked = false;
         int errors[4];
-        uint32_t cor;
+        int cor;
 
         sathelper::Viterbi27 viterbi;
 
