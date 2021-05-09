@@ -9,7 +9,6 @@ namespace noaa
     class NOAAExtractorModule : public ProcessingModule
     {
     protected:
-
         uint16_t *buffer;
         uint8_t *frameBuffer;
 

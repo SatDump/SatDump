@@ -35,21 +35,27 @@ namespace noaa
             while (!data_in.eof())
             {
                 uint8_t buffer[104];
+
                 data_in.read((char *)&buffer[0], 104);
+
                 amsureader.work(buffer);
+
                 progress = data_in.tellg();
+
                 if (time(NULL) % 2 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
+
             data_in.close();
-            //amsureader.process();
+
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
             logger->info("AMSU Lines:" + std::to_string(amsureader.linesA1));
-            
+
             cimg_library::CImg<unsigned short> compo = cimg_library::CImg(240, 2 * amsureader.linesA1, 1, 1);
             cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(240, 2 * amsureader.linesA1, 1, 1);
 
@@ -57,19 +63,19 @@ namespace noaa
             {
                 cimg_library::CImg<unsigned short> image = amsureader.getChannel(i);
                 WRITE_IMAGE(image, directory + "/AMSU-" + std::to_string(i + 1) + ".png");
-                compo.draw_image((i%8)*30, ((int)i/8)*(amsureader.linesA1), image);
+                compo.draw_image((i % 8) * 30, ((int)i / 8) * (amsureader.linesA1), image);
                 image.equalize(1000);
                 WRITE_IMAGE(image, directory + "/AMSU-" + std::to_string(i + 1) + "-EQU.png");
-                equcompo.draw_image((i%8)*30, ((int)i/8)*(amsureader.linesA1), image);
-                
+                equcompo.draw_image((i % 8) * 30, ((int)i / 8) * (amsureader.linesA1), image);
             }
+
             WRITE_IMAGE(compo, directory + "/AMSU-ALL.png");
             WRITE_IMAGE(equcompo, directory + "/AMSU-ALL-EQU.png");
         }
 
         void NOAAAMSUDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("NOAA AMSU Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("NOAA AMSU Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

@@ -9,7 +9,10 @@ namespace noaa
             for (int i = 0; i < 15; i++)
                 channels[i] = new unsigned short[30 * 120];
         }
-        AMSUReader::~AMSUReader() {}
+
+        AMSUReader::~AMSUReader()
+        {
+        }
 
         void AMSUReader::work(uint8_t *buffer)
         {
@@ -43,6 +46,7 @@ namespace noaa
                     channels[0][30 * linesA2 + i / 8] = frame[i + 12] << 8 | frame[12 + i + 1];
                     channels[1][30 * linesA2 + i / 8] = frame[i + 12 + 2] << 8 | frame[12 + i + 1 + 2];
                 }
+
                 linesA2++;
             }
 
@@ -52,9 +56,10 @@ namespace noaa
                 {
                     for (int j = 0; j < 13; j++)
                     {
-                        channels[j+2][30 * linesA1 + i / 34] = (frame[i + 16 + 2 * j] << 8) | frame[16 + i + 2 * j + 1];
+                        channels[j + 2][30 * linesA1 + i / 34] = (frame[i + 16 + 2 * j] << 8) | frame[16 + i + 2 * j + 1];
                     }
                 }
+
                 linesA1++;
             }
         }

@@ -14,8 +14,9 @@ namespace noaa
         {
         private:
             unsigned short *channels[5];
-            unsigned int last;
+            unsigned int last = 0;
             uint16_t MHSWord[643];
+
         public:
             MHSReader();
             ~MHSReader();

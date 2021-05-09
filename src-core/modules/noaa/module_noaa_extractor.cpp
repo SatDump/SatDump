@@ -13,11 +13,13 @@ namespace noaa
         buffer = new uint16_t[BUFFER_SIZE / 2];
         frameBuffer = new uint8_t[104];
     }
+
     NOAAExtractorModule::~NOAAExtractorModule()
     {
         delete[] buffer;
         delete[] frameBuffer;
     }
+
     void NOAAExtractorModule::process()
     {
         filesize = getFilesize(d_input_file);
@@ -34,9 +36,10 @@ namespace noaa
 
         while (!data_in.eof())
         {
-            progress = data_in.tellg();
             data_in.read((char *)buffer, BUFFER_SIZE);
+
             int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
+
             if (frmnum == 1 || frmnum == 3)
             {
                 for (int i = 0; i < 5; i++)
@@ -55,37 +58,41 @@ namespace noaa
                     }
                 }
             }
+
+            progress = data_in.tellg();
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
             }
         }
+
         tip_out.close();
         aip_out.close();
     }
 
     void NOAAExtractorModule::drawUI(bool window)
-        {
-            ImGui::Begin("NOAA Frame Extractor", NULL, window ? NULL : NOWINDOW_FLAGS );
+    {
+        ImGui::Begin("NOAA Frame Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 
-            ImGui::End();
-        }
+        ImGui::End();
+    }
 
-        std::string NOAAExtractorModule::getID()
-        {
-            return "noaa_extractor";
-        }
+    std::string NOAAExtractorModule::getID()
+    {
+        return "noaa_extractor";
+    }
 
-        std::vector<std::string> NOAAExtractorModule::getParameters()
-        {
-            return {};
-        }
+    std::vector<std::string> NOAAExtractorModule::getParameters()
+    {
+        return {};
+    }
 
-        std::shared_ptr<ProcessingModule> NOAAExtractorModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
-        {
-            return std::make_shared<NOAAExtractorModule>(input_file, output_file_hint, parameters);
-        }
+    std::shared_ptr<ProcessingModule> NOAAExtractorModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    {
+        return std::make_shared<NOAAExtractorModule>(input_file, output_file_hint, parameters);
+    }
 }

@@ -35,44 +35,52 @@ namespace noaa
             while (!data_in.eof())
             {
                 uint8_t buffer[104];
+
                 data_in.read((char *)&buffer[0], 104);
+
                 hirsreader.work(buffer);
+
                 progress = data_in.tellg();
+
                 if (time(NULL) % 2 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
+
             data_in.close();
-            //hirsreader.process();
+
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
             logger->info("HIRS Lines:" + std::to_string(hirsreader.line));
-            
+
             cimg_library::CImg<unsigned short> compo = cimg_library::CImg(280, 4 * hirsreader.line, 1, 1);
             cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(280, 4 * hirsreader.line, 1, 1);
 
             for (int i = 0; i < 20; i++)
             {
                 cimg_library::CImg<unsigned short> image = hirsreader.getChannel(i);
-                for (int j = 0; j<image.size(); j++){
-                    image[j] = image [j]*8;
+                for (int j = 0; j < image.size(); j++)
+                {
+                    image[j] = image[j] * 8;
                 }
                 WRITE_IMAGE(image, directory + "/HIRS-" + std::to_string(i + 1) + ".png");
                 //logger->debug(std::to_string(i)+" ," + std::to_string(hirsreader.line));
-                compo.draw_image((i%5)*56, ((int)i/5)*hirsreader.line, image);
+                compo.draw_image((i % 5) * 56, ((int)i / 5) * hirsreader.line, image);
                 image.equalize(1000);
                 WRITE_IMAGE(image, directory + "/HIRS-" + std::to_string(i + 1) + "-EQU.png");
-                equcompo.draw_image((i%5)*56, ((int)i/5)*hirsreader.line, image);
+                equcompo.draw_image((i % 5) * 56, ((int)i / 5) * hirsreader.line, image);
             }
+
             WRITE_IMAGE(compo, directory + "/HIRS-ALL.png");
             WRITE_IMAGE(equcompo, directory + "/HIRS-ALL-EQU.png");
         }
 
         void NOAAHIRSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("NOAA HIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("NOAA HIRS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
 

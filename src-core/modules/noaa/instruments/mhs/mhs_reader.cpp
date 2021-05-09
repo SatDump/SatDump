@@ -140,9 +140,10 @@ namespace noaa
             //AIP frame counter
             //line++;
         }
+
         cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 90, line+1);
+            return cimg_library::CImg<unsigned short>(channels[channel], 90, line + 1);
         }
     }
 }
