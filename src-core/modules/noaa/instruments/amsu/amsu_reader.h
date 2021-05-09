@@ -19,6 +19,7 @@ namespace noaa
             SimpleDeframer<uint32_t, 24, 1240 * 8, 0xFFFFFF> amsuA1Deframer;
             std::vector<std::vector<uint8_t>> amsuA2Data;
             std::vector<std::vector<uint8_t>> amsuA1Data;
+
         public:
             AMSUReader();
             ~AMSUReader();

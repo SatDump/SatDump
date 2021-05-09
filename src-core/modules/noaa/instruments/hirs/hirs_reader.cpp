@@ -29,6 +29,7 @@ namespace noaa
                 pos++;
                 //std::cout<<pos<<std::endl;
             }
+
             uint16_t enct = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
             //std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[i][0] << std::endl;
 
@@ -76,10 +77,12 @@ namespace noaa
                         int buffer = 4096 - ((imageBuffer[i][enct][line] & 0b0000111111111111));
                         imageBuffer[i][enct][line] = abs(buffer);
                     }
-                    channels[i][enct+56*line] = imageBuffer[i][enct][line];
+
+                    channels[i][enct + 56 * line] = imageBuffer[i][enct][line];
                 }
             }
         }
+
         /*
         void HIRSReader::process()
         {
