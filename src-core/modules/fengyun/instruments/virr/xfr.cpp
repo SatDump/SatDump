@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <vector>
-#include <bits/stdc++.h>
+#include <sstream>
 
 XFR::XFR(float r1, float r2, float r3, float g1, float g2, float g3, float b1, float b2, float b3)
 {

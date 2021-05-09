@@ -219,18 +219,18 @@ namespace fengyun
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                          ImColor::HSV(0, 0, 0));
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100) % 200,
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100) % 200),
-                                               2,
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
+                                               2 * ui_scale,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
 
-                ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+                ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
 
             ImGui::Button("Reed-Solomon", {200, 20});
@@ -256,7 +256,7 @@ namespace fengyun
         ImGui::BeginGroup();
         {
 
-            ImGui::Button("Viterbi 1", {200, 20});
+            ImGui::Button("Viterbi 1", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -269,15 +269,15 @@ namespace fengyun
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber1).c_str());
+                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber1));
 
                 std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
 
-                ImGui::PlotLines("", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
-            ImGui::Button("Viterbi 2", {200, 20});
+            ImGui::Button("Viterbi 2", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -290,17 +290,17 @@ namespace fengyun
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber2).c_str());
+                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber2));
 
                 std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
 
-                ImGui::PlotLines("", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
 
-            ImGui::Button("Deframer", {200, 20});
+            ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -316,7 +316,7 @@ namespace fengyun
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

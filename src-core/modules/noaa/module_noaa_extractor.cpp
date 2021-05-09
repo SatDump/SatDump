@@ -76,7 +76,7 @@ namespace noaa
     {
         ImGui::Begin("NOAA Frame Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

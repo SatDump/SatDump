@@ -1,4 +1,5 @@
 #include "snr_estimator.h"
+#include <algorithm>
 
 M2M4SNREstimator::M2M4SNREstimator(float alpha)
 {

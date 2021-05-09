@@ -210,18 +210,18 @@ namespace saral
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                          ImColor::HSV(0, 0, 0));
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100) % 200,
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100) % 200),
-                                               2,
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
+                                               2 * ui_scale,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
 
-                ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+                ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
         }
         ImGui::EndGroup();
@@ -230,35 +230,35 @@ namespace saral
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Correlator", {200, 20});
+            ImGui::Button("Correlator", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(locked ? colorSynced : colorSyncing, std::to_string(cor).c_str());
+                ImGui::TextColored(locked ? colorSynced : colorSyncing, UITO_C_STR(cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
 
-            ImGui::Button("Viterbi", {200, 20});
+            ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ber < 0.22 ? colorSynced : colorNosync, std::to_string(ber).c_str());
+                ImGui::TextColored(ber < 0.22 ? colorSynced : colorNosync, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
-                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
 
-            ImGui::Button("Reed-Solomon", {200, 20});
+            ImGui::Button("Reed-Solomon", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("RS    : ");
                 for (int i = 0; i < 4; i++)
@@ -276,7 +276,7 @@ namespace saral
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

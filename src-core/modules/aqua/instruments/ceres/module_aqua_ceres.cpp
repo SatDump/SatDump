@@ -180,9 +180,9 @@ namespace aqua
 
         void AquaCERESDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Aqua CERES Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+            ImGui::Begin("Aqua CERES Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

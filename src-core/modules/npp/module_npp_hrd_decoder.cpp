@@ -119,7 +119,7 @@ namespace npp
 
     void NPPHRDDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NPP HRD Decoder", NULL, window ? NULL : NOWINDOW_FLAGS );
+        ImGui::Begin("NPP HRD Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
         float ber = viterbi.ber();
 
         ImGui::BeginGroup();
@@ -128,18 +128,18 @@ namespace npp
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200, ImGui::GetCursorScreenPos().y + 200),
+                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                          ImColor::HSV(0, 0, 0));
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 + sym_buffer[i].real() * 100) % 200,
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 + sym_buffer[i].imag() * 100) % 200),
-                                               2,
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + sym_buffer[i].real() * 100 * ui_scale) % int(200 * ui_scale),
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + sym_buffer[i].imag() * 100 * ui_scale) % int(200 * ui_scale)),
+                                               2 * ui_scale,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
 
-                ImGui::Dummy(ImVec2(200 + 3, 200 + 3));
+                ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
         }
         ImGui::EndGroup();
@@ -148,7 +148,7 @@ namespace npp
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Viterbi", {200, 20});
+            ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -161,17 +161,17 @@ namespace npp
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, std::to_string(ber).c_str());
+                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
-                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200, 50));
+                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
 
-            ImGui::Button("Deframer", {200, 20});
+            ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
 
@@ -187,7 +187,7 @@ namespace npp
 
             ImGui::Spacing();
 
-            ImGui::Button("Reed-Solomon", {200, 20});
+            ImGui::Button("Reed-Solomon", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("RS    : ");
                 for (int i = 0; i < 4; i++)
@@ -205,7 +205,7 @@ namespace npp
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20));
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

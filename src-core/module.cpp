@@ -2,6 +2,8 @@
 #include "module.h"
 #include "logger.h"
 
+SATDUMP_DLL float ui_scale = 1; // UI Scaling factor, set to 1 (no scaling) by default
+
 ProcessingModule::ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : d_input_file(input_file),
                                                                                                                                           d_output_file_hint(output_file_hint),
                                                                                                                                           d_parameters(parameters)

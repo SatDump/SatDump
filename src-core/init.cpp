@@ -21,11 +21,14 @@ void initSatdump()
     logger->info("");
 
     registerModules();
-
+#ifdef __ANDROID__
+    loadPipelines(".");
+#else
     if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
         loadPipelines("pipelines");
     else
         loadPipelines((std::string)RESOURCES_PATH + "pipelines");
+#endif
 
     //if (std::filesystem::exists("settings.json"))
     //    loadSettings("settings.json");
@@ -36,3 +39,15 @@ void initSatdump()
     for (Pipeline &pipeline : pipelines)
         logger->debug(" - " + pipeline.name);
 }
+
+// This is a pretty crappy way of doing it,
+// but it avoids a few libraries complaining
+// when linking in the Android NDK
+#ifdef __ANDROID__
+#include <stdio.h>
+extern "C"
+{
+#undef stderr
+    FILE *stderr = NULL;
+}
+#endif

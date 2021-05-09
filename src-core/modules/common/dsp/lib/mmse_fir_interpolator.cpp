@@ -1,5 +1,6 @@
 #include "mmse_fir_interpolator.h"
 #include "interpolator_taps.h"
+#include <string>
 
 namespace dsp
 {
