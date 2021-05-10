@@ -11,6 +11,7 @@
 #include "modules/common/dsp/clock_recovery_mm.h"
 #include "modules/common/dsp/file_source.h"
 #include "modules/common/dsp/dc_blocker.h"
+#include "modules/common/dsp/rational_resampler.h"
 #include "modules/common/snr_estimator.h"
 
 class QPSKDemodModule : public ProcessingModule
@@ -18,6 +19,7 @@ class QPSKDemodModule : public ProcessingModule
 protected:
     std::shared_ptr<dsp::FileSourceBlock> file_source;
     std::shared_ptr<dsp::DCBlockerBlock> dcb;
+    std::shared_ptr<dsp::CCRationalResamplerBlock> res;
     std::shared_ptr<dsp::AGCBlock> agc;
     std::shared_ptr<dsp::CCFIRBlock> rrc;
     std::shared_ptr<dsp::CostasLoopBlock> pll;
@@ -29,9 +31,12 @@ protected:
     const float d_rrc_alpha;
     const int d_rrc_taps;
     const float d_loop_bw;
-    const int d_buffer_size;
+    /*const*/ int d_buffer_size;
     const bool d_dc_block;
     const bool d_iq_swap;
+
+    const int MAX_SPS = 3; // Maximum sample per symbol the demodulator will accept before resampling the input
+    bool resample = false;
 
     int8_t *sym_buffer;
 

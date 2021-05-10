@@ -14,12 +14,42 @@ namespace noaa
                                                                                                                                                   d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                   d_buffer_size(std::stoi(parameters["buffer_size"]))
     {
-        // Init DSP blocks
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
-        agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 1e-3f, 1.0f, 1.0f, 65536);
-        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01, 2) / 4.0f, 3.0f * M_PI * 100e3 / (float)d_samplerate);
-        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, (float)8320, 0.5, 1023));
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)8320) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01, 100e-6);
+        float symbolrate = 8320;                                           // Symbolrate
+        float input_sps = (float)d_samplerate / symbolrate;                // Compute input SPS
+        resample = input_sps > MAX_SPS;                                    // If SPS is over MAX_SPS, we resample
+        float samplerate = resample ? symbolrate * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+        float decimation_factor = d_samplerate / samplerate;               // Decimation factor to rescale our input buffer
+
+        if (resample)
+            d_buffer_size *= round(decimation_factor);
+
+        float sps = samplerate / symbolrate;
+
+        logger->debug("Input SPS : " + std::to_string(input_sps));
+        logger->debug("Resample : " + std::to_string(resample));
+        logger->debug("Samplerate : " + std::to_string(samplerate));
+        logger->debug("Dec factor : " + std::to_string(decimation_factor));
+        logger->debug("Final SPS : " + std::to_string(sps));
+
+        // Init DSP Blocks
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+
+        // Init resampler if required
+        if (resample)
+            res = std::make_shared<dsp::CCRationalResamplerBlock>(file_source->output_stream, samplerate, d_samplerate);
+
+        // AGC
+        agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : file_source->output_stream, 1e-3f, 1.0f, 1.0f, 65536);
+
+        // PLL
+        pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01, 2) / 4.0f, 3.0f * M_PI * 100e3 / (float)samplerate);
+
+        // RRC
+        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)samplerate / 2.0f, symbolrate, 0.5, 1023));
+
+        // Recovery
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, sps / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01, 100e-6);
+
         rep = std::make_shared<RepackBitsByte>();
         def = std::make_shared<DSBDeframer>();
 
@@ -57,6 +87,8 @@ namespace noaa
 
         // Start
         file_source->start();
+        if (resample)
+            res->start();
         agc->start();
         pll->start();
         rrc->start();
@@ -111,6 +143,8 @@ namespace noaa
 
         // Stop
         file_source->stop();
+        if (resample)
+            res->stop();
         agc->stop();
         pll->stop();
         rrc->stop();

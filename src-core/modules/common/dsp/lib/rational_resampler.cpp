@@ -1,5 +1,6 @@
 #include "rational_resampler.h"
 #include "fir_gen.h"
+#include <numeric>
 
 namespace dsp
 {
@@ -17,9 +18,10 @@ namespace dsp
                                                const unsigned decimation,
                                                const float fractional_bw)
     {
+
         if (fractional_bw >= 0.5 || fractional_bw <= 0)
         {
-            // throw std::range_error("Invalid fractional_bandwidth, must be in (0, 0.5)");
+            throw std::range_error("Invalid fractional_bandwidth, must be in (0, 0.5)");
         }
 
         // These are default values used to generate the filter when no taps are known
@@ -48,17 +50,36 @@ namespace dsp
                                 beta); /* beta*/
     }
 
-    RationalResamplerCCF::RationalResamplerCCF(unsigned interpolation, unsigned decimation) : d_history(1),
-                                                                                              d_decimation(decimation),
-                                                                                              d_ctr(0),
-                                                                                              d_updated(false)
+    RationalResamplerCCF::RationalResamplerCCF(unsigned interpolation, unsigned decimation, float fractional_bw) : d_history(1),
+                                                                                                                   d_decimation(decimation),
+                                                                                                                   d_ctr(0),
+                                                                                                                   d_updated(false)
     {
         if (interpolation == 0)
-            throw std::out_of_range(
-                "rational_resampler_base_ccf: interpolation must be > 0");
+        {
+            throw std::out_of_range("rational_resampler: interpolation must be > 0");
+        }
         if (decimation == 0)
-            throw std::out_of_range(
-                "rational_resampler_base_ccf: decimation must be > 0");
+        {
+            throw std::out_of_range("rational_resampler: decimation must be > 0");
+        }
+
+        unsigned int d = std::gcd(interpolation, decimation);
+
+        std::vector<float> staps;
+
+        if (fractional_bw <= 0)
+        {
+            fractional_bw = 0.4;
+        }
+        // If we don't have user-provided taps, reduce the interp and
+        // decim values by the GCD (if there is one) and then define
+        // the taps from these new values.
+        interpolation /= d;
+        decimation /= d;
+        staps = design_resampler_filter(interpolation, decimation, fractional_bw);
+
+        d_decimation = decimation;
 
         d_firs.reserve(interpolation);
         for (unsigned i = 0; i < interpolation; i++)
@@ -66,8 +87,7 @@ namespace dsp
             d_firs.emplace_back(1, std::vector<float>());
         }
 
-        std::vector<float> taps = design_resampler_filter(interpolation, decimation, 0);
-        set_taps(taps);
+        set_taps(staps);
         install_taps(d_new_taps);
     }
 
@@ -142,15 +162,17 @@ namespace dsp
         unsigned int ctr = d_ctr;
         int count = 0;
 
+        std::complex<float> *in_d = tmp_.data();
+
         int i = 0;
-        while (count < (int)tmp_.size())
+        while (count < (int)tmp_.size() - d_history)
         {
-            out[i++] = d_firs[ctr].filter(in);
+            out[i++] = d_firs[ctr].filter(in_d);
             ctr += this->decimation();
             while (ctr >= this->interpolation())
             {
                 ctr -= this->interpolation();
-                in++;
+                in_d++;
                 count++;
             }
         }

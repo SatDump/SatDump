@@ -10,7 +10,7 @@ namespace dsp
     private:
         unsigned d_history;
         unsigned d_decimation;
-        unsigned d_ctr;
+        unsigned d_ctr = 0;
         std::vector<float> d_new_taps;
         std::vector<fir_filter_ccf> d_firs;
         bool d_updated;
@@ -19,7 +19,7 @@ namespace dsp
         void install_taps(const std::vector<float> &taps);
 
     public:
-        RationalResamplerCCF(unsigned interpolation, unsigned decimation);
+        RationalResamplerCCF(unsigned interpolation, unsigned decimation, float fractional_bw = 0.4);
         RationalResamplerCCF(unsigned interpolation, unsigned decimation, const std::vector<float> &taps);
 
         unsigned history() const { return d_history; }
