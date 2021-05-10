@@ -12,6 +12,7 @@
 #include "modules/common/dsp/clock_recovery_mm.h"
 #include "modules/common/dsp/file_source.h"
 #include "modules/common/dsp/bpsk_carrier_pll.h"
+#include "modules/common/dsp/rational_resampler.h"
 #include "dsb_deframer.h"
 
 namespace noaa
@@ -20,6 +21,7 @@ namespace noaa
     {
     protected:
         std::shared_ptr<dsp::FileSourceBlock> file_source;
+        std::shared_ptr<dsp::CCRationalResamplerBlock> res;
         std::shared_ptr<dsp::AGCBlock> agc;
         std::shared_ptr<dsp::BPSKCarrierPLLBlock> pll;
         std::shared_ptr<dsp::FFFIRBlock> rrc;
@@ -28,7 +30,10 @@ namespace noaa
         std::shared_ptr<DSBDeframer> def;
 
         const int d_samplerate;
-        const int d_buffer_size;
+        /*const*/ int d_buffer_size;
+
+        const int MAX_SPS = 4; // Maximum sample per symbol the demodulator will accept before resampling the input
+        bool resample = false;
 
         uint8_t *bits_buffer;
         uint8_t *bytes_buffer;

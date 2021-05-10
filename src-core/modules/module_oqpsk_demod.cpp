@@ -30,16 +30,48 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
 
 void OQPSKDemodModule::init()
 {
+    float input_sps = (float)d_samplerate / (float)d_symbolrate;         // Compute input SPS
+    resample = input_sps > MAX_SPS;                                      // If SPS is over MAX_SPS, we resample
+    float samplerate = resample ? d_symbolrate * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+    float decimation_factor = d_samplerate / samplerate;                 // Decimation factor to rescale our input buffer
+
+    if (resample)
+        d_buffer_size *= round(decimation_factor);
+
+    float sps = samplerate / (float)d_symbolrate;
+
+    logger->debug("Input SPS : " + std::to_string(input_sps));
+    logger->debug("Resample : " + std::to_string(resample));
+    logger->debug("Samplerate : " + std::to_string(samplerate));
+    logger->debug("Dec factor : " + std::to_string(decimation_factor));
+    logger->debug("Final SPS : " + std::to_string(sps));
+
     // Init DSP blocks
     if (input_data_type == DATA_FILE)
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     if (d_dc_block)
         dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
-    agc = std::make_shared<dsp::AGCBlock>(d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream), d_agc_rate, 1.0f, 1.0f, 65536);
-    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+
+    // Cleanup things a bit
+    std::shared_ptr<dsp::stream<std::complex<float>>> input_data = d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
+
+    // Init resampler if required
+    if (resample)
+        res = std::make_shared<dsp::CCRationalResamplerBlock>(input_data, samplerate, d_samplerate);
+
+    // AGC
+    agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, d_agc_rate, 1.0f, 1.0f, 65536);
+
+    // RRC
+    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+
+    // Costas
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
+    // Delay for OQPSK
     del = std::make_shared<dsp::DelayOneImagBlock>(pll->output_stream);
-    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(del->output_stream, (float)d_samplerate / (float)d_symbolrate, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+
+    // Clock recovery
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(del->output_stream, sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 }
 
 std::vector<ModuleDataType> OQPSKDemodModule::getInputTypes()
@@ -78,6 +110,8 @@ void OQPSKDemodModule::process()
         file_source->start();
     if (d_dc_block)
         dcb->start();
+    if (resample)
+        res->start();
     agc->start();
     rrc->start();
     pll->start();
@@ -122,6 +156,8 @@ void OQPSKDemodModule::process()
         file_source->stop();
     if (d_dc_block)
         dcb->stop();
+    if (resample)
+        res->stop();
     agc->stop();
     rrc->stop();
     pll->stop();

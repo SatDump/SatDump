@@ -28,7 +28,7 @@
             "soft": {
                 "qpsk_demod": {
                     "symbolrate": "72000",
-                    "agc_rate": "0.00001",
+                    "agc_rate": "0.001",
                     "rrc_alpha": "0.6",
                     "rrc_taps": "361",
                     "costas_bw": "0.004",
