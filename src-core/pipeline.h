@@ -10,6 +10,7 @@ struct PipelineModule
 {
     std::string module_name;
     std::map<std::string, std::string> parameters;
+    std::string input_override;
 };
 
 struct PipelineStep
