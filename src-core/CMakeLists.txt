@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0.0)
 include(CheckLibraryExists)
-include(CheckIncludeFiles)
+include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CMakePushCheckState)
 include(CheckCCompilerFlag)
@@ -63,8 +63,14 @@ else()
     target_include_directories(satdump_core PUBLIC ${fmt_INCLUDE_DIRS})
     target_link_libraries(satdump_core PUBLIC fmt::fmt)
 
-    # FMT
+    # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
+    set(CMAKE_REQUIRED_INCLUDES "/usr/include;/usr/local/includes")
+    check_include_file("volk/volk_alloc.h" VOLK_HAS_ALLOC)
+    if(NOT VOLK_HAS_ALLOC)
+        message(STATUS "VOLK does not have volk_alloc.hh, including volk_includes")
+        target_include_directories(satdump_core PUBLIC ../volk_includes) # If we're running VOLK 1.0, include our own volk_alloc
+    endif()
     target_include_directories(satdump_core PUBLIC ${volk_INCLUDE_DIRS})
     target_link_libraries(satdump_core PUBLIC volk)
 
