@@ -98,7 +98,11 @@ In the same way as Windows, [libcorrect](https://github.com/quiet/libcorrect) is
 Here are some generic Debian build instructions.
 
 ```
+# Linux: Install dependencies
 sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libfmt-dev libglew-dev libglfw3-dev
+
+# macOS: Install dependencies
+brew install cmake volk jpeg libpng fmt glew glfw
 
 # Build and install libcorrect
 git clone https://github.com/quiet/libcorrect.git
@@ -109,6 +113,19 @@ make -j4
 sudo make install
 cd ../..
 rm -rf libcorrect
+
+# macOS ONLY: build and install libfftw3
+# if you install fftw via brew, cmake won't be able to find it
+wget http://www.fftw.org/fftw-3.3.9.tar.gz
+tar xf fftw-3.3.9.tar.gz
+rm fftw-3.3.9.tar.gz
+cd fftw-3.3.9
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true ..
+make
+sudo make install
+cd ../..
+rm -rf fftw-3.3.9
 
 # Finally, SatDump
 git clone https://github.com/altillimity/satdump.git
