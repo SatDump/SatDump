@@ -51,7 +51,7 @@ void Pipeline::run(std::string input_file,
             for (const std::pair<std::string, std::string> &param : final_parameters)
                 logger->debug("   - " + param.first + " : " + param.second);
 
-            std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](stepC == 0 ? input_file : lastFiles[0], output_directory + "/" + name, final_parameters);
+            std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](modStep.input_override == "" ? (stepC == 0 ? input_file : lastFiles[0]) : output_directory + "/" + modStep.input_override, output_directory + "/" + name, final_parameters);
 
             module->setInputType(DATA_FILE);
             module->setOutputType(DATA_FILE);
@@ -119,6 +119,11 @@ void loadPipeline(std::string filepath, std::string category)
                 PipelineModule newModule;
                 newModule.module_name = pipelineModule.key();
                 newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
+
+                if (newModule.parameters.count("input_override") > 0)
+                    newModule.input_override = newModule.parameters["input_override"];
+                else
+                    newModule.input_override = "";
                 //logger->debug(newModule.module_name);
 
                 newStep.modules.push_back(newModule);
@@ -134,7 +139,7 @@ void loadPipeline(std::string filepath, std::string category)
 void loadPipelines(std::string filepath)
 {
     logger->info("Loading pipelines from " + filepath);
-    
+
     std::vector<std::pair<std::string, std::string>> pipelinesToLoad;
 
     std::filesystem::recursive_directory_iterator pipelinesIterator(filepath);
