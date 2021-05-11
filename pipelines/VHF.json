@@ -19,9 +19,22 @@
     },
     "meteor_m2_lrpt": {
         "name": "METEOR M2 LRPT",
-        "live": false,
-        "frequencies": [],
-        "samplerate": 0,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            137.1,
+            137.9
+        ],
+        "samplerate": 1e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
@@ -47,8 +60,21 @@
     },
     "meteor_m2-x_lrpt": {
         "name": "METEOR M2-x LRPT",
-        "live": false,
-        "frequencies": [],
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            137.1,
+            137.9
+        ],
         "samplerate": 0,
         "baseband_type": "i16",
         "work": {

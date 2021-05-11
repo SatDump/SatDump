@@ -26,6 +26,16 @@ namespace meteor
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
 
+    std::vector<ModuleDataType> METEORLRPTDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> METEORLRPTDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     METEORLRPTDecoderModule::~METEORLRPTDecoderModule()
     {
         delete[] buffer;
@@ -33,8 +43,12 @@ namespace meteor
 
     void METEORLRPTDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -63,17 +77,24 @@ namespace meteor
         fec::code::cc_decoder_impl cc_decoder_in(ENCODED_FRAME_SIZE / 2, 7, 2, {-79, -109}, 0, -1, CC_STREAMING, false);
         diff::NRZMDiff diff;
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            // Read buffer
-            data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
+            // Read a buffer
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
+            else
+                input_fifo->read((uint8_t *)buffer, ENCODED_FRAME_SIZE);
 
             int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
 
             if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
                 std::memmove(buffer, &buffer[pos], pos);
-                data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                else
+                    input_fifo->read((uint8_t *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
             }
 
             // Correct phase ambiguity
@@ -125,7 +146,8 @@ namespace meteor
                 data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -136,7 +158,8 @@ namespace meteor
         }
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
