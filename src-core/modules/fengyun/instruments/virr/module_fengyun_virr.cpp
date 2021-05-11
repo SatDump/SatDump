@@ -20,6 +20,20 @@ namespace fengyun
         {
         }
 
+        std::string getHRPTReaderTimeStamp()
+        {
+            const time_t timevalue = time(0);
+            std::tm *timeReadable = gmtime(&timevalue);
+
+            std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +                                                                               // Year yyyy
+                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" + // Month MM
+                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "-" +          // Day dd
+                                    (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +                // Hour HH
+                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));                    // Minutes mm
+
+            return timestamp;
+        }
+
         void FengyunVIRRDecoderModule::process()
         {
             filesize = getFilesize(d_input_file);
@@ -44,8 +58,9 @@ namespace fengyun
 
             logger->info("Demultiplexing and deframing...");
 
-            std::ofstream output_hrpt_reader(directory + "/FY3B_2012-05-01-1419.C10", std::ios::binary);
-            d_output_files.push_back(directory + "/FY3B_2012-05-01-1419.C10");
+            std::string c10_filename = "FY3x_" + getHRPTReaderTimeStamp() + ".C10";
+            std::ofstream output_hrpt_reader(directory + "/" + c10_filename, std::ios::binary);
+            d_output_files.push_back(directory + "/" + c10_filename);
 
             uint8_t c10_buffer[27728];
 
