@@ -20,6 +20,20 @@ namespace metop
         {
         }
 
+        std::string getHRPTReaderTimeStamp()
+        {
+            const time_t timevalue = time(0);
+            std::tm *timeReadable = gmtime(&timevalue);
+
+            std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +                                                                               // Year yyyy
+                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" + // Month MM
+                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "-" +          // Day dd
+                                    (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +                // Hour HH
+                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));                    // Minutes mm
+
+            return timestamp;
+        }
+
         void MetOpAVHRRDecoderModule::process()
         {
             filesize = getFilesize(d_input_file);
@@ -38,6 +52,12 @@ namespace metop
             uint8_t cadu[1024];
 
             logger->info("Demultiplexing and deframing...");
+
+            std::string hpt_filename = "M0x_" + getHRPTReaderTimeStamp() + ".hpt";
+            std::ofstream output_hrpt_reader(directory + "/" + hpt_filename, std::ios::binary);
+            d_output_files.push_back(directory + "/" + hpt_filename);
+
+            uint8_t hpt_buffer[13864];
 
             while (!data_in.eof())
             {
@@ -65,6 +85,31 @@ namespace metop
                         {
                             avhrr_ccsds++;
                             reader.work(pkt);
+
+                            // Write out HPT
+                            if (pkt.payload.size() >= 12960)
+                            {
+                                // Clean it up
+                                std::fill(hpt_buffer, &hpt_buffer[13864], 0);
+
+                                // Write header
+                                hpt_buffer[0] = 0xa1;
+                                hpt_buffer[1] = 0x16;
+                                hpt_buffer[2] = 0xfd;
+                                hpt_buffer[3] = 0x71;
+                                hpt_buffer[4] = 0x9d;
+                                hpt_buffer[5] = 0x83;
+                                hpt_buffer[6] = 0xc9;
+
+                                // Timestamp
+                                std::memcpy(&hpt_buffer[12], &pkt.payload[3], 3);
+
+                                // Imagery
+                                std::memcpy(&hpt_buffer[937], &pkt.payload[76], 12800);
+
+                                // Write it out
+                                output_hrpt_reader.write((char *)hpt_buffer, 13864);
+                            }
                         }
                     }
                 }
@@ -79,6 +124,7 @@ namespace metop
             }
 
             data_in.close();
+            output_hrpt_reader.close();
 
             logger->info("VCID 9 (AVHRR) Frames  : " + std::to_string(avhrr_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));
