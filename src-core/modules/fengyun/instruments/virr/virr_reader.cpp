@@ -23,15 +23,15 @@ namespace fengyun
             if (packet.size() < 12960)
                 return;
 
-            int pos = 424; // VIRR Data position, found through a bit viewer
+            int pos = 436; // VIRR Data position, found through a bit viewer
 
             // Convert into 10-bits values
             for (int i = 0; i < 20480; i += 4)
             {
-                virrBuffer[i] = (packet[pos + 0] << 2) | (packet[pos + 1] >> 6);
-                virrBuffer[i + 1] = ((packet[pos + 1] % 64) << 4) | (packet[pos + 2] >> 4);
-                virrBuffer[i + 2] = ((packet[pos + 2] % 16) << 6) | (packet[pos + 3] >> 2);
-                virrBuffer[i + 3] = ((packet[pos + 3] % 4) << 8) | packet[pos + 4];
+                virrBuffer[i + 0] = (packet[pos + 0] & 0b111111) << 4 | packet[pos + 1] >> 4;
+                virrBuffer[i + 1] = (packet[pos + 1] & 0b1111) << 6 | packet[pos + 2] >> 2;
+                virrBuffer[i + 2] = (packet[pos + 2] & 0b11) << 8 | packet[pos + 3];
+                virrBuffer[i + 3] = packet[pos + 4] << 2 | packet[pos + 5] >> 6;
                 pos += 5;
             }
 

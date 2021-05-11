@@ -44,6 +44,11 @@ namespace fengyun
 
             logger->info("Demultiplexing and deframing...");
 
+            std::ofstream output_hrpt_reader(directory + "/FY3B_2012-05-01-1419.C10", std::ios::binary);
+            d_output_files.push_back(directory + "/FY3B_2012-05-01-1419.C10");
+
+            uint8_t c10_buffer[27728];
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -65,6 +70,41 @@ namespace fengyun
                     {
                         virr_frames++;
                         reader.work(frameVec);
+
+                        // Write out C10
+                        {
+                            // Clean it up
+                            std::fill(c10_buffer, &c10_buffer[27728], 0);
+
+                            // Write header
+                            c10_buffer[0] = 0xa1;
+                            c10_buffer[1] = 0x16;
+                            c10_buffer[2] = 0xfd;
+                            c10_buffer[3] = 0x71;
+                            c10_buffer[4] = 0x9d;
+                            c10_buffer[5] = 0x83;
+                            c10_buffer[6] = 0xc9;
+                            c10_buffer[7] = 0x50;
+                            c10_buffer[8] = 0x34;
+                            c10_buffer[9] = 0x00;
+                            c10_buffer[10] = 0x3d;
+                            c10_buffer[11] = 0x2d;
+
+                            // Timestamp
+                            c10_buffer[12] = (frameVec[26045] & 0b111111) << 2 | frameVec[26046] >> 6;
+                            c10_buffer[13] = (frameVec[26046] & 0b111111) << 2 | frameVec[26047] >> 6;
+                            c10_buffer[14] = (frameVec[26047] & 0b111111) << 2 | frameVec[26048] >> 6;
+
+                            // Imagery, shifted by 2 bits
+                            for (int i = 0; i < 25600 + 16; i++)
+                                c10_buffer[2000 + i] = (frameVec[436 + i] & 0b111111) << 2 | frameVec[437 + i] >> 6;
+
+                            // Last marker
+                            c10_buffer[27613] = 0b0000010;
+
+                            // Write it out
+                            output_hrpt_reader.write((char *)c10_buffer, 27728);
+                        }
                     }
                 }
 
@@ -78,6 +118,7 @@ namespace fengyun
             }
 
             data_in.close();
+            output_hrpt_reader.close();
 
             logger->info("VCID 5 Frames         : " + std::to_string(vcidFrames));
             logger->info("VIRR Frames           : " + std::to_string(virr_frames));
@@ -130,7 +171,7 @@ namespace fengyun
             logger->info("Channel 10...");
             WRITE_IMAGE(image10, directory + "/VIRR-10.png");
 
-            logger->info("321 Composite...");
+            logger->info("221 Composite...");
             cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
             {
                 image221.draw_image(0, 0, 0, 0, image2);
