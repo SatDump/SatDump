@@ -60,7 +60,7 @@ namespace fengyun
                         if (outputBits == 0)
                         {
                             uint64_t syncAsm = ASM_SYNC;
-                            for (int y = 60 + 1; y >= 0; y--)
+                            for (int y = 60 - 1; y >= 0; y--)
                             {
                                 pushBit(getBit<uint64_t>(syncAsm, y));
                                 outputBits++;
