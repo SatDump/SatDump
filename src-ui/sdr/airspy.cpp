@@ -55,7 +55,7 @@ void SDRAirspy::drawUI()
 
     if (ImGui::Button("Set"))
     {
-        d_frequency = std::stoi(frequency) * 1e6;
+        d_frequency = std::stof(frequency) * 1e6;
         airspy_set_freq(dev, d_frequency);
     }
 
@@ -75,7 +75,7 @@ void SDRAirspy::drawUI()
 void SDRAirspy::setFrequency(int frequency)
 {
     d_frequency = frequency;
-    std::memcpy(this->frequency, std::to_string(d_frequency / 1e6).c_str(), std::to_string(d_frequency / 1e6).length());
+    std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
 }
 
 void SDRAirspy::init()

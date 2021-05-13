@@ -70,22 +70,37 @@ void SDRRtlSdr::drawUI()
 
     if (ImGui::Button("Set"))
     {
-        d_frequency = std::stoi(frequency) * 1e6;
+        d_frequency = std::stof(frequency) * 1e6;
         setFrequency(d_frequency);
     }
 
     ImGui::SetNextItemWidth(200);
     if (ImGui::SliderInt("Gain", &gain, 0, 49))
     {
-        rtlsdr_set_tuner_gain(dev, gain * 10);
+        setGain(gain);
     }
+
+    if (ImGui::Checkbox("AGC", &agc))
+    {
+        setGainMode(agc);
+    }
+
+#ifdef HAS_RTLSDR_SET_BIAS_TEE
+    ImGui::SameLine();
+
+    if (ImGui::Checkbox("Bias", &bias))
+    {
+        setBias(bias);
+    }
+#endif
+
     ImGui::End();
 }
 
 void SDRRtlSdr::setFrequency(int frequency)
 {
     d_frequency = frequency;
-    std::memcpy(this->frequency, std::to_string(d_frequency / 1e6).c_str(), std::to_string(d_frequency / 1e6).length());
+    std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
 
     if (should_run)
         rtlsdr_cancel_async(dev);
@@ -95,6 +110,45 @@ void SDRRtlSdr::setFrequency(int frequency)
         logger->error("Could not set SDR frequency!");
     }
     dev_mutex.unlock();
+}
+
+void SDRRtlSdr::setGainMode(bool gainmode)
+{
+    if (should_run)
+        rtlsdr_cancel_async(dev);
+    dev_mutex.lock();
+    while (rtlsdr_set_tuner_gain_mode(dev, !gainmode) != 0)
+    {
+        logger->error("Could not set SDR gain mode!");
+    }
+    dev_mutex.unlock();
+}
+
+void SDRRtlSdr::setGain(int gain)
+{
+
+    if (should_run)
+        rtlsdr_cancel_async(dev);
+    dev_mutex.lock();
+    while (rtlsdr_set_tuner_gain(dev, gain * 10) != 0)
+    {
+        logger->error("Could not set SDR gain!");
+    }
+    dev_mutex.unlock();
+}
+
+void SDRRtlSdr::setBias(bool bias)
+{
+#ifdef HAS_RTLSDR_SET_BIAS_TEE
+    if (should_run)
+        rtlsdr_cancel_async(dev);
+    dev_mutex.lock();
+    while (rtlsdr_set_bias_tee(dev, bias) != 0)
+    {
+        logger->error("Could not set SDR bias tee!");
+    }
+    dev_mutex.unlock();
+#endif
 }
 
 void SDRRtlSdr::init()
