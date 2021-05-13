@@ -14,6 +14,7 @@ private:
     bool should_run;
     std::mutex dev_mutex;
     struct rtlsdr_dev *dev;
+    bool agc = false;
     int gain = 10;
     bool bias = false;
     char frequency[100];
@@ -27,6 +28,9 @@ public:
     void drawUI();
     static void init();
     virtual void setFrequency(int frequency);
+    void setGainMode(bool gainmode);
+    void setGain(int gain);
+    void setBias(bool bias);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
 #endif

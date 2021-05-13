@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0.0)
+include(CheckFunctionExists)
 
 file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
 
@@ -54,5 +55,12 @@ else()
         target_link_libraries(satdump-ui PUBLIC ${RTLSDR_LIBRARY})
     endif()
 endif()
+
+set(CMAKE_REQUIRED_LIBRARIES ${RTLSDR_LIBRARIES})
+check_function_exists(rtlsdr_set_bias_tee HAS_RTLSDR_SET_BIAS_TEE)
+if(BUILD_LIVE)
+    add_compile_definitions(HAS_RTLSDR_SET_BIAS_TEE="1")
+endif()
+unset(CMAKE_REQUIRED_LIBRARIES)
 
 install(TARGETS satdump-ui DESTINATION bin)
