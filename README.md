@@ -139,3 +139,20 @@ ln -s ../Ro* . # Symlink fonts for the GUI version so it can run
 # Run (if you want!)
 ./satdump-ui
 ```
+
+### Android (Very, very WIP)
+
+SatDump can now be used on Android devices as a simple APK, which will be built alongside normal releases.   
+Keep in mind this port is very much a work-in-progress, and most things have not been tested or may not perform as expected yet. Though, any input is welcome!
+
+If you wish to build it for yourself, make sure to have the Android SDK and NDK installed, then just :
+
+```
+git clone https://github.com/altillimity/satdump.git --recursive # For SDL2
+
+cd satdump/android
+
+./gradlew assembleDebug # Your .apk will be in android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
+```
+
+Credits for the ImGui port over to Android / SDL2 to https://github.com/sfalexrog/Imgui_Android.

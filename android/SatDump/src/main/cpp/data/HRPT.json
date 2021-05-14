@@ -1,0 +1,409 @@
+{
+    "metop_ahrpt": {
+        "name": "MetOp AHRPT",
+        "live": false,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.3
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2333333",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                },
+                "metop_ascat": {}
+            }
+        }
+    },
+    "metop_ahrpt_live": {
+        "name": "MetOp AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.3
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2333333",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                },
+                "metop_ascat": {}
+            }
+        }
+    },
+    "fengyun3_ab_ahrpt": {
+        "name": "FengYun-3 A/B AHRPT",
+        "live": false,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1704.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {},
+                "fengyun_erm": {},
+                "fengyun_mwhs": {}
+            }
+        }
+    },
+    "fengyun3_ab_ahrpt_live": {
+        "name": "FengYun-3 A/B AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1704.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {},
+                "fengyun_erm": {},
+                "fengyun_mwhs": {}
+            }
+        }
+    },
+    "fengyun3_c_ahrpt": {
+        "name": "FengYun-3 C AHRPT",
+        "live": false,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.4
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2600000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {},
+                "fengyun_erm": {},
+                "fengyun_mwhs": {}
+            }
+        }
+    },
+    "fengyun3_c_ahrpt_live": {
+        "name": "FengYun-3 C AHRPT - New, Live-compatible, WIP /!\\",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1701.4
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "2600000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            },
+            "products": {
+                "fengyun_virr": {},
+                "fengyun_erm": {},
+                "fengyun_mwhs": {}
+            }
+        }
+    },
+    "noaa_hrpt": {
+        "name": "NOAA HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1707,
+            1698,
+            1702.5
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "frames": {
+                "noaa_hrpt_demod": {
+                    "buffer_size": "8192",
+                    "deframer_thresold": "0"
+                }
+            },
+            "products": {
+                "noaa_avhrr": {},
+                "noaa_extractor": {},
+                "noaa_hirs": {
+                    "input_override": "noaa_hrpt.tip"
+                },
+                "noaa_amsu": {
+                    "input_override": "noaa_hrpt.aip"
+                },
+                "noaa_mhs": {
+                    "input_override": "noaa_hrpt.aip"
+                }
+            }
+        }
+    },
+    "meteor_hrpt": {
+        "name": "METEOR HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1700
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "dem": {
+                "meteor_hrpt_demod": {
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "meteor_hrpt_decoder": {}
+            },
+            "products": {
+                "meteor_msumr": {},
+                "meteor_mtvza": {}
+            }
+        }
+    },
+    "saral_l_band": {
+        "name": "Saral L-Band",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1698.4
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "800000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "saral_decoder": {}
+            },
+            "products": {
+                "saral_argos": {}
+            }
+        }
+    },
+    "yunhai_ahrpt": {
+        "name": "Yunhai AHRPT - Encrypted",
+        "live": false,
+        "frequencies": [
+            1704
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "4000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.002",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "0"
+                }
+            }
+        }
+    }
+}
