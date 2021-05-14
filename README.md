@@ -4,6 +4,17 @@ A generic satellite data processing software.
 
 **Still WIP**
 
+# Important - Possible issues with VOLK Viterbi decoding (Windows users can probably ignore this)
+
+/!\ Some decoders utilize VOLK's Viterbi decoder. But as of writing this, only the "spiral" (SSE) implementation performs as intended. Please ensure you have it set as such in your volk_config or things may not work as expected! /!\
+
+On Windows, this should not be necessary as it this will (should!) be the default already.
+
+On Linux, Mac OS and similar platforms, please edit your ~/.volk/volk_config file.  
+Find the line referring to `volk_8u_x4_conv_k7_r2_8u`, and make sure it contains the following : `volk_8u_x4_conv_k7_r2_8u spiral spiral`.
+
+If you are using an ARM-based machine (Raspbery Pi, most Android devices), there is unfortunately no way around poorer decoding performances of the "generic" kernel... Until this gets fixed in VOLK itself.
+
 # Usage
 
 First of all, as with any program using volk, running volk_profile once is highly recommended for better performances.
