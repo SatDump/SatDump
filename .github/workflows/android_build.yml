@@ -19,11 +19,9 @@ jobs:
     - name: Install packages
       run: sudo apt install cmake ninja-build openjdk-8-jdk wget unzip
 
-    # Not sure how well this will work so let's see I guess!
     - name: Install Android SDK
-      run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && mkdir $PWD/android-sdk-linux && unzip -qq android-sdk.zip -d $PWD/android-sdk-linux && export ANDROID_HOME=$PWD/android-sdk-linux && echo y | $ANDROID_HOME/tools/bin/sdkmanager --update && (echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/tools/bin/sdkmanager --licenses
+      run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
 
     - name: Build
       shell: bash
-      working-directory: $GITHUB_WORKSPACE/android
-      run: chmod +x gradlew && ./gradlew assembleDebug
+      run: cd $GITHUB_WORKSPACE/android && git submodule update --init && chmod +x gradlew && ./gradlew assembleDebug
