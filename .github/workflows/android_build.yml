@@ -1,0 +1,29 @@
+name: Android Build
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Update repositories
+      run: sudo apt update 
+    
+    - name: Install packages
+      run: sudo apt install cmake ninja-build openjdk-8-jdk wget unzip
+
+    # Not sure how well this will work so let's see I guess!
+    - name: Install Android SDK
+      run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && mkdir $PWD/android-sdk-linux && unzip -qq android-sdk.zip -d $PWD/android-sdk-linux && export ANDROID_HOME=$PWD/android-sdk-linux && echo y | $ANDROID_HOME/tools/bin/sdkmanager --update && (echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/tools/bin/sdkmanager --licenses
+
+    - name: Build
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/android
+      run: chmod +x gradlew && ./gradlew assembleDebug
