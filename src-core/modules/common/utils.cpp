@@ -1,7 +1,7 @@
 #include "utils.h"
 #include <cmath>
 
-void char_array_to_uchar(const char *in, unsigned char *out, int nsamples)
+void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples)
 {
     for (int i = 0; i < nsamples; i++)
     {

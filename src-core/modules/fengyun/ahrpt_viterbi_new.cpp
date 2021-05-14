@@ -47,7 +47,7 @@ namespace fengyun
 
     float DualAHRPTViterbi2::getBER(uint8_t *input)
     {
-        char_array_to_uchar((char *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
+        char_array_to_uchar((int8_t *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
 
         depunc_ber.general_work(TEST_BITS_LENGTH, d_ber_input_buffer, d_ber_input_buffer_depunc);
 
@@ -142,7 +142,7 @@ namespace fengyun
                 std::memcpy(fixed_soft_packet1, &input1[d_skip[0]], size - d_skip[0]);
                 phaseShifter.fixPacket(fixed_soft_packet1, size - d_skip[0], d_phase_shift[0], d_iq_inv[0]);
 
-                char_array_to_uchar((char *)fixed_soft_packet1, converted_buffer1, size - d_skip[0]);
+                char_array_to_uchar((int8_t *)fixed_soft_packet1, converted_buffer1, size - d_skip[0]);
 
                 int depunc_out = depunc1.general_work(size - d_skip[0], converted_buffer1, depunc_buffer1);
 
@@ -156,7 +156,7 @@ namespace fengyun
                 std::memcpy(fixed_soft_packet2, &input2[d_skip[1]], size - d_skip[1]);
                 phaseShifter.fixPacket(fixed_soft_packet2, size - d_skip[1], d_phase_shift[1], d_iq_inv[1]);
 
-                char_array_to_uchar((char *)fixed_soft_packet2, converted_buffer2, size - d_skip[1]);
+                char_array_to_uchar((int8_t *)fixed_soft_packet2, converted_buffer2, size - d_skip[1]);
 
                 int depunc_out = depunc2.general_work(size - d_skip[1], converted_buffer2, depunc_buffer2);
 
