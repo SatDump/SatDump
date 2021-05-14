@@ -103,7 +103,7 @@ namespace meteor
             // Viterbi
             viterbi.decode(buffer, frameBuffer); // This gotta get removed ASAP... Gotta write a wrapper for the other one
 
-            char_array_to_uchar((char *)buffer, bufferu, ENCODED_FRAME_SIZE);
+            char_array_to_uchar((int8_t *)buffer, bufferu, ENCODED_FRAME_SIZE);
             cc_decoder_in.generic_work(bufferu, bufferh);
 
             // Repack

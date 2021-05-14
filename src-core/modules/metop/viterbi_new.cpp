@@ -39,7 +39,7 @@ namespace metop
 
     float MetopViterbi2::getBER(uint8_t *input)
     {
-        char_array_to_uchar((char *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
+        char_array_to_uchar((int8_t *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
 
         for (int i = 0; i < TEST_BITS_LENGTH / 4; i++)
         {
@@ -103,7 +103,7 @@ namespace metop
             std::memcpy(fixed_soft_packet, &input[d_skip], size - d_skip);
             phaseShifter.fixPacket(fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
 
-            char_array_to_uchar((char *)fixed_soft_packet, converted_buffer, size - d_skip);
+            char_array_to_uchar((int8_t *)fixed_soft_packet, converted_buffer, size - d_skip);
 
             int reorg_out = reorg.work(converted_buffer, size - d_skip, reorg_buffer);
 

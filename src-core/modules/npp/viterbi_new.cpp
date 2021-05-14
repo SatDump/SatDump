@@ -32,7 +32,7 @@ namespace npp
 
     float HRDViterbi2::getBER(uint8_t *input)
     {
-        char_array_to_uchar((char *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
+        char_array_to_uchar((int8_t *)input, d_ber_input_buffer, TEST_BITS_LENGTH);
         cc_decoder_in_ber.generic_work(d_ber_input_buffer, d_ber_decoded_buffer);
         cc_encoder_in_ber.generic_work(d_ber_decoded_buffer, d_ber_encoded_buffer);
 
@@ -81,7 +81,7 @@ namespace npp
             std::memcpy(fixed_soft_packet, input, size);
             phaseShifter.fixPacket(fixed_soft_packet, size, d_phase_shift, d_iq_inv);
 
-            char_array_to_uchar((char *)fixed_soft_packet, viterbi_in, size);
+            char_array_to_uchar((int8_t *)fixed_soft_packet, viterbi_in, size);
 
             int output_size = cc_decoder_in.continuous_work(viterbi_in, size, output_buffer);
 
