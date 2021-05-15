@@ -19,6 +19,34 @@ size_t getFilesize(std::string filepath);
 
 namespace oceansat
 {
+    // Modified to only repack the OCM channel
+    class RepackOneChannel
+    {
+    private:
+        uint8_t byteToWrite;
+        int inByteToWrite = 0;
+
+    public:
+        int work(uint8_t *in, int length, uint8_t *out)
+        {
+            int oo = 0;
+
+            for (int ii = 0; ii < length; ii++)
+            {
+                byteToWrite = byteToWrite << 1 | (in[ii] >> 1) & 1;
+                inByteToWrite++;
+
+                if (inByteToWrite == 8)
+                {
+                    out[oo++] = byteToWrite;
+                    inByteToWrite = 0;
+                }
+            }
+
+            return oo;
+        }
+    };
+
     Oceansat2DBDecoderModule::Oceansat2DBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
@@ -43,21 +71,26 @@ namespace oceansat
         time_t lastTime = 0;
 
         // I/Q Buffers
-        uint8_t decodedBuffer[BUFFER_SIZE];
-        uint8_t diffedBuffer[BUFFER_SIZE];
+        uint8_t decodedBuffer1[BUFFER_SIZE], decodedBuffer2[BUFFER_SIZE];
+        uint8_t diffedBuffer1[BUFFER_SIZE], diffedBuffer2[BUFFER_SIZE];
 
         // Final buffer after decoding
-        uint8_t finalBuffer[BUFFER_SIZE];
+        uint8_t finalBuffer1[BUFFER_SIZE], finalBuffer2[BUFFER_SIZE];
+        uint8_t tempBuff1[BUFFER_SIZE], tempBuff2[BUFFER_SIZE];
 
         // Bits => Bytes stuff
-        uint8_t byteShifter = 0;
-        int inByteShifter = 0;
-        int inFinalByteBuffer;
+        RepackOneChannel repack1, repack2;
 
-        diff::GenericDiff diffdecoder(4);
+        diff::GenericDiff diffdecoder1(4), diffdecoder2(4);
 
-        Oceansat2Deframer deframer;
+        Oceansat2Deframer deframer1, deframer2;
         Oceansat2Derand derand;
+
+        // In this decoder both swapped and normal I/Q are always decoded. This does is crappier
+        // than correlation, but works well enough and faster. And anyway, we aren't dealing with
+        // that much data.
+        // We can also safely assume frames will NEVER be found on both states in some weird way...
+        // So I guess this is fine enough?
 
         while (!data_in.eof())
         {
@@ -67,50 +100,72 @@ namespace oceansat
             // Demodulate DQPSK... This is the crappy way but it works
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                bool a = buffer[i * 2] > 0;
+                // Normal IQ
+                bool a = buffer[i * 2 + 0] > 0;
                 bool b = buffer[i * 2 + 1] > 0;
 
                 if (a)
                 {
                     if (b)
-                        decodedBuffer[i] = 0x0;
+                        decodedBuffer1[i] = 0x0;
                     else
-                        decodedBuffer[i] = 0x3;
+                        decodedBuffer1[i] = 0x3;
                 }
                 else
                 {
                     if (b)
-                        decodedBuffer[i] = 0x1;
+                        decodedBuffer1[i] = 0x1;
                     else
-                        decodedBuffer[i] = 0x2;
+                        decodedBuffer1[i] = 0x2;
                 }
-            }
 
-            int diff_count = diffdecoder.work(decodedBuffer, BUFFER_SIZE / 2, diffedBuffer);
+                // Inversed IQ
+                a = buffer[i * 2 + 1] > 0;
+                b = buffer[i * 2 + 0] > 0;
 
-            inFinalByteBuffer = 0;
-            inByteShifter = 0;
-            for (int i = 0; i < diff_count; i++)
-            {
-                byteShifter = byteShifter << 1 | getBit<uint8_t>(diffedBuffer[i], 1);
-                inByteShifter++;
-
-                if (inByteShifter == 8)
+                if (a)
                 {
-                    finalBuffer[inFinalByteBuffer++] = byteShifter;
-                    inByteShifter = 0;
+                    if (b)
+                        decodedBuffer2[i] = 0x0;
+                    else
+                        decodedBuffer2[i] = 0x3;
+                }
+                else
+                {
+                    if (b)
+                        decodedBuffer2[i] = 0x1;
+                    else
+                        decodedBuffer2[i] = 0x2;
                 }
             }
 
-            std::vector<std::vector<uint8_t>> frames = deframer.work(finalBuffer, inFinalByteBuffer);
+            int diff_count1 = diffdecoder1.work(decodedBuffer1, BUFFER_SIZE / 2, diffedBuffer1); // Diff normal IQ
+            int diff_count2 = diffdecoder2.work(decodedBuffer2, BUFFER_SIZE / 2, diffedBuffer2); // Diff inversed IQ
 
-            frame_count += frames.size();
+            int byteCount1 = repack1.work(diffedBuffer1, diff_count1, finalBuffer1); // Repack normal IQ
+            int byteCount2 = repack2.work(diffedBuffer2, diff_count2, finalBuffer2); // Repack inversed IQ
 
-            for (std::vector<uint8_t> frame : frames)
+            std::vector<std::vector<uint8_t>> frames1 = deframer1.work(finalBuffer1, byteCount1); // Deframe normal IQ
+            std::vector<std::vector<uint8_t>> frames2 = deframer2.work(finalBuffer2, byteCount2); // Deframe inversed IQ
+
+            frame_count += frames1.size() + frames2.size();
+
+            // Process normal IQ
+            for (std::vector<uint8_t> frame : frames1)
             {
                 derand.work(frame.data());
                 data_out.write((char *)frame.data(), 92220);
             }
+
+            // Process inversed IQ
+            for (std::vector<uint8_t> frame : frames2)
+            {
+                derand.work(frame.data());
+                data_out.write((char *)frame.data(), 92220);
+            }
+
+            // This above, just processing without checking what frame came first is only fine because we are using a smaller
+            // buffer size than frame size. First will get out first.
 
             progress = data_in.tellg();
 
