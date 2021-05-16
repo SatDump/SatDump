@@ -12,6 +12,7 @@ namespace dsp
         float d_noise;
         bool d_use_snr;
         int d_order;
+        
         float phase_detector_8(std::complex<float> sample) const // for 8PSK
         {
             const float K = (sqrtf(2.0) - 1);

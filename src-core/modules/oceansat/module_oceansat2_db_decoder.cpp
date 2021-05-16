@@ -33,7 +33,7 @@ namespace oceansat
 
             for (int ii = 0; ii < length; ii++)
             {
-                byteToWrite = byteToWrite << 1 | (in[ii] >> 1) & 1;
+                byteToWrite = byteToWrite << 1 | ((in[ii] >> 1) & 1);
                 inByteToWrite++;
 
                 if (inByteToWrite == 8)
@@ -76,7 +76,6 @@ namespace oceansat
 
         // Final buffer after decoding
         uint8_t finalBuffer1[BUFFER_SIZE], finalBuffer2[BUFFER_SIZE];
-        uint8_t tempBuff1[BUFFER_SIZE], tempBuff2[BUFFER_SIZE];
 
         // Bits => Bytes stuff
         RepackOneChannel repack1, repack2;

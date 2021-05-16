@@ -62,7 +62,7 @@ namespace noaa
             for (int i = 0; i < 20; i++)
             {
                 cimg_library::CImg<unsigned short> image = hirsreader.getChannel(i);
-                for (int j = 0; j < image.size(); j++)
+                for (int j = 0; j < (int)image.size(); j++)
                 {
                     image[j] = image[j] * 8;
                 }

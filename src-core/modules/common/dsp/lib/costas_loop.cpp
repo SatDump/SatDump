@@ -3,7 +3,7 @@
 
 namespace dsp
 {
-    CostasLoop::CostasLoop(float loop_bw, unsigned int order) : d_error(0), d_noise(1.0), d_use_snr(false), d_order(order), ControlLoop(loop_bw, 1.0, -1.0)
+    CostasLoop::CostasLoop(float loop_bw, unsigned int order) : ControlLoop(loop_bw, 1.0, -1.0), d_error(0), d_noise(1.0), d_use_snr(false), d_order(order)
     {
         d_damping = sqrtf(2.0f) / 2.0f;
 

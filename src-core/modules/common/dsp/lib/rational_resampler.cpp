@@ -165,7 +165,7 @@ namespace dsp
         std::complex<float> *in_d = tmp_.data();
 
         int i = 0;
-        while (count < (int)tmp_.size() - d_history)
+        while (count < (int)tmp_.size() - (int)d_history)
         {
             out[i++] = d_firs[ctr].filter(in_d);
             ctr += this->decimation();
