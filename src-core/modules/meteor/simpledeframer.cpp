@@ -119,6 +119,6 @@ template class SimpleDeframer<uint64_t, 64, 74 * 8, 0x0218A7A392DD9ABF>;
 // Build this template for BIS-M data
 template class SimpleDeframer<uint32_t, 32, 88 * 8, 0x71DE2CD8>;
 // Build this template for MTVZA data
-template class SimpleDeframer<uint64_t, 32, 248 * 8, 0xFB386A45>;
+template class SimpleDeframer<uint32_t, 32, 248 * 8, 0xFB386A45>;
 // Build this template for SSPD data
 template class SimpleDeframer<uint64_t, 24, 99 * 8, 0x42BB1F>;
