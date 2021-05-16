@@ -117,7 +117,7 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
                     }
                 }
 
-                current = (current << 2) | (hard_buf[pos] >> (6 - ii)) & 0b11;
+                current = (current << 2) | ((hard_buf[pos] >> (6 - ii)) & 0b11);
             }
 
             pos++;
