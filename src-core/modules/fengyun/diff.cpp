@@ -2,12 +2,12 @@
 
 namespace fengyun
 {
-    void FengyunDiff::work(uint8_t *in, size_t len, uint8_t *out)
+    void FengyunDiff::work(uint8_t *in, int len, uint8_t *out)
     {
         int oo = 0;
 
         // Process all given samples
-        for (size_t ii = 0; ii < len; ii++)
+        for (int ii = 0; ii < len; ii++)
         {
             uint8_t &sample = in[ii];
 
