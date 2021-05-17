@@ -6,7 +6,7 @@
 class RepackBitsByte
 {
 private:
-    uint8_t byteToWrite;
+    uint8_t byteToWrite = 0;
     int inByteToWrite = 0;
 
 public:
