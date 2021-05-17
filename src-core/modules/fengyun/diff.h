@@ -1,5 +1,5 @@
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 
 namespace fengyun
 {
@@ -12,6 +12,6 @@ namespace fengyun
         uint8_t buffer[2]; // Smaller buffer for internal use
 
     public:
-        void work(uint8_t *in, size_t len, uint8_t *out);
+        void work(uint8_t *in, int len, uint8_t *out);
     };
 } // namespace fengyun
