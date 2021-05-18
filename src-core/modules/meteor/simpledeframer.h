@@ -9,7 +9,7 @@
 #include <cstdint>
 #include "ccsds.h"
 
-template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC>
+template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC, int chk_size>
 class SimpleDeframer
 {
 private:
