@@ -41,7 +41,7 @@ void Pipeline::run(std::string input_file,
         for (PipelineModule modStep : step.modules)
         {
             std::map<std::string, std::string> final_parameters = modStep.parameters;
-            for (const std::pair<std::string, std::string> &param : parameters)
+            for (const std::pair<std::string, std::string> param : parameters)
                 if (final_parameters.count(param.first) > 0)
                     ; // Do Nothing //final_parameters[param.first] = param.second;
                 else

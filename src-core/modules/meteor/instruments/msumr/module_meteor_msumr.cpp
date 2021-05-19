@@ -36,7 +36,7 @@ namespace meteor
             std::vector<uint8_t> msumrData;
 
             // MSU-MR data
-            SimpleDeframer<uint64_t, 64, 11850 * 8, 0x0218A7A392DD9ABF> msumrDefra;
+            SimpleDeframer<uint64_t, 64, 11850 * 8, 0x0218A7A392DD9ABF, 10> msumrDefra;
 
             MSUMRReader reader;
 
