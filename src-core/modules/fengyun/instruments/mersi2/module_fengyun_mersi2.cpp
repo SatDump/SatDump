@@ -28,6 +28,9 @@ namespace fengyun
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-2";
 
+            if (!std::filesystem::exists(directory))
+                std::filesystem::create_directory(directory);
+
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
@@ -103,9 +106,6 @@ namespace fengyun
             const float beta = 0.58333; //1.0 - alpha;
             const long scanHeight_250 = 40;
             const long scanHeight_1000 = 10;
-
-            if (!std::filesystem::exists(directory))
-                std::filesystem::create_directory(directory);
 
             // Do it for our correlated ones
             mersiCorrelator->makeImages();
