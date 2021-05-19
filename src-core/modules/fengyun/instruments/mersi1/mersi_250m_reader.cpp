@@ -37,7 +37,7 @@ namespace fengyun
             for (int i = 0; i < 8192; i++)
             {
                 uint16_t pixel = mersiLineBuffer[i];
-                imageBuffer[frames * 8192 + (8192 - i)] = pixel * 20;
+                imageBuffer[frames * 8192 + (8192 - i)] = pixel * 15;
             }
 
             // Frame counter
