@@ -41,6 +41,9 @@ namespace fengyun
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/VIRR";
 
+            if (!std::filesystem::exists(directory))
+                std::filesystem::create_directory(directory);
+
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
@@ -140,9 +143,6 @@ namespace fengyun
             logger->info("VIRR Lines            : " + std::to_string(reader.lines));
 
             logger->info("Writing images.... (Can take a while)");
-
-            if (!std::filesystem::exists(directory))
-                std::filesystem::create_directory(directory);
 
             cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
             cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
