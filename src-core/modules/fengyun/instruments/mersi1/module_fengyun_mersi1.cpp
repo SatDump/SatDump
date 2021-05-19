@@ -32,6 +32,10 @@ namespace fengyun
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
+            logger->info("Writing MERSI frames to " + directory + "/mersi.bin");
+            std::ofstream data_out(directory + "/mersi.bin", std::ios::binary);
+            d_output_files.push_back(directory + "/mersi.bin");
+
             time_t lastTime = 0;
 
             // Read buffer
@@ -77,6 +81,9 @@ namespace fengyun
                         int marker = (frameVec[3] % (int)pow(2, 3)) << 7 | frameVec[4] >> 1;
 
                         mersiCorrelator->feedFrames(marker, frameVec);
+
+                        // Write it out
+                        data_out.write((char *)frameVec.data(), frameVec.size());
 
                         //std::cout << marker << std::endl;
                         if (marker >= 200)
@@ -146,6 +153,7 @@ namespace fengyun
             }
 
             data_in.close();
+            data_out.close();
 
             logger->info("VCID 3 Frames         : " + std::to_string(vcidFrames));
             logger->info("250m Channels frames  : " + std::to_string(m250Frames));
