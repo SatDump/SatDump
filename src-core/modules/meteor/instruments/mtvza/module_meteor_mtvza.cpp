@@ -34,7 +34,7 @@ namespace meteor
             std::vector<uint8_t> mtvzaData;
 
             // MSU-MR data
-            SimpleDeframer<uint32_t, 32, 248 * 8, 0xFB386A45> mtvzarDefra;
+            SimpleDeframer<uint32_t, 32, 248 * 8, 0xFB386A45, 0> mtvzarDefra;
 
             MTVZAReader reader;
 
