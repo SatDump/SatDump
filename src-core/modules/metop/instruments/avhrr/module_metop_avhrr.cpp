@@ -58,6 +58,7 @@ namespace metop
             d_output_files.push_back(directory + "/" + hpt_filename);
 
             uint8_t hpt_buffer[13864];
+            int counter = 0, counter2 = 0;
 
             while (!data_in.eof())
             {
@@ -101,8 +102,26 @@ namespace metop
                                 hpt_buffer[5] = 0x83;
                                 hpt_buffer[6] = 0xc9;
 
+                                // Counter
+                                hpt_buffer[7] = 0b01010 << 3 | (counter & 0b111) << 1 | 0b1;
+                                counter++;
+                                if (counter == 4)
+                                    counter = 0;
+
+                                // Other marker
+                                hpt_buffer[10] = 0b00110110;
+                                hpt_buffer[11] = 0b00101001;
+
                                 // Timestamp
                                 std::memcpy(&hpt_buffer[12], &pkt.payload[3], 3);
+
+                                // Other marker
+                                hpt_buffer[21] = counter2 == 0 ? 0 : 0b1100;
+                                hpt_buffer[22] = counter2 == 0 ? 0 : 0b0011;
+                                hpt_buffer[24] = counter2 == 0 ? 0 : 0b11000000;
+                                counter2++;
+                                if (counter2 == 5)
+                                    counter2 = 0;
 
                                 // Imagery
                                 std::memcpy(&hpt_buffer[937], &pkt.payload[76], 12800);

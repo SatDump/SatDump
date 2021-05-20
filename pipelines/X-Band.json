@@ -18,7 +18,7 @@
                 }
             },
             "cadu": {
-                "new_fengyun_mpt_decoder": {
+                "fengyun_mpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"
