@@ -8,7 +8,7 @@
 #include <array>
 #include <cstdint>
 
-template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC>
+template <typename SYNC_T, int SYNC_SIZE, int FRAME_SIZE, SYNC_T ASM_SYNC, int chk_size>
 class SimpleDeframer
 {
 private:
@@ -24,5 +24,5 @@ private:
 
 public:
     SimpleDeframer();
-    std::vector<std::vector<uint8_t>> work(uint8_t *data, int length);
+    std::vector<std::vector<uint8_t>> work(uint8_t* data, int size);
 };
