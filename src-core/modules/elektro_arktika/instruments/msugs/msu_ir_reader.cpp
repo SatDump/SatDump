@@ -41,7 +41,7 @@ namespace elektro_arktika
             }
 
             // Parse all channels
-            if (segment % 2 == 0)
+            if (segment % 2 == 0 && segment < 36 && counter < 3400)
             {
                 // 1
                 for (int i = 0; i < 183; i++)
