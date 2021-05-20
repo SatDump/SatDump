@@ -103,9 +103,9 @@ namespace fengyun
                             c10_buffer[8] = 0x34;
                             c10_buffer[9] = 0x00;
                             c10_buffer[10] = 0x3d;
-                            c10_buffer[11] = 0x2d;
 
                             // Timestamp
+                            c10_buffer[11] = 0b00101000 | (((frameVec[26044] & 0b111111) << 2 | frameVec[26045] >> 6) & 0b111);
                             c10_buffer[12] = (frameVec[26045] & 0b111111) << 2 | frameVec[26046] >> 6;
                             c10_buffer[13] = (frameVec[26046] & 0b111111) << 2 | frameVec[26047] >> 6;
                             c10_buffer[14] = (frameVec[26047] & 0b111111) << 2 | frameVec[26048] >> 6;

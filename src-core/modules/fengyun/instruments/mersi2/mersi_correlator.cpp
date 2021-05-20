@@ -6,11 +6,12 @@ namespace fengyun
     {
         MERSICorrelator::MERSICorrelator()
         {
-            checking = false;
             m250Frames = 0;
             m1000Frames = 0;
             complete = 0;
-            incomplete = 0;
+
+            for (int i = 0; i < 430; i++)
+                scanBuffer[i] = std::vector<uint8_t>(99120 / 8);
         }
 
         // Export decoded data
@@ -74,9 +75,10 @@ namespace fengyun
         {
             complete++;
 
-            for (std::vector<uint8_t> &frameVec : scanBuffer)
+            for (int i = 0; i < 430; i++)
             {
-                int marker = (frameVec[3] % (int)pow(2, 3)) << 7 | frameVec[4] >> 1;
+                int marker = i; // Silly, but cleans things up
+                std::vector<uint8_t> &frameVec = scanBuffer[i];
 
                 if (marker >= 240)
                 {
@@ -144,40 +146,18 @@ namespace fengyun
                 }
             }
 
-            scanBuffer.clear();
+            for (int i = 0; i < 430; i++)
+                scanBuffer[i] = std::vector<uint8_t>(99120 / 8);
         }
 
         void MERSICorrelator::feedFrames(int marker, std::vector<uint8_t> &data)
         {
-            // Scan start
-            if (marker == 0) // First frame has marker 0
-            {
-                checking = true;
-                lastMarker = marker;
-                scanBuffer.push_back(data); // Buffer it
-                return;
-            }
+            // Much simpler than before!
+            if (marker == 0)
+                processScan();
 
-            if (checking)
-            {
-                if (lastMarker + 1 == marker)
-                {
-                    lastMarker++;
-                    scanBuffer.push_back(data); // Buffer it
-
-                    // Complete! Let's read it.
-                    if (lastMarker == 429)
-                    {
-                        processScan();
-                    }
-                }
-                else // The scan is incomplete, discard
-                {
-                    incomplete++;
-                    scanBuffer.clear();
-                    checking = false;
-                }
-            }
+            if (marker < 430)
+                scanBuffer[marker] = data;
         }
     } // namespace mersi2
 } // namespace fengyun

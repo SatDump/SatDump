@@ -13,16 +13,14 @@ namespace fengyun
         class MERSICorrelator
         {
         private:
-            int lastMarker;
-            bool checking;
-            std::vector<std::vector<uint8_t>> scanBuffer;
+            std::vector<uint8_t> scanBuffer[350];
             void processScan();
             MERSI250Reader reader1, reader2, reader3, reader4, reader5;
             MERSI1000Reader reader6, reader7, reader8, reader9, reader10, reader11, reader12, reader13, reader14,
                 reader15, reader16, reader17, reader18, reader19, reader20;
 
         public:
-            int complete, incomplete;
+            int complete;
             MERSICorrelator();
             void feedFrames(int marker, std::vector<uint8_t> &data);
 
