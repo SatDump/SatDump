@@ -1,5 +1,5 @@
 #include "module_metop_ahrpt_decoder.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
+#include "common/sathelper/reedsolomon_233.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 

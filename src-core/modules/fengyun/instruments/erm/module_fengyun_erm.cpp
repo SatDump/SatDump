@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "erm_reader.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

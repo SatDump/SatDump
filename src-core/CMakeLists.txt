@@ -6,7 +6,7 @@ include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
 file(GLOB_RECURSE SatDump_core_CPPS  *.cpp 
-                                     modules/common/aec/*.c
+                                     common/aec/*.c
 )
 
 find_package(PkgConfig)

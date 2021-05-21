@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/sathelper/viterbi27.h"
+#include "common/sathelper/viterbi27.h"
 #include <fstream>
 
 namespace saral

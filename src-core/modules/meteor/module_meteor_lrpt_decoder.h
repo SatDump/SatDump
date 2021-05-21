@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/viterbi/viterbi27.h"
+#include "common/viterbi/viterbi27.h"
 #include <fstream>
 
 namespace meteor

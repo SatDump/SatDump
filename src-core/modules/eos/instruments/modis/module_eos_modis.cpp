@@ -1,13 +1,13 @@
 #include "module_eos_modis.h"
 #include <fstream>
 #include "modis_reader.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "modules/common/bowtie.h"
-#include "modules/common/image.h"
+#include "common/bowtie.h"
+#include "common/image.h"
 
 #define BUFFER_SIZE 8192
 

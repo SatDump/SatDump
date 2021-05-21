@@ -1,7 +1,7 @@
 #include "module_proba_vegetation.h"
 #include <fstream>
-#include "modules/common/ccsds/ccsds_1_0_proba/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"

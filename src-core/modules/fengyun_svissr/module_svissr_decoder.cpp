@@ -1,6 +1,6 @@
 #include "module_svissr_decoder.h"
 #include "logger.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "svissr_deframer.h"
 #include "svissr_derand.h"

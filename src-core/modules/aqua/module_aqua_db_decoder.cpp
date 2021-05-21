@@ -1,7 +1,7 @@
 #include "module_aqua_db_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/sathelper/reedsolomon_233.h"
+#include "common/differential/nrzm.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)

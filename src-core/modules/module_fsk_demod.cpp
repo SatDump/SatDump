@@ -1,5 +1,5 @@
 #include "module_fsk_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>

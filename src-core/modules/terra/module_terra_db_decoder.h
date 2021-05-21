@@ -2,9 +2,9 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/sathelper/viterbi27.h"
+#include "common/sathelper/viterbi27.h"
 #include <fstream>
-#include "modules/common/dsp/lib/random.h"
+#include "common/dsp/lib/random.h"
 
 namespace terra
 {

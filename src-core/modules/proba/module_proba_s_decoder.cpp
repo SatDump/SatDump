@@ -1,9 +1,9 @@
 #include "module_proba_s_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/sathelper/correlator.h"
-#include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/sathelper/derandomizer.h"
+#include "common/sathelper/reedsolomon_233.h"
+#include "common/sathelper/correlator.h"
+#include "common/sathelper/packetfixer.h"
+#include "common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 #include <cmath>
 

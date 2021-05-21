@@ -1,7 +1,7 @@
 #include "module_jason3_poseidon.h"
 #include <fstream>
-#include "modules/common/ccsds/ccsds_1_0_jason/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_jason/vcdu.h"
+#include "common/ccsds/ccsds_1_0_jason/demuxer.h"
+#include "common/ccsds/ccsds_1_0_jason/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"

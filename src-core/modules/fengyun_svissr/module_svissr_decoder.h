@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "modules/common/dsp/lib/random.h"
+#include "common/dsp/lib/random.h"
 
 namespace fengyun_svissr
 {

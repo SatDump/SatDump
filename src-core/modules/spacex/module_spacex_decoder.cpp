@@ -1,8 +1,8 @@
 #include "module_spacex_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/derandomizer.h"
-#include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/sathelper/reedsolomon_239.h"
+#include "common/sathelper/derandomizer.h"
+#include "common/sathelper/packetfixer.h"
+#include "common/sathelper/reedsolomon_239.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192 * 10

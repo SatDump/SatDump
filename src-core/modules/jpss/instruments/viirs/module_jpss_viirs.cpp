@@ -2,13 +2,13 @@
 #include <fstream>
 #include "channel_reader.h"
 #include "channel_correlator.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "modules/common/bowtie.h"
-#include "modules/common/image.h"
+#include "common/bowtie.h"
+#include "common/image.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

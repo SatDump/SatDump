@@ -1,9 +1,9 @@
 #include "module_fengyun_ahrpt_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/sathelper/packetfixer.h"
+#include "common/sathelper/reedsolomon_233.h"
+#include "common/sathelper/packetfixer.h"
 #include "diff.h"
-#include "modules/common/ctpl/ctpl_stl.h"
+#include "common/ctpl/ctpl_stl.h"
 #include "modules/metop/instruments/iasi/utils.h"
 #include "imgui/imgui.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "block.h"
-#include "modules/common/delay_one_imag.h"
+#include "common/delay_one_imag.h"
 
 namespace dsp
 {

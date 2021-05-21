@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "modules/common/ctpl/ctpl_stl.h"
+#include "common/ctpl/ctpl_stl.h"
 #include "image/infrared1_reader.h"
 #include "image/infrared2_reader.h"
 #include "image/visible_reader.h"

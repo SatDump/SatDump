@@ -1,13 +1,13 @@
 #include "module_meteor_lrpt_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/sathelper/correlator.h"
-#include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/sathelper/derandomizer.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/sathelper/reedsolomon_233.h"
+#include "common/sathelper/correlator.h"
+#include "common/sathelper/packetfixer.h"
+#include "common/sathelper/derandomizer.h"
+#include "common/differential/nrzm.h"
 #include "imgui/imgui.h"
-#include "modules/common/viterbi/viterbi27.h"
-#include "modules/common/correlator.h"
+#include "common/viterbi/viterbi27.h"
+#include "common/correlator.h"
 
 #define FRAME_SIZE 1024
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2
