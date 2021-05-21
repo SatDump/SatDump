@@ -45,8 +45,8 @@ namespace aqua
         // I/Q Buffers
         uint8_t decodedBufI[BUFFER_SIZE / 2];
         uint8_t decodedBufQ[BUFFER_SIZE / 2];
-        uint8_t bufI[(BUFFER_SIZE / 8) / 2 + 1];
-        uint8_t bufQ[(BUFFER_SIZE / 8) / 2 + 1];
+        uint8_t bufI[(BUFFER_SIZE / 8) / 2];
+        uint8_t bufQ[(BUFFER_SIZE / 8) / 2];
 
         // Final buffer after decoding
         uint8_t finalBuffer[(BUFFER_SIZE / 8)];
@@ -55,6 +55,9 @@ namespace aqua
         uint8_t byteShifter = 0;
         int inByteShifter = 0;
         int inFinalByteBuffer;
+
+        // 2 NRZ-M Decoders
+        diff::NRZMDiff diff1, diff2;
 
         while (!data_in.eof())
         {
@@ -92,7 +95,6 @@ namespace aqua
             // Group symbols into bytes now, I channel
             inFinalByteBuffer = 1;
             inByteShifter = 0;
-            bufI[0] = bufI[512]; // Reuse some of last run's data
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
                 byteShifter = byteShifter << 1 | decodedBufI[i];
@@ -108,7 +110,6 @@ namespace aqua
             // Group symbols into bytes now, Q channel
             inFinalByteBuffer = 1;
             inByteShifter = 0;
-            bufQ[0] = bufQ[512]; // Reuse some of last run's data
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
                 byteShifter = byteShifter << 1 | decodedBufQ[i];
@@ -122,28 +123,28 @@ namespace aqua
             }
 
             // Differential decoding for both of them
-            diff::nrzm_decode(bufI, (BUFFER_SIZE / 8) / 2 + 1);
-            diff::nrzm_decode(bufQ, (BUFFER_SIZE / 8) / 2 + 1);
+            diff1.decode(bufI, (BUFFER_SIZE / 8) / 2);
+            diff2.decode(bufQ, (BUFFER_SIZE / 8) / 2);
 
             // Interleave them back
             for (int i = 0; i < (BUFFER_SIZE / 8) / 2; i++)
             {
-                finalBuffer[i * 2] = getBit<uint8_t>(bufI[i + 1], 7) << 7 |
-                                     getBit<uint8_t>(bufQ[i + 1], 7) << 6 |
-                                     getBit<uint8_t>(bufI[i + 1], 6) << 5 |
-                                     getBit<uint8_t>(bufQ[i + 1], 6) << 4 |
-                                     getBit<uint8_t>(bufI[i + 1], 5) << 3 |
-                                     getBit<uint8_t>(bufQ[i + 1], 5) << 2 |
-                                     getBit<uint8_t>(bufI[i + 1], 4) << 1 |
-                                     getBit<uint8_t>(bufQ[i + 1], 4) << 0;
-                finalBuffer[i * 2 + 1] = getBit<uint8_t>(bufI[i + 1], 3) << 7 |
-                                         getBit<uint8_t>(bufQ[i + 1], 3) << 6 |
-                                         getBit<uint8_t>(bufI[i + 1], 2) << 5 |
-                                         getBit<uint8_t>(bufQ[i + 1], 2) << 4 |
-                                         getBit<uint8_t>(bufI[i + 1], 1) << 3 |
-                                         getBit<uint8_t>(bufQ[i + 1], 1) << 2 |
-                                         getBit<uint8_t>(bufI[i + 1], 0) << 1 |
-                                         getBit<uint8_t>(bufQ[i + 1], 0) << 0;
+                finalBuffer[i * 2] = getBit<uint8_t>(bufI[i], 7) << 7 |
+                                     getBit<uint8_t>(bufQ[i], 7) << 6 |
+                                     getBit<uint8_t>(bufI[i], 6) << 5 |
+                                     getBit<uint8_t>(bufQ[i], 6) << 4 |
+                                     getBit<uint8_t>(bufI[i], 5) << 3 |
+                                     getBit<uint8_t>(bufQ[i], 5) << 2 |
+                                     getBit<uint8_t>(bufI[i], 4) << 1 |
+                                     getBit<uint8_t>(bufQ[i], 4) << 0;
+                finalBuffer[i * 2 + 1] = getBit<uint8_t>(bufI[i], 3) << 7 |
+                                         getBit<uint8_t>(bufQ[i], 3) << 6 |
+                                         getBit<uint8_t>(bufI[i], 2) << 5 |
+                                         getBit<uint8_t>(bufQ[i], 2) << 4 |
+                                         getBit<uint8_t>(bufI[i], 1) << 3 |
+                                         getBit<uint8_t>(bufQ[i], 1) << 2 |
+                                         getBit<uint8_t>(bufI[i], 0) << 1 |
+                                         getBit<uint8_t>(bufQ[i], 0) << 0;
             }
 
             // Deframe that! (Integrated derand)
@@ -162,12 +163,8 @@ namespace aqua
                         reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 4);
                     }
 
-                    // Write it to our output file! But only corrected frames...
-                    //if (errors > -4)
-                    //{
-                    //data_out_total += CADU_SIZE;
+                    // Write it to our output file!
                     data_out.write((char *)&cadu, CADU_SIZE);
-                    //}
                 }
             }
 
