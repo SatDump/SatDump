@@ -1,6 +1,6 @@
 #include "module_svissr_image_decoder.h"
 #include "logger.h"
-#include "common/differential/nrzs.h"
+#include "common/codings/differential/nrzs.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>

@@ -4,10 +4,10 @@
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
-#include "common/differential/nrzm.h"
+#include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
-#include "common/viterbi/viterbi27.h"
-#include "common/correlator.h"
+#include "common/codings/viterbi/viterbi27.h"
+#include "common/codings/correlator.h"
 
 #define FRAME_SIZE 1024
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2

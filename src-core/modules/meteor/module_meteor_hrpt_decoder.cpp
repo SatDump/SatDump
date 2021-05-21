@@ -1,6 +1,6 @@
 #include "module_meteor_hrpt_decoder.h"
 #include "logger.h"
-#include "common/manchester.h"
+#include "common/codings/manchester.h"
 #include "imgui/imgui.h"
 
 // Return filesize

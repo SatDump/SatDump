@@ -3,9 +3,9 @@
 #define TEST_BITS_LENGTH 1024
 
 #include "common/sathelper/packetfixer.h"
-#include "common/viterbi/cc_decoder_impl.h"
-#include "common/viterbi/cc_encoder_impl.h"
-#include "common/viterbi/depuncture_bb_impl.h"
+#include "common/codings/viterbi/cc_decoder_impl.h"
+#include "common/codings/viterbi/cc_encoder_impl.h"
+#include "common/codings/viterbi/depuncture_bb_impl.h"
 #include "common/repack_bits_byte.h"
 
 namespace metop

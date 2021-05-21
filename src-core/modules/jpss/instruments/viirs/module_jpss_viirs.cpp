@@ -7,8 +7,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/bowtie.h"
-#include "common/image.h"
+#include "common/image/bowtie.h"
+#include "common/image/image.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
