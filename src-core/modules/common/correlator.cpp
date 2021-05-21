@@ -73,7 +73,7 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
         uint8_t shifter = 0;
         for (int i = 0; i < length; i++)
         {
-            shifter = shifter << 1 | (soft_input[i] < 0);
+            shifter = shifter << 1 | (soft_input[i] >= 0);
             bits++;
 
             if (bits == 8)
@@ -92,7 +92,7 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
         // Check pos 0
         for (int p = 0; p < 8; p++)
         {
-            if (corr_64(syncwords[p], current) > 40)
+            if (corr_64(syncwords[p], current) > 45)
             {
                 phase = (phase_t)(p % 4);
                 swap = (p / 4) == 0;

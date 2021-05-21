@@ -6,9 +6,7 @@
 #include "modules/common/sathelper/derandomizer.h"
 #include "modules/common/differential/nrzm.h"
 #include "imgui/imgui.h"
-#include "modules/common/viterbi/cc_decoder_impl.h"
-#include "modules/common/repack_bits_byte.h"
-#include "modules/common/utils.h"
+#include "modules/common/viterbi/viterbi27.h"
 #include "modules/common/correlator.h"
 
 #define FRAME_SIZE 1024
@@ -21,7 +19,7 @@ namespace meteor
 {
     METEORLRPTDecoderModule::METEORLRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                             diff_decode(std::stoi(parameters["diff_decode"])),
-                                                                                                                                                            viterbi(ENCODED_FRAME_SIZE / 2)
+                                                                                                                                                            viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
@@ -67,14 +65,11 @@ namespace meteor
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
-        uint8_t bufferh[FRAME_SIZE * 8];
-        uint8_t bufferu[ENCODED_FRAME_SIZE];
 
         phase_t phase;
         bool swap;
 
         // Vectors are inverted
-        fec::code::cc_decoder_impl cc_decoder_in(ENCODED_FRAME_SIZE / 2, 7, 2, {-79, -109}, 0, -1, CC_STREAMING, false);
         diff::NRZMDiff diff;
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
@@ -90,7 +85,7 @@ namespace meteor
             if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
                 std::memmove(buffer, &buffer[pos], pos);
-                
+
                 if (input_data_type == DATA_FILE)
                     data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
                 else
@@ -101,26 +96,7 @@ namespace meteor
             packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
 
             // Viterbi
-            viterbi.decode(buffer, frameBuffer); // This gotta get removed ASAP... Gotta write a wrapper for the other one
-
-            char_array_to_uchar((int8_t *)buffer, bufferu, ENCODED_FRAME_SIZE);
-            cc_decoder_in.generic_work(bufferu, bufferh);
-
-            // Repack
-            int inbuf = 0, inbyte = 0;
-            uint8_t shifter = 0;
-            for (int i = 0; i < ENCODED_FRAME_SIZE / 2; i++)
-            {
-                shifter = shifter << 1 | bufferh[i];
-                inbuf++;
-
-                if (inbuf == 8)
-                {
-                    frameBuffer[inbyte] = shifter;
-                    inbuf = 0;
-                    inbyte++;
-                }
-            }
+            viterbi.work((int8_t *)buffer, frameBuffer);
 
             if (diff_decode)
                 diff.decode(frameBuffer, FRAME_SIZE);
@@ -153,7 +129,7 @@ namespace meteor
             {
                 lastTime = time(NULL);
                 std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.GetPercentBER()) + "%, Lock : " + lock_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.ber() * 100) + "%, Lock : " + lock_state);
             }
         }
 
@@ -170,7 +146,7 @@ namespace meteor
     {
         ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-        float ber = viterbi.GetPercentBER() / 100.0f;
+        float ber = viterbi.ber();
 
         ImGui::BeginGroup();
         {

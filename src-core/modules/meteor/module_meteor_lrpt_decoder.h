@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/sathelper/viterbi27.h"
+#include "modules/common/viterbi/viterbi27.h"
 #include <fstream>
 
 namespace meteor
@@ -26,7 +26,7 @@ namespace meteor
         int errors[4];
         int cor;
 
-        sathelper::Viterbi27 viterbi;
+        viterbi::Viterbi27 viterbi;
 
         // UI Stuff
         float ber_history[200];
