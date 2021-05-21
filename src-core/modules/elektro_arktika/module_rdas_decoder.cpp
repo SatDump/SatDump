@@ -1,6 +1,6 @@
 #include "module_rdas_decoder.h"
 #include "logger.h"
-#include "common/differential/nrzm.h"
+#include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192

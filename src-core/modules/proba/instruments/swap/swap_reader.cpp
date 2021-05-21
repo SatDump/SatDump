@@ -4,7 +4,7 @@
 #include <map>
 #include <filesystem>
 #include "logger.h"
-#include "common/image.h"
+#include "common/image/image.h"
 
 #define WRITE_IMAGE_LOCAL(image, path)         \
     image.save_png(std::string(path).c_str()); \

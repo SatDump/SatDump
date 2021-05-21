@@ -1,7 +1,7 @@
 #include "module_noaa_dsb_demod.h"
 #include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
-#include "common/manchester.h"
+#include "common/codings/manchester.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 

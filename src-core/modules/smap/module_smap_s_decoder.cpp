@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
-#include "common/differential/nrzm.h"
+#include "common/codings/differential/nrzm.h"
 #include "common/sathelper/reedsolomon_239.h"
 
 #define BUFFER_SIZE 8192 * 10

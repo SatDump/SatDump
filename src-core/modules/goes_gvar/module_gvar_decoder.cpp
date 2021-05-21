@@ -1,6 +1,6 @@
 #include "module_gvar_decoder.h"
 #include "logger.h"
-#include "common/differential/nrzs.h"
+#include "common/codings/differential/nrzs.h"
 #include "imgui/imgui.h"
 #include "gvar_deframer.h"
 #include "gvar_derand.h"

@@ -4,7 +4,7 @@
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
-#include "common/differential/nrzm.h"
+#include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 
 #define FRAME_SIZE 1024
