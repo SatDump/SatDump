@@ -1,5 +1,5 @@
 #include "viterbi27.h"
-#include "modules/common/utils.h"
+#include "common/utils.h"
 
 namespace viterbi
 {

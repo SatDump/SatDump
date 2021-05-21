@@ -1,6 +1,6 @@
 #include "module_falcon_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/derandomizer.h"
+#include "common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 #include "demuxer.h"
 

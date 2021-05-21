@@ -2,7 +2,7 @@
 
 #define TestBitsLen 1024
 
-#include "modules/common/viterbi_lib/viterbi.h"
+#include "common/viterbi_lib/viterbi.h"
 
 namespace fengyun
 {

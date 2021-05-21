@@ -7,7 +7,7 @@
 #include "mersi_1000m_reader.h"
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
-#include "modules/common/bowtie.h"
+#include "common/bowtie.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

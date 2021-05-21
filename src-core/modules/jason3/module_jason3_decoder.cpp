@@ -1,10 +1,10 @@
 #include "module_jason3_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_239.h"
-#include "modules/common/sathelper/correlator.h"
-#include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/sathelper/derandomizer.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/sathelper/reedsolomon_239.h"
+#include "common/sathelper/correlator.h"
+#include "common/sathelper/packetfixer.h"
+#include "common/sathelper/derandomizer.h"
+#include "common/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include <cmath>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/buffer.h"
+#include "common/dsp/buffer.h"
 #include "live.h"
 #include <vector>
 

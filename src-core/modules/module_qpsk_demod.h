@@ -5,14 +5,14 @@
 #include <thread>
 #include <fstream>
 #include <atomic>
-#include "modules/common/dsp/agc.h"
-#include "modules/common/dsp/fir.h"
-#include "modules/common/dsp/costas_loop.h"
-#include "modules/common/dsp/clock_recovery_mm.h"
-#include "modules/common/dsp/file_source.h"
-#include "modules/common/dsp/dc_blocker.h"
-#include "modules/common/dsp/rational_resampler.h"
-#include "modules/common/snr_estimator.h"
+#include "common/dsp/agc.h"
+#include "common/dsp/fir.h"
+#include "common/dsp/costas_loop.h"
+#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/file_source.h"
+#include "common/dsp/dc_blocker.h"
+#include "common/dsp/rational_resampler.h"
+#include "common/snr_estimator.h"
 
 class QPSKDemodModule : public ProcessingModule
 {

@@ -6,7 +6,7 @@
 #include <cstring>
 #include "logger.h"
 #include <volk/volk_alloc.hh>
-#include "modules/common/dsp/file_source.h"
+#include "common/dsp/file_source.h"
 
 #ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
@@ -116,7 +116,7 @@ void startRealLive()
     liveModules[0]->input_stream = moduleStream;
     liveModules[0]->setInputType(DATA_DSP_STREAM);
     liveModules[0]->setOutputType(liveModules.size() > 1 ? DATA_STREAM : DATA_FILE);
-    liveModules[0]->output_fifo = std::make_shared<RingBuffer<uint8_t>>(1000000);
+    liveModules[0]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
     liveModules[0]->init();
     liveModules[0]->input_active = true;
     processThreadPool.push([=](int) { logger->info("Start processing...");
@@ -126,7 +126,7 @@ void startRealLive()
     for (int i = 1; i < liveModules.size() - 1; i++)
     {
         liveModules[i]->input_fifo = liveModules[i - 1]->output_fifo;
-        liveModules[i]->output_fifo = std::make_shared<RingBuffer<uint8_t>>(1000000);
+        liveModules[i]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
         liveModules[i]->setInputType(DATA_STREAM);
         liveModules[i]->setOutputType(DATA_STREAM);
         liveModules[i]->init();

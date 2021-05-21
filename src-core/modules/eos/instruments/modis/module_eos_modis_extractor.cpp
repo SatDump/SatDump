@@ -1,8 +1,8 @@
 #include "module_eos_modis_extractor.h"
 #include <fstream>
 #include "modis_reader.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"

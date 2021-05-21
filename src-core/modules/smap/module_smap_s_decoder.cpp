@@ -1,9 +1,9 @@
 #include "module_smap_s_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/derandomizer.h"
+#include "common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
-#include "modules/common/differential/nrzm.h"
-#include "modules/common/sathelper/reedsolomon_239.h"
+#include "common/differential/nrzm.h"
+#include "common/sathelper/reedsolomon_239.h"
 
 #define BUFFER_SIZE 8192 * 10
 

@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 #include "viterbi.h"
 #include <fstream>
 
