@@ -1,16 +1,8 @@
-/*
- * reedsolomon.cpp
- *
- *  Created on: 04/11/2016
- *      Author: Lucas teske
- */
-
-#include "reedsolomon_233.h"
+#include "reedsolomon.h"
 #include <cstring>
 
-namespace sathelper
+namespace reedsolomon
 {
-
     unsigned char ToDualBasis[256] = {0x00, 0x7b, 0xaf, 0xd4, 0x99, 0xe2, 0x36, 0x4d, 0xfa, 0x81, 0x55, 0x2e, 0x63, 0x18, 0xcc, 0xb7, 0x86, 0xfd, 0x29, 0x52, 0x1f,
                                       0x64, 0xb0, 0xcb, 0x7c, 0x07, 0xd3, 0xa8, 0xe5, 0x9e, 0x4a, 0x31, 0xec, 0x97, 0x43, 0x38, 0x75, 0x0e, 0xda, 0xa1, 0x16, 0x6d, 0xb9, 0xc2, 0x8f, 0xf4,
                                       0x20, 0x5b, 0x6a, 0x11, 0xc5, 0xbe, 0xf3, 0x88, 0x5c, 0x27, 0x90, 0xeb, 0x3f, 0x44, 0x09, 0x72, 0xa6, 0xdd, 0xef, 0x94, 0x40, 0x3b, 0x76, 0x0d, 0xd9,
@@ -35,37 +27,45 @@ namespace sathelper
                                         0xf3, 0x3f, 0x5f, 0x93, 0xa9, 0x65, 0x05, 0xc9, 0xd0, 0x1c, 0x7c, 0xb0, 0x59, 0x95, 0xf5, 0x39, 0x20, 0xec, 0x8c, 0x40, 0x54, 0x98, 0xf8, 0x34, 0x2d,
                                         0xe1, 0x81, 0x4d, 0xa4, 0x68, 0x08, 0xc4, 0xdd, 0x11, 0x71, 0xbd};
 
-    ReedSolomon::ReedSolomon()
+    ReedSolomon::ReedSolomon(RS_TYPE type)
     {
-        this->rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 112, 11, 32);
+        if (type == RS223)
+        {
+            rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 112, 11, 32);
+            d_coded_bits = 223;
+        }
+        else if (type == RS239)
+        {
+            rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 120, 11, 16);
+            d_coded_bits = 239;
+        }
     }
 
     ReedSolomon::~ReedSolomon()
     {
-        correct_reed_solomon_destroy(this->rs);
+        correct_reed_solomon_destroy(rs);
     }
 
-    uint32_t ReedSolomon::decode_ccsds(uint8_t *data)
+    void ReedSolomon::decode_interlaved(uint8_t *data, bool ccsds, int i, int *errors)
     {
-        for (int i = 0; i < 255; i++)
+        for (int b = 0; b < i; b++)
         {
-            data[i] = FromDualBasis[data[i]];
+            deinterleave(data, buff, b, i);
+            errors[b] = decode(buff, ccsds);
+            interleave(buff, data, b, i);
         }
-
-        int errors = decode_rs8(data);
-
-        for (int i = 0; i < 255; i++)
-        {
-            data[i] = ToDualBasis[data[i]];
-        }
-
-        return errors;
     }
 
-    uint32_t ReedSolomon::decode_rs8(uint8_t *data)
+    int ReedSolomon::decode(uint8_t *data, bool ccsds)
     {
-        uint8_t odata[255];
+        if (ccsds)
+        {
+            for (int i = 0; i < 255; i++)
+                data[i] = FromDualBasis[data[i]];
+        }
+
         int err = correct_reed_solomon_decode(this->rs, data, 255, odata);
+
         if (err == -1)
         {
             return -1;
@@ -73,32 +73,62 @@ namespace sathelper
         else
         {
             err = 0;
+
             // Calculate wrong bytes
-            for (int i = 0; i < 223; i++)
+            for (int i = 0; i < d_coded_bits; i++)
             {
                 if ((data[i] ^ odata[i]) != 0)
-                {
                     err++;
-                }
             }
         }
+
         std::memcpy(data, odata, 255);
+
+        if (ccsds)
+        {
+            for (int i = 0; i < 255; i++)
+                data[i] = ToDualBasis[data[i]];
+        }
+
         return err;
     }
 
-    void ReedSolomon::deinterleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t I)
+    void ReedSolomon::encode_interlaved(uint8_t *data, bool ccsds, int i)
     {
-        for (int i = 0; i < 255; i++)
+        for (int b = 0; b < i; b++)
         {
-            output[i] = data[i * I + pos];
+            deinterleave(data, buff, b, i);
+            encode(buff, ccsds);
+            interleave(buff, data, b, i);
         }
     }
 
-    void ReedSolomon::interleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t I)
+    void ReedSolomon::encode(uint8_t *data, bool ccsds)
     {
-        for (int i = 0; i < 255; i++)
+        if (ccsds)
         {
-            output[i * I + pos] = data[i];
+            for (int ii = 0; ii < 255; ii++)
+                data[ii] = FromDualBasis[data[ii]];
+        }
+
+        correct_reed_solomon_encode(rs, data, d_coded_bits, data);
+
+        if (ccsds)
+        {
+            for (int ii = 0; ii < 255; ii++)
+                data[ii] = ToDualBasis[data[ii]];
         }
     }
-} // namespace sathelper
+
+    void ReedSolomon::deinterleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t i)
+    {
+        for (int ii = 0; ii < 255; ii++)
+            output[ii] = data[ii * i + pos];
+    }
+
+    void ReedSolomon::interleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t i)
+    {
+        for (int ii = 0; ii < 255; ii++)
+            output[ii * i + pos] = data[ii];
+    }
+};

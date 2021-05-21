@@ -1,6 +1,6 @@
 #include "module_terra_db_decoder.h"
 #include "logger.h"
-#include "common/sathelper/reedsolomon_233.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
@@ -50,7 +50,7 @@ namespace terra
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -105,12 +105,7 @@ namespace terra
                 diff::nrzm_decode(frameBuffer, FRAME_SIZE);
 
                 // RS Correction
-                for (int i = 0; i < 4; i++)
-                {
-                    reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 4);
-                    errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                    reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 4);
-                }
+                rs.decode_interlaved(&frameBuffer[4], true, 4, errors);
 
                 // Derandomize that frame
                 derand.work(&frameBuffer[10], 886);
