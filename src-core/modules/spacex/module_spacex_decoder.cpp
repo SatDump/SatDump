@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "common/sathelper/derandomizer.h"
 #include "common/sathelper/packetfixer.h"
-#include "common/sathelper/reedsolomon_239.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192 * 10
@@ -42,7 +42,7 @@ namespace spacex
 
         time_t lastTime = 0;
 
-        sathelper::ReedSolomon239 reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS239);
         sathelper::Derandomizer derand;
 
         // Final buffer after decoding
@@ -114,12 +114,7 @@ namespace spacex
                 for (std::array<uint8_t, ccsds::ccsds_1_0_proba::CADU_SIZE> cadu : frameBuffer)
                 {
                     // RS Correction
-                    for (int i = 0; i < 5; i++)
-                    {
-                        reedSolomon.deinterleave(&cadu[4], rsWorkBuffer, i, 5);
-                        errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                        reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 5);
-                    }
+                    rs.decode_interlaved(&cadu[4], true, 5, errors);
 
                     derand.work(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
 

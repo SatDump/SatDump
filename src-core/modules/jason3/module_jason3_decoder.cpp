@@ -1,6 +1,6 @@
 #include "module_jason3_decoder.h"
 #include "logger.h"
-#include "common/sathelper/reedsolomon_239.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
@@ -61,7 +61,7 @@ namespace jason3
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        sathelper::ReedSolomon239 reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS239);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -143,12 +143,7 @@ namespace jason3
                 diff_dec.decode(frameBuffer, FRAME_SIZE);
 
                 // RS Correction
-                for (int i = 0; i < 5; i++)
-                {
-                    reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 5);
-                    errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                    reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 5);
-                }
+                rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
 
                 // Derandomize that frame
                 derand.work(&frameBuffer[4], FRAME_SIZE - 4);

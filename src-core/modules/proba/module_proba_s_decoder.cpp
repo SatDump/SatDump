@@ -1,6 +1,6 @@
 #include "module_proba_s_decoder.h"
 #include "logger.h"
-#include "common/sathelper/reedsolomon_233.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
@@ -52,7 +52,7 @@ namespace proba
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -108,12 +108,7 @@ namespace proba
                 }
 
                 // RS Correction
-                for (int i = 0; i < 5; i++)
-                {
-                    reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 5);
-                    errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                    reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 5);
-                }
+                rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
 
                 // Write it out if it's not garbage
                 if (cor > 50)

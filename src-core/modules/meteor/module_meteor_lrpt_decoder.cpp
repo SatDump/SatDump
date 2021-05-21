@@ -1,6 +1,5 @@
 #include "module_meteor_lrpt_decoder.h"
 #include "logger.h"
-#include "common/sathelper/reedsolomon_233.h"
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
@@ -8,6 +7,7 @@
 #include "imgui/imgui.h"
 #include "common/codings/viterbi/viterbi27.h"
 #include "common/codings/correlator.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 
 #define FRAME_SIZE 1024
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2
@@ -61,7 +61,7 @@ namespace meteor
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -105,12 +105,7 @@ namespace meteor
             derand.work(&frameBuffer[4], FRAME_SIZE - 4);
 
             // RS Correction
-            for (int i = 0; i < 4; i++)
-            {
-                reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 4);
-                errors[i] = reedSolomon.decode_rs8(rsWorkBuffer);
-                reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 4);
-            }
+            rs.decode_interlaved(&frameBuffer[4], false, 4, errors);
 
             // Write it out if it's not garbage
             if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)

@@ -1,5 +1,5 @@
 #include "module_new_metop_ahrpt_decoder.h"
-#include "common/sathelper/reedsolomon_233.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -51,7 +51,7 @@ namespace metop
 
         time_t lastTime = 0;
 
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -75,12 +75,7 @@ namespace metop
                     for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
                     {
                         // RS Decoding
-                        for (int i = 0; i < 4; i++)
-                        {
-                            reedSolomon.deinterleave(&cadu[4], rsWorkBuffer, i, 4);
-                            errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                            reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 4);
-                        }
+                        rs.decode_interlaved(&cadu[4], true, 4, errors);
 
                         // Write it out
                         data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
