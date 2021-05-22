@@ -228,6 +228,7 @@ namespace goes_gvar
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
         logger->info("Dump remaining data...");
+        if (input_data_type == DATA_FILE)
         {
             writingImage = true;
 
