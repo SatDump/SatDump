@@ -145,6 +145,12 @@ void BPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void BPSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -154,6 +160,7 @@ void BPSKDemodModule::process()
     rrc->stop();
     pll->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     if (output_data_type == DATA_FILE)
         data_out.close();

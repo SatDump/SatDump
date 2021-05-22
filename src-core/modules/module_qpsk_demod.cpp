@@ -154,6 +154,12 @@ void QPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void QPSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -165,6 +171,7 @@ void QPSKDemodModule::process()
     rrc->stop();
     pll->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     if (output_data_type == DATA_FILE)
         data_out.close();

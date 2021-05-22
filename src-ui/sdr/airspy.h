@@ -17,6 +17,7 @@ private:
 
 public:
     SDRAirspy(uint64_t id = 0);
+    ~SDRAirspy();
     void start();
     void stop();
     void drawUI();

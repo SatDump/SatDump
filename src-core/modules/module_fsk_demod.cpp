@@ -96,6 +96,12 @@ void FSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void FSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -103,6 +109,7 @@ void FSKDemodModule::process()
     lpf->stop();
     qua->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     data_out.close();
 }

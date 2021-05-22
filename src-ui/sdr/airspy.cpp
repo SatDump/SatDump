@@ -41,7 +41,12 @@ void SDRAirspy::start()
 
 void SDRAirspy::stop()
 {
-    airspy_start_rx(dev, &_rx_callback, nullptr);
+    airspy_stop_rx(dev);
+}
+
+SDRAirspy::~SDRAirspy()
+{
+    airspy_close(dev);
 }
 
 void SDRAirspy::drawUI()
