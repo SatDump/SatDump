@@ -218,11 +218,6 @@ void stopRealLive()
 
 void renderLive()
 {
-    if (ImGui::Button("Stop"))
-    {
-        showUI = false;
-        processThreadPool.push([=](int) { stopRealLive(); });
-    }
 
     // Safety
     if (showUI)
@@ -237,6 +232,12 @@ void renderLive()
         ImGui::Begin("Input FFT", NULL);
         ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
         ImGui::SliderFloat("Scale", &scale, 0, 22);
+        ImGui::SameLine();
+        if (ImGui::Button("Stop"))
+        {
+            showUI = false;
+            processThreadPool.push([=](int) { stopRealLive(); });
+        }
         ImGui::End();
     }
 }
