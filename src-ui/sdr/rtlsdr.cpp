@@ -56,6 +56,12 @@ void SDRRtlSdr::stop()
 {
     should_run = false;
     rtlsdr_cancel_async(dev);
+    if (workThread.joinable())
+        workThread.join();
+}
+
+SDRRtlSdr::~SDRRtlSdr()
+{
     rtlsdr_close(dev);
 }
 

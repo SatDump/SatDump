@@ -37,7 +37,10 @@ public:
     virtual std::vector<ModuleDataType> getOutputTypes() { return {DATA_FILE}; }
     void setInputType(ModuleDataType type);
     void setOutputType(ModuleDataType type);
+    ModuleDataType getInputType();
+    ModuleDataType getOutputType();
     virtual void init();
+    virtual void stop();
     virtual void process() = 0;
     virtual void drawUI(bool window) = 0;
     std::vector<std::string> getOutputs();

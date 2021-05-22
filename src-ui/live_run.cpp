@@ -17,6 +17,9 @@ extern std::vector<std::shared_ptr<ProcessingModule>> liveModules;
 float scale = 1.0f;
 std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
 
+bool process_fft = false;
+std::mutex fft_run;
+
 void processFFT(int)
 {
     int refresh_per_second = 20;
@@ -35,14 +38,24 @@ void processFFT(int)
     //dsp::FileSourceBlock files("/home/alan/Downloads/10-36-51_1701300000Hz.wav", dsp::BasebandType::INTEGER_16, 8192);
     //files.start();
 
-    while (1)
+    fft_run.lock();
+
+    while (process_fft)
     {
         // This also reduces the buffer size for the demod
         if (sample_buffer_vec.size() < FFT_BUFFER_SIZE)
         {
             cnt = radio->output_stream->read();
-            sample_buffer_vec.insert(sample_buffer_vec.end(), radio->output_stream->readBuf, &radio->output_stream->readBuf[cnt]);
-            radio->output_stream->flush();
+
+            if (cnt > 0)
+            {
+                sample_buffer_vec.insert(sample_buffer_vec.end(), radio->output_stream->readBuf, &radio->output_stream->readBuf[cnt]);
+                radio->output_stream->flush();
+            }
+            else
+            {
+                continue;
+            }
         }
 
         std::memcpy(sample_buffer, sample_buffer_vec.data(), FFT_BUFFER_SIZE * sizeof(std::complex<float>));
@@ -83,7 +96,13 @@ void processFFT(int)
             y = 0;
         y++;
     }
+
+    logger->info("FFT exit");
+
+    fft_run.unlock();
 }
+
+bool showUI = false;
 
 void startRealLive()
 {
@@ -92,6 +111,7 @@ void startRealLive()
     SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 #endif
     // 1
+    process_fft = true;
     moduleStream = std::make_shared<dsp::stream<std::complex<float>>>();
     processThreadPool.push(processFFT);
 
@@ -147,20 +167,77 @@ void startRealLive()
         processThreadPool.push([=](int) { logger->info("Start processing...");
                                            liveModules[num]->process(); });
     }
+
+    showUI = true;
+}
+
+void stopRealLive()
+{
+    logger->info("Stop processing");
+    for (std::shared_ptr<ProcessingModule> mod : liveModules)
+    {
+        mod->input_active = false;
+
+        if (mod->getInputType() == DATA_DSP_STREAM)
+        {
+            mod->input_stream->stopReader();
+            mod->input_stream->stopWriter();
+        }
+        else if (mod->getInputType() == DATA_STREAM)
+        {
+            mod->input_fifo->stopReader();
+            mod->input_fifo->stopWriter();
+        }
+        //logger->info("mod");
+        mod->stop();
+    }
+
+    logger->info("Stopping SDR");
+    radio->stop();
+    moduleStream->stopReader();
+    moduleStream->stopWriter();
+
+    logger->info("Stop FFT");
+    process_fft = false;
+    radio->output_stream->stopReader();
+    radio->output_stream->stopWriter();
+    logger->info("lock");
+    fft_run.lock();
+    fft_run.unlock();
+
+    logger->info("Destroying objects");
+    radio.reset();
+    liveModules.clear();
+    moduleStream.reset();
+    logger->info("Live exited!");
+
+    initLive();
+
+    live_processing = false;
 }
 
 void renderLive()
 {
-    radio->drawUI();
+    if (ImGui::Button("Stop"))
+    {
+        showUI = false;
+        processThreadPool.push([=](int) { stopRealLive(); });
+    }
 
-    //ImGui::SetNextWindowPos({0, 0});
-    for (std::shared_ptr<ProcessingModule> mod : liveModules)
-        mod->drawUI(true);
-    //ImGui::Text("LIVE");
+    // Safety
+    if (showUI)
+    {
+        radio->drawUI();
 
-    ImGui::Begin("Input FFT", NULL);
-    ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
-    ImGui::SliderFloat("Scale", &scale, 0, 22);
-    ImGui::End();
+        //ImGui::SetNextWindowPos({0, 0});
+        for (std::shared_ptr<ProcessingModule> mod : liveModules)
+            mod->drawUI(true);
+        //ImGui::Text("LIVE");
+
+        ImGui::Begin("Input FFT", NULL);
+        ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
+        ImGui::SliderFloat("Scale", &scale, 0, 22);
+        ImGui::End();
+    }
 }
 #endif

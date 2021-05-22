@@ -26,7 +26,21 @@ void ProcessingModule::setOutputType(ModuleDataType type)
     output_data_type = type;
 }
 
+ModuleDataType ProcessingModule::getInputType()
+{
+    return input_data_type;
+}
+
+ModuleDataType ProcessingModule::getOutputType()
+{
+    return output_data_type;
+}
+
 void ProcessingModule::init()
+{
+}
+
+void ProcessingModule::stop()
 {
 }
 

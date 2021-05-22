@@ -23,6 +23,7 @@ private:
 
 public:
     SDRRtlSdr(uint64_t id = 0);
+    ~SDRRtlSdr();
     void start();
     void stop();
     void drawUI();
