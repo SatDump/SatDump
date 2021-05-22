@@ -103,6 +103,12 @@ namespace noaa
 
         logger->info("Demodulation finished");
 
+        if (input_data_type == DATA_FILE)
+            stop();
+    }
+
+    void NOAAHRPTDemodModule::stop()
+    {
         // Stop
         if (input_data_type == DATA_FILE)
             file_source->stop();
@@ -110,6 +116,7 @@ namespace noaa
         pll->stop();
         rrc->stop();
         rec->stop();
+        rec->output_stream->stopReader();
 
         data_out.close();
     }
