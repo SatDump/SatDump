@@ -111,11 +111,10 @@ namespace metop
                                 if (counter == 4)
                                     counter = 0;
 
-                                // Other marker
-                                hpt_buffer[10] = 0b00110110;
-                                hpt_buffer[11] = 0b00101001;
-
                                 // Timestamp
+                                uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
+                                hpt_buffer[10] = days >> 1; // I am not sure this will work. Converting to "day count since first frame" may be a requirement... One way to find out
+                                hpt_buffer[11] = 0b0101000 | (pkt.payload[2] & 0b111);
                                 std::memcpy(&hpt_buffer[12], &pkt.payload[3], 3);
 
                                 // Other marker
