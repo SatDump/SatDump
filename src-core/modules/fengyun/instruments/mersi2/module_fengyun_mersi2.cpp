@@ -112,79 +112,79 @@ namespace fengyun
 
             // Write synced channels
             logger->info("Channel 1...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image1, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image1), directory + "/MERSI2-1.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image1, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image1), directory + "/MERSI2-1.png");
 
             logger->info("Channel 2...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image2, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image2), directory + "/MERSI2-2.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image2, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image2), directory + "/MERSI2-2.png");
 
             logger->info("Channel 3...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image3, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image3), directory + "/MERSI2-3.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image3, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image3), directory + "/MERSI2-3.png");
 
             logger->info("Channel 4...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image4, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image4), directory + "/MERSI2-4.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image4, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image4), directory + "/MERSI2-4.png");
 
             logger->info("Channel 5...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image5, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image5), directory + "/MERSI2-5.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image5, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image5), directory + "/MERSI2-5.png");
 
             logger->info("Channel 6...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image6, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image6), directory + "/MERSI2-6.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image6, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image6), directory + "/MERSI2-6.png");
 
             logger->info("Channel 7...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image7, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image7), directory + "/MERSI2-7.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image7, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image7), directory + "/MERSI2-7.png");
 
             logger->info("Channel 8...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image8, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image8), directory + "/MERSI2-8.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image8, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image8), directory + "/MERSI2-8.png");
 
             logger->info("Channel 9...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image9, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image9), directory + "/MERSI2-9.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image9, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image9), directory + "/MERSI2-9.png");
 
             logger->info("Channel 10...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image10, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image10), directory + "/MERSI2-10.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image10, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image10), directory + "/MERSI2-10.png");
 
             logger->info("Channel 11...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image11, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image11), directory + "/MERSI2-11.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image11, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image11), directory + "/MERSI2-11.png");
 
             logger->info("Channel 12...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image12, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image12), directory + "/MERSI2-12.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image12, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image12), directory + "/MERSI2-12.png");
 
             logger->info("Channel 13...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image13, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image13), directory + "/MERSI2-13.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image13, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image13), directory + "/MERSI2-13.png");
 
             logger->info("Channel 14...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image14, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image14), directory + "/MERSI2-14.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image14, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image14), directory + "/MERSI2-14.png");
 
             logger->info("Channel 15...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image15, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image15), directory + "/MERSI2-15.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image15, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image15), directory + "/MERSI2-15.png");
 
             logger->info("Channel 16...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image16, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image16), directory + "/MERSI2-16.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image16, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image16), directory + "/MERSI2-16.png");
 
             logger->info("Channel 17...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image17, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image17), directory + "/MERSI2-17.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image17, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image17), directory + "/MERSI2-17.png");
 
             logger->info("Channel 18...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image18, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image18), directory + "/MERSI2-18.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image18, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image18), directory + "/MERSI2-18.png");
 
             logger->info("Channel 19...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image19, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image19), directory + "/MERSI2-19.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image19, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image19), directory + "/MERSI2-19.png");
 
             logger->info("Channel 20...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image20, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image20), directory + "/MERSI2-20.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image20, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image20), directory + "/MERSI2-20.png");
 
             logger->info("Channel 21...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image21, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image21), directory + "/MERSI2-21.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image21, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image21), directory + "/MERSI2-21.png");
 
             logger->info("Channel 22...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image22, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image22), directory + "/MERSI2-22.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image22, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image22), directory + "/MERSI2-22.png");
 
             logger->info("Channel 23...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image23, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image23), directory + "/MERSI2-23.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image23, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image23), directory + "/MERSI2-23.png");
 
             logger->info("Channel 24...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image24, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image24), directory + "/MERSI2-24.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image24, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image24), directory + "/MERSI2-24.png");
 
             logger->info("Channel 25...");
-            WRITE_IMAGE((bowtie ? bowtie::correctGenericBowTie(mersiCorrelator->image25, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image25), directory + "/MERSI2-25.png");
+            WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image25, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image25), directory + "/MERSI2-25.png");
 
             // Output a few nice composites as well
             logger->info("221 Composite...");
@@ -199,7 +199,7 @@ namespace fengyun
                     image221.draw_image(7, 0, 0, 2, tempImage1);
 
                     if (bowtie)
-                        image221 = bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
+                        image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image221, directory + "/MERSI2-RGB-221.png");
             }
@@ -212,7 +212,7 @@ namespace fengyun
                 image341.draw_image(24, 0, 0, 2, mersiCorrelator->image1);
 
                 if (bowtie)
-                    image341 = bowtie::correctGenericBowTie(image341, 3, scanHeight_250, alpha, beta);
+                    image341 = image::bowtie::correctGenericBowTie(image341, 3, scanHeight_250, alpha, beta);
 
                 WRITE_IMAGE(image341, directory + "/MERSI2-RGB-341.png");
             }
@@ -225,7 +225,7 @@ namespace fengyun
                 image441.draw_image(21, 0, 0, 2, mersiCorrelator->image1);
 
                 if (bowtie)
-                    image441 = bowtie::correctGenericBowTie(image441, 3, scanHeight_250, alpha, beta);
+                    image441 = image::bowtie::correctGenericBowTie(image441, 3, scanHeight_250, alpha, beta);
 
                 WRITE_IMAGE(image441, directory + "/MERSI2-RGB-441.png");
             }
@@ -243,7 +243,7 @@ namespace fengyun
                     image321.draw_image(8, 0, 0, 2, tempImage1);
 
                     if (bowtie)
-                        image321 = bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
+                        image321 = image::bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image321, directory + "/MERSI2-RGB-321.png");
             }
@@ -264,7 +264,7 @@ namespace fengyun
                     image3241.draw_image(26, 0, 0, 2, tempImage1);
 
                     if (bowtie)
-                        image3241 = bowtie::correctGenericBowTie(image3241, 3, scanHeight_250, alpha, beta);
+                        image3241 = image::bowtie::correctGenericBowTie(image3241, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image3241, directory + "/MERSI2-RGB-3(24)1.png");
             }
@@ -278,7 +278,7 @@ namespace fengyun
                 image171918.normalize(0, std::numeric_limits<unsigned char>::max());
 
                 if (bowtie)
-                    image171918 = bowtie::correctGenericBowTie(image171918, 3, scanHeight_1000, alpha, beta);
+                    image171918 = image::bowtie::correctGenericBowTie(image171918, 3, scanHeight_1000, alpha, beta);
 
                 WRITE_IMAGE(image171918, directory + "/MERSI2-RGB-18.19.17.png");
             }
@@ -302,7 +302,7 @@ namespace fengyun
                     image91211.draw_image(0, 0, 0, 2, tempImage11);
 
                     if (bowtie)
-                        image91211 = bowtie::correctGenericBowTie(image91211, 3, scanHeight_1000, alpha, beta);
+                        image91211 = image::bowtie::correctGenericBowTie(image91211, 3, scanHeight_1000, alpha, beta);
                 }
                 WRITE_IMAGE(image91211, directory + "/MERSI2-RGB-9.12.11.png");
             }

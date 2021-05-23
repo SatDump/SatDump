@@ -186,7 +186,7 @@ namespace eos
                 cimg_library::CImg<unsigned short> image = reader.getImage250m(i);
 
                 if (bowtie)
-                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
+                    image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
 
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 1) + ".png");
@@ -197,7 +197,7 @@ namespace eos
                 cimg_library::CImg<unsigned short> image = reader.getImage500m(i);
 
                 if (bowtie)
-                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
+                    image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
 
                 logger->info("Channel " + std::to_string(i + 3) + "...");
                 WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 3) + ".png");
@@ -208,7 +208,7 @@ namespace eos
                 cimg_library::CImg<unsigned short> image = reader.getImage1000m(i);
 
                 if (bowtie)
-                    image = bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                 if (i < 5)
                 {
@@ -255,7 +255,7 @@ namespace eos
                     image::white_balance(image221);
 
                     if (bowtie)
-                        image221 = bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
+                        image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
                 image221.equalize(1000);
@@ -274,7 +274,7 @@ namespace eos
                     image121.draw_image(0, 0, 0, 2, tempImage1);
 
                     if (bowtie)
-                        image121 = bowtie::correctGenericBowTie(image121, 3, scanHeight_250, alpha, beta);
+                        image121 = image::bowtie::correctGenericBowTie(image121, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
             }
@@ -302,8 +302,8 @@ namespace eos
 
                     if (bowtie)
                     {
-                        image143 = bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
-                        pre_wb = bowtie::correctGenericBowTie(pre_wb, 3, scanHeight_250, alpha, beta);
+                        image143 = image::bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
+                        pre_wb = image::bowtie::correctGenericBowTie(pre_wb, 3, scanHeight_250, alpha, beta);
                     }
                 }
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
