@@ -105,6 +105,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/jpss/instruments/atms/module_jpss_atms.h"
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
+#include "modules/jpss/instruments/cris/module_jpss_cris.h"
 
 #include "modules/proba/module_proba_s_decoder.h"
 #include "modules/proba/instruments/swap/module_proba_swap.h"
@@ -203,6 +204,7 @@ void registerModules()
     // JPSS
     REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
     REGISTER_MODULE(jpss::viirs::JPSSVIIRSDecoderModule);
+    REGISTER_MODULE(jpss::cris::JPSSCrISDecoderModule);
 
     // Proba
     REGISTER_MODULE(proba::ProbaSDecoderModule);
