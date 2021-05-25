@@ -16,6 +16,7 @@ std::shared_ptr<SDRDevice> radio;
 std::vector<std::shared_ptr<ProcessingModule>> liveModules;
 
 int device_id = 0;
+std::map<std::string, std::string> device_parameters;
 
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devices;
 
@@ -103,6 +104,8 @@ void renderLiveProcessing()
                 //frequency = it->frequencies[frequency_id];
             }
         }
+
+        device_parameters = drawParamsUIForID(devices, device_id);
 
         ImGui::Text("Frequency : ");
         ImGui::SameLine();
@@ -193,7 +196,7 @@ void renderLiveProcessing()
                     }
 
                     logger->debug("Starting SDR...");
-                    radio = getDeviceByID(devices, device_id);
+                    radio = getDeviceByID(devices, device_parameters, device_id);
                     radio->setFrequency(frequency * 1e6);
                     radio->setSamplerate(std::stoi(samplerate));
                     radio->start();
@@ -211,6 +214,15 @@ void renderLiveProcessing()
         ImGui::SameLine();
 
         ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
+
+        ImGui::Text("Please keep in mind live processing support in SatDump is still Work-In-Progress. \n"
+                    "While it should be perfectly functional and work as expected, bugs and crashes could still happen... \n"
+                    "Please report if any of those occur! Anyway, enjoy! :-)");
+        ImGui::Text(" - Aang23");
+        ImGui::Text("PS : About saving settings between SatDump restarts, this is planned and will be implemented \nin the future. (Soon enough, it's in current priorities)");
+        ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), "There current is NO automatic samplerate selection \n"
+                                                               "system that takes into account what the selected device can actually do. \n"
+                                                               "Please ensure the selected samplerate is correct before pressing start.");
     }
     ImGui::EndGroup();
 }
