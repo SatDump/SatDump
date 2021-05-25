@@ -14,7 +14,7 @@ int SDRAirspy::_rx_callback(airspy_transfer *t)
     return 0;
 };
 
-SDRAirspy::SDRAirspy(uint64_t id) : SDRDevice(id)
+SDRAirspy::SDRAirspy(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     if (airspy_open_sn(&dev, id) != AIRSPY_SUCCESS)
     {

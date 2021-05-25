@@ -27,7 +27,7 @@ void SDRRtlSdr::runThread()
     }
 }
 
-SDRRtlSdr::SDRRtlSdr(uint64_t id) : SDRDevice(id)
+SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     if (rtlsdr_open(&dev, id) > 0)
     {
