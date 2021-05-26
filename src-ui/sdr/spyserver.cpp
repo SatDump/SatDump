@@ -19,20 +19,41 @@ SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64
         logger->error("No SpyServer Port provided! Things will not work!!!!");
     }
 
-    client = std::make_shared<ss_client>(parameters["ip"], std::stoi(parameters["port"]), 1, 0, 0, 16);
+    if (parameters.count("bit16") == 0)
+    {
+        logger->error("No SpyServer bit depth provided! Things will not work!!!!");
+    }
+
+    bit16 = std::stoi(parameters["bit16"]);
+
+    if (bit16)
+        logger->debug("Using 16-bit samples");
+
+    client = std::make_shared<ss_client>(parameters["ip"], std::stoi(parameters["port"]), 1, 0, 0, bit16 ? 16 : 8);
 
     logger->info("Opened SpyServer device!");
 
     samples = new int16_t[8192 * 2];
+    samples8 = new uint8_t[8192 * 2];
 }
 
 void SDRSpyServer::runThread()
 {
     while (should_run)
     {
-        client->get_iq_data<int16_t>(8192, samples);
-        volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)samples, 1.0f / 0.00004f, 8192 * 2);
-        output_stream->swap(8192);
+        if (bit16)
+        {
+            client->get_iq_data<int16_t>(8192, samples);
+            volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)samples, 1.0f / 0.00004f, 8192 * 2);
+            output_stream->swap(8192);
+        }
+        else
+        {
+            client->get_iq_data<uint8_t>(8192, samples8);
+            for (int i = 0; i < 8192; i++)
+                output_stream->writeBuf[i] = std::complex<float>((samples8[i * 2 + 0] - 127) / 128.0f, (samples8[i * 2 + 1] - 127) / 128.0f);
+            output_stream->swap(8192);
+        }
     }
 }
 
@@ -68,6 +89,7 @@ SDRSpyServer::~SDRSpyServer()
 {
     //airspy_close(dev);
     delete[] samples;
+    delete[] samples8;
 }
 
 void SDRSpyServer::drawUI()
@@ -115,6 +137,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRSpyServer::ge
 
 char SDRSpyServer::server_ip[100] = "localhost";
 char SDRSpyServer::server_port[100] = "5555";
+bool SDRSpyServer::enable_bit16 = true;
 
 std::map<std::string, std::string> SDRSpyServer::drawParamsUI()
 {
@@ -126,6 +149,10 @@ std::map<std::string, std::string> SDRSpyServer::drawParamsUI()
     ImGui::SameLine();
     ImGui::InputText("##spyserverport", server_port, 100);
 
-    return {{"ip", std::string(server_ip)}, {"port", std::string(server_port)}};
+    ImGui::Text("16-bit streaming");
+    ImGui::SameLine();
+    ImGui::Checkbox("##enable16bitspyserver", &enable_bit16);
+
+    return {{"ip", std::string(server_ip)}, {"port", std::string(server_port)}, {"bit16", std::to_string(enable_bit16)}};
 }
 #endif
