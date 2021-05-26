@@ -11,6 +11,7 @@ enum sdr_device_type
 {
     AIRSPY,
     RTLSDR,
+    HACKRF,
     SPYSERVER
 };
 
