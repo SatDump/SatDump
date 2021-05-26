@@ -67,7 +67,7 @@ void processFFT(int)
         {
             fftwf_execute(p);
 
-            for (int i = 0, iMax = FFT_BUFFER_SIZE / 2; i < iMax; i++)
+            for (int i = 0; i < FFT_BUFFER_SIZE / 2; i++)
             {
                 float a = buffer_fft_out[i].real();
                 float b = buffer_fft_out[i].imag();
