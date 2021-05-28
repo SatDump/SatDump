@@ -4,3 +4,5 @@ android/local.properties
 android/SatDump/.cxx
 android/.gradle
 android/SatDump/build
+android/SatDump/assets
+android/.idea
