@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "logger.h"
 #include "common/image/image.h"
+#include "resources.h"
 
 #define WRITE_IMAGE_LOCAL(image, path)         \
     image.save_png(std::string(path).c_str()); \
@@ -52,10 +53,10 @@ namespace proba
             // This is temporary code until a resource system is implemented everywhere.
             cimg_library::CImg<unsigned short> adc_mask, ffc_mask;
             bool masks_found = false;
-            if (std::filesystem::exists("adc_mask.png") && std::filesystem::exists("ffc_mask.png"))
+            if (resources::resourceExists("proba/swap/adc_mask.png") && resources::resourceExists("proba/swap/ffc_mask.png"))
             {
-                adc_mask.load_png("adc_mask.png");
-                ffc_mask.load_png("ffc_mask.png");
+                adc_mask.load_png(resources::getResourcePath("proba/swap/adc_mask.png").c_str());
+                ffc_mask.load_png(resources::getResourcePath("proba/swap/ffc_mask.png").c_str());
                 masks_found = true;
             }
             else

@@ -49,6 +49,7 @@ if(BUILD_TESTING)
 endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
 install(FILES ${CMAKE_SOURCE_DIR}/Roboto-Medium.ttf DESTINATION share/satdump)
 
 # Create uninstall target
