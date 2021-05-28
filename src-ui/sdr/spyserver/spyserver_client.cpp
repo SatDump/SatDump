@@ -915,7 +915,7 @@ bool ss_client::set_center_freq(double centerFrequency, size_t chan)
   return ret1 && ret2;
 }
 
-bool ss_client::set_iq_center_freq(double centerFrequency, size_t chan)
+bool ss_client::set_iq_center_freq(double centerFrequency, size_t /*chan*/)
 {
 
   if (centerFrequency < device_info.MinimumFrequency ||
@@ -952,7 +952,7 @@ bool ss_client::set_iq_center_freq(double centerFrequency, size_t chan)
   return true;
 }
 
-bool ss_client::set_fft_center_freq(double centerFrequency, size_t chan)
+bool ss_client::set_fft_center_freq(double centerFrequency, size_t /*chan*/)
 {
 
   if (centerFrequency < device_info.MinimumFrequency ||
@@ -1138,12 +1138,12 @@ double ss_client::get_sample_rate()
   return 0;
 }
 
-double ss_client::get_center_freq(size_t chan)
+double ss_client::get_center_freq(size_t /*chan*/)
 {
   return _center_freq;
 }
 
-std::vector<std::string> ss_client::get_gain_names(size_t chan)
+std::vector<std::string> ss_client::get_gain_names(size_t /*chan*/)
 {
   std::vector<std::string> names;
 
@@ -1156,17 +1156,17 @@ std::vector<std::string> ss_client::get_gain_names(size_t chan)
   return names;
 }
 
-bool ss_client::set_gain_mode(bool automatic, size_t chan)
+bool ss_client::set_gain_mode(bool /*automatic*/, size_t chan)
 {
   return get_gain_mode(chan);
 }
 
-bool ss_client::get_gain_mode(size_t chan)
+bool ss_client::get_gain_mode(size_t /*chan*/)
 {
   return false;
 }
 
-double ss_client::set_gain(double gain, size_t chan)
+double ss_client::set_gain(double gain, size_t /*chan*/)
 {
   if (m_cur_client_sync.CanControl)
   {

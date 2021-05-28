@@ -143,7 +143,7 @@ void startRealLive()
                                             liveModules[0]->process(); });
 
     // Init whatever's in the middle
-    for (int i = 1; i < liveModules.size() - 1; i++)
+    for (int i = 1; i < (int)liveModules.size() - 1; i++)
     {
         liveModules[i]->input_fifo = liveModules[i - 1]->output_fifo;
         liveModules[i]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);

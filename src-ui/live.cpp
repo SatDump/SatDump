@@ -34,7 +34,7 @@ void renderLiveProcessing()
 
         std::map<int, std::string> id_table;
 
-        for (int i = 0, y = 0; i < pipelines.size(); i++)
+        for (int i = 0, y = 0; i < (int)pipelines.size(); i++)
         {
             if (pipelines[i].live)
             {
@@ -94,7 +94,7 @@ void renderLiveProcessing()
         {
             std::string names; // = "baseband\0";
 
-            for (int i = 0; i < devices.size(); i++)
+            for (int i = 0; i < (int)devices.size(); i++)
             {
                 names += std::get<0>(devices[i]) + "" + '\0';
             }
@@ -118,7 +118,7 @@ void renderLiveProcessing()
                                                               });
 
             if (it != pipelines.end())
-                for (int i = 0; i < it->frequencies.size(); i++)
+                for (int i = 0; i < (int)it->frequencies.size(); i++)
                 {
                     names += std::to_string(it->frequencies[i]) + " Mhz" + '\0';
                 }
@@ -180,14 +180,14 @@ void renderLiveProcessing()
                     for (std::pair<int, int> currentModule : it->live_cfg)
                     {
                         std::map<std::string, std::string> final_parameters = it->steps[currentModule.first].modules[currentModule.second].parameters;
-                        for (const std::pair<std::string, std::string> &param : parameters)
+                        for (const std::pair<std::string, std::string> param : parameters)
                             if (final_parameters.count(param.first) > 0)
                                 final_parameters[param.first] = param.second;
                             else
                                 final_parameters.emplace(param.first, param.second);
 
                         logger->debug("Parameters :");
-                        for (const std::pair<std::string, std::string> &param : final_parameters)
+                        for (const std::pair<std::string, std::string> param : final_parameters)
                             logger->debug("   - " + param.first + " : " + param.second);
 
                         liveModules.push_back(modules_registry[it->steps[currentModule.first]

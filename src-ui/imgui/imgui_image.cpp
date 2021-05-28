@@ -18,7 +18,7 @@ void funcUpdateImageTexture(unsigned int gl_text, uint32_t *buffer, int width, i
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void funcDeleteImageTexture(unsigned int gl_text)
+void funcDeleteImageTexture(unsigned int /*gl_text*/)
 {
     //glDeleteTextures(1, &gl_text);
 }

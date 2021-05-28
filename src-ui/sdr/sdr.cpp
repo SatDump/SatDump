@@ -2,7 +2,7 @@
 
 #ifdef BUILD_LIVE
 
-SDRDevice::SDRDevice(std::map<std::string, std::string> parameters, uint64_t id)
+SDRDevice::SDRDevice(std::map<std::string, std::string> parameters, uint64_t /*id*/)
     : d_parameters(parameters)
 {
     output_stream = std::make_shared<dsp::stream<std::complex<float>>>();
@@ -108,5 +108,7 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
         return std::make_shared<SDRHackRF>(parameters, id);
     if (type == SPYSERVER)
         return std::make_shared<SDRSpyServer>(parameters, id);
+    else
+        return nullptr;
 }
 #endif
