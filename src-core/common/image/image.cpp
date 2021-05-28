@@ -111,4 +111,28 @@ namespace image
 
         return img;
     }
+
+    void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold)
+    {
+        int h = image.height();
+        int w = image.width();
+
+        for (int x = 0; x < h; x++)
+        {
+            for (int y = 0; y < w; y++)
+            {
+                unsigned short current = image[x * w + y];
+
+                unsigned short below = x + 1 == h ? 0 : image[(x + 1) * w + y];
+                unsigned short left = y - 1 == -1 ? 0 : image[x * w + (y - 1)];
+                unsigned short right = y + 1 == w ? 0 : image[x * w + (y + 1)];
+
+                if ((current - left > thresold && current - right > thresold) ||
+                    (current - below > thresold && current - right > thresold))
+                {
+                    image[x * w + y] = (right + left) / 2;
+                }
+            }
+        }
+    }
 }

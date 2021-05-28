@@ -49,6 +49,20 @@ namespace proba
 
         void SWAPReader::save()
         {
+            // This is temporary code until a resource system is implemented everywhere.
+            cimg_library::CImg<unsigned short> adc_mask, ffc_mask;
+            bool masks_found = false;
+            if (std::filesystem::exists("adc_mask.png") && std::filesystem::exists("ffc_mask.png"))
+            {
+                adc_mask.load_png("adc_mask.png");
+                ffc_mask.load_png("ffc_mask.png");
+                masks_found = true;
+            }
+            else
+            {
+                logger->error("Necessary resources were not found, no correction will be applied!");
+            }
+
             for (std::pair<const uint16_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
             {
                 std::string filename = currentPair.second.second.first;
@@ -63,6 +77,19 @@ namespace proba
                     logger->info("Error! Skipping...");
                     continue;
                 }
+
+                if (masks_found)
+                {
+                    for (int i = 0; i < img.height() * img.width(); i++)
+                    {
+                        // Our values are 100x smaller... So we have to scale masks down
+                        img[i] = std::max<float>(0, img[i] - adc_mask[i] / 100.0f); // ADC Bias correction
+                        img[i] = std::max<float>(0, img[i] - ffc_mask[i] / 100.0f); // Flat field correction
+                    }
+                }
+
+                // Despeckle
+                image::simple_despeckle(img, 20);
 
                 logger->info("Good! Saving as png... ");
                 WRITE_IMAGE_LOCAL(img, output_folder + "/" + filename + ".png");
