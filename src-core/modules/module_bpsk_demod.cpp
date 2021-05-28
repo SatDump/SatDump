@@ -104,6 +104,8 @@ void BPSKDemodModule::process()
         file_source->start();
     if (d_dc_block)
         dcb->start();
+    if (resample)
+        res->start();
     agc->start();
     rrc->start();
     pll->start();
@@ -156,6 +158,8 @@ void BPSKDemodModule::stop()
         file_source->stop();
     if (d_dc_block)
         dcb->stop();
+    if (resample)
+        res->stop();
     agc->stop();
     rrc->stop();
     pll->stop();
