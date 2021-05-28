@@ -145,6 +145,7 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j4
 ln -s ../pipelines . # Symlink pipelines so it can run
+ln -s ../resources . # Symlink pipelines so it can run
 ln -s ../Ro* . # Symlink fonts for the GUI version so it can run
 
 # Run (if you want!)
