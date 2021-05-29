@@ -8,8 +8,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(NOGUI         "Disable building the GUI"     OFF)
 option(BUILD_TESTING "Build the testing program"    OFF)
+option(USE_VIDEO_ENCODER "Build the video encoder module, links against libav."    OFF)
 option(BUILD_LIVE "Build the live processing feature (WIP)"    OFF)
 option(BUILD_MSVC    "Build for Windows with MSVC"  OFF) # Seems like "MSVC" as a macro messed up below for some reason...
+
+if(NOGUI)
+    set(BUILD_LIVE OFF)
+endif()
 
 if(APPLE)
     include_directories(/usr/local/include)

@@ -4,11 +4,18 @@
 #include <complex>
 #include <fstream>
 #include "common/dsp/lib/random.h"
+#include "falcon_video_encoder.hpp"
 
 namespace spacex
 {
     class FalconDecoderModule : public ProcessingModule
     {
+    public:
+        FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~FalconDecoderModule();
+        void process();
+        void drawUI(bool window);
+
     protected:
         std::ifstream data_in;
         std::ofstream data_out;
@@ -16,14 +23,13 @@ namespace spacex
         std::atomic<size_t> progress;
 
     public:
-        FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-        ~FalconDecoderModule();
-        void process();
-        void drawUI(bool window);
-
-    public:
         static std::string getID();
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+
+    private:
+#ifdef USE_VIDEO_ENCODER
+        std::unique_ptr<FalconVideoEncoder> videoStreamEnc;
+#endif
     };
 } // namespace falcon
