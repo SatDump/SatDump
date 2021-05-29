@@ -1,7 +1,5 @@
 #include "mwhs_reader.h"
 
-#include <iostream>
-
 namespace fengyun
 {
     namespace mwhs
@@ -22,11 +20,6 @@ namespace fengyun
                 return;
 
             int marker = packet.payload[350] & 2;
-
-            //int marker2 = (packet.payload[3] >> 5) & 1;
-
-            //if (marker2 != 0)
-            //    return;
 
             int counter = packet.payload[79] & 0b00011111;
             int mk = (packet.payload[79] >> 5) & 1;
@@ -53,18 +46,21 @@ namespace fengyun
 
             for (int i = 0; i < 49; i++)
             {
-                imageVector[imageVector.size() - 1].channels[0][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 0];
-                imageVector[imageVector.size() - 1].channels[1][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 1];
-                imageVector[imageVector.size() - 1].channels[2][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 2];
-                imageVector[imageVector.size() - 1].channels[3][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 3];
-                imageVector[imageVector.size() - 1].channels[4][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 4];
-                imageVector[imageVector.size() - 1].channels[5][counter * 98 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 5];
+                imageVector[imageVector.size() - 1].channels[0][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 0];
+                imageVector[imageVector.size() - 1].channels[1][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 1];
+                imageVector[imageVector.size() - 1].channels[2][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 2];
+                imageVector[imageVector.size() - 1].channels[3][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 3];
+                imageVector[imageVector.size() - 1].channels[4][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 4];
+                imageVector[imageVector.size() - 1].channels[5][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 5];
             }
 
-            //if (mk == 1)
-            //    imageVector[imageVector.size() - 1].channels[0][counter * 98 + 0] = 65535;
-            //else
-            //    imageVector[imageVector.size() - 1].channels[0][counter * 98 + 0] = 0;
+            for (int i = 0; i < 6; i++)
+            {
+                if (mk == 1)
+                    imageVector[imageVector.size() - 1].channels[i][counter * 99 + 98] = 65535;
+                else
+                    imageVector[imageVector.size() - 1].channels[i][counter * 99 + 98] = 0;
+            }
 
             if (counter == 31 && marker == 0)
             {
@@ -77,41 +73,61 @@ namespace fengyun
 
         cimg_library::CImg<unsigned short> MWHSReader::getChannel(int channel)
         {
-            //for (int i = 0; i < imageVector.size(); i++)
-            //{
-            //    std::cout << "Frame " << (i + 1) << std::endl;
-            //    cimg_library::CImg<unsigned short> img(imageVector[i].channels[0], 98, 32);
-            //    img.resize(img.width() * 20, img.height() * 20);
-            //    img.save_png(std::string("MWHS_FR-" + std::to_string(i + 1) + ".png").c_str());
-            //}
-
             cimg_library::CImg<unsigned short> img(98, imageVector.size() * 6, 1, 1);
 
             int line = 0;
+            int y = 0;
+            int last = 1;
 
             // Reconstitute the image. Works "OK", not perfect...
             for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
             {
                 // Count 0s on the side
-                //int zeros = 0;
-                //for (int i = 0; i < 31; i++)
-                //{
-                //    if (imageVector[imageVector.size() - cnt].channels[channel][i * 98] == 0)
-                //        zeros++;
-                //}
+                int zeros = 0;
+                for (int i = 0; i < 31; i++)
+                {
+                    if (imageVector[imageVector.size() - cnt].channels[channel][i * 99] == 0)
+                        zeros++;
+                }
 
-                //if (zeros > 15)
-                //    continue;
+                if (zeros > 10)
+                    continue;
+
+                int differences = 0;
+                int lastMarker = imageVector[imageVector.size() - cnt].channels[channel][0 * 99 + 98];
+                for (int i = 1; i < 31; i++)
+                {
+                    if (imageVector[imageVector.size() - cnt].channels[channel][i * 99 + 98] != lastMarker)
+                        differences++;
+                    lastMarker = imageVector[imageVector.size() - cnt].channels[channel][i * 99 + 98];
+                }
+
+                if (differences == 0 && last != 0)
+                {
+                    imageVector[imageVector.size() - cnt].lastMkMatch = imageVector[imageVector.size() - (cnt + 1)].lastMkMatch + 6;
+
+                    if (imageVector[imageVector.size() - cnt].lastMkMatch > 31)
+                        imageVector[imageVector.size() - cnt].lastMkMatch -= 32;
+                }
+                else if (differences == 0 && last == 0)
+                {
+                    continue;
+                }
+
+                last = differences;
 
                 for (int i = 0; i < 6; i++)
                 {
-                    std::memcpy(&img.data()[line * 98], &imageVector[imageVector.size() - cnt].channels[channel][(imageVector[imageVector.size() - cnt].lastMkMatch - i) * 98], 2 * 98);
+                    std::memcpy(&img.data()[line * 98], &imageVector[imageVector.size() - cnt].channels[channel][(imageVector[imageVector.size() - cnt].lastMkMatch - i) * 99], 2 * 98);
                     line++;
                 }
             }
 
             img.normalize(0, 65535);
             img.equalize(1000);
+
+            img.crop(0, 0, 98, line);
+
             img.mirror('x');
 
             return img;
