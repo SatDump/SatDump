@@ -76,7 +76,6 @@ namespace fengyun
             cimg_library::CImg<unsigned short> img(98, imageVector.size() * 6, 1, 1);
 
             int line = 0;
-            int y = 0;
             int last = 1;
 
             // Reconstitute the image. Works "OK", not perfect...
