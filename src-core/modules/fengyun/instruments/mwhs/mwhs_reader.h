@@ -14,7 +14,7 @@ namespace fengyun
         class MWHSImage
         {
         public:
-            unsigned short channels[6][98 * 32];
+            unsigned short channels[6][99 * 32];
             int mk = -1;
             int lastMkMatch;
         };
