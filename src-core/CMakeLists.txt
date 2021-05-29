@@ -59,7 +59,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC png zlib)
 
     # FFTW3
-    # Currently not mandatory
+    target_link_libraries(satdump_core PUBLIC fftw)
 else()
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
