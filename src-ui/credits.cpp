@@ -17,6 +17,9 @@ void renderCredits(int wwidth, int wheight)
     ImGui::BulletText("libfftw3");
     ImGui::BulletText("libcorrect");
     ImGui::BulletText("libairspy");
+    ImGui::BulletText("librtlsdr");
+    ImGui::BulletText("libhackrf");
+    ImGui::BulletText("libpredict");
     ImGui::BulletText("tinyfiledialogs");
     ImGui::BulletText("ImGui");
     ImGui::EndGroup();
