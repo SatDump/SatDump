@@ -150,7 +150,8 @@
                 "jason3_decoder": {}
             },
             "products": {
-                "jason3_poseidon": {}
+                "jason3_poseidon": {},
+                "jason3_amr2": {}
             }
         }
     }
