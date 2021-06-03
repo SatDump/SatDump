@@ -18,7 +18,7 @@ time_t mktime_utc(const struct tm *timeinfo_utc)
 
 	//get UTC time, interpret resulting tm as a localtime
 	struct tm timeinfo_gmt;
-#ifdef _WIN32_
+#ifdef _WIN32
 	gmtime(&curr_time, &timeinfo_gmt);
 #else
 	gmtime_r(&curr_time, &timeinfo_gmt);
@@ -27,7 +27,7 @@ time_t mktime_utc(const struct tm *timeinfo_utc)
 
 	//get localtime, interpret resulting tm as localtime
 	struct tm timeinfo_local;
-#ifdef _WIN32_
+#ifdef _WIN32
 	localtime(&curr_time, &timeinfo_local);
 #else
 	localtime_r(&curr_time, &timeinfo_local);
@@ -81,7 +81,7 @@ time_t predict_from_julian(predict_julian_date_t date)
 
 	//add number of seconds since julian start day to the julian start day, get current time_t
 	struct tm timeinfo;
-#ifdef _WIN32_
+#ifdef _WIN32
 	gmtime(&ret_time, &timeinfo);
 #else
 	gmtime_r(&ret_time, &timeinfo);
