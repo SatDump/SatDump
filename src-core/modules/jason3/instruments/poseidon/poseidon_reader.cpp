@@ -1,6 +1,7 @@
 #define cimg_use_jpeg
 #include "poseidon_reader.h"
 #include "resources.h"
+#include "tle.h"
 
 namespace jason3
 {
@@ -17,8 +18,9 @@ namespace jason3
 
         PoseidonReader::PoseidonReader()
         {
-            jason3_object = predict_parse_tle("1 41240U 16002A   21152.89851733 -.00000040  00000-0  90989-4 0  9999",
-                                              "2 41240  66.0421 359.3280 0007702 272.4283  87.5850 12.80929983251198");
+            tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
+
+            jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
 
             map_image_height.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
             map_image_scatter.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
