@@ -4,7 +4,11 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
+#ifdef __ANDROID__
+#include "common/std/binder1st.h"
+#else
 #include <functional>
+#endif
 
 namespace tle
 {
