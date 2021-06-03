@@ -8,7 +8,7 @@
 #include <atomic>
 #include "imgui/imgui_flags.h"
 #include "dll_export.h"
-#include "modules/buffer.h"
+#include "common/dsp/buffer.h"
 
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \
@@ -37,14 +37,17 @@ public:
     virtual std::vector<ModuleDataType> getOutputTypes() { return {DATA_FILE}; }
     void setInputType(ModuleDataType type);
     void setOutputType(ModuleDataType type);
+    ModuleDataType getInputType();
+    ModuleDataType getOutputType();
     virtual void init();
+    virtual void stop();
     virtual void process() = 0;
     virtual void drawUI(bool window) = 0;
     std::vector<std::string> getOutputs();
 
 public:
-    std::shared_ptr<RingBuffer<uint8_t>> input_fifo;
-    std::shared_ptr<RingBuffer<uint8_t>> output_fifo;
+    std::shared_ptr<dsp::RingBuffer<uint8_t>> input_fifo;
+    std::shared_ptr<dsp::RingBuffer<uint8_t>> output_fifo;
     std::shared_ptr<dsp::stream<std::complex<float>>> input_stream;
     std::shared_ptr<dsp::stream<std::complex<float>>> output_stream;
     std::atomic<bool> input_active;

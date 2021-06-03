@@ -1,5 +1,5 @@
 #include "module_fsk_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -96,6 +96,12 @@ void FSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void FSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -103,6 +109,7 @@ void FSKDemodModule::process()
     lpf->stop();
     qua->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     data_out.close();
 }

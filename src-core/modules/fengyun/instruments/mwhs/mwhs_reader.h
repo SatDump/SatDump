@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
 #include <vector>
 
 #define cimg_use_png
@@ -14,7 +14,7 @@ namespace fengyun
         class MWHSImage
         {
         public:
-            unsigned short channels[6][98 * 32];
+            unsigned short channels[6][99 * 32];
             int mk = -1;
             int lastMkMatch;
         };

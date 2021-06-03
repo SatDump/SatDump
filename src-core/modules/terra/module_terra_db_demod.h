@@ -4,12 +4,12 @@
 #include <complex>
 #include <thread>
 #include <fstream>
-#include "modules/common/dsp/agc.h"
-#include "modules/common/dsp/fir.h"
-#include "modules/common/dsp/costas_loop.h"
-#include "modules/common/dsp/clock_recovery_mm.h"
-#include "modules/common/dsp/file_source.h"
-#include "modules/common/snr_estimator.h"
+#include "common/dsp/agc.h"
+#include "common/dsp/fir.h"
+#include "common/dsp/costas_loop.h"
+#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/file_source.h"
+#include "common/snr_estimator.h"
 
 namespace terra
 {

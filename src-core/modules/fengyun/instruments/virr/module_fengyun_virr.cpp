@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "virr_deframer.h"
 #include "virr_reader.h"
-#include "xfr.h"
+#include "common/image/xfr.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192
@@ -259,9 +259,9 @@ namespace fengyun
             {
                 cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
-                XFR trueColor(26, 663, 165, 34, 999, 162, 47, 829, 165);
+                image::xfr::XFR trueColor(26, 663, 165, 34, 999, 162, 47, 829, 165);
 
-                applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
+                image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
                 image197truecolorxfr.draw_image(1, 0, 0, 0, tempImage1);
                 image197truecolorxfr.draw_image(0, 0, 0, 1, tempImage9);
@@ -276,9 +276,9 @@ namespace fengyun
             {
                 cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
-                XFR trueColor(23, 610, 153, 34, 999, 162, 39, 829, 165);
+                image::xfr::XFR trueColor(23, 610, 153, 34, 999, 162, 39, 829, 165);
 
-                applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
+                image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
                 image197nightxfr.draw_image(1, 0, 0, 0, tempImage1);
                 image197nightxfr.draw_image(0, 0, 0, 1, tempImage9);

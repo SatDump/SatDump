@@ -1,10 +1,10 @@
 #include "module_saral_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/sathelper/correlator.h"
-#include "modules/common/sathelper/packetfixer.h"
-#include "modules/common/sathelper/derandomizer.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
+#include "common/sathelper/correlator.h"
+#include "common/sathelper/packetfixer.h"
+#include "common/sathelper/derandomizer.h"
+#include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include <cmath>
 
@@ -61,7 +61,7 @@ namespace saral
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
@@ -143,12 +143,7 @@ namespace saral
                 diff_dec.decode(frameBuffer, FRAME_SIZE);
 
                 // RS Correction
-                for (int i = 0; i < 4; i++)
-                {
-                    reedSolomon.deinterleave(&frameBuffer[4], rsWorkBuffer, i, 4);
-                    errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                    reedSolomon.interleave(rsWorkBuffer, &frameBuffer[4], i, 4);
-                }
+                rs.decode_interlaved(&frameBuffer[4], true, 4, errors);
 
                 // Derandomize that frame
                 derand.work(&frameBuffer[4], FRAME_SIZE - 4);

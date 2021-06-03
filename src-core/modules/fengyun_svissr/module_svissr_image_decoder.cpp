@@ -1,6 +1,6 @@
 #include "module_svissr_image_decoder.h"
 #include "logger.h"
-#include "modules/common/differential/nrzs.h"
+#include "common/codings/differential/nrzs.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
@@ -210,6 +210,7 @@ namespace fengyun_svissr
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
         logger->info("Dump remaining data...");
+        if (input_data_type == DATA_FILE)
         {
             writingImage = true;
 

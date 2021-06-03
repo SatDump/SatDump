@@ -16,6 +16,7 @@ std::shared_ptr<SDRDevice> radio;
 std::vector<std::shared_ptr<ProcessingModule>> liveModules;
 
 int device_id = 0;
+std::map<std::string, std::string> device_parameters;
 
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devices;
 
@@ -33,7 +34,7 @@ void renderLiveProcessing()
 
         std::map<int, std::string> id_table;
 
-        for (int i = 0, y = 0; i < pipelines.size(); i++)
+        for (int i = 0, y = 0; i < (int)pipelines.size(); i++)
         {
             if (pipelines[i].live)
             {
@@ -93,7 +94,7 @@ void renderLiveProcessing()
         {
             std::string names; // = "baseband\0";
 
-            for (int i = 0; i < devices.size(); i++)
+            for (int i = 0; i < (int)devices.size(); i++)
             {
                 names += std::get<0>(devices[i]) + "" + '\0';
             }
@@ -103,6 +104,8 @@ void renderLiveProcessing()
                 //frequency = it->frequencies[frequency_id];
             }
         }
+
+        device_parameters = drawParamsUIForID(devices, device_id);
 
         ImGui::Text("Frequency : ");
         ImGui::SameLine();
@@ -115,7 +118,7 @@ void renderLiveProcessing()
                                                               });
 
             if (it != pipelines.end())
-                for (int i = 0; i < it->frequencies.size(); i++)
+                for (int i = 0; i < (int)it->frequencies.size(); i++)
                 {
                     names += std::to_string(it->frequencies[i]) + " Mhz" + '\0';
                 }
@@ -177,14 +180,14 @@ void renderLiveProcessing()
                     for (std::pair<int, int> currentModule : it->live_cfg)
                     {
                         std::map<std::string, std::string> final_parameters = it->steps[currentModule.first].modules[currentModule.second].parameters;
-                        for (const std::pair<std::string, std::string> &param : parameters)
+                        for (const std::pair<std::string, std::string> param : parameters)
                             if (final_parameters.count(param.first) > 0)
                                 final_parameters[param.first] = param.second;
                             else
                                 final_parameters.emplace(param.first, param.second);
 
                         logger->debug("Parameters :");
-                        for (const std::pair<std::string, std::string> &param : final_parameters)
+                        for (const std::pair<std::string, std::string> param : final_parameters)
                             logger->debug("   - " + param.first + " : " + param.second);
 
                         liveModules.push_back(modules_registry[it->steps[currentModule.first]
@@ -193,7 +196,7 @@ void renderLiveProcessing()
                     }
 
                     logger->debug("Starting SDR...");
-                    radio = getDeviceByID(devices, device_id);
+                    radio = getDeviceByID(devices, device_parameters, device_id);
                     radio->setFrequency(frequency * 1e6);
                     radio->setSamplerate(std::stoi(samplerate));
                     radio->start();
@@ -211,6 +214,15 @@ void renderLiveProcessing()
         ImGui::SameLine();
 
         ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
+
+        ImGui::Text("Please keep in mind live processing support in SatDump is still Work-In-Progress. \n"
+                    "While it should be perfectly functional and work as expected, bugs and crashes could still happen... \n"
+                    "Please report if any of those occur! Anyway, enjoy! :-)");
+        ImGui::Text(" - Aang23");
+        ImGui::Text("PS : About saving settings between SatDump restarts, this is planned and will be implemented \nin the future. (Soon enough, it's in current priorities)");
+        ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), "There current is NO automatic samplerate selection \n"
+                                                               "system that takes into account what the selected device can actually do. \n"
+                                                               "Please ensure the selected samplerate is correct before pressing start.");
     }
     ImGui::EndGroup();
 }

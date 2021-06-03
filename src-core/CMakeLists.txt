@@ -6,7 +6,8 @@ include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
 file(GLOB_RECURSE SatDump_core_CPPS  *.cpp 
-                                     modules/common/aec/*.c
+                                     common/aec/*.c
+                                     common/predict/*.c
 )
 
 find_package(PkgConfig)
@@ -33,6 +34,17 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
+
+    if(USE_VIDEO_ENCODER)
+        target_link_libraries(satdump_core PUBLIC libavcodec.dll)
+        target_link_libraries(satdump_core PUBLIC libavformat.dll)
+        target_link_libraries(satdump_core PUBLIC libavutil.dll)
+        target_link_libraries(satdump_core PUBLIC libavfilter.dll)
+        
+        # Enable it
+        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+    endif()
+
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 elseif(ANDROID)
     # LibCorrect
@@ -48,7 +60,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC png zlib)
 
     # FFTW3
-    # Currently not mandatory
+    target_link_libraries(satdump_core PUBLIC fftw)
 else()
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
@@ -91,6 +103,27 @@ else()
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
         target_link_libraries(satdump_core PUBLIC stdc++fs)
+    endif()
+    
+    if(USE_VIDEO_ENCODER)
+        # libavcodec
+        find_library(AVCODEC_LIBRARY avcodec REQUIRED)
+        target_link_libraries(satdump_core PUBLIC ${AVCODEC_LIBRARY})
+
+        # libavformat
+        find_library(AVFORMAT_LIBRARY avformat REQUIRED)
+        target_link_libraries(satdump_core PUBLIC ${AVFORMAT_LIBRARY})
+
+        # libavutil
+        find_library(AVUTIL_LIBRARY avutil REQUIRED)
+        target_link_libraries(satdump_core PUBLIC ${AVUTIL_LIBRARY})
+
+        # libavfilter
+        find_library(AVFILTER_LIBRARY avfilter REQUIRED)
+        target_link_libraries(satdump_core PUBLIC ${AVFILTER_LIBRARY})
+
+        # Enable it
+        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
 endif()
 

@@ -4,6 +4,7 @@
 #include "pipeline.h"
 #include <filesystem>
 #include "settings.h"
+#include "tle.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -21,14 +22,11 @@ void initSatdump()
     logger->info("");
 
     registerModules();
-#ifdef __ANDROID__
-    loadPipelines(".");
-#else
+
     if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
         loadPipelines("pipelines");
     else
         loadPipelines((std::string)RESOURCES_PATH + "pipelines");
-#endif
 
     //if (std::filesystem::exists("settings.json"))
     //    loadSettings("settings.json");
@@ -38,6 +36,8 @@ void initSatdump()
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)
         logger->debug(" - " + pipeline.name);
+
+    tle::loadTLEs();
 }
 
 // This is a pretty crappy way of doing it,

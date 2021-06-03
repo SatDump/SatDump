@@ -5,13 +5,13 @@
 #include <thread>
 #include <fstream>
 #include "deframer.h"
-#include "modules/common/dsp/lib/random.h"
-#include "modules/common/dsp/agc.h"
-#include "modules/common/dsp/fir.h"
-#include "modules/common/dsp/moving_average.h"
-#include "modules/common/dsp/clock_recovery_mm.h"
-#include "modules/common/dsp/file_source.h"
-#include "modules/common/dsp/bpsk_carrier_pll.h"
+#include "common/dsp/lib/random.h"
+#include "common/dsp/agc.h"
+#include "common/dsp/fir.h"
+#include "common/dsp/moving_average.h"
+#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/file_source.h"
+#include "common/dsp/bpsk_carrier_pll.h"
 
 namespace meteor
 {
@@ -47,6 +47,7 @@ namespace meteor
         METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         ~METEORHRPTDemodModule();
         void init();
+        void stop();
         void process();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();

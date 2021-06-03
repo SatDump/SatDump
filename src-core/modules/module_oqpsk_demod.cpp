@@ -1,5 +1,5 @@
 #include "module_oqpsk_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -81,7 +81,7 @@ std::vector<ModuleDataType> OQPSKDemodModule::getInputTypes()
 
 std::vector<ModuleDataType> OQPSKDemodModule::getOutputTypes()
 {
-    return {DATA_FILE};
+    return {DATA_FILE, DATA_STREAM};
 }
 
 OQPSKDemodModule::~OQPSKDemodModule()
@@ -96,8 +96,11 @@ void OQPSKDemodModule::process()
     else
         filesize = 0;
 
-    data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
-    d_output_files.push_back(d_output_file_hint + ".soft");
+    if (output_data_type == DATA_FILE)
+    {
+        data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
+        d_output_files.push_back(d_output_file_hint + ".soft");
+    }
 
     logger->info("Using input baseband " + d_input_file);
     logger->info("Demodulating to " + d_output_file_hint + ".soft");
@@ -138,7 +141,10 @@ void OQPSKDemodModule::process()
 
         rec->output_stream->flush();
 
-        data_out.write((char *)sym_buffer, dat_size * 2);
+        if (output_data_type == DATA_FILE)
+            data_out.write((char *)sym_buffer, dat_size * 2);
+        else
+            output_fifo->write((uint8_t *)sym_buffer, dat_size * 2);
 
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
@@ -151,6 +157,12 @@ void OQPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void OQPSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -163,8 +175,10 @@ void OQPSKDemodModule::process()
     pll->stop();
     del->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
-    data_out.close();
+    if (output_data_type == DATA_FILE)
+        data_out.close();
 }
 
 const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);

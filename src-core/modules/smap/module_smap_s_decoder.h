@@ -3,8 +3,8 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "modules/common/ccsds/ccsds_1_0_proba/deframer.h"
-#include "modules/common/dsp/lib/random.h"
+#include "common/ccsds/ccsds_1_0_proba/deframer.h"
+#include "common/dsp/lib/random.h"
 
 namespace smap
 {

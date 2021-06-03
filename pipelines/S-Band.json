@@ -18,7 +18,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "2000000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.004",
@@ -55,7 +55,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "2000000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.004",
@@ -91,7 +91,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "1919000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.004",
@@ -116,7 +116,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "590000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.04",
@@ -150,7 +150,8 @@
                 "jason3_decoder": {}
             },
             "products": {
-                "jason3_poseidon": {}
+                "jason3_poseidon": {},
+                "jason3_amr2": {}
             }
         }
     }

@@ -1,7 +1,7 @@
 #include "module_new_npp_hrd_decoder.h"
 #include "logger.h"
-#include "modules/common/sathelper/reedsolomon_233.h"
-#include "modules/common/differential/nrzm.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
+#include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 
 #define BUFFER_SIZE 8192 * 2
@@ -40,7 +40,7 @@ namespace npp
 
         diff::NRZMDiff diff;
 
-        sathelper::ReedSolomon reedSolomon;
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         int vout;
 
@@ -66,12 +66,7 @@ namespace npp
                     for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
                     {
                         // RS Correction
-                        for (int i = 0; i < 4; i++)
-                        {
-                            reedSolomon.deinterleave(&cadu[4], rsWorkBuffer, i, 4);
-                            errors[i] = reedSolomon.decode_ccsds(rsWorkBuffer);
-                            reedSolomon.interleave(rsWorkBuffer, &cadu[4], i, 4);
-                        }
+                        rs.decode_interlaved(&cadu[4], true, 4, errors);
 
                         // Write it out
                         data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "module.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 #include "viterbi_new.h"
 #include <fstream>
 

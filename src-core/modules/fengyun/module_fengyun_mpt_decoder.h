@@ -4,7 +4,7 @@
 #include <complex>
 #include <future>
 #include "mpt_viterbi.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <fstream>
 
 namespace fengyun

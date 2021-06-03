@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "mwhs_reader.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -41,7 +41,6 @@ namespace fengyun
 
             // Reader
             MWHSReader mwhs_reader;
-            //std::ofstream frames("test.bin");
 
             while (!data_in.eof())
             {
@@ -50,7 +49,7 @@ namespace fengyun
 
                 // Extract VCID
                 int vcid = buffer[5] % ((int)pow(2, 6));
-                //logger->debug(vcid);
+
                 if (vcid == 12)
                 {
                     vcidFrames++;
@@ -60,15 +59,8 @@ namespace fengyun
 
                     for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        // logger->debug("APID " + std::to_string(pkt.header.apid));
-
                         if (pkt.header.apid == 16)
-                        {
-                            //logger->debug("SIZE " + std::to_string(pkt.payload.size()));
-                            //if ((pkt.payload[350] & 2) == 0)
-                            //    frames.write((char *)pkt.payload.data(), 1018);
                             mwhs_reader.work(pkt);
-                        }
                     }
                 }
 
@@ -92,23 +84,29 @@ namespace fengyun
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            logger->info("Channel 1...");
-            WRITE_IMAGE(mwhs_reader.getChannel(0), directory + "/MWHS-1.png");
+            for (int i = 0; i < 6; i++)
+            {
+                logger->info("Channel " + std::to_string(i + 1) + "...");
+                WRITE_IMAGE(mwhs_reader.getChannel(i), directory + "/MWHS-" + std::to_string(i + 1) + ".png");
+            }
 
-            logger->info("Channel 2...");
-            WRITE_IMAGE(mwhs_reader.getChannel(1), directory + "/MWHS-2.png");
+            // Output a few nice composites as well
+            logger->info("Global Composite...");
+            cimg_library::CImg<unsigned short> imageAll(98 * 3, mwhs_reader.getChannel(0).height() * 2, 1, 1);
+            {
+                int height = mwhs_reader.getChannel(0).height();
 
-            logger->info("Channel 3...");
-            WRITE_IMAGE(mwhs_reader.getChannel(2), directory + "/MWHS-3.png");
+                // Row 1
+                imageAll.draw_image(98 * 0, 0, 0, 0, mwhs_reader.getChannel(0));
+                imageAll.draw_image(98 * 1, 0, 0, 0, mwhs_reader.getChannel(1));
+                imageAll.draw_image(98 * 2, 0, 0, 0, mwhs_reader.getChannel(2));
 
-            logger->info("Channel 4...");
-            WRITE_IMAGE(mwhs_reader.getChannel(3), directory + "/MWHS-4.png");
-
-            logger->info("Channel 5...");
-            WRITE_IMAGE(mwhs_reader.getChannel(4), directory + "/MWHS-5.png");
-
-            logger->info("Channel 6...");
-            WRITE_IMAGE(mwhs_reader.getChannel(5), directory + "/MWHS-6.png");
+                // Row 2
+                imageAll.draw_image(98 * 0, height, 0, 0, mwhs_reader.getChannel(3));
+                imageAll.draw_image(98 * 1, height, 0, 0, mwhs_reader.getChannel(4));
+                imageAll.draw_image(98 * 2, height, 0, 0, mwhs_reader.getChannel(5));
+            }
+            WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
         }
 
         void FengyunMWHSDecoderModule::drawUI(bool window)

@@ -1,6 +1,6 @@
 #include "module_oceansat2_db_decoder.h"
 #include "logger.h"
-#include "modules/common/differential/generic.h"
+#include "common/codings/differential/generic.h"
 #include "imgui/imgui.h"
 #include "oceansat2_deframer.h"
 #include "oceansat2_derand.h"

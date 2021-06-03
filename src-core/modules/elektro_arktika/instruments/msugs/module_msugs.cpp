@@ -39,9 +39,9 @@ namespace elektro_arktika
             int vis3_frames = 0;
             int infr_frames = 0;
 
-            SimpleDeframer<uint64_t, 64, 121680, 0x0218a7a392dd9abf> deframerVIS1, deframerVIS2, deframerVIS3;
-            SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf> deframerIR;
-            SimpleDeframer<uint64_t, 24, 1680, 0xa6007c> deframerUnknown;
+            SimpleDeframer<uint64_t, 64, 121680, 0x0218a7a392dd9abf, 10> deframerVIS1, deframerVIS2, deframerVIS3;
+            SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf, 10> deframerIR;
+            SimpleDeframer<uint64_t, 24, 1680, 0xa6007c, 0> deframerUnknown;
 
             //std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
 

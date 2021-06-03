@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cstring>
-#include "modules/common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
 #include "channels.h"
 
 namespace jpss

@@ -48,7 +48,7 @@ void Pipeline::run(std::string input_file,
                     final_parameters.emplace(param.first, param.second);
 
             logger->debug("Parameters :");
-            for (const std::pair<std::string, std::string> &param : final_parameters)
+            for (const std::pair<std::string, std::string> param : final_parameters)
                 logger->debug("   - " + param.first + " : " + param.second);
 
             std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](modStep.input_override == "" ? (stepC == 0 ? input_file : lastFiles[0]) : output_directory + "/" + modStep.input_override, output_directory + "/" + name, final_parameters);
