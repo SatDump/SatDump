@@ -1,8 +1,10 @@
 #pragma once
 
 // This is not present on Android, so we have to provide it ourselves
-namespace std
+namespace std2
 {
+    using namespace std;
+    
     template <typename _Operation>
     class binder1st
         : public unary_function<typename _Operation::second_argument_type,

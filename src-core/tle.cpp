@@ -4,11 +4,7 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
-#ifdef __ANDROID__
 #include "common/std/binder1st.h"
-#else
-#include <functional>
-#endif
 
 namespace tle
 {
@@ -44,7 +40,7 @@ namespace tle
                             if (line_count % 3 == 0)
                             {
                                 name = line;
-                                name.erase(std::find_if(name.rbegin(), name.rend(), std::bind1st(std::not_equal_to<char>(), ' ')).base(), name.end()); // Remove useless spaces
+                                name.erase(std::find_if(name.rbegin(), name.rend(), std2::bind1st(std::not_equal_to<char>(), ' ')).base(), name.end()); // Remove useless spaces
                             }
                             else if (line_count % 3 == 1)
                             {
