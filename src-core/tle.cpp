@@ -4,6 +4,7 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
+#include <functional>
 
 namespace tle
 {
