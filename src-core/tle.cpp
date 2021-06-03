@@ -4,7 +4,6 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
-#include "common/std/binder1st.h"
 
 namespace tle
 {
@@ -40,7 +39,10 @@ namespace tle
                             if (line_count % 3 == 0)
                             {
                                 name = line;
-                                name.erase(std::find_if(name.rbegin(), name.rend(), std2::bind1st(std::not_equal_to<char>(), ' ')).base(), name.end()); // Remove useless spaces
+                                name.erase(std::find_if(name.rbegin(), name.rend(), [](char &c)
+                                                        { return c != ' '; })
+                                               .base(),
+                                           name.end()); // Remove useless spaces
                             }
                             else if (line_count % 3 == 1)
                             {
