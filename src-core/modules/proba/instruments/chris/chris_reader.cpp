@@ -25,7 +25,9 @@ T most_common(InputIt begin, InputIt end)
         else
             counts[*it] = 1;
     }
-    return std::max_element(counts.begin(), counts.end(), [](const std::pair<T, int> &pair1, const std::pair<T, int> &pair2) { return pair1.second < pair2.second; })->first;
+    return std::max_element(counts.begin(), counts.end(), [](const std::pair<T, int> &pair1, const std::pair<T, int> &pair2)
+                            { return pair1.second < pair2.second; })
+        ->first;
 }
 
 namespace proba
@@ -259,16 +261,34 @@ namespace proba
             WRITE_IMAGE_LOCAL(image13169, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png");
         }
 
-        void CHRISImageParser::writeAllCompos(cimg_library::CImg<unsigned short> & /*img*/)
+        void CHRISImageParser::writeAllCompos(cimg_library::CImg<unsigned short> &img)
         {
-            /*logger->info("Dumping all 63 channels... (Temporary!)");
+            logger->info("Writing ALL mode RGB compositions...");
             cimg_library::CImg<unsigned short> imgs[63];
             for (int i = 0; i < 63; i++)
             {
                 imgs[i] = img;
                 imgs[i].crop(4 + i * 192, 4 + i * 192 + 186);
-                imgs[iWRITE_IMAGE_LOCAL(], output_folder + "/CHRIS-" + std::to_string(count_ref) + "-CHANNEL-" + std::to_string(i + 1) + ".png");
-            }*/
+                //WRITE_IMAGE_LOCAL(imgs[i], output_folder + "/CHRIS-" + std::to_string(count_ref) + "-CHANNEL-" + std::to_string(i + 1) + ".png");
+            }
+
+            cimg_library::CImg<unsigned short> image8409(187, 374, 1, 3);
+            image8409.draw_image(0, 0, 0, 0, imgs[8]);
+            image8409.draw_image(0, 0, 0, 1, imgs[40]);
+            image8409.draw_image(0, 0, 0, 2, imgs[9]);
+            WRITE_IMAGE_LOCAL(image8409, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-40-9.png");
+
+            cimg_library::CImg<unsigned short> image204060(187, 374, 1, 3);
+            image204060.draw_image(0, 0, 0, 0, imgs[20]);
+            image204060.draw_image(0, 0, 0, 1, imgs[40]);
+            image204060.draw_image(0, 0, 0, 2, imgs[60]);
+            WRITE_IMAGE_LOCAL(image204060, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB20-40-60.png");
+
+            cimg_library::CImg<unsigned short> image305518(187, 374, 1, 3);
+            image305518.draw_image(0, 0, 0, 0, imgs[30]);
+            image305518.draw_image(0, 0, 0, 1, imgs[55]);
+            image305518.draw_image(0, 0, 0, 2, imgs[18]);
+            WRITE_IMAGE_LOCAL(image305518, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB30-55-18.png");
         }
 
         std::string CHRISImageParser::getModeName(int mode)
