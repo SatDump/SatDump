@@ -4,6 +4,7 @@
 #include "pipeline.h"
 #include <filesystem>
 #include "settings.h"
+#include "tle.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -35,6 +36,8 @@ void initSatdump()
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)
         logger->debug(" - " + pipeline.name);
+
+    tle::loadTLEs();
 }
 
 // This is a pretty crappy way of doing it,
