@@ -6,9 +6,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+//#include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
+//#include <unistd.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
 
 /**
  * Set three-element vector to specified components.
