@@ -14,7 +14,7 @@ void renderOfflineProcessing()
     {
         std::string names;
 
-        for (int i = 0; i < pipeline_categories.size(); i++)
+        for (int i = 0; i < (int)pipeline_categories.size(); i++)
         {
             names += pipeline_categories[i] + '\0';
         }
@@ -34,7 +34,7 @@ void renderOfflineProcessing()
     {
         std::string names;
 
-        for (int i = 0; i < catPipelines.size(); i++)
+        for (int i = 0; i < (int)catPipelines.size(); i++)
         {
             names += catPipelines[i].readable_name + '\0';
         }
@@ -82,7 +82,7 @@ void renderOfflineProcessing()
         std::string names; // = "baseband\0";
 
         if (pipeline_id != -1)
-            for (int i = 0; i < catPipelines[pipeline_id].steps.size(); i++)
+            for (int i = 0; i < (int)catPipelines[pipeline_id].steps.size(); i++)
             {
                 names += catPipelines[pipeline_id].steps[i].level_name + '\0';
             }
@@ -102,7 +102,7 @@ void renderOfflineProcessing()
         if (ImGui::Button("Select Input"))
         {
             logger->debug("Opening file dialog");
-            auto result = pfd::open_file("Open input file", ".", {".*"}, false);
+            auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
             while (result.ready(1000))
             {
             }

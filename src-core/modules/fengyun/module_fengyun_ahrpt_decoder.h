@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <future>
-#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 #include "ahrpt_viterbi.h"
 #include <fstream>
 

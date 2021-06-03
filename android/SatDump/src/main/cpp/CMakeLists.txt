@@ -69,6 +69,11 @@ add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
 include_directories(deps/jpeg/jni)
 
+# LIBFFTW3
+add_library(fftw STATIC IMPORTED)
+set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fftw3/${ANDROID_ABI}/libfftw3f.a)
+include_directories(deps/fftw3/jni)
+
 #add_subdirectory(src-core)
 add_subdirectory(../../../../../src-core ${CMAKE_BINARY_DIR}/src-core)
 target_include_directories(satdump_android PRIVATE ../../../../../src-core)

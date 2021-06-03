@@ -1,5 +1,5 @@
 #include "module_meteor_hrpt_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -102,6 +102,12 @@ namespace meteor
 
         logger->info("Demodulation finished");
 
+        if (input_data_type == DATA_FILE)
+            stop();
+    }
+
+    void METEORHRPTDemodModule::stop()
+    {
         // Stop
         if (input_data_type == DATA_FILE)
             file_source->stop();
@@ -110,6 +116,7 @@ namespace meteor
         pll->stop();
         mov->stop();
         rec->stop();
+        rec->output_stream->stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();

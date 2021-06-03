@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/common/ctpl/ctpl_stl.h"
+#include "common/ctpl/ctpl_stl.h"
 #include "module.h"
 
 extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;

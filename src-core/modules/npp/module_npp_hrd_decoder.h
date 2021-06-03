@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include "viterbi.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 #include <fstream>
 
 namespace npp

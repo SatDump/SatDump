@@ -1,5 +1,5 @@
 #include "module_qpsk_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -154,6 +154,12 @@ void QPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void QPSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
@@ -165,6 +171,7 @@ void QPSKDemodModule::process()
     rrc->stop();
     pll->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     if (output_data_type == DATA_FILE)
         data_out.close();

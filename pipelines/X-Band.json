@@ -179,7 +179,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "30720000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.03",
@@ -205,7 +205,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "30720000",
-                    "agc_rate": "0.000001",
+                    "agc_rate": "0.00001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.03",

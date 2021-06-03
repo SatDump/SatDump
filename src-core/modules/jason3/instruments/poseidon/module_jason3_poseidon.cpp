@@ -1,16 +1,11 @@
 #include "module_jason3_poseidon.h"
 #include <fstream>
-#include "modules/common/ccsds/ccsds_1_0_jason/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_jason/vcdu.h"
+#include "common/ccsds/ccsds_1_0_jason/demuxer.h"
+#include "common/ccsds/ccsds_1_0_jason/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-
-#include <iostream>
-
-#define WRITE_IMAGE_LOCAL(image, path)         \
-    image.save_png(std::string(path).c_str()); \
-    all_images.push_back(path);
+#include "poseidon_reader.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -45,8 +40,7 @@ namespace jason3
 
             logger->info("Demultiplexing and deframing...");
 
-            std::ofstream frames_out(directory + "/pos.ccsds", std::ios::binary);
-            d_output_files.push_back(directory + "/pos.ccsds");
+            PoseidonReader readerC, readerKU;
 
             while (!data_in.eof())
             {
@@ -54,8 +48,6 @@ namespace jason3
                 data_in.read((char *)buffer, 1279);
 
                 int vcid = ccsds::ccsds_1_0_jason::parseVCDU(buffer).vcid;
-
-                std::cout << "VCID" << vcid << std::endl;
 
                 if (vcid == 1)
                 {
@@ -68,14 +60,11 @@ namespace jason3
                             if (pkt.header.apid == 2047)
                                 continue;
 
-                            std::cout << "APID " << pkt.header.apid << std::endl;
-
                             if (pkt.header.apid == 1031)
-                            {
-                                std::cout << "LEN " << pkt.payload.size() << std::endl;
-                                frames_out.write((char *)pkt.header.raw, 6);
-                                frames_out.write((char *)pkt.payload.data(), 930);
-                            }
+                                readerC.work(pkt);
+
+                            if (pkt.header.apid == 1032)
+                                readerKU.work(pkt);
                         }
                     }
                 }
@@ -91,8 +80,17 @@ namespace jason3
 
             data_in.close();
 
-            frames_out.close();
-            //d_output_files = swap_reader.all_images;
+            logger->info("Writing images.... (Can take a while)");
+
+            logger->info("C-Band height map...");
+            WRITE_IMAGE(readerC.getImageHeight(), directory + "/Poseidon-C-Band-Height-Map.png");
+            logger->info("Ku-Band height map...");
+            WRITE_IMAGE(readerKU.getImageHeight(), directory + "/Poseidon-Ku-Band-Height-Map.png");
+
+            logger->info("C-Band scatter map...");
+            WRITE_IMAGE(readerC.getImageScatter(), directory + "/Poseidon-C-Band-Scatter-Map.png");
+            logger->info("Ku-Band scatter map...");
+            WRITE_IMAGE(readerKU.getImageScatter(), directory + "/Poseidon-Ku-Band-Scatter-Map.png");
         }
 
         void Jason3PoseidonDecoderModule::drawUI(bool window)

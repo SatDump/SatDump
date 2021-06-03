@@ -16,7 +16,8 @@ private:
     static int _rx_callback(airspy_transfer *t);
 
 public:
-    SDRAirspy(uint64_t id = 0);
+    SDRAirspy(std::map<std::string, std::string> parameters, uint64_t id = 0);
+    ~SDRAirspy();
     void start();
     void stop();
     void drawUI();

@@ -11,7 +11,7 @@ void SDRRtlSdr::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<std::complex<float>>> stream = *((std::shared_ptr<dsp::stream<std::complex<float>>> *)ctx);
     // Convert to CF-32
-    for (int i = 0; i < len / 2; i++)
+    for (int i = 0; i < (int)len / 2; i++)
         stream->writeBuf[i] = std::complex<float>((buf[i * 2 + 0] - 127) / 128.0f, (buf[i * 2 + 1] - 127) / 128.0f);
     stream->swap(len / 2);
 };
@@ -27,7 +27,7 @@ void SDRRtlSdr::runThread()
     }
 }
 
-SDRRtlSdr::SDRRtlSdr(uint64_t id) : SDRDevice(id)
+SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     if (rtlsdr_open(&dev, id) > 0)
     {
@@ -56,6 +56,12 @@ void SDRRtlSdr::stop()
 {
     should_run = false;
     rtlsdr_cancel_async(dev);
+    if (workThread.joinable())
+        workThread.join();
+}
+
+SDRRtlSdr::~SDRRtlSdr()
+{
     rtlsdr_close(dev);
 }
 
@@ -159,7 +165,6 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRRtlSdr::getDe
 {
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
-    uint64_t serials[100];
     int c = rtlsdr_get_device_count();
 
     for (int i = 0; i < c; i++)

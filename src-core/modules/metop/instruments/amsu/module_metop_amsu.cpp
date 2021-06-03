@@ -2,8 +2,8 @@
 #include <fstream>
 #include "amsu_a1_reader.h"
 #include "amsu_a2_reader.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "modules/common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"

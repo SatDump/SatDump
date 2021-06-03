@@ -22,7 +22,8 @@ private:
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
 public:
-    SDRRtlSdr(uint64_t id = 0);
+    SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id = 0);
+    ~SDRRtlSdr();
     void start();
     void stop();
     void drawUI();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modules/common/ccsds/ccsds_1_0_proba/ccsds.h"
+#include "common/ccsds/ccsds_1_0_proba/ccsds.h"
 #include <fstream>
 #include <map>
 

@@ -1,5 +1,5 @@
 #include "module_bpsk_demod.h"
-#include "modules/common/dsp/lib/fir_gen.h"
+#include "common/dsp/lib/fir_gen.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -104,6 +104,8 @@ void BPSKDemodModule::process()
         file_source->start();
     if (d_dc_block)
         dcb->start();
+    if (resample)
+        res->start();
     agc->start();
     rrc->start();
     pll->start();
@@ -145,15 +147,24 @@ void BPSKDemodModule::process()
 
     logger->info("Demodulation finished");
 
+    if (input_data_type == DATA_FILE)
+        stop();
+}
+
+void BPSKDemodModule::stop()
+{
     // Stop
     if (input_data_type == DATA_FILE)
         file_source->stop();
     if (d_dc_block)
         dcb->stop();
+    if (resample)
+        res->stop();
     agc->stop();
     rrc->stop();
     pll->stop();
     rec->stop();
+    rec->output_stream->stopReader();
 
     if (output_data_type == DATA_FILE)
         data_out.close();

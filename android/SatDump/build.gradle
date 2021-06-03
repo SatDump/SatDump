@@ -34,7 +34,7 @@ android {
             java.srcDirs += ['src/main/cpp/deps/SDL/android-project/app/src/main/java']
             // Instead of copying data files from the native project, we just add its data
             // as another asset directory
-            assets.srcDirs += ['src/main/cpp/data']
+            assets.srcDirs += ['assets']
         }
     }
 }
@@ -46,3 +46,36 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 }
+
+task deleteTempAssets (type: Delete) {
+    delete 'assets'
+}
+
+task copyPipelines(type: Copy) {
+    description = 'Copy pipelines...'
+    from '../../pipelines'
+    into 'assets/pipelines'
+    include('**/*')
+}
+
+task copyResources(type: Copy) {
+    description = 'Copy resources...'
+    from '../../resources'
+    into 'assets/resources'
+    include('**/*')
+}
+
+task copyFont(type: Copy) {
+    description = 'Copy font...'
+    from '../../Roboto-Medium.ttf'
+    into 'assets/'
+    include('*')
+}
+
+copyPipelines.dependsOn deleteTempAssets
+copyResources.dependsOn deleteTempAssets
+copyFont.dependsOn deleteTempAssets
+
+preBuild.dependsOn copyPipelines
+preBuild.dependsOn copyResources
+preBuild.dependsOn copyFont

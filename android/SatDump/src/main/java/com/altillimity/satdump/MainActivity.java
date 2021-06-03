@@ -5,14 +5,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.content.Context;
 import android.os.Environment;
+
 import androidx.core.app.ActivityCompat;
+
 import android.Manifest;
 import android.widget.Toast;
 import android.content.Intent;
+
 import androidx.core.content.PermissionChecker;
+
 import android.app.Activity;
 import android.net.Uri;
+
 import androidx.loader.content.CursorLoader;
+
 import android.database.Cursor;
 import android.provider.MediaStore;
 import android.content.pm.PackageManager;
@@ -23,6 +29,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbDeviceConnection;
 import android.provider.DocumentsContract;
+
 import com.altillimity.satdump.RealPathUtil;
 
 import org.libsdl.app.SDLActivity;
@@ -35,8 +42,11 @@ import java.io.File;
 
 import android.app.PendingIntent;
 import android.content.IntentFilter;
+
 import java.util.HashMap;
+
 import android.content.BroadcastReceiver;
+
 import java.util.Iterator;
 
 /**
@@ -49,18 +59,6 @@ public class MainActivity extends SDLActivity {
     /* A fancy way of getting the class name */
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    /* A list of assets to copy to internal directory */
-    private static final String[] ASSET_NAMES = new String[]{
-            "Roboto-Medium.ttf",
-            "VHF.json",
-            "X-Band.json",
-            "HRPT.json",
-            "GEO.json",
-            "Rockets.json",
-            "S-Band.json",
-            "Rockets.json"
-    };
-
     @Override
     protected String[] getLibraries() {
         return new String[]{"hidapi", "SDL2", "satdump_android"};
@@ -72,6 +70,53 @@ public class MainActivity extends SDLActivity {
     }
 
     public native void initlibusb(int descriptor);
+
+    // Thanks https://gist.github.com/tylerchesley/6198074
+    public void copyFileOrDir(String path) {
+        AssetManager assetManager = this.getAssets();
+        String assets[] = null;
+        try {
+            assets = assetManager.list(path);
+            if (assets.length == 0) {
+                copyFile(path);
+            } else {
+                String fullPath = getFilesDir() + "/" + path;
+                File dir = new File(fullPath);
+                if (!dir.exists())
+                    dir.mkdir();
+                for (int i = 0; i < assets.length; ++i) {
+                    copyFileOrDir(path + "/" + assets[i]);
+                }
+            }
+        } catch (IOException ex) {
+            Log.e(TAG, "I/O Exception", ex);
+        }
+    }
+
+    private void copyFile(String filename) {
+        AssetManager assetManager = this.getAssets();
+
+        InputStream in = null;
+        FileOutputStream out = null;
+        try {
+            in = assetManager.open(filename);
+            String newFileName = getFilesDir() + "/" + filename;
+            out = new FileOutputStream(newFileName);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            in = null;
+            out.flush();
+            out.close();
+            out = null;
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,28 +132,10 @@ public class MainActivity extends SDLActivity {
          * via the usual stdio means. This is to avoid using AAssetManager
          * in our native code. */
         Log.v(TAG, "Copying assets to accessible locations");
-        AssetManager assetManager = this.getAssets();
-        for (String assetName: ASSET_NAMES) {
-            try {
-                Log.v(TAG, "Copying " + assetName);
-                InputStream ais = assetManager.open(assetName);
-                FileOutputStream fos = openFileOutput(assetName, MODE_PRIVATE);
-                final int BUFSZ = 8192;
-                byte[] buffer = new byte[BUFSZ];
-                int readlen = 0;
-                do {
-                    readlen = ais.read(buffer, 0, BUFSZ);
-                    if (readlen < 0) {
-                        break;
-                    }
-                    fos.write(buffer, 0, readlen);
-                } while (readlen > 0);
-                fos.close();
-                ais.close();
-            } catch(IOException e){
-                Log.e(TAG, "Could not open " + assetName + " from assets, that should not happen", e);
-            }
-        }
+
+        copyFileOrDir("resources");
+        copyFileOrDir("pipelines");
+        copyFileOrDir("Roboto-Medium.ttf");
 
         Log.v(TAG, getExternalFilesDir(null).getAbsolutePath());
     }
@@ -120,10 +147,10 @@ public class MainActivity extends SDLActivity {
     public String getFilePath() {
         outputFile = "";
 
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT); 
-        intent.setType("*/*"); 
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-    
+
         try {
             startActivityForResult(Intent.createChooser(intent, "Select a File to process"), 0);
         } catch (android.content.ActivityNotFoundException ex) {
@@ -132,7 +159,7 @@ public class MainActivity extends SDLActivity {
 
         waiting = true;
 
-        while(waiting);
+        while (waiting) ;
 
         return outputFile;
     }
@@ -144,11 +171,11 @@ public class MainActivity extends SDLActivity {
     public String getFilePath1() {
         outputFile1 = "";
 
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE); 
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         //intent.setType("file/*"); 
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-    
+
         try {
             startActivityForResult(Intent.createChooser(intent, "Select an output directory"), 1);
         } catch (android.content.ActivityNotFoundException ex) {
@@ -157,7 +184,7 @@ public class MainActivity extends SDLActivity {
 
         waiting1 = true;
 
-        while(waiting1);
+        while (waiting1) ;
 
         return outputFile1;
     }
@@ -166,17 +193,17 @@ public class MainActivity extends SDLActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case 0:
-            if (resultCode == RESULT_OK) {
-                outputFile = RealPathUtil.getRealPath(this, data.getData());
-                waiting = false;
-            }
-            break;
+                if (resultCode == RESULT_OK) {
+                    outputFile = RealPathUtil.getRealPath(this, data.getData());
+                    waiting = false;
+                }
+                break;
             case 1:
-            if (resultCode == RESULT_OK) {
-                outputFile1 = RealPathUtil.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(data.getData(), DocumentsContract.getTreeDocumentId(data.getData())));
-                waiting1 = false;
-            }
-            break;
+                if (resultCode == RESULT_OK) {
+                    outputFile1 = RealPathUtil.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(data.getData(), DocumentsContract.getTreeDocumentId(data.getData())));
+                    waiting1 = false;
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
