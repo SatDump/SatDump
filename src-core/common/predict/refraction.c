@@ -1,6 +1,10 @@
 #include "predict.h"
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
+
 /* Corrections for atmospheric refraction */
 /* Reference:  Astronomical Algorithms by Jean Meeus, pp. 101-104    */
 /* 			   http://en.wikipedia.org/wiki/Atmospheric_refraction */
