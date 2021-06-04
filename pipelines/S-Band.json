@@ -1,7 +1,7 @@
 {
     "proba1_dump": {
         "name": "Proba-1 Dump",
-        "live": false,
+        "live": true,
         "live_cfg": [
             [
                 1,
@@ -38,7 +38,7 @@
     },
     "proba2_dump": {
         "name": "Proba-2 Dump",
-        "live": false,
+        "live": true,
         "live_cfg": [
             [
                 1,
@@ -74,7 +74,7 @@
     },
     "probav_s_dump": {
         "name": "Proba-V S-Band Dump",
-        "live": false,
+        "live": true,
         "live_cfg": [
             [
                 1,
