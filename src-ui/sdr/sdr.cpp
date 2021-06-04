@@ -24,12 +24,12 @@ void SDRDevice::init()
 {
 }
 
-void SDRDevice::setFrequency(int frequency)
+void SDRDevice::setFrequency(long frequency)
 {
     d_frequency = frequency;
 }
 
-void SDRDevice::setSamplerate(int samplerate)
+void SDRDevice::setSamplerate(long samplerate)
 {
     d_samplerate = samplerate;
 }

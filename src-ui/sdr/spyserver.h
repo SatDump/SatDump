@@ -28,7 +28,7 @@ public:
     void stop();
     void drawUI();
     static void init();
-    virtual void setFrequency(int frequency);
+    virtual void setFrequency(long frequency);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
     static char server_ip[100];
     static char server_port[100];
