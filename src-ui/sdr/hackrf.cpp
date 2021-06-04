@@ -36,15 +36,7 @@ void SDRHackRF::start()
     hackrf_set_baseband_filter_bandwidth(dev, d_samplerate);
 
     logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    logger->info("Frequency " + std::to_string(d_frequency));
-    //hackrf_set_freq(dev, d_frequency);
+    setFrequency(d_frequency);
 
     hackrf_set_amp_enable(dev, amp);
     hackrf_set_lna_gain(dev, lna_gain);
