@@ -32,6 +32,7 @@ if(MSVC)
         target_link_libraries(satdump-ui PUBLIC airspy.dll)
         target_link_libraries(satdump-ui PUBLIC rtlsdr.dll)
         target_link_libraries(satdump-ui PUBLIC hackrf.dll)
+        target_link_libraries(satdump-ui PUBLIC LimeSuite.dll)
     endif()
 else()
     # Glew
@@ -55,9 +56,13 @@ else()
         find_library(RTLSDR_LIBRARY rtlsdr REQUIRED)
         target_link_libraries(satdump-ui PUBLIC ${RTLSDR_LIBRARY})
 
-        # RTL-SDR
+        # HackRF
         find_library(HACKRF_LIBRARY hackrf REQUIRED)
         target_link_libraries(satdump-ui PUBLIC ${HACKRF_LIBRARY})
+
+        # LimeSDR
+        find_library(LIME_LIBRARY LimeSuite REQUIRED)
+        target_link_libraries(satdump-ui PUBLIC ${LIME_LIBRARY})
     endif()
 endif()
 

@@ -12,7 +12,7 @@ int SDRHackRF::_rx_callback(hackrf_transfer *t)
     std::shared_ptr<dsp::stream<std::complex<float>>> stream = *((std::shared_ptr<dsp::stream<std::complex<float>>> *)t->rx_ctx);
     // Convert to CF-32
     for (int i = 0; i < t->buffer_length / 2; i++)
-        stream->writeBuf[i] = std::complex<float>((t->buffer[i * 2 + 0] - 127) / 128.0f, (t->buffer[i * 2 + 1] - 127) / 128.0f);
+        stream->writeBuf[i] = std::complex<float>(((int8_t *)t->buffer)[i * 2 + 0] / 128.0f, ((int8_t *)t->buffer)[i * 2 + 1] / 128.0f);
     stream->swap(t->buffer_length / 2);
     return 0;
 };
