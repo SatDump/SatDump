@@ -28,7 +28,7 @@ public:
     void stop();
     void drawUI();
     static void init();
-    virtual void setFrequency(long frequency);
+    virtual void setFrequency(float frequency);
     void setGainMode(bool gainmode);
     void setGain(int gain);
     void setBias(bool bias);
