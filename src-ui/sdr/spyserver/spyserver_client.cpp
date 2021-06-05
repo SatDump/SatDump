@@ -414,7 +414,7 @@ int ss_client::parse_header(char *buffer, uint32_t length)
 
   while (length > 0)
   {
-    int to_write = std::min((uint32_t)(sizeof(MessageHeader) - parser_position), length);
+    int to_write = std::min<int>((uint32_t)(sizeof(MessageHeader) - parser_position), length);
     std::memcpy(&header + parser_position, buffer, to_write);
     /*    
     std::cerr << "Header:"
@@ -455,7 +455,7 @@ int ss_client::parse_body(char *buffer, uint32_t length)
 
   while (length > 0)
   {
-    int to_write = std::min((int)header.BodySize - parser_position, length);
+    int to_write = std::min<int>((int)header.BodySize - parser_position, length);
     std::memcpy(body_buffer + parser_position, buffer, to_write);
     length -= to_write;
     buffer += to_write;
