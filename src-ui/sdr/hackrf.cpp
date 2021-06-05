@@ -97,7 +97,7 @@ void SDRHackRF::drawUI()
     ImGui::End();
 }
 
-void SDRHackRF::setFrequency(long frequency)
+void SDRHackRF::setFrequency(float frequency)
 {
     d_frequency = frequency;
     std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());

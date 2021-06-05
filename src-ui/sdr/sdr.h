@@ -20,8 +20,8 @@ class SDRDevice
 {
 protected:
     std::map<std::string, std::string> d_parameters;
-    long d_samplerate;
-    long d_frequency;
+    float d_samplerate;
+    float d_frequency;
 
 public:
     std::shared_ptr<dsp::stream<std::complex<float>>> output_stream;
@@ -30,8 +30,8 @@ public:
     virtual void stop();
     virtual void drawUI();
     static void init();
-    virtual void setFrequency(long frequency);
-    virtual void setSamplerate(long samplerate);
+    virtual void setFrequency(float frequency);
+    virtual void setSamplerate(float samplerate);
     virtual int getFrequency();
     virtual int getSamplerate();
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();

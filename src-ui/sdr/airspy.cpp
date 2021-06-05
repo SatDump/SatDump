@@ -77,7 +77,7 @@ void SDRAirspy::drawUI()
     ImGui::End();
 }
 
-void SDRAirspy::setFrequency(long frequency)
+void SDRAirspy::setFrequency(float frequency)
 {
     d_frequency = frequency;
     std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
