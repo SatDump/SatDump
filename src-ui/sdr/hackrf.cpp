@@ -31,6 +31,8 @@ SDRHackRF::SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id)
 
 void SDRHackRF::start()
 {
+    hackrf_reset(dev);
+
     logger->info("Samplerate " + std::to_string(d_samplerate));
     hackrf_set_sample_rate(dev, d_samplerate);
     hackrf_set_baseband_filter_bandwidth(dev, d_samplerate);
