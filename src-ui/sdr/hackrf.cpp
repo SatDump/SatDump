@@ -19,6 +19,11 @@ int SDRHackRF::_rx_callback(hackrf_transfer *t)
 
 SDRHackRF::SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
+    READ_PARAMETER_IF_EXISTS_FLOAT(lna_gain, "lna_gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(vga_gain, "vga_gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(amp, "amp");
+    READ_PARAMETER_IF_EXISTS_FLOAT(bias, "bias");
+
     std::stringstream ss;
     ss << std::hex << id;
     if (!hackrf_open_by_serial(ss.str().c_str(), &dev))
@@ -26,13 +31,22 @@ SDRHackRF::SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id)
         logger->critical("Could not open HackRF device!");
         return;
     }
+    hackrf_reset(dev);
     logger->info("Opened HackRF device!");
+}
+
+std::map<std::string, std::string> SDRHackRF::getParameters()
+{
+    d_parameters["lna_gain"] = std::to_string(lna_gain);
+    d_parameters["vga_gain"] = std::to_string(vga_gain);
+    d_parameters["amp"] = std::to_string(amp);
+    d_parameters["bias"] = std::to_string(bias);
+
+    return d_parameters;
 }
 
 void SDRHackRF::start()
 {
-    hackrf_reset(dev);
-
     logger->info("Samplerate " + std::to_string(d_samplerate));
     hackrf_set_sample_rate(dev, d_samplerate);
     hackrf_set_baseband_filter_bandwidth(dev, d_samplerate);
@@ -131,6 +145,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRHackRF::getDe
         results.push_back({"HackRF One " + ss.str(), HACKRF, id});
     }
     return results;
+}
+
+std::string SDRHackRF::getID()
+{
+    return "hackrf";
 }
 
 #endif

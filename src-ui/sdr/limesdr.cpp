@@ -7,6 +7,10 @@
 
 SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain_tia, "tia_gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain_lna, "lna_gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain_pga, "pga_gain");
+
     limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[id]);
     logger->info("Opened " + std::string(limeDevice->GetInfo()->deviceName) + " device!");
 
@@ -51,6 +55,15 @@ void SDRLimeSDR::start()
     should_run = true;
     workThread = std::thread(&SDRLimeSDR::runThread, this);
     limeStream->Start();
+}
+
+std::map<std::string, std::string> SDRLimeSDR::getParameters()
+{
+    d_parameters["tia_gain"] = std::to_string(gain_tia);
+    d_parameters["lna_gain"] = std::to_string(gain_lna);
+    d_parameters["pga_gain"] = std::to_string(gain_pga);
+
+    return d_parameters;
 }
 
 void SDRLimeSDR::runThread()
@@ -138,4 +151,10 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRLimeSDR::getD
 
     return results;
 }
+
+std::string SDRLimeSDR::getID()
+{
+    return "limesdr";
+}
+
 #endif

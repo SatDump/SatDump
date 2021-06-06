@@ -20,6 +20,8 @@ private:
 public:
     SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id = 0);
     ~SDRHackRF();
+    std::map<std::string, std::string> getParameters();
+    std::string getID();
     void start();
     void stop();
     void drawUI();
