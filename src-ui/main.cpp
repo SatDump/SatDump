@@ -14,6 +14,7 @@
 #include "live_run.h"
 #include <filesystem>
 #include "settings.h"
+#include "settings.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -89,6 +90,27 @@ int main(int argc, char *argv[])
 
     initSatdump();
 
+#ifdef _WIN32
+    loadSettings("settings.json");
+#else
+    if (std::filesystem::exists("settings.json"))
+    {
+        loadSettings("settings.json");
+    }
+    else
+    {
+        std::string cfg_path = std::string(getenv("HOME")) + "/.config/satdump";
+
+        if (!std::filesystem::exists(cfg_path))
+        {
+            logger->debug("Creating directory " + cfg_path);
+            std::filesystem::create_directories(cfg_path);
+        }
+
+        loadSettings(cfg_path + "/settings.json");
+    }
+#endif
+
 #ifdef BUILD_LIVE
     initLive();
 #endif
@@ -149,7 +171,8 @@ int main(int argc, char *argv[])
         style::setDarkStyle((std::string)RESOURCES_PATH);
 
     if (processing)
-        processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
+        processThreadPool.push([&](int)
+                               { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
     // Main loop
     while (!glfwWindowShouldClose(window))

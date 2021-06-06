@@ -34,12 +34,12 @@ void SDRDevice::setSamplerate(float samplerate)
     d_samplerate = samplerate;
 }
 
-int SDRDevice::getFrequency()
+float SDRDevice::getFrequency()
 {
     return d_frequency;
 }
 
-int SDRDevice::getSamplerate()
+float SDRDevice::getSamplerate()
 {
     return d_samplerate;
 }
@@ -99,6 +99,25 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
         return SDRSpyServer::drawParamsUI();
     else
         return std::map<std::string, std::string>();
+}
+
+std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
+{
+    sdr_device_type type = std::get<1>(devList[num]);
+    uint64_t id = std::get<2>(devList[num]);
+
+    if (type == AIRSPY)
+        return "airspy";
+    if (type == RTLSDR)
+        return "rtlsdr";
+    if (type == HACKRF)
+        return "hackrf";
+    if (type == LIMESDR)
+        return "limesdr";
+    if (type == SPYSERVER)
+        return "spyserver";
+    else
+        return nullptr;
 }
 
 std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, std::map<std::string, std::string> parameters, int num)

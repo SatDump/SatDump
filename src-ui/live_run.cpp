@@ -7,6 +7,7 @@
 #include "logger.h"
 #include <volk/volk_alloc.hh>
 #include "common/dsp/file_source.h"
+#include "settings.h"
 
 #ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
@@ -22,8 +23,9 @@ std::mutex fft_run;
 
 void processFFT(int)
 {
-    int refresh_per_second = 20;
-    int runs_to_wait = (radio->getSamplerate() / 8192) / (refresh_per_second * 3);
+    int refresh_per_second = 60 * 2;
+    int runs_per_second = radio->getSamplerate() / FFT_BUFFER_SIZE;
+    int runs_to_wait = runs_per_second / refresh_per_second;
     int i = 0, y = 0, cnt = 0;
 
     float fftb[FFT_BUFFER_SIZE];
@@ -106,6 +108,9 @@ bool showUI = false;
 
 void startRealLive()
 {
+    if (settings.count("fft_scale") > 0)
+        scale = settings["fft_scale"].get<float>();
+
 #ifdef _WIN32
     logger->info("Setting process priority to Realtime");
     SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
@@ -139,8 +144,11 @@ void startRealLive()
     liveModules[0]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
     liveModules[0]->init();
     liveModules[0]->input_active = true;
-    processThreadPool.push([=](int) { logger->info("Start processing...");
-                                            liveModules[0]->process(); });
+    processThreadPool.push([=](int)
+                           {
+                               logger->info("Start processing...");
+                               liveModules[0]->process();
+                           });
 
     // Init whatever's in the middle
     for (int i = 1; i < (int)liveModules.size() - 1; i++)
@@ -151,8 +159,11 @@ void startRealLive()
         liveModules[i]->setOutputType(DATA_STREAM);
         liveModules[i]->init();
         liveModules[i]->input_active = true;
-        processThreadPool.push([=](int) { logger->info("Start processing...");
-                                            liveModules[i]->process(); });
+        processThreadPool.push([=](int)
+                               {
+                                   logger->info("Start processing...");
+                                   liveModules[i]->process();
+                               });
     }
 
     // Init the last module
@@ -164,8 +175,11 @@ void startRealLive()
         liveModules[num]->setOutputType(DATA_FILE);
         liveModules[num]->init();
         liveModules[num]->input_active = true;
-        processThreadPool.push([=](int) { logger->info("Start processing...");
-                                           liveModules[num]->process(); });
+        processThreadPool.push([=](int)
+                               {
+                                   logger->info("Start processing...");
+                                   liveModules[num]->process();
+                               });
     }
 
     showUI = true;
@@ -205,6 +219,11 @@ void stopRealLive()
     fft_run.lock();
     fft_run.unlock();
 
+    logger->info("Saving settings...");
+    settings["fft_scale"] = scale;
+    settings["sdr"][radio->getID()] = radio->getParameters();
+    saveSettings();
+
     logger->info("Destroying objects");
     radio.reset();
     liveModules.clear();
@@ -236,7 +255,8 @@ void renderLive()
         if (ImGui::Button("Stop"))
         {
             showUI = false;
-            processThreadPool.push([=](int) { stopRealLive(); });
+            processThreadPool.push([=](int)
+                                   { stopRealLive(); });
         }
         ImGui::End();
     }

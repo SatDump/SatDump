@@ -29,12 +29,23 @@ void SDRRtlSdr::runThread()
 
 SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(bias, "bias");
+
     if (rtlsdr_open(&dev, id) > 0)
     {
         logger->critical("Could not open RTL-SDR device!");
         return;
     }
     logger->info("Opened RTL-SDR device!");
+}
+
+std::map<std::string, std::string> SDRRtlSdr::getParameters()
+{
+    d_parameters["gain"] = std::to_string(gain);
+    d_parameters["bias"] = std::to_string(bias);
+
+    return d_parameters;
 }
 
 void SDRRtlSdr::start()
@@ -173,6 +184,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRRtlSdr::getDe
         results.push_back({std::string(name) + " #" + std::to_string(i), RTLSDR, i});
     }
     return results;
+}
+
+std::string SDRRtlSdr::getID()
+{
+    return "rtlsdr";
 }
 
 #endif

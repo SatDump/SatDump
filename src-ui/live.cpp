@@ -12,6 +12,8 @@
 #include "sdr/sdr.h"
 #include "live_run.h"
 #include "sdr/sdr.h"
+#include "settings.h"
+
 std::shared_ptr<SDRDevice> radio;
 std::vector<std::shared_ptr<ProcessingModule>> liveModules;
 
@@ -20,9 +22,15 @@ std::map<std::string, std::string> device_parameters;
 
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devices;
 
+bool first_init = true;
+
 void initLive()
 {
-    initSDRs();
+    if (first_init)
+    {
+        initSDRs();
+        first_init = false;
+    }
     devices = getAllDevices();
 }
 
@@ -51,7 +59,8 @@ void renderLiveProcessing()
             downlink_pipeline = id_table[pipeline_id];
             std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
                                                               pipelines.end(),
-                                                              [](const Pipeline &e) {
+                                                              [](const Pipeline &e)
+                                                              {
                                                                   return e.name == downlink_pipeline;
                                                               });
             std::memcpy(samplerate, std::to_string(it->default_samplerate).c_str(), std::to_string(it->default_samplerate).length());
@@ -113,7 +122,8 @@ void renderLiveProcessing()
             std::string names; // = "baseband\0";
             std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
                                                               pipelines.end(),
-                                                              [](const Pipeline &e) {
+                                                              [](const Pipeline &e)
+                                                              {
                                                                   return e.name == downlink_pipeline;
                                                               });
 
@@ -164,7 +174,8 @@ void renderLiveProcessing()
 
                 std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
                                                                   pipelines.end(),
-                                                                  [](const Pipeline &e) {
+                                                                  [](const Pipeline &e)
+                                                                  {
                                                                       return e.name == downlink_pipeline;
                                                                   });
 
@@ -196,6 +207,20 @@ void renderLiveProcessing()
                     }
 
                     logger->debug("Starting SDR...");
+
+                    std::string devID = getDeviceIDStringByID(devices, device_id);
+
+                    std::map<std::string, std::string> settings_parameters = settings["sdr"].count(devID) > 0 ? settings["sdr"][devID].get<std::map<std::string, std::string>>() : std::map<std::string, std::string>();
+                    for (const std::pair<std::string, std::string> param : settings_parameters)
+                        if (device_parameters.count(param.first) > 0)
+                            ; // Do Nothing
+                        else
+                            device_parameters.emplace(param.first, param.second);
+
+                    logger->debug("Device parameters " + devID + ":");
+                    for (const std::pair<std::string, std::string> param : device_parameters)
+                        logger->debug("   - " + param.first + " : " + param.second);
+
                     radio = getDeviceByID(devices, device_parameters, device_id);
                     radio->setFrequency(frequency * 1e6);
                     radio->setSamplerate(std::stoi(samplerate));

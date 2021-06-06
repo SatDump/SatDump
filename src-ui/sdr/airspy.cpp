@@ -16,12 +16,23 @@ int SDRAirspy::_rx_callback(airspy_transfer *t)
 
 SDRAirspy::SDRAirspy(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(bias, "bias");
+
     if (airspy_open_sn(&dev, id) != AIRSPY_SUCCESS)
     {
         logger->critical("Could not open Airspy device!");
         return;
     }
     logger->info("Opened Airspy device!");
+}
+
+std::map<std::string, std::string> SDRAirspy::getParameters()
+{
+    d_parameters["gain"] = std::to_string(gain);
+    d_parameters["bias"] = std::to_string(bias);
+
+    return d_parameters;
 }
 
 void SDRAirspy::start()
@@ -101,6 +112,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRAirspy::getDe
         results.push_back({"AirSpy One " + ss.str(), AIRSPY, serials[i]});
     }
     return results;
+}
+
+std::string SDRAirspy::getID()
+{
+    return "airspy";
 }
 
 #endif

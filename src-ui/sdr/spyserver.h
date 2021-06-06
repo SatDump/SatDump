@@ -24,6 +24,8 @@ private:
 public:
     SDRSpyServer(std::map<std::string, std::string> parameters, uint64_t id = 0);
     ~SDRSpyServer();
+    std::map<std::string, std::string> getParameters();
+    std::string getID();
     void start();
     void stop();
     void drawUI();

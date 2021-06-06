@@ -9,6 +9,8 @@
 
 SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+
     if (parameters.count("ip") == 0)
     {
         logger->error("No SpyServer IP provided! Things will not work!!!!");
@@ -55,6 +57,13 @@ void SDRSpyServer::runThread()
             output_stream->swap(8192);
         }
     }
+}
+
+std::map<std::string, std::string> SDRSpyServer::getParameters()
+{
+    d_parameters["gain"] = std::to_string(gain);
+
+    return d_parameters;
 }
 
 void SDRSpyServer::start()
@@ -155,4 +164,10 @@ std::map<std::string, std::string> SDRSpyServer::drawParamsUI()
 
     return {{"ip", std::string(server_ip)}, {"port", std::string(server_port)}, {"bit16", std::to_string(enable_bit16)}};
 }
+
+std::string SDRSpyServer::getID()
+{
+    return "spyserver";
+}
+
 #endif
