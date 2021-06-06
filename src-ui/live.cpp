@@ -13,9 +13,12 @@
 #include "live_run.h"
 #include "sdr/sdr.h"
 #include "settings.h"
+#include "live_pipeline.h"
 
 std::shared_ptr<SDRDevice> radio;
-std::vector<std::shared_ptr<ProcessingModule>> liveModules;
+
+extern std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
+std::shared_ptr<LivePipeline> live_pipeline;
 
 int device_id = 0;
 std::map<std::string, std::string> device_parameters;
@@ -181,30 +184,11 @@ void renderLiveProcessing()
 
                 if (it != pipelines.end())
                 {
-
                     parameters.emplace("samplerate", std::string(samplerate));
-
                     parameters.emplace("baseband_format", "f32");
-
                     parameters.emplace("dc_block", dc_block ? "1" : "0");
 
-                    for (std::pair<int, int> currentModule : it->live_cfg)
-                    {
-                        std::map<std::string, std::string> final_parameters = it->steps[currentModule.first].modules[currentModule.second].parameters;
-                        for (const std::pair<std::string, std::string> param : parameters)
-                            if (final_parameters.count(param.first) > 0)
-                                final_parameters[param.first] = param.second;
-                            else
-                                final_parameters.emplace(param.first, param.second);
-
-                        logger->debug("Parameters :");
-                        for (const std::pair<std::string, std::string> param : final_parameters)
-                            logger->debug("   - " + param.first + " : " + param.second);
-
-                        liveModules.push_back(modules_registry[it->steps[currentModule.first]
-                                                                   .modules[currentModule.second]
-                                                                   .module_name]("", output_file + "/" + it->name, final_parameters));
-                    }
+                    live_pipeline = std::make_shared<LivePipeline>(*it, parameters, output_file);
 
                     logger->debug("Starting SDR...");
 

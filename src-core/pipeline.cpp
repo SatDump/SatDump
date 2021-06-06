@@ -170,7 +170,8 @@ void loadPipelines(std::string filepath)
 std::vector<Pipeline> getPipelinesInCategory(std::string category)
 {
     std::vector<Pipeline> catPipelines;
-    std::copy_if(pipelines.begin(), pipelines.end(), std::back_inserter(catPipelines), [=](Pipeline p) { return p.category == category; });
+    std::copy_if(pipelines.begin(), pipelines.end(), std::back_inserter(catPipelines), [=](Pipeline p)
+                 { return p.category == category; });
     return catPipelines;
 }
 
