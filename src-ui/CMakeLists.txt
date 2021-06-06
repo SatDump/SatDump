@@ -61,8 +61,8 @@ else()
         target_link_libraries(satdump-ui PUBLIC ${HACKRF_LIBRARY})
 
         # LimeSDR
-        find_library(LIME_LIBRARY LimeSuite REQUIRED)
-        target_link_libraries(satdump-ui PUBLIC ${LIME_LIBRARY})
+        #find_library(LIME_LIBRARY LimeSuite REQUIRED)
+        #target_link_libraries(satdump-ui PUBLIC ${LIME_LIBRARY})
     endif()
 endif()
 
