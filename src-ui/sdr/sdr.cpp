@@ -131,8 +131,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
         return std::make_shared<SDRRtlSdr>(parameters, id);
     if (type == HACKRF)
         return std::make_shared<SDRHackRF>(parameters, id);
+#if 0
     if (type == LIMESDR)
         return std::make_shared<SDRLimeSDR>(parameters, id);
+#endif
     if (type == SPYSERVER)
         return std::make_shared<SDRSpyServer>(parameters, id);
     else
