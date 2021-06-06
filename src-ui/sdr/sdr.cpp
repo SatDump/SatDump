@@ -80,7 +80,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> hackrf_results = SDRHackRF::getDevices();
     results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
 
-#ifndef _WIN32
+#if 0
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> limesdr_results = SDRLimeSDR::getDevices();
     results.insert(results.end(), limesdr_results.begin(), limesdr_results.end());
 #endif
