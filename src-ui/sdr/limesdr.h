@@ -2,6 +2,7 @@
 
 #include "sdr.h"
 
+#if 0
 #ifdef BUILD_LIVE
 #include <lime/lms7_device.h>
 #include <lime/Streamer.h>
@@ -34,4 +35,5 @@ public:
     virtual void setFrequency(float frequency);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
+#endif
 #endif
