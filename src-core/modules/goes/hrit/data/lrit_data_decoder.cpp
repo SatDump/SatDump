@@ -5,6 +5,8 @@
 #include <fstream>
 #include "lrit_header.h"
 #include "crc_table.h"
+#include <sstream>
+#include <string>
 #include <iomanip>
 #include "products.h"
 #include <filesystem>
