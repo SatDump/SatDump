@@ -70,6 +70,9 @@
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170"
                 }
+            },
+            "products": {
+                "goes_lrit_data_decoder": {}
             }
         }
     }
