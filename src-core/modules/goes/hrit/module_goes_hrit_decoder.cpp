@@ -29,7 +29,7 @@ namespace goes
 
         std::vector<ModuleDataType> GOESHRITDecoderModule::getOutputTypes()
         {
-            return {DATA_FILE};
+            return {DATA_FILE, DATA_STREAM};
         }
 
         GOESHRITDecoderModule::~GOESHRITDecoderModule()
@@ -46,8 +46,11 @@ namespace goes
                 filesize = 0;
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
-            data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".cadu");
+            if (output_data_type == DATA_FILE)
+            {
+                data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
+                d_output_files.push_back(d_output_file_hint + ".cadu");
+            }
 
             logger->info("Using input symbols " + d_input_file);
             logger->info("Decoding to " + d_output_file_hint + ".cadu");
@@ -88,7 +91,10 @@ namespace goes
                             rs.decode_interlaved(&cadu[4], true, 4, errors);
 
                             // Write it out
-                            data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
+                            if (output_data_type == DATA_FILE)
+                                data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
+                            else
+                                output_fifo->write((uint8_t *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
                         }
                     }
                 }
@@ -105,7 +111,8 @@ namespace goes
                 }
             }
 
-            data_out.close();
+            if (output_data_type == DATA_FILE)
+                data_out.close();
             if (input_data_type == DATA_FILE)
                 data_in.close();
         }
