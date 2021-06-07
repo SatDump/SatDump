@@ -20,10 +20,26 @@ namespace goes
         {
         }
 
+        std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
+        {
+            return {DATA_FILE, DATA_STREAM};
+        }
+
+        std::vector<ModuleDataType> GOESLRITDataDecoderModule::getOutputTypes()
+        {
+            return {DATA_FILE};
+        }
+
         void GOESLRITDataDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
+            std::ifstream data_in;
+
+            if (input_data_type == DATA_FILE)
+                filesize = getFilesize(d_input_file);
+            else
+                filesize = 0;
+            if (input_data_type == DATA_FILE)
+                data_in = std::ifstream(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/LRIT";
 
@@ -45,7 +61,10 @@ namespace goes
             while (!data_in.eof())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)&cadu, 1024);
+                else
+                    input_fifo->read((uint8_t *)&cadu, 1024);
 
                 // Parse this transport frame
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
@@ -67,7 +86,8 @@ namespace goes
                     }
                 }
 
-                progress = data_in.tellg();
+                if (input_data_type == DATA_FILE)
+                    progress = data_in.tellg();
 
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
@@ -78,7 +98,7 @@ namespace goes
 
             data_in.close();
 
-            for (const std::pair<int, std::shared_ptr<LRITDataDecoder>> &dec : decoders)
+            for (const std::pair<const int, const std::shared_ptr<LRITDataDecoder>> &dec : decoders)
                 dec.second->save();
         }
 

@@ -16,7 +16,7 @@ namespace goes
     namespace hrit
     {
         // CRC Implementation from LRIT-Missin-Specific-Document.pdf
-        uint16_t computeCRC(const uint8_t *data, size_t size)
+        uint16_t computeCRC(const uint8_t *data, int size)
         {
             uint16_t crc = 0xffff;
             for (int i = 0; i < size; i++)
@@ -199,6 +199,7 @@ namespace goes
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
+                            logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
                         }
 
@@ -215,12 +216,14 @@ namespace goes
 
                     if (segmentedDecoder.isComplete())
                     {
+                        logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
                         segmentedDecoder.image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                     }
                 }
                 else
                 {
+                    logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
                     cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
                     image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
                 }
@@ -229,6 +232,8 @@ namespace goes
             {
                 if (!std::filesystem::exists(directory + "/files"))
                     std::filesystem::create_directory(directory + "/files");
+
+                logger->info("Writing file " + directory + "/files/" + current_filename + "...");
 
                 // Write file out
                 std::ofstream file(directory + "/files/" + current_filename, std::ios::binary);
