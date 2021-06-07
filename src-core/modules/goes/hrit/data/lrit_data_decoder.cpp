@@ -111,7 +111,7 @@ namespace goes
 
                 for (char &c : current_filename) // Strip invalid chars
                 {
-                    if (c > 127)
+                    if (c < 33)
                         c = '_';
                 }
 
