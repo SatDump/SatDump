@@ -10,6 +10,7 @@
 #include <iomanip>
 #include "products.h"
 #include <filesystem>
+#include <algorithm>
 
 namespace goes
 {
@@ -104,6 +105,15 @@ namespace goes
                 AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
 
                 current_filename = std::string(annotation_record.annotation_text.data());
+
+                std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
+                std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
+
+                for (char &c : current_filename) // Strip invalid chars
+                {
+                    if (c > 127)
+                        c = '_';
+                }
 
                 // Taken from goestools... Took me a while to figure out what was going on there.. Damn it!
                 NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
