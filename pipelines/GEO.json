@@ -86,5 +86,51 @@
                 }
             }
         }
+    },
+    "elektro_tlm": {
+        "name": "ELEKTRO-L L-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1693.0
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "elektro_arktika_tlm_demod": {
+                    "buffer_size": "8192"
+                }
+            }
+        }
+    },
+    "arktika_tlm": {
+        "name": "ARKTIKA-M L-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1693.0
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "elektro_arktika_tlm_demod": {
+                    "buffer_size": "8192"
+                }
+            }
+        }
     }
 }
