@@ -115,6 +115,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/elektro_arktika/module_rdas_decoder.h"
 #include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
+#include "modules/elektro_arktika/module_tlm_demod.h"
 
 #include "modules/terra/module_terra_db_demod.h"
 #include "modules/terra/module_terra_db_decoder.h"
@@ -220,6 +221,7 @@ void registerModules()
     // ELEKTRO
     REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
+    REGISTER_MODULE(elektro_arktika::TLMDemodModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);

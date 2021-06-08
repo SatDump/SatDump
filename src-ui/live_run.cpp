@@ -22,6 +22,8 @@ extern std::shared_ptr<LivePipeline> live_pipeline;
 bool process_fft = false;
 std::mutex fft_run;
 
+bool finishProcessing = false;
+
 void processFFT(int)
 {
     int refresh_per_second = 60 * 2;
@@ -112,6 +114,9 @@ void startRealLive()
     if (settings.count("fft_scale") > 0)
         scale = settings["fft_scale"].get<float>();
 
+    if (settings.count("fft_scale") > 0)
+        finishProcessing = settings["fft_scale"].get<int>();
+
 #ifdef _WIN32
     logger->info("Setting process priority to Realtime");
     SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
@@ -148,6 +153,7 @@ void stopRealLive()
 
     logger->info("Saving settings...");
     settings["fft_scale"] = scale;
+    settings["live_finish_processing"] = finishProcessing;
     settings["sdr"][radio->getID()] = radio->getParameters();
     saveSettings();
 
@@ -184,6 +190,8 @@ void renderLive()
             processThreadPool.push([=](int)
                                    { stopRealLive(); });
         }
+        ImGui::SameLine();
+        ImGui::Checkbox("Finish processing", &finishProcessing);
         ImGui::End();
     }
 }
