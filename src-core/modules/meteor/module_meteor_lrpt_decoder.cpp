@@ -82,6 +82,8 @@ namespace meteor
 
             int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
 
+            locked = pos == 0; // Update locking state
+
             if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
                 std::memmove(buffer, &buffer[pos], pos);
