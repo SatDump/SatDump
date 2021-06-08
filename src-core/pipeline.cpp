@@ -17,6 +17,12 @@ void Pipeline::run(std::string input_file,
                    std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList,
                    std::shared_ptr<std::mutex> uiCallListMutex)
 {
+    if (!std::filesystem::exists(input_file))
+    {
+        logger->error("Input file " + input_file + " does not exist!");
+        return;
+    }
+
     logger->debug("Starting " + name);
 
     std::vector<std::string> lastFiles;
