@@ -100,6 +100,12 @@ void LivePipeline::stop()
     }
 }
 
+std::vector<std::string> LivePipeline::getOutputFiles()
+{
+    int num = modules.size() - 1;
+    return modules[num]->getOutputs();
+}
+
 void LivePipeline::drawUIs()
 {
     for (std::shared_ptr<ProcessingModule> mod : modules)
