@@ -26,8 +26,8 @@ namespace meteor
         agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
         rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(rrc->output_stream, 0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
-        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / round(((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.01f);
+        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / (((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.001f);
     }
 
     std::vector<ModuleDataType> METEORHRPTDemodModule::getInputTypes()
