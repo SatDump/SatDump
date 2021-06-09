@@ -18,5 +18,7 @@ public:
     void start(std::shared_ptr<dsp::stream<std::complex<float>>> stream, ctpl::thread_pool &threadPool);
     void stop();
 
+    std::vector<std::string> getOutputFiles();
+
     void drawUIs();
 };

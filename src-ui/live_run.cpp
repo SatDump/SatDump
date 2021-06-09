@@ -9,6 +9,8 @@
 #include "common/dsp/file_source.h"
 #include "settings.h"
 #include "live_pipeline.h"
+#include "global.h"
+#include "processing.h"
 
 #ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
@@ -157,6 +159,11 @@ void stopRealLive()
     settings["sdr"][radio->getID()] = radio->getParameters();
     saveSettings();
 
+    if (finishProcessing)
+    {
+        input_file = live_pipeline->getOutputFiles()[0];
+    }
+
     logger->info("Destroying objects");
     radio.reset();
     live_pipeline.reset();
@@ -166,6 +173,20 @@ void stopRealLive()
     initLive();
 
     live_processing = false;
+
+    if (finishProcessing)
+    {
+        std::vector<Pipeline>::iterator pipeline = std::find_if(pipelines.begin(),
+                                                                pipelines.end(),
+                                                                [](const Pipeline &e)
+                                                                {
+                                                                    return e.name == downlink_pipeline;
+                                                                });
+        int start_level = pipeline->live_cfg[pipeline->live_cfg.size() - 1].first;
+        input_level = pipeline->steps[start_level].level_name;
+        processThreadPool.push([&](int)
+                               { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
+    }
 }
 
 void renderLive()
