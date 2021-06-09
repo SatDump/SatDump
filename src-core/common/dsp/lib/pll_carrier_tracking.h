@@ -4,6 +4,10 @@
 #include "control_loop.h"
 #include "fast_atan2f.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
+
 /* Based on the Costas Loop from GNU Radio (https://github.com/gnuradio/gnuradio) */
 
 namespace dsp
