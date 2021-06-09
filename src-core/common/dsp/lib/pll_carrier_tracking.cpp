@@ -8,14 +8,16 @@ namespace dsp
     PLLCarrierTracking::PLLCarrierTracking(float loop_bw,
                                            float max_freq,
                                            float min_freq)
-        : d_locksig(0),
+        : ControlLoop(loop_bw, max_freq, min_freq),
+          d_locksig(0),
           d_lock_threshold(0),
-          d_squelch_enable(false),
-          ControlLoop(loop_bw, max_freq, min_freq)
+          d_squelch_enable(false)
     {
     }
 
-    PLLCarrierTracking::~PLLCarrierTracking() {}
+    PLLCarrierTracking::~PLLCarrierTracking()
+    {
+    }
 
     bool PLLCarrierTracking::squelch_enable(bool set_squelch)
     {
@@ -27,7 +29,7 @@ namespace dsp
         return d_lock_threshold = threshold;
     }
 
-    size_t PLLCarrierTracking::work(std::complex<float> *in, size_t length, std::complex<float> *out)
+    int PLLCarrierTracking::work(std::complex<float> *in, int length, std::complex<float> *out)
     {
         float error;
         float t_imag, t_real;
@@ -44,8 +46,7 @@ namespace dsp
             phase_wrap();
             frequency_limit();
 
-            d_locksig = d_locksig * (1.0 - d_alpha) +
-                        d_alpha * (in[i].real() * t_real + in[i].imag() * t_imag);
+            d_locksig = d_locksig * (1.0 - d_alpha) + d_alpha * (in[i].real() * t_real + in[i].imag() * t_imag);
 
             if ((d_squelch_enable) && !lock_detector())
                 out[i] = 0;
@@ -94,42 +95,42 @@ namespace dsp
         ControlLoop::set_max_freq(freq);
     }
 
-    float PLLCarrierTracking::get_loop_bandwidth() const
+    float PLLCarrierTracking::get_loop_bandwidth()
     {
         return ControlLoop::get_loop_bandwidth();
     }
 
-    float PLLCarrierTracking::get_damping_factor() const
+    float PLLCarrierTracking::get_damping_factor()
     {
         return ControlLoop::get_damping_factor();
     }
 
-    float PLLCarrierTracking::get_alpha() const
+    float PLLCarrierTracking::get_alpha()
     {
         return ControlLoop::get_alpha();
     }
 
-    float PLLCarrierTracking::get_beta() const
+    float PLLCarrierTracking::get_beta()
     {
         return ControlLoop::get_beta();
     }
 
-    float PLLCarrierTracking::get_frequency() const
+    float PLLCarrierTracking::get_frequency()
     {
         return ControlLoop::get_frequency();
     }
 
-    float PLLCarrierTracking::get_phase() const
+    float PLLCarrierTracking::get_phase()
     {
         return ControlLoop::get_phase();
     }
 
-    float PLLCarrierTracking::get_min_freq() const
+    float PLLCarrierTracking::get_min_freq()
     {
         return ControlLoop::get_min_freq();
     }
 
-    float PLLCarrierTracking::get_max_freq() const
+    float PLLCarrierTracking::get_max_freq()
     {
         return ControlLoop::get_max_freq();
     }

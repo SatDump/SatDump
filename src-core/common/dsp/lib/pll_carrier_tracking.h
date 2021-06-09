@@ -50,15 +50,15 @@ namespace dsp
         void set_min_freq(float freq);
         void set_max_freq(float freq);
 
-        float get_loop_bandwidth() const;
-        float get_damping_factor() const;
-        float get_alpha() const;
-        float get_beta() const;
-        float get_frequency() const;
-        float get_phase() const;
-        float get_min_freq() const;
-        float get_max_freq() const;
+        float get_loop_bandwidth();
+        float get_damping_factor();
+        float get_alpha();
+        float get_beta();
+        float get_frequency();
+        float get_phase();
+        float get_min_freq();
+        float get_max_freq();
 
-        size_t work(std::complex<float> *in, size_t length, std::complex<float> *out);
+        int work(std::complex<float> *in, int length, std::complex<float> *out);
     };
 } // namespace libdsp
