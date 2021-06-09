@@ -23,6 +23,18 @@ namespace widgets
         std::memcpy(sample_buffer_complex_float, buffer, to_copy * sizeof(std::complex<float>));
     }
 
+    void ConstellationViewer::pushFloatAndGaussian(float *buffer, int size)
+    {
+        int to_copy = std::min<int>(CONST_SIZE, size);
+        int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
+
+        if (to_move > 0)
+            std::memmove(&sample_buffer_complex_float[size], sample_buffer_complex_float, to_move * sizeof(std::complex<float>));
+
+        for (int i = 0; i < to_copy; i++)
+            sample_buffer_complex_float[i] = std::complex<float>(buffer[i], rng.gasdev());
+    }
+
     void ConstellationViewer::draw()
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();

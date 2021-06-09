@@ -98,7 +98,7 @@ namespace goes
 
             data_in.close();
 
-            for (const std::pair<const int, const std::shared_ptr<LRITDataDecoder>> &dec : decoders)
+            for (const std::pair<const int, std::shared_ptr<LRITDataDecoder>> &dec : decoders)
                 dec.second->save();
         }
 

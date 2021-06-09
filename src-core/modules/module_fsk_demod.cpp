@@ -12,7 +12,8 @@ FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_h
                                                                                                                                       d_symbolrate(std::stoi(parameters["symbolrate"])),
                                                                                                                                       d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                       d_lpf_cutoff(std::stoi(parameters["lpf_cutoff"])),
-                                                                                                                                      d_lpf_transition_width(std::stoi(parameters["lpf_transition_width"]))
+                                                                                                                                      d_lpf_transition_width(std::stoi(parameters["lpf_transition_width"])),
+                                                                                                                                      constellation(45.0f / 100.0f, 15.0f / 100.0f)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 10];
@@ -119,22 +120,8 @@ void FSKDemodModule::drawUI(bool window)
     ImGui::Begin("FSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
     // Constellation
-    {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                 ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                 ImColor::HSV(0, 0, 0));
-
-        for (int i = 0; i < 2048; i++)
-        {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + rec->output_stream->readBuf[i] * 45 * ui_scale) % int(200 * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 15) % int(200 * ui_scale)),
-                                       2 * ui_scale,
-                                       ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
-        }
-
-        ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
-    }
+    constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
+    constellation.draw();
 
     ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

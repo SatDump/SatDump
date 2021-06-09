@@ -10,6 +10,7 @@
 #include "common/dsp/quadrature_demod.h"
 #include "common/dsp/clock_recovery_mm.h"
 #include "common/dsp/file_source.h"
+#include "common/widgets/constellation.h"
 
 class FSKDemodModule : public ProcessingModule
 {
@@ -43,7 +44,7 @@ protected:
     std::atomic<uint64_t> progress;
 
     // UI Stuff
-    dsp::Random rng;
+    widgets::ConstellationViewer constellation;
 
 public:
     FSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
