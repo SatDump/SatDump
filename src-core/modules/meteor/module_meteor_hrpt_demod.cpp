@@ -11,7 +11,8 @@ namespace meteor
 {
     METEORHRPTDemodModule::METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                         d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"]))
+                                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"])),
+                                                                                                                                                        constellation(90.0f / 100.0f, 15.0f / 100.0f)
     {
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
@@ -127,22 +128,8 @@ namespace meteor
         ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // Constellation
-        {
-            ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                     ImColor::HSV(0, 0, 0));
-
-            for (int i = 0; i < 2048; i++)
-            {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + rec->output_stream->readBuf[i] * 90 * ui_scale) % int(200 * ui_scale),
-                                                  ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 15 * ui_scale) % int(200 * ui_scale)),
-                                           2 * ui_scale,
-                                           ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
-            }
-
-            ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
-        }
+        constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
+        constellation.draw();
 
         ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

@@ -14,6 +14,7 @@
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "common/dsp/rational_resampler.h"
 #include "dsb_deframer.h"
+#include "common/widgets/constellation.h"
 
 namespace noaa
 {
@@ -48,7 +49,7 @@ namespace noaa
         std::atomic<uint64_t> progress;
 
         // UI Stuff
-        dsp::Random rng;
+        widgets::ConstellationViewer constellation;
 
     public:
         NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

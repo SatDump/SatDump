@@ -11,6 +11,7 @@
 #include "common/dsp/file_source.h"
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "noaa_deframer.h"
+#include "common/widgets/constellation.h"
 
 namespace noaa
 {
@@ -42,7 +43,7 @@ namespace noaa
         int frame_count = 0;
 
         // UI Stuff
-        dsp::Random rng;
+        widgets::ConstellationViewer constellation;
 
     public:
         NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

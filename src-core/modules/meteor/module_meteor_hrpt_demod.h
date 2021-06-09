@@ -12,6 +12,7 @@
 #include "common/dsp/clock_recovery_mm.h"
 #include "common/dsp/file_source.h"
 #include "common/dsp/bpsk_carrier_pll.h"
+#include "common/widgets/constellation.h"
 
 namespace meteor
 {
@@ -41,7 +42,7 @@ namespace meteor
         std::atomic<size_t> progress;
 
         // UI Stuff
-        dsp::Random rng;
+        widgets::ConstellationViewer constellation;
 
     public:
         METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
