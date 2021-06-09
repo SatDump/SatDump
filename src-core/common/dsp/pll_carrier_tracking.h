@@ -12,6 +12,6 @@ namespace dsp
         void work();
 
     public:
-        PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float loop_bw, unsigned int min, unsigned int max);
+        PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float loop_bw, float max, float min);
     };
 }

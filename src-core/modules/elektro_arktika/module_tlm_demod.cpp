@@ -54,7 +54,7 @@ namespace elektro_arktika
         agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, 0.001f, 1.0f, 1.0f, 65536);
 
         // Carrier tracking
-        cpl = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, 6e-3f, -100e3, -100e3);
+        cpl = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, 6e-3f, 10e3, -10e3);
 
         // DC Blocking
         dcb = std::make_shared<dsp::DCBlockerBlock>(cpl->output_stream, 32, true);
@@ -63,13 +63,13 @@ namespace elektro_arktika
         shi = std::make_shared<dsp::FreqShiftBlock>(dcb->output_stream, samplerate, -symbolrate);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(shi->output_stream, 1, dsp::firgen::root_raised_cosine(1, samplerate, symbolrate, 0.35, 31));
+        rrc = std::make_shared<dsp::CCFIRBlock>(shi->output_stream, 1, dsp::firgen::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
 
         // Costas
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.03f, 2);
 
         // Clock recovery
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, 0.625e-3, 0.5f, 0.175, 0.005f);
     }
 
     std::vector<ModuleDataType> TLMDemodModule::getInputTypes()
@@ -131,7 +131,7 @@ namespace elektro_arktika
                 continue;
 
             // Estimate SNR, only on part of the samples to limit CPU usage
-            snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
+            snr_estimator.update(rec->output_stream->readBuf, dat_size);
             snr = snr_estimator.snr();
 
             rec->output_stream->flush();
