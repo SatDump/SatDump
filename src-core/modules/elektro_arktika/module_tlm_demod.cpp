@@ -196,23 +196,8 @@ namespace elektro_arktika
         ImGui::Begin("ELEKTRO-L / ARKTIKA-M TLM Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
-        // Constellation
-        {
-            ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                     ImColor::HSV(0, 0, 0));
-
-            for (int i = 0; i < 2048; i++)
-            {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + rec->output_stream->readBuf[i].real() * 100 * ui_scale) % int(200 * ui_scale),
-                                                  ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rec->output_stream->readBuf[i].imag() * 100 * ui_scale) % int(200 * ui_scale)),
-                                           2 * ui_scale,
-                                           ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
-            }
-
-            ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
-        }
+        constellation.pushComplex(rec->output_stream->readBuf, rec->output_stream->getDataSize());
+        constellation.draw();
         ImGui::EndGroup();
 
         ImGui::SameLine();

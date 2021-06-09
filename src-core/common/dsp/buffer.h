@@ -110,6 +110,11 @@ namespace dsp
             readerStop = false;
         }
 
+        int getDataSize() 
+        {
+            return dataSize;
+        }
+
         T *writeBuf;
         T *readBuf;
 

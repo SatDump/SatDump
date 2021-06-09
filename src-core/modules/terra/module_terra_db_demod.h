@@ -10,6 +10,7 @@
 #include "common/dsp/clock_recovery_mm.h"
 #include "common/dsp/file_source.h"
 #include "common/snr_estimator.h"
+#include "common/widgets/constellation.h"
 
 namespace terra
 {
@@ -47,6 +48,7 @@ namespace terra
 
         // UI Stuff
         float snr_history[200];
+        widgets::ConstellationViewer constellation;
 
     public:
         TerraDBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);

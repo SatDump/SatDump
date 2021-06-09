@@ -20,7 +20,8 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_gain_omega(std::stof(parameters["clock_gain_omega"])),
                                                                                                                                           d_clock_mu(std::stof(parameters["clock_mu"])),
                                                                                                                                           d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
-                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"]))
+                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
+                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f)
 
 {
     // Buffers
@@ -190,23 +191,8 @@ void OQPSKDemodModule::drawUI(bool window)
     ImGui::Begin("OQPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
 
     ImGui::BeginGroup();
-    // Constellation
-    {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                 ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                 ImColor::HSV(0, 0, 0));
-
-        for (int i = 0; i < 2048; i++)
-        {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (sym_buffer[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (sym_buffer[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
-                                       2 * ui_scale,
-                                       ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
-        }
-
-        ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
-    }
+    constellation.pushComplex(rec->output_stream->readBuf, rec->output_stream->getDataSize());
+    constellation.draw();
     ImGui::EndGroup();
 
     ImGui::SameLine();

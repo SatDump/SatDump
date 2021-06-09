@@ -12,6 +12,7 @@
 #include "common/dsp/dc_blocker.h"
 #include "common/dsp/rational_resampler.h"
 #include "common/snr_estimator.h"
+#include "common/widgets/constellation.h"
 
 class BPSKDemodModule : public ProcessingModule
 {
@@ -57,6 +58,7 @@ protected:
 
     // UI Stuff
     float snr_history[200];
+    widgets::ConstellationViewer constellation;
 
 public:
     BPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
