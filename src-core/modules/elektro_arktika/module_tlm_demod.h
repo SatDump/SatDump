@@ -16,6 +16,7 @@
 #include "common/dsp/freq_shift.h"
 #include "common/repack_bits_byte.h"
 #include "tlm_deframer.h"
+#include "common/widgets/constellation.h"
 
 namespace elektro_arktika
 {
@@ -66,6 +67,7 @@ namespace elektro_arktika
 
         // UI Stuff
         float snr_history[200];
+        widgets::ConstellationViewer constellation;
 
     public:
         TLMDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
