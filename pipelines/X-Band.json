@@ -245,5 +245,41 @@
                 "oceansat_ocm": {}
             }
         }
+    },
+    "fengyun3_abc_dpt": {
+        "name": "FengYun-3 A/B/C DPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 65e6,
+        "baseband_type": "i8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "62000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersi1": {
+                    "correct_bowtie": "1"
+                },
+                "fengyun_virr": {},
+                "fengyun_erm": {},
+                "fengyun_mwhs": {}
+            }
+        }
     }
 }
