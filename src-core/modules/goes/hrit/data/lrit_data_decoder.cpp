@@ -54,6 +54,7 @@ namespace goes
                 else
                 {
                     logger->error("CRC is invalid... Skipping.");
+                    file_in_progress = false;
                 }
             }
             else if (packet.header.sequence_flag == 0)
