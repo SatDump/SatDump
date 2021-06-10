@@ -21,38 +21,41 @@
 #include "spyserver_protocol.h"
 
 ss_client::ss_client(const std::string _ip,
-                           const int _port,
-                           const uint8_t _do_iq,
-                           const uint8_t _do_fft,
-                           const uint32_t _fft_points,
-                           const uint8_t _samp_bits) : terminated(false),
-                                                       streaming(false),
-                                                       got_device_info(false),
-                                                       receiver_thread(NULL),
-                                                       header_data(new uint8_t[sizeof(MessageHeader)]),
-                                                       body_buffer(NULL),
-                                                       body_buffer_length(0),
-                                                       parser_position(0),
-                                                       last_sequence_number(0),
-                                                       ip(_ip),
-                                                       port(_port),
+                     const int _port,
+                     const uint8_t _do_iq,
+                     const uint8_t _do_fft,
+                     const uint32_t _fft_points,
+                     const uint8_t _samp_bits) : terminated(false),
+                                                 streaming(false),
+                                                 got_device_info(false),
+                                                 receiver_thread(NULL),
+                                                 header_data(new uint8_t[sizeof(MessageHeader)]),
+                                                 body_buffer(NULL),
+                                                 body_buffer_length(0),
+                                                 parser_position(0),
+                                                 last_sequence_number(0),
+                                                 ip(_ip),
+                                                 port(_port),
 
-                                                       streaming_mode(STREAM_MODE_IQ_ONLY),
-                                                       _fifo(NULL),
-                                                       m_fifo_head(0),
-                                                       m_fifo_tail(0),
-                                                       m_fifo_size(10 * 1024 * 1024),
-                                                       m_fft_count(0),
-                                                       m_fft_period(100),
-                                                       m_fft_bins(_fft_points),
-                                                       m_iq_sample_rate(0),
-                                                       _center_freq(0),
-                                                       _gain(0),
-                                                       _digitalGain(0),
-                                                       m_do_iq(_do_iq),
-                                                       m_do_fft(_do_fft),
-                                                       m_sample_bits(_samp_bits)
+                                                 streaming_mode(STREAM_MODE_IQ_ONLY),
+                                                 _fifo(NULL),
+                                                 m_fifo_head(0),
+                                                 m_fifo_tail(0),
+                                                 m_fifo_size(10 * 1024 * 1024),
+                                                 m_fft_count(0),
+                                                 m_fft_period(100),
+                                                 m_fft_bins(_fft_points),
+                                                 m_iq_sample_rate(0),
+                                                 _center_freq(0),
+                                                 _gain(0),
+                                                 _digitalGain(0),
+                                                 m_do_iq(_do_iq),
+                                                 m_do_fft(_do_fft),
+                                                 m_sample_bits(_samp_bits)
 {
+#ifdef _WIN32
+  WSAStartup();
+#endif
 
   std::cerr << "SS_client(" << ip << ", " << port << ")" << std::endl;
   client = tcp_client(ip, port);
@@ -1068,7 +1071,7 @@ bool ss_client::stop()
 
 template <class T>
 int ss_client::get_iq_data(const int batch_size,
-                              T *out_array)
+                           T *out_array)
 {
 
   if (!streaming || !m_do_iq)
