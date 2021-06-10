@@ -53,10 +53,6 @@ ss_client::ss_client(const std::string _ip,
                                                  m_do_fft(_do_fft),
                                                  m_sample_bits(_samp_bits)
 {
-#ifdef _WIN32
-  WSAStartup();
-#endif
-
   std::cerr << "SS_client(" << ip << ", " << port << ")" << std::endl;
   client = tcp_client(ip, port);
 
