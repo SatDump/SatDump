@@ -6,14 +6,14 @@ namespace fengyun
     {
         MERSI1000Reader::MERSI1000Reader()
         {
-            imageBuffer = new unsigned short[20000 * 2048];
+            imageBuffer.create(20000 * 2048);
             mersiLineBuffer = new unsigned short[40960];
             frames = 0;
         }
 
         MERSI1000Reader::~MERSI1000Reader()
         {
-            delete[] imageBuffer;
+            imageBuffer.destroy();
             delete[] mersiLineBuffer;
         }
 
@@ -42,6 +42,10 @@ namespace fengyun
 
             // Frame counter
             frames++;
+
+            // Make sure we have enough room
+            if (frames * 2048 >= (int)imageBuffer.size())
+                imageBuffer.resize((frames + 1000) * 2048);
         }
 
         cimg_library::CImg<unsigned short> MERSI1000Reader::getImage()

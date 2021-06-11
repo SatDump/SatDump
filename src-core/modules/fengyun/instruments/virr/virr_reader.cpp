@@ -7,7 +7,7 @@ namespace fengyun
         VIRRReader::VIRRReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i] = new unsigned short[10000 * 2048];
+                channels[i].create(10000 * 2048);
 
             lines = 0;
         }
@@ -15,7 +15,7 @@ namespace fengyun
         VIRRReader::~VIRRReader()
         {
             for (int i = 0; i < 10; i++)
-                delete[] channels[i];
+                channels[i].destroy();
         }
 
         void VIRRReader::work(std::vector<uint8_t> &packet)
@@ -46,11 +46,18 @@ namespace fengyun
 
             // Frame counter
             lines++;
+
+            // Make sure we have enough room
+            if (lines * 2048 >= (int)channels[0].size())
+            {
+                for (int i = 0; i < 10; i++)
+                    channels[i].resize((lines + 1000) * 2048);
+            }
         }
 
         cimg_library::CImg<unsigned short> VIRRReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 2048, lines);
+            return cimg_library::CImg<unsigned short>(channels[channel].buf, 2048, lines);
         }
     } // namespace virr
 } // namespace fengyun

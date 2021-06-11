@@ -5,6 +5,7 @@
 #define cimg_use_png
 #define cimg_display 0
 #include "CImg.h"
+#include "common/resizeable_buffer.h"
 
 namespace fengyun
 {
@@ -13,7 +14,7 @@ namespace fengyun
         class MERSI1000Reader
         {
         private:
-            unsigned short *imageBuffer;
+            ResizeableBuffer<unsigned short> imageBuffer;
             unsigned short *mersiLineBuffer;
             int frames;
             uint8_t byteBufShift[3];

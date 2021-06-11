@@ -5,6 +5,7 @@
 #define cimg_display 0
 #include "CImg.h"
 #include <vector>
+#include "common/resizeable_buffer.h"
 
 namespace fengyun
 {
@@ -13,7 +14,7 @@ namespace fengyun
         class VIRRReader
         {
         private:
-            unsigned short *channels[10];
+            ResizeableBuffer<unsigned short> channels[10];
             uint16_t virrBuffer[204800];
 
         public:
