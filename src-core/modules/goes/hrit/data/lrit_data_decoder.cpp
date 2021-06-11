@@ -144,7 +144,7 @@ namespace goes
                         logger->debug("This is RICE-compressed! Decompressing...");
 
                         rice_parameters.bits_per_pixel = image_structure_record.bit_per_pixel;
-                        rice_parameters.pixels_per_block = 16;
+                        rice_parameters.pixels_per_block = 16 * 2; // The real default is 16, but has been to 32 for ages
                         rice_parameters.pixels_per_scanline = image_structure_record.columns_count;
                         rice_parameters.options_mask = SZ_ALLOW_K13_OPTION_MASK | SZ_MSB_OPTION_MASK | SZ_NN_OPTION_MASK | SZ_RAW_OPTION_MASK;
 
@@ -174,6 +174,12 @@ namespace goes
             {
                 if (rice_parameters.bits_per_pixel == 0)
                     return;
+
+                if (rice_parameters.pixels_per_block <= 0)
+                {
+                    logger->critical("Pixel per blocks is set to 0! Using defaults");
+                    rice_parameters.pixels_per_block = 16 * 2; // The real default is 16, but has been to 32 for ages
+                }
 
                 size_t output_size = decompression_buffer.size();
                 int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size(), &rice_parameters);
