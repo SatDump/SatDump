@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef SPDLOG_COMPILED_LIB
+#define SPDLOG_COMPILED_LIB
+#endif
 #include <spdlog/spdlog.h>
 #include <memory>
 #include "dll_export.h"

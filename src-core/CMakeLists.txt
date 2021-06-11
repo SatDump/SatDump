@@ -26,6 +26,9 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
+# Set Spdlog to build the library
+target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
+
 if(MSVC)
     target_link_libraries(satdump_core PUBLIC dsp.dll)
     target_link_libraries(satdump_core PUBLIC correct.dll)
