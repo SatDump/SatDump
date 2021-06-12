@@ -111,15 +111,11 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    parseSettingsOrDefaults();
+
 #ifdef BUILD_LIVE
     initLive();
 #endif
-
-    // Load last settings
-    //{
-    //    if (settings.contains("offline_pipeline_id"))
-    //        pipeline_id = settings["offline_pipeline_id"].get<int>();
-    //}
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -166,9 +162,19 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
     if (std::filesystem::exists("Roboto-Medium.ttf"))
-        style::setDarkStyle(".");
+    {
+        if (use_light_theme)
+            style::setLightStyle(".");
+        else
+            style::setDarkStyle(".");
+    }
     else
-        style::setDarkStyle((std::string)RESOURCES_PATH);
+    {
+        if (use_light_theme)
+            style::setLightStyle((std::string)RESOURCES_PATH);
+        else
+            style::setDarkStyle((std::string)RESOURCES_PATH);
+    }
 
     if (processing)
         processThreadPool.push([&](int)
@@ -251,8 +257,10 @@ int main(int argc, char *argv[])
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        //glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-        glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
+        if (use_light_theme)
+            glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+        else
+            glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         //glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
