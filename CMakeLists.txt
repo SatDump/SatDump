@@ -42,12 +42,12 @@ endif()
 
 project (SatDump)
 
+add_subdirectory(src-core)
+add_subdirectory(src-cli)
+
 if(BUILD_LIVE)
     add_subdirectory(libsdr)
 endif()
-
-add_subdirectory(src-core)
-add_subdirectory(src-cli)
 
 if(NOT NOGUI)
     add_subdirectory(src-ui)
