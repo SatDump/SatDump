@@ -90,7 +90,7 @@ cd satdump
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.bat
-./vcpkg.exe install png:x64-windows jpeg-turbo:x64-windows fftw3:x64-windows glew:x64-windows glfw:x64-windows # Gotta check those are correct... Should be
+.\vcpkg.exe install libpng:x64-windows libjpeg-turbo:x64-windows fftw3:x64-windows glew:x64-windows glfw3:x64-windows # Gotta check those are correct... Should be
 # At this point, I copied over the files from libraries compiled from source in vcpkg/installed/x64-windows
 cd ..
 mkdir build
