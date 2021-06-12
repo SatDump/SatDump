@@ -33,7 +33,6 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC dsp.dll)
     target_link_libraries(satdump_core PUBLIC correct.dll)
     target_link_libraries(satdump_core PUBLIC jpeg)
-    target_link_libraries(satdump_core PUBLIC fmt.dll)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
@@ -72,11 +71,6 @@ else()
     # LibJpeg
     find_library(JPEG_LIBRARY jpeg REQUIRED)
     target_link_libraries(satdump_core PUBLIC ${JPEG_LIBRARY})
-
-    # FMT
-    find_package(fmt REQUIRED)
-    target_include_directories(satdump_core PUBLIC ${fmt_INCLUDE_DIRS})
-    target_link_libraries(satdump_core PUBLIC fmt::fmt)
 
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)

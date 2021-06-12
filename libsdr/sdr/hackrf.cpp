@@ -1,11 +1,7 @@
 #include "hackrf.h"
 #include <sstream>
-#include "live.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-#include <volk/volk.h>
-
-#ifdef BUILD_LIVE
 
 int SDRHackRF::_rx_callback(hackrf_transfer *t)
 {
@@ -151,5 +147,3 @@ std::string SDRHackRF::getID()
 {
     return "hackrf";
 }
-
-#endif

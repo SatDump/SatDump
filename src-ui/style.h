@@ -11,5 +11,4 @@ namespace style {
     bool setDarkStyle(std::string resDir);
     void beginDisabled();
     void endDisabled();
-    void testtt();
 }

@@ -1,11 +1,7 @@
 #include "rtlsdr.h"
 #include <sstream>
-#include "live.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-#include <volk/volk.h>
-
-#ifdef BUILD_LIVE
 
 void SDRRtlSdr::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
@@ -190,5 +186,3 @@ std::string SDRRtlSdr::getID()
 {
     return "rtlsdr";
 }
-
-#endif

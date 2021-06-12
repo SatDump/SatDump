@@ -21,7 +21,7 @@ jobs:
       run: sudo apt update 
     
     - name: Install dependencies
-      run: sudo apt install libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev libairspy-dev libfmt-dev build-essential cmake pkgconf libjpeg-dev libpng-dev
+      run: sudo apt install libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libhackrf-dev librtlsdr-dev
 
     - name: Build libcorrect
       run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install
@@ -39,7 +39,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
 
     - name: Build
       working-directory: ${{runner.workspace}}/build

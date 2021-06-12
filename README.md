@@ -90,7 +90,7 @@ cd satdump
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.bat
-./vcpkg.exe install png:x64-windows jpeg-turbo:x64-windows fftw3:x64-windows glew:x64-windows fmt:x64-windows glfw:x64-windows # Gotta check those are correct... Should be
+./vcpkg.exe install png:x64-windows jpeg-turbo:x64-windows fftw3:x64-windows glew:x64-windows glfw:x64-windows # Gotta check those are correct... Should be
 # At this point, I copied over the files from libraries compiled from source in vcpkg/installed/x64-windows
 cd ..
 mkdir build
@@ -110,10 +110,10 @@ Here are some generic Debian build instructions.
 
 ```
 # Linux: Install dependencies
-sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libfmt-dev libglew-dev libglfw3-dev
+sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libglew-dev libglfw3-dev
 
 # macOS: Install dependencies
-brew install cmake volk jpeg libpng fmt glew glfw
+brew install cmake volk jpeg libpng glew glfw
 
 # Build and install libcorrect
 git clone https://github.com/quiet/libcorrect.git

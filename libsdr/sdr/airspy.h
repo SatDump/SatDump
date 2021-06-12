@@ -1,8 +1,6 @@
 #pragma once
 
 #include "sdr.h"
-
-#ifdef BUILD_LIVE
 #include <libairspy/airspy.h>
 
 class SDRAirspy : public SDRDevice
@@ -27,4 +25,3 @@ public:
     virtual void setFrequency(float frequency);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
-#endif

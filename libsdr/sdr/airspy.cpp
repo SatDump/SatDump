@@ -1,10 +1,7 @@
 #include "airspy.h"
 #include <sstream>
-#include "live.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-
-#ifdef BUILD_LIVE
 
 int SDRAirspy::_rx_callback(airspy_transfer *t)
 {
@@ -118,5 +115,3 @@ std::string SDRAirspy::getID()
 {
     return "airspy";
 }
-
-#endif

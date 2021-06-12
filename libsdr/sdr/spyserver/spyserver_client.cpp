@@ -5,10 +5,6 @@
  * Adapted from https://github.com/miweber67/spyserver_client
  */
 
-#include "live.h"
-
-#ifdef BUILD_LIVE
-
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
@@ -1233,5 +1229,3 @@ void ss_client::send_stream_format_commands()
 
 template int ss_client::get_iq_data<int16_t>(const int batch_size, int16_t *out_array);
 template int ss_client::get_iq_data<uint8_t>(const int batch_size, uint8_t *out_array);
-
-#endif

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "sdr.h"
-
-#ifdef BUILD_LIVE
 #include <rtl-sdr.h>
 #include <thread>
 
@@ -36,4 +34,3 @@ public:
     void setBias(bool bias);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
-#endif

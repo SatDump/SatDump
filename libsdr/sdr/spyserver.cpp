@@ -1,11 +1,8 @@
 #include "spyserver.h"
 #include <sstream>
-#include "live.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include <volk/volk.h>
-
-#ifdef BUILD_LIVE
 
 SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
@@ -169,5 +166,3 @@ std::string SDRSpyServer::getID()
 {
     return "spyserver";
 }
-
-#endif

@@ -24,18 +24,14 @@ namespace style {
         ImGui::GetStyle().PopupRounding = 0.0f;
         ImGui::GetStyle().ScrollbarRounding = 0.0f;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 128.0f);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 16.0f);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 45.0f);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 128.0f);
 
         ImGui::StyleColorsDark();
         //ImGui::StyleColorsLight();
 
         return true;
-    }
-
-    void testtt() {
-        ImGui::StyleColorsLight();
     }
 
     bool setDarkStyle(std::string resDir) {
