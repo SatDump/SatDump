@@ -7,6 +7,8 @@ add_library(sdr STATIC ${LIBSDR_CPPS})
 target_include_directories(sdr PUBLIC . ../src-core)
 set_target_properties(sdr PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 
+target_link_libraries(sdr PUBLIC satdump_core)
+
 if(MSVC)
         target_link_libraries(sdr PUBLIC airspy.dll)
         target_link_libraries(sdr PUBLIC rtlsdr.dll)
