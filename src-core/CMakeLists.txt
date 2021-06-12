@@ -30,7 +30,6 @@ target_link_libraries(satdump_core PUBLIC Threads::Threads)
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
 if(MSVC)
-    target_link_libraries(satdump_core PUBLIC dsp.dll)
     target_link_libraries(satdump_core PUBLIC correct.dll)
     target_link_libraries(satdump_core PUBLIC jpeg)
     target_link_libraries(satdump_core PUBLIC volk.dll)
