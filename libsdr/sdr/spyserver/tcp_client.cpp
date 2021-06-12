@@ -18,10 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "live.h"
-
-#ifdef BUILD_LIVE
-
 #include "tcp_client.h"
 
 #include <cstdio>
@@ -190,5 +186,3 @@ uint64_t tcp_client::available_data()
 
     return bytesAvailable;
 }
-
-#endif

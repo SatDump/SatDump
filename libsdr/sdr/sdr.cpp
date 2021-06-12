@@ -1,7 +1,5 @@
 #include "sdr.h"
 
-#ifdef BUILD_LIVE
-
 SDRDevice::SDRDevice(std::map<std::string, std::string> parameters, uint64_t /*id*/)
     : d_parameters(parameters)
 {
@@ -104,7 +102,7 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
 std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
 {
     sdr_device_type type = std::get<1>(devList[num]);
-    uint64_t id = std::get<2>(devList[num]);
+    //uint64_t id = std::get<2>(devList[num]);
 
     if (type == AIRSPY)
         return "airspy";
@@ -140,4 +138,3 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
     else
         return nullptr;
 }
-#endif

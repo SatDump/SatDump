@@ -4,7 +4,6 @@
 #include "logger.h"
 
 #if 0
-#ifdef BUILD_LIVE
 
 SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
@@ -158,5 +157,4 @@ std::string SDRLimeSDR::getID()
     return "limesdr";
 }
 
-#endif
 #endif

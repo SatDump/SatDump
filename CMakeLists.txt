@@ -42,6 +42,10 @@ endif()
 
 project (SatDump)
 
+if(BUILD_LIVE)
+    add_subdirectory(libsdr)
+endif()
+
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
