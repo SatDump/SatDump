@@ -12,7 +12,7 @@
 #include "global.h"
 #include "processing.h"
 #ifdef _WIN32
-#include <processthreadsapi.h>
+#include <windows.h>
 #endif
 
 #ifdef BUILD_LIVE
