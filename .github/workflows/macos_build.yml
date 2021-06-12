@@ -1,4 +1,4 @@
-name: Linux Build
+name: MacOS Build
 
 on: [push]
 
