@@ -14,7 +14,7 @@
 #include "live_run.h"
 #include <filesystem>
 #include "settings.h"
-#include "settings.h"
+#include "settingsui.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -224,8 +224,13 @@ int main(int argc, char *argv[])
 #ifdef BUILD_LIVE
                         renderLiveProcessing();
 #else
-                        ImGui::Text("Live support is currently being rewritten, and does not work on Windows yet. If you really need it, please stick to an older version.");
+                        ImGui::Text("Live support was not enabled in this build. Please rebuild with BUILD_LIVE=ON if you wish to use it.");
 #endif
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("Settings"))
+                    {
+                        renderSettings(wwidth, wheight);
                         ImGui::EndTabItem();
                     }
                     if (ImGui::BeginTabItem("Credits"))
