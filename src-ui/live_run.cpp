@@ -11,6 +11,9 @@
 #include "live_pipeline.h"
 #include "global.h"
 #include "processing.h"
+#ifdef _WIN32
+#include <processthreadsapi.h>
+#endif
 
 #ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
