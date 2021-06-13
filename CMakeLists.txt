@@ -10,6 +10,7 @@ option(NOGUI                "Disable building the GUI"                          
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_LIVE           "Build the live processing feature (WIP)"                   OFF)
+option(BUILD_ZSTD           "Build support for decompressing i8 basebands with zstd"    OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
 if(NOGUI)
