@@ -46,6 +46,11 @@ if(MSVC)
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
 
+    if(BUILD_ZSTD)
+        target_link_libraries(satdump_core PUBLIC zstd.dll)
+        target_compile_definitions(satdump_core PUBLIC ENABLE_DECOMPRESSION="1")
+    endif()
+
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 elseif(ANDROID)
     # LibCorrect
@@ -120,6 +125,13 @@ else()
 
         # Enable it
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+    endif()
+
+    if(BUILD_ZSTD)
+         # zstd
+         find_library(ZSTD_LIBRARY zstd REQUIRED)
+         target_link_libraries(satdump_core PUBLIC ${ZSTD_LIBRARY}) 
+        target_compile_definitions(satdump_core PUBLIC ENABLE_DECOMPRESSION="1")
     endif()
 endif()
 

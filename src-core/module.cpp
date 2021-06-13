@@ -82,6 +82,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/aqua/instruments/amsu/module_aqua_amsu.h"
 #include "modules/aqua/instruments/ceres/module_aqua_ceres.h"
 
+#include "modules/aura/instruments/omi/module_aura_omi.h"
+
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 #include "modules/eos/instruments/modis/module_eos_modis_extractor.h"
 
@@ -180,6 +182,9 @@ void registerModules()
     REGISTER_MODULE(aqua::airs::AquaAIRSDecoderModule);
     REGISTER_MODULE(aqua::amsu::AquaAMSUDecoderModule);
     REGISTER_MODULE(aqua::ceres::AquaCERESDecoderModule);
+
+    // Aura
+    REGISTER_MODULE(aura::omi::AuraOMIDecoderModule);
 
     // EOS
     REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
