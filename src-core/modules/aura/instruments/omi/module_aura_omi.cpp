@@ -29,13 +29,8 @@ namespace aura
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            logger->warn("This decoder is very WIP!!!!");
-
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
-
-            std::ofstream frames_out(directory + "/omi.ccsds", std::ios::binary);
-            d_output_files.push_back(directory + "/omi.ccsds");
 
             time_t lastTime = 0;
 
@@ -43,7 +38,7 @@ namespace aura
             uint8_t cadu[1024];
 
             // Counters
-            uint64_t ceres_cadu = 0, ccsds = 0, modis_ccsds = 0;
+            uint64_t omi_cadu = 0, ccsds = 0, omi_ccsds = 0;
 
             ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer1, ccsdsDemuxer2;
 
@@ -58,11 +53,11 @@ namespace aura
 
                 // Parse this transport frame
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
-                //std::cout << "VCID " << (int)vcdu.vcid << std::endl;
-                // Right channel? (VCID 10-15 is CERES)
+
+                // Right channel?
                 if (vcdu.vcid == 26)
                 {
-                    ceres_cadu++;
+                    omi_cadu++;
 
                     // Demux
                     std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer1.work(cadu);
@@ -73,22 +68,14 @@ namespace aura
                     // Push into processor
                     for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        //std::cout << "APID " << (int)pkt.header.apid << std::endl;
-                        if (pkt.header.apid == 1838 /*+ 2*/)
+                        if (pkt.header.apid == 1838)
                         {
-                            modis_ccsds++;
+                            omi_ccsds++;
                             reader1.work(pkt);
-                            //int counter = pkt.payload[9] & 0b11111;
-                            //std::cout << "LEN " << (int)pkt.payload.size() << std::endl;
-                            //if (counter == 0)
-                            //{
-                            frames_out.write((char *)pkt.header.raw, 6);
-                            frames_out.write((char *)pkt.payload.data(), 4116);
-                            //}
                         }
                         else if (pkt.header.apid == 1840)
                         {
-                            modis_ccsds++;
+                            omi_ccsds++;
                             reader2.work(pkt);
                         }
                     }
@@ -105,16 +92,55 @@ namespace aura
 
             data_in.close();
 
-            logger->info("VCID (CERES) Frames    : " + std::to_string(ceres_cadu));
+            logger->info("VCID 26 (OMI) Frames   : " + std::to_string(omi_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));
-            logger->info("CERES CCSDS Frames     : " + std::to_string(modis_ccsds));
-            //logger->info("CERES 1 Lines          : " + std::to_string(reader1.lines));
-            //logger->info("CERES 2 Lines          : " + std::to_string(reader2.lines));
+            logger->info("OMI CCSDS Frames       : " + std::to_string(omi_ccsds));
+            logger->info("OMI UV 1 Lines         : " + std::to_string(reader1.lines));
+            logger->info("OMI VIS Lines          : " + std::to_string(reader2.lines));
 
             logger->info("Writing images.... (Can take a while)");
 
-            WRITE_IMAGE(reader1.getImage(0), directory + "/OMI-1.png");
-            WRITE_IMAGE(reader2.getImage(0), directory + "/OMI-2.png");
+            WRITE_IMAGE(reader1.getImageRaw(), directory + "/OMI-1.png");
+            WRITE_IMAGE(reader2.getImageRaw(), directory + "/OMI-2.png");
+
+            WRITE_IMAGE(reader1.getImageVisible(), directory + "/OMI-VIS-1.png");
+            WRITE_IMAGE(reader2.getImageVisible(), directory + "/OMI-VIS-2.png");
+
+            logger->info("Global Composite...");
+            int all_width_count = 33;
+            int all_height_count = 24;
+            cimg_library::CImg<unsigned short> imageAll1(65 * all_width_count, reader1.getChannel(0).height() * all_height_count, 1, 1);
+            {
+                int height = reader1.getChannel(0).height();
+
+                for (int row = 0; row < all_height_count; row++)
+                {
+                    for (int column = 0; column < all_width_count; column++)
+                    {
+                        if (row * all_width_count + column >= 792)
+                            break;
+
+                        imageAll1.draw_image(65 * column, height * row, 0, 0, reader1.getChannel(row * all_width_count + column));
+                    }
+                }
+            }
+            cimg_library::CImg<unsigned short> imageAll2(65 * all_width_count, reader2.getChannel(0).height() * all_height_count, 1, 1);
+            {
+                int height = reader2.getChannel(0).height();
+
+                for (int row = 0; row < all_height_count; row++)
+                {
+                    for (int column = 0; column < all_width_count; column++)
+                    {
+                        if (row * all_width_count + column >= 792)
+                            break;
+
+                        imageAll2.draw_image(65 * column, height * row, 0, 0, reader2.getChannel(row * all_width_count + column));
+                    }
+                }
+            }
+            WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1.png");
+            WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2.png");
         }
 
         void AuraOMIDecoderModule::drawUI(bool window)
