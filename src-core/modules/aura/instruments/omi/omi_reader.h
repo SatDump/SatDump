@@ -13,14 +13,19 @@ namespace aura
         class OMIReader
         {
         private:
-            unsigned short *channels[3];
+            unsigned short *frameBuffer;
+            unsigned short *channelRaw;
+            unsigned short *visibleChannel;
+            unsigned short *channels[792];
 
         public:
             OMIReader();
             ~OMIReader();
             int lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getImage(int channel);
+            cimg_library::CImg<unsigned short> getChannel(int channel);
+            cimg_library::CImg<unsigned short> getImageRaw();
+            cimg_library::CImg<unsigned short> getImageVisible();
         };
     } // namespace ceres
 } // namespace aqua
