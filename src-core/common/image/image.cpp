@@ -44,6 +44,8 @@ namespace image
                 image[band_number * width * height + i] = balanced;
             }
         }
+
+        delete[] sorted_array;
     }
 
     struct jpeg_error_struct
@@ -133,6 +135,47 @@ namespace image
                     image[x * w + y] = (right + left) / 2;
                 }
             }
+        }
+    }
+
+    void extract_percentile(cimg_library::CImg<unsigned short> &image, float percentilev1, float percentilev2, int channelCount)
+    {
+        int height = image.height();
+        int width = image.width();
+
+        unsigned short *sorted_array = new unsigned short[height * width];
+
+        for (int band_number = 0; band_number < channelCount; band_number++)
+        {
+            // Load the whole image band into our array
+            std::memcpy(sorted_array, &image.data()[band_number * width * height], width * height * sizeof(unsigned short));
+
+            // Sort it
+            std::sort(&sorted_array[0], &sorted_array[width * height]);
+
+            // Get percentiles
+            int percentile1 = percentile(sorted_array, width * height, percentilev1);
+            int percentile2 = percentile(sorted_array, width * height, percentilev2);
+
+            for (int i = 0; i < width * height; i++)
+            {
+                long balanced = (image[band_number * width * height + i] - percentile1) * 65535.0f / (percentile2 - percentile1);
+                if (balanced < 0)
+                    balanced = 0;
+                else if (balanced > 65535)
+                    balanced = 65535;
+                image[band_number * width * height + i] = balanced;
+            }
+        }
+
+        delete[] sorted_array;
+    }
+
+    void linear_invert(cimg_library::CImg<unsigned short> &image)
+    {
+        for (int i = 0; i < image.width() * image.height(); i++)
+        {
+            image[i] = 65535 - image[i];
         }
     }
 }

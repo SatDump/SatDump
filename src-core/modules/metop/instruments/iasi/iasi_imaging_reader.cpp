@@ -1,6 +1,5 @@
 #include "iasi_imaging_reader.h"
 #include "utils.h"
-#include <iostream>
 
 namespace metop
 {
@@ -45,11 +44,20 @@ namespace metop
                 lines++;
         }
 
+        int percentile(unsigned short *array, int size, float percentile)
+        {
+            float number_percent = (size + 1) * percentile / 100.0f;
+            if (number_percent == 1)
+                return array[0];
+            else if (number_percent == size)
+                return array[size - 1];
+            else
+                return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
+        }
+
         cimg_library::CImg<unsigned short> IASIIMGReader::getIRChannel()
         {
             cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(ir_channel, 30 * 64, lines * 64);
-            img.normalize(0, 65535);
-            img.equalize(1000);
             img.mirror('x');
             return img;
         }
