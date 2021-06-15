@@ -15,4 +15,10 @@ namespace image
 
     // Simple despeckle
     void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold);
+
+    // Percentile application
+    void extract_percentile(cimg_library::CImg<unsigned short> &image, float percentile1, float percentile2, int channelCount = 3);
+
+    // Linear invert
+    void linear_invert(cimg_library::CImg<unsigned short> &image);
 }
