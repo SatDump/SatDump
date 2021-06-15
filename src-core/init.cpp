@@ -49,5 +49,7 @@ extern "C"
 {
 #undef stderr
     FILE *stderr = NULL;
+#undef stdout
+    FILE *stdout = NULL;
 }
 #endif
