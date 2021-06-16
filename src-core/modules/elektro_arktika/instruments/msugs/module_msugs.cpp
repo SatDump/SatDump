@@ -6,6 +6,7 @@
 #include "msu_vis_reader.h"
 #include "msu_ir_reader.h"
 #include "imgui/imgui.h"
+#include "common/image/image.h"
 
 #define BUFFER_SIZE 8192
 
@@ -166,6 +167,7 @@ namespace elektro_arktika
                     image221.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
                     image221.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
                 }
+                image::white_balance(image221);
                 WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221.png");
             }
 
