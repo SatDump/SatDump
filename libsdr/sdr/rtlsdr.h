@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef DISABLE_SDR_RTLSDR
 #include "sdr.h"
 #include <rtl-sdr.h>
 #include <thread>
@@ -34,3 +35,4 @@ public:
     void setBias(bool bias);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
+#endif

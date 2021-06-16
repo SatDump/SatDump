@@ -8,6 +8,7 @@
  * Original Copyright 2013 Dimitri Stolnikov <horiz0n@gmx.net>
  *
  */
+#ifndef DISABLE_SDR_SPYSERVER
 #ifndef SS_CLIENT_H
 #define SS_CLIENT_H
 
@@ -156,3 +157,4 @@ private:
 };
 
 #endif /* SS_CLIENT_H */
+#endif

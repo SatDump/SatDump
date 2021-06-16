@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef DISABLE_SDR_AIRSPY
 #include "sdr.h"
 #include <libairspy/airspy.h>
 
@@ -25,3 +26,4 @@ public:
     virtual void setFrequency(float frequency);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
+#endif

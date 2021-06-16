@@ -2,6 +2,7 @@
 
 #include "sdr.h"
 
+#ifndef DISABLE_SDR_SPYSERVER
 #include "spyserver/spyserver_client.h"
 
 class SDRSpyServer : public SDRDevice
@@ -36,3 +37,4 @@ public:
     static bool enable_bit16;
     static std::map<std::string, std::string> drawParamsUI();
 };
+#endif

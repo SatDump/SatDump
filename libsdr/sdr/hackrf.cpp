@@ -1,4 +1,6 @@
 #include "hackrf.h"
+
+#ifndef DISABLE_SDR_HACKRF
 #include <sstream>
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -147,3 +149,4 @@ std::string SDRHackRF::getID()
 {
     return "hackrf";
 }
+#endif

@@ -2,7 +2,7 @@
 
 #ifdef BUILD_LIVE
 #include "imgui/imgui.h"
-#include "sdr/airspy.h"
+#include "sdr/sdr.h"
 #include "global.h"
 #include <fftw3.h>
 #include <cstring>

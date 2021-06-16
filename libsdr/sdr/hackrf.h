@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef DISABLE_SDR_HACKRF
 #include "sdr.h"
 #include <libhackrf/hackrf.h>
 #include <thread>
@@ -27,3 +28,4 @@ public:
     virtual void setFrequency(float frequency);
     static std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getDevices();
 };
+#endif

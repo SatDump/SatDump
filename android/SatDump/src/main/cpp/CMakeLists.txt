@@ -74,6 +74,17 @@ add_library(fftw STATIC IMPORTED)
 set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fftw3/${ANDROID_ABI}/libfftw3f.a)
 include_directories(deps/fftw3/jni)
 
+# Enable live processing for remove devices. WIP
+set(BUILD_LIVE OFF)
+if(BUILD_LIVE)
+    set(ENABLE_SDR_AIRSPY OFF)
+    set(ENABLE_SDR_RTLSDR OFF)
+    set(ENABLE_SDR_HACKRF OFF)
+    set(ENABLE_SDR_SPYSERVER ON)
+    add_subdirectory(../../../../../libsdr ${CMAKE_BINARY_DIR}/libsdr)
+endif()
+
+
 #add_subdirectory(src-core)
 add_subdirectory(../../../../../src-core ${CMAKE_BINARY_DIR}/src-core)
 target_include_directories(satdump_android PRIVATE ../../../../../src-core)

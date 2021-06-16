@@ -18,6 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifndef DISABLE_SDR_SPYSERVER
 #include "tcp_client.h"
 
 #include <cstdio>
@@ -186,3 +187,4 @@ uint64_t tcp_client::available_data()
 
     return bytesAvailable;
 }
+#endif

@@ -6,7 +6,9 @@
 #include "pipeline.h"
 #include <cstring>
 #include "logger.h"
+#ifndef __ANDROID__
 #include "portable-file-dialogs.h"
+#endif
 #include "processing.h"
 #include <filesystem>
 #include "sdr/sdr.h"
@@ -14,6 +16,11 @@
 #include "sdr/sdr.h"
 #include "settings.h"
 #include "live_pipeline.h"
+
+#ifdef __ANDROID__
+std::string getFilePath();
+std::string getDirPath();
+#endif
 
 std::shared_ptr<SDRDevice> radio;
 
@@ -81,6 +88,9 @@ void renderLiveProcessing()
         if (ImGui::Button("Select Output"))
         {
             logger->debug("Opening file dialog");
+#ifdef __ANDROID__
+            output_file = getDirPath();
+#else
             auto result = pfd::select_folder("Open output directory", ".");
             while (result.ready(1000))
             {
@@ -88,12 +98,13 @@ void renderLiveProcessing()
 
             if (result.result().size() > 0)
                 output_file = result.result();
+#endif
 
             logger->debug("Dir " + output_file);
         }
 
         ImGui::SameLine();
-        ImGui::Text(output_file.c_str());
+        ImGui::Text("%s", output_file.c_str());
     }
     ImGui::EndGroup();
 
@@ -222,7 +233,7 @@ void renderLiveProcessing()
 
         ImGui::SameLine();
 
-        ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), error_message);
+        ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), "%s", error_message);
 
         ImGui::Text("Please keep in mind live processing support in SatDump is still Work-In-Progress. \n"
                     "While it should be perfectly functional and work as expected, bugs and crashes could still happen... \n"
