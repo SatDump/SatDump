@@ -51,6 +51,7 @@ if(BUILD_LIVE)
 endif()
 
 if(NOT NOGUI)
+    add_subdirectory(src-interface)
     add_subdirectory(src-ui)
 endif()
 

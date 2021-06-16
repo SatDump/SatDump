@@ -5,6 +5,7 @@
 //#include <options.h>
 #include <spdlog/spdlog.h>
 #include <filesystem>
+#include "module.h"
 
 namespace style
 {
@@ -37,7 +38,7 @@ namespace style
         return true;
     }
 
-    bool setLightStyle(std::string resDir)
+    bool setLightStyle(std::string resDir, float dpi_scaling)
     {
         if (!std::filesystem::is_directory(resDir))
         {
@@ -52,9 +53,9 @@ namespace style
         ImGui::GetStyle().PopupRounding = 0.0f;
         ImGui::GetStyle().ScrollbarRounding = 0.0f;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 128.0f);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 128.0f);
 
         ImGui::StyleColorsLight();
 
@@ -105,10 +106,13 @@ namespace style
         colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);*/
 
+        ImGui::GetStyle().ScaleAllSizes(dpi_scaling);
+        ui_scale = dpi_scaling;
+
         return true;
     }
 
-    bool setDarkStyle(std::string resDir)
+    bool setDarkStyle(std::string resDir, float dpi_scaling)
     {
         if (!std::filesystem::is_directory(resDir))
         {
@@ -123,9 +127,9 @@ namespace style
         ImGui::GetStyle().PopupRounding = 0.0f;
         ImGui::GetStyle().ScrollbarRounding = 0.0f;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 128.0f);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 128.0f);
 
         ImGui::StyleColorsDark();
 
@@ -175,6 +179,9 @@ namespace style
         colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
         colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+
+        ImGui::GetStyle().ScaleAllSizes(dpi_scaling);
+        ui_scale = dpi_scaling;
 
         return true;
     }

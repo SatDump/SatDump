@@ -17,6 +17,9 @@
 #include "processing.h"
 #include "offline.h"
 #include "logger.h"
+#include <filesystem>
+#include "settings.h"
+#include "settingsui.h"
 
 #define NOWINDOW_FLAGS (long int)ImGuiWindowFlags_NoMove | (long int)ImGuiWindowFlags_NoCollapse | (long int)ImGuiWindowFlags_NoBringToFrontOnFocus /*| ImGuiWindowFlags_NoTitleBar*/ | (long int)ImGuiWindowFlags_NoResize | (long int)ImGuiWindowFlags_NoBackground
 
@@ -214,7 +217,21 @@ int main(int argc, char **argv)
         int major;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
 
-        style::setDarkStyle(".");
+        if (std::filesystem::exists("settings.json"))
+        {
+            loadSettings("settings.json");
+        }
+
+        parseSettingsOrDefaults();
+
+        float ddpi, hdpi, vdpi;
+        SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
+        float dpi_scaling = ddpi / (72.f * 3);
+
+        if (use_light_theme)
+            style::setLightStyle(".", dpi_scaling);
+        else
+            style::setDarkStyle(".", dpi_scaling);
 
         initLogger();
         initSatdump();
@@ -331,6 +348,11 @@ int main(int argc, char **argv)
                                 ImGui::Text("Live processing is not yet supported on Android!");
                                 ImGui::EndTabItem();
                             }
+                            if (ImGui::BeginTabItem("Settings"))
+                            {
+                                renderSettings(wwidth, wheight);
+                                ImGui::EndTabItem();
+                            }
                             if (ImGui::BeginTabItem("Credits"))
                             {
                                 renderCredits(wwidth, wheight);
@@ -350,7 +372,10 @@ int main(int argc, char **argv)
                 glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
+                if (use_light_theme)
+                    glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+                else
+                    glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
                 //glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 

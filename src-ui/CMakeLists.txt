@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.0.0)
 
-file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp tinyfiledialogs/tinyfiledialogs.c)
+file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp)
 
 add_executable(satdump-ui ${SatDump_ui_CPPS})
-target_include_directories(satdump-ui PUBLIC . ../src-core ../libsdr)
+target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
 
 # Set the resources path
 if(MSVC)
@@ -18,7 +18,7 @@ if(BUILD_LIVE)
 endif()
 
 # Link against the core
-target_link_libraries(satdump-ui PUBLIC satdump_core)
+target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 
 # OpenGL
 find_package(OpenGL REQUIRED)

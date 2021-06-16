@@ -78,7 +78,10 @@ include_directories(deps/fftw3/jni)
 add_subdirectory(../../../../../src-core ${CMAKE_BINARY_DIR}/src-core)
 target_include_directories(satdump_android PRIVATE ../../../../../src-core)
 
-target_link_libraries(satdump_android PUBLIC satdump_core)
+add_subdirectory(../../../../../src-interface ${CMAKE_BINARY_DIR}/src-interface)
+target_include_directories(satdump_android PRIVATE ../../../../../src-core)
+
+target_link_libraries(satdump_android PUBLIC satdump_core satdump_interface)
 
 add_library(app-glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 target_include_directories(satdump_android PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue/)
