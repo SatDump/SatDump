@@ -3,7 +3,7 @@
 
 void renderCredits(int wwidth, int wheight)
 {
-    ImGui::SetCursorPos({(float)wwidth / 2 - 250, (float)wheight / 2 - 90});
+    ImGui::SetCursorPos({50, 100});
     ImGui::BeginGroup();
 
     ImGui::BeginGroup();
@@ -17,6 +17,9 @@ void renderCredits(int wwidth, int wheight)
     ImGui::BulletText("libfftw3");
     ImGui::BulletText("libcorrect");
     ImGui::BulletText("libairspy");
+    ImGui::BulletText("librtlsdr");
+    ImGui::BulletText("libhackrf");
+    ImGui::BulletText("libpredict");
     ImGui::BulletText("tinyfiledialogs");
     ImGui::BulletText("ImGui");
     ImGui::EndGroup();
@@ -29,6 +32,7 @@ void renderCredits(int wwidth, int wheight)
     ImGui::BulletText("ZbychuButItWasTaken");
     ImGui::BulletText("Arved MØKDS");
     ImGui::BulletText("Ryzerth");
+    ImGui::BulletText("LazzSnazz");
     ImGui::EndGroup();
 
     ImGui::SameLine();

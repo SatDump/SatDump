@@ -4,12 +4,16 @@
 #include "pipeline.h"
 #include <cstring>
 #include "logger.h"
-//#include "portable-file-dialogs.h"
+#ifndef __ANDROID__
+#include "portable-file-dialogs.h"
+#endif
 #include "processing.h"
 #include "settings.h"
 
+#ifdef __ANDROID__
 std::string getFilePath();
 std::string getDirPath();
+#endif
 
 void renderOfflineProcessing()
 {
@@ -17,7 +21,7 @@ void renderOfflineProcessing()
     {
         std::string names;
 
-        for (int i = 0; i < pipeline_categories.size(); i++)
+        for (int i = 0; i < (int)pipeline_categories.size(); i++)
         {
             names += pipeline_categories[i] + '\0';
         }
@@ -37,7 +41,7 @@ void renderOfflineProcessing()
     {
         std::string names;
 
-        for (int i = 0; i < catPipelines.size(); i++)
+        for (int i = 0; i < (int)catPipelines.size(); i++)
         {
             names += catPipelines[i].readable_name + '\0';
         }
@@ -85,7 +89,7 @@ void renderOfflineProcessing()
         std::string names; // = "baseband\0";
 
         if (pipeline_id != -1)
-            for (int i = 0; i < catPipelines[pipeline_id].steps.size(); i++)
+            for (int i = 0; i < (int)catPipelines[pipeline_id].steps.size(); i++)
             {
                 names += catPipelines[pipeline_id].steps[i].level_name + '\0';
             }
@@ -105,14 +109,17 @@ void renderOfflineProcessing()
         if (ImGui::Button("Select Input"))
         {
             logger->debug("Opening file dialog");
-            //auto result = pfd::open_file("Open input file", ".", {".*"}, false);
-            // while (result.ready(1000))
-            // {
-            // }
-
-            // if (result.result().size() > 0)
-            //    input_file = result.result()[0];
+#ifdef __ANDROID__
             input_file = getFilePath();
+#else
+            auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
+            while (result.ready(1000))
+            {
+            }
+
+            if (result.result().size() > 0)
+                input_file = result.result()[0];
+#endif
 
             logger->debug("Dir " + input_file);
         }
@@ -130,15 +137,17 @@ void renderOfflineProcessing()
         if (ImGui::Button("Select Output"))
         {
             logger->debug("Opening file dialog");
-            //auto result = pfd::select_folder("Open output directory", ".");
-            //while (result.ready(1000))
-            //{
-            //}
-
-            //if (result.result().size() > 0)
-            //    output_file = result.result();
-
+#ifdef __ANDROID__
             output_file = getDirPath();
+#else
+            auto result = pfd::select_folder("Open output directory", ".");
+            while (result.ready(1000))
+            {
+            }
+
+            if (result.result().size() > 0)
+                output_file = result.result();
+#endif
 
             logger->debug("Dir " + output_file);
         }
@@ -238,7 +247,8 @@ void renderOfflineProcessing()
                 parameters.emplace("dc_block", dc_block ? "1" : "0");
                 parameters.emplace("iq_swap", iq_swap ? "1" : "0");
 
-                processThreadPool.push([&](int) { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
+                processThreadPool.push([&](int)
+                                       { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
                 //showStartup = false;
             }
         }

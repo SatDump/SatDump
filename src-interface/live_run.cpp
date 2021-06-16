@@ -1,4 +1,6 @@
 #include "live_run.h"
+
+#ifdef BUILD_LIVE
 #include "imgui/imgui.h"
 #include "sdr/airspy.h"
 #include "global.h"
@@ -15,7 +17,6 @@
 #include <windows.h>
 #endif
 
-#ifdef BUILD_LIVE
 #define FFT_BUFFER_SIZE 8192
 bool live_processing = false;
 float fft_buffer[FFT_BUFFER_SIZE];
