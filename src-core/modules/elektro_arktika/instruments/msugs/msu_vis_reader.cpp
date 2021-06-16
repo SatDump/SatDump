@@ -17,6 +17,14 @@ namespace elektro_arktika
 
         void MSUVISReader::pushFrame(uint8_t *data)
         {
+            // Skip marker
+            //if (data[18] == 0 && data[19] == 0)
+            //    return;
+
+            // Skip "black"
+            if (data[18] == 255 && data[19] == 255)
+                return;
+
             // Offset to start reading from
             int pos = 5 * 38;
 

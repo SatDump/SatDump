@@ -50,6 +50,10 @@ namespace elektro_arktika
 
             logger->info("Demultiplexing and deframing...");
 
+            //std::ofstream data_out1(directory + "/data_msugs1.bin", std::ios::binary);
+            //std::ofstream data_out2(directory + "/data_msugs2.bin", std::ios::binary);
+            //std::ofstream data_out3(directory + "/data_msugs3.bin", std::ios::binary);
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -64,21 +68,31 @@ namespace elektro_arktika
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     vis1_frames += frames.size();
                     for (std::vector<uint8_t> &frame : frames)
+                    {
                         vis1_reader.pushFrame(&frame[0]);
+                        //data_out1.write((char *)frame.data(), frame.size());
+                    }
                 }
                 else if (vcid == 3)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
                     vis2_frames += frames.size();
                     for (std::vector<uint8_t> &frame : frames)
+                    {
                         vis2_reader.pushFrame(&frame[0]);
+                        //data_out2.write((char *)frame.data(), frame.size());
+                    }
                 }
                 else if (vcid == 5)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     vis3_frames += frames.size();
+
                     for (std::vector<uint8_t> &frame : frames)
+                    {
                         vis3_reader.pushFrame(&frame[0]);
+                        //data_out3.write((char *)frame.data(), frame.size());
+                    }
                 }
                 else if (vcid == 4)
                 {
@@ -142,6 +156,28 @@ namespace elektro_arktika
             {
                 logger->info("Channel IR " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(infr_reader.getImage(i), directory + "/MSU-GS-IR-" + std::to_string(i + 1) + ".png");
+            }
+
+            logger->info("221 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image221(image1.width(), std::max<int>(image1.height(), image2.height()), 1, 3);
+                {
+                    image221.draw_image(31 - 2, -2220 + 13 - 6, 0, 0, image2);
+                    image221.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
+                    image221.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+                }
+                WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221.png");
+            }
+
+            logger->info("321 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image321(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+                {
+                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
+                    image321.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+                }
+                WRITE_IMAGE(image321, directory + "/MSU-GS-RGB-321.png");
             }
         }
 
