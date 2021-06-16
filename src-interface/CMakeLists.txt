@@ -15,7 +15,7 @@ else()
 endif()
 
 if(BUILD_LIVE)
-    add_compile_definitions(BUILD_LIVE="1")
+    target_compile_definitions(satdump_interface PUBLIC BUILD_LIVE="1")
     target_link_libraries(satdump_interface PUBLIC sdr)
 endif()
 

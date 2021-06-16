@@ -1,4 +1,6 @@
 #include "spyserver.h"
+
+#ifndef DISABLE_SDR_SPYSERVER
 #include <sstream>
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -166,3 +168,4 @@ std::string SDRSpyServer::getID()
 {
     return "spyserver";
 }
+#endif

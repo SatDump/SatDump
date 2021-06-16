@@ -1,6 +1,11 @@
 cmake_minimum_required (VERSION 3.0.0)
 include(CheckFunctionExists)
 
+option(ENABLE_SDR_AIRSPY                "Enable Airspy Support"                                  ON)
+option(ENABLE_SDR_RTLSDR                "Enable RTL-SDR Support"                                 ON)
+option(ENABLE_SDR_HACKRF                "Enable HackRF Support."                                 ON)
+option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              ON)
+
 file(GLOB_RECURSE LIBSDR_CPPS  sdr/*.cpp)
 
 add_library(sdr STATIC ${LIBSDR_CPPS})
@@ -9,24 +14,46 @@ set_target_properties(sdr PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 
 target_link_libraries(sdr PUBLIC satdump_core)
 
+if(NOT ENABLE_SDR_AIRSPY)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_AIRSPY="1")
+endif()
+if(NOT ENABLE_SDR_RTLSDR)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_RTLSDR="1")
+endif()
+if(NOT ENABLE_SDR_HACKRF)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_HACKRF="1")
+endif()
+if(NOT ENABLE_SDR_SPYSERVER)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_SPYSERVER="1")
+endif()
+
 if(MSVC)
-        target_link_libraries(sdr PUBLIC airspy.dll)
-        target_link_libraries(sdr PUBLIC rtlsdr.dll)
-        target_link_libraries(sdr PUBLIC hackrf.dll)
+        if(ENABLE_SDR_AIRSPY)
+                target_link_libraries(sdr PUBLIC airspy.dll)
+        endif()
+        if(ENABLE_SDR_RTLSDR)
+                target_link_libraries(sdr PUBLIC rtlsdr.dll)
+        endif()
+        if(ENABLE_SDR_HACKRF)
+                target_link_libraries(sdr PUBLIC hackrf.dll)
+        endif()
         #target_link_libraries(sdr PUBLIC LimeSuite.dll)
 else()
-        # Airspy
-        find_library(AIRSPY_LIBRARY airspy REQUIRED)
-        target_link_libraries(sdr PUBLIC ${AIRSPY_LIBRARY})
-
-        # RTL-SDR
-        find_library(RTLSDR_LIBRARY rtlsdr REQUIRED)
-        target_link_libraries(sdr PUBLIC ${RTLSDR_LIBRARY})
-
-        # HackRF
-        find_library(HACKRF_LIBRARY hackrf REQUIRED)
-        target_link_libraries(sdr PUBLIC ${HACKRF_LIBRARY})
-
+if(ENABLE_SDR_AIRSPY)
+                # Airspy
+                find_library(AIRSPY_LIBRARY airspy REQUIRED)
+                target_link_libraries(sdr PUBLIC ${AIRSPY_LIBRARY})
+        endif()
+        if(ENABLE_SDR_RTLSDR)
+                # RTL-SDR
+                find_library(RTLSDR_LIBRARY rtlsdr REQUIRED)
+                target_link_libraries(sdr PUBLIC ${RTLSDR_LIBRARY})
+        endif()
+        if(ENABLE_SDR_HACKRF)
+                # HackRF
+                find_library(HACKRF_LIBRARY hackrf REQUIRED)
+                target_link_libraries(sdr PUBLIC ${HACKRF_LIBRARY})
+        endif()
         # LimeSDR
         #find_library(LIME_LIBRARY LimeSuite REQUIRED)
         #target_link_libraries(sdr PUBLIC ${LIME_LIBRARY})
@@ -34,5 +61,5 @@ endif()
 
 set(CMAKE_REQUIRED_LIBRARIES ${RTLSDR_LIBRARIES})
 check_function_exists(rtlsdr_set_bias_tee HAS_RTLSDR_SET_BIAS_TEE)
-add_compile_definitions(HAS_RTLSDR_SET_BIAS_TEE="1")
+target_compile_definitions(sdr PUBLIC HAS_RTLSDR_SET_BIAS_TEE="1")
 unset(CMAKE_REQUIRED_LIBRARIES)

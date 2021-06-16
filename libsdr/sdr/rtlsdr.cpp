@@ -1,4 +1,6 @@
 #include "rtlsdr.h"
+
+#ifndef DISABLE_SDR_RTLSDR
 #include <sstream>
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -186,3 +188,4 @@ std::string SDRRtlSdr::getID()
 {
     return "rtlsdr";
 }
+#endif

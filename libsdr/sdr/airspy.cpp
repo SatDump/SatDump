@@ -1,4 +1,6 @@
 #include "airspy.h"
+
+#ifndef DISABLE_SDR_AIRSPY
 #include <sstream>
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -115,3 +117,4 @@ std::string SDRAirspy::getID()
 {
     return "airspy";
 }
+#endif

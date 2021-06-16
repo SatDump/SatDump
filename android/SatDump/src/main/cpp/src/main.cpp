@@ -20,6 +20,8 @@
 #include <filesystem>
 #include "settings.h"
 #include "settingsui.h"
+#include "live.h"
+#include "live_run.h"
 
 #define NOWINDOW_FLAGS (long int)ImGuiWindowFlags_NoMove | (long int)ImGuiWindowFlags_NoCollapse | (long int)ImGuiWindowFlags_NoBringToFrontOnFocus /*| ImGuiWindowFlags_NoTitleBar*/ | (long int)ImGuiWindowFlags_NoResize | (long int)ImGuiWindowFlags_NoBackground
 
@@ -330,6 +332,12 @@ int main(int argc, char **argv)
                         }
                         uiCallListMutex->unlock();
                     }
+#ifdef BUILD_LIVE
+                    else if (live_processing)
+                    {
+                        renderLive();
+                    }
+#endif
                     else
                     {
                         ImGui::SetNextWindowPos({0, 0});
@@ -345,7 +353,11 @@ int main(int argc, char **argv)
                             }
                             if (ImGui::BeginTabItem("Live processing"))
                             {
+#ifdef BUILD_LIVE
+                                renderLiveProcessing();
+#else
                                 ImGui::Text("Live processing is not yet supported on Android!");
+#endif
                                 ImGui::EndTabItem();
                             }
                             if (ImGui::BeginTabItem("Settings"))

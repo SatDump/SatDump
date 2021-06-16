@@ -61,30 +61,42 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 
 void initSDRs()
 {
+#ifndef DISABLE_SDR_AIRSPY
     SDRAirspy::init();
+#endif
+#ifndef DISABLE_SDR_HACKRF
     SDRHackRF::init();
+#endif
 }
 
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 {
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
+#ifndef DISABLE_SDR_AIRSPY
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspy_results = SDRAirspy::getDevices();
     results.insert(results.end(), airspy_results.begin(), airspy_results.end());
+#endif
 
+#ifndef DISABLE_SDR_RTLSDR
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> rtlsdr_results = SDRRtlSdr::getDevices();
     results.insert(results.end(), rtlsdr_results.begin(), rtlsdr_results.end());
+#endif
 
+#ifndef DISABLE_SDR_HACKRF
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> hackrf_results = SDRHackRF::getDevices();
     results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
+#endif
 
 #if 0
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> limesdr_results = SDRLimeSDR::getDevices();
     results.insert(results.end(), limesdr_results.begin(), limesdr_results.end());
 #endif
 
+#ifndef DISABLE_SDR_SPYSERVER
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> spyserver_results = SDRSpyServer::getDevices();
     results.insert(results.end(), spyserver_results.begin(), spyserver_results.end());
+#endif
 
     return results;
 }
@@ -104,16 +116,26 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
     sdr_device_type type = std::get<1>(devList[num]);
     //uint64_t id = std::get<2>(devList[num]);
 
+#ifndef DISABLE_SDR_AIRSPY
     if (type == AIRSPY)
         return "airspy";
+#endif
+#ifndef DISABLE_SDR_RTLSDR
     if (type == RTLSDR)
         return "rtlsdr";
+#endif
+#ifndef DISABLE_SDR_HACKRF
     if (type == HACKRF)
         return "hackrf";
+#endif
+#if 0
     if (type == LIMESDR)
         return "limesdr";
+#endif
+#ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return "spyserver";
+#endif
     else
         return nullptr;
 }
@@ -123,18 +145,26 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
     sdr_device_type type = std::get<1>(devList[num]);
     uint64_t id = std::get<2>(devList[num]);
 
+#ifndef DISABLE_SDR_AIRSPY
     if (type == AIRSPY)
         return std::make_shared<SDRAirspy>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_RTLSDR
     if (type == RTLSDR)
         return std::make_shared<SDRRtlSdr>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_HACKRF
     if (type == HACKRF)
         return std::make_shared<SDRHackRF>(parameters, id);
+#endif
 #if 0
     if (type == LIMESDR)
         return std::make_shared<SDRLimeSDR>(parameters, id);
 #endif
+#ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return std::make_shared<SDRSpyServer>(parameters, id);
+#endif
     else
         return nullptr;
 }
