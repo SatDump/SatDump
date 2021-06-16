@@ -56,21 +56,24 @@ namespace fengyun
         {
             cimg_library::CImg<unsigned short> img(151, imageVector.size() * 4, 1, 1);
 
-            int line = 0;
-
-            // Reconstitute the image. Works "OK", not perfect...
-            for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
+            if (imageVector.size() > 2)
             {
-                for (int i = 0; i < 4; i++)
-                {
-                    std::memcpy(&img.data()[line * 151], &imageVector[imageVector.size() - cnt].imageData[(imageVector[imageVector.size() - cnt].lastMkMatch - i) * 151], 2 * 151);
-                    line++;
-                }
-            }
+                int line = 0;
 
-            img.normalize(0, 65535);
-            img.equalize(1000);
-            img.mirror('x');
+                // Reconstitute the image. Works "OK", not perfect...
+                for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        std::memcpy(&img.data()[line * 151], &imageVector[imageVector.size() - cnt].imageData[(imageVector[imageVector.size() - cnt].lastMkMatch - i) * 151], 2 * 151);
+                        line++;
+                    }
+                }
+
+                img.normalize(0, 65535);
+                img.equalize(1000);
+                img.mirror('x');
+            }
 
             return img;
         }
