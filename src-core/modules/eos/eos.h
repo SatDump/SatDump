@@ -1,0 +1,7 @@
+#pragma once
+
+#define EOS_ORBIT_HEIGHT 710
+#define EOS_MODIS_SWATH 2230
+#define EOS_MODIS_RES250 0.25
+#define EOS_MODIS_RES500 0.5
+#define EOS_MODIS_RES1000 1
