@@ -10,13 +10,13 @@
 
 namespace fengyun
 {
-    namespace mersi
+    namespace mwri
     {
-        class MersiDeframer
+        class MWRIDeframer
         {
         private:
             // Main shifter
-            uint32_t shifter;
+            uint64_t shifter;
             // Small function to push a bit into the frame
             void pushBit(uint8_t bit);
             // Framing variables
@@ -24,11 +24,10 @@ namespace fengyun
             bool writeFrame;
             int wroteBits, outputBits;
             std::vector<uint8_t> frameBuffer;
-            int currentFrameSize;
 
         public:
-            MersiDeframer();
+            MWRIDeframer();
             std::vector<std::vector<uint8_t>> work(uint8_t *input, int size);
         };
-    } // namespace mersi1
+    } // namespace virr
 } // namespace fengyun

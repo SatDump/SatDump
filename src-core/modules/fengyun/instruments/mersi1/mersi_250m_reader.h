@@ -9,9 +9,9 @@
 
 namespace fengyun
 {
-    namespace mersi
+    namespace mersi1
     {
-        class MERSI1000Reader
+        class MERSI250Reader
         {
         private:
             ResizeableBuffer<unsigned short> imageBuffer;
@@ -20,8 +20,8 @@ namespace fengyun
             uint8_t byteBufShift[3];
 
         public:
-            MERSI1000Reader();
-            ~MERSI1000Reader();
+            MERSI250Reader();
+            ~MERSI250Reader();
             void pushFrame(std::vector<uint8_t> &data);
             cimg_library::CImg<unsigned short> getImage();
         };

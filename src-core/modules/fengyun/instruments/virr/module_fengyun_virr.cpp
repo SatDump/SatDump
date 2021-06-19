@@ -82,9 +82,7 @@ namespace fengyun
                     vcidFrames++;
 
                     // Deframe MERSI
-                    std::vector<uint8_t> defraVec;
-                    defraVec.insert(defraVec.end(), &buffer[14], &buffer[14 + 882]);
-                    std::vector<std::vector<uint8_t>> out = virrDefra.work(defraVec);
+                    std::vector<std::vector<uint8_t>> out = virrDefra.work(&buffer[14], 882);
 
                     for (std::vector<uint8_t> frameVec : out)
                     {

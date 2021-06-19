@@ -27,7 +27,7 @@ namespace fengyun
 
         public:
             VIRRDeframer();
-            std::vector<std::vector<uint8_t>> work(std::vector<uint8_t> &data);
+            std::vector<std::vector<uint8_t>> work(uint8_t *input, int size);
         };
     } // namespace virr
 } // namespace fengyun
