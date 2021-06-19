@@ -15,7 +15,7 @@ inline bool getBit(T &data, int &bit)
 
 namespace fengyun
 {
-    namespace mersi1
+    namespace mersi
     {
         MersiDeframer::MersiDeframer()
         {
