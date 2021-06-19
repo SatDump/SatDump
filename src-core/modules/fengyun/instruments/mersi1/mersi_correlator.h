@@ -2,8 +2,8 @@
 
 #include <cstdint>
 #include <vector>
-#include "../mersi/mersi_250m_reader.h"
-#include "../mersi/mersi_1000m_reader.h"
+#include "mersi_250m_reader.h"
+#include "mersi_1000m_reader.h"
 
 namespace fengyun
 {
@@ -15,8 +15,8 @@ namespace fengyun
         private:
             std::vector<uint8_t> scanBuffer[350];
             void processScan();
-            mersi::MERSI250Reader reader1, reader2, reader3, reader4, reader5;
-            mersi::MERSI1000Reader reader6, reader7, reader8, reader9, reader10, reader11, reader12, reader13, reader14,
+            MERSI250Reader reader1, reader2, reader3, reader4, reader5;
+            MERSI1000Reader reader6, reader7, reader8, reader9, reader10, reader11, reader12, reader13, reader14,
                 reader15, reader16, reader17, reader18, reader19, reader20;
 
         public:

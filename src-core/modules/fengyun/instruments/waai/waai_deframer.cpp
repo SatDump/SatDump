@@ -1,10 +1,10 @@
-#include "mersi_deframer.h"
+#include "waai_deframer.h"
 
 #include <math.h>
-#include <iostream>
-#include <bitset>
+//#include <iostream>
+//#include <bitset>
 
-#define ASM_SYNC 0b0111111111111000000000000100
+#define ASM_SYNC 0x55aa55aa55aa
 
 // Returns the asked bit!
 template <typename T>
@@ -15,9 +15,9 @@ inline bool getBit(T &data, int &bit)
 
 namespace fengyun
 {
-    namespace mersi
+    namespace waai
     {
-        MersiDeframer::MersiDeframer()
+        WAAIDeframer::WAAIDeframer()
         {
             // Default values
             writeFrame = false;
@@ -26,7 +26,7 @@ namespace fengyun
         }
 
         // Write a single bit into the frame
-        void MersiDeframer::pushBit(uint8_t bit)
+        void WAAIDeframer::pushBit(uint8_t bit)
         {
             byteBuffer = (byteBuffer << 1) | bit;
             wroteBits++;
@@ -37,7 +37,7 @@ namespace fengyun
             }
         }
 
-        std::vector<std::vector<uint8_t>> MersiDeframer::work(uint8_t *input, int size)
+        std::vector<std::vector<uint8_t>> WAAIDeframer::work(uint8_t *input, int size)
         {
             // Output buffer
             std::vector<std::vector<uint8_t>> framesOut;
@@ -51,7 +51,7 @@ namespace fengyun
                     // Get a bit, push it
                     uint8_t bit = getBit<uint8_t>(input[byteInBuf], i);
 
-                    shifter = ((shifter << 1 | bit) % (int)pow(2, 28));
+                    shifter = ((shifter << 1 | bit) % 281474976710656); // 2^40
 
                     // Writing a frame!
                     if (writeFrame)
@@ -59,10 +59,10 @@ namespace fengyun
                         // First run : push header
                         if (outputBits == 0)
                         {
-                            uint32_t syncAsm = ASM_SYNC;
-                            for (int y = 28; y >= 0; y--)
+                            uint64_t syncAsm = ASM_SYNC;
+                            for (int y = 48 - 1; y >= 0; y--)
                             {
-                                pushBit(getBit<uint32_t>(syncAsm, y));
+                                pushBit(getBit<uint64_t>(syncAsm, y));
                                 outputBits++;
                             }
                         }
@@ -71,7 +71,7 @@ namespace fengyun
                         if (shifter == ASM_SYNC)
                         {
                             // Fill up what we're missing
-                            for (int b = 0; b < currentFrameSize - outputBits; b++)
+                            for (int b = 0; b < 524336 - outputBits; b++)
                                 pushBit(0);
 
                             writeFrame = false;
@@ -89,22 +89,8 @@ namespace fengyun
                         pushBit(bit);
                         outputBits++;
 
-                        if (outputBits == 80)
-                        {
-                            int marker = (frameBuffer[3] % (int)pow(2, 3)) << 7 | frameBuffer[4] >> 1;
-                            //std::cout << marker << std::endl;
-                            if (marker >= 200)
-                            {
-                                currentFrameSize = 25392;
-                            }
-                            else if (marker < 200)
-                            {
-                                currentFrameSize = 99120;
-                            }
-                        }
-
                         // Once we wrote a frame, exit!
-                        if (outputBits == currentFrameSize)
+                        if (outputBits == 524336)
                         {
                             writeFrame = false;
                             wroteBits = 0;
@@ -116,7 +102,7 @@ namespace fengyun
                         continue;
                     }
 
-                    //std::cout << std::bitset<32>(shifter) << " " << std::bitset<28>(ASM_SYNC) << std::endl;
+                    //std::cout << std::bitset<60>(shifter) << " " << std::bitset<60>(ASM_SYNC) << std::endl;
 
                     // Otherwise search for markers
                     if (shifter == ASM_SYNC)
@@ -129,5 +115,5 @@ namespace fengyun
             // Output what we found if anything
             return framesOut;
         }
-    } // namespace mersi1
+    } // namespace virr
 } // namespace fengyun

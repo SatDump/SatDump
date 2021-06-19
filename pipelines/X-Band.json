@@ -60,7 +60,9 @@
             "products": {
                 "fengyun_mersi2": {
                     "correct_bowtie": "1"
-                }
+                },
+                "fengyun_waai": {},
+                "fengyun_mwri": {}
             }
         }
     },
