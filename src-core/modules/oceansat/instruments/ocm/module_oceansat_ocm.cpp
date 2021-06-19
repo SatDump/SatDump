@@ -4,6 +4,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/earth_curvature.h"
+#include "modules/oceansat/oceansat.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -104,6 +106,11 @@ namespace oceansat
                 image642.equalize(1000);
                 image642.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image642, directory + "/OCM-RGB-642-EQU.png");
+                cimg_library::CImg<unsigned short> corrected642 = image::earth_curvature::correct_earth_curvature(image642,
+                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                                  OCEANSAT2_OCM2_SWATH,
+                                                                                                                  OCEANSAT2_OCM2_RES);
+                WRITE_IMAGE(corrected642, directory + "/OCM-RGB-642-EQU-CORRECTED.png");
             }
 
             logger->info("654 Composite...");
@@ -118,6 +125,11 @@ namespace oceansat
                 image654.equalize(1000);
                 image654.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU.png");
+                cimg_library::CImg<unsigned short> corrected654 = image::earth_curvature::correct_earth_curvature(image654,
+                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                                  OCEANSAT2_OCM2_SWATH,
+                                                                                                                  OCEANSAT2_OCM2_RES);
+                WRITE_IMAGE(corrected654, directory + "/OCM-RGB-654-EQU-CORRECTED.png");
             }
 
             logger->info("754 Composite...");
@@ -132,6 +144,11 @@ namespace oceansat
                 image754.equalize(1000);
                 image754.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image754, directory + "/OCM-RGB-754-EQU.png");
+                cimg_library::CImg<unsigned short> corrected754 = image::earth_curvature::correct_earth_curvature(image754,
+                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                                  OCEANSAT2_OCM2_SWATH,
+                                                                                                                  OCEANSAT2_OCM2_RES);
+                WRITE_IMAGE(corrected754, directory + "/OCM-RGB-754-EQU-CORRECTED.png");
             }
         }
 
