@@ -2,7 +2,7 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
-#include "../mersi/mersi_deframer.h"
+#include "mersi_deframer.h"
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
@@ -45,7 +45,7 @@ namespace fengyun
             uint8_t buffer[1024];
 
             // Deframer
-            mersi::MersiDeframer mersiDefra;
+            MersiDeframer mersiDefra;
 
             // MERSI Correlator used to fix synchronise channels in composites
             // It will recover full MERSI scans
