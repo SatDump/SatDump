@@ -2,12 +2,13 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
-#include "mersi_deframer.h"
-#include "mersi_250m_reader.h"
-#include "mersi_1000m_reader.h"
+#include "../mersi/mersi_deframer.h"
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
+#include "common/image/image.h"
+#include "common/image/earth_curvature.h"
+#include "modules/fengyun/fengyun3.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -44,7 +45,7 @@ namespace fengyun
             uint8_t buffer[1024];
 
             // Deframer
-            MersiDeframer mersiDefra;
+            mersi::MersiDeframer mersiDefra;
 
             // MERSI Correlator used to fix synchronise channels in composites
             // It will recover full MERSI scans
@@ -202,6 +203,11 @@ namespace fengyun
                         image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image221, directory + "/MERSI2-RGB-221.png");
+                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSI_SWATH,
+                                                                                                                  FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected221, directory + "/MERSI2-RGB-221-CORRECTED.png");
             }
 
             logger->info("341 Composite...");
@@ -215,6 +221,11 @@ namespace fengyun
                     image341 = image::bowtie::correctGenericBowTie(image341, 3, scanHeight_250, alpha, beta);
 
                 WRITE_IMAGE(image341, directory + "/MERSI2-RGB-341.png");
+                cimg_library::CImg<unsigned short> corrected341 = image::earth_curvature::correct_earth_curvature(image341,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSI_SWATH,
+                                                                                                                  FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected341, directory + "/MERSI2-RGB-341-CORRECTED.png");
             }
 
             logger->info("441 Composite...");
@@ -228,6 +239,11 @@ namespace fengyun
                     image441 = image::bowtie::correctGenericBowTie(image441, 3, scanHeight_250, alpha, beta);
 
                 WRITE_IMAGE(image441, directory + "/MERSI2-RGB-441.png");
+                cimg_library::CImg<unsigned short> corrected441 = image::earth_curvature::correct_earth_curvature(image441,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSI_SWATH,
+                                                                                                                  FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected441, directory + "/MERSI2-RGB-441-CORRECTED.png");
             }
 
             logger->info("321 Composite...");
@@ -246,6 +262,11 @@ namespace fengyun
                         image321 = image::bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image321, directory + "/MERSI2-RGB-321.png");
+                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSI_SWATH,
+                                                                                                                  FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected321, directory + "/MERSI2-RGB-321-CORRECTED.png");
             }
 
             logger->info("3(24)1 Composite...");
@@ -267,6 +288,11 @@ namespace fengyun
                         image3241 = image::bowtie::correctGenericBowTie(image3241, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image3241, directory + "/MERSI2-RGB-3(24)1.png");
+                cimg_library::CImg<unsigned short> corrected3241 = image::earth_curvature::correct_earth_curvature(image3241,
+                                                                                                                   FY3_ORBIT_HEIGHT,
+                                                                                                                   FY3_MERSI_SWATH,
+                                                                                                                   FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected3241, directory + "/MERSI2-RGB-3(24)1-CORRECTED.png");
             }
 
             logger->info("17.19.18 Composite...");
@@ -281,6 +307,11 @@ namespace fengyun
                     image171918 = image::bowtie::correctGenericBowTie(image171918, 3, scanHeight_1000, alpha, beta);
 
                 WRITE_IMAGE(image171918, directory + "/MERSI2-RGB-18.19.17.png");
+                cimg_library::CImg<unsigned short> corrected171918 = image::earth_curvature::correct_earth_curvature(image171918,
+                                                                                                                     FY3_ORBIT_HEIGHT,
+                                                                                                                     FY3_MERSI_SWATH,
+                                                                                                                     FY3_MERSI_RES1000);
+                WRITE_IMAGE(corrected171918, directory + "/MERSI2-RGB-18.19.17-CORRECTED.png");
             }
 
             logger->info("9.12.11 Composite...");
@@ -305,6 +336,25 @@ namespace fengyun
                         image91211 = image::bowtie::correctGenericBowTie(image91211, 3, scanHeight_1000, alpha, beta);
                 }
                 WRITE_IMAGE(image91211, directory + "/MERSI2-RGB-9.12.11.png");
+                cimg_library::CImg<unsigned short> corrected91211 = image::earth_curvature::correct_earth_curvature(image91211,
+                                                                                                                    FY3_ORBIT_HEIGHT,
+                                                                                                                    FY3_MERSI_SWATH,
+                                                                                                                    FY3_MERSI_RES1000);
+                WRITE_IMAGE(corrected91211, directory + "/MERSI2-RGB-9.12.11-CORRECTED.png");
+            }
+
+            logger->info("Equalized Ch 5...");
+            {
+                cimg_library::CImg<unsigned short> image5 = mersiCorrelator->image5;
+                image::linear_invert(image5);
+                image5.equalize(1000);
+                image5.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image5, directory + "/MERSI2-5-EQU.png");
+                cimg_library::CImg<unsigned short> corrected5 = image::earth_curvature::correct_earth_curvature(image5,
+                                                                                                                FY3_ORBIT_HEIGHT,
+                                                                                                                FY3_MERSI_SWATH,
+                                                                                                                FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected5, directory + "/MERSI2-5-EQU-CORRECTED.png");
             }
         }
 
