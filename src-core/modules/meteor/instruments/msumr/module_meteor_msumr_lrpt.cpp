@@ -8,6 +8,8 @@
 #include <cstring>
 #include "lrpt_msumr_reader.h"
 #include "imgui/imgui.h"
+#include "common/image/earth_curvature.h"
+#include "modules/meteor/meteor.h"
 
 #define BUFFER_SIZE 8192
 
@@ -106,6 +108,12 @@ namespace meteor
                 image221.equalize(1000);
                 image221.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
+                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
+                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                  METEOR_ORBIT_HEIGHT,
+                                                                                                                  METEOR_MSUMR_SWATH,
+                                                                                                                  METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-EQU-CORRECTED.png");
             }
 
             if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
@@ -128,6 +136,26 @@ namespace meteor
                 image321.equalize(1000);
                 image321.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
+                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
+                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
+                                                                                                                  METEOR_ORBIT_HEIGHT,
+                                                                                                                  METEOR_MSUMR_SWATH,
+                                                                                                                  METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
+            }
+
+            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
+            {
+                cimg_library::CImg<unsigned short> image5 = msureader.getChannel(4);
+                logger->info("Equalized Ch 5...");
+                image5.equalize(1000);
+                image5.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image5, directory + "/MSU-MR-5-EQU.png");
+                cimg_library::CImg<unsigned short> corrected5 = image::earth_curvature::correct_earth_curvature(image5,
+                                                                                                                METEOR_ORBIT_HEIGHT,
+                                                                                                                METEOR_MSUMR_SWATH,
+                                                                                                                METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected5, directory + "/MSU-MR-5-EQU-CORRECTED.png");
             }
         }
 
