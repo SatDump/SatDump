@@ -19,7 +19,7 @@ namespace fengyun
 
         void MERSI250Reader::pushFrame(std::vector<uint8_t> &data)
         {
-            int pos = 96; // MERSI-2 Data position, found through a bit viewer
+            int pos = 96; // MERSI-1 Data position, found through a bit viewer
 
             // Convert into 12-bits values
             for (int i = 0; i < 8192; i += 2)

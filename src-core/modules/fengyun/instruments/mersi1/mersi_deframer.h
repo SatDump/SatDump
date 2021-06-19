@@ -10,7 +10,7 @@
 
 namespace fengyun
 {
-    namespace mersi
+    namespace mersi1
     {
         class MersiDeframer
         {

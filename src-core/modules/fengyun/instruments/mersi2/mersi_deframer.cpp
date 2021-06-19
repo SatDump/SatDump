@@ -15,7 +15,7 @@ inline bool getBit(T &data, int &bit)
 
 namespace fengyun
 {
-    namespace mersi
+    namespace mersi2
     {
         MersiDeframer::MersiDeframer()
         {
@@ -93,13 +93,13 @@ namespace fengyun
                         {
                             int marker = (frameBuffer[3] % (int)pow(2, 3)) << 7 | frameBuffer[4] >> 1;
                             //std::cout << marker << std::endl;
-                            if (marker >= 200)
+                            if (marker >= 240)
                             {
-                                currentFrameSize = 25392;
+                                currentFrameSize = 25128;
                             }
-                            else if (marker < 200)
+                            else if (marker < 240)
                             {
-                                currentFrameSize = 99120;
+                                currentFrameSize = 98856;
                             }
                         }
 
@@ -129,5 +129,5 @@ namespace fengyun
             // Output what we found if anything
             return framesOut;
         }
-    } // namespace mersi1
+    } // namespace mersi2
 } // namespace fengyun
