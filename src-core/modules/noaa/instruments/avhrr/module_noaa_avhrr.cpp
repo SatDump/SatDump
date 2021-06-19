@@ -4,6 +4,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/earth_curvature.h"
+#include "modules/noaa/noaa.h"
 
 #define BUFFER_SIZE 8192
 
@@ -83,16 +85,35 @@ namespace noaa
             WRITE_IMAGE(image5, directory + "/AVHRR-5.png");
 
             logger->info("221 Composite...");
-            cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
             {
-                image221.draw_image(0, 0, 0, 0, image2);
-                image221.draw_image(0, 0, 0, 1, image2);
-                image221.draw_image(0, 0, 0, 2, image1);
+                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
+                {
+                    image221.draw_image(0, 0, 0, 0, image2);
+                    image221.draw_image(0, 0, 0, 1, image2);
+                    image221.draw_image(0, 0, 0, 2, image1);
+                }
+                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
+                image221.equalize(1000);
+                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
+                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                  NOAA_ORBIT_HEIGHT,
+                                                                                                                  NOAA_AVHRR_SWATH,
+                                                                                                                  NOAA_AVHRR_RES);
+                WRITE_IMAGE(corrected221, directory + "/AVHRR-RGB-221-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
-            image221.equalize(1000);
-            image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
+
+            logger->info("Equalized Ch 4...");
+            {
+                image4.equalize(1000);
+                image4.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image4, directory + "/AVHRR-4-EQU.png");
+                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
+                                                                                                                NOAA_ORBIT_HEIGHT,
+                                                                                                                NOAA_AVHRR_SWATH,
+                                                                                                                NOAA_AVHRR_RES);
+                WRITE_IMAGE(corrected4, directory + "/AVHRR-4-EQU-CORRECTED.png");
+            }
         }
 
         void NOAAAVHRRDecoderModule::drawUI(bool window)
