@@ -2,6 +2,7 @@
 #include "poseidon_reader.h"
 #include "resources.h"
 #include "tle.h"
+#include "common/ccsds/ccsds_time.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 /* pi */
@@ -11,15 +12,6 @@ namespace jason3
 {
     namespace poseidon
     {
-        time_t parseTime(ccsds::ccsds_1_0_jason::CCSDSPacket &pkt)
-        {
-            uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
-            uint32_t milliseconds_of_day = pkt.payload[2] << 24 | pkt.payload[3] << 16 | pkt.payload[4] << 8 | pkt.payload[5];
-            //uint16_t milliseconds_of_millisecond = pkt.payload[6] << 8 | pkt.payload[7];
-
-            return (16617 + days) * 86400 + milliseconds_of_day;
-        }
-
         PoseidonReader::PoseidonReader()
         {
             tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
@@ -41,7 +33,7 @@ namespace jason3
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = parseTime(packet);
+            time_t currentTime = ccsds::parseCCSDSTime<ccsds::ccsds_1_0_jason::CCSDSPacket>(packet, 16617);
             predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
