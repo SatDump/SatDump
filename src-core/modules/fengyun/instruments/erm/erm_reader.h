@@ -1,7 +1,8 @@
 #pragma once
 
 #include "common/ccsds/ccsds_1_0_1024/ccsds.h"
-#include <vector>
+#include <map>
+#include <array>
 
 #define cimg_use_png
 #define cimg_display 0
@@ -11,18 +12,10 @@ namespace fengyun
 {
     namespace erm
     {
-        class ERMImage
-        {
-        public:
-            unsigned short imageData[151 * 32];
-            int mk = -1;
-            int lastMkMatch;
-        };
-
         class ERMReader
         {
         private:
-            std::vector<ERMImage> imageVector;
+            std::map<time_t, std::array<unsigned short, 151>> imageData;
 
         public:
             ERMReader();
