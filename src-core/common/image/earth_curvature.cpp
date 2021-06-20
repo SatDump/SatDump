@@ -1,6 +1,6 @@
 #include "earth_curvature.h"
 #include <cmath>
-
+#include "logger.h"
 namespace image
 {
     namespace earth_curvature
@@ -25,7 +25,7 @@ namespace image
             {
                 float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                    // Get the satellite's angle
                 float satellite_angle = -atanf(EARTH_RADIUS * sinf(angle) / ((cosf(angle)) * EARTH_RADIUS - satellite_orbit_radius)); // Convert to an angle relative to earth
-                correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1) / 2);                                     // Convert that to a pixel from the original image
+                correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
             }
 
             cimg_library::CImg<unsigned short> output_image(corrected_width, image.height(), 1, image.spectrum()); // Allocate output image

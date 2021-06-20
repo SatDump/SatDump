@@ -3,7 +3,7 @@
 #define FY3_ORBIT_HEIGHT 842
 
 #define FY3_VIRR_SWATH 2800
-#define FY3_VIRR_RES 1
+#define FY3_VIRR_RES 1.1
 
 #define FY3_MERSI_SWATH 2900
 #define FY3_MERSI_RES250 0.250
