@@ -45,8 +45,6 @@ namespace fengyun
 
             logger->info("Demultiplexing and deframing...");
 
-            std::ofstream waai_out(directory + "/waai.bin");
-
             while (!data_in.eof())
             {
                 // Read buffer
