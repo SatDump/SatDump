@@ -13,7 +13,7 @@ namespace noaa
     NOAADSBDemodModule::NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                   d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                   d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                  constellation(90.0f / 100.0f, 15.0f / 100.0f)
+                                                                                                                                                  constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         float symbolrate = 8320;                                           // Symbolrate
         float input_sps = (float)d_samplerate / symbolrate;                // Compute input SPS

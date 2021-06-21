@@ -21,7 +21,7 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_mu(std::stof(parameters["clock_mu"])),
                                                                                                                                           d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
                                                                                                                                           d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
-                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f)
+                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 
 {
     // Buffers
