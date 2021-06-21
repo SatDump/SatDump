@@ -22,7 +22,7 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
                                                                                                                                         d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0),
-                                                                                                                                        constellation(100.0f / 127.0f, 100.0f / 127.0f)
+                                                                                                                                        constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];

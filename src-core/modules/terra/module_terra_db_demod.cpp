@@ -12,7 +12,7 @@ namespace terra
                                                                                                                                                   d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                   d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                                   d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
-                                                                                                                                                  constellation(0.5f, 0.5f)
+                                                                                                                                                  constellation(0.5f, 0.5f, demod_constellation_size)
     {
         // Init DSP blocks
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);

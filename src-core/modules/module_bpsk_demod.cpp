@@ -15,7 +15,7 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_loop_bw(std::stof(parameters["costas_bw"])),
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
-                                                                                                                                        constellation(0.5f, 0.5f)
+                                                                                                                                        constellation(0.5f, 0.5f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
