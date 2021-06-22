@@ -16,12 +16,13 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include "common/widgets/fft_plot.h"
 
 #define FFT_BUFFER_SIZE 8192
 bool live_processing = false;
 float fft_buffer[FFT_BUFFER_SIZE];
 extern std::shared_ptr<SDRDevice> radio;
-float scale = 1.0f;
+float scale_max = 100.0f;
 std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
 extern std::shared_ptr<LivePipeline> live_pipeline;
 
@@ -78,23 +79,12 @@ void processFFT(int)
         {
             fftwf_execute(p);
 
-            for (int i = 0; i < FFT_BUFFER_SIZE / 2; i++)
-            {
-                float a = buffer_fft_out[i].real();
-                float b = buffer_fft_out[i].imag();
-                float c = sqrt(a * a + b * b);
-
-                float x = buffer_fft_out[FFT_BUFFER_SIZE / 2 + i].real();
-                float y = buffer_fft_out[FFT_BUFFER_SIZE / 2 + i].imag();
-                float z = sqrt(x * x + y * y);
-
-                fftb[i] = z * 4.0f * scale;
-                fftb[FFT_BUFFER_SIZE / 2 + i] = c * 4.0f * scale;
-            }
+            volk_32fc_s32f_x2_power_spectral_density_32f(fftb, (lv_32fc_t *)buffer_fft_out, 1, 1, FFT_BUFFER_SIZE);
 
             for (int i = 0; i < FFT_BUFFER_SIZE; i++)
             {
-                fft_buffer[i] = (fftb[i] * 1 + fft_buffer[i] * 9) / 10;
+                int pos = i + (i > (FFT_BUFFER_SIZE / 2) ? -(FFT_BUFFER_SIZE / 2) : (FFT_BUFFER_SIZE / 2));
+                fft_buffer[i] = (std::max<float>(0, fftb[pos]) + fft_buffer[i] * 9) / 10;
             }
 
             i++;
@@ -115,10 +105,12 @@ void processFFT(int)
 
 bool showUI = false;
 
+widgets::FFTPlot fftPlotWidget(fft_buffer, FFT_BUFFER_SIZE, 0, 1000);
+
 void startRealLive()
 {
     if (settings.count("fft_scale") > 0)
-        scale = settings["fft_scale"].get<float>();
+        scale_max = settings["fft_scale"].get<float>();
 
     if (settings.count("fft_scale") > 0)
         finishProcessing = settings["fft_scale"].get<int>();
@@ -158,7 +150,7 @@ void stopRealLive()
     fft_run.unlock();
 
     logger->info("Saving settings...");
-    settings["fft_scale"] = scale;
+    settings["fft_scale"] = scale_max;
     settings["live_finish_processing"] = finishProcessing;
     settings["sdr"][radio->getID()] = radio->getParameters();
     saveSettings();
@@ -206,9 +198,13 @@ void renderLive()
         //ImGui::Text("LIVE");
 
         ImGui::Begin("Input FFT", NULL);
-        ImGui::PlotLines("", fft_buffer, IM_ARRAYSIZE(fft_buffer), 0, 0, 0, 100, {std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
-        ImGui::SliderFloat("Scale", &scale, 0, 22);
+
+        fftPlotWidget.scale_max = scale_max;
+        fftPlotWidget.draw({std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
+
+        ImGui::SliderFloat("Scale", &scale_max, 0, 100);
         ImGui::SameLine();
+
         if (ImGui::Button("Stop"))
         {
             showUI = false;
