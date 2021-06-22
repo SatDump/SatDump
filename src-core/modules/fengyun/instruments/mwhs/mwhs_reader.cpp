@@ -33,13 +33,9 @@ namespace fengyun
                 currentTime = lastTime;
 
             int pos = 172 + 30 * 6;
-            int shift = 3;
             for (int i = 0; i < 500; i++)
             {
-                byteBufShift[0] = packet.payload[pos + i * 2 + 0] << shift | packet.payload[pos + i * 2 + 1] >> (8 - shift);
-                byteBufShift[1] = packet.payload[pos + i * 2 + 1] << shift | packet.payload[pos + i * 2 + 2] >> (8 - shift);
-
-                lineBuf[i] = byteBufShift[0] << 8 | byteBufShift[1];
+                lineBuf[i] = packet.payload[pos + i * 2 + 0] << 8 | packet.payload[pos + i * 2 + 1];
             }
 
             for (int i = 0; i < 49; i++)

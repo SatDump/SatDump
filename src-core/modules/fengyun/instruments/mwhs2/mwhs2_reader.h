@@ -10,18 +10,18 @@
 
 namespace fengyun
 {
-    namespace mwhs
+    namespace mwhs2
     {
-        class MWHSReader
+        class MWHS2Reader
         {
         private:
-            std::map<time_t, std::array<std::array<unsigned short, 98>, 6>> imageData;
+            std::map<time_t, std::array<std::array<unsigned short, 98>, 15>> imageData;
             time_t lastTime;
             unsigned short lineBuf[1000];
 
         public:
-            MWHSReader();
-            ~MWHSReader();
+            MWHS2Reader();
+            ~MWHS2Reader();
             int lines;
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);
