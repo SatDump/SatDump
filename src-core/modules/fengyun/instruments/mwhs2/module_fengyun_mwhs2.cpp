@@ -41,7 +41,7 @@ namespace fengyun
 
             // Reader
             MWHS2Reader mwhs_reader;
-            std::ofstream outputf(directory + "/t.ccsds");
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -61,13 +61,7 @@ namespace fengyun
                     {
 
                         if (pkt.header.apid == 16)
-                        {
-                            int marker = (pkt.payload[35] >> 2) & 0b11;
-                            logger->info(marker);
-                            if (marker == 1)
-                                outputf.write((char *)pkt.payload.data(), 1018);
                             mwhs_reader.work(pkt);
-                        }
                     }
                 }
 
