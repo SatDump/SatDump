@@ -343,6 +343,19 @@ namespace eos
                                                                                                                         EOS_MODIS_RES250);
                 WRITE_IMAGE(corrected143equraw, directory + "/MODIS-RGB-143-EQURAW-CORRECTED.png");
             }
+
+            logger->info("Equalized Ch 29...");
+            {
+                cimg_library::CImg<unsigned short> image23 = reader.getImage1000m(23);
+                image::linear_invert(image23);
+                image23.equalize(1000);
+                WRITE_IMAGE(image23, directory + "/MODIS-29-EQU.png");
+                cimg_library::CImg<unsigned short> corrected23 = image::earth_curvature::correct_earth_curvature(image23,
+                                                                                                                EOS_ORBIT_HEIGHT,
+                                                                                                                EOS_MODIS_SWATH,
+                                                                                                                EOS_MODIS_RES1000);
+                WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
+            }
         }
 
         void EOSMODISDecoderModule::drawUI(bool window)
