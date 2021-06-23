@@ -59,7 +59,7 @@ namespace npp
                 for (int i = 0; i < BUFFER_SIZE; i++)
                 {
                     using namespace std::complex_literals;
-                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 1] / 127.0f) + ((float)soft_buffer[i * 2] / 127.0f) * 1if;
+                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 0] / 127.0f) + ((float)soft_buffer[i * 2 + 1] / 127.0f) * 1if;
                 }
             }
             else

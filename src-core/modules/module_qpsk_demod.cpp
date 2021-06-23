@@ -22,6 +22,10 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
                                                                                                                                         d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0),
+                                                                                                                                        d_clock_gain_omega(parameters.count("clock_gain_omega") > 0 ? std::stof(parameters["clock_gain_omega"]) : (pow(8.7e-3, 2) / 4.0)),
+                                                                                                                                        d_clock_mu(parameters.count("clock_mu") > 0 ? std::stof(parameters["clock_mu"]) : 0.5f),
+                                                                                                                                        d_clock_gain_mu(parameters.count("clock_gain_mu") > 0 ? std::stof(parameters["clock_gain_mu"]) : 8.7e-3),
+                                                                                                                                        d_clock_omega_relative_limit(parameters.count("clock_omega_relative_limit") > 0 ? std::stof(parameters["clock_omega_relative_limit"]) : 0.005f),
                                                                                                                                         constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 {
     // Buffers
@@ -70,7 +74,8 @@ void QPSKDemodModule::init()
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
 
     // Clock recovery
-    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+    //rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
 }
 
 std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
@@ -133,8 +138,8 @@ void QPSKDemodModule::process()
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * 100);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real() * 100);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag() * 100);
         }
 
         rec->output_stream->flush();
@@ -222,7 +227,7 @@ std::string QPSKDemodModule::getID()
 
 std::vector<std::string> QPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit"};
 }
 
 std::shared_ptr<ProcessingModule> QPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

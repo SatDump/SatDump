@@ -106,7 +106,7 @@ namespace metop
 
     void NewMetOpAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("New MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

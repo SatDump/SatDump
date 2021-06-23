@@ -36,6 +36,11 @@ protected:
     const bool d_dc_block;
     const bool d_iq_swap;
 
+    const float d_clock_gain_omega;
+    const float d_clock_mu;
+    const float d_clock_gain_mu;
+    const float d_clock_omega_relative_limit;
+
     const int MAX_SPS = 3; // Maximum sample per symbol the demodulator will accept before resampling the input
     bool resample = false;
 
