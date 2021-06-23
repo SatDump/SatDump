@@ -28,10 +28,10 @@ file(GLOB_RECURSE SATDUMP_ANDROID_FILES
     src/*.cpp
 )
 
-set(SATDUM_ANDROID_SOURCES ${IMGUI_FILES} ${SATDUMP_ANDROID_FILES} ${GLLOAD_FILES})
+set(SATDUMP_ANDROID_SOURCES ${IMGUI_FILES} ${SATDUMP_ANDROID_FILES} ${GLLOAD_FILES})
 
 # Build as a library for Android, as an executable otherwise
-add_library(satdump_android SHARED ${SATDUM_ANDROID_SOURCES})
+add_library(satdump_android SHARED ${SATDUMP_ANDROID_SOURCES})
 
 target_link_libraries(satdump_android PUBLIC ${SDL2_LIBRARY} GLESv2)
 target_include_directories(satdump_android PRIVATE src/)
