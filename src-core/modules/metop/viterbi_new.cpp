@@ -74,7 +74,7 @@ namespace metop
                 for (int of = 0; of < 2; of++)
                 {
                     std::memcpy(d_ber_test_buffer, &input[of * 2], TEST_BITS_LENGTH);
-                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
+                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, true);
                     d_bers[of][ph] = getBER(d_ber_test_buffer);
                 }
             }
@@ -86,7 +86,7 @@ namespace metop
                     if (d_ber_thresold > d_bers[o][p])
                     {
                         d_ber = d_bers[o][p];
-                        d_iq_inv = 1;
+                        d_iq_inv = 0;
                         d_phase_shift = (sathelper::PhaseShift)(p + 1);
                         d_state = ST_SYNCED;
                         d_skip = o * 2;

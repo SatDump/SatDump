@@ -67,8 +67,8 @@ namespace aqua
             // Demodulate QPSK... This is the crappy way but it works
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                int8_t sample_i = clamp(*((int8_t *)&buffer[i * 2]));
-                int8_t sample_q = clamp(*((int8_t *)&buffer[i * 2 + 1]));
+                int8_t sample_i = clamp(*((int8_t *)&buffer[i * 2 + 1]));
+                int8_t sample_q = clamp(*((int8_t *)&buffer[i * 2 + 0]));
 
                 if (sample_i == -1 && sample_q == -1)
                 {

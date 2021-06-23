@@ -136,8 +136,8 @@ void OQPSKDemodModule::process()
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * d_const_scale);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * d_const_scale);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real() * d_const_scale);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag() * d_const_scale);
         }
 
         rec->output_stream->flush();
