@@ -127,7 +127,6 @@ static SDL_GLContext createCtx(SDL_Window *w)
 #include <jni.h>
 #include <android_native_app_glue.h>
 
-/** @return the id of the button clicked if model is true, or 0 */
 std::string getFilePath()
 {
     JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
@@ -209,8 +208,6 @@ int main(int argc, char **argv)
     {
 
         bool done = false;
-        float teapotRotation = 0;
-        bool rotateSync = false;
 
         int deltaX = 0, deltaY = 0;
         int prevX, prevY;
@@ -296,7 +293,7 @@ int main(int argc, char **argv)
                         //SDLActivity.createEGLSurface();
                         break;
                     case SDL_WINDOWEVENT_RESIZED:
-                        logger->info("RESIZING");
+                        //logger->info("RESIZING");
                         break;
                     default:
                         break;
