@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "common/sathelper/viterbi27.h"
+#include "common/codings/viterbi/viterbi27.h"
 #include <fstream>
 #include "common/dsp/lib/random.h"
 
@@ -28,9 +28,9 @@ namespace proba
 
         bool locked = false;
         int errors[5];
-        uint32_t cor;
+        int cor;
 
-        sathelper::Viterbi27 viterbi;
+        viterbi::Viterbi27 viterbi;
 
         // UI Stuff
         float ber_history[200];
@@ -43,6 +43,8 @@ namespace proba
         ~ProbaSDecoderModule();
         void process();
         void drawUI(bool window);
+        std::vector<ModuleDataType> getInputTypes();
+        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();
