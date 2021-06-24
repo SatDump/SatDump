@@ -2,8 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "viterbi.h"
-#include "common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/codings/viterbi/viterbi27.h"
 #include <fstream>
 #include "common/dsp/lib/random.h"
 
@@ -14,28 +13,23 @@ namespace goes
         class GOESHRITDecoderModule : public ProcessingModule
         {
         protected:
-            int d_viterbi_outsync_after;
-            float d_viterbi_ber_threasold;
-
-            uint8_t *viterbi_out;
-            int8_t *soft_buffer;
-
-            // Work buffers
-            uint8_t rsWorkBuffer[255];
+            uint8_t *buffer;
 
             std::ifstream data_in;
             std::ofstream data_out;
-
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
-            HRITViterbi viterbi;
-            ccsds::ccsds_1_0_1024::CADUDeframer deframer;
-
+            bool locked = false;
             int errors[4];
+            int cor;
+
+            viterbi::Viterbi27 viterbi;
 
             // UI Stuff
             float ber_history[200];
+            float cor_history[200];
+
             dsp::Random rng;
 
         public:
@@ -51,5 +45,5 @@ namespace goes
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
         };
-    } // namespace npp
+    } // namespace meteor
 }

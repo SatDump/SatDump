@@ -180,7 +180,7 @@ namespace meteor
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
