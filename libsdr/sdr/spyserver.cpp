@@ -36,6 +36,7 @@ SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64
 
     samples = new int16_t[8192 * 2];
     samples8 = new uint8_t[8192 * 2];
+    std::fill(frequency, &frequency[100], 0);
 }
 
 void SDRSpyServer::runThread()

@@ -31,6 +31,7 @@ SDRHackRF::SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id)
     }
     hackrf_reset(dev);
     logger->info("Opened HackRF device!");
+    std::fill(frequency, &frequency[100], 0);
 }
 
 std::map<std::string, std::string> SDRHackRF::getParameters()
