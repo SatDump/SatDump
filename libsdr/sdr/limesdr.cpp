@@ -15,6 +15,7 @@ SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t i
     logger->info("Opened " + std::string(limeDevice->GetInfo()->deviceName) + " device!");
 
     limeDevice->Init();
+    std::fill(frequency, &frequency[100], 0);
 }
 
 void SDRLimeSDR::start()

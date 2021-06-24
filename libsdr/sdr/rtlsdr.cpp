@@ -36,6 +36,7 @@ SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id)
         return;
     }
     logger->info("Opened RTL-SDR device!");
+    std::fill(frequency, &frequency[100], 0);
 }
 
 std::map<std::string, std::string> SDRRtlSdr::getParameters()
