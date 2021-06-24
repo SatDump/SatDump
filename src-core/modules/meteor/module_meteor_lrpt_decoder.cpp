@@ -89,9 +89,9 @@ namespace meteor
                 std::memmove(buffer, &buffer[pos], pos);
 
                 if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                    data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
                 else
-                    input_fifo->read((uint8_t *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                    input_fifo->read((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
             }
 
             // Correct phase ambiguity
