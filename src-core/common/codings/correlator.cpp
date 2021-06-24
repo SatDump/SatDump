@@ -45,7 +45,13 @@ Correlator::Correlator(modulation_t mod, uint64_t syncword) : d_modulation(mod)
 {
     hard_buf = new uint8_t[8192 * 20];
 
-    if (d_modulation == QPSK)
+    if (d_modulation == BPSK)
+    {
+        // Generate syncwords
+        syncwords[0] = syncword;
+        syncwords[1] = syncword ^ 0xFFFFFFFFFFFFFFFF;
+    }
+    else if (d_modulation == QPSK)
     {
         // Generate syncwords
         for (int i = 0; i < 4; i++)
@@ -66,34 +72,77 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
 {
     int correlation = 0, offset = 0, pos = 0;
 
-    if (d_modulation == QPSK)
+    // Pack into hard symbols
+    int bits = 0, bytes = 0;
+    uint8_t shifter = 0;
+    for (int i = 0; i < length; i++)
     {
-        // Pack into hard symbols
-        int bits = 0, bytes = 0;
-        uint8_t shifter = 0;
-        for (int i = 0; i < length; i++)
-        {
-            shifter = shifter << 1 | (soft_input[i] >= 0);
-            bits++;
+        shifter = shifter << 1 | (soft_input[i] >= 0);
+        bits++;
 
-            if (bits == 8)
+        if (bits == 8)
+        {
+            hard_buf[bytes] = shifter;
+            bits = 0;
+            bytes++;
+        }
+    }
+
+    uint64_t current = ((uint64_t)hard_buf[0] << 56) | ((uint64_t)hard_buf[1] << 48) | ((uint64_t)hard_buf[2] << 40) |
+                       ((uint64_t)hard_buf[3] << 32) | ((uint64_t)hard_buf[4] << 24) | ((uint64_t)hard_buf[5] << 16) |
+                       ((uint64_t)hard_buf[6] << 8) | ((uint64_t)hard_buf[7] << 0);
+
+    if (d_modulation == BPSK)
+    {
+        pos += 8;
+
+        // Check pos 0
+        for (int p = 0; p < 2; p++)
+        {
+            int corr = corr_64(syncwords[p], current);
+            if (corr > 45)
             {
-                hard_buf[bytes] = shifter;
-                bits = 0;
-                bytes++;
+                cor = corr;
+                phase = p ? PHASE_180 : PHASE_0;
+                swap = 0;
+                return 0;
             }
         }
 
-        uint64_t current = ((uint64_t)hard_buf[0] << 56) | ((uint64_t)hard_buf[1] << 48) | ((uint64_t)hard_buf[2] << 40) |
-                           ((uint64_t)hard_buf[3] << 32) | ((uint64_t)hard_buf[4] << 24) | ((uint64_t)hard_buf[5] << 16) |
-                           ((uint64_t)hard_buf[6] << 8) | ((uint64_t)hard_buf[7] << 0);
+        // Check the rest
+        for (int i = 0; i < length - 8; i++)
+        {
+            for (int ii = 0; ii < 8; ii += 1)
+            {
+                for (int p = 0; p < 2; p++)
+                {
+                    int corr = corr_64(syncwords[p], current);
+                    if (corr > correlation)
+                    {
+                        correlation = corr;
+                        offset = i * 8 + ii;
+                        phase = p ? PHASE_180 : PHASE_0;
+                        swap = 0;
+                    }
+                }
+
+                current = (current << 1) | ((hard_buf[pos] >> (7 - ii)) & 0b1);
+            }
+
+            pos++;
+        }
+    }
+    else if (d_modulation == QPSK)
+    {
         pos += 8;
 
         // Check pos 0
         for (int p = 0; p < 8; p++)
         {
-            if (corr_64(syncwords[p], current) > 45)
+            int corr = corr_64(syncwords[p], current);
+            if (corr > 45)
             {
+                cor = corr;
                 phase = (phase_t)(p % 4);
                 swap = (p / 4) == 0;
                 return 0;

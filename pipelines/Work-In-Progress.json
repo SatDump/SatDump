@@ -66,10 +66,7 @@
                 }
             },
             "cadu": {
-                "goes_hrit_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170"
-                }
+                "goes_hrit_decoder": {}
             },
             "products": {
                 "goes_lrit_data_decoder": {}
