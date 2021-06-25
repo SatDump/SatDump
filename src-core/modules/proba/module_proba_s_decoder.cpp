@@ -22,7 +22,6 @@ namespace proba
                                                                                                                                                     viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
-        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
     }
 
     std::vector<ModuleDataType> ProbaSDecoderModule::getInputTypes()
@@ -38,7 +37,6 @@ namespace proba
     ProbaSDecoderModule::~ProbaSDecoderModule()
     {
         delete[] buffer;
-        delete[] buffer_2;
     }
 
     void ProbaSDecoderModule::process()

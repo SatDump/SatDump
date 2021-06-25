@@ -13,12 +13,9 @@ namespace proba
     protected:
         bool derandomize;
 
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
-
         void shiftWithConstantSize(uint8_t *arr, int pos, int length);
 
-        uint8_t *buffer, *buffer_2;
+        uint8_t *buffer;
 
         std::ifstream data_in;
         std::ofstream data_out;
