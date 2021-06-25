@@ -241,11 +241,6 @@ int main(int argc, char **argv)
         {
             SDL_Event e;
 
-            deltaX = 0;
-            deltaY = 0;
-
-            float deltaZoom = 0.0f;
-
             while (SDL_PollEvent(&e))
             {
                 bool handledByImGui = processEvent(&e);
@@ -254,28 +249,6 @@ int main(int argc, char **argv)
                     {
                     case SDL_QUIT:
                         done = true;
-                        break;
-                    case SDL_MOUSEBUTTONDOWN:
-                        prevX = e.button.x;
-                        prevY = e.button.y;
-                        break;
-                    case SDL_MOUSEMOTION:
-                        if (e.motion.state & SDL_BUTTON_LMASK)
-                        {
-                            deltaX += prevX - e.motion.x;
-                            deltaY += prevY - e.motion.y;
-                            prevX = e.motion.x;
-                            prevY = e.motion.y;
-                        }
-                        break;
-                    case SDL_MULTIGESTURE:
-                        if (e.mgesture.numFingers > 1)
-                        {
-                            deltaZoom += e.mgesture.dDist * 10.0f;
-                        }
-                        break;
-                    case SDL_MOUSEWHEEL:
-                        deltaZoom += e.wheel.y / 100.0f;
                         break;
                     case SDL_APP_WILLENTERBACKGROUND:
                         render = false;
@@ -286,10 +259,8 @@ int main(int argc, char **argv)
                         render = true;
                         ctx = createCtx(window);
                         initImgui(window);
-                        //SDLActivity.createEGLSurface();
                         break;
                     case SDL_WINDOWEVENT_RESIZED:
-                        //logger->info("RESIZING");
                         break;
                     default:
                         break;
@@ -390,6 +361,10 @@ int main(int argc, char **argv)
                     ImGui_ImplSdlGLES2_RenderDrawLists(ImGui::GetDrawData());
 
                 SDL_GL_SwapWindow(window);
+
+                // We have to do that here to avoid backspace repeating
+                if (io.KeysDown[SDLK_BACKSPACE] == 1)
+                    io.KeysDown[SDLK_BACKSPACE] = 0;
             }
         }
     }
