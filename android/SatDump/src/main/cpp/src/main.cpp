@@ -216,13 +216,6 @@ int main(int argc, char **argv)
         int major;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
 
-        if (std::filesystem::exists("settings.json"))
-        {
-            loadSettings("settings.json");
-        }
-
-        parseSettingsOrDefaults();
-
         float ddpi, hdpi, vdpi;
         SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
         float dpi_scaling = ddpi / (72.f * 3);
@@ -234,6 +227,9 @@ int main(int argc, char **argv)
 
         initLogger();
         initSatdump();
+
+        loadSettings("settings.json");
+        parseSettingsOrDefaults();
 
 #ifdef BUILD_LIVE
         initLive();

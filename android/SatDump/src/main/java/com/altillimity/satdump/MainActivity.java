@@ -137,6 +137,7 @@ public class MainActivity extends SDLActivity {
         copyFileOrDir("pipelines");
         copyFileOrDir("Roboto-Medium.ttf");
 
+        Log.v(TAG, getFilesDir().getAbsolutePath());
         Log.v(TAG, getExternalFilesDir(null).getAbsolutePath());
     }
 
