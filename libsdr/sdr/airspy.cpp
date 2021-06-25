@@ -27,6 +27,22 @@ SDRAirspy::SDRAirspy(std::map<std::string, std::string> parameters, uint64_t id)
     std::fill(frequency, &frequency[100], 0);
 }
 
+#ifdef __ANDROID__
+SDRAirspy::SDRAirspy(std::map<std::string, std::string> parameters, int fileDescriptor, std::string devicePath) : SDRDevice(parameters, 0)
+{
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(bias, "bias");
+
+    if (airspy_open2(&dev, fileDescriptor, devicePath.c_str()) != AIRSPY_SUCCESS)
+    {
+        logger->critical("Could not open Airspy device!");
+        return;
+    }
+    logger->info("Opened Airspy device!");
+    std::fill(frequency, &frequency[100], 0);
+}
+#endif
+
 std::map<std::string, std::string> SDRAirspy::getParameters()
 {
     d_parameters["gain"] = std::to_string(gain);
@@ -64,7 +80,7 @@ void SDRAirspy::drawUI()
 {
     ImGui::Begin("Airspy Control", NULL);
 
-    ImGui::SetNextItemWidth(100);
+    //ImGui::SetNextItemWidth(100);
     ImGui::InputText("MHz", frequency, 100);
 
     ImGui::SameLine();
@@ -75,7 +91,7 @@ void SDRAirspy::drawUI()
         airspy_set_freq(dev, d_frequency);
     }
 
-    ImGui::SetNextItemWidth(200);
+    //ImGui::SetNextItemWidth(200);
     if (ImGui::SliderInt("Gain", &gain, 0, 22))
     {
         airspy_set_linearity_gain(dev, gain);
@@ -111,6 +127,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRAirspy::getDe
         ss << std::hex << serials[i];
         results.push_back({"AirSpy One " + ss.str(), AIRSPY, serials[i]});
     }
+
+#ifdef __ANDROID__
+    results.push_back({"Airspy Device", AIRSPY, 0});
+#endif
+
     return results;
 }
 

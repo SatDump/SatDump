@@ -105,9 +105,11 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
 {
     sdr_device_type type = std::get<1>(devList[num]);
 
+#ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return SDRSpyServer::drawParamsUI();
     else
+#endif
         return std::map<std::string, std::string>();
 }
 
@@ -136,8 +138,8 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
     if (type == SPYSERVER)
         return "spyserver";
 #endif
-    else
-        return nullptr;
+
+    return nullptr;
 }
 
 std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, std::map<std::string, std::string> parameters, int num)
@@ -165,6 +167,6 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
     if (type == SPYSERVER)
         return std::make_shared<SDRSpyServer>(parameters, id);
 #endif
-    else
-        return nullptr;
+
+    return nullptr;
 }

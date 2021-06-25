@@ -200,7 +200,7 @@ void renderLive()
         ImGui::Begin("Input FFT", NULL);
 
         fftPlotWidget.scale_max = scale_max;
-        fftPlotWidget.draw({std::max<float>(ImGui::GetWindowWidth() - 3, 200), std::max<float>(ImGui::GetWindowHeight() - 64, 100)});
+        fftPlotWidget.draw({std::max<float>(ImGui::GetWindowWidth() - 3 * ui_scale, 200 * ui_scale), std::max<float>(ImGui::GetWindowHeight() - 64 * ui_scale, 100 * ui_scale)});
 
         ImGui::SliderFloat("Scale", &scale_max, 0, 100);
         ImGui::SameLine();
