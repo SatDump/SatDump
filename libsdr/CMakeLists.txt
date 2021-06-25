@@ -14,6 +14,14 @@ set_target_properties(sdr PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 
 target_link_libraries(sdr PUBLIC satdump_core)
 
+# We don't enable everything on Android...
+if(ANDROID)
+        set(ENABLE_SDR_AIRSPY ON)
+        set(ENABLE_SDR_RTLSDR ON)
+        set(ENABLE_SDR_HACKRF OFF)
+        set(ENABLE_SDR_SPYSERVER OFF)
+endif()
+
 if(NOT ENABLE_SDR_AIRSPY)
 target_compile_definitions(sdr PUBLIC DISABLE_SDR_AIRSPY="1")
 endif()
