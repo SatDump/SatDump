@@ -124,33 +124,6 @@ static SDL_GLContext createCtx(SDL_Window *w)
     return ctx;
 }
 
-#include <jni.h>
-#include <android_native_app_glue.h>
-
-std::string getFilePath()
-{
-    JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
-    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
-    jclass cls = env->GetObjectClass(activity);
-    //jclass localcls = reinterpret_cast<jclass>(env->NewGlobalRef(cls));
-    jmethodID getFilePath = env->GetMethodID(cls, "getFilePath", "()Ljava/lang/String;");
-    jstring str = (jstring)env->CallObjectMethod(activity, getFilePath);
-    const char *str2 = env->GetStringUTFChars(str, 0);
-    return std::string(str2);
-}
-
-std::string getDirPath()
-{
-    JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
-    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
-    jclass cls = env->GetObjectClass(activity);
-    //jclass localcls = reinterpret_cast<jclass>(env->NewGlobalRef(cls));
-    jmethodID getFilePath = env->GetMethodID(cls, "getFilePath1", "()Ljava/lang/String;");
-    jstring str = (jstring)env->CallObjectMethod(activity, getFilePath);
-    const char *str2 = env->GetStringUTFChars(str, 0);
-    return std::string(str2);
-}
-
 void bindImageTextureFunctions();
 
 int main(int argc, char **argv)
@@ -280,7 +253,6 @@ int main(int argc, char **argv)
             {
                 newFrame(window);
 
-                ImGui::SetNextWindowPos({0, 0});
                 int wwidth, wheight;
                 SDL_GetWindowSize(window, &wwidth, &wheight);
 

@@ -75,12 +75,21 @@ set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/de
 include_directories(deps/fftw3/jni)
 
 # Enable live processing for remove devices. WIP
-set(BUILD_LIVE OFF)
+set(BUILD_LIVE ON)
 if(BUILD_LIVE)
-    set(ENABLE_SDR_AIRSPY OFF)
-    set(ENABLE_SDR_RTLSDR OFF)
+    add_subdirectory(deps/libusb)
+    include_directories(deps/libusb)
+
+    add_subdirectory(deps/librtlsdr)
+    include_directories(deps/librtlsdr)
+
+    add_subdirectory(deps/libairspy)
+    include_directories(deps/libairspy)
+
+    set(ENABLE_SDR_AIRSPY ON)
+    set(ENABLE_SDR_RTLSDR ON)
     set(ENABLE_SDR_HACKRF OFF)
-    set(ENABLE_SDR_SPYSERVER ON)
+    set(ENABLE_SDR_SPYSERVER OFF)
     add_subdirectory(../../../../../libsdr ${CMAKE_BINARY_DIR}/libsdr)
 endif()
 
@@ -99,7 +108,6 @@ target_include_directories(satdump_android PRIVATE ${ANDROID_NDK}/sources/androi
 
 # You need to link static libraries against your shared native library.
 target_link_libraries(satdump_android PUBLIC app-glue ${log-lib})
-
 
 # LIBRTL-SDR
 #add_library(rtlsdr STATIC IMPORTED)
