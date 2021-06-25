@@ -164,9 +164,9 @@ int main(int argc, char *argv[])
     if (std::filesystem::exists("Roboto-Medium.ttf"))
     {
         if (use_light_theme)
-            style::setLightStyle(".");
+            style::setLightStyle(".", manual_dpi_scaling);
         else
-            style::setDarkStyle(".");
+            style::setDarkStyle(".", manual_dpi_scaling);
     }
     else
     {

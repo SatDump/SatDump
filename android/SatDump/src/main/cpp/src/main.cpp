@@ -220,16 +220,16 @@ int main(int argc, char **argv)
         SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
         float dpi_scaling = ddpi / (72.f * 3);
 
-        if (use_light_theme)
-            style::setLightStyle(".", dpi_scaling);
-        else
-            style::setDarkStyle(".", dpi_scaling);
-
         initLogger();
         initSatdump();
 
         loadSettings("settings.json");
         parseSettingsOrDefaults();
+
+        if (use_light_theme)
+            style::setLightStyle(".", dpi_scaling * manual_dpi_scaling);
+        else
+            style::setDarkStyle(".", dpi_scaling * manual_dpi_scaling);
 
 #ifdef BUILD_LIVE
         initLive();
