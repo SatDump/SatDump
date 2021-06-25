@@ -86,10 +86,6 @@ if(BUILD_LIVE)
     add_subdirectory(deps/libairspy)
     include_directories(deps/libairspy)
 
-    set(ENABLE_SDR_AIRSPY ON)
-    set(ENABLE_SDR_RTLSDR ON)
-    set(ENABLE_SDR_HACKRF OFF)
-    set(ENABLE_SDR_SPYSERVER OFF)
     add_subdirectory(../../../../../libsdr ${CMAKE_BINARY_DIR}/libsdr)
 endif()
 
