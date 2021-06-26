@@ -12,6 +12,7 @@ void renderCredits(int wwidth, int wheight)
     ImGui::BulletText("spdlog");
     ImGui::BulletText("libsathelper");
     ImGui::BulletText("libaec");
+    ImGui::BulletText("libbzip");
     ImGui::BulletText("libpng");
     ImGui::BulletText("libjpeg");
     ImGui::BulletText("libfftw3");
