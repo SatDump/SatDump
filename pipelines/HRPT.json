@@ -42,7 +42,8 @@
                 "metop_gome": {
                     "write_all": "0"
                 },
-                "metop_ascat": {}
+                "metop_ascat": {},
+                "metop_admin_msg": {}
             }
         }
     },
@@ -93,7 +94,8 @@
                 "metop_gome": {
                     "write_all": "0"
                 },
-                "metop_ascat": {}
+                "metop_ascat": {},
+                "metop_admin_msg": {}
             }
         }
     },
