@@ -69,27 +69,20 @@ namespace metop
                         {
                             admmsg_ccsds++;
 
-                            bz_stream bz2_stream;
-                            BZ2_bzDecompressInit(&bz2_stream, 1, 1);
-                            bz2_stream.next_in = (char *)&pkt.payload[41];
-                            bz2_stream.avail_in = pkt.payload.size() - 41;
-                            bz2_stream.next_out = (char *)message_out;
-                            bz2_stream.avail_out = MAX_MSG_SIZE;
+                            unsigned int outsize = MAX_MSG_SIZE;
 
-                            int ret = BZ2_bzDecompress(&bz2_stream);
+                            int ret = BZ2_bzBuffToBuffDecompress((char *)message_out, &outsize, (char *)&pkt.payload[41], pkt.payload.size() - 41, 1, 1);
                             if (ret != BZ_OK && ret != BZ_STREAM_END)
                             {
                                 logger->error("Failed decomressing Bzip2 data! Error : " + std::to_string(ret));
                                 continue;
                             }
 
-                            BZ2_bzDecompressEnd(&bz2_stream);
-
                             std::string outputFileName = directory + "/" + std::to_string(pkt.header.packet_sequence_count) + ".xml";
                             logger->info("Writing message to " + outputFileName);
                             std::ofstream outputMessageFile(outputFileName);
                             d_output_files.push_back(outputFileName);
-                            outputMessageFile.write((char *)message_out, MAX_MSG_SIZE - bz2_stream.avail_out);
+                            outputMessageFile.write((char *)message_out, outsize);
                         }
                     }
                 }
