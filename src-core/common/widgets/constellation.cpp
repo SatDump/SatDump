@@ -46,7 +46,7 @@ namespace widgets
         {
             draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].real() * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
                                               ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].imag() * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
-                                       2 * ui_scale,
+                                       2 * ui_scale * (d_constellation_size / 200.0f),
                                        ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
         }
 
