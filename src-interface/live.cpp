@@ -16,6 +16,7 @@
 #include "sdr/sdr.h"
 #include "settings.h"
 #include "live_pipeline.h"
+#include "settingsui.h"
 
 #ifdef __ANDROID__
 std::string getFilePath();
@@ -93,33 +94,40 @@ void renderLiveProcessing()
     }
     ImGui::EndGroup();
 
-    ImGui::BeginGroup();
+    if (!live_use_generated_output_folder)
     {
-        ImGui::Text("Output dir : ");
-        ImGui::SameLine();
-
-        if (ImGui::Button("Select Output"))
+        ImGui::BeginGroup();
         {
-            logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-            output_file = getDirPath();
-#else
-            auto result = pfd::select_folder("Open output directory", ".");
-            while (result.ready(1000))
-            {
-            }
+            ImGui::Text("Output dir : ");
+            ImGui::SameLine();
 
-            if (result.result().size() > 0)
-                output_file = result.result();
+            if (ImGui::Button("Select Output"))
+            {
+                logger->debug("Opening file dialog");
+#ifdef __ANDROID__
+                output_file = getDirPath();
+#else
+                auto result = pfd::select_folder("Open output directory", ".");
+                while (result.ready(1000))
+                {
+                }
+
+                if (result.result().size() > 0)
+                    output_file = result.result();
 #endif
 
-            logger->debug("Dir " + output_file);
-        }
+                logger->debug("Dir " + output_file);
+            }
 
-        ImGui::SameLine();
-        ImGui::Text("%s", output_file.c_str());
+            ImGui::SameLine();
+            ImGui::Text("%s", output_file.c_str());
+        }
+        ImGui::EndGroup();
     }
-    ImGui::EndGroup();
+    else
+    {
+        ImGui::Text("Output directory will be automically created. You can disable this in Settings.");
+    }
 
     ImGui::Separator();
 
@@ -176,7 +184,22 @@ void renderLiveProcessing()
         {
             logger->debug("Starting livedemod...");
 
-            if (output_file == "")
+            // Generate filename
+            if (live_use_generated_output_folder)
+            {
+                const time_t timevalue = time(0);
+                std::tm *timeReadable = gmtime(&timevalue);
+                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+
+                output_file = default_live_output_folder + "/" + timestamp + "_" + downlink_pipeline + "_" + std::to_string(long(frequency)) + "Mhz";
+                logger->info("Generated folder name : " + output_file);
+            }
+
+            if (output_file == "" && !live_use_generated_output_folder)
             {
                 sprintf(error_message, "Please select an output file!");
             }

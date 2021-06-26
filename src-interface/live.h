@@ -1,5 +1,5 @@
 #pragma once
-//#define BUILD_LIVE
+#define BUILD_LIVE
 
 #ifdef BUILD_LIVE
 void initLive();
