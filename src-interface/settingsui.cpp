@@ -62,7 +62,7 @@ void renderSettings(int wwidth, int wheight)
     {
         logger->debug("Opening file dialog");
 #ifdef __ANDROID__
-        output_file = getDirPath();
+        default_live_output_folder = getDirPath();
 #else
         auto result = pfd::select_folder("Open output directory", ".");
         while (result.ready(1000))

@@ -10,7 +10,8 @@ namespace elektro_arktika
 {
     TLMDemodModule::TLMDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                           d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"]))
+                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"])),
+                                                                                                                                          constellation(1,1, demod_constellation_size)
     {
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
