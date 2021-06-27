@@ -21,6 +21,7 @@ void renderCredits(int wwidth, int wheight)
     ImGui::BulletText("librtlsdr");
     ImGui::BulletText("libhackrf");
     ImGui::BulletText("libpredict");
+    ImGui::BulletText("miniz");
     ImGui::BulletText("tinyfiledialogs");
     ImGui::BulletText("ImGui");
     ImGui::EndGroup();
