@@ -2,6 +2,8 @@
 #ifndef MINIZ_EXPORT_H
 #define MINIZ_EXPORT_H
 
+#define MINIZ_STATIC_DEFINE
+
 #ifdef MINIZ_STATIC_DEFINE
 #  define MINIZ_EXPORT
 #  define MINIZ_NO_EXPORT
