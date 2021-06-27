@@ -11,6 +11,8 @@
 #include "products.h"
 #include <filesystem>
 #include <algorithm>
+#include "common/miniz/miniz.h"
+#include "common/miniz/miniz_zip.h"
 
 namespace goes
 {
@@ -200,12 +202,12 @@ namespace goes
 
         void LRITDataDecoder::finalizeLRITData()
         {
+            PrimaryHeader primary_header(&lrit_data[0]);
             NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
 
             // Check if this is image data, and if so also write it as an image
             if (all_headers.count(ImageStructureRecord::TYPE) > 0)
             {
-                PrimaryHeader primary_header(&lrit_data[0]);
                 ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
 
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
@@ -243,6 +245,57 @@ namespace goes
                     logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
                     cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
                     image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
+                }
+            }
+            else if (primary_header.file_type_code == 2 && noaa_header.product_id == 9)
+            {
+                if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
+                {
+                    if (!std::filesystem::exists(directory + "/../EMWIN"))
+                        std::filesystem::create_directory(directory + "/../EMWIN");
+
+                    logger->info("Writing file " + directory + "/../EMWIN/" + current_filename + ".txt" + "...");
+
+                    int offset = primary_header.total_header_length;
+
+                    // Write file out
+                    std::ofstream file(directory + "/../EMWIN/" + current_filename + ".txt");
+                    file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
+                    file.close();
+                }
+                else if (noaa_header.noaa_specific_compression == 10) // ZIP Files
+                {
+                    if (!std::filesystem::exists(directory + "/../EMWIN"))
+                        std::filesystem::create_directory(directory + "/../EMWIN");
+
+                    int offset = primary_header.total_header_length;
+
+                    // Init
+                    mz_zip_archive zipFile;
+                    MZ_CLEAR_OBJ(zipFile);
+                    if (!mz_zip_reader_init_mem(&zipFile, &lrit_data[offset], lrit_data.size() - offset, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+                    {
+                        logger->error("Could not open ZIP data! Discarding...");
+                        return;
+                    }
+
+                    // Read filename
+                    char filenameStr[1000];
+                    int chs = mz_zip_reader_get_filename(&zipFile, 0, filenameStr, 1000);
+                    std::string filename(filenameStr, &filenameStr[chs - 1]);
+
+                    // Decompress
+                    size_t outSize = 0;
+                    uint8_t *outBuffer = (uint8_t *)mz_zip_reader_extract_to_heap(&zipFile, 0, &outSize, 0);
+
+                    // Write out
+                    logger->info("Writing file " + directory + "/../EMWIN/" + filename + "...");
+                    std::ofstream file(directory + "/../EMWIN/" + filename);
+                    file.write((char *)outBuffer, outSize);
+                    file.close();
+
+                    // Free memory
+                    delete outBuffer;
                 }
             }
             else
@@ -285,6 +338,8 @@ namespace goes
             image = cimg_library::CImg<unsigned char>(segment_width, segment_height * max_seg, 1);
             seg_height = segment_height;
             seg_width = segment_width;
+
+            image.fill(0);
         }
 
         SegmentedLRITImageDecoder::~SegmentedLRITImageDecoder()

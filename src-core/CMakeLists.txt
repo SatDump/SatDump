@@ -9,6 +9,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/aec/*.c
                                      common/predict/*.c
                                      common/bzlib/*.c
+                                     common/miniz/*.c
 )
 
 find_package(PkgConfig)
