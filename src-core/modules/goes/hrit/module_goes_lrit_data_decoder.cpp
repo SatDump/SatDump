@@ -41,7 +41,7 @@ namespace goes
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/LRIT";
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
