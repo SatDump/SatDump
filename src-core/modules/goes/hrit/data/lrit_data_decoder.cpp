@@ -119,7 +119,7 @@ namespace goes
                 }
 
                 // Taken from goestools... Took me a while to figure out what was going on there.. Damn it!
-                NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
+                /*NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
                 if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 || noaa_header.product_id == 17))
                 {
                     if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
@@ -129,7 +129,7 @@ namespace goes
                         suffix << "_" << std::setfill('0') << std::setw(3) << segment_id_header.segment_sequence_number;
                         current_filename.insert(current_filename.rfind(".lrit"), suffix.str());
                     }
-                }
+                }*/
 
                 logger->info("New LRIT file : " + current_filename);
 
@@ -206,8 +206,11 @@ namespace goes
             NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
 
             // Check if this is image data, and if so also write it as an image
-            if (all_headers.count(ImageStructureRecord::TYPE) > 0)
+            if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
             {
+                if (!std::filesystem::exists(directory + "/IMAGES"))
+                    std::filesystem::create_directory(directory + "/IMAGES");
+
                 ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
 
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
@@ -218,8 +221,8 @@ namespace goes
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
-                            logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
-                            segmentedDecoder.image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
+                            logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
@@ -235,38 +238,39 @@ namespace goes
 
                     if (segmentedDecoder.isComplete())
                     {
-                        logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
-                        segmentedDecoder.image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
+                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                     }
                 }
                 else
                 {
-                    logger->info("Writing image " + directory + "/" + current_filename + ".png" + "...");
+                    logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                     cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
-                    image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
+                    image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                 }
             }
-            else if (primary_header.file_type_code == 2 && noaa_header.product_id == 9)
+            // Check if this EMWIN data
+            else if (primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
             {
                 if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
                 {
-                    if (!std::filesystem::exists(directory + "/../EMWIN"))
-                        std::filesystem::create_directory(directory + "/../EMWIN");
+                    if (!std::filesystem::exists(directory + "/EMWIN"))
+                        std::filesystem::create_directory(directory + "/EMWIN");
 
-                    logger->info("Writing file " + directory + "/../EMWIN/" + current_filename + ".txt" + "...");
+                    logger->info("Writing file " + directory + "/EMWIN/" + current_filename + ".txt" + "...");
 
                     int offset = primary_header.total_header_length;
 
                     // Write file out
-                    std::ofstream file(directory + "/../EMWIN/" + current_filename + ".txt");
+                    std::ofstream file(directory + "/EMWIN/" + current_filename + ".txt");
                     file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
                     file.close();
                 }
                 else if (noaa_header.noaa_specific_compression == 10) // ZIP Files
                 {
-                    if (!std::filesystem::exists(directory + "/../EMWIN"))
-                        std::filesystem::create_directory(directory + "/../EMWIN");
+                    if (!std::filesystem::exists(directory + "/EMWIN"))
+                        std::filesystem::create_directory(directory + "/EMWIN");
 
                     int offset = primary_header.total_header_length;
 
@@ -289,8 +293,8 @@ namespace goes
                     uint8_t *outBuffer = (uint8_t *)mz_zip_reader_extract_to_heap(&zipFile, 0, &outSize, 0);
 
                     // Write out
-                    logger->info("Writing file " + directory + "/../EMWIN/" + filename + "...");
-                    std::ofstream file(directory + "/../EMWIN/" + filename);
+                    logger->info("Writing file " + directory + "/EMWIN/" + filename + "...");
+                    std::ofstream file(directory + "/EMWIN/" + filename);
                     file.write((char *)outBuffer, outSize);
                     file.close();
 
@@ -298,15 +302,44 @@ namespace goes
                     delete outBuffer;
                 }
             }
-            else
+            // Check if this is message data. If we slipped to here we know it's not EMWIN
+            else if (primary_header.file_type_code == 1 || primary_header.file_type_code == 2)
             {
-                if (!std::filesystem::exists(directory + "/files"))
-                    std::filesystem::create_directory(directory + "/files");
+                if (!std::filesystem::exists(directory + "/Admin Messages"))
+                    std::filesystem::create_directory(directory + "/Admin Messages");
 
-                logger->info("Writing file " + directory + "/files/" + current_filename + "...");
+                logger->info("Writing file " + directory + "/Admin Messages/" + current_filename + ".txt" + "...");
+
+                int offset = primary_header.total_header_length;
 
                 // Write file out
-                std::ofstream file(directory + "/files/" + current_filename, std::ios::binary);
+                std::ofstream file(directory + "/Admin Messages/" + current_filename + ".txt");
+                file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
+                file.close();
+            }
+            // Check if this is DCS data
+            else if (primary_header.file_type_code == 130)
+            {
+                if (!std::filesystem::exists(directory + "/DCS"))
+                    std::filesystem::create_directory(directory + "/DCS");
+
+                logger->info("Writing file " + directory + "/DCS/" + current_filename + "...");
+
+                // Write file out
+                std::ofstream file(directory + "/DCS/" + current_filename, std::ios::binary);
+                file.write((char *)lrit_data.data(), lrit_data.size());
+                file.close();
+            }
+            // Otherwise, write as generic, unknown stuff
+            else
+            {
+                if (!std::filesystem::exists(directory + "/LRIT"))
+                    std::filesystem::create_directory(directory + "/LRIT");
+
+                logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
+
+                // Write file out
+                std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
                 file.write((char *)lrit_data.data(), lrit_data.size());
                 file.close();
             }
