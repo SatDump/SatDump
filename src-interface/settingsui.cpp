@@ -46,7 +46,7 @@ void parseSettingsOrDefaults()
         default_live_output_folder = ".";
 }
 
-void renderSettings(int wwidth, int wheight)
+void renderSettings(int /*wwidth*/, int /*wheight*/)
 {
     ImGui::Checkbox("Use Light Theme", &use_light_theme);
 
