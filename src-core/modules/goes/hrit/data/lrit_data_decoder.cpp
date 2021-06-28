@@ -14,6 +14,7 @@
 #include "common/miniz/miniz.h"
 #include "common/miniz/miniz_zip.h"
 #include "common/utils.h"
+#include "common/others/strptime.h"
 
 namespace goes
 {
