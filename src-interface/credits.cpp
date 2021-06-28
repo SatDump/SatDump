@@ -43,6 +43,7 @@ void renderCredits(int wwidth, int wheight)
     ImGui::Text("Others :");
     ImGui::BulletText("GNU Radio");
     ImGui::BulletText("OpenSatellite Project");
+    ImGui::BulletText("goestools");
     ImGui::BulletText("Martin Blaho");
     ImGui::EndGroup();
 
