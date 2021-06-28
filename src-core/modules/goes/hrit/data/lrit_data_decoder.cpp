@@ -289,7 +289,15 @@ namespace goes
                         if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                             std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
-                        current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM8", noaa_header.product_subid); // SubID = Channel
+                        // Apparently the timestamp is in there for Himawari-8 data
+                        AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
+
+                        std::vector<std::string> strParts = splitString(annotation_record.annotation_text, '_');
+                        if (strParts.size() > 3)
+                        {
+                            strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);
+                            current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM8", noaa_header.product_subid); // SubID = Channel
+                        }
                     }
                     // NWS Images
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == 6)
