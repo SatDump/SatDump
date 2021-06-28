@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
+#include "common/utils.h"
 
 namespace goes
 {
@@ -102,7 +103,7 @@ namespace goes
 
             uint8_t type;
             uint16_t record_length;
-            std::vector<char> data_definition;
+            std::string data_definition;
 
             ImageDataFunctionRecord(uint8_t *data)
             {
@@ -118,7 +119,7 @@ namespace goes
 
             uint8_t type;
             uint16_t record_length;
-            std::vector<char> annotation_text;
+            std::string annotation_text;
 
             AnnotationRecord(uint8_t *data)
             {
@@ -134,13 +135,19 @@ namespace goes
 
             uint8_t type;
             uint16_t record_length;
-            // TODO
+            uint16_t days;
+            uint32_t milliseconds_of_day;
+
+            time_t timestamp;
 
             TimeStampRecord(uint8_t *data)
             {
                 type = data[0];
                 record_length = data[1] << 8 | data[2];
-                //ancillary_text.insert(ancillary_text.end(), &data[3], &data[record_length]);
+                uint16_t days = data[3] << 8 | data[4];
+                uint32_t milliseconds_of_day = data[5] << 24 | data[6] << 16 | data[7] << 8 | data[8];
+
+                timestamp = (days - 4383) * 86400 + milliseconds_of_day;
             }
         };
 
@@ -150,13 +157,30 @@ namespace goes
 
             uint8_t type;
             uint16_t record_length;
-            std::vector<char> ancillary_text;
+            std::string ancillary_text;
+
+            std::map<std::string, std::string> meta;
 
             AncillaryTextRecord(uint8_t *data)
             {
                 type = data[0];
                 record_length = data[1] << 8 | data[2];
                 ancillary_text.insert(ancillary_text.end(), &data[3], &data[record_length]);
+
+                // I will admit I needed to peek in goestools to figure that one out
+                // A bit hard without having live data...
+                std::vector<std::string> fields = splitString(ancillary_text, ';');
+
+                for (std::string &field : fields)
+                {
+                    std::vector<std::string> values = splitString(field, '=');
+                    if (values.size() == 2)
+                    {
+                        values[0] = values[0].substr(0, values[0].find_last_not_of(' ') + 1);
+                        values[1] = values[1].substr(values[1].find_first_not_of(' '));
+                        meta.insert({values[0], values[1]});
+                    }
+                }
             }
         };
 
@@ -226,7 +250,7 @@ namespace goes
 
             uint8_t type;
             uint16_t record_length;
-            std::vector<char> header_structure;
+            std::string header_structure;
 
             HeaderStructureRecord(uint8_t *data)
             {

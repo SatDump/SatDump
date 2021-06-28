@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <cmath>
+#include <sstream>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples)
 {
@@ -12,4 +13,16 @@ void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples)
             r = 255;
         out[i] = floor(r);
     }
+}
+
+std::vector<std::string> splitString(std::string input, char del)
+{
+    std::stringstream stcStream(input);
+    std::string seg;
+    std::vector<std::string> segs;
+
+    while (std::getline(stcStream, seg, del))
+        segs.push_back(seg);
+
+    return segs;
 }
