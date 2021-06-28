@@ -152,7 +152,9 @@ namespace goes
                     ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                    if (image_structure_record.compression_flag == 1)
+                    NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
+
+                    if (image_structure_record.compression_flag == 1 && noaa_header.noaa_specific_compression == 1) // Check this is RICE
                     {
                         is_rice_compressed = true;
 
@@ -289,6 +291,17 @@ namespace goes
 
                         current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM8", noaa_header.product_subid); // SubID = Channel
                     }
+                    // NWS Images
+                    else if (primary_header.file_type_code == 0 && noaa_header.product_id == 6)
+                    {
+                        std::string subdir = "NWS";
+
+                        if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
+                            std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
+
+                        std::string back = current_filename;
+                        current_filename = subdir + "/" + back;
+                    }
                 }
 
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
@@ -323,9 +336,23 @@ namespace goes
                 }
                 else
                 {
-                    logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                    cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
-                    image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    if (noaa_header.noaa_specific_compression == 5) // Gif?
+                    {
+                        logger->info("Writing file " + directory + "/IMAGES/" + current_filename + ".gif" + "...");
+
+                        int offset = primary_header.total_header_length;
+
+                        // Write file out
+                        std::ofstream file(directory + "/IMAGES/" + current_filename + ".gif");
+                        file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
+                        file.close();
+                    }
+                    else // Write raw image dats
+                    {
+                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
+                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    }
                 }
             }
             // Check if this EMWIN data
