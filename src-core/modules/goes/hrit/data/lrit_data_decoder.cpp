@@ -159,7 +159,7 @@ namespace goes
                         logger->debug("This is RICE-compressed! Decompressing...");
 
                         rice_parameters.bits_per_pixel = image_structure_record.bit_per_pixel;
-                        rice_parameters.pixels_per_block = 16 * 2; // The real default is 16, but has been to 32 for ages
+                        rice_parameters.pixels_per_block = 16 /* * 2*/; // The real default is 16, but has been to 32 for ages
                         rice_parameters.pixels_per_scanline = image_structure_record.columns_count;
                         rice_parameters.options_mask = SZ_ALLOW_K13_OPTION_MASK | SZ_MSB_OPTION_MASK | SZ_NN_OPTION_MASK | SZ_RAW_OPTION_MASK;
 
