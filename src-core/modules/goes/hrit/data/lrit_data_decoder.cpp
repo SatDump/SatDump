@@ -219,7 +219,7 @@ namespace goes
             NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
 
             // Check if this is image data, and if so also write it as an image
-            if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
+            if (write_images && primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
             {
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
@@ -329,7 +329,7 @@ namespace goes
                 }
             }
             // Check if this EMWIN data
-            else if (primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
+            else if (write_emwin && primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
             {
                 if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
                 {
@@ -381,7 +381,7 @@ namespace goes
                 }
             }
             // Check if this is message data. If we slipped to here we know it's not EMWIN
-            else if (primary_header.file_type_code == 1 || primary_header.file_type_code == 2)
+            else if (write_messages && (primary_header.file_type_code == 1 || primary_header.file_type_code == 2))
             {
                 if (!std::filesystem::exists(directory + "/Admin Messages"))
                     std::filesystem::create_directory(directory + "/Admin Messages");
@@ -396,7 +396,7 @@ namespace goes
                 file.close();
             }
             // Check if this is DCS data
-            else if (primary_header.file_type_code == 130)
+            else if (write_dcs && primary_header.file_type_code == 130)
             {
                 if (!std::filesystem::exists(directory + "/DCS"))
                     std::filesystem::create_directory(directory + "/DCS");
@@ -409,7 +409,7 @@ namespace goes
                 file.close();
             }
             // Otherwise, write as generic, unknown stuff. This should not happen
-            else
+            else if (write_unknown)
             {
                 if (!std::filesystem::exists(directory + "/LRIT"))
                     std::filesystem::create_directory(directory + "/LRIT");
