@@ -69,7 +69,13 @@
                 "goes_hrit_decoder": {}
             },
             "products": {
-                "goes_lrit_data_decoder": {}
+                "goes_lrit_data_decoder": {
+                    "write_images": "1",
+                    "write_emwin": "1",
+                    "write_messages": "1",
+                    "write_dcs": "1",
+                    "write_unknown": "0"
+                }
             }
         }
     }

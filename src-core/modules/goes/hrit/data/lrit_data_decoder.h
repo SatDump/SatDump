@@ -58,7 +58,13 @@ namespace goes
         public:
             LRITDataDecoder(std::string dir);
             ~LRITDataDecoder();
-            
+
+            bool write_images = true;
+            bool write_emwin = true;
+            bool write_messages = true;
+            bool write_dcs = true;
+            bool write_unknown = true;
+
             void save();
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
         };

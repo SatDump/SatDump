@@ -16,7 +16,12 @@ namespace goes
 {
     namespace hrit
     {
-        GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                                    write_images(std::stoi(parameters["write_images"])),
+                                                                                                                                                                    write_emwin(std::stoi(parameters["write_emwin"])),
+                                                                                                                                                                    write_messages(std::stoi(parameters["write_messages"])),
+                                                                                                                                                                    write_dcs(std::stoi(parameters["write_dcs"])),
+                                                                                                                                                                    write_unknown(std::stoi(parameters["write_unknown"]))
         {
         }
 
@@ -81,7 +86,14 @@ namespace goes
                     if (pkt.header.apid != 2047)
                     {
                         if (decoders.count(vcdu.vcid) <= 0)
+                        {
                             decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
+                            decoders[vcdu.vcid]->write_images = write_images;
+                            decoders[vcdu.vcid]->write_emwin = write_emwin;
+                            decoders[vcdu.vcid]->write_messages = write_messages;
+                            decoders[vcdu.vcid]->write_dcs = write_dcs;
+                            decoders[vcdu.vcid]->write_unknown = write_unknown;
+                        }
                         decoders[vcdu.vcid]->work(pkt);
                     }
                 }
@@ -118,7 +130,7 @@ namespace goes
 
         std::vector<std::string> GOESLRITDataDecoderModule::getParameters()
         {
-            return {};
+            return {"write_images", "write_emwin", "write_messages", "write_dcs", "write_unknown"};
         }
 
         std::shared_ptr<ProcessingModule> GOESLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

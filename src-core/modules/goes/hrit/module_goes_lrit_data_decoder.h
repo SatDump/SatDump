@@ -12,6 +12,12 @@ namespace goes
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
+            bool write_images;
+            bool write_emwin;
+            bool write_messages;
+            bool write_dcs;
+            bool write_unknown;
+
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
