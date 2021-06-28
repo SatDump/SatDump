@@ -1,7 +1,7 @@
 #include "credits.h"
 #include "imgui/imgui.h"
 
-void renderCredits(int wwidth, int wheight)
+void renderCredits(int /*wwidth*/, int /*wheight*/)
 {
     ImGui::SetCursorPos({50, 100});
     ImGui::BeginGroup();
