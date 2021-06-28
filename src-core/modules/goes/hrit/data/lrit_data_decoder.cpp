@@ -13,11 +13,24 @@
 #include <algorithm>
 #include "common/miniz/miniz.h"
 #include "common/miniz/miniz_zip.h"
+#include "common/utils.h"
 
 namespace goes
 {
     namespace hrit
     {
+        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, int channel)
+        {
+            std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
+                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+            return utc_filename;
+        }
+
         // CRC Implementation from LRIT-Missin-Specific-Document.pdf
         uint16_t computeCRC(const uint8_t *data, int size)
         {
@@ -213,6 +226,71 @@ namespace goes
 
                 ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
 
+                TimeStampRecord timestamp_record(&lrit_data[all_headers[TimeStampRecord::TYPE]]);
+                std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
+
+                // Process as a specific dataset
+                {
+                    // GOES-R Data, from GOES-16 to 19.
+                    // Once again peeked in goestools for the meso detection, sorry :-)
+                    if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
+                                                               noaa_header.product_id == 17 ||
+                                                               noaa_header.product_id == 18 ||
+                                                               noaa_header.product_id == 19))
+                    {
+                        std::vector<std::string> cutFilename = splitString(current_filename, '-');
+
+                        if (cutFilename.size() >= 4)
+                        {
+                            int mode = -1;
+                            int channel = -1;
+
+                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
+                            {
+                                AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+
+                                std::string region = "Others";
+
+                                if (ancillary_record.meta.count("Region") > 0)
+                                {
+                                    std::string regionName = ancillary_record.meta["Region"];
+
+                                    if (regionName == "Full Disk")
+                                    {
+                                        region = "Full Disk";
+                                    }
+                                    else if (regionName == "Mesoscale")
+                                    {
+                                        if (cutFilename[2] == "CMIPM1")
+                                            region = "Mesoscale 1";
+                                        else if (cutFilename[2] == "CMIPM2")
+                                            region = "Mesoscale 2";
+                                        else
+                                            region = "Mesoscale";
+                                    }
+                                }
+
+                                std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + region;
+
+                                if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
+                                    std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
+
+                                current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "G" + std::to_string(noaa_header.product_id), channel);
+                            }
+                        }
+                    }
+                    // Himawari-8 rebroadcast
+                    else if (primary_header.file_type_code == 0 && noaa_header.product_id == 43)
+                    {
+                        std::string subdir = "Himawari-8/Full Disk";
+
+                        if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
+                            std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
+
+                        current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM8", noaa_header.product_subid); // SubID = Channel
+                    }
+                }
+
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
                 {
                     SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
@@ -330,7 +408,7 @@ namespace goes
                 file.write((char *)lrit_data.data(), lrit_data.size());
                 file.close();
             }
-            // Otherwise, write as generic, unknown stuff
+            // Otherwise, write as generic, unknown stuff. This should not happen
             else
             {
                 if (!std::filesystem::exists(directory + "/LRIT"))
@@ -349,8 +427,7 @@ namespace goes
         {
             if (segmentedDecoder.image_id != -1)
             {
-                segmentedDecoder.image.save_png(std::string(directory + "/" + current_filename + ".png").c_str());
-                segmentedDecoder = SegmentedLRITImageDecoder();
+                finalizeLRITData();
             }
         }
 

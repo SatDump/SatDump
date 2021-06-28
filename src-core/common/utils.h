@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <algorithm>
 #include <map>
+#include <string>
+#include <vector>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 
@@ -17,5 +19,9 @@ T most_common(InputIt begin, InputIt end)
         else
             counts[*it] = 1;
     }
-    return std::max_element(counts.begin(), counts.end(), [](const std::pair<T, int> &pair1, const std::pair<T, int> &pair2) { return pair1.second < pair2.second; })->first;
+    return std::max_element(counts.begin(), counts.end(), [](const std::pair<T, int> &pair1, const std::pair<T, int> &pair2)
+                            { return pair1.second < pair2.second; })
+        ->first;
 }
+
+std::vector<std::string> splitString(std::string input, char del);
