@@ -74,6 +74,9 @@ namespace goes
                 // Parse this transport frame
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
+                if (vcdu.vcid == 63)
+                    continue;
+
                 if (demuxers.count(vcdu.vcid) <= 0)
                     demuxers.emplace(std::pair<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_shared<ccsds::ccsds_1_0_1024::Demuxer>(884, false)));
 
