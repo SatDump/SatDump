@@ -35,6 +35,13 @@ namespace goes
             int image_id = -1;
         };
 
+        enum lrit_image_status
+        {
+            RECEIVING,
+            SAVING,
+            IDLE
+        };
+
         class LRITDataDecoder
         {
         private:
@@ -67,6 +74,15 @@ namespace goes
 
             void save();
             void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+
+        public:
+            // UI Stuff
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
         };
     } // namespace atms
 } // namespace jpss

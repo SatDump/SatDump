@@ -15,6 +15,7 @@
 #include "common/miniz/miniz_zip.h"
 #include "common/utils.h"
 #include "common/others/strptime.h"
+#include "imgui/imgui_image.h"
 
 namespace goes
 {
@@ -44,6 +45,9 @@ namespace goes
         LRITDataDecoder::LRITDataDecoder(std::string dir) : directory(dir)
         {
             file_in_progress = false;
+            imageStatus = IDLE;
+            img_height = 0;
+            img_width = 0;
         }
 
         LRITDataDecoder::~LRITDataDecoder()
@@ -315,14 +319,18 @@ namespace goes
 
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
                 {
+                    imageStatus = RECEIVING;
+
                     SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
 
                     if (segmentedDecoder.image_id != segment_id_header.image_identifier)
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
+                            imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                            imageStatus = RECEIVING;
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
@@ -336,11 +344,25 @@ namespace goes
                     else
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
 
+                    // If the UI is active, update texture
+                    if (textureID > 0)
+                    {
+                        // Downscale image
+                        img_height = 1000;
+                        img_width = 1000;
+                        cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
+                        imageScaled.resize(img_width, img_height);
+                        uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width);
+                        hasToUpdate = true;
+                    }
+
                     if (segmentedDecoder.isComplete())
                     {
+                        imageStatus = SAVING;
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
+                        imageStatus = IDLE;
                     }
                 }
                 else

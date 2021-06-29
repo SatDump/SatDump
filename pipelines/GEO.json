@@ -87,6 +87,54 @@
             }
         }
     },
+    "goes_hrit": {
+        "name": "GOES-R HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1694.1
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "927000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.02",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "goes_hrit_decoder": {}
+            },
+            "products": {
+                "goes_lrit_data_decoder": {
+                    "write_images": "1",
+                    "write_emwin": "1",
+                    "write_messages": "1",
+                    "write_dcs": "1",
+                    "write_unknown": "0"
+                }
+            }
+        }
+    },
     "elektro_tlm": {
         "name": "ELEKTRO-L L-Band TLM",
         "live": true,
