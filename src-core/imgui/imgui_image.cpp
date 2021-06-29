@@ -28,3 +28,27 @@ void ushort_to_rgba(uint16_t *input, uint32_t *output, int size, int channels)
         }
     }
 }
+
+void uchar_to_rgba(uint8_t *input, uint32_t *output, int size, int channels)
+{
+    if (channels == 1)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            uint8_t c;
+            c = input[i];
+            output[i] = ((uint32_t)255 << 24) | ((uint32_t)c << 16) | ((uint32_t)c << 8) | (uint32_t)c;
+        }
+    }
+    else if (channels == 3)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            uint8_t r, g, b;
+            r = input[size * 0 + i];
+            g = input[size * 1 + i];
+            b = input[size * 2 + i];
+            output[i] = ((uint32_t)255 << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+        }
+    }
+}

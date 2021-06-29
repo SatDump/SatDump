@@ -5,7 +5,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "data/lrit_data_decoder.h"
+#include "imgui/imgui_image.h"
 
 #define BUFFER_SIZE 8192
 
@@ -35,6 +35,20 @@ namespace goes
             return {DATA_FILE};
         }
 
+        GOESLRITDataDecoderModule::~GOESLRITDataDecoderModule()
+        {
+            for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+            {
+                std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+
+                if (dec->textureID > 0)
+                {
+
+                    delete[] dec->textureBuffer;
+                }
+            }
+        }
+
         void GOESLRITDataDecoderModule::process()
         {
             std::ifstream data_in;
@@ -61,7 +75,6 @@ namespace goes
             logger->info("Demultiplexing and deframing...");
 
             std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
-            std::map<int, std::shared_ptr<LRITDataDecoder>> decoders;
 
             while (!data_in.eof())
             {
@@ -117,9 +130,71 @@ namespace goes
                 dec.second->save();
         }
 
+        const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+        const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+        const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
         void GOESLRITDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+            if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
+            {
+                bool hasImage = false;
+
+                for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+                {
+                    std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+
+                    if (dec->textureID == 0)
+                    {
+                        dec->textureID = makeImageTexture();
+                        dec->textureBuffer = new uint32_t[1000 * 1000];
+                    }
+
+                    if (dec->imageStatus != IDLE)
+                    {
+                        if (dec->hasToUpdate)
+                        {
+                            dec->hasToUpdate = true;
+                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
+                        }
+
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        {
+                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (dec->imageStatus == SAVING)
+                                ImGui::TextColored(colorSynced, "Writing image...");
+                            else if (dec->imageStatus == RECEIVING)
+                                ImGui::TextColored(colorSyncing, "Receiving...");
+                            else
+                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                }
+
+                if (!hasImage) // Add empty tab if there is no image yet
+                {
+                    if (ImGui::BeginTabItem("No image yet"))
+                    {
+                        ImGui::Dummy({200 * ui_scale, 200 * ui_scale});
+                        ImGui::SameLine();
+                        ImGui::BeginGroup();
+                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                        ImGui::TextColored(colorNosync, "Idle (Image)...");
+                        ImGui::EndGroup();
+                        ImGui::EndTabItem();
+                    }
+                }
+            }
+            ImGui::EndTabBar();
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

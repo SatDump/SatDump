@@ -48,8 +48,11 @@ namespace goes
                 filesize = 0;
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
-            data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".cadu");
+            if (output_data_type == DATA_FILE)
+            {
+                data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
+                d_output_files.push_back(d_output_file_hint + ".cadu");
+            }
 
             logger->info("Using input symbols " + d_input_file);
             logger->info("Decoding to " + d_output_file_hint + ".cadu");
@@ -113,11 +116,15 @@ namespace goes
                 // Write it out if it's not garbage
                 if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
                 {
-                    data_out.put(0x1a);
-                    data_out.put(0xcf);
-                    data_out.put(0xfc);
-                    data_out.put(0x1d);
-                    data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
+                    frameBuffer[0] = 0x1a;
+                    frameBuffer[1] = 0xcf;
+                    frameBuffer[2] = 0xfc;
+                    frameBuffer[3] = 0x1d;
+
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)frameBuffer, FRAME_SIZE);
+                    else
+                        output_fifo->write(frameBuffer, FRAME_SIZE);
                 }
 
                 if (input_data_type == DATA_FILE)
@@ -131,7 +138,8 @@ namespace goes
                 }
             }
 
-            data_out.close();
+            if (output_data_type == DATA_FILE)
+                data_out.close();
             if (input_data_type == DATA_FILE)
                 data_in.close();
         }
