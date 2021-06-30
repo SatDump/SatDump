@@ -58,6 +58,7 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 #include "hackrf.h"
 #include "limesdr.h"
 #include "spyserver.h"
+#include "rtltcp.h"
 
 void initSDRs()
 {
@@ -98,6 +99,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     results.insert(results.end(), spyserver_results.begin(), spyserver_results.end());
 #endif
 
+#ifndef DISABLE_SDR_RTLTCP
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> rtltcp_results = SDRRtlTcp::getDevices();
+    results.insert(results.end(), rtltcp_results.begin(), rtltcp_results.end());
+#endif
+
     return results;
 }
 
@@ -108,9 +114,13 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return SDRSpyServer::drawParamsUI();
-    else
 #endif
-        return std::map<std::string, std::string>();
+#ifndef DISABLE_SDR_RTLTCP
+    if (type == RTLTCP)
+        return SDRRtlTcp::drawParamsUI();
+#endif
+
+    return std::map<std::string, std::string>();
 }
 
 std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
@@ -137,6 +147,10 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return "spyserver";
+#endif
+#ifndef DISABLE_SDR_RTLTCP
+    if (type == RTLTCP)
+        return "rtltcp";
 #endif
 
     return nullptr;
@@ -166,6 +180,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return std::make_shared<SDRSpyServer>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_RTLTCP
+    if (type == RTLTCP)
+        return std::make_shared<SDRRtlTcp>(parameters, id);
 #endif
 
     return nullptr;

@@ -15,7 +15,8 @@ enum sdr_device_type
     RTLSDR,
     HACKRF,
     LIMESDR,
-    SPYSERVER
+    SPYSERVER,
+    RTLTCP
 };
 
 class SDRDevice

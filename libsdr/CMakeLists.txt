@@ -4,7 +4,8 @@ include(CheckFunctionExists)
 option(ENABLE_SDR_AIRSPY                "Enable Airspy Support"                                  ON)
 option(ENABLE_SDR_RTLSDR                "Enable RTL-SDR Support"                                 ON)
 option(ENABLE_SDR_HACKRF                "Enable HackRF Support."                                 ON)
-option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              ON)
+option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              OFF) # Currently broken so disabled by default
+option(ENABLE_SDR_RTLTCP                "Enable RTL-TCP Support."                                ON)
 
 file(GLOB_RECURSE LIBSDR_CPPS  sdr/*.cpp)
 
@@ -20,6 +21,7 @@ if(ANDROID)
         set(ENABLE_SDR_RTLSDR ON)
         set(ENABLE_SDR_HACKRF OFF)
         set(ENABLE_SDR_SPYSERVER OFF)
+        set(ENABLE_SDR_RTLTCP OFF)
 endif()
 
 if(NOT ENABLE_SDR_AIRSPY)
@@ -33,6 +35,9 @@ target_compile_definitions(sdr PUBLIC DISABLE_SDR_HACKRF="1")
 endif()
 if(NOT ENABLE_SDR_SPYSERVER)
 target_compile_definitions(sdr PUBLIC DISABLE_SDR_SPYSERVER="1")
+endif()
+if(NOT ENABLE_SDR_RTLTCP)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_RTLTCP="1")
 endif()
 
 if(MSVC)
