@@ -117,11 +117,22 @@ void RTLTCPClient::receiveSamples(uint8_t *buffer, int size)
     }
 }
 
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
 struct rtl_tcp_command
 {
     unsigned char cmd;
     unsigned int prm;
-} __attribute__((packed));
+}
+#ifdef _WIN32
+;
+#else
+__attribute__((packed));
+#endif
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
 
 void RTLTCPClient::sendCmd(uint8_t cmd, uint32_t prm)
 {
