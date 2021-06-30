@@ -121,7 +121,7 @@ struct rtl_tcp_command
 {
     unsigned char cmd;
     unsigned int prm;
-};
+} __attribute__((packed));
 
 void RTLTCPClient::sendCmd(uint8_t cmd, uint32_t prm)
 {
