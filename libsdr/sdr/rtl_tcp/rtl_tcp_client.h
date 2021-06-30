@@ -2,6 +2,9 @@
 
 #ifndef DISABLE_SDR_RTLTCP
 #include <string>
+#ifdef _WIN32
+#include <WinSock2.h>
+#endif
 
 class RTLTCPClient
 {
