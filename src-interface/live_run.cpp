@@ -155,9 +155,12 @@ void stopRealLive()
     settings["sdr"][radio->getID()] = radio->getParameters();
     saveSettings();
 
-    if (finishProcessing)
+    bool doFinishProcessing = false;
+
+    if (finishProcessing && live_pipeline->getOutputFiles().size() > 0)
     {
         input_file = live_pipeline->getOutputFiles()[0];
+        doFinishProcessing = true;
     }
 
     logger->info("Destroying objects");
@@ -170,7 +173,7 @@ void stopRealLive()
 
     live_processing = false;
 
-    if (finishProcessing)
+    if (doFinishProcessing)
     {
         std::vector<Pipeline>::iterator pipeline = std::find_if(pipelines.begin(),
                                                                 pipelines.end(),
