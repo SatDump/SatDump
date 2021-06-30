@@ -108,7 +108,7 @@ namespace proba
             rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
 
             // Write it out
-            if (cor > 48)
+            if (cor > 50 || pos == 0)
             {
                 data_out.put(0x1a);
                 data_out.put(0xcf);

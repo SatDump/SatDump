@@ -108,8 +108,8 @@ namespace saral
             // RS Correction
             rs.decode_interlaved(&frameBuffer[4], true, 4, errors);
 
-            // Write it out if it's not garbage
-            if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
+            // Write it out
+            if (cor > 50 || pos == 0)
             {
                 data_out.put(0x1a);
                 data_out.put(0xcf);

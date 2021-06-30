@@ -1,12 +1,13 @@
 #include "module_jason3_decoder.h"
 #include "logger.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/sathelper/correlator.h"
 #include "common/sathelper/packetfixer.h"
 #include "common/sathelper/derandomizer.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
-#include <cmath>
+#include "common/codings/viterbi/viterbi27.h"
+#include "common/codings/correlator.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 
 #define FRAME_SIZE 1279
 #define ENCODED_FRAME_SIZE 1279 * 8 * 2
@@ -17,22 +18,34 @@ size_t getFilesize(std::string filepath);
 namespace jason3
 {
     Jason3DecoderModule::Jason3DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                    viterbi(ENCODED_FRAME_SIZE / 2)
+                                                                                                                                                    viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
-        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
+    }
+
+    std::vector<ModuleDataType> Jason3DecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> Jason3DecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
     }
 
     Jason3DecoderModule::~Jason3DecoderModule()
     {
         delete[] buffer;
-        delete[] buffer_2;
     }
 
     void Jason3DecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -42,151 +55,83 @@ namespace jason3
         time_t lastTime = 0;
 
         // Correlator
-        sathelper::Correlator correlator;
-
-        // Diff decoder
-        diff::NRZMDiff diff_dec;
-
-        // All differentially encoded sync words
-        correlator.addWord((uint64_t)0xfc4ef4fd0cc2df89);
-        correlator.addWord((uint64_t)0x56275254a66b45ec);
-        correlator.addWord((uint64_t)0x03b10b02f33d2076);
-        correlator.addWord((uint64_t)0xa9d8adab5994ba89);
-
-        correlator.addWord((uint64_t)0xfc8df8fe0cc1ef46);
-        correlator.addWord((uint64_t)0xa91ba1a859978adc);
-        correlator.addWord((uint64_t)0x03720701f33e1089);
-        correlator.addWord((uint64_t)0x56e45e57a6687546);
+        Correlator correlator(QPSK, 0xfc4ef4fd0cc2df89);
 
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
         sathelper::Derandomizer derand;
-        reedsolomon::ReedSolomon rs(reedsolomon::RS239);
+        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
 
-        // Other variables
-        sathelper::PhaseShift phaseShift;
-        bool iqinv;
+        phase_t phase;
+        bool swap;
 
-        while (!data_in.eof())
+        // Vectors are inverted
+        diff::NRZMDiff diff;
+
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            // Read buffer
-            data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
-
-            // Correlate less if we're locked to go faster
-            if (!locked)
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-            {
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE / 64);
-                if (correlator.getHighestCorrelationPosition() != 0)
-                {
-                    correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-                    if (correlator.getHighestCorrelationPosition() > 30)
-                        locked = false;
-                }
-            }
-
-            // Correlator statistics
-            cor = correlator.getHighestCorrelation();
-            uint32_t word = correlator.getCorrelationWordNumber();
-            uint32_t pos = correlator.getHighestCorrelationPosition();
-
-            if (cor > 10)
-            {
-                iqinv = (word / 4) > 0;
-                switch (word % 4)
-                {
-                case 0:
-                    phaseShift = sathelper::PhaseShift::DEG_0;
-                    break;
-
-                case 1:
-                    phaseShift = sathelper::PhaseShift::DEG_90;
-                    break;
-
-                case 2:
-                    phaseShift = sathelper::PhaseShift::DEG_180;
-                    break;
-
-                case 3:
-                    phaseShift = sathelper::PhaseShift::DEG_270;
-                    break;
-
-                default:
-                    break;
-                }
-
-                if (pos != 0)
-                {
-                    shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
-                    uint32_t offset = ENCODED_FRAME_SIZE - pos;
-
-                    data_in.read((char *)buffer_2, pos);
-
-                    for (int i = offset; i < ENCODED_FRAME_SIZE; i++)
-                    {
-                        buffer[i] = buffer_2[i - offset];
-                    }
-                }
-                else
-                {
-                }
-
-                // Correct phase ambiguity
-                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, phaseShift, iqinv);
-
-                // Viterbi
-                viterbi.decode(buffer, frameBuffer);
-
-                diff_dec.decode(frameBuffer, FRAME_SIZE);
-
-                // RS Correction
-                rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
-
-                // Derandomize that frame
-                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
-
-                // Write it out if it's not garbage
-                if (cor > 50)
-                    locked = true;
-
-                if (locked)
-                {
-                    //data_out_total += FRAME_SIZE;
-                    data_out.put(0x1a);
-                    data_out.put(0xcf);
-                    data_out.put(0xfc);
-                    data_out.put(0x1d);
-                    data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
-                }
-            }
+            // Read a buffer
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
             else
+                input_fifo->read((uint8_t *)buffer, ENCODED_FRAME_SIZE);
+
+            int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
+
+            locked = pos == 0; // Update locking state
+
+            if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
-                locked = false;
+                std::memmove(buffer, &buffer[pos], pos);
+
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
+                else
+                    input_fifo->read((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
             }
 
-            progress = data_in.tellg();
+            // Correct phase ambiguity
+            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+
+            // Viterbi
+            viterbi.work((int8_t *)buffer, frameBuffer);
+
+            // Differential decoding
+            diff.decode(frameBuffer, FRAME_SIZE);
+
+            // Derandomize that frame
+            derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+
+            // RS Correction
+            rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
+
+            // Write it out
+            if (cor > 50 || pos == 0)
+            {
+                data_out.put(0x1a);
+                data_out.put(0xcf);
+                data_out.put(0xfc);
+                data_out.put(0x1d);
+                data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
+            }
+
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.GetPercentBER()) + "%, Lock : " + lock_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.ber() * 100) + "%, Lock : " + lock_state);
             }
         }
 
         data_out.close();
-        data_in.close();
-    }
-
-    void Jason3DecoderModule::shiftWithConstantSize(uint8_t *arr, int pos, int length)
-    {
-        for (int i = 0; i < length - pos; i++)
-        {
-            arr[i] = arr[pos + i];
-        }
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
@@ -197,7 +142,7 @@ namespace jason3
     {
         ImGui::Begin("Jason-3 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-        float ber = viterbi.GetPercentBER() / 100.0f;
+        float ber = viterbi.ber();
 
         ImGui::BeginGroup();
         {
@@ -234,7 +179,7 @@ namespace jason3
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -271,7 +216,8 @@ namespace jason3
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }
