@@ -12,9 +12,6 @@ namespace meteor
     protected:
         bool diff_decode;
 
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
-
         uint8_t *buffer;
 
         std::ifstream data_in;
