@@ -40,7 +40,7 @@ bool RTLTCPClient::connectClient(std::string address, int port)
     hints.ai_protocol = IPPROTO_TCP;
 
     // Resolve the server address and port
-    ret = getaddrinfo(address.c_str(), port, &hints, &result);
+    ret = getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &result);
     if (ret != 0)
     {
         logger->error("Could not connect get RTL-TCP Server address info!");
@@ -55,7 +55,7 @@ bool RTLTCPClient::connectClient(std::string address, int port)
     {
         logger->error("Could not connect to RTL-TCP Server!");
         closesocket(socket_fd);
-        continue;
+        return false;
     }
 
     freeaddrinfo(result);
@@ -96,7 +96,7 @@ void RTLTCPClient::disconnect()
     if (is_connected)
     {
 #ifdef _WIN32
-        closesocket(sock);
+        closesocket(socket_fd);
         WSACleanup();
 #else
         close(socket_fd);
@@ -110,7 +110,7 @@ void RTLTCPClient::receiveSamples(uint8_t *buffer, int size)
     if (is_connected)
     {
 #ifdef _WIN32
-        recv(sock, (char *)buf, count, 0);
+        recv(socket_fd, (char *)buffer, size, 0);
 #else
         read(socket_fd, buffer, size);
 #endif
@@ -120,8 +120,8 @@ void RTLTCPClient::receiveSamples(uint8_t *buffer, int size)
 struct rtl_tcp_command
 {
     unsigned char cmd;
-    unsigned int param;
-} __attribute__((packed));
+    unsigned int prm;
+};
 
 void RTLTCPClient::sendCmd(uint8_t cmd, uint32_t prm)
 {
@@ -130,7 +130,7 @@ void RTLTCPClient::sendCmd(uint8_t cmd, uint32_t prm)
         rtl_tcp_command command = {cmd, htonl(prm)};
 
 #ifdef _WIN32
-        send(sock, (char *)&command, sizeof(rtl_tcp_command), 0);
+        send(socket_fd, (char *)&command, sizeof(rtl_tcp_command), 0);
 #else
         write(socket_fd, (char *)&command, sizeof(rtl_tcp_command));
 #endif
