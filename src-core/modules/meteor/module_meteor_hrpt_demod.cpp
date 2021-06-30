@@ -131,7 +131,8 @@ namespace meteor
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
         constellation.draw();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

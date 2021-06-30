@@ -31,6 +31,8 @@ protected:
     std::map<std::string, std::string> d_parameters;
     ModuleDataType input_data_type, output_data_type;
 
+    bool streamingInput; // Used to know if we should treat the input as a stream or file
+
 public:
     ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     virtual std::vector<ModuleDataType> getInputTypes() { return {DATA_FILE}; }

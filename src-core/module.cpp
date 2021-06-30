@@ -10,6 +10,7 @@ ProcessingModule::ProcessingModule(std::string input_file, std::string output_fi
                                                                                                                                           d_parameters(parameters)
 {
     input_active = false;
+    streamingInput = false;
 }
 
 std::vector<std::string> ProcessingModule::getOutputs()
@@ -20,6 +21,9 @@ std::vector<std::string> ProcessingModule::getOutputs()
 void ProcessingModule::setInputType(ModuleDataType type)
 {
     input_data_type = type;
+
+    if (type != DATA_FILE)
+        streamingInput = true;
 }
 
 void ProcessingModule::setOutputType(ModuleDataType type)
