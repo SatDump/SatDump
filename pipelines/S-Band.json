@@ -142,7 +142,17 @@
     },
     "jason3_link": {
         "name": "Jason-3 S-Band Link",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [],
         "samplerate": 3e6,
         "baseband_type": "i16",
