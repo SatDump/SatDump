@@ -41,7 +41,7 @@ namespace jason3
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = ccsds::parseCCSDSTime<ccsds::CCSDSPacket>(packet, 16617, 1);
+            time_t currentTime = ccsds::parseCCSDSTime(packet, 16617, 1);
             predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
