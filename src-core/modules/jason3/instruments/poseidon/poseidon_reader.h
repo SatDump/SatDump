@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_jason/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
 #define cimg_use_png
@@ -23,7 +23,7 @@ namespace jason3
             PoseidonReader();
             ~PoseidonReader();
 
-            void work(ccsds::ccsds_1_0_jason::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned char> getImageHeight();
             cimg_library::CImg<unsigned char> getImageScatter();
         };

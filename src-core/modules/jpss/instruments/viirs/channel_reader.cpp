@@ -28,7 +28,7 @@ namespace jpss
         {
         }
 
-        void VIIRSReader::feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void VIIRSReader::feed(ccsds::CCSDSPacket &packet)
         {
             if (packet.header.apid != channelSettings.apid)
                 return;

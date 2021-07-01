@@ -30,7 +30,7 @@ namespace aqua
             }
         }
 
-        void AIRSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void AIRSReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 4280)
                 return;

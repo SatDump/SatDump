@@ -67,13 +67,13 @@ namespace jpss
                     atms_cadu++;
 
                     // Demux
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 528)
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 528)
                         {

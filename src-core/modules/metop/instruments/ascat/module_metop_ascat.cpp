@@ -53,12 +53,12 @@ namespace metop
                     ascat_cadu++;
 
                     // Demux
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         ascatreader.work(pkt);
                         ascat_ccsds++;
