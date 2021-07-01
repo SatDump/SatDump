@@ -54,7 +54,7 @@ namespace goes
         {
         }
 
-        void LRITDataDecoder::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void LRITDataDecoder::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.header.sequence_flag == 1 || packet.header.sequence_flag == 3)
             {
@@ -95,7 +95,7 @@ namespace goes
             }
         }
 
-        void LRITDataDecoder::processLRITHeader(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt)
+        void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
         {
             lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
             parseHeader();
@@ -190,7 +190,7 @@ namespace goes
             }
         }
 
-        void LRITDataDecoder::processLRITData(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt)
+        void LRITDataDecoder::processLRITData(ccsds::CCSDSPacket &pkt)
         {
             if (is_rice_compressed)
             {

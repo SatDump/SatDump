@@ -14,12 +14,12 @@ namespace fengyun
         {
         }
 
-        void ERMReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void ERMReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1018)
                 return;
 
-            time_t currentTime = ccsds::parseCCSDSTime<ccsds::ccsds_1_0_1024::CCSDSPacket>(packet, 0);
+            time_t currentTime = ccsds::parseCCSDSTime<ccsds::CCSDSPacket>(packet, 0);
 
             if (imageData.count(currentTime) <= 0)
             {

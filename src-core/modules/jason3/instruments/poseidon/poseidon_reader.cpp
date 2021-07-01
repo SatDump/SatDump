@@ -27,13 +27,13 @@ namespace jason3
             delete jason3_object;
         }
 
-        void PoseidonReader::work(ccsds::ccsds_1_0_jason::CCSDSPacket &packet)
+        void PoseidonReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 930)
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = ccsds::parseCCSDSTime<ccsds::ccsds_1_0_jason::CCSDSPacket>(packet, 16617, 1);
+            time_t currentTime = ccsds::parseCCSDSTime<ccsds::CCSDSPacket>(packet, 16617, 1);
             predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map

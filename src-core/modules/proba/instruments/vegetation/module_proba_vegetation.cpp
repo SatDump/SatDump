@@ -59,11 +59,11 @@ namespace proba
 
                 if (vcid == 4)
                 {
-                    std::vector<ccsds::ccsds_1_0_proba::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
+                    std::vector<ccsds::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
 
                     if (pkts.size() > 0)
                     {
-                        for (ccsds::ccsds_1_0_proba::CCSDSPacket pkt : pkts)
+                        for (ccsds::CCSDSPacket pkt : pkts)
                         {
                             if (pkt.header.apid == 2047)
                                 continue;

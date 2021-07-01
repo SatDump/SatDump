@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cstring>
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include "channels.h"
 
 namespace jpss
@@ -11,9 +11,9 @@ namespace jpss
     namespace viirs
     {
         // VIIRS Segment Header packet
-        struct HeaderPacket : public ccsds::ccsds_1_0_1024::CCSDSPacket
+        struct HeaderPacket : public ccsds::CCSDSPacket
         {
-            HeaderPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+            HeaderPacket(ccsds::CCSDSPacket &packet)
             {
                 header = packet.header;
                 payload = packet.payload;
@@ -181,7 +181,7 @@ namespace jpss
         };
 
         // VIIRS Body / End packet
-        struct BodyPacket : public ccsds::ccsds_1_0_1024::CCSDSPacket
+        struct BodyPacket : public ccsds::CCSDSPacket
         {
             bool empty;
 
@@ -190,7 +190,7 @@ namespace jpss
                 empty = true;
             };
 
-            BodyPacket(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+            BodyPacket(ccsds::CCSDSPacket &packet)
             {
                 if (packet.payload.size() < 88)
                     return;

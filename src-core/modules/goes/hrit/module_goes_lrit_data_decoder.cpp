@@ -94,10 +94,10 @@ namespace goes
                     demuxers.emplace(std::pair<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_shared<ccsds::ccsds_1_0_1024::Demuxer>(884, false)));
 
                 // Demux
-                std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = demuxers[vcdu.vcid]->work(cadu);
+                std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxers[vcdu.vcid]->work(cadu);
 
                 // Push into processor (filtering APID 103 and 104)
-                for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                 {
                     if (pkt.header.apid != 2047)
                     {

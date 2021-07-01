@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <map>
 #include <array>
 
@@ -21,7 +21,7 @@ namespace fengyun
             ERMReader();
             ~ERMReader();
             int lines;
-            void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel();
         };
     }

@@ -22,7 +22,7 @@ namespace proba
             output_folder = outputfolder;
         }
 
-        void SWAPReader::work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet)
+        void SWAPReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 65530)
                 return;

@@ -17,7 +17,7 @@ namespace aqua
                 delete[] channels[i];
         }
 
-        void AMSUA2Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void AMSUA2Reader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 350)
                 return;

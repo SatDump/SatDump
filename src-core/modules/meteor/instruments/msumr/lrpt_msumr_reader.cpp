@@ -30,7 +30,7 @@ namespace meteor
                 }
             }
 
-            void MSUMRReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+            void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
                 //if (packet.payload.size() - 1 != packet.header.packet_length)
                 //    return;

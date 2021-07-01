@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <tuple>
 
 #define cimg_use_png
@@ -27,7 +27,7 @@ namespace meteor
             public:
                 MSUMRReader();
                 ~MSUMRReader();
-                void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+                void work(ccsds::CCSDSPacket &packet);
                 cimg_library::CImg<unsigned short> getChannel(int channel, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2, int channel3);

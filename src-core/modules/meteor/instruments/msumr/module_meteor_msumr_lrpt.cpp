@@ -52,8 +52,8 @@ namespace meteor
 
                 if (vcdu.vcid == 5)
                 {
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> frames = ccsds_demuxer.work(cadu);
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket pkt : frames)
+                    std::vector<ccsds::CCSDSPacket> frames = ccsds_demuxer.work(cadu);
+                    for (ccsds::CCSDSPacket pkt : frames)
                     {
                         msureader.work(pkt);
                     }

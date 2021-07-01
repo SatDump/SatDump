@@ -95,11 +95,11 @@ namespace jpss
                 {
                     virr_cadu++;
 
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
 
                     ccsds_frames += ccsds2.size();
 
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsds2)
+                    for (ccsds::CCSDSPacket &pkt : ccsds2)
                     {
                         // Moderate resolution channels
                         reader_m4.feed(pkt);

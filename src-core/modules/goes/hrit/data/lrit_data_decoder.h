@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <cmath>
 #define cimg_use_png
 #define cimg_display 0
@@ -57,9 +57,9 @@ namespace goes
             std::map<int, int> all_headers;
             SegmentedLRITImageDecoder segmentedDecoder;
 
-            void processLRITHeader(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt);
+            void processLRITHeader(ccsds::CCSDSPacket &pkt);
             void parseHeader();
-            void processLRITData(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt);
+            void processLRITData(ccsds::CCSDSPacket &pkt);
             void finalizeLRITData();
 
         public:
@@ -73,7 +73,7 @@ namespace goes
             bool write_unknown = true;
 
             void save();
-            void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
 
             lrit_image_status imageStatus;
             int img_width, img_height;

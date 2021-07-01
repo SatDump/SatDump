@@ -27,7 +27,7 @@ namespace aura
             delete[] visibleChannel;
         }
 
-        void OMIReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void OMIReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() < 4116)
