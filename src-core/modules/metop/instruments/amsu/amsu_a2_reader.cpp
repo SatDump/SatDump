@@ -70,7 +70,7 @@ namespace metop
                 for (int i = 0; i < 30; i++)
                 {
                     uint16_t pixel = lineBuffer[i * 14 + channel];
-                    channels[channel][lines * 30 + 30 - i] = pixel;
+                    channels[channel][lines * 30 + 29 - i] = pixel;
                 }
             }
 
