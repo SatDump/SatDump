@@ -12,7 +12,7 @@ namespace proba
         {
         private:
             int count;
-            std::map<uint16_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> currentOuts;
+            std::map<time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> currentOuts;
             std::string output_folder;
 
         public:

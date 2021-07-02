@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "common/image/image.h"
 #include "resources.h"
+#include "common/ccsds/ccsds_time.h"
 
 #define WRITE_IMAGE_LOCAL(image, path)         \
     image.save_png(std::string(path).c_str()); \
@@ -27,18 +28,33 @@ namespace proba
             if (packet.payload.size() < 65530)
                 return;
 
-            uint16_t marker = packet.payload[10 - 6] << 8 | packet.payload[11 - 6];
+            time_t timestamp = ccsds::parseCCSDSTime(packet, 18473) + 4 * 3600;
 
             // Start new image
-            if (currentOuts.find(marker) == currentOuts.end())
+            if (currentOuts.find(timestamp) == currentOuts.end())
             {
-                logger->info("Found new SWAP image! Saving as SWAP-" + std::to_string(count) + ".jpeg. Marker " + std::to_string(marker));
-                currentOuts.insert(std::pair<uint16_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>>(marker, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>(0, std::pair<std::string, std::vector<uint8_t>>("SWAP-" + std::to_string(count), std::vector<uint8_t>()))));
+                std::tm *timeReadable = gmtime(&timestamp);
+                std::string timestamp_str = (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "/" +
+                                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
+                                            std::to_string(timeReadable->tm_year + 1900) + " " +
+                                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
+                                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
+                                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+                logger->info("Found new SWAP image! Saving as SWAP-" + std::to_string(count) + ".jpeg. Timestamp " + timestamp_str);
+
+                std::string utc_filename = "SWAP_" +                                                                                                                    // Instrument name
+                                           std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                           (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                           (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                           (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                           (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                           (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+                currentOuts.insert(std::pair<time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>>(timestamp, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>(0, std::pair<std::string, std::vector<uint8_t>>(utc_filename, std::vector<uint8_t>()))));
                 count++;
             }
 
-            int &currentFrameCount = currentOuts[marker].first;
-            std::vector<uint8_t> &currentOutVec = currentOuts[marker].second.second;
+            int &currentFrameCount = currentOuts[timestamp].first;
+            std::vector<uint8_t> &currentOutVec = currentOuts[timestamp].second.second;
 
             if (currentFrameCount == 0)
                 currentOutVec.insert(currentOutVec.end(), &packet.payload[14 + 78], &packet.payload[14 + 78 + 65530 - 14]);
@@ -64,7 +80,7 @@ namespace proba
                 logger->error("Necessary resources were not found, no correction will be applied!");
             }
 
-            for (std::pair<const uint16_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
+            for (std::pair<const time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
             {
                 std::string filename = currentPair.second.second.first;
                 std::vector<uint8_t> &currentOutVec = currentPair.second.second.second;
