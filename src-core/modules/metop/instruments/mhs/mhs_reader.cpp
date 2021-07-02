@@ -1,4 +1,5 @@
 #include "mhs_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -47,6 +48,7 @@ namespace metop
         {
             cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 90, lines);
             img.equalize(1000);
+            img.normalize(0, 65535);
             return img;
         }
     } // namespace mhs

@@ -1,5 +1,6 @@
 #include "mwhs_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include "logger.h"
 
 namespace fengyun
 {
@@ -19,7 +20,8 @@ namespace fengyun
             if (packet.payload.size() < 1018)
                 return;
 
-            time_t currentTime = ccsds::parseCCSDSTime(packet, 0);
+            time_t currentTime = ccsds::parseCCSDSTime(packet, 10957);
+            currentTime += 12 * 3600;
             int marker = packet.payload[350] & 2;
 
             if (imageData.count(currentTime) <= 0 && marker == 0)
