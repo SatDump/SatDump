@@ -71,9 +71,9 @@ bool RTLTCPClient::connectClient(std::string address, int port)
     sockaddr_in server_address;
     hostent *server = gethostbyname(address.c_str());
 
-    memset(&server_address, 0, sizeof(sockaddr_in));
+    bzero(&server_address, sizeof(sockaddr_in));
     server_address.sin_family = AF_INET;
-    memcpy((char *)server->h_addr, (char *)&server_address.sin_addr.s_addr, server->h_length);
+    bcopy((char *)server->h_addr, (char *)&server_address.sin_addr.s_addr, server->h_length);
     server_address.sin_port = htons(uint16_t(port));
 
     int ret = connect(socket_fd, (sockaddr *)&server_address, sizeof(server_address));
