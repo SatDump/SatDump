@@ -93,7 +93,7 @@ namespace metop
             {
                 for (int i = 0; i < 30; i++)
                 {
-                    channels[channel][lines * 30 + 30 - i] = lineBuffer[i * 26 + channel];
+                    channels[channel][lines * 30 + 29 - i] = lineBuffer[i * 26 + channel];
                     ;
                 }
             }
