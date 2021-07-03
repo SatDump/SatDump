@@ -588,6 +588,14 @@ namespace jpss
                 }
                 WRITE_IMAGE(imagem16dnb, directory + "/VIIRS-M16-DNB.png");
             }
+
+            if (image_i4.height() > 0)
+            {
+                logger->info("Equalized Ch 4...");
+                image_i4.equalize(1000);
+                image_i4.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image_i4, directory + "/VIIRS-I4-EQU.png");
+            }
         }
 
         void JPSSVIIRSDecoderModule::drawUI(bool window)
