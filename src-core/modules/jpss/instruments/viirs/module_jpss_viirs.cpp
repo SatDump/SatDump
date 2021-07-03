@@ -318,7 +318,7 @@ namespace jpss
             logger->info("Making DNB night version...");
             cimg_library::CImg<unsigned short> image_dnb_night = image_dnb;
             for (int i = 0; i < image_dnb_night.height() * image_dnb_night.width(); i++)
-                image_dnb_night.data()[i] *= 15;
+                image_dnb_night[i] = std::min(65535, 20 * image_dnb_night[i]);
 
             // Takes a while so we say how we're doing
             if (image_m1.height() > 0)
