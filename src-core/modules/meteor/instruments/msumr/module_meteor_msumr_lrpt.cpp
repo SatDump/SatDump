@@ -9,6 +9,7 @@
 #include "lrpt_msumr_reader.h"
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
+#include "common/image/image.h"
 #include "modules/meteor/meteor.h"
 
 #define BUFFER_SIZE 8192
@@ -144,10 +145,11 @@ namespace meteor
                 WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
             }
 
-            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
+            if (msureader.getChannel(4).size() > 0)
             {
                 cimg_library::CImg<unsigned short> image5 = msureader.getChannel(4);
                 logger->info("Equalized Ch 5...");
+                image::linear_invert(image5);
                 image5.equalize(1000);
                 image5.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(image5, directory + "/MSU-MR-5-EQU.png");
