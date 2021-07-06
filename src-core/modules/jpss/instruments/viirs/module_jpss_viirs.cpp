@@ -576,7 +576,7 @@ namespace jpss
                     tempImageDNB.resize(tempImage5.width(), tempImage5.height());
 
                     for (int i = 0; i < tempImageDNB.height() * tempImageDNB.width(); i++)
-                        tempImageDNB.data()[i] *= 15;
+                        tempImageDNB[i] = std::min(65535, 20 * tempImageDNB[i]);
 
                     imagem16dnb = cimg_library::CImg<unsigned short>(3200 - 50, tempImage5.height(), 1, 1);
                     tempImage5.equalize(1000);
