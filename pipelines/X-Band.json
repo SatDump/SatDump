@@ -67,6 +67,40 @@
             }
         }
     },
+    "fengyun3_e_ahrpt": {
+        "name": "FengYun-3 E AHRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "30000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0063",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_mersill": {
+                    "correct_bowtie": "1"
+                },
+                "fengyun_mwhs2": {}
+            }
+        }
+    },
     "aqua_db": {
         "name": "Aqua DB",
         "live": false,
