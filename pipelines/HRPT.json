@@ -136,6 +136,7 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_virr": {},
                 "fengyun_erm": {},
                 "fengyun_mwhs": {},
@@ -182,6 +183,7 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_virr": {},
                 "fengyun_erm": {},
                 "fengyun_mwhs": {}
@@ -223,6 +225,9 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "51"
+                },
                 "fengyun_virr": {},
                 "fengyun_erm": {},
                 "fengyun_mwhs2": {}
@@ -268,6 +273,9 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "51"
+                },
                 "fengyun_virr": {},
                 "fengyun_erm": {},
                 "fengyun_mwhs2": {}

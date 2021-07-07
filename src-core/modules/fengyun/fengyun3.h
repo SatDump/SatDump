@@ -1,5 +1,15 @@
 #pragma once
 
+#define FY3_A_SCID 49
+#define FY3_B_SCID 50
+#define FY3_C_SCID 51
+#define FY3_D_SCID 52
+
+#define FY3_A_NORAD 32958
+#define FY3_B_NORAD 37214
+#define FY3_C_NORAD 39260
+#define FY3_D_NORAD 43010
+
 #define FY3_ORBIT_HEIGHT 842
 
 #define FY3_VIRR_SWATH 2800

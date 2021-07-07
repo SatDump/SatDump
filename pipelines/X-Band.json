@@ -58,6 +58,9 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "52"
+                },
                 "fengyun_mersi2": {
                     "correct_bowtie": "1"
                 },
