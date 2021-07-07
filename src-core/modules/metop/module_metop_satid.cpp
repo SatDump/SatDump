@@ -34,7 +34,7 @@ namespace metop
 
             logger->info("Scanning through CADUs...");
 
-            std::vector<int> scids;
+            std::vector<uint8_t> scids;
 
             while (!data_in.eof())
             {
