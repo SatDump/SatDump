@@ -33,6 +33,7 @@
                 }
             },
             "products": {
+                "metop_satid": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -85,6 +86,7 @@
                 }
             },
             "products": {
+                "metop_satid": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},

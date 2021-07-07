@@ -8,6 +8,7 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "modules/metop/metop.h"
+#include "nlohmann/json_utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -58,7 +59,21 @@ namespace metop
 
             logger->info("Demultiplexing and deframing...");
 
-            std::string hpt_filename = "M0x_" + getHRPTReaderTimeStamp() + ".hpt";
+            // Get satellite info
+            nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+            int scid = satData.contains("scid") > 0 ? satData["scid"].get<int>() : 0;
+
+            // Name the file properly
+            std::string hpt_prefix = "M0x_";
+
+            if (scid == METOP_A_SCID)
+                hpt_prefix = "M01_";
+            else if (scid == METOP_B_SCID)
+                hpt_prefix = "M02_";
+            else if (scid == METOP_C_SCID)
+                hpt_prefix = "M03_";
+
+            std::string hpt_filename = hpt_prefix + getHRPTReaderTimeStamp() + ".hpt";
             std::ofstream output_hrpt_reader(directory + "/" + hpt_filename, std::ios::binary);
             d_output_files.push_back(directory + "/" + hpt_filename);
 
