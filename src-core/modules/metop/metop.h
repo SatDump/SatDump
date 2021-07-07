@@ -1,8 +1,8 @@
 #pragma once
 
-#define METOP_A_SCID 13
-#define METOP_B_SCID 12
-#define METOP_C_SCID 11
+#define METOP_A_SCID 12
+#define METOP_B_SCID 11
+#define METOP_C_SCID 13
 
 #define METOP_A_NORAD 29499
 #define METOP_B_NORAD 38771
