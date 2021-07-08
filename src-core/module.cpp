@@ -73,6 +73,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/metop/instruments/ascat/module_metop_ascat.h"
 #include "modules/metop/instruments/admin_msg/module_metop_admin_msg.h"
 #include "modules/metop/module_metop_satid.h"
+#include "modules/metop/instruments/sem/module_metop_sem.h"
 
 #include "modules/fengyun/module_new_fengyun_ahrpt_decoder.h"
 #include "modules/fengyun/module_fengyun_ahrpt_decoder.h"
@@ -179,6 +180,7 @@ void registerModules()
     REGISTER_MODULE(metop::ascat::MetOpASCATDecoderModule);
     REGISTER_MODULE(metop::admin_msg::MetOpAdminMsgDecoderModule);
     REGISTER_MODULE(metop::satid::MetOpSatIDModule);
+    REGISTER_MODULE(metop::sem::MetOpSEMDecoderModule);
 
     // FengYun-3
     REGISTER_MODULE(fengyun::NewFengyunAHRPTDecoderModule);
