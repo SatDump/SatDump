@@ -6,6 +6,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/ccsds/ccsds_time.h"
+#include "sem_reader.h"
+#include "nlohmann/json_utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -38,7 +40,11 @@ namespace metop
 
             logger->info("Demultiplexing and deframing...");
 
-            std::ofstream outpuft("sem.ccsds");
+            // Get satellite info
+            nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+            int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+            SEMReader reader(norad);
 
             while (!data_in.eof())
             {
@@ -49,7 +55,7 @@ namespace metop
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 // Right channel? (VCID 12 is MHS)
-                if (vcdu.vcid == 24)
+                if (vcdu.vcid == 3)
                 {
                     sem_cadu++;
 
@@ -62,22 +68,9 @@ namespace metop
                     // Push into processor (filtering APID 64)
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                       if (pkt.header.apid == 384)
+                        if (pkt.header.apid == 37)
                         {
-                            logger->info(pkt.payload.size());
-
-                            time_t currentTime = ccsds::parseCCSDSTime(pkt, 10957);
-                            std::tm *timeReadable = gmtime(&currentTime);
-                            std::string timestamp = (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "/" +
-                                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
-                                                    std::to_string(timeReadable->tm_year + 1900) + " " +
-                                                    (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
-                                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
-                                                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-                            logger->info("Scan time : " + timestamp);
-
-                            outpuft.write((char *)pkt.payload.data(), 18732);
-
+                            reader.work(pkt);
                             sem_ccsds++;
                         }
                     }
@@ -102,6 +95,9 @@ namespace metop
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            logger->info("Channel 1...");
+            WRITE_IMAGE(reader.getImage(), directory + "/SEM-MAP.png");
         }
 
         void MetOpSEMDecoderModule::drawUI(bool window)
