@@ -34,7 +34,6 @@
             },
             "products": {
                 "metop_satid": {},
-                "metop_sem": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -45,6 +44,7 @@
                     "write_all": "0"
                 },
                 "metop_ascat": {},
+                "metop_sem": {},
                 "metop_admin_msg": {}
             }
         }
@@ -88,7 +88,6 @@
             },
             "products": {
                 "metop_satid": {},
-                "metop_sem": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -99,6 +98,7 @@
                     "write_all": "0"
                 },
                 "metop_ascat": {},
+                "metop_sem": {},
                 "metop_admin_msg": {}
             }
         }
