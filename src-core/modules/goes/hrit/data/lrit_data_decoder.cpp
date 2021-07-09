@@ -258,6 +258,7 @@ namespace goes
 
                                 std::string region = "Others";
 
+                                // Parse Region
                                 if (ancillary_record.meta.count("Region") > 0)
                                 {
                                     std::string regionName = ancillary_record.meta["Region"];
@@ -277,12 +278,20 @@ namespace goes
                                     }
                                 }
 
+                                // Parse scan time
+                                std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                                if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
+                                {
+                                    std::string scanTime = ancillary_record.meta["Time of frame start"];
+                                    strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                                }
+
                                 std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + region;
 
                                 if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                                     std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
-                                current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "G" + std::to_string(noaa_header.product_id), channel);
+                                current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
                             }
                         }
                     }
