@@ -97,8 +97,11 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "56"
+                },
                 "fengyun_mersill": {
-                    "correct_bowtie": "1"
+                    "correct_bowtie": "0"
                 },
                 "fengyun_mwhs2": {}
             }

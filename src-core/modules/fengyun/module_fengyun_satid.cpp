@@ -48,7 +48,8 @@ namespace fengyun
                 if (vcdu.spacecraft_id == FY3_A_SCID ||
                     vcdu.spacecraft_id == FY3_B_SCID ||
                     vcdu.spacecraft_id == FY3_C_SCID ||
-                    vcdu.spacecraft_id == FY3_D_SCID)
+                    vcdu.spacecraft_id == FY3_D_SCID ||
+                    vcdu.spacecraft_id == FY3_E_SCID)
                     scids.push_back(vcdu.spacecraft_id);
 
                 progress = data_in.tellg();
@@ -89,6 +90,8 @@ namespace fengyun
                 sat_name = "FengYun-3C";
             else if (scid == FY3_D_SCID)
                 sat_name = "FengYun-3D";
+            else if (scid == FY3_E_SCID)
+                sat_name = "FengYun-3E";
 
             int norad = 0;
 
@@ -100,6 +103,8 @@ namespace fengyun
                 norad = FY3_C_NORAD;
             else if (scid == FY3_D_SCID)
                 norad = FY3_D_NORAD;
+            else if (scid == FY3_E_SCID)
+                norad = FY3_E_NORAD;
 
             logger->info("This is satellite is " + sat_name + ", NORAD " + std::to_string(norad));
 
