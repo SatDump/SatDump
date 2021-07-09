@@ -164,7 +164,7 @@
                     "agc_rate": "0.00001",
                     "rrc_alpha": "0.7",
                     "rrc_taps": "31",
-                    "costas_bw": "0.001",
+                    "costas_bw": "0.005",
                     "buffer_size": "8192"
                 }
             },
