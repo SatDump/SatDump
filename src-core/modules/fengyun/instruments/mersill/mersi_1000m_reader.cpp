@@ -6,7 +6,7 @@ namespace fengyun
     {
         MERSI1000Reader::MERSI1000Reader()
         {
-            imageBuffer.create(20000 * 2048);
+            imageBuffer.create(20000 * 1536);
             mersiLineBuffer = new unsigned short[40960];
             frames = 0;
         }
@@ -19,10 +19,10 @@ namespace fengyun
 
         void MERSI1000Reader::pushFrame(std::vector<uint8_t> &data)
         {
-            int pos = 63; // MERSI-2 Data position, found through a bit viewer
+            int pos = 96 + 54; // MERSI-LL Data position, found through a bit viewer
 
             // Convert into 12-bits values
-            for (int i = 0; i < 2048; i += 2)
+            for (int i = 0; i < 1536; i += 2)
             {
                 byteBufShift[0] = data[pos + 0] << 3 | data[pos + 1] >> 5;
                 byteBufShift[1] = data[pos + 1] << 3 | data[pos + 2] >> 5;
@@ -34,23 +34,23 @@ namespace fengyun
             }
 
             // Load into our image buffer
-            for (int i = 0; i < 2048; i++)
+            for (int i = 0; i < 1536; i++)
             {
                 uint16_t pixel = mersiLineBuffer[i];
-                imageBuffer[frames * 2048 + (2048 - i)] = pixel * 15;
+                imageBuffer[frames * 1536 + (1535 - i)] = pixel * 15;
             }
 
             // Frame counter
             frames++;
 
             // Make sure we have enough room
-            if (frames * 2048 >= (int)imageBuffer.size())
-                imageBuffer.resize((frames + 1000) * 2048);
+            if (frames * 1536 >= (int)imageBuffer.size())
+                imageBuffer.resize((frames + 1000) * 1536);
         }
 
         cimg_library::CImg<unsigned short> MERSI1000Reader::getImage()
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 2048, frames);
+            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 1536, frames);
         }
     } // namespace mersi1
 } // namespace fengyun
