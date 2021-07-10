@@ -167,6 +167,46 @@ namespace fengyun
 
             logger->info("Channel 18...");
             WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image18, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image18), directory + "/MERSILL-18.png");
+
+            logger->info("388 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image388(1536, mersiCorrelator->image17.height(), 1, 3);
+                image388.draw_image(0, 0, 0, 0, mersiCorrelator->image3);
+                image388.draw_image(6, 0, 0, 1, mersiCorrelator->image8);
+                image388.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
+                image388.normalize(0, std::numeric_limits<unsigned char>::max());
+                image388.equalize(1000);
+
+                if (bowtie)
+                    image388 = image::bowtie::correctGenericBowTie(image388, 3, scanHeight_1000, alpha, beta);
+
+                WRITE_IMAGE(image388, directory + "/MERSILL-RGB-388.png");
+                cimg_library::CImg<unsigned short> corrected388 = image::earth_curvature::correct_earth_curvature(image388,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSILL_SWATH,
+                                                                                                                  FY3_MERSI_RES1000);
+                WRITE_IMAGE(corrected388, directory + "/MERSILL-RGB-388-CORRECTED.png");
+            }
+
+            logger->info("838 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image8838(1536, mersiCorrelator->image17.height(), 1, 3);
+                image8838.draw_image(6, 0, 0, 0, mersiCorrelator->image8);
+                image8838.draw_image(0, 0, 0, 1, mersiCorrelator->image3);
+                image8838.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
+                image8838.normalize(0, std::numeric_limits<unsigned char>::max());
+                image8838.equalize(1000);
+
+                if (bowtie)
+                    image8838 = image::bowtie::correctGenericBowTie(image8838, 3, scanHeight_1000, alpha, beta);
+
+                WRITE_IMAGE(image8838, directory + "/MERSILL-RGB-838.png");
+                cimg_library::CImg<unsigned short> corrected838 = image::earth_curvature::correct_earth_curvature(image8838,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSILL_SWATH,
+                                                                                                                  FY3_MERSI_RES1000);
+                WRITE_IMAGE(corrected838, directory + "/MERSILL-RGB-838-CORRECTED.png");
+            }
         }
 
         void FengyunMERSILLDecoderModule::drawUI(bool window)

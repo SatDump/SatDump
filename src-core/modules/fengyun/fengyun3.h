@@ -18,5 +18,6 @@
 #define FY3_VIRR_RES 1.1
 
 #define FY3_MERSI_SWATH 2900
+#define FY3_MERSILL_SWATH 2100 // Not sure what the swath is so... Tried what worked
 #define FY3_MERSI_RES250 0.250
 #define FY3_MERSI_RES1000 1

@@ -59,7 +59,6 @@ namespace fengyun
 
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-
                         if (pkt.header.apid == 16)
                             mwhs_reader.work(pkt);
                     }

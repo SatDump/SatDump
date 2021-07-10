@@ -91,6 +91,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/fengyun/module_fengyun_satid.h"
 #include "modules/fengyun/instruments/mersill/module_fengyun_mersill.h"
 #include "modules/fengyun/instruments/windrad/module_fengyun_windrad.h"
+#include "modules/fengyun/instruments/mwts3/module_fengyun_mwts3.h"
 
 #include "modules/aqua/module_aqua_db_decoder.h"
 #include "modules/aqua/instruments/airs/module_aqua_airs.h"
@@ -201,6 +202,7 @@ void registerModules()
     REGISTER_MODULE(fengyun::satid::FengYunSatIDModule);
     REGISTER_MODULE(fengyun::mersill::FengyunMERSILLDecoderModule);
     REGISTER_MODULE(fengyun::windrad::FengyunWindRADDecoderModule);
+    REGISTER_MODULE(fengyun::mwts3::FengyunMWTS3DecoderModule);
 
     // Aqua
     REGISTER_MODULE(aqua::AquaDBDecoderModule);
