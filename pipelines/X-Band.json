@@ -18,7 +18,7 @@
                 }
             },
             "cadu": {
-                "fengyun_mpt_decoder": {
+                "new_fengyun_mpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"
@@ -50,7 +50,7 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "new_fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1",
@@ -196,7 +196,7 @@
                 }
             },
             "cadu": {
-                "npp_hrd_decoder": {
+                "new_npp_hrd_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"
