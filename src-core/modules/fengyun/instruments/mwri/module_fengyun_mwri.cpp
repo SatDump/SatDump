@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "mwri_deframer.h"
 #include "mwri_reader.h"
-#include <iostream>
+
 #define BUFFER_SIZE 8192
 
 // Return filesize
