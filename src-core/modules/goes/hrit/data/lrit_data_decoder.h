@@ -42,6 +42,37 @@ namespace goes
             IDLE
         };
 
+        class GOESRFalseColorComposer
+        {
+        private:
+            cimg_library::CImg<unsigned char> ch2_curve, fc_lut;
+            cimg_library::CImg<unsigned char> ch2, ch13, falsecolor;
+            time_t time2, time13;
+
+            void generateCompo();
+
+        public:
+            GOESRFalseColorComposer();
+            ~GOESRFalseColorComposer();
+
+            bool hasData = false;
+
+            std::string filename;
+
+            void save(std::string directory);
+
+            void push2(cimg_library::CImg<unsigned char> img, time_t time);
+            void push13(cimg_library::CImg<unsigned char> img, time_t time);
+
+        public:
+            // UI Stuff
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
+        };
+
         class LRITDataDecoder
         {
         private:
@@ -61,6 +92,11 @@ namespace goes
             void parseHeader();
             void processLRITData(ccsds::CCSDSPacket &pkt);
             void finalizeLRITData();
+
+        public: // Other things
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
 
         public:
             LRITDataDecoder(std::string dir);

@@ -1,6 +1,4 @@
 #include "lrit_data_decoder.h"
-
-#include <iostream>
 #include "logger.h"
 #include <fstream>
 #include "lrit_header.h"
@@ -24,6 +22,18 @@ namespace goes
         std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, int channel)
         {
             std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
+                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+            return utc_filename;
+        }
+
+        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, std::string channel)
+        {
+            std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
                                        std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
@@ -292,6 +302,47 @@ namespace goes
                                     std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
                                 current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
+
+                                if ((region == "Full Disk" || region == "Mesoscale 1" || region == "Mesoscale 2"))
+                                {
+                                    std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer;
+
+                                    if (region == "Full Disk")
+                                    {
+                                        goes_r_fc_composer = goes_r_fc_composer_full_disk;
+
+                                        if (channel == 2)
+                                        {
+                                            goes_r_fc_composer->push2(segmentedDecoder.image, mktime(&scanTimestamp));
+                                        }
+                                        else if (channel == 13)
+                                        {
+                                            goes_r_fc_composer->push13(segmentedDecoder.image, mktime(&scanTimestamp));
+                                        }
+                                    }
+                                    else if (region == "Mesoscale 1" || region == "Mesoscale 2")
+                                    {
+                                        if (region == "Mesoscale 1")
+                                            goes_r_fc_composer = goes_r_fc_composer_meso1;
+                                        else if (region == "Mesoscale 2")
+                                            goes_r_fc_composer = goes_r_fc_composer_meso2;
+
+                                        cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length],
+                                                                                image_structure_record.columns_count,
+                                                                                image_structure_record.lines_count);
+
+                                        if (channel == 2)
+                                        {
+                                            goes_r_fc_composer->push2(image, mktime(&scanTimestamp));
+                                        }
+                                        else if (channel == 13)
+                                        {
+                                            goes_r_fc_composer->push13(image, mktime(&scanTimestamp));
+                                        }
+                                    }
+
+                                    goes_r_fc_composer->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                }
                             }
                         }
                     }
@@ -340,6 +391,16 @@ namespace goes
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                             imageStatus = RECEIVING;
+
+                            // Check if this is GOES-R
+                            if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
+                                                                       noaa_header.product_id == 17 ||
+                                                                       noaa_header.product_id == 18 ||
+                                                                       noaa_header.product_id == 19))
+                            {
+                                if (goes_r_fc_composer_full_disk->hasData)
+                                    goes_r_fc_composer_full_disk->save(directory);
+                            }
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
@@ -372,6 +433,16 @@ namespace goes
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         imageStatus = IDLE;
+
+                        // Check if this is GOES-R
+                        if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
+                                                                   noaa_header.product_id == 17 ||
+                                                                   noaa_header.product_id == 18 ||
+                                                                   noaa_header.product_id == 19))
+                        {
+                            if (goes_r_fc_composer_full_disk->hasData)
+                                goes_r_fc_composer_full_disk->save(directory);
+                        }
                     }
                 }
                 else
@@ -392,6 +463,18 @@ namespace goes
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
                         image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+
+                        // Check if this is GOES-R
+                        if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
+                                                                   noaa_header.product_id == 17 ||
+                                                                   noaa_header.product_id == 18 ||
+                                                                   noaa_header.product_id == 19))
+                        {
+                            if (goes_r_fc_composer_meso1->hasData)
+                                goes_r_fc_composer_meso1->save(directory);
+                            if (goes_r_fc_composer_meso2->hasData)
+                                goes_r_fc_composer_meso2->save(directory);
+                        }
                     }
                 }
             }
@@ -496,47 +579,6 @@ namespace goes
             {
                 finalizeLRITData();
             }
-        }
-
-        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder()
-        {
-            seg_count = 0;
-            seg_height = 0;
-            seg_width = 0;
-            image_id = -1;
-        }
-
-        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder(int max_seg, int segment_width, int segment_height, uint16_t id) : seg_count(max_seg), image_id(id)
-        {
-            segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
-                                                  { delete[] p; });
-            std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
-
-            image = cimg_library::CImg<unsigned char>(segment_width, segment_height * max_seg, 1);
-            seg_height = segment_height;
-            seg_width = segment_width;
-
-            image.fill(0);
-        }
-
-        SegmentedLRITImageDecoder::~SegmentedLRITImageDecoder()
-        {
-        }
-
-        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, int segc)
-        {
-            if (segc >= seg_count)
-                return;
-            std::memcpy(&image[(seg_height * seg_width) * segc], data, seg_height * seg_width);
-            segments_done.get()[segc] = true;
-        }
-
-        bool SegmentedLRITImageDecoder::isComplete()
-        {
-            bool complete = true;
-            for (int i = 0; i < seg_count; i++)
-                complete = complete && segments_done.get()[i];
-            return complete;
         }
     } // namespace atms
 } // namespace jpss
