@@ -23,6 +23,9 @@ namespace goes
                                                                                                                                                                     write_dcs(std::stoi(parameters["write_dcs"])),
                                                                                                                                                                     write_unknown(std::stoi(parameters["write_unknown"]))
         {
+            goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
+            goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
+            goes_r_fc_composer_meso2 = std::make_shared<GOESRFalseColorComposer>();
         }
 
         std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
@@ -43,10 +46,16 @@ namespace goes
 
                 if (dec->textureID > 0)
                 {
-
                     delete[] dec->textureBuffer;
                 }
             }
+
+            if (goes_r_fc_composer_full_disk->textureID > 0)
+                delete[] goes_r_fc_composer_full_disk->textureBuffer;
+            if (goes_r_fc_composer_meso1->textureID > 0)
+                delete[] goes_r_fc_composer_meso1->textureBuffer;
+            if (goes_r_fc_composer_meso2->textureID > 0)
+                delete[] goes_r_fc_composer_meso2->textureBuffer;
         }
 
         void GOESLRITDataDecoderModule::process()
@@ -109,6 +118,10 @@ namespace goes
                             decoders[vcdu.vcid]->write_messages = write_messages;
                             decoders[vcdu.vcid]->write_dcs = write_dcs;
                             decoders[vcdu.vcid]->write_unknown = write_unknown;
+
+                            decoders[vcdu.vcid]->goes_r_fc_composer_full_disk = goes_r_fc_composer_full_disk;
+                            decoders[vcdu.vcid]->goes_r_fc_composer_meso1 = goes_r_fc_composer_meso1;
+                            decoders[vcdu.vcid]->goes_r_fc_composer_meso2 = goes_r_fc_composer_meso2;
                         }
                         decoders[vcdu.vcid]->work(pkt);
                     }
@@ -171,6 +184,123 @@ namespace goes
                             if (dec->imageStatus == SAVING)
                                 ImGui::TextColored(colorSynced, "Writing image...");
                             else if (dec->imageStatus == RECEIVING)
+                                ImGui::TextColored(colorSyncing, "Receiving...");
+                            else
+                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                }
+
+                // Full disk FC
+                {
+                    if (goes_r_fc_composer_full_disk->textureID == 0)
+                    {
+                        goes_r_fc_composer_full_disk->textureID = makeImageTexture();
+                        goes_r_fc_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
+                    }
+
+                    if (goes_r_fc_composer_full_disk->imageStatus != IDLE)
+                    {
+                        if (goes_r_fc_composer_full_disk->hasToUpdate)
+                        {
+                            goes_r_fc_composer_full_disk->hasToUpdate = true;
+                            updateImageTexture(goes_r_fc_composer_full_disk->textureID,
+                                               goes_r_fc_composer_full_disk->textureBuffer,
+                                               goes_r_fc_composer_full_disk->img_width,
+                                               goes_r_fc_composer_full_disk->img_height);
+                        }
+
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem("FD Color"))
+                        {
+                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_full_disk->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (goes_r_fc_composer_full_disk->imageStatus == SAVING)
+                                ImGui::TextColored(colorSynced, "Writing image...");
+                            else if (goes_r_fc_composer_full_disk->imageStatus == RECEIVING)
+                                ImGui::TextColored(colorSyncing, "Receiving...");
+                            else
+                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                }
+
+                // Meso 1 FC
+                {
+                    if (goes_r_fc_composer_meso1->textureID == 0)
+                    {
+                        goes_r_fc_composer_meso1->textureID = makeImageTexture();
+                        goes_r_fc_composer_meso1->textureBuffer = new uint32_t[1000 * 1000];
+                    }
+
+                    if (goes_r_fc_composer_meso1->imageStatus != IDLE)
+                    {
+                        if (goes_r_fc_composer_meso1->hasToUpdate)
+                        {
+                            goes_r_fc_composer_meso1->hasToUpdate = true;
+                            updateImageTexture(goes_r_fc_composer_meso1->textureID,
+                                               goes_r_fc_composer_meso1->textureBuffer,
+                                               goes_r_fc_composer_meso1->img_width,
+                                               goes_r_fc_composer_meso1->img_height);
+                        }
+
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem("Meso 1 Color"))
+                        {
+                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_meso1->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (goes_r_fc_composer_meso1->imageStatus == SAVING)
+                                ImGui::TextColored(colorSynced, "Writing image...");
+                            else if (goes_r_fc_composer_meso1->imageStatus == RECEIVING)
+                                ImGui::TextColored(colorSyncing, "Receiving...");
+                            else
+                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                }
+
+                // Meso 2 FC
+                {
+                    if (goes_r_fc_composer_meso2->textureID == 0)
+                    {
+                        goes_r_fc_composer_meso2->textureID = makeImageTexture();
+                        goes_r_fc_composer_meso2->textureBuffer = new uint32_t[1000 * 1000];
+                    }
+
+                    if (goes_r_fc_composer_meso2->imageStatus != IDLE)
+                    {
+                        if (goes_r_fc_composer_meso2->hasToUpdate)
+                        {
+                            goes_r_fc_composer_meso2->hasToUpdate = true;
+                            updateImageTexture(goes_r_fc_composer_meso2->textureID,
+                                               goes_r_fc_composer_meso2->textureBuffer,
+                                               goes_r_fc_composer_meso2->img_width,
+                                               goes_r_fc_composer_meso2->img_height);
+                        }
+
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem("Meso 2 Color"))
+                        {
+                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_meso2->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (goes_r_fc_composer_meso2->imageStatus == SAVING)
+                                ImGui::TextColored(colorSynced, "Writing image...");
+                            else if (goes_r_fc_composer_meso2->imageStatus == RECEIVING)
                                 ImGui::TextColored(colorSyncing, "Receiving...");
                             else
                                 ImGui::TextColored(colorNosync, "Idle (Image)...");

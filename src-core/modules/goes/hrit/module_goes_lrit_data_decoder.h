@@ -21,6 +21,11 @@ namespace goes
 
             std::map<int, std::shared_ptr<LRITDataDecoder>> decoders;
 
+        private:
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
+
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             ~GOESLRITDataDecoderModule();
