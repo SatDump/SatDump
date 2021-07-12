@@ -231,6 +231,7 @@ void renderLiveProcessing()
 
                 if (it != pipelines.end())
                 {
+                    parameters.clear();
                     parameters.emplace("samplerate", std::string(samplerate));
                     parameters.emplace("baseband_format", "f32");
                     parameters.emplace("dc_block", dc_block ? "1" : "0");

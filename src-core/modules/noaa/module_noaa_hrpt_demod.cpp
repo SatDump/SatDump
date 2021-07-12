@@ -20,13 +20,28 @@ namespace noaa
 
     void NOAAHRPTDemodModule::init()
     {
+        float symbolrate = 665400;
+        float sps = float(d_samplerate) / symbolrate;
+
+        logger->info("SPS : " + std::to_string(sps));
+
         // Init DSP blocks
         if (input_data_type == DATA_FILE)
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+
+        // AGC
         agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.002e-3f, 1.0f, 0.5f / 32768.0f, 65536);
+
+        // PLL
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01f, 2) / 4.0f, (3.0f * M_PI * 100e3f) / (float)d_samplerate);
-        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, 665400.0f, 0.5f, 31));
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
+
+        // RRC
+        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)d_samplerate / 2.0f, symbolrate, 0.5f, 31));
+
+        // Clock Recovery
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, sps / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
+
+        // Deframer
         def = std::make_shared<NOAADeframer>(std::stoi(d_parameters["deframer_thresold"]));
     }
 
