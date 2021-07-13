@@ -233,10 +233,6 @@ namespace fengyun_svissr
         imageSavingThreadPool->stop();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void SVISSRImageDecoderModule::drawUI(bool window)
     {
         if (textureID == 0)
@@ -266,14 +262,14 @@ namespace fengyun_svissr
             ImGui::SameLine();
             if (backwardScan)
             {
-                ImGui::TextColored(colorNosync, "Imager rollback...");
+                ImGui::TextColored(IMCOLOR_NOSYNC, "Imager rollback...");
             }
             else
             {
                 if (writingImage)
-                    ImGui::TextColored(colorSynced, "Writing images...");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
                 else
-                    ImGui::TextColored(colorSyncing, "Receiving...");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
             }
         }
         ImGui::EndGroup();

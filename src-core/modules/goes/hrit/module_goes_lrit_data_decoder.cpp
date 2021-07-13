@@ -143,10 +143,6 @@ namespace goes
                 dec.second->save();
         }
 
-        const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-        const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-        const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
         void GOESLRITDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -182,11 +178,11 @@ namespace goes
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(colorSynced, "Writing image...");
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
                             else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(colorSyncing, "Receiving...");
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                             else
-                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -221,11 +217,11 @@ namespace goes
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (goes_r_fc_composer_full_disk->imageStatus == SAVING)
-                                ImGui::TextColored(colorSynced, "Writing image...");
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
                             else if (goes_r_fc_composer_full_disk->imageStatus == RECEIVING)
-                                ImGui::TextColored(colorSyncing, "Receiving...");
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                             else
-                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -260,11 +256,11 @@ namespace goes
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (goes_r_fc_composer_meso1->imageStatus == SAVING)
-                                ImGui::TextColored(colorSynced, "Writing image...");
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
                             else if (goes_r_fc_composer_meso1->imageStatus == RECEIVING)
-                                ImGui::TextColored(colorSyncing, "Receiving...");
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                             else
-                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -299,11 +295,11 @@ namespace goes
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (goes_r_fc_composer_meso2->imageStatus == SAVING)
-                                ImGui::TextColored(colorSynced, "Writing image...");
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
                             else if (goes_r_fc_composer_meso2->imageStatus == RECEIVING)
-                                ImGui::TextColored(colorSyncing, "Receiving...");
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                             else
-                                ImGui::TextColored(colorNosync, "Idle (Image)...");
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -318,7 +314,7 @@ namespace goes
                         ImGui::SameLine();
                         ImGui::BeginGroup();
                         ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(colorNosync, "Idle (Image)...");
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
                     }

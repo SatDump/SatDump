@@ -247,10 +247,6 @@ namespace goes
             imageSavingThreadPool->stop();
         }
 
-        const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-        const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-        const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
         void GVARImageDecoderModule::drawUI(bool window)
         {
             if (textureID == 0)
@@ -279,9 +275,9 @@ namespace goes
                 ImGui::Text("State : ");
                 ImGui::SameLine();
                 if (writingImage)
-                    ImGui::TextColored(colorSynced, "Writing images...");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
                 else
-                    ImGui::TextColored(colorSyncing, "Receiving...");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
             }
             ImGui::EndGroup();
 
