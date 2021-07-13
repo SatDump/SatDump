@@ -12,6 +12,7 @@
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "noaa_deframer.h"
 #include "common/widgets/constellation.h"
+#include "common/snr_estimator.h"
 
 namespace noaa
 {
@@ -42,7 +43,11 @@ namespace noaa
 
         int frame_count = 0;
 
+        M2M4SNREstimator snr_estimator;
+        float snr;
+
         // UI Stuff
+        float snr_history[200];
         widgets::ConstellationViewer constellation;
 
     public:

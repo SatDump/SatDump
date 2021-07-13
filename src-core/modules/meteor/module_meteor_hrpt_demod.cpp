@@ -16,6 +16,7 @@ namespace meteor
     {
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
+        snr = 0;
     }
 
     void METEORHRPTDemodModule::init()
@@ -96,6 +97,10 @@ namespace meteor
             if (dat_size <= 0)
                 continue;
 
+            // Estimate SNR, only on part of the samples to limit CPU usage
+            snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
+            snr = snr_estimator.snr();
+
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
             rec->output_stream->flush();
@@ -138,6 +143,10 @@ namespace meteor
             data_out.close();
     }
 
+    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
+    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
+    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
+
     void METEORHRPTDemodModule::drawUI(bool window)
     {
         ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -145,6 +154,24 @@ namespace meteor
         // Constellation
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
         constellation.draw();
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            {
+                ImGui::Text("SNR (dB) : ");
+                ImGui::SameLine();
+                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
+
+                std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
+                snr_history[200 - 1] = snr;
+
+                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+            }
+        }
+        ImGui::EndGroup();
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
