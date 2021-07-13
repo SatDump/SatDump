@@ -15,6 +15,7 @@
 #include "common/dsp/rational_resampler.h"
 #include "dsb_deframer.h"
 #include "common/widgets/constellation.h"
+#include "common/snr_estimator.h"
 
 namespace noaa
 {
@@ -48,7 +49,11 @@ namespace noaa
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
+        M2M4SNREstimator snr_estimator;
+        float snr;
+
         // UI Stuff
+        float snr_history[200];
         widgets::ConstellationViewer constellation;
 
     public:

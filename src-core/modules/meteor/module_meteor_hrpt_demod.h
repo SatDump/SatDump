@@ -13,6 +13,7 @@
 #include "common/dsp/file_source.h"
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "common/widgets/constellation.h"
+#include "common/snr_estimator.h"
 
 namespace meteor
 {
@@ -41,7 +42,11 @@ namespace meteor
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
+        M2M4SNREstimator snr_estimator;
+        float snr;
+
         // UI Stuff
+        float snr_history[200];
         widgets::ConstellationViewer constellation;
 
     public:
