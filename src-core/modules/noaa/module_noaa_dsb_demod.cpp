@@ -160,10 +160,6 @@ namespace noaa
         data_out.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void NOAADSBDemodModule::drawUI(bool window)
     {
         ImGui::Begin("NOAA DSB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -181,7 +177,7 @@ namespace noaa
             {
                 ImGui::Text("SNR (dB) : ");
                 ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
+                ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
 
                 std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
                 snr_history[200 - 1] = snr;
@@ -196,11 +192,11 @@ namespace noaa
                 ImGui::SameLine();
 
                 if (def->getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (def->getState() == 2 || def->getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("Frames : ");
 

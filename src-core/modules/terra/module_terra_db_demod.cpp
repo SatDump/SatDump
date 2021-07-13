@@ -108,9 +108,6 @@ namespace terra
         data_out.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
     void TerraDBDemodModule::drawUI(bool window)
     {
@@ -129,7 +126,7 @@ namespace terra
             {
                 ImGui::Text("SNR (dB) : ");
                 ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
+                ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
 
                 std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
                 snr_history[200 - 1] = snr;

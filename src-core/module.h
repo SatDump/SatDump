@@ -10,10 +10,16 @@
 #include "dll_export.h"
 #include "common/dsp/buffer.h"
 
+// Utils
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \
     d_output_files.push_back(path);
 #define UITO_C_STR(input) "%s", std::to_string(input).c_str()
+
+// Colors
+#define IMCOLOR_NOSYNC ImColor::HSV(0 / 360.0, 1, 1, 1.0)
+#define IMCOLOR_SYNCING ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0)
+#define IMCOLOR_SYNCED ImColor::HSV(113.0 / 360.0, 1, 1, 1.0)
 
 enum ModuleDataType
 {
