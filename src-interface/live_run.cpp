@@ -17,6 +17,7 @@
 #include <windows.h>
 #endif
 #include "common/widgets/fft_plot.h"
+#include "imgui/imgui_internal.h"
 
 #define FFT_BUFFER_SIZE 8192
 bool live_processing = false;
@@ -103,7 +104,7 @@ void processFFT(int)
     fft_run.unlock();
 }
 
-bool showUI = false;
+bool showUI = false, firstUIRun = true;
 
 widgets::FFTPlot fftPlotWidget(fft_buffer, FFT_BUFFER_SIZE, 0, 1000);
 
@@ -128,6 +129,7 @@ void startRealLive()
     // Start pipeline
     live_pipeline->start(moduleStream, processThreadPool);
 
+    firstUIRun = true;
     showUI = true;
 }
 
@@ -190,7 +192,6 @@ void stopRealLive()
 
 void renderLive()
 {
-
     // Safety
     if (showUI)
     {
@@ -210,6 +211,19 @@ void renderLive()
 
         if (ImGui::Button("Stop"))
         {
+            // Save windows positions & sizes
+            for (ImGuiWindow *win : ImGui::GetCurrentContext()->Windows)
+            {
+                if (win->Active)
+                {
+                    nlohmann::json &winJson = settings["live_windows"][downlink_pipeline][win->Name];
+                    winJson["size_x"] = win->Size.x;
+                    winJson["size_y"] = win->Size.y;
+                    winJson["pos_x"] = win->Pos.x;
+                    winJson["pos_y"] = win->Pos.y;
+                }
+            }
+
             showUI = false;
             processThreadPool.push([=](int)
                                    { stopRealLive(); });
@@ -217,6 +231,24 @@ void renderLive()
         ImGui::SameLine();
         ImGui::Checkbox("Finish processing", &finishProcessing);
         ImGui::End();
+
+        if (firstUIRun)
+        {
+            firstUIRun = false;
+
+            // Restore Window positions & sizes
+            for (ImGuiWindow *win : ImGui::GetCurrentContext()->Windows)
+            {
+                if (win->Active)
+                {
+                    nlohmann::json &winJson = settings["live_windows"][downlink_pipeline][win->Name];
+                    win->Size.x = winJson["size_x"].get<int>();
+                    win->Size.y = winJson["size_y"].get<int>();
+                    win->Pos.x = winJson["pos_x"].get<int>();
+                    win->Pos.y = winJson["pos_y"].get<int>();
+                }
+            }
+        }
     }
 }
 #endif
