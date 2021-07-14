@@ -239,13 +239,22 @@ void renderLive()
             // Restore Window positions & sizes
             for (ImGuiWindow *win : ImGui::GetCurrentContext()->Windows)
             {
-                if (win->Active)
+                if (settings.contains("live_windows"))
                 {
-                    nlohmann::json &winJson = settings["live_windows"][downlink_pipeline][win->Name];
-                    win->Size.x = winJson["size_x"].get<int>();
-                    win->Size.y = winJson["size_y"].get<int>();
-                    win->Pos.x = winJson["pos_x"].get<int>();
-                    win->Pos.y = winJson["pos_y"].get<int>();
+                    if (settings["live_windows"].contains(downlink_pipeline))
+                    {
+                        if (settings["live_windows"][downlink_pipeline].contains(win->Name))
+                        {
+                            if (win->Active)
+                            {
+                                nlohmann::json &winJson = settings["live_windows"][downlink_pipeline][win->Name];
+                                win->Size.x = winJson["size_x"].get<int>();
+                                win->Size.y = winJson["size_y"].get<int>();
+                                win->Pos.x = winJson["pos_x"].get<int>();
+                                win->Pos.y = winJson["pos_y"].get<int>();
+                            }
+                        }
+                    }
                 }
             }
         }
