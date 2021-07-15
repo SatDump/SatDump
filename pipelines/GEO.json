@@ -122,6 +122,10 @@
                 }
             },
             "cadu": {
+                "xrit_decoder": {
+                    "is_bpsk": "1",
+                    "diff_decode": "1"
+                }
             },
             "products": {
                 "goes_lrit_data_decoder": {
