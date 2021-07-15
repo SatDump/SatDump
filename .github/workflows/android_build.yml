@@ -28,6 +28,6 @@ jobs:
 
     - name: Upload APK
       uses: actions/upload-artifact@v2
-        with:
-          name: SatDump-debug.apk
-          path: $GITHUB_WORKSPACE/android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
+      with:
+        name: SatDump-debug.apk
+        path: $GITHUB_WORKSPACE/android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
