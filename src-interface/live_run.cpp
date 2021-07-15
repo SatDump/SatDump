@@ -104,7 +104,7 @@ void processFFT(int)
     fft_run.unlock();
 }
 
-bool showUI = false, firstUIRun = true;
+bool showUI = false, firstUIRun = false;
 
 widgets::FFTPlot fftPlotWidget(fft_buffer, FFT_BUFFER_SIZE, 0, 1000);
 
@@ -195,6 +195,37 @@ void renderLive()
     // Safety
     if (showUI)
     {
+        if (firstUIRun)
+        {
+            firstUIRun = false;
+
+            // Restore Window positions & sizes
+            if (settings.contains("live_windows"))
+            {
+                if (settings["live_windows"].contains(downlink_pipeline))
+                {
+                    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> winJson : settings["live_windows"][downlink_pipeline].items())
+                    {
+                        // Find or create
+                        ImGuiWindow *window = ImGui::FindWindowByName(winJson.key().c_str());
+                        const bool window_just_created = (window == NULL);
+                        if (window_just_created)
+                        {
+                            ImGui::Begin(winJson.key().c_str(), NULL);
+                            ImGui::End();
+                            window = ImGui::FindWindowByName(winJson.key().c_str());
+                        }
+
+                        nlohmann::json &win = winJson.value();
+                        window->Size.x = win["size_x"].get<int>();
+                        window->Size.y = win["size_y"].get<int>();
+                        window->Pos.x = win["pos_x"].get<int>();
+                        window->Pos.y = win["pos_y"].get<int>();
+                    }
+                }
+            }
+        }
+
         radio->drawUI();
 
         //ImGui::SetNextWindowPos({0, 0});
@@ -231,33 +262,6 @@ void renderLive()
         ImGui::SameLine();
         ImGui::Checkbox("Finish processing", &finishProcessing);
         ImGui::End();
-
-        if (firstUIRun)
-        {
-            firstUIRun = false;
-
-            // Restore Window positions & sizes
-            for (ImGuiWindow *win : ImGui::GetCurrentContext()->Windows)
-            {
-                if (settings.contains("live_windows"))
-                {
-                    if (settings["live_windows"].contains(downlink_pipeline))
-                    {
-                        if (settings["live_windows"][downlink_pipeline].contains(win->Name))
-                        {
-                            if (win->Active)
-                            {
-                                nlohmann::json &winJson = settings["live_windows"][downlink_pipeline][win->Name];
-                                win->Size.x = winJson["size_x"].get<int>();
-                                win->Size.y = winJson["size_y"].get<int>();
-                                win->Pos.x = winJson["pos_x"].get<int>();
-                                win->Pos.y = winJson["pos_y"].get<int>();
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 #endif
