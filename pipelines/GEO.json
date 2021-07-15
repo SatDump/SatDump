@@ -122,7 +122,6 @@
                 }
             },
             "cadu": {
-                "goes_hrit_decoder": {}
             },
             "products": {
                 "goes_lrit_data_decoder": {
