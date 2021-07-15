@@ -27,7 +27,7 @@ jobs:
       run: cd $GITHUB_WORKSPACE/android && git submodule update --init && chmod +x gradlew && ./gradlew assembleDebug
 
     - name: Upload APK
-          uses: actions/upload-artifact@v2
-          with:
-              name: SatDump-debug.apk
-              path: $GITHUB_WORKSPACE/android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
+      uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-debug.apk
+          path: $GITHUB_WORKSPACE/android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
