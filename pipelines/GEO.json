@@ -138,6 +138,82 @@
             }
         }
     },
+    "gk2a_lrit": {
+        "name": "GK-2A LRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1692.14
+        ],
+        "samplerate": 1e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": "128000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.02",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "xrit_decoder": {
+                    "is_bpsk": "1",
+                    "diff_decode": "0"
+                }
+            }
+        }
+    },
+    "gk2a_hrit": {
+        "name": "GK-2A HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1695.4
+        ],
+        "samplerate": 10e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "3000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.02",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "xrit_decoder": {
+                    "is_bpsk": "0",
+                    "diff_decode": "0"
+                }
+            }
+        }
+    },
     "elektro_tlm": {
         "name": "ELEKTRO-L L-Band TLM",
         "live": true,
