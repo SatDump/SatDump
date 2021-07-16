@@ -21,4 +21,7 @@ namespace image
 
     // Linear invert
     void linear_invert(cimg_library::CImg<unsigned short> &image);
+
+    // Contrast and brightness correction
+    void brightness_contrast(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount = 3);
 }

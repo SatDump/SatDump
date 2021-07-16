@@ -178,4 +178,24 @@ namespace image
             image[i] = 65535 - image[i];
         }
     }
+
+    void brightness_contrast(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount)
+    {
+        float brightness_v = brightness / 2.0f;
+        float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
+
+        for (int i = 0; i < image.height() * image.width() * channelCount; i++)
+        {
+            float v = image[i];
+
+            if (brightness_v < 0.0f)
+                v = v * (65535.0f + brightness_v);
+            else
+                v = v + ((65535.0f - v) * brightness_v);
+
+            v = (v - 32767.5f) * slant + 32767.5f;
+
+            image[i] = std::min<float>(65535, std::max<float>(0, v * 2.0f));
+        }
+    }
 }
