@@ -99,7 +99,10 @@ namespace xrit
             }
 
             // Correct phase ambiguity
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)(phase + 2), swap);
+            if (is_bpsk) // BPSK
+                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)(phase + 2), swap);
+            else // QPSK
+                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
@@ -157,17 +160,17 @@ namespace xrit
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                            ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                            ImColor::HSV(0, 0, 0));
+                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
+                                         ImColor::HSV(0, 0, 0));
 
                 if (is_bpsk)
                 {
                     for (int i = 0; i < 2048; i++)
                     {
                         draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
-                                                        ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
-                                                2 * ui_scale,
-                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                                          ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
+                                                   2 * ui_scale,
+                                                   ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                     }
                 }
                 else
@@ -175,9 +178,9 @@ namespace xrit
                     for (int i = 0; i < 2048; i++)
                     {
                         draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
-                                                        ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
-                                                2 * ui_scale,
-                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                                          ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
+                                                   2 * ui_scale,
+                                                   ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                     }
                 }
 
