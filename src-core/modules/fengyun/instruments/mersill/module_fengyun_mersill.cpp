@@ -207,6 +207,26 @@ namespace fengyun
                                                                                                                   FY3_MERSI_RES1000);
                 WRITE_IMAGE(corrected838, directory + "/MERSILL-RGB-838-CORRECTED.png");
             }
+
+            logger->info("338 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image338(1536, mersiCorrelator->image17.height(), 1, 3);
+                image338.draw_image(0, 0, 0, 0, mersiCorrelator->image3);
+                image338.draw_image(0, 0, 0, 1, mersiCorrelator->image3);
+                image338.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
+                //image338.normalize(0, std::numeric_limits<unsigned char>::max());
+                //image338.equalize(1000);
+
+                if (bowtie)
+                    image338 = image::bowtie::correctGenericBowTie(image338, 3, scanHeight_1000, alpha, beta);
+
+                WRITE_IMAGE(image338, directory + "/MERSILL-RGB-338.png");
+                cimg_library::CImg<unsigned short> corrected338 = image::earth_curvature::correct_earth_curvature(image338,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSILL_SWATH,
+                                                                                                                  FY3_MERSI_RES1000);
+                WRITE_IMAGE(corrected338, directory + "/MERSILL-RGB-338-CORRECTED.png");
+            }
         }
 
         void FengyunMERSILLDecoderModule::drawUI(bool window)
