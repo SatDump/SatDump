@@ -160,12 +160,25 @@ namespace xrit
                                             ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
                                             ImColor::HSV(0, 0, 0));
 
-                for (int i = 0; i < 2048; i++)
+                if (is_bpsk)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
+                    for (int i = 0; i < 2048; i++)
+                    {
+                        draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
                                                         ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
                                                 2 * ui_scale,
                                                 ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 2048; i++)
+                    {
+                        draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
+                                                        ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
+                                                2 * ui_scale,
+                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                    }
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
