@@ -9,6 +9,7 @@
 #include "common/image/image.h"
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
+#include "common/image/xfr.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -208,14 +209,21 @@ namespace fengyun
                 WRITE_IMAGE(corrected838, directory + "/MERSILL-RGB-838-CORRECTED.png");
             }
 
-            logger->info("338 Composite...");
+            logger->info("338 Composite... Thanks Arved! :-)");
             {
                 cimg_library::CImg<unsigned short> image338(1536, mersiCorrelator->image17.height(), 1, 3);
-                image338.draw_image(0, 0, 0, 0, mersiCorrelator->image3);
-                image338.draw_image(0, 0, 0, 1, mersiCorrelator->image3);
-                image338.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
-                //image338.normalize(0, std::numeric_limits<unsigned char>::max());
-                //image338.equalize(1000);
+                cimg_library::CImg<unsigned short> r = mersiCorrelator->image3,
+                                                   g = mersiCorrelator->image3,
+                                                   b = mersiCorrelator->image8;
+
+                image::xfr::XFR curveCorrection(0, 1023, 100, 0, 1023, 100, 0, 1023, 70);
+                image::xfr::applyXFR(curveCorrection, r, g, b);
+
+                image338.draw_image(0, 0, 0, 0, r);
+                image338.draw_image(0, 0, 0, 1, g);
+                image338.draw_image(6, 0, 0, 2, b);
+
+                image::brightness_contrast(image338, 0.360f, 0.357f);
 
                 if (bowtie)
                     image338 = image::bowtie::correctGenericBowTie(image338, 3, scanHeight_1000, alpha, beta);
