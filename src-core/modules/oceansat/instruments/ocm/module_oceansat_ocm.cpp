@@ -150,6 +150,43 @@ namespace oceansat
                                                                                                                   OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected754, directory + "/OCM-RGB-754-EQU-CORRECTED.png");
             }
+             logger->info("882 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image882(4072, reader.lines, 1, 3);
+                {
+                    image882.draw_image(0, 0, 0, 0, image8);
+                    image882.draw_image(0, 0, 0, 1, image8);
+                    image882.draw_image(0, 0, 0, 2, image2);
+                }
+                WRITE_IMAGE(image882, directory + "/OCM-RGB-882.png");
+                image882.equalize(1000);
+                image882.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image882, directory + "/OCM-RGB-882-EQU.png");
+                cimg_library::CImg<unsigned short> corrected882 = image::earth_curvature::correct_earth_curvature(image882,
+                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                                  OCEANSAT2_OCM2_SWATH,
+                                                                                                                  OCEANSAT2_OCM2_RES);
+                WRITE_IMAGE(corrected882, directory + "/OCM-RGB-882-EQU-CORRECTED.png");
+            }
+            
+            logger->info("662 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image662(4072, reader.lines, 1, 3);
+                {
+                    image662.draw_image(0, 0, 0, 0, image6);
+                    image662.draw_image(0, 0, 0, 1, image6);
+                    image662.draw_image(0, 0, 0, 2, image2);
+                }
+                WRITE_IMAGE(image662, directory + "/OCM-RGB-662.png");
+                image662.equalize(1000);
+                image662.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image662, directory + "/OCM-RGB-662-EQU.png");
+                cimg_library::CImg<unsigned short> corrected662 = image::earth_curvature::correct_earth_curvature(image662,
+                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                                  OCEANSAT2_OCM2_SWATH,
+                                                                                                                  OCEANSAT2_OCM2_RES);
+                WRITE_IMAGE(corrected662, directory + "/OCM-RGB-662-EQU-CORRECTED.png");
+            }
         }
 
         void OceansatOCMDecoderModule::drawUI(bool window)
