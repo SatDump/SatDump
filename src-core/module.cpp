@@ -152,7 +152,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/goes/gvar/module_gvar_decoder.h"
 #include "modules/goes/gvar/module_gvar_image_decoder.h"
 
-#include "modules/goes/hrit/module_goes_hrit_decoder.h"
+#include "modules/xrit/module_xrit_decoder.h"
 #include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
 
 #include "modules/fengyun_svissr/module_svissr_decoder.h"
@@ -274,12 +274,14 @@ void registerModules()
     REGISTER_MODULE(saral::SaralDecoderModule);
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
+    // xRIT
+    REGISTER_MODULE(xrit::XRITDecoderModule);
+
     // GOES - GVAR
     REGISTER_MODULE(goes::gvar::GVARDecoderModule);
     REGISTER_MODULE(goes::gvar::GVARImageDecoderModule);
 
     // GOES - HRIT
-    REGISTER_MODULE(goes::hrit::GOESHRITDecoderModule);
     REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
 
     // FengYun2 - S-VISSR
