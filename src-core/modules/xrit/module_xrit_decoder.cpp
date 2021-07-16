@@ -99,7 +99,7 @@ namespace xrit
             }
 
             // Correct phase ambiguity
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)(phase + 2), swap);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
