@@ -76,6 +76,8 @@ namespace goes
             frame = new uint8_t[FRAME_SIZE];
             writingImage = false;
 
+            nonEndCount = 0;
+
             // Init thread pool
             imageSavingThreadPool = std::make_shared<ctpl::thread_pool>(1);
         }
@@ -187,7 +189,7 @@ namespace goes
                         {
                             logger->info("Full disk end detected!");
 
-                            if (!writingImage)
+                            if (!writingImage && (nonEndCount > 20 || input_data_type == DATA_STREAM))
                             {
                                 writingImage = true;
 
@@ -207,6 +209,17 @@ namespace goes
                                 infraredImageReader2.startNewFullDisk();
                                 visibleImageReader.startNewFullDisk();
                             }
+                            else if (input_data_type == DATA_FILE)
+                            {
+                                while (writingImage)
+                                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                            }
+
+                            nonEndCount = 0;
+                        }
+                        else
+                        {
+                            nonEndCount++;
                         }
                     }
                 }
@@ -217,7 +230,8 @@ namespace goes
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) +
+                                 "%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
