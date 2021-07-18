@@ -47,6 +47,8 @@ namespace goes
             std::string getGvarFilename(std::tm *timeReadable, int channel);
             void writeImages(std::string directory);
 
+            int nonEndCount;
+
             // UI Stuff
             unsigned int textureID = 0;
             uint32_t *textureBuffer;
