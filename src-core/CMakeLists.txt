@@ -37,6 +37,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
+    target_link_libraries(satdump_core PUBLIC nng.dll)
 
     if(USE_VIDEO_ENCODER)
         target_link_libraries(satdump_core PUBLIC libavcodec.dll)
@@ -69,6 +70,9 @@ elseif(ANDROID)
 
     # FFTW3
     target_link_libraries(satdump_core PUBLIC fftw)
+
+    # NNG
+    target_link_libraries(satdump_core PUBLIC nng)
 else()
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
@@ -107,6 +111,10 @@ else()
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
         target_link_libraries(satdump_core PUBLIC stdc++fs)
     endif()
+
+    # NNG
+    find_library(NNG_LIBRARY nng REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${NNG_LIBRARY})
     
     if(USE_VIDEO_ENCODER)
         # libavcodec
