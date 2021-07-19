@@ -110,10 +110,20 @@ Here are some generic Debian build instructions.
 
 ```
 # Linux: Install dependencies
-sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libglew-dev libglfw3-dev
+sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libglew-dev libglfw3-dev libnng-dev
+
+# If libnng-dev is not available, you will have to build it from source
+git clone https://github.com/nanomsg/nng.git
+cd nng
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+sudo make install
+cd ../..
+rm -rf nng
 
 # macOS: Install dependencies
-brew install cmake volk jpeg libpng glew glfw
+brew install cmake volk jpeg libpng glew glfw nng
 
 # Build and install libcorrect
 git clone https://github.com/quiet/libcorrect.git

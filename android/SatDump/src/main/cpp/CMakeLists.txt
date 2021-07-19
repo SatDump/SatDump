@@ -74,6 +74,11 @@ add_library(fftw STATIC IMPORTED)
 set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fftw3/${ANDROID_ABI}/libfftw3f.a)
 include_directories(deps/fftw3/jni)
 
+# LIBNNG
+#add_library(nng STATIC IMPORTED)
+#set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/nng/${ANDROID_ABI}/libnng.a)
+#include_directories(deps/nng/jni)
+
 # Enable live processing for remove devices. WIP
 set(BUILD_LIVE ON)
 if(BUILD_LIVE)
