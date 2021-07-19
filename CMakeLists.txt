@@ -55,6 +55,10 @@ if(NOT NOGUI)
     add_subdirectory(src-ui)
 endif()
 
+if(BUILD_LIVE)
+    add_subdirectory(src-ingestor)
+endif()
+
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
 endif()

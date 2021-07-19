@@ -161,7 +161,7 @@
             "soft": {
                 "bpsk_demod": {
                     "symbolrate": "128000",
-                    "agc_rate": "0.00001",
+                    "agc_rate": "0.0001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
                     "costas_bw": "0.02",
