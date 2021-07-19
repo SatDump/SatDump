@@ -9,6 +9,9 @@
 #include "init.h"
 #include "live_pipeline.h"
 #include <volk/volk_alloc.hh>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main(int argc, char *argv[])
 {
