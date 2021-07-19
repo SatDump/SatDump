@@ -153,6 +153,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/goes/gvar/module_gvar_image_decoder.h"
 
 #include "modules/xrit/module_xrit_decoder.h"
+#include "modules/xrit/module_goesrecv_publisher.h"
+
 #include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
 
 #include "modules/fengyun_svissr/module_svissr_decoder.h"
@@ -276,6 +278,7 @@ void registerModules()
 
     // xRIT
     REGISTER_MODULE(xrit::XRITDecoderModule);
+    REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
     // GOES - GVAR
     REGISTER_MODULE(goes::gvar::GVARDecoderModule);
