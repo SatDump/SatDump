@@ -33,3 +33,14 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+
+    - name: Copy DLLs and resources
+      working-directory: ${{runner.workspace}}/build
+      shell: powershell
+      run: cp ../vcpkg/installed/x64-windows/bin/*.dll Release; cp ../vcpkg/installed/x64-windows/bin/*.dll Release; cp ../resources Release; cp ../pipelines Release; cp ../Roboto-Medium.ttf Release
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v2
+      with:
+        name: SatDump-Windows_x64_MSVC
+        path: /home/runner/work/SatDump/SatDump/build/Release/*
