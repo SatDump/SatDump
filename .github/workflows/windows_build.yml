@@ -43,4 +43,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: SatDump-Windows_x64_MSVC
-        path: /home/runner/work/SatDump/SatDump/build/Release/*
+        path: ${{runner.workspace}}/build/Release/*
