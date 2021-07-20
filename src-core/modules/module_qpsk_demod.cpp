@@ -149,6 +149,9 @@ void QPSKDemodModule::process()
         else
             output_fifo->write((uint8_t *)sym_buffer, dat_size * 2);
 
+        // Update module stats
+        module_stats["snr"] = snr;
+
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
