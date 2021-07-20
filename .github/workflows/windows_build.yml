@@ -42,12 +42,12 @@ jobs:
     - name: Copy Resources
       working-directory: ${{runner.workspace}}/build
       shell: powershell
-      run: cp $Env:GITHUB_WORKSPACE/resources Release
+      run: cp -r $Env:GITHUB_WORKSPACE/resources Release
 
     - name: Copy Pipelines
       working-directory: ${{runner.workspace}}/build
       shell: powershell
-      run: cp $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release; cp $Env:GITHUB_WORKSPACE/Roboto-Medium.ttf ${{runner.workspace}}/build/Release
+      run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release; cp $Env:GITHUB_WORKSPACE/Roboto-Medium.ttf ${{runner.workspace}}/build/Release
 
     - name: Copy Fonts
       working-directory: ${{runner.workspace}}/build
