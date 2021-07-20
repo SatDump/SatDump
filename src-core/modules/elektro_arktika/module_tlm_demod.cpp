@@ -152,6 +152,10 @@ namespace elektro_arktika
                     output_fifo->write((uint8_t *)&cadu, CADU_SIZE);
             }
 
+            // Update module stats
+            module_stats["snr"] = snr;
+            module_stats["lock_state"] = deframer.getState();
+
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
 

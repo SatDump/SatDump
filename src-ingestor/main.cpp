@@ -12,6 +12,25 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <nng/nng.h>
+#include <nng/supplemental/http/http.h>
+#include <nng/supplemental/util/platform.h>
+
+std::shared_ptr<LivePipeline> live_pipeline;
+
+// HTTP Handler for stats
+void http_handle(nng_aio *aio)
+{
+    nng_http_req *req = (nng_http_req *)nng_aio_get_input(aio, 0);
+    nng_http_conn *conn = (nng_http_conn *)nng_aio_get_input(aio, 2);
+    std::string test = live_pipeline->getModulesStats().dump(4);
+
+    nng_http_res *res;
+    nng_http_res_alloc(&res);
+    nng_http_res_copy_data(res, test.c_str(), test.size());
+    nng_aio_set_output(aio, 0, res);
+    nng_aio_finish(aio, 0);
+}
 
 int main(int argc, char *argv[])
 {
@@ -55,6 +74,7 @@ int main(int argc, char *argv[])
     std::map<std::string, std::string> device_parameters = ingestor_cfg["sdr_settings"].get<std::map<std::string, std::string>>();
     std::string downlink_pipeline = ingestor_cfg["pipeline"].get<std::string>();
     std::string output_folder = ingestor_cfg["output_folder"].get<std::string>();
+    std::string http_server_url = "http://" + ingestor_cfg["http_server"].get<std::string>();
 
     // Prepare other parameters
     std::map<std::string, std::string> parameters;
@@ -90,7 +110,7 @@ int main(int argc, char *argv[])
     if (!std::filesystem::exists(output_folder))
         std::filesystem::create_directory(output_folder);
 
-    std::shared_ptr<LivePipeline> live_pipeline = std::make_shared<LivePipeline>(*it, parameters, output_folder);
+    live_pipeline = std::make_shared<LivePipeline>(*it, parameters, output_folder);
 
     // Start processing
 #ifdef _WIN32
@@ -100,6 +120,19 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<dsp::stream<std::complex<float>>> pipelineStream = std::make_shared<dsp::stream<std::complex<float>>>();
     live_pipeline->start(pipelineStream, processThreadPool);
+
+    // HTTP
+    logger->info("Starting HTTP Server...");
+    nng_http_server *http_server;
+    nng_url *url;
+    nng_http_handler *handler;
+    nng_url_parse(&url, http_server_url.c_str());
+    nng_http_server_hold(&http_server, url);
+    nng_http_handler_alloc(&handler, url->u_path, http_handle);
+    nng_http_handler_set_method(handler, "GET");
+    nng_http_server_add_handler(http_server, handler);
+    nng_http_server_start(http_server);
+    nng_url_free(url);
 
     // Loop to pass samples from the SDR into set buffers for the pipeline
     volk::vector<std::complex<float>> sample_buffer_vec;

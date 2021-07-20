@@ -9,6 +9,7 @@
 #include "imgui/imgui_flags.h"
 #include "dll_export.h"
 #include "common/dsp/buffer.h"
+#include "nlohmann/json.hpp"
 
 // Utils
 #define WRITE_IMAGE(image, path)               \
@@ -61,7 +62,11 @@ public:
     std::atomic<bool> input_active;
 
 public:
+    nlohmann::json module_stats;
+
+public:
     static std::string getID();
+    virtual std::string getIDM() = 0;
     static std::vector<std::string> getParameters();
     static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
 };

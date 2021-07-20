@@ -196,6 +196,9 @@ namespace fengyun_svissr
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            // Update module stats
+            module_stats["full_disk_progress"] = approx_progess;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);

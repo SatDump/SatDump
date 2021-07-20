@@ -20,5 +20,7 @@ public:
 
     std::vector<std::string> getOutputFiles();
 
+    nlohmann::json getModulesStats();
+
     void drawUIs();
 };

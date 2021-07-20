@@ -139,6 +139,9 @@ void BPSKDemodModule::process()
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
 
+        // Update module stats
+        module_stats["snr"] = snr;
+
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
