@@ -143,7 +143,7 @@ namespace fec
 
                 if (has_spiral)
                 { // If spiral is available, use it
-                    logger->trace("Volk has the spiral kernel using it!");
+                    logger->trace("Volk has the spiral kernel, using it!");
                     k7_r2_kernel = volk_fixed::volk_8u_x4_conv_k7_r2_8u_spiral;
                 }
                 else
