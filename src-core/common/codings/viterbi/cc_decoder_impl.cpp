@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <sstream>
 #include <vector>
+#include "logger.h"
+#include "volk_k7_r2_generic_fixed.h"
 
 namespace fec
 {
@@ -122,7 +124,35 @@ namespace fec
                 d_SUBSHIFT = 0;
             }
 
-            std::map<std::string, conv_kernel> yp_kernel = {{"k=7r=2", volk_8u_x4_conv_k7_r2_8u}};
+            conv_kernel k7_r2_kernel = volk_fixed::volk_8u_x4_conv_k7_r2_8u_generic; // Default to our fixed generic kernel
+
+            // We need to get around Volk's broken generic and AVX kernel....
+            {
+                volk_func_desc k7_r2_desc = volk_8u_x4_conv_k7_r2_8u_get_func_desc(); // Check what kernels are available
+
+                bool has_spiral = false;
+
+                for (int i = 0; i < (int)k7_r2_desc.n_impls; i++)
+                {
+                    if (std::string(k7_r2_desc.impl_names[i]) == "spiral") // Try to find spiral
+                    {
+                        has_spiral = true;
+                        break;
+                    }
+                }
+
+                if (has_spiral)
+                { // If spiral is available, use it
+                    logger->trace("Volk has the spiral kernel using it!");
+                    k7_r2_kernel = volk_fixed::volk_8u_x4_conv_k7_r2_8u_spiral;
+                }
+                else
+                { // Stick to our fixed kernel
+                    logger->trace("Volk does not have the spiral kernel, will default to bundled generic.");
+                }
+            }
+
+            std::map<std::string, conv_kernel> yp_kernel = {{"k=7r=2", k7_r2_kernel}};
 
             std::string k_ = "k=";
             std::string r_ = "r=";
