@@ -21,13 +21,11 @@ std::shared_ptr<LivePipeline> live_pipeline;
 // HTTP Handler for stats
 void http_handle(nng_aio *aio)
 {
-    nng_http_req *req = (nng_http_req *)nng_aio_get_input(aio, 0);
-    nng_http_conn *conn = (nng_http_conn *)nng_aio_get_input(aio, 2);
-    std::string test = live_pipeline->getModulesStats().dump(4);
+    std::string jsonstr = live_pipeline->getModulesStats().dump(4);
 
     nng_http_res *res;
     nng_http_res_alloc(&res);
-    nng_http_res_copy_data(res, test.c_str(), test.size());
+    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
     nng_aio_set_output(aio, 0, res);
     nng_aio_finish(aio, 0);
 }
