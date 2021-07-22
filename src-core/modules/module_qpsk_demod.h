@@ -62,6 +62,7 @@ protected:
 
     M2M4SNREstimator snr_estimator;
     float snr;
+    float peak_snr;
 
     // UI Stuff
     float snr_history[200];

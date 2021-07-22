@@ -27,6 +27,7 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
     snr = 0;
+    peak_snr = 0;
 }
 
 void OQPSKDemodModule::init()
@@ -133,6 +134,10 @@ void OQPSKDemodModule::process()
         // Estimate SNR, only on part of the samples to limit CPU usage
         snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
         snr = snr_estimator.snr();
+        
+        if (snr > peak_snr) {
+            peak_snr = snr;
+        }
 
         for (int i = 0; i < dat_size; i++)
         {
@@ -155,7 +160,7 @@ void OQPSKDemodModule::process()
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " PEAK SNR: " + std::to_string(peak_snr) + "dB");
         }
     }
 
@@ -203,6 +208,10 @@ void OQPSKDemodModule::drawUI(bool window)
             ImGui::Text("SNR (dB) : ");
             ImGui::SameLine();
             ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
+            
+            ImGui::Text("PEAK SNR (dB) : ");
+            ImGui::SameLine();
+            ImGui::TextColored(peak_snr > 2 ? peak_snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(peak_snr));
 
             std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
             snr_history[200 - 1] = snr;
