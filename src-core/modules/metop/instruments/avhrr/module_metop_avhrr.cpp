@@ -67,11 +67,11 @@ namespace metop
             std::string hpt_prefix = "M0x_";
 
             if (scid == METOP_A_SCID)
-                hpt_prefix = "M01_";
-            else if (scid == METOP_B_SCID)
                 hpt_prefix = "M02_";
-            else if (scid == METOP_C_SCID)
+            else if (scid == METOP_B_SCID)
                 hpt_prefix = "M03_";
+            else if (scid == METOP_C_SCID)
+                hpt_prefix = "M04_";
 
             std::string hpt_filename = hpt_prefix + getHRPTReaderTimeStamp() + ".hpt";
             std::ofstream output_hrpt_reader(directory + "/" + hpt_filename, std::ios::binary);
@@ -130,8 +130,11 @@ namespace metop
 
                                 // Timestamp
                                 uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
-                                hpt_buffer[10] = days >> 1; // I am not sure this will work. Converting to "day count since first frame" may be a requirement... One way to find out
-                                hpt_buffer[11] = 0b0101000 | (pkt.payload[2] & 0b111);
+                                days -= 502;         // Scale from 1/1/2000 to days since first frame
+                                days &= 0b111111111; // Cap to 9-bits
+
+                                hpt_buffer[10] = days >> 1;
+                                hpt_buffer[11] = (days & 0b1) << 7 | 0b0101 << 3 | (pkt.payload[2] & 0b111);
                                 std::memcpy(&hpt_buffer[12], &pkt.payload[3], 3);
 
                                 // Other marker
