@@ -11,7 +11,7 @@ namespace image
     void white_balance(cimg_library::CImg<unsigned short> &image, float percentileValue = 0.05f, int channelCount = 3);
 
     // Decompress JPEG Data from memory
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length);
+    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length);
 
     // Simple despeckle
     void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold);
