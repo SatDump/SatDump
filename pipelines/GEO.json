@@ -149,6 +149,10 @@
             [
                 2,
                 0
+            ],
+            [
+                3,
+                0
             ]
         ],
         "frequencies": [
@@ -173,6 +177,9 @@
                     "is_bpsk": "1",
                     "diff_decode": "0"
                 }
+            },
+            "products": {
+                "gk2a_lrit_data_decoder": {}
             }
         }
     },

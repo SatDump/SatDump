@@ -59,9 +59,9 @@ namespace image
         longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length)
+    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length)
     {
-        cimg_library::CImg<unsigned short> img;
+        cimg_library::CImg<unsigned char> img;
         unsigned char *jpeg_decomp = NULL;
 
         // Huge thanks to https://gist.github.com/PhirePhly/3080633

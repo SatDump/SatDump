@@ -10,6 +10,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/predict/*.c
                                      common/bzlib/*.c
                                      common/miniz/*.c
+                                     common/libtom/*.c
 )
 
 find_package(PkgConfig)
