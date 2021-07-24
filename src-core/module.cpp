@@ -164,6 +164,10 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/jason3/instruments/poseidon/module_jason3_poseidon.h"
 #include "modules/jason3/instruments/amr2/module_jason3_amr2.h"
 
+#include "modules/angels/argos/module_angels_argos.h"
+
+#include "modules/ccsds/module_ccsds_analyzer.h"
+
 void registerModules()
 {
     // Register modules
@@ -295,6 +299,12 @@ void registerModules()
     REGISTER_MODULE(jason3::Jason3DecoderModule);
     REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
     REGISTER_MODULE(jason3::amr2::Jason3AMR2DecoderModule);
+
+    // ANGELS
+    REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
+
+    // CCSDS
+    REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
