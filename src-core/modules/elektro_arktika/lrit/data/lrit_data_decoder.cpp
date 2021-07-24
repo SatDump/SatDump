@@ -206,7 +206,7 @@ namespace elektro
                             strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
 
                             // Channel
-                            std::string ch = current_filename.substr(19, 1);
+                            std::string ch = current_filename.substr(29, 1);
 
                             image_id = getHRITImageFilename(&scanTimestamp, "L2", std::stoi(ch));
                         }
@@ -219,7 +219,7 @@ namespace elektro
                             strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
 
                             // Channel
-                            std::string ch = current_filename.substr(19, 1);
+                            std::string ch = current_filename.substr(29, 1);
 
                             image_id = getHRITImageFilename(&scanTimestamp, "L3", std::stoi(ch));
                         }
