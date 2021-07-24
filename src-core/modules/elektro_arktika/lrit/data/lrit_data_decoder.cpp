@@ -194,6 +194,9 @@ namespace elektro
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_');
 
+                    for (std::string part : header_parts)
+                        logger->trace(part);
+
                     std::string image_id = current_filename.substr(0, 30);
 
                     // If we can, use a better filename
