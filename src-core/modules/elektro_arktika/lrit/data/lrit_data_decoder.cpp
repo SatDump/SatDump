@@ -198,6 +198,19 @@ namespace elektro
                     {
                         std::string product_name = current_filename.substr(0, current_filename.size() - 43);
 
+                        if (product_name == "L-000-GOMS2_-GOMS2")
+                        {
+                            // Timestamp
+                            std::string timestamp = current_filename.substr(46, 12);
+                            std::tm scanTimestamp;
+                            strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
+
+                            // Channel
+                            std::string ch = current_filename.substr(19, 1);
+
+                            image_id = getHRITImageFilename(&scanTimestamp, "L2", std::stoi(ch));
+                        }
+
                         if (product_name == "L-000-GOMS3_-GOMS3")
                         {
                             // Timestamp
