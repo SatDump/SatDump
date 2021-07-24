@@ -192,7 +192,7 @@ namespace elektro
                 {
                     imageStatus = RECEIVING;
 
-                    std::string image_id = current_filename.substr(0, current_filename.size() - 25);
+                    std::string image_id = current_filename.substr(0, 30);
 
                     // If we can, use a better filename
                     {
@@ -315,6 +315,9 @@ namespace elektro
             if (segmentedDecoder.image_id != "")
             {
                 finalizeLRITData();
+                
+                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
             }
         }
     } // namespace atms
