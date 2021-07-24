@@ -40,32 +40,39 @@ namespace gk2a
             img_height = 0;
             img_width = 0;
 
-            // Load decryption keys
-            std::ifstream keyFile(resources::getResourcePath("gk2a/EncryptionKeyMessage.bin"), std::ios::binary);
-
-            // Read key count
-            uint16_t key_count = 0;
-            keyFile.read((char *)&key_count, 2);
-            key_count = (key_count & 0xFF) << 8 | (key_count >> 8);
-
-            uint8_t readBuf[10];
-            for (int i = 0; i < key_count; i++)
+            if (resources::resourceExists("gk2a/EncryptionKeyMessage.bin"))
             {
-                keyFile.read((char *)readBuf, 10);
-                int index = readBuf[0] << 8 | readBuf[1];
-                uint64_t key = (uint64_t)readBuf[2] << 56 |
-                               (uint64_t)readBuf[3] << 48 |
-                               (uint64_t)readBuf[4] << 40 |
-                               (uint64_t)readBuf[5] << 32 |
-                               (uint64_t)readBuf[6] << 24 |
-                               (uint64_t)readBuf[7] << 16 |
-                               (uint64_t)readBuf[8] << 8 |
-                               (uint64_t)readBuf[9];
-                std::memcpy(&key, &readBuf[2], 8);
-                decryption_keys.emplace(std::pair<int, uint64_t>(index, key));
-            }
+                // Load decryption keys
+                std::ifstream keyFile(resources::getResourcePath("gk2a/EncryptionKeyMessage.bin"), std::ios::binary);
 
-            keyFile.close();
+                // Read key count
+                uint16_t key_count = 0;
+                keyFile.read((char *)&key_count, 2);
+                key_count = (key_count & 0xFF) << 8 | (key_count >> 8);
+
+                uint8_t readBuf[10];
+                for (int i = 0; i < key_count; i++)
+                {
+                    keyFile.read((char *)readBuf, 10);
+                    int index = readBuf[0] << 8 | readBuf[1];
+                    uint64_t key = (uint64_t)readBuf[2] << 56 |
+                                   (uint64_t)readBuf[3] << 48 |
+                                   (uint64_t)readBuf[4] << 40 |
+                                   (uint64_t)readBuf[5] << 32 |
+                                   (uint64_t)readBuf[6] << 24 |
+                                   (uint64_t)readBuf[7] << 16 |
+                                   (uint64_t)readBuf[8] << 8 |
+                                   (uint64_t)readBuf[9];
+                    std::memcpy(&key, &readBuf[2], 8);
+                    decryption_keys.emplace(std::pair<int, uint64_t>(index, key));
+                }
+
+                keyFile.close();
+            }
+            else
+            {
+                logger->critical("GK-2A Decryption keys could not be loaded!!! Nothing apart from encrypted data will be decoded.");
+            }
         }
 
         LRITDataDecoder::~LRITDataDecoder()
@@ -197,7 +204,7 @@ namespace gk2a
         {
             PrimaryHeader primary_header(&lrit_data[0]);
 
-            if (is_encrypted) // Decrypt
+            if (is_encrypted && decryption_keys.size() > 0) // Decrypt
             {
                 logger->info("Decrypting....");
                 uint8_t inblock[8], outblock[8];
@@ -238,105 +245,122 @@ namespace gk2a
                 lrit_data[all_headers[KeyHeader::TYPE]] = 0; // Type
             }
 
-            // Check if this is image data, and if so also write it as an image
-            if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
+            if (is_encrypted && decryption_keys.size() <= 0) // We lack decryption
             {
-                if (!std::filesystem::exists(directory + "/IMAGES"))
-                    std::filesystem::create_directory(directory + "/IMAGES");
-
-                ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-
-                if (is_jpeg_compressed) // Is this Jpeg-Compressed? Decompress
                 {
-                    logger->info("Decompressing JPEG...");
-                    cimg_library::CImg<unsigned char> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
-                    lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
-                    lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                    if (!std::filesystem::exists(directory + "/LRIT_ENCRYPTED"))
+                        std::filesystem::create_directory(directory + "/LRIT_ENCRYPTED");
+
+                    logger->info("Writing file " + directory + "/LRIT_ENCRYPTED/" + current_filename + "...");
+
+                    // Write file out
+                    std::ofstream file(directory + "/LRIT_ENCRYPTED/" + current_filename, std::ios::binary);
+                    file.write((char *)lrit_data.data(), lrit_data.size());
+                    file.close();
                 }
-
-                if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+            }
+            else
+            {
+                // Check if this is image data, and if so also write it as an image
+                if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
                 {
-                    imageStatus = RECEIVING;
+                    if (!std::filesystem::exists(directory + "/IMAGES"))
+                        std::filesystem::create_directory(directory + "/IMAGES");
 
-                    std::string image_id = current_filename.substr(0, current_filename.size() - 8);
+                    ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
 
-                    if (segmentedDecoder.image_id != image_id)
+                    if (is_jpeg_compressed) // Is this Jpeg-Compressed? Decompress
                     {
-                        if (segmentedDecoder.image_id != "")
+                        logger->info("Decompressing JPEG...");
+                        cimg_library::CImg<unsigned char> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
+                        lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
+                        lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                    }
+
+                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+                    {
+                        imageStatus = RECEIVING;
+
+                        std::string image_id = current_filename.substr(0, current_filename.size() - 8);
+
+                        if (segmentedDecoder.image_id != image_id)
+                        {
+                            if (segmentedDecoder.image_id != "")
+                            {
+                                current_filename = image_id;
+
+                                imageStatus = SAVING;
+                                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                                imageStatus = RECEIVING;
+                            }
+
+                            segmentedDecoder = SegmentedLRITImageDecoder(10,
+                                                                         image_structure_record.columns_count,
+                                                                         image_structure_record.lines_count,
+                                                                         image_id);
+                        }
+
+                        std::vector<std::string> header_parts = splitString(current_filename, '_');
+
+                        int seg_number = 0;
+                        if (header_parts.size() >= 7)
+                        {
+                            seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
+                        }
+                        else
+                        {
+                            logger->critical("Could not parse segment number from filename!");
+
+                            // Fallback, maybe unreliable code
+                            SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
+                            seg_number = (segment_id_header.segment_sequence_number - 1) / image_structure_record.lines_count;
+                        }
+                        segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
+
+                        // If the UI is active, update texture
+                        if (textureID > 0)
+                        {
+                            // Downscale image
+                            img_height = 1000;
+                            img_width = 1000;
+                            cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
+                            imageScaled.resize(img_width, img_height);
+                            uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width);
+                            hasToUpdate = true;
+                        }
+
+                        if (segmentedDecoder.isComplete())
                         {
                             current_filename = image_id;
 
                             imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                            imageStatus = RECEIVING;
+                            segmentedDecoder = SegmentedLRITImageDecoder();
+                            imageStatus = IDLE;
                         }
-
-                        segmentedDecoder = SegmentedLRITImageDecoder(10,
-                                                                     image_structure_record.columns_count,
-                                                                     image_structure_record.lines_count,
-                                                                     image_id);
-                    }
-
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
-
-                    int seg_number = 0;
-                    if (header_parts.size() >= 7)
-                    {
-                        seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
                     }
                     else
                     {
-                        logger->critical("Could not parse segment number from filename!");
-
-                        // Fallback, maybe unreliable code
-                        SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
-                        seg_number = (segment_id_header.segment_sequence_number - 1) / image_structure_record.lines_count;
-                    }
-                    segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
-
-                    // If the UI is active, update texture
-                    if (textureID > 0)
-                    {
-                        // Downscale image
-                        img_height = 1000;
-                        img_width = 1000;
-                        cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
-                        imageScaled.resize(img_width, img_height);
-                        uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width);
-                        hasToUpdate = true;
-                    }
-
-                    if (segmentedDecoder.isComplete())
-                    {
-                        current_filename = image_id;
-
-                        imageStatus = SAVING;
+                        // Write raw image dats
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                        segmentedDecoder = SegmentedLRITImageDecoder();
-                        imageStatus = IDLE;
+                        cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
+                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                     }
                 }
                 else
                 {
-                    // Write raw image dats
-                    logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                    cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
-                    image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    if (!std::filesystem::exists(directory + "/LRIT"))
+                        std::filesystem::create_directory(directory + "/LRIT");
+
+                    logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
+
+                    // Write file out
+                    std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
+                    file.write((char *)lrit_data.data(), lrit_data.size());
+                    file.close();
                 }
-            }
-            else
-            {
-                if (!std::filesystem::exists(directory + "/LRIT"))
-                    std::filesystem::create_directory(directory + "/LRIT");
-
-                logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
-
-                // Write file out
-                std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
-                file.write((char *)lrit_data.data(), lrit_data.size());
-                file.close();
             }
         }
 
