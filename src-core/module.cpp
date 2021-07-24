@@ -169,6 +169,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/ccsds/module_ccsds_analyzer.h"
 
+#include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -307,6 +309,9 @@ void registerModules()
 
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
+    
+    // GK-2A
+    REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
