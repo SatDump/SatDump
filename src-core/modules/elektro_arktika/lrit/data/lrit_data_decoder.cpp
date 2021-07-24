@@ -194,8 +194,8 @@ namespace elektro
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_');
 
-                    for (std::string part : header_parts)
-                        logger->trace(part);
+                    //for (std::string part : header_parts)
+                    //    logger->trace(part);
 
                     std::string image_id = current_filename.substr(0, 30);
 
@@ -209,6 +209,7 @@ namespace elektro
                             std::string timestamp = current_filename.substr(46, 12);
                             std::tm scanTimestamp;
                             strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
+                            scanTimestamp.tm_sec = 0; // No seconds
 
                             // Channel
                             std::string ch = current_filename.substr(29, 1);
@@ -222,6 +223,7 @@ namespace elektro
                             std::string timestamp = current_filename.substr(46, 12);
                             std::tm scanTimestamp;
                             strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
+                            scanTimestamp.tm_sec = 0; // No seconds
 
                             // Channel
                             std::string ch = current_filename.substr(29, 1);
