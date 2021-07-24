@@ -192,6 +192,8 @@ namespace elektro
                 {
                     imageStatus = RECEIVING;
 
+                    std::vector<std::string> header_parts = splitString(current_filename, '_');
+
                     std::string image_id = current_filename.substr(0, 30);
 
                     // If we can, use a better filename
@@ -242,8 +244,6 @@ namespace elektro
                                                                      image_structure_record.lines_count,
                                                                      image_id);
                     }
-
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
 
                     std::vector<std::string> header_parts2;
                     if (header_parts.size() >= 10)
@@ -315,7 +315,7 @@ namespace elektro
             if (segmentedDecoder.image_id != "")
             {
                 finalizeLRITData();
-                
+
                 logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                 segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
             }
