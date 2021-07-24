@@ -201,7 +201,7 @@ namespace elektro
 
                     // If we can, use a better filename
                     {
-                        std::string product_name = current_filename.substr(0, current_filename.size() - 43);
+                        std::string product_name = current_filename.substr(0, 18);
 
                         if (product_name == "L-000-GOMS2_-GOMS2")
                         {
