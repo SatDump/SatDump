@@ -224,7 +224,7 @@
         "frequencies": [
             1691.0
         ],
-        "samplerate": 1e3,
+        "samplerate": 1e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
