@@ -64,9 +64,9 @@ namespace image
         //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
+    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
     {
-        cimg_library::CImg<unsigned short> img;
+        cimg_library::CImg<unsigned char> img;
         unsigned char *jpeg_decomp = NULL;
 
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
@@ -107,7 +107,7 @@ namespace image
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
-        img = cimg_library::CImg<unsigned short>(cinfo.image_width, cinfo.image_height, 1, 1);
+        img = cimg_library::CImg<unsigned char>(cinfo.image_width, cinfo.image_height, 1, 1);
 
         // Copy over
         for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
