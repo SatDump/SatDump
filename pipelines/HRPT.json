@@ -406,6 +406,10 @@
             [
                 2,
                 0
+            ],
+            [
+                3,
+                0
             ]
         ],
         "frequencies": [
@@ -427,6 +431,9 @@
             },
             "cadu": {
                 "saral_decoder": {}
+            },
+            "products": {
+                "angels_argos": {}
             }
         }
     },
