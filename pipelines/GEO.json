@@ -208,8 +208,8 @@
             }
         }
     },
-    "fy2x_lrit": {
-        "name": "FY-2x LRIT",
+    "elektro_lrit": {
+        "name": "ELEKTRO-L LRIT",
         "live": true,
         "live_cfg": [
             [
@@ -230,7 +230,7 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "588000",
+                    "symbolrate": "294000",
                     "agc_rate": "0.0001",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
@@ -245,10 +245,7 @@
                 }
             },
             "products": {
-                "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "0"
-                }
+                "elektro_lrit_data_decoder": {}
             }
         }
     },

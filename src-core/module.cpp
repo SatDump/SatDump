@@ -134,6 +134,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/elektro_arktika/module_rdas_decoder.h"
 #include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
 #include "modules/elektro_arktika/module_tlm_demod.h"
+#include "modules/elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
 
 #include "modules/terra/module_terra_db_demod.h"
 #include "modules/terra/module_terra_db_decoder.h"
@@ -157,8 +158,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
 
-#include "modules/fengyun_svissr/module_svissr_decoder.h"
-#include "modules/fengyun_svissr/module_svissr_image_decoder.h"
+#include "modules/fengyun2/svissr/module_svissr_decoder.h"
+#include "modules/fengyun2/svissr/module_svissr_image_decoder.h"
 
 #include "modules/jason3/module_jason3_decoder.h"
 #include "modules/jason3/instruments/poseidon/module_jason3_poseidon.h"
@@ -260,6 +261,7 @@ void registerModules()
     REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
+    REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
@@ -291,7 +293,7 @@ void registerModules()
     // GOES - HRIT
     REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
 
-    // FengYun2 - S-VISSR
+    // FengYun2 - S-VISSR / LRIT
     REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
     REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
 

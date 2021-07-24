@@ -59,7 +59,12 @@ namespace image
         longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length)
+    static void libjpeg_error_func_ignore(j_common_ptr cinfo)
+    {
+        //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
+    }
+
+    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
     {
         cimg_library::CImg<unsigned short> img;
         unsigned char *jpeg_decomp = NULL;
@@ -70,7 +75,7 @@ namespace image
 
         // Init
         cinfo.err = jpeg_std_error(&jerr.pub);
-        jerr.pub.error_exit = libjpeg_error_func;
+        jerr.pub.error_exit = ignore_errors ? libjpeg_error_func_ignore : libjpeg_error_func;
 
         if (setjmp(jerr.setjmp_buffer))
         {
