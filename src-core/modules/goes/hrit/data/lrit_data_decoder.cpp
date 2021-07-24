@@ -578,6 +578,9 @@ namespace goes
             if (segmentedDecoder.image_id != -1)
             {
                 finalizeLRITData();
+
+                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
             }
         }
     } // namespace atms
