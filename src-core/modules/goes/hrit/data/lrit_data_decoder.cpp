@@ -481,17 +481,19 @@ namespace goes
             // Check if this EMWIN data
             else if (write_emwin && primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
             {
+                std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
+
                 if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
                 {
                     if (!std::filesystem::exists(directory + "/EMWIN"))
                         std::filesystem::create_directory(directory + "/EMWIN");
 
-                    logger->info("Writing file " + directory + "/EMWIN/" + current_filename + ".txt" + "...");
+                    logger->info("Writing file " + directory + "/EMWIN/" + clean_filename + ".txt" + "...");
 
                     int offset = primary_header.total_header_length;
 
                     // Write file out
-                    std::ofstream file(directory + "/EMWIN/" + current_filename + ".txt");
+                    std::ofstream file(directory + "/EMWIN/" + clean_filename + ".txt");
                     file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
                     file.close();
                 }
@@ -533,15 +535,17 @@ namespace goes
             // Check if this is message data. If we slipped to here we know it's not EMWIN
             else if (write_messages && (primary_header.file_type_code == 1 || primary_header.file_type_code == 2))
             {
+                std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
+
                 if (!std::filesystem::exists(directory + "/Admin Messages"))
                     std::filesystem::create_directory(directory + "/Admin Messages");
 
-                logger->info("Writing file " + directory + "/Admin Messages/" + current_filename + ".txt" + "...");
+                logger->info("Writing file " + directory + "/Admin Messages/" + clean_filename + ".txt" + "...");
 
                 int offset = primary_header.total_header_length;
 
                 // Write file out
-                std::ofstream file(directory + "/Admin Messages/" + current_filename + ".txt");
+                std::ofstream file(directory + "/Admin Messages/" + clean_filename + ".txt");
                 file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
                 file.close();
             }
