@@ -32,6 +32,18 @@ namespace elektro
             return utc_filename;
         }
 
+        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, std::string channel)
+        {
+            std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
+                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+            return utc_filename;
+        }
+
         // CRC Implementation from LRIT-Missin-Specific-Document.pdf
         uint16_t computeCRC(const uint8_t *data, int size)
         {
@@ -199,36 +211,29 @@ namespace elektro
 
                     std::string image_id = current_filename.substr(0, 30);
 
+                    // Channel
+                    int channel = std::stoi(current_filename.substr(29, 1));
+
+                    // Timestamp
+                    std::string timestamp = current_filename.substr(46, 12);
+                    std::tm scanTimestamp;
+                    strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
+                    scanTimestamp.tm_sec = 0; // No seconds
+
                     // If we can, use a better filename
                     {
                         std::string product_name = current_filename.substr(0, 18);
 
                         if (product_name == "L-000-GOMS2_-GOMS2")
                         {
-                            // Timestamp
-                            std::string timestamp = current_filename.substr(46, 12);
-                            std::tm scanTimestamp;
-                            strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
-                            scanTimestamp.tm_sec = 0; // No seconds
-
-                            // Channel
-                            std::string ch = current_filename.substr(29, 1);
-
-                            image_id = getHRITImageFilename(&scanTimestamp, "L2", std::stoi(ch));
+                            image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
+                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
                         }
 
                         if (product_name == "L-000-GOMS3_-GOMS3")
                         {
-                            // Timestamp
-                            std::string timestamp = current_filename.substr(46, 12);
-                            std::tm scanTimestamp;
-                            strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
-                            scanTimestamp.tm_sec = 0; // No seconds
-
-                            // Channel
-                            std::string ch = current_filename.substr(29, 1);
-
-                            image_id = getHRITImageFilename(&scanTimestamp, "L3", std::stoi(ch));
+                            image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
+                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
                         }
                     }
 
@@ -241,6 +246,10 @@ namespace elektro
                             imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+
+                            if (elektro_221_composer_full_disk->hasData)
+                                elektro_221_composer_full_disk->save(directory);
+
                             imageStatus = RECEIVING;
                         }
 
@@ -270,6 +279,16 @@ namespace elektro
                     }
                     segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
+                    // Composite?
+                    if (channel == 9)
+                    {
+                        elektro_221_composer_full_disk->push9(segmentedDecoder.image, mktime(&scanTimestamp));
+                    }
+                    else if (channel == 6)
+                    {
+                        elektro_221_composer_full_disk->push6(segmentedDecoder.image, mktime(&scanTimestamp));
+                    }
+
                     // If the UI is active, update texture
                     if (textureID > 0)
                     {
@@ -289,6 +308,10 @@ namespace elektro
                         imageStatus = SAVING;
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+
+                        if (elektro_221_composer_full_disk->hasData)
+                            elektro_221_composer_full_disk->save(directory);
+
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         imageStatus = IDLE;
                     }

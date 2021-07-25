@@ -42,6 +42,36 @@ namespace elektro
             IDLE
         };
 
+        class ELEKTRO221Composer
+        {
+        private:
+            cimg_library::CImg<unsigned char> ch9, ch6, compo221;
+            time_t time9, time6;
+
+            void generateCompo();
+
+        public:
+            ELEKTRO221Composer();
+            ~ELEKTRO221Composer();
+
+            bool hasData = false;
+
+            std::string filename;
+
+            void save(std::string directory);
+
+            void push9(cimg_library::CImg<unsigned char> img, time_t time);
+            void push6(cimg_library::CImg<unsigned char> img, time_t time);
+
+        public:
+            // UI Stuff
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
+        };
+
         class LRITDataDecoder
         {
         private:
@@ -60,6 +90,9 @@ namespace elektro
             void parseHeader();
             void processLRITData(ccsds::CCSDSPacket &pkt);
             void finalizeLRITData();
+
+        public: // Other things
+            std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
 
         public:
             LRITDataDecoder(std::string dir);
