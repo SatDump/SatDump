@@ -17,10 +17,10 @@ jobs:
       run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng
 
     - name: Build libcorrect
-      run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install
+      run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
 
     - name: Build FFTW3
-      run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true .. && make && sudo make install
+      run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true .. && make -j8 && sudo make install
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -38,4 +38,4 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE
+      run: make -j8
