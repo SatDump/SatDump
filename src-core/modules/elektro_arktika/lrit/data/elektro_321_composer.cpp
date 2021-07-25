@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
+#include "common/image/hue_saturation.h"
 
 namespace elektro
 {
@@ -52,6 +53,15 @@ namespace elektro
             compo231.draw_image(0, 0, 0, 1, ch3);
             compo231.draw_image(0, 0, 0, 2, ch1);
 
+            compoNC = compo321;
+
+            image::HueSaturation hueTuning;
+            hueTuning.hue[image::HUE_RANGE_YELLOW] = -45.0 / 180.0;
+            hueTuning.hue[image::HUE_RANGE_RED] = 90.0 / 180.0;
+            hueTuning.overlap = 100.0 / 100.0;
+
+            image::hue_saturation(compoNC, hueTuning);
+
             hasData = true;
 
             // If the UI is active, update texture
@@ -101,6 +111,9 @@ namespace elektro
             compo321.save_png(std::string(directory + "/IMAGES/" + filename321 + ".png").c_str());
             logger->info("Writing image " + directory + "/IMAGES/" + filename231 + ".png" + "...");
             compo231.save_png(std::string(directory + "/IMAGES/" + filename231 + ".png").c_str());
+            logger->info("Writing image " + directory + "/IMAGES/" + filenameNC + ".png" + "...");
+            logger->warn("This natural color composite was originally found by Derek (@dereksgc)!");
+            compoNC.save_png(std::string(directory + "/IMAGES/" + filenameNC + ".png").c_str());
             hasData = false;
             imageStatus = IDLE;
         }

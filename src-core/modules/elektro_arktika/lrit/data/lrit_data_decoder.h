@@ -75,7 +75,7 @@ namespace elektro
         class ELEKTRO321Composer
         {
         private:
-            cimg_library::CImg<unsigned char> ch3, ch2, ch1, compo321, compo231;
+            cimg_library::CImg<unsigned char> ch3, ch2, ch1, compo321, compo231, compoNC;
             time_t time3, time2, time1;
 
             void generateCompo();
@@ -86,7 +86,7 @@ namespace elektro
 
             bool hasData = false;
 
-            std::string filename321, filename231;
+            std::string filename321, filename231, filenameNC;
 
             void save(std::string directory);
 
