@@ -45,8 +45,8 @@ namespace elektro
         class ELEKTRO221Composer
         {
         private:
-            cimg_library::CImg<unsigned char> ch9, ch6, compo221;
-            time_t time9, time6;
+            cimg_library::CImg<unsigned char> ch2, ch1, compo221;
+            time_t time2, time1;
 
             void generateCompo();
 
@@ -60,8 +60,8 @@ namespace elektro
 
             void save(std::string directory);
 
-            void push9(cimg_library::CImg<unsigned char> img, time_t time);
-            void push6(cimg_library::CImg<unsigned char> img, time_t time);
+            void push2(cimg_library::CImg<unsigned char> img, time_t time);
+            void push1(cimg_library::CImg<unsigned char> img, time_t time);
 
         public:
             // UI Stuff
@@ -75,8 +75,8 @@ namespace elektro
         class ELEKTRO321Composer
         {
         private:
-            cimg_library::CImg<unsigned char> ch9, ch7, ch6, compo321;
-            time_t time9, time7, time6;
+            cimg_library::CImg<unsigned char> ch3, ch2, ch1, compo321, compo231;
+            time_t time3, time2, time1;
 
             void generateCompo();
 
@@ -86,13 +86,13 @@ namespace elektro
 
             bool hasData = false;
 
-            std::string filename;
+            std::string filename321, filename231;
 
             void save(std::string directory);
 
-            void push9(cimg_library::CImg<unsigned char> img, time_t time);
-            void push7(cimg_library::CImg<unsigned char> img, time_t time);
-            void push6(cimg_library::CImg<unsigned char> img, time_t time);
+            void push3(cimg_library::CImg<unsigned char> img, time_t time);
+            void push2(cimg_library::CImg<unsigned char> img, time_t time);
+            void push1(cimg_library::CImg<unsigned char> img, time_t time);
 
         public:
             // UI Stuff

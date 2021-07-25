@@ -9,8 +9,8 @@ namespace elektro
     {
         ELEKTRO221Composer::ELEKTRO221Composer()
         {
-            time6 = 0;
-            time9 = 0;
+            time1 = 0;
+            time2 = 0;
 
             imageStatus = IDLE;
         }
@@ -24,16 +24,16 @@ namespace elektro
             imageStatus = RECEIVING;
 
             // Not really necessary, but good to be safe
-            if (ch9.height() > 0)
-                ch6.resize(ch9.width(), ch9.height());
+            if (ch1.height() > 0)
+                ch2.resize(ch1.width(), ch1.height());
             else
-                ch9.resize(ch6.width(), ch6.height());
+                ch1.resize(ch2.width(), ch2.height());
 
-            compo221 = cimg_library::CImg<unsigned char>(ch6.width(), ch6.height(), 1, 3); // Init image
+            compo221 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
 
-            compo221.draw_image(0, 0, 0, 0, ch9);
-            compo221.draw_image(0, 0, 0, 1, ch9);
-            compo221.draw_image(0, 0, 0, 2, ch6);
+            compo221.draw_image(0, 0, 0, 0, ch2);
+            compo221.draw_image(0, 0, 0, 1, ch2);
+            compo221.draw_image(0, 0, 0, 2, ch1);
 
             hasData = true;
 
@@ -50,21 +50,21 @@ namespace elektro
             }
         }
 
-        void ELEKTRO221Composer::push6(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO221Composer::push2(cimg_library::CImg<unsigned char> img, time_t time)
         {
-            ch6 = img;
-            time6 = time;
+            ch2 = img;
+            time2 = time;
 
-            if (time6 == time9)
+            if (time1 == time2)
                 generateCompo();
         }
 
-        void ELEKTRO221Composer::push9(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO221Composer::push1(cimg_library::CImg<unsigned char> img, time_t time)
         {
-            ch9 = img;
-            time9 = time;
+            ch1 = img;
+            time1 = time;
 
-            if (time6 == time9)
+            if (time1 == time2)
                 generateCompo();
         }
 

@@ -9,8 +9,8 @@ namespace elektro
     {
         ELEKTRO321Composer::ELEKTRO321Composer()
         {
-            time6 = 0;
-            time9 = 0;
+            time1 = 0;
+            time2 = 0;
 
             imageStatus = IDLE;
         }
@@ -24,27 +24,33 @@ namespace elektro
             imageStatus = RECEIVING;
 
             // Not really necessary, but good to be safe
-            if (ch9.height() > 0)
+            if (ch1.height() > 0)
             {
-                ch6.resize(ch9.width(), ch9.height());
-                ch7.resize(ch9.width(), ch9.height());
+                ch2.resize(ch1.width(), ch1.height());
+                ch3.resize(ch1.width(), ch1.height());
             }
-            else if (ch7.height() > 0)
+            else if (ch2.height() > 0)
             {
-                ch9.resize(ch7.width(), ch7.height());
-                ch6.resize(ch7.width(), ch7.height());
+                ch1.resize(ch2.width(), ch2.height());
+                ch3.resize(ch2.width(), ch2.height());
             }
             else
             {
-                ch9.resize(ch6.width(), ch6.height());
-                ch7.resize(ch6.width(), ch6.height());
+                ch2.resize(ch3.width(), ch3.height());
+                ch1.resize(ch3.width(), ch3.height());
             }
 
-            compo321 = cimg_library::CImg<unsigned char>(ch6.width(), ch6.height(), 1, 3); // Init image
+            compo321 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
 
-            compo321.draw_image(0, 0, 0, 0, ch7);
-            compo321.draw_image(0, 0, 0, 1, ch9);
-            compo321.draw_image(0, 0, 0, 2, ch6);
+            compo321.draw_image(0, 0, 0, 0, ch3);
+            compo321.draw_image(0, 0, 0, 1, ch2);
+            compo321.draw_image(0, 0, 0, 2, ch1);
+
+            compo231 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
+
+            compo231.draw_image(0, 0, 0, 0, ch2);
+            compo231.draw_image(0, 0, 0, 1, ch3);
+            compo231.draw_image(0, 0, 0, 2, ch1);
 
             hasData = true;
 
@@ -61,38 +67,40 @@ namespace elektro
             }
         }
 
-        void ELEKTRO321Composer::push6(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push3(cimg_library::CImg<unsigned char> img, time_t time)
         {
-            ch6 = img;
-            time6 = time;
+            ch3 = img;
+            time3 = time;
 
-            if (time6 == time9 && time7 == time9)
+            if (time1 == time2 && time2 == time3)
                 generateCompo();
         }
 
-        void ELEKTRO321Composer::push7(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push2(cimg_library::CImg<unsigned char> img, time_t time)
         {
-            ch7 = img;
-            time7 = time;
+            ch2 = img;
+            time2 = time;
 
-            if (time6 == time9 && time7 == time9)
+            if (time1 == time2 && time2 == time3)
                 generateCompo();
         }
 
-        void ELEKTRO321Composer::push9(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push1(cimg_library::CImg<unsigned char> img, time_t time)
         {
-            ch9 = img;
-            time9 = time;
+            ch1 = img;
+            time1 = time;
 
-            if (time6 == time9 && time7 == time9)
+            if (time1 == time2 && time2 == time3)
                 generateCompo();
         }
 
         void ELEKTRO321Composer::save(std::string directory)
         {
             imageStatus = SAVING;
-            logger->info("Writing image " + directory + "/IMAGES/" + filename + ".png" + "...");
-            compo321.save_png(std::string(directory + "/IMAGES/" + filename + ".png").c_str());
+            logger->info("Writing image " + directory + "/IMAGES/" + filename321 + ".png" + "...");
+            compo321.save_png(std::string(directory + "/IMAGES/" + filename321 + ".png").c_str());
+            logger->info("Writing image " + directory + "/IMAGES/" + filename231 + ".png" + "...");
+            compo231.save_png(std::string(directory + "/IMAGES/" + filename231 + ".png").c_str());
             hasData = false;
             imageStatus = IDLE;
         }

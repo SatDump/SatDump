@@ -217,6 +217,16 @@ namespace elektro
                         int aux_ch = std::stoi(current_filename.substr(26, 2));
                         if (aux_ch > 0)
                             channel += aux_ch;
+
+                        // Now, we remap the channel to the "normal" MSU-GS numbering
+                        if (channel == 6) // 6 is 1
+                            channel = 1;
+                        else if (channel == 7) // 7 is 2
+                            channel = 2;
+                        else if (channel == 9) // 9 is 3
+                            channel = 3;
+                        else // May for IR?
+                            channel = aux_ch - channel;
                     }
 
                     // Timestamp
@@ -233,14 +243,16 @@ namespace elektro
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
-                            elektro_321_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "321");
+                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L2", "321");
+                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L2", "231");
                         }
 
                         if (product_name == "L-000-GOMS3_-GOMS3")
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
-                            elektro_321_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "321");
+                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L3", "321");
+                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L3", "231");
                         }
                     }
 
@@ -289,19 +301,19 @@ namespace elektro
                     segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
                     // Composite?
-                    if (channel == 9)
+                    if (channel == 1)
                     {
-                        elektro_221_composer_full_disk->push9(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push9(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_221_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
                     }
-                    if (channel == 7)
+                    else if (channel == 2)
                     {
-                        elektro_321_composer_full_disk->push7(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_221_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
                     }
-                    if (channel == 6)
+                    else if (channel == 3)
                     {
-                        elektro_221_composer_full_disk->push6(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push6(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push3(segmentedDecoder.image, mktime(&scanTimestamp));
                     }
 
                     // If the UI is active, update texture
