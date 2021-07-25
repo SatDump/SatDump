@@ -16,7 +16,10 @@ namespace gk2a
 {
     namespace lrit
     {
-        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                                    write_images(std::stoi(parameters["write_images"])),
+                                                                                                                                                                    write_additional(std::stoi(parameters["write_additional"])),
+                                                                                                                                                                    write_unknown(std::stoi(parameters["write_unknown"]))
         {
         }
 
@@ -101,6 +104,10 @@ namespace gk2a
                         if (decoders.count(vcdu.vcid) <= 0)
                         {
                             decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
+
+                            decoders[vcdu.vcid]->write_images = write_images;
+                            decoders[vcdu.vcid]->write_additional = write_additional;
+                            decoders[vcdu.vcid]->write_unknown = write_unknown;
                         }
                         decoders[vcdu.vcid]->work(pkt);
                     }
@@ -197,7 +204,7 @@ namespace gk2a
 
         std::vector<std::string> GK2ALRITDataDecoderModule::getParameters()
         {
-            return {};
+            return {"write_images", "write_additional", "write_unknown"};
         }
 
         std::shared_ptr<ProcessingModule> GK2ALRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
