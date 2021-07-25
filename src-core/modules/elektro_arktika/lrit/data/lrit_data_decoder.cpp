@@ -213,6 +213,11 @@ namespace elektro
 
                     // Channel
                     int channel = std::stoi(current_filename.substr(29, 1));
+                    {
+                        int aux_ch = std::stoi(current_filename.substr(26, 2));
+                        if (aux_ch > 0)
+                            channel += aux_ch;
+                    }
 
                     // Timestamp
                     std::string timestamp = current_filename.substr(46, 12);
@@ -228,12 +233,14 @@ namespace elektro
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
+                            elektro_321_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "321");
                         }
 
                         if (product_name == "L-000-GOMS3_-GOMS3")
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
+                            elektro_321_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "321");
                         }
                     }
 
@@ -249,6 +256,8 @@ namespace elektro
 
                             if (elektro_221_composer_full_disk->hasData)
                                 elektro_221_composer_full_disk->save(directory);
+                            if (elektro_321_composer_full_disk->hasData)
+                                elektro_321_composer_full_disk->save(directory);
 
                             imageStatus = RECEIVING;
                         }
@@ -283,10 +292,16 @@ namespace elektro
                     if (channel == 9)
                     {
                         elektro_221_composer_full_disk->push9(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push9(segmentedDecoder.image, mktime(&scanTimestamp));
                     }
-                    else if (channel == 6)
+                    if (channel == 7)
+                    {
+                        elektro_321_composer_full_disk->push7(segmentedDecoder.image, mktime(&scanTimestamp));
+                    }
+                    if (channel == 6)
                     {
                         elektro_221_composer_full_disk->push6(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push6(segmentedDecoder.image, mktime(&scanTimestamp));
                     }
 
                     // If the UI is active, update texture
@@ -311,6 +326,8 @@ namespace elektro
 
                         if (elektro_221_composer_full_disk->hasData)
                             elektro_221_composer_full_disk->save(directory);
+                        if (elektro_321_composer_full_disk->hasData)
+                            elektro_321_composer_full_disk->save(directory);
 
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         imageStatus = IDLE;

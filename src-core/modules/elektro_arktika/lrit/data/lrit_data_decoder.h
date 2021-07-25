@@ -72,6 +72,37 @@ namespace elektro
             uint32_t *textureBuffer;
         };
 
+        class ELEKTRO321Composer
+        {
+        private:
+            cimg_library::CImg<unsigned char> ch9, ch7, ch6, compo321;
+            time_t time9, time7, time6;
+
+            void generateCompo();
+
+        public:
+            ELEKTRO321Composer();
+            ~ELEKTRO321Composer();
+
+            bool hasData = false;
+
+            std::string filename;
+
+            void save(std::string directory);
+
+            void push9(cimg_library::CImg<unsigned char> img, time_t time);
+            void push7(cimg_library::CImg<unsigned char> img, time_t time);
+            void push6(cimg_library::CImg<unsigned char> img, time_t time);
+
+        public:
+            // UI Stuff
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
+        };
+
         class LRITDataDecoder
         {
         private:
@@ -93,6 +124,7 @@ namespace elektro
 
         public: // Other things
             std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
+            std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;
 
         public:
             LRITDataDecoder(std::string dir);
