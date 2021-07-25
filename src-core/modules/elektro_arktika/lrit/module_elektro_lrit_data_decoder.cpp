@@ -19,6 +19,7 @@ namespace elektro
         ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
             elektro_221_composer_full_disk = std::make_shared<ELEKTRO221Composer>();
+            elektro_321_composer_full_disk = std::make_shared<ELEKTRO321Composer>();
         }
 
         std::vector<ModuleDataType> ELEKTROLRITDataDecoderModule::getInputTypes()
@@ -101,6 +102,7 @@ namespace elektro
                             decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
 
                             decoders[vcdu.vcid]->elektro_221_composer_full_disk = elektro_221_composer_full_disk;
+                            decoders[vcdu.vcid]->elektro_321_composer_full_disk = elektro_321_composer_full_disk;
                         }
                         decoders[vcdu.vcid]->work(pkt);
                     }
@@ -198,6 +200,45 @@ namespace elektro
                             if (elektro_221_composer_full_disk->imageStatus == SAVING)
                                 ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
                             else if (elektro_221_composer_full_disk->imageStatus == RECEIVING)
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                            else
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                }
+
+                // Full disk 321
+                {
+                    if (elektro_321_composer_full_disk->textureID == 0)
+                    {
+                        elektro_321_composer_full_disk->textureID = makeImageTexture();
+                        elektro_321_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
+                    }
+
+                    if (elektro_321_composer_full_disk->imageStatus != IDLE)
+                    {
+                        if (elektro_321_composer_full_disk->hasToUpdate)
+                        {
+                            elektro_321_composer_full_disk->hasToUpdate = true;
+                            updateImageTexture(elektro_321_composer_full_disk->textureID,
+                                               elektro_321_composer_full_disk->textureBuffer,
+                                               elektro_321_composer_full_disk->img_width,
+                                               elektro_321_composer_full_disk->img_height);
+                        }
+
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem("321 Color"))
+                        {
+                            ImGui::Image((void *)(intptr_t)elektro_321_composer_full_disk->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (elektro_321_composer_full_disk->imageStatus == SAVING)
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                            else if (elektro_321_composer_full_disk->imageStatus == RECEIVING)
                                 ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                             else
                                 ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");

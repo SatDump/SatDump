@@ -16,6 +16,7 @@ namespace elektro
             std::map<int, std::shared_ptr<LRITDataDecoder>> decoders;
 
             std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
+             std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
