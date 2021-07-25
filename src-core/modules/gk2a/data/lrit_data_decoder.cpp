@@ -169,7 +169,7 @@ namespace gk2a
                     ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                    if (image_structure_record.compression_flag == 2)
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */ || image_structure_record.compression_flag == 1 /* JPEG 2000 */)
                     {
                         logger->debug("JPEG Compression is used, decompressing...");
                         is_jpeg_compressed = true;
