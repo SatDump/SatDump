@@ -183,9 +183,16 @@ namespace gk2a
                 if (all_headers.count(KeyHeader::TYPE) > 0)
                 {
                     KeyHeader key_header(&lrit_data[all_headers[KeyHeader::TYPE]]);
-                    logger->debug("This is encrypted!");
-                    is_encrypted = true;
-                    key_index = key_header.key;
+                    if (key_header.key != 0)
+                    {
+                        logger->debug("This is encrypted!");
+                        is_encrypted = true;
+                        key_index = key_header.key;
+                    }
+                    else
+                    {
+                        is_encrypted = false;
+                    }
                 }
                 else
                 {
@@ -245,8 +252,10 @@ namespace gk2a
                 lrit_data[all_headers[KeyHeader::TYPE]] = 0; // Type
             }
 
-            if (is_encrypted && decryption_keys.size() <= 0) // We lack decryption
+            // Check if this is image data, and if so also write it as an image
+            if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
             {
+                if (is_encrypted && decryption_keys.size() <= 0) // We lack decryption
                 {
                     if (!std::filesystem::exists(directory + "/LRIT_ENCRYPTED"))
                         std::filesystem::create_directory(directory + "/LRIT_ENCRYPTED");
@@ -258,11 +267,7 @@ namespace gk2a
                     file.write((char *)lrit_data.data(), lrit_data.size());
                     file.close();
                 }
-            }
-            else
-            {
-                // Check if this is image data, and if so also write it as an image
-                if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
+                else
                 {
                     if (!std::filesystem::exists(directory + "/IMAGES"))
                         std::filesystem::create_directory(directory + "/IMAGES");
@@ -349,18 +354,50 @@ namespace gk2a
                         image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                     }
                 }
-                else
-                {
-                    if (!std::filesystem::exists(directory + "/LRIT"))
-                        std::filesystem::create_directory(directory + "/LRIT");
+            }
+            else if (primary_header.file_type_code == 255)
+            {
+                std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
 
-                    logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
+                int offset = primary_header.total_header_length;
 
-                    // Write file out
-                    std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
-                    file.write((char *)lrit_data.data(), lrit_data.size());
-                    file.close();
-                }
+                std::vector<std::string> header_parts = splitString(current_filename, '_');
+
+                // Get type name
+                std::string name = "";
+                if (header_parts.size() >= 2)
+                    name = header_parts[1] + "/";
+
+                // Get extension
+                std::string extension = "bin";
+                if (std::string((char *)&lrit_data[offset + 1], 3) == "PNG")
+                    extension = "png";
+                else if (std::string((char *)&lrit_data[offset], 3) == "GIF")
+                    extension = "gif";
+                else if (name == "ANT")
+                    extension = "txt";
+
+                if (!std::filesystem::exists(directory + "/ADD/" + name))
+                    std::filesystem::create_directories(directory + "/ADD/" + name);
+
+                logger->info("Writing file " + directory + "/ADD/" + name + clean_filename + "." + extension + "...");
+
+                // Write file out
+                std::ofstream file(directory + "/ADD/" + name + clean_filename + "." + extension);
+                file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
+                file.close();
+            }
+            else
+            {
+                if (!std::filesystem::exists(directory + "/LRIT"))
+                    std::filesystem::create_directory(directory + "/LRIT");
+
+                logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
+
+                // Write file out
+                std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
+                file.write((char *)lrit_data.data(), lrit_data.size());
+                file.close();
             }
         }
 

@@ -15,6 +15,10 @@ namespace gk2a
 
             std::map<int, std::shared_ptr<LRITDataDecoder>> decoders;
 
+            bool write_images;
+            bool write_additional;
+            bool write_unknown;
+
         public:
             GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             ~GK2ALRITDataDecoderModule();

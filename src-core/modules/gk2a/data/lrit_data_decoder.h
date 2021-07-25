@@ -68,6 +68,10 @@ namespace gk2a
             LRITDataDecoder(std::string dir);
             ~LRITDataDecoder();
 
+            bool write_images = true;
+            bool write_additional = true;
+            bool write_unknown = true;
+
             void save();
             void work(ccsds::CCSDSPacket &packet);
 

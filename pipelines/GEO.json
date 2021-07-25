@@ -179,7 +179,11 @@
                 }
             },
             "products": {
-                "gk2a_lrit_data_decoder": {}
+                "gk2a_lrit_data_decoder": {
+                    "write_images": "1",
+                    "write_additional": "1",
+                    "write_unknown": "1"
+                }
             }
         }
     },
