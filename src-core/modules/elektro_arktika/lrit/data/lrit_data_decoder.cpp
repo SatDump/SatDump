@@ -245,6 +245,7 @@ namespace elektro
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
                             elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L2", "321");
                             elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L2", "231");
+                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L2", "NC");
                         }
 
                         if (product_name == "L-000-GOMS3_-GOMS3")
@@ -253,6 +254,7 @@ namespace elektro
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
                             elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L3", "321");
                             elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L3", "231");
+                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L3", "NC");
                         }
                     }
 
