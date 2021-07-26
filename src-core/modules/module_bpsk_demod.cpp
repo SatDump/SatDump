@@ -20,6 +20,7 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
     snr = 0;
+    peak_snr = 0;
 }
 
 void BPSKDemodModule::init()
@@ -124,6 +125,9 @@ void BPSKDemodModule::process()
         snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
         snr = snr_estimator.snr();
 
+        if (snr > peak_snr)
+            peak_snr = snr;
+
         for (int i = 0; i < dat_size; i++)
         {
             sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real() * 50);
@@ -145,7 +149,7 @@ void BPSKDemodModule::process()
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
         }
     }
 
@@ -187,17 +191,9 @@ void BPSKDemodModule::drawUI(bool window)
 
     ImGui::BeginGroup();
     {
+        // Show SNR information
         ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-        {
-            ImGui::Text("SNR (dB) : ");
-            ImGui::SameLine();
-            ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
-
-            std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-            snr_history[200 - 1] = snr;
-
-            ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-        }
+        snr_plot.draw(snr, peak_snr);
     }
     ImGui::EndGroup();
 
