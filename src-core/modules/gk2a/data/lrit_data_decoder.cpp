@@ -169,9 +169,14 @@ namespace gk2a
                     ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */ || image_structure_record.compression_flag == 1 /* JPEG 2000 */)
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
                     {
                         logger->debug("JPEG Compression is used, decompressing...");
+                        is_jpeg_compressed = true;
+                    }
+                    else if (image_structure_record.compression_flag == 1 /* JPEG 2000 */)
+                    {
+                        logger->debug("JPEG2000 Compression is used, decompressing...");
                         is_jpeg_compressed = true;
                     }
                     else
@@ -282,7 +287,11 @@ namespace gk2a
                         lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                     }
 
-                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+                    std::vector<std::string> header_parts = splitString(current_filename, '_'); // Is this a FD?
+                    if (header_parts.size() < 2)
+                        header_parts = {"", ""};
+
+                    if (header_parts[1] == "FD")
                     {
                         imageStatus = RECEIVING;
 
@@ -316,10 +325,6 @@ namespace gk2a
                         else
                         {
                             logger->critical("Could not parse segment number from filename!");
-
-                            // Fallback, maybe unreliable code
-                            SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
-                            seg_number = (segment_id_header.segment_sequence_number - 1) / image_structure_record.lines_count;
                         }
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
@@ -348,10 +353,11 @@ namespace gk2a
                     }
                     else
                     {
+                        std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                         // Write raw image dats
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        logger->info("Writing image " + directory + "/IMAGES/" + clean_filename + ".png" + "...");
                         cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
-                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                        image.save_png(std::string(directory + "/IMAGES/" + clean_filename + ".png").c_str());
                     }
                 }
             }
