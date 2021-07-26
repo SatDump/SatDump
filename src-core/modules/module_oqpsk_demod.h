@@ -64,8 +64,7 @@ protected:
     std::atomic<uint64_t> progress;
 
     M2M4SNREstimator snr_estimator;
-    float snr;
-    float peak_snr;
+    float snr, peak_snr;
 
     // UI Stuff
     widgets::ConstellationViewer constellation;

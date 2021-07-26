@@ -109,10 +109,9 @@ namespace noaa
             // Estimate SNR, only on part of the samples to limit CPU usage
             snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
-            
-            if (snr > peak_snr) {
+
+            if (snr > peak_snr)
                 peak_snr = snr;
-            }
 
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
@@ -179,6 +178,7 @@ namespace noaa
         ImGui::BeginGroup();
         {
             // Show SNR information
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             snr_plot.draw(snr, peak_snr);
 
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});

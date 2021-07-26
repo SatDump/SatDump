@@ -79,10 +79,9 @@ namespace terra
             // Estimate SNR, only on part of the samples to limit CPU usage
             snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
-            
-            if (snr > peak_snr) {
-            peak_snr = snr;
-            }
+
+            if (snr > peak_snr)
+                peak_snr = snr;
 
             for (int i = 0; i < dat_size; i++)
             {
@@ -113,7 +112,6 @@ namespace terra
         data_out.close();
     }
 
-
     void TerraDBDemodModule::drawUI(bool window)
     {
         ImGui::Begin("Terra DB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -128,6 +126,7 @@ namespace terra
         ImGui::BeginGroup();
         {
             // Show SNR information
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             snr_plot.draw(snr, peak_snr);
         }
         ImGui::EndGroup();
