@@ -13,6 +13,7 @@
 #include "noaa_deframer.h"
 #include "common/widgets/constellation.h"
 #include "common/snr_estimator.h"
+#include "common/widgets/snr_plot.h"
 
 namespace noaa
 {
@@ -44,11 +45,11 @@ namespace noaa
         int frame_count = 0;
 
         M2M4SNREstimator snr_estimator;
-        float snr;
+        float snr, peak_snr;
 
         // UI Stuff
-        float snr_history[200];
         widgets::ConstellationViewer constellation;
+        widgets::SNRPlotViewer snr_plot;
 
     public:
         NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
