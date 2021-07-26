@@ -76,7 +76,7 @@ error_exit (j_common_ptr cinfo)
   /* Let the memory manager delete any temp files before we die */
   jpeg_destroy(cinfo);
 
-  exit(EXIT_FAILURE);
+  //exit(EXIT_FAILURE);
 }
 
 
