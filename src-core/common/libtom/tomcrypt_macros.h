@@ -264,17 +264,17 @@ static inline unsigned ROR(unsigned word, int i)
 
 static inline unsigned ROLc(unsigned word, const int i)
 {
-   asm ("roll %2,%0"
+   asm ("roll %%cl,%0"
       :"=r" (word)
-      :"0" (word),"I" (i));
+      :"0" (word),"c" (i));
    return word;
 }
 
 static inline unsigned RORc(unsigned word, const int i)
 {
-   asm ("rorl %2,%0"
+   asm ("rorl %%cl,%0"
       :"=r" (word)
-      :"0" (word),"I" (i));
+      :"0" (word),"c" (i));
    return word;
 }
 
@@ -363,17 +363,17 @@ static inline unsigned long ROR64(unsigned long word, int i)
 
 static inline unsigned long ROL64c(unsigned long word, const int i)
 {
-   asm("rolq %2,%0"
+   asm("rolq %%cl,%0"
       :"=r" (word)
-      :"0" (word),"J" (i));
+      :"0" (word),"c" (i));
    return word;
 }
 
 static inline unsigned long ROR64c(unsigned long word, const int i)
 {
-   asm("rorq %2,%0"
+   asm("rorq %%cl,%0"
       :"=r" (word)
-      :"0" (word),"J" (i));
+      :"0" (word),"c" (i));
    return word;
 }
 
