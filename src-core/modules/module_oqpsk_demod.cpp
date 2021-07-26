@@ -134,10 +134,9 @@ void OQPSKDemodModule::process()
         // Estimate SNR, only on part of the samples to limit CPU usage
         snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
         snr = snr_estimator.snr();
-        
-        if (snr > peak_snr) {
+
+        if (snr > peak_snr)
             peak_snr = snr;
-        }
 
         for (int i = 0; i < dat_size; i++)
         {
@@ -204,6 +203,7 @@ void OQPSKDemodModule::drawUI(bool window)
     ImGui::BeginGroup();
     {
         // Show SNR information
+        ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
         snr_plot.draw(snr, peak_snr);
     }
     ImGui::EndGroup();
