@@ -212,21 +212,21 @@ namespace elektro
                     std::string image_id = current_filename.substr(0, 30);
 
                     // Channel
-                    int channel = std::stoi(current_filename.substr(29, 1));
+                    std::string band = current_filename.substr(26, 4);
+                    int channel = std::stoi(current_filename.substr(29, 1)) + std::stoi(current_filename.substr(26, 2)); // Default value ensuring no data is discarded
                     {
-                        int aux_ch = std::stoi(current_filename.substr(26, 2));
-                        if (aux_ch > 0)
-                            channel += aux_ch;
-
                         // Now, we remap the channel to the "normal" MSU-GS numbering
-                        if (channel == 6) // 6 is 1
+                        if (band == "00_6") // 0.6um is 1
                             channel = 1;
-                        else if (channel == 7) // 7 is 2
+                        else if (band == "00_7") // 0.7um is 2
                             channel = 2;
-                        else if (channel == 9) // 9 is 3
+                        else if (band == "00_9") // 0.9um is 3
                             channel = 3;
-                        else // May for IR?
-                            channel = aux_ch - channel;
+                        else if (band == "10_7") // 10.7um is 9
+                            channel = 9;
+                        else if (band == "11_9") // 10.7um is 9
+                            channel = 10;
+                        // We don't know other IRs yet
                     }
 
                     // Timestamp
