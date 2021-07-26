@@ -16,6 +16,7 @@ namespace noaa
                                                                                                                                                   constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         snr = 0;
+        peak_snr = 0;
 
         float symbolrate = 8320;                                           // Symbolrate
         float input_sps = (float)d_samplerate / symbolrate;                // Compute input SPS
@@ -108,6 +109,10 @@ namespace noaa
             // Estimate SNR, only on part of the samples to limit CPU usage
             snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
+            
+            if (snr > peak_snr) {
+                peak_snr = snr;
+            }
 
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
@@ -173,17 +178,8 @@ namespace noaa
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-            {
-                ImGui::Text("SNR (dB) : ");
-                ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
-
-                std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-                snr_history[200 - 1] = snr;
-
-                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-            }
+            // Show SNR information
+            snr_plot.draw(snr, peak_snr);
 
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
