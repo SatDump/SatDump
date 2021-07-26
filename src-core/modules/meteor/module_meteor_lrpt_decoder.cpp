@@ -106,6 +106,13 @@ namespace meteor
             // Derandomize that frame
             derand.work(&frameBuffer[4], FRAME_SIZE - 4);
 
+            // There is a VERY rare edge case where CADUs end up inverted... Better cover it to be safe
+            if (frameBuffer[9] == 0xFF)
+            {
+                for (int i = 0; i < FRAME_SIZE; i++)
+                    frameBuffer[i] ^= 0xFF;
+            }
+
             // RS Correction
             rs.decode_interlaved(&frameBuffer[4], false, 4, errors);
 
