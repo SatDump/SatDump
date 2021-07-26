@@ -11,6 +11,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/bzlib/*.c
                                      common/miniz/*.c
                                      common/libtom/*.c
+                                     common/jpeg/*.c
 )
 
 find_package(PkgConfig)
