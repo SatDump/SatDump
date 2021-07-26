@@ -6,3 +6,4 @@ android/.gradle
 android/SatDump/build
 android/SatDump/assets
 android/.idea
+**/.DS_Store
