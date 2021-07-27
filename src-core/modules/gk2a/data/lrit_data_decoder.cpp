@@ -95,6 +95,7 @@ namespace gk2a
                 if (crc == computeCRC(packet.payload.data(), packet.payload.size() - 2))
                 {
                     processLRITHeader(packet);
+                    header_parsed = false;
                     file_in_progress = true;
                 }
                 else
@@ -120,9 +121,10 @@ namespace gk2a
                 }
             }
 
-            if (file_in_progress)
+            if (file_in_progress && !header_parsed)
             {
                 PrimaryHeader primary_header(&lrit_data[0]);
+                header_parsed = true;
 
                 if (lrit_data.size() >= primary_header.total_header_length)
                     parseHeader();

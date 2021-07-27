@@ -54,6 +54,8 @@ namespace gk2a
             std::vector<uint8_t> decompression_buffer;
             std::map<int, int> all_headers;
 
+            bool header_parsed = false;
+
             void processLRITHeader(ccsds::CCSDSPacket &pkt);
             void parseHeader();
             void processLRITData(ccsds::CCSDSPacket &pkt);
