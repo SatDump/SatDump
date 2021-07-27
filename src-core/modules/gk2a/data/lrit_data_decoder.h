@@ -9,10 +9,6 @@
 #include <string>
 #include <map>
 #include <memory>
-extern "C"
-{
-    //#include <common/aec/szlib.h>
-}
 
 namespace gk2a
 {
@@ -57,7 +53,6 @@ namespace gk2a
             std::string current_filename;
             std::vector<uint8_t> decompression_buffer;
             std::map<int, int> all_headers;
-            SegmentedLRITImageDecoder segmentedDecoder;
 
             void processLRITHeader(ccsds::CCSDSPacket &pkt);
             void parseHeader();
@@ -75,14 +70,16 @@ namespace gk2a
             void save();
             void work(ccsds::CCSDSPacket &packet);
 
-            lrit_image_status imageStatus;
-            int img_width, img_height;
+            std::map<std::string, lrit_image_status> imageStatus;
+            std::map<std::string, int> img_widths, img_heights;
+
+            std::map<std::string, SegmentedLRITImageDecoder> segmentedDecoders;
 
         public:
             // UI Stuff
-            bool hasToUpdate = false;
-            unsigned int textureID = 0;
-            uint32_t *textureBuffer;
+            std::map<std::string, bool> hasToUpdates;
+            std::map<std::string, unsigned int> textureIDs;
+            std::map<std::string, uint32_t *> textureBuffers;
         };
     } // namespace atms
 } // namespace jpss
