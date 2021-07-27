@@ -103,12 +103,19 @@ namespace goes
                     file_in_progress = false;
                 }
             }
+
+            if (file_in_progress)
+            {
+                PrimaryHeader primary_header(&lrit_data[0]);
+
+                if (lrit_data.size() >= primary_header.total_header_length)
+                    parseHeader();
+            }
         }
 
         void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
         {
             lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
-            parseHeader();
         }
 
         void LRITDataDecoder::parseHeader()
