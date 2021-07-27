@@ -72,7 +72,7 @@ namespace elektro
 
             std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
 
-            while (!data_in.eof())
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer
                 if (input_data_type == DATA_FILE)

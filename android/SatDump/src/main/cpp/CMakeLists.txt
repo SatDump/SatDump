@@ -7,8 +7,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX14_EXTENSION_COMPILE_OPTION "-std=c++17")
 
 # Build in release mod so it isn't unusably slow
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+# We have to disable fortify... Or some stuff doesn't build
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_RELEASE   "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_DEBUG     "-O3 -D_FORTIFY_SOURCE=0")
 
 #set(CFLAGS "${CFLAGS} -D__ANDROID_API__=29")
 #set(CMAKE_CXX_FLAGS "-fPIE ${CMAKE_CXX_FLAGS}")
