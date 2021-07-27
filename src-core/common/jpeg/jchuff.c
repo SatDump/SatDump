@@ -21,7 +21,7 @@
  */
 
 GLOBAL(void)
-jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
+jpeg_make_c_derived_tbl (j_compress_ptr cinfo, jboolean isDC, int tblno,
              c_derived_tbl ** pdtbl)
 {
   JHUFF_TBL *htbl;

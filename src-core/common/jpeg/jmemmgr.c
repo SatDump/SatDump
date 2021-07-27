@@ -157,9 +157,9 @@ struct jvirt_sarray_control {
   JDIMENSION rowsperchunk;  /* allocation chunk size in mem_buffer */
   JDIMENSION cur_start_row; /* first logical row # in the buffer */
   JDIMENSION first_undef_row;   /* row # of first uninitialized row */
-  boolean pre_zero;     /* pre-zero mode requested? */
-  boolean dirty;        /* do current buffer contents need written? */
-  boolean b_s_open;     /* is backing-store data valid? */
+  jboolean pre_zero;     /* pre-zero mode requested? */
+  jboolean dirty;        /* do current buffer contents need written? */
+  jboolean b_s_open;     /* is backing-store data valid? */
   jvirt_sarray_ptr next;    /* link to next virtual sarray control block */
   backing_store_info b_s_info;  /* System-dependent control info */
 };
@@ -173,9 +173,9 @@ struct jvirt_barray_control {
   JDIMENSION rowsperchunk;  /* allocation chunk size in mem_buffer */
   JDIMENSION cur_start_row; /* first logical row # in the buffer */
   JDIMENSION first_undef_row;   /* row # of first uninitialized row */
-  boolean pre_zero;     /* pre-zero mode requested? */
-  boolean dirty;        /* do current buffer contents need written? */
-  boolean b_s_open;     /* is backing-store data valid? */
+  jboolean pre_zero;     /* pre-zero mode requested? */
+  jboolean dirty;        /* do current buffer contents need written? */
+  jboolean b_s_open;     /* is backing-store data valid? */
   jvirt_barray_ptr next;    /* link to next virtual barray control block */
   backing_store_info b_s_info;  /* System-dependent control info */
 };
@@ -573,7 +573,7 @@ alloc_darray (j_common_ptr cinfo, int pool_id,
 
 
 METHODDEF(jvirt_sarray_ptr)
-request_virt_sarray (j_common_ptr cinfo, int pool_id, boolean pre_zero,
+request_virt_sarray (j_common_ptr cinfo, int pool_id, jboolean pre_zero,
              JDIMENSION samplesperrow, JDIMENSION numrows,
              JDIMENSION maxaccess)
 /* Request a virtual 2-D sample array */
@@ -603,7 +603,7 @@ request_virt_sarray (j_common_ptr cinfo, int pool_id, boolean pre_zero,
 
 
 METHODDEF(jvirt_barray_ptr)
-request_virt_barray (j_common_ptr cinfo, int pool_id, boolean pre_zero,
+request_virt_barray (j_common_ptr cinfo, int pool_id, jboolean pre_zero,
              JDIMENSION blocksperrow, JDIMENSION numrows,
              JDIMENSION maxaccess)
 /* Request a virtual 2-D coefficient-block array */
@@ -740,7 +740,7 @@ realize_virt_arrays (j_common_ptr cinfo)
 
 
 LOCAL(void)
-do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
+do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, jboolean writing)
 /* Do backing store read or write of a virtual sample array */
 {
   size_t bytesperrow, file_offset, byte_count, rows, thisrow, i;
@@ -773,7 +773,7 @@ do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
 
 
 LOCAL(void)
-do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
+do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, jboolean writing)
 /* Do backing store read or write of a virtual coefficient-block array */
 {
   size_t bytesperrow, file_offset, byte_count, rows, thisrow, i;
@@ -808,7 +808,7 @@ do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
 METHODDEF(JSAMPARRAY)
 access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
             JDIMENSION start_row, JDIMENSION num_rows,
-            boolean writable)
+            jboolean writable)
 /* Access the part of a virtual sample array starting at start_row */
 /* and extending for num_rows rows.  writable is true if  */
 /* caller intends to modify the accessed area. */
@@ -893,7 +893,7 @@ access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
 METHODDEF(JBLOCKARRAY)
 access_virt_barray (j_common_ptr cinfo, jvirt_barray_ptr ptr,
             JDIMENSION start_row, JDIMENSION num_rows,
-            boolean writable)
+            jboolean writable)
 /* Access the part of a virtual block array starting at start_row */
 /* and extending for num_rows rows.  writable is true if  */
 /* caller intends to modify the accessed area. */

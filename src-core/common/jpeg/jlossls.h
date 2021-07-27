@@ -102,7 +102,7 @@ typedef struct {
 
   /* Entropy decoding */
   JMETHOD(void, entropy_start_pass, (j_decompress_ptr cinfo));
-  JMETHOD(boolean, entropy_process_restart, (j_decompress_ptr cinfo));
+  JMETHOD(jboolean, entropy_process_restart, (j_decompress_ptr cinfo));
   JMETHOD(JDIMENSION, entropy_decode_mcus, (j_decompress_ptr cinfo,
 					    JDIFFIMAGE diff_buf,
 					    JDIMENSION MCU_row_num,

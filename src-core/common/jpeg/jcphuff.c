@@ -24,7 +24,7 @@
 
 typedef struct {
   /* Mode flag: TRUE for optimization, FALSE for actual data output */
-  boolean gather_statistics;
+  jboolean gather_statistics;
 
   /* Bit-level coding status.
    * next_output_byte/free_in_buffer are local copies of cinfo->dest fields.
@@ -85,13 +85,13 @@ typedef phuff_entropy_encoder * phuff_entropy_ptr;
 #endif
 
 /* Forward declarations */
-METHODDEF(boolean) encode_mcu_DC_first JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_DC_first JPP((j_compress_ptr cinfo,
                         JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_AC_first JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_AC_first JPP((j_compress_ptr cinfo,
                         JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_DC_refine JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_DC_refine JPP((j_compress_ptr cinfo,
                          JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_AC_refine JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_AC_refine JPP((j_compress_ptr cinfo,
                          JBLOCKROW *MCU_data));
 METHODDEF(void) finish_pass_phuff JPP((j_compress_ptr cinfo));
 METHODDEF(void) finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
@@ -102,11 +102,11 @@ METHODDEF(void) finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
  */
 
 METHODDEF(void)
-start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
+start_pass_phuff (j_compress_ptr cinfo, jboolean gather_statistics)
 {  
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
-  boolean is_DC_band;
+  jboolean is_DC_band;
   int ci, tbl;
   jpeg_component_info * compptr;
 
@@ -373,7 +373,7 @@ emit_restart (phuff_entropy_ptr entropy, int restart_num)
  * or first pass of successive approximation).
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -461,7 +461,7 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * or first pass of successive approximation).
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -569,7 +569,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * is not very clear on the point.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -617,7 +617,7 @@ encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * MCU encoding for AC successive approximation refinement scan.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -773,11 +773,11 @@ finish_pass_gather_phuff (j_compress_ptr cinfo)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
-  boolean is_DC_band;
+  jboolean is_DC_band;
   int ci, tbl;
   jpeg_component_info * compptr;
   JHUFF_TBL **htblptr;
-  boolean did[NUM_HUFF_TBLS];
+  jboolean did[NUM_HUFF_TBLS];
 
   /* Flush out buffered data (all we care about is counting the EOB symbol) */
   emit_eobrun(entropy);
@@ -812,7 +812,7 @@ finish_pass_gather_phuff (j_compress_ptr cinfo)
 }
 
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 need_optimization_pass (j_compress_ptr cinfo)
 {
   return (cinfo->Ss != 0 || cinfo->Ah == 0);

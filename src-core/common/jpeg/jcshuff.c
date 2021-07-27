@@ -85,11 +85,11 @@ typedef struct {
 
 
 /* Forward declarations */
-METHODDEF(boolean) encode_mcu_huff JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_huff JPP((j_compress_ptr cinfo,
 					JBLOCKROW *MCU_data));
 METHODDEF(void) finish_pass_huff JPP((j_compress_ptr cinfo));
 #ifdef ENTROPY_OPT_SUPPORTED
-METHODDEF(boolean) encode_mcu_gather JPP((j_compress_ptr cinfo,
+METHODDEF(jboolean) encode_mcu_gather JPP((j_compress_ptr cinfo,
 					  JBLOCKROW *MCU_data));
 METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
 #endif
@@ -102,7 +102,7 @@ METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
  */
 
 METHODDEF(void)
-start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
+start_pass_huff (j_compress_ptr cinfo, jboolean gather_statistics)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   shuff_entropy_ptr entropy = (shuff_entropy_ptr) lossyc->entropy_private;
@@ -178,7 +178,7 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
 	      { action; } }
 
 
-LOCAL(boolean)
+LOCAL(jboolean)
 dump_buffer (working_state * state)
 /* Empty the output buffer; return TRUE if successful, FALSE if must suspend */
 {
@@ -202,7 +202,7 @@ dump_buffer (working_state * state)
  */
 
 INLINE
-LOCAL(boolean)
+LOCAL(jboolean)
 emit_bits (working_state * state, unsigned int code, int size)
 /* Emit some bits; return TRUE if successful, FALSE if must suspend */
 {
@@ -240,7 +240,7 @@ emit_bits (working_state * state, unsigned int code, int size)
 }
 
 
-LOCAL(boolean)
+LOCAL(jboolean)
 flush_bits (working_state * state)
 {
   if (! emit_bits(state, 0x7F, 7)) /* fill any partial byte with ones */
@@ -253,7 +253,7 @@ flush_bits (working_state * state)
 
 /* Encode a single block's worth of coefficients */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 encode_one_block (working_state * state, const JCOEFPTR block, int last_dc_val,
 		  c_derived_tbl *dctbl, c_derived_tbl *actbl)
 {
@@ -351,7 +351,7 @@ encode_one_block (working_state * state, const JCOEFPTR block, int last_dc_val,
  * Emit a restart marker & resynchronize predictions.
  */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 emit_restart (working_state * state, int restart_num)
 {
   int ci;
@@ -376,7 +376,7 @@ emit_restart (working_state * state, int restart_num)
  * Encode and output one MCU's worth of Huffman-compressed coefficients.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -547,7 +547,7 @@ htest_one_block (j_compress_ptr cinfo, const JCOEFPTR block, int last_dc_val,
  * No data is actually output, so no suspension return is possible.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 encode_mcu_gather (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
@@ -592,8 +592,8 @@ finish_pass_gather (j_compress_ptr cinfo)
   int ci, dctbl, actbl;
   jpeg_component_info * compptr;
   JHUFF_TBL **htblptr;
-  boolean did_dc[NUM_HUFF_TBLS];
-  boolean did_ac[NUM_HUFF_TBLS];
+  jboolean did_dc[NUM_HUFF_TBLS];
+  jboolean did_ac[NUM_HUFF_TBLS];
 
   /* It's important not to apply jpeg_gen_optimal_table more than once
    * per table, because it clobbers the input frequency counts!
@@ -626,7 +626,7 @@ finish_pass_gather (j_compress_ptr cinfo)
 #endif /* ENTROPY_OPT_SUPPORTED */
 
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 need_optimization_pass (j_compress_ptr cinfo)
 {
   (void)cinfo;

@@ -68,7 +68,7 @@ jinit_lossless_c_codec(j_compress_ptr cinfo)
 
   /* Need a full-image difference buffer in any multi-pass mode. */
   jinit_c_diff_controller(cinfo,
-			  (boolean) (cinfo->num_scans > 1 ||
+			  (jboolean) (cinfo->num_scans > 1 ||
 				     cinfo->optimize_coding));
 
   /* Initialize method pointers.

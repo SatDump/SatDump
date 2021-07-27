@@ -57,7 +57,7 @@ GLOBAL(void)
 jinit_lossless_d_codec(j_decompress_ptr cinfo)
 {
   j_lossless_d_ptr losslsd;
-  boolean use_c_buffer;
+  jboolean use_c_buffer;
 
   /* Create subobject in permanent pool */
   losslsd = (j_lossless_d_ptr)

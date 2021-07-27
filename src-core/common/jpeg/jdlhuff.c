@@ -152,7 +152,7 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
  * Returns FALSE if must suspend.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 process_restart (j_decompress_ptr cinfo)
 {
   j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;

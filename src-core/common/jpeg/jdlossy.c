@@ -185,7 +185,7 @@ GLOBAL(void)
 jinit_lossy_d_codec (j_decompress_ptr cinfo)
 {
   j_lossy_d_ptr lossyd;
-  boolean use_c_buffer;
+  jboolean use_c_buffer;
 
   /* Create subobject in permanent pool */
   lossyd = (j_lossy_d_ptr)

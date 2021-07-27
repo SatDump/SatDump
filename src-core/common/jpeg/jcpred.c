@@ -61,7 +61,7 @@ METHODDEF(void) start_pass
 #define DIFFERENCE_1D(INITIAL_PREDICTOR) \
     j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec; \
     c_pred_ptr pred = (c_pred_ptr) losslsc->pred_private; \
-    boolean restart = FALSE; \
+    jboolean restart = FALSE; \
     unsigned int xindex; \
     int samp, Ra; \
  \
