@@ -1,6 +1,9 @@
 #include "image.h"
-#include <jpeglib.h>
 #include <stdexcept>
+extern "C"
+{
+#include "common/jpeg/jpeglib.h"
+}
 
 namespace image
 {
@@ -59,7 +62,7 @@ namespace image
         longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    static void libjpeg_error_func_ignore(j_common_ptr cinfo)
+    static void libjpeg_error_func_ignore(j_common_ptr /*cinfo*/)
     {
         //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
@@ -87,7 +90,7 @@ namespace image
         jpeg_create_decompress(&cinfo);
 
         // Parse and start decompressing
-        jpeg_mem_src(&cinfo, data, length);
+        jpeg_mem__src(&cinfo, data, length);
         jpeg_read_header(&cinfo, FALSE);
         jpeg_start_decompress(&cinfo);
 

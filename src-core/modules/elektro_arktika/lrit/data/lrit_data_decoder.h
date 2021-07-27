@@ -117,6 +117,8 @@ namespace elektro
             std::map<int, int> all_headers;
             SegmentedLRITImageDecoder segmentedDecoder;
 
+            bool header_parsed = false;
+
             void processLRITHeader(ccsds::CCSDSPacket &pkt);
             void parseHeader();
             void processLRITData(ccsds::CCSDSPacket &pkt);

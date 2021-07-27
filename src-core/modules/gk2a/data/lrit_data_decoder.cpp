@@ -36,9 +36,6 @@ namespace gk2a
         LRITDataDecoder::LRITDataDecoder(std::string dir) : directory(dir)
         {
             file_in_progress = false;
-            imageStatus = IDLE;
-            img_height = 0;
-            img_width = 0;
 
             if (resources::resourceExists("gk2a/EncryptionKeyMessage.bin"))
             {
@@ -81,6 +78,10 @@ namespace gk2a
 
         void LRITDataDecoder::work(ccsds::CCSDSPacket &packet)
         {
+            // Thanks Sam for this one... Defeats the very purpose of those marker but that's an eof CCSDS frame. We'll just ignore those.
+            if (packet.header.packet_sequence_count == 0 && packet.header.apid == 0 && packet.payload.size() == 0 && packet.header.sequence_flag == 0)
+                return;
+
             if (packet.header.sequence_flag == 1 || packet.header.sequence_flag == 3)
             {
                 if (file_in_progress)
@@ -94,6 +95,7 @@ namespace gk2a
                 if (crc == computeCRC(packet.payload.data(), packet.payload.size() - 2))
                 {
                     processLRITHeader(packet);
+                    header_parsed = false;
                     file_in_progress = true;
                 }
                 else
@@ -118,12 +120,20 @@ namespace gk2a
                     file_in_progress = false;
                 }
             }
+
+            if (file_in_progress && !header_parsed)
+            {
+                PrimaryHeader primary_header(&lrit_data[0]);
+                header_parsed = true;
+
+                if (lrit_data.size() >= primary_header.total_header_length)
+                    parseHeader();
+            }
         }
 
         void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
         {
             lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
-            parseHeader();
         }
 
         void LRITDataDecoder::parseHeader()
@@ -169,9 +179,14 @@ namespace gk2a
                     ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */ || image_structure_record.compression_flag == 1 /* JPEG 2000 */)
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
                     {
                         logger->debug("JPEG Compression is used, decompressing...");
+                        is_jpeg_compressed = true;
+                    }
+                    else if (image_structure_record.compression_flag == 1 /* JPEG 2000 */)
+                    {
+                        logger->debug("JPEG2000 Compression is used, decompressing...");
                         is_jpeg_compressed = true;
                     }
                     else
@@ -282,11 +297,27 @@ namespace gk2a
                         lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                     }
 
-                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+                    std::vector<std::string> header_parts = splitString(current_filename, '_'); // Is this a FD?
+                    if (header_parts.size() < 2)
+                        header_parts = {"", ""};
+
+                    if (header_parts[1] == "FD")
                     {
-                        imageStatus = RECEIVING;
+                        std::string channel = header_parts[3];
+
+                        if (segmentedDecoders.count(channel) <= 0)
+                        {
+                            segmentedDecoders.insert(std::pair<std::string, SegmentedLRITImageDecoder>(channel, SegmentedLRITImageDecoder()));
+                            imageStatus[channel] = IDLE;
+                            img_heights[channel] = 0;
+                            img_widths[channel] = 0;
+                        }
+
+                        imageStatus[channel] = RECEIVING;
 
                         std::string image_id = current_filename.substr(0, current_filename.size() - 8);
+
+                        SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
 
                         if (segmentedDecoder.image_id != image_id)
                         {
@@ -294,10 +325,10 @@ namespace gk2a
                             {
                                 current_filename = image_id;
 
-                                imageStatus = SAVING;
+                                imageStatus[channel] = SAVING;
                                 logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                                 segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                                imageStatus = RECEIVING;
+                                imageStatus[channel] = RECEIVING;
                             }
 
                             segmentedDecoder = SegmentedLRITImageDecoder(10,
@@ -316,42 +347,39 @@ namespace gk2a
                         else
                         {
                             logger->critical("Could not parse segment number from filename!");
-
-                            // Fallback, maybe unreliable code
-                            SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
-                            seg_number = (segment_id_header.segment_sequence_number - 1) / image_structure_record.lines_count;
                         }
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
                         // If the UI is active, update texture
-                        if (textureID > 0)
+                        if (textureIDs[channel] > 0)
                         {
                             // Downscale image
-                            img_height = 1000;
-                            img_width = 1000;
+                            img_heights[channel] = 1000;
+                            img_widths[channel] = 1000;
                             cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
-                            imageScaled.resize(img_width, img_height);
-                            uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width);
-                            hasToUpdate = true;
+                            imageScaled.resize(img_widths[channel], img_heights[channel]);
+                            uchar_to_rgba(imageScaled, textureBuffers[channel], img_heights[channel] * img_widths[channel]);
+                            hasToUpdates[channel] = true;
                         }
 
                         if (segmentedDecoder.isComplete())
                         {
                             current_filename = image_id;
 
-                            imageStatus = SAVING;
+                            imageStatus[channel] = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                             segmentedDecoder = SegmentedLRITImageDecoder();
-                            imageStatus = IDLE;
+                            imageStatus[channel] = IDLE;
                         }
                     }
                     else
                     {
+                        std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                         // Write raw image dats
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        logger->info("Writing image " + directory + "/IMAGES/" + clean_filename + ".png" + "...");
                         cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
-                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                        image.save_png(std::string(directory + "/IMAGES/" + clean_filename + ".png").c_str());
                     }
                 }
             }
@@ -403,12 +431,20 @@ namespace gk2a
 
         void LRITDataDecoder::save()
         {
-            if (segmentedDecoder.image_id != "")
+            if (segmentedDecoders.size() > 0)
             {
-                finalizeLRITData();
+                for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec : segmentedDecoders)
+                {
+                    SegmentedLRITImageDecoder &segmentedDecoder = dec.second;
 
-                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    if (segmentedDecoder.image_id != "")
+                    {
+                        finalizeLRITData();
+
+                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    }
+                }
             }
         }
     } // namespace atms

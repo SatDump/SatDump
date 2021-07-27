@@ -79,6 +79,7 @@ namespace goes
                 if (crc == computeCRC(packet.payload.data(), packet.payload.size() - 2))
                 {
                     processLRITHeader(packet);
+                    header_parsed = false;
                     file_in_progress = true;
                 }
                 else
@@ -103,12 +104,20 @@ namespace goes
                     file_in_progress = false;
                 }
             }
+
+            if (file_in_progress && !header_parsed)
+            {
+                PrimaryHeader primary_header(&lrit_data[0]);
+                header_parsed = true;
+
+                if (lrit_data.size() >= primary_header.total_header_length)
+                    parseHeader();
+            }
         }
 
         void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
         {
             lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
-            parseHeader();
         }
 
         void LRITDataDecoder::parseHeader()

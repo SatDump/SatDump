@@ -156,8 +156,8 @@ namespace elektro_arktika
 
             for (int i = 0; i < 7; i++)
             {
-                logger->info("Channel IR " + std::to_string(i + 1) + "...");
-                WRITE_IMAGE(infr_reader.getImage(i), directory + "/MSU-GS-IR-" + std::to_string(i + 1) + ".png");
+                logger->info("Channel IR " + std::to_string(i + 4) + "...");
+                WRITE_IMAGE(infr_reader.getImage(i), directory + "/MSU-GS-" + std::to_string(i + 4) + ".png");
             }
 
             logger->info("221 Composite...");

@@ -39,9 +39,13 @@ namespace gk2a
             {
                 std::shared_ptr<LRITDataDecoder> dec = decMap.second;
 
-                if (dec->textureID > 0)
+                for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec2 : dec->segmentedDecoders)
                 {
-                    delete[] dec->textureBuffer;
+                    std::string channel = dec2.first;
+                    if (dec->textureIDs[channel] > 0)
+                    {
+                        delete[] dec->textureBuffers[channel];
+                    }
                 }
             }
         }
@@ -76,7 +80,7 @@ namespace gk2a
 
             std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
 
-            while (!data_in.eof())
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer
                 if (input_data_type == DATA_FILE)
@@ -141,36 +145,41 @@ namespace gk2a
                 {
                     std::shared_ptr<LRITDataDecoder> dec = decMap.second;
 
-                    if (dec->textureID == 0)
+                    for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec2 : dec->segmentedDecoders)
                     {
-                        dec->textureID = makeImageTexture();
-                        dec->textureBuffer = new uint32_t[1000 * 1000];
-                    }
+                        std::string channel = dec2.first;
 
-                    if (dec->imageStatus != IDLE)
-                    {
-                        if (dec->hasToUpdate)
+                        if (dec->textureIDs[channel] == 0)
                         {
-                            dec->hasToUpdate = true;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
+                            dec->textureIDs[channel] = makeImageTexture();
+                            dec->textureBuffers[channel] = new uint32_t[1000 * 1000];
                         }
 
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        if (dec->imageStatus[channel] != IDLE)
                         {
-                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
-                            else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-                            else
-                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
+                            if (dec->hasToUpdates[channel])
+                            {
+                                dec->hasToUpdates[channel] = true;
+                                updateImageTexture(dec->textureIDs[channel], dec->textureBuffers[channel], dec->img_widths[channel], dec->img_heights[channel]);
+                            }
+
+                            hasImage = true;
+
+                            if (ImGui::BeginTabItem(std::string(channel).c_str()))
+                            {
+                                ImGui::Image((void *)(intptr_t)dec->textureIDs[channel], {200 * ui_scale, 200 * ui_scale});
+                                ImGui::SameLine();
+                                ImGui::BeginGroup();
+                                ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                                if (dec->imageStatus[channel] == SAVING)
+                                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                                else if (dec->imageStatus[channel] == RECEIVING)
+                                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                                else
+                                    ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                                ImGui::EndGroup();
+                                ImGui::EndTabItem();
+                            }
                         }
                     }
                 }
