@@ -8,6 +8,7 @@ class LivePipeline
 private:
     std::map<std::string, std::string> d_parameters;
     std::vector<std::shared_ptr<ProcessingModule>> modules;
+    std::vector<std::future<void>> moduleFutures;
 
 public:
     LivePipeline(Pipeline pipeline,
