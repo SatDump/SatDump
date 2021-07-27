@@ -264,7 +264,7 @@ start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
  * NB: input_buf is ignored; it is likely to be a NULL pointer.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 {
   (void)input_buf;

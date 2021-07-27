@@ -467,7 +467,7 @@ jinit_downsampler (j_compress_ptr cinfo)
   my_downsample_ptr downsample;
   int ci;
   jpeg_component_info * compptr;
-  boolean smoothok = TRUE;
+  jboolean smoothok = TRUE;
 
   downsample = (my_downsample_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,

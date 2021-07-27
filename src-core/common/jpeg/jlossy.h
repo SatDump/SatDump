@@ -20,7 +20,7 @@ typedef struct {
 
   /* Coefficient buffer control */
   JMETHOD(void, coef_start_pass, (j_compress_ptr cinfo, J_BUF_MODE pass_mode));
-  /*  JMETHOD(boolean, coef_compress_data, (j_compress_ptr cinfo,
+  /*  JMETHOD(jboolean, coef_compress_data, (j_compress_ptr cinfo,
 					JSAMPIMAGE input_buf));*/
 
   /* Pointer to data which is private to coef module */
@@ -41,7 +41,7 @@ typedef struct {
 
 
   /* Entropy encoding */
-  JMETHOD(boolean, entropy_encode_mcu, (j_compress_ptr cinfo,
+  JMETHOD(jboolean, entropy_encode_mcu, (j_compress_ptr cinfo,
 					JBLOCKROW *MCU_data));
 
   /* Pointer to data which is private to entropy module */
@@ -76,12 +76,12 @@ typedef struct {
 
   /* Entropy decoding */
   JMETHOD(void, entropy_start_pass, (j_decompress_ptr cinfo));
-  JMETHOD(boolean, entropy_decode_mcu, (j_decompress_ptr cinfo,
+  JMETHOD(jboolean, entropy_decode_mcu, (j_decompress_ptr cinfo,
 					JBLOCKROW *MCU_data));
 
   /* This is here to share code between baseline and progressive decoders; */
   /* other modules probably should not use it */
-  boolean entropy_insufficient_data;	/* set TRUE after emitting warning */
+  jboolean entropy_insufficient_data;	/* set TRUE after emitting warning */
 
   /* Pointer to data which is private to entropy module */
   void *entropy_private;
@@ -104,7 +104,7 @@ typedef jpeg_lossy_d_codec * j_lossy_d_ptr;
 /* Compression module initialization routines */
 EXTERN(void) jinit_lossy_c_codec JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_c_coef_controller JPP((j_compress_ptr cinfo,
-					  boolean need_full_buffer));
+					  jboolean need_full_buffer));
 EXTERN(void) jinit_forward_dct JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_shuff_encoder JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_phuff_encoder JPP((j_compress_ptr cinfo));
@@ -112,7 +112,7 @@ EXTERN(void) jinit_phuff_encoder JPP((j_compress_ptr cinfo));
 /* Decompression module initialization routines */
 EXTERN(void) jinit_lossy_d_codec JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_d_coef_controller JPP((j_decompress_ptr cinfo,
-					  boolean need_full_buffer));
+					  jboolean need_full_buffer));
 EXTERN(void) jinit_shuff_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_phuff_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_inverse_dct JPP((j_decompress_ptr cinfo));

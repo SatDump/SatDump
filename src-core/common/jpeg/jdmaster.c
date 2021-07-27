@@ -23,7 +23,7 @@ typedef struct {
 
   int pass_number;		/* # of passes completed */
 
-  boolean using_merged_upsample; /* TRUE if using merged upsample/cconvert */
+  jboolean using_merged_upsample; /* TRUE if using merged upsample/cconvert */
 
   /* Saved references to initialized quantizer modules,
    * in case we need to switch modes.
@@ -40,7 +40,7 @@ typedef my_decomp_master * my_master_ptr;
  * CRUCIAL: this must match the actual capabilities of jdmerge.c!
  */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 use_merged_upsample (j_decompress_ptr cinfo)
 {
 #ifdef UPSAMPLE_MERGING_SUPPORTED

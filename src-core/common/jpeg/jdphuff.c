@@ -74,13 +74,13 @@ typedef struct {
 typedef phuff_entropy_decoder * phuff_entropy_ptr;
 
 /* Forward declarations */
-METHODDEF(boolean) decode_mcu_DC_first JPP((j_decompress_ptr cinfo,
+METHODDEF(jboolean) decode_mcu_DC_first JPP((j_decompress_ptr cinfo,
                         JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_first JPP((j_decompress_ptr cinfo,
+METHODDEF(jboolean) decode_mcu_AC_first JPP((j_decompress_ptr cinfo,
                         JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_DC_refine JPP((j_decompress_ptr cinfo,
+METHODDEF(jboolean) decode_mcu_DC_refine JPP((j_decompress_ptr cinfo,
                          JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_refine JPP((j_decompress_ptr cinfo,
+METHODDEF(jboolean) decode_mcu_AC_refine JPP((j_decompress_ptr cinfo,
                          JBLOCKROW *MCU_data));
 
 
@@ -93,7 +93,7 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
-  boolean is_DC_band, bad;
+  jboolean is_DC_band, bad;
   int ci, coefi, tbl;
   int *coef_bit_ptr;
   jpeg_component_info * compptr;
@@ -230,7 +230,7 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
  * Returns FALSE if must suspend.
  */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 process_restart (j_decompress_ptr cinfo)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
@@ -289,7 +289,7 @@ process_restart (j_decompress_ptr cinfo)
  * or first pass of successive approximation).
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
@@ -361,7 +361,7 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
  * or first pass of successive approximation).
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
@@ -447,7 +447,7 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
  * is not very clear on the point.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
@@ -497,7 +497,7 @@ decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
  * MCU decoding for AC successive approximation refinement scan.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;

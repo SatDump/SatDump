@@ -71,8 +71,8 @@ typedef struct {
   d_derived_tbl * dc_cur_tbls[D_MAX_DATA_UNITS_IN_MCU];
   d_derived_tbl * ac_cur_tbls[D_MAX_DATA_UNITS_IN_MCU];
   /* Whether we care about the DC and AC coefficient values for each block */
-  boolean dc_needed[D_MAX_DATA_UNITS_IN_MCU];
-  boolean ac_needed[D_MAX_DATA_UNITS_IN_MCU];
+  jboolean dc_needed[D_MAX_DATA_UNITS_IN_MCU];
+  jboolean ac_needed[D_MAX_DATA_UNITS_IN_MCU];
 } shuff_entropy_decoder;
 
 typedef shuff_entropy_decoder * shuff_entropy_ptr;
@@ -175,7 +175,7 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
  * Returns FALSE if must suspend.
  */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 process_restart (j_decompress_ptr cinfo)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
@@ -225,7 +225,7 @@ process_restart (j_decompress_ptr cinfo)
  * this module, since we'll just re-assign them on the next call.)
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;

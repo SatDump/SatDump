@@ -30,7 +30,7 @@ typedef struct {
 
   JDIMENSION cur_iMCU_row;  /* number of current iMCU row */
   JDIMENSION rowgroup_ctr;  /* counts row groups received in iMCU row */
-  boolean suspended;        /* remember if we suspended output */
+  jboolean suspended;        /* remember if we suspended output */
   J_BUF_MODE pass_mode;     /* current operating mode */
 
   /* If using just a strip buffer, this points to the entire set of buffers
@@ -174,7 +174,7 @@ process_data_buffer_main (j_compress_ptr cinfo,
   my_main_ptr mymain = (my_main_ptr) cinfo->main;
   int ci;
   jpeg_component_info *compptr;
-  boolean writing = (mymain->pass_mode != JBUF_CRANK_DEST);
+  jboolean writing = (mymain->pass_mode != JBUF_CRANK_DEST);
   JDIMENSION data_unit = (JDIMENSION)(cinfo->data_unit);
 
   while (mymain->cur_iMCU_row < cinfo->total_iMCU_rows) {
@@ -244,7 +244,7 @@ process_data_buffer_main (j_compress_ptr cinfo,
  */
 
 GLOBAL(void)
-jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
+jinit_c_main_controller (j_compress_ptr cinfo, jboolean need_full_buffer)
 {
   my_main_ptr mymain;
   int ci;

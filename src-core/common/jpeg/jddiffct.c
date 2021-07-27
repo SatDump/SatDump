@@ -110,7 +110,7 @@ start_input_pass (j_decompress_ptr cinfo)
  * Returns FALSE if must suspend.
  */
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 process_restart (j_decompress_ptr cinfo)
 {
   j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
@@ -340,7 +340,7 @@ output_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
  */
 
 GLOBAL(void)
-jinit_d_diff_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
+jinit_d_diff_controller (j_decompress_ptr cinfo, jboolean need_full_buffer)
 {
   j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
   d_diff_ptr diff;

@@ -129,7 +129,7 @@ METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
  */
 
 METHODDEF(void)
-start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
+start_pass_huff (j_compress_ptr cinfo, jboolean gather_statistics)
 {
   j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
   lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
@@ -215,7 +215,7 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
           { action; } }
 
 
-LOCAL(boolean)
+LOCAL(jboolean)
 dump_buffer (working_state * state)
 /* Empty the output buffer; return TRUE if successful, FALSE if must suspend */
 {
@@ -239,7 +239,7 @@ dump_buffer (working_state * state)
  */
 
 INLINE
-LOCAL(boolean)
+LOCAL(jboolean)
 emit_bits (working_state * state, unsigned int code, int size)
 /* Emit some bits; return TRUE if successful, FALSE if must suspend */
 {
@@ -277,7 +277,7 @@ emit_bits (working_state * state, unsigned int code, int size)
 }
 
 
-LOCAL(boolean)
+LOCAL(jboolean)
 flush_bits (working_state * state)
 {
   if (! emit_bits(state, 0x7F, 7)) /* fill any partial byte with ones */
@@ -292,7 +292,7 @@ flush_bits (working_state * state)
  * Emit a restart marker & resynchronize predictions.
  */
 
-LOCAL(boolean)
+LOCAL(jboolean)
 emit_restart (working_state * state, int restart_num)
 {
   /* int ci; */
@@ -542,7 +542,7 @@ finish_pass_gather (j_compress_ptr cinfo)
   int ci, dctbl;
   jpeg_component_info * compptr;
   JHUFF_TBL **htblptr;
-  boolean did_dc[NUM_HUFF_TBLS];
+  jboolean did_dc[NUM_HUFF_TBLS];
 
   /* It's important not to apply jpeg_gen_optimal_table more than once
    * per table, because it clobbers the input frequency counts!
@@ -566,7 +566,7 @@ finish_pass_gather (j_compress_ptr cinfo)
 #endif /* ENTROPY_OPT_SUPPORTED */
 
 
-METHODDEF(boolean)
+METHODDEF(jboolean)
 need_optimization_pass (j_compress_ptr cinfo)
 {
   (void)cinfo;

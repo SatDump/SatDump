@@ -23,7 +23,7 @@
  */
 
 GLOBAL(void)
-jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
+jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, jboolean isDC, int tblno,
              d_derived_tbl ** pdtbl)
 {
   JHUFF_TBL *htbl;
@@ -166,7 +166,7 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
 #endif
 
 
-GLOBAL(boolean)
+GLOBAL(jboolean)
 jpeg_fill_bit_buffer (bitread_working_state * state,
               register bit_buf_type get_buffer, register int bits_left,
               int nbits)
