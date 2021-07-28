@@ -255,6 +255,8 @@ namespace goes
                 TimeStampRecord timestamp_record(&lrit_data[all_headers[TimeStampRecord::TYPE]]);
                 std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
+                std::string old_filename = current_filename;
+
                 // Process as a specific dataset
                 {
                     // GOES-R Data, from GOES-16 to 19.
@@ -320,14 +322,14 @@ namespace goes
                                     {
                                         goes_r_fc_composer = goes_r_fc_composer_full_disk;
 
-                                        if (channel == 2)
+                                        /*if (channel == 2)
                                         {
                                             goes_r_fc_composer->push2(segmentedDecoder.image, mktime(&scanTimestamp));
                                         }
                                         else if (channel == 13)
                                         {
                                             goes_r_fc_composer->push13(segmentedDecoder.image, mktime(&scanTimestamp));
-                                        }
+                                        }*/
                                     }
                                     else if (region == "Mesoscale 1" || region == "Mesoscale 2")
                                     {
@@ -407,8 +409,18 @@ namespace goes
                                                                        noaa_header.product_id == 18 ||
                                                                        noaa_header.product_id == 19))
                             {
-                                if (goes_r_fc_composer_full_disk->hasData)
-                                    goes_r_fc_composer_full_disk->save(directory);
+                                int mode = -1;
+                                int channel = -1;
+                                std::vector<std::string> cutFilename = splitString(old_filename, '-');
+                                if (cutFilename.size() > 3)
+                                {
+                                    if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
+                                    {
+                                        logger->critical(channel);
+                                        if (goes_r_fc_composer_full_disk->hasData && (channel == 2 || channel == 2))
+                                            goes_r_fc_composer_full_disk->save(directory);
+                                    }
+                                }
                             }
                         }
 
@@ -422,6 +434,37 @@ namespace goes
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number - 1);
                     else
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
+
+                    // Check if this is GOES-R, if yes, MS
+                    if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
+                                                               noaa_header.product_id == 17 ||
+                                                               noaa_header.product_id == 18 ||
+                                                               noaa_header.product_id == 19))
+                    {
+                        int mode = -1;
+                        int channel = -1;
+                        std::vector<std::string> cutFilename = splitString(old_filename, '-');
+                        if (cutFilename.size() > 3)
+                        {
+                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
+                            {
+                                AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+
+                                // Parse scan time
+                                std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                                if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
+                                {
+                                    std::string scanTime = ancillary_record.meta["Time of frame start"];
+                                    strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                                }
+
+                                if (channel == 2)
+                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
+                                else if (channel == 13)
+                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, mktime(&scanTimestamp));
+                            }
+                        }
+                    }
 
                     // If the UI is active, update texture
                     if (textureID > 0)
@@ -449,8 +492,17 @@ namespace goes
                                                                    noaa_header.product_id == 18 ||
                                                                    noaa_header.product_id == 19))
                         {
-                            if (goes_r_fc_composer_full_disk->hasData)
-                                goes_r_fc_composer_full_disk->save(directory);
+                            int mode = -1;
+                            int channel = -1;
+                            std::vector<std::string> cutFilename = splitString(old_filename, '-');
+                            if (cutFilename.size() > 3)
+                            {
+                                if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
+                                {
+                                    if (goes_r_fc_composer_full_disk->hasData && (channel == 2 || channel == 2))
+                                        goes_r_fc_composer_full_disk->save(directory);
+                                }
+                            }
                         }
                     }
                 }
