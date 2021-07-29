@@ -36,10 +36,11 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
 
 void QPSKDemodModule::init()
 {
-    float input_sps = (float)d_samplerate / (float)d_symbolrate;         // Compute input SPS
-    resample = input_sps > MAX_SPS;                                      // If SPS is over MAX_SPS, we resample
-    float samplerate = resample ? d_symbolrate * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
-    float decimation_factor = d_samplerate / samplerate;                 // Decimation factor to rescale our input buffer
+    float input_sps = (float)d_samplerate / (float)d_symbolrate;                                  // Compute input SPS
+    resample = input_sps > MAX_SPS;                                                               // If SPS is over MAX_SPS, we resample
+    int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1));                          // Avoid complex resampling
+    float samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+    float decimation_factor = d_samplerate / samplerate;                                          // Decimation factor to rescale our input buffer
 
     if (resample)
         d_buffer_size *= round(decimation_factor);
