@@ -172,31 +172,31 @@ namespace elektro_arktika
                 WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221.png");
             }
 
-            logger->info("321 Composite...");
+            logger->info("Natural Color Composite...");
             {
-                cimg_library::CImg<unsigned short> image321(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+                cimg_library::CImg<unsigned short> imageNC(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
                 {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
-                    image321.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+                    imageNC.draw_image(0, 0, 0, 0, image3);
+                    imageNC.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
+                    imageNC.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
 
-                    cimg_library::CImg<unsigned char> image321_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+                    cimg_library::CImg<unsigned char> imageNC_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
 
-                    for(int i = 0; i < image321.height() * image321.width() * 3; i++)
-                    image321_8bits[i] = image321[i] / 255; 
+                    for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
+                        imageNC_8bits[i] = imageNC[i] / 255;
 
                     image::HueSaturation hueTuning;
                     hueTuning.hue[image::HUE_RANGE_YELLOW] = -45.0 / 180.0;
                     hueTuning.hue[image::HUE_RANGE_RED] = 90.0 / 180.0;
                     hueTuning.overlap = 100.0 / 100.0;
-                    image::hue_saturation(image321_8bits, hueTuning);
+                    image::hue_saturation(imageNC_8bits, hueTuning);
 
-                    for(int i = 0; i < image321.height() * image321.width() * 3; i++)
-                    image321[i] = image321_8bits[i] * 255;
+                    for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
+                        imageNC[i] = imageNC_8bits[i] * 255;
 
-                    image::white_balance(image321);
+                    image::white_balance(imageNC);
                 }
-                WRITE_IMAGE(image321, directory + "/MSU-GS-RGB-321.png");
+                WRITE_IMAGE(imageNC, directory + "/MSU-GS-RGB-NC.png");
             }
         }
 
