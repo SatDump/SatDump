@@ -7,6 +7,7 @@
 #include "msu_ir_reader.h"
 #include "imgui/imgui.h"
 #include "common/image/image.h"
+#include "common/image/hue_saturation.h"
 
 #define BUFFER_SIZE 8192
 
@@ -178,6 +179,22 @@ namespace elektro_arktika
                     image321.draw_image(0, 0, 0, 0, image3);
                     image321.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
                     image321.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+
+                    cimg_library::CImg<unsigned char> image321_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+
+                    for(int i = 0; i < image321.height() * image321.width() * 3; i++)
+                    image321_8bits[i] = image321[i] / 255; 
+
+                    image::HueSaturation hueTuning;
+                    hueTuning.hue[image::HUE_RANGE_YELLOW] = -45.0 / 180.0;
+                    hueTuning.hue[image::HUE_RANGE_RED] = 90.0 / 180.0;
+                    hueTuning.overlap = 100.0 / 100.0;
+                    image::hue_saturation(image321_8bits, hueTuning);
+
+                    for(int i = 0; i < image321.height() * image321.width() * 3; i++)
+                    image321[i] = image321_8bits[i] * 255;
+
+                    image::white_balance(image321);
                 }
                 WRITE_IMAGE(image321, directory + "/MSU-GS-RGB-321.png");
             }
