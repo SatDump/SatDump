@@ -18,6 +18,14 @@
 
 std::shared_ptr<LivePipeline> live_pipeline;
 
+bool should_stop = false;
+
+// SIGINT Handler
+void sigint_handler(int s)
+{
+    should_stop = true;
+}
+
 // HTTP Handler for stats
 void http_handle(nng_aio *aio)
 {
@@ -41,6 +49,13 @@ int main(int argc, char *argv[])
     // SatDump init
     initLogger();
     initSatdump();
+
+    // Setup SIGINT handler
+    struct sigaction siginthandler;
+    siginthandler.sa_handler = sigint_handler;
+    sigemptyset(&siginthandler.sa_mask);
+    siginthandler.sa_flags = 0;
+    sigaction(SIGINT, &siginthandler, NULL);
 
     logger->warn("Keep in mind this ingestor is still WIP! Features such as SDR selection are lacking and coming shortly.");
 
@@ -136,7 +151,7 @@ int main(int argc, char *argv[])
     volk::vector<std::complex<float>> sample_buffer_vec;
     int cnt = 0;
     int buf_size = 8192;
-    while (true)
+    while (!should_stop)
     {
         if ((int)sample_buffer_vec.size() < buf_size)
         {
@@ -156,6 +171,12 @@ int main(int argc, char *argv[])
         pipelineStream->swap(buf_size);
         sample_buffer_vec.erase(sample_buffer_vec.begin(), sample_buffer_vec.begin() + buf_size);
     }
+
+    logger->info("Stop pipeline...");
+    live_pipeline->stop();
+
+    logger->info("Stopping SDR...");
+    radio->stop();
 
     logger->info("Done! Goodbye");
 }
