@@ -10,6 +10,10 @@
 #define RESOURCES_PATH "./"
 #endif
 
+#ifndef SATDUMP_VERSION
+#define SATDUMP_VERSION "0.0.0-dev"
+#endif
+
 void initSatdump()
 {
     logger->info("   _____       __  ____                      ");
@@ -18,7 +22,7 @@ void initSatdump()
     logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
     logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
     logger->info("                                    /_/      ");
-    logger->info("Starting SatDump v1.0");
+    logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
     logger->info("");
 
     registerModules();

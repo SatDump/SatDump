@@ -20,6 +20,10 @@
 #define RESOURCES_PATH "./"
 #endif
 
+#ifndef SATDUMP_VERSION
+#define SATDUMP_VERSION "0.0.0-dev"
+#endif
+
 static void glfw_error_callback(int error, const char *description)
 {
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
     // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(1000, 600, "SatDump", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
     if (window == NULL)
     {
         logger->critical("Could not init GLFW Window");
