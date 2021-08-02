@@ -20,11 +20,13 @@ std::shared_ptr<LivePipeline> live_pipeline;
 
 bool should_stop = false;
 
+#ifndef _WIN32
 // SIGINT Handler
 void sigint_handler(int s)
 {
     should_stop = true;
 }
+#endif
 
 // HTTP Handler for stats
 void http_handle(nng_aio *aio)
@@ -50,12 +52,14 @@ int main(int argc, char *argv[])
     initLogger();
     initSatdump();
 
+#ifndef _WIN32
     // Setup SIGINT handler
     struct sigaction siginthandler;
     siginthandler.sa_handler = sigint_handler;
     sigemptyset(&siginthandler.sa_mask);
     siginthandler.sa_flags = 0;
     sigaction(SIGINT, &siginthandler, NULL);
+#endif
 
     logger->warn("Keep in mind this ingestor is still WIP! Features such as SDR selection are lacking and coming shortly.");
 
