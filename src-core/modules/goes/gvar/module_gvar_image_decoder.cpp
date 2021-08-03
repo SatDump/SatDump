@@ -237,6 +237,9 @@ namespace goes
                     // Is this IR?
                     else if (block_header.block_id == 1 || block_header.block_id == 2)
                     {
+                        // Easy way of showing an approximate progress percentage
+                        approx_progess = round(((float)line_header.relative_scan_count / 1353.0f) * 1000.0f) / 10.0f;
+
                         // Push frame size stats
                         ir_width_stats.push_back(line_header.word_count);
 
