@@ -316,6 +316,57 @@
             }
         }
     },
+    "elektro_hrit": {
+        "name": "ELEKTRO-L HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1691.0
+        ],
+        "samplerate": 1e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": "1150000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.6",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "clock_gain_omega": "2.5e-7",
+                    "clock_mu": "0.5",
+                    "clock_gain_mu": "0.001",
+                    "clock_omega_relative_limit": "0.005",
+                    "dc_block": "0",
+                    "constellation_scale": "100",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "xrit_decoder": {
+                    "is_bpsk": "0",
+                    "diff_decode": "0"
+                }
+            },
+            "products": {
+                "elektro_lrit_data_decoder": {}
+            }
+        }
+    },
     "elektro_tlm": {
         "name": "ELEKTRO-L L-Band TLM",
         "live": true,
