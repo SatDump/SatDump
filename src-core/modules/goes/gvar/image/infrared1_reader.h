@@ -17,7 +17,6 @@ namespace goes
             unsigned short *imageLineBuffer;
 
         private:
-            uint8_t byteBufShift[5];
             bool *goodLines;
 
         public:
@@ -25,7 +24,7 @@ namespace goes
             InfraredReader1();
             ~InfraredReader1();
             void startNewFullDisk();
-            void pushFrame(uint8_t *data, int counter);
+            void pushFrame(uint8_t *data, int counter, int word_cnt);
             cimg_library::CImg<unsigned short> getImage1();
             cimg_library::CImg<unsigned short> getImage2();
         };

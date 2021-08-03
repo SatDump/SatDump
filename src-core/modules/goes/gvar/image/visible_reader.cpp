@@ -1,6 +1,6 @@
 #include "visible_reader.h"
 
-#define WIDTH 20832 //30000//20824
+#define WIDTH 20944 //30000//20824
 #define HEIGHT (1354 * 8)
 
 namespace goes
@@ -17,7 +17,7 @@ namespace goes
         VisibleReader::~VisibleReader()
         {
             // delete[] imageBuffer;
-            //delete[] imageLineBuffer;
+            // delete[] imageLineBuffer;
             // delete[] goodLines;
         }
 
@@ -29,9 +29,6 @@ namespace goes
 
         void VisibleReader::pushFrame(uint8_t *data, int block, int counter)
         {
-            // Get the current mode. Shifted?
-            bool status = data[8 + 30 + 3] >> 4 & 1;
-
             // Offset to start reading from
             int pos = 116;
             int posb = 6;
@@ -55,9 +52,9 @@ namespace goes
             }
 
             // Deinterleave and load into our image buffer
-            for (int i = 0; i < WIDTH - (status ? 0 : 8); i++)
+            for (int i = 0; i < WIDTH; i++)
             {
-                uint16_t pixel = imageLineBuffer[1 + i];
+                uint16_t pixel = imageLineBuffer[i + 1];
                 imageBuffer[((counter * 8 + (block - 3)) * WIDTH) + i] = pixel << 6;
                 goodLines[counter * 8 + (block - 3)] = true;
             }

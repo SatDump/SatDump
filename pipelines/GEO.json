@@ -37,9 +37,7 @@
                 "goes_gvar_decoder": {}
             },
             "products": {
-                "goes_gvar_image_decoder": {
-                    "satname": "EWS-G1"
-                }
+                "goes_gvar_image_decoder": {}
             }
         }
     },

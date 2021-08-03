@@ -15,9 +15,6 @@ namespace goes
         class GVARImageDecoderModule : public ProcessingModule
         {
         protected:
-            // Settings
-            const std::string sat_name;
-
             // Read buffer
             uint8_t *frame;
 
@@ -26,7 +23,7 @@ namespace goes
             std::atomic<size_t> progress;
 
             // Utils values
-            bool writingImage;
+            bool isImageInProgress, isSavingInProgress;
             float approx_progess;
 
             // Image readers
@@ -41,13 +38,14 @@ namespace goes
             cimg_library::CImg<unsigned short> image4;
             cimg_library::CImg<unsigned short> image5;
 
-            // Saving is multithreaded
-            std::shared_ptr<ctpl::thread_pool> imageSavingThreadPool;
-
-            std::string getGvarFilename(std::tm *timeReadable, int channel);
+            std::string getGvarFilename(int sat_number, std::tm *timeReadable, int channel);
             void writeImages(std::string directory);
 
-            int nonEndCount;
+            int nonEndCount, endCount;
+
+            // Stats
+            std::vector<int> scid_stats;
+            std::vector<int> vis_width_stats, ir_width_stats;
 
             // UI Stuff
             unsigned int textureID = 0;
