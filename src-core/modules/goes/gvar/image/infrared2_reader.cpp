@@ -34,7 +34,6 @@ namespace goes
         {
             // Offset to start reading from
             int pos = 0;
-            int posb = 0;
 
             // Convert to 10 bits values
             for (int i = 0; i < 5252 * 4; i += 4)

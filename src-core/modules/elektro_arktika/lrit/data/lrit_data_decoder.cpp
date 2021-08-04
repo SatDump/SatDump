@@ -15,6 +15,8 @@
 #include "imgui/imgui_image.h"
 #include "common/image/image.h"
 #include "resources.h"
+#include "common/DecompWT/CompressWT.h"
+#include "common/DecompWT/CompressT4.h"
 
 namespace elektro
 {
@@ -164,14 +166,22 @@ namespace elektro
                     ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */ || image_structure_record.compression_flag == 1 /* JPEG 2000 */)
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
                     {
                         logger->debug("JPEG Compression is used, decompressing...");
                         is_jpeg_compressed = true;
+                        is_wt_compressed = false;
+                    }
+                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
+                    {
+                        logger->debug("Wavelet Compression is used, decompressing...");
+                        is_jpeg_compressed = false;
+                        is_wt_compressed = true;
                     }
                     else
                     {
                         is_jpeg_compressed = false;
+                        is_wt_compressed = false;
                     }
                 }
 
@@ -208,10 +218,115 @@ namespace elektro
                     lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
                     lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                 }
+                else if (is_wt_compressed) // Is this Wavelet-Compressed? Decompress. We know this will always be 10-bits
+                {
+                    /*
+                    This could be better... Sometimes I should maybe adapt the DecompWT code to be cleaner for this purpose...
+                    */
+                    logger->info("Decompressing Wavelet...");
+
+                    int compression_type = 3; // We assume Wavelet
+
+                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0) // But if we have a header with better info, use it
+                    {
+                        SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
+                        compression_type = segment_id_header.compression;
+                    }
+
+                    // Init variables
+                    uint8_t *image_ptr = NULL;
+                    int buf_size = 0;
+                    int out_pixels = 0;
+
+                    // Decompress
+                    {
+                        // We need to copy over that memory to its own buffer
+                        uint8_t *compressedData = new uint8_t[lrit_data.size() - primary_header.total_header_length];
+                        std::memcpy(compressedData, &lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
+
+                        // Images object
+                        Util::CDataFieldCompressedImage compressedImage(compressedData,
+                                                                        (lrit_data.size() - primary_header.total_header_length) * 8,
+                                                                        image_structure_record.bit_per_pixel,
+                                                                        image_structure_record.columns_count,
+                                                                        image_structure_record.lines_count);
+                        Util::CDataFieldUncompressedImage decompressedImage;
+
+                        // Perform WT Decompression
+                        std::vector<short> m_QualityInfo;
+                        if (compression_type == 3)
+                            COMP::DecompressWT(compressedImage, image_structure_record.bit_per_pixel, decompressedImage, m_QualityInfo); // Standard HRIT compression
+                        else if (compression_type == 2)
+                            COMP::DecompressT4(compressedImage, decompressedImage, m_QualityInfo); // Shouldn't happen but better be ready
+                        else
+                            logger->error("Unknown compression! This should not have happened!");
+
+                        // Fill our output buffer
+                        buf_size = decompressedImage.Size() / 8;
+                        out_pixels = decompressedImage.Size() / image_structure_record.bit_per_pixel;
+                        image_ptr = new uint8_t[buf_size];
+                        decompressedImage.Read(0, image_ptr, buf_size);
+                    }
+
+                    if (out_pixels == image_structure_record.columns_count * image_structure_record.lines_count) // Matches?
+                    {
+                        // Empty current LRIT file
+                        lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
+
+                        if (image_structure_record.bit_per_pixel == 10)
+                        {
+                            // Fill it back up converting to 8-bits
+                            for (int i = 0; i < buf_size - (buf_size % 5); i += 5)
+                            {
+                                uint16_t v1 = (image_ptr[0] << 2) | (image_ptr[1] >> 6);
+                                uint16_t v2 = ((image_ptr[1] % 64) << 4) | (image_ptr[2] >> 4);
+                                uint16_t v3 = ((image_ptr[2] % 16) << 6) | (image_ptr[3] >> 2);
+                                uint16_t v4 = ((image_ptr[3] % 4) << 8) | image_ptr[4];
+
+                                lrit_data.push_back(v1 >> 2);
+                                lrit_data.push_back(v2 >> 2);
+                                lrit_data.push_back(v3 >> 2);
+                                lrit_data.push_back(v4 >> 2);
+
+                                image_ptr += 5;
+                            }
+
+                            // Fill remaining if required
+                            for (int i = 0; i < buf_size % 5; i++)
+                                lrit_data.push_back(0);
+                        }
+                        else if (image_structure_record.bit_per_pixel == 8) // Just in case
+                        {
+                            lrit_data.insert(lrit_data.end(), image_ptr, &image_ptr[buf_size]);
+                        }
+                        else
+                        {
+                            logger->error("Bit per pixels were not what they should!");
+                        }
+                    }
+                    else // Fill it up with 0s
+                    {
+                        logger->error("Decompression result did not match image header. Discarding.");
+
+                        out_pixels = image_structure_record.lines_count * image_structure_record.columns_count;
+
+                        // Empty current LRIT file
+                        lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
+
+                        // Fill with 0s
+                        for (int i = 0; i < out_pixels; i++)
+                            lrit_data.push_back(0);
+                    }
+
+                    // Free up memory if necessary
+                    //if (image_ptr != NULL)
+                    //    delete[] image_ptr;
+                }
 
                 if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
                 {
                     imageStatus = RECEIVING;
+                    SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_');
 
@@ -221,22 +336,7 @@ namespace elektro
                     std::string image_id = current_filename.substr(0, 30);
 
                     // Channel
-                    std::string band = current_filename.substr(26, 4);
-                    int channel = std::stoi(current_filename.substr(29, 1)) + std::stoi(current_filename.substr(26, 2)); // Default value ensuring no data is discarded
-                    {
-                        // Now, we remap the channel to the "normal" MSU-GS numbering
-                        if (band == "00_6") // 0.6um is 1
-                            channel = 1;
-                        else if (band == "00_7") // 0.7um is 2
-                            channel = 2;
-                        else if (band == "00_9") // 0.9um is 3
-                            channel = 3;
-                        else if (band == "10_7") // 10.7um is 9
-                            channel = 9;
-                        else if (band == "11_9") // 10.7um is 9
-                            channel = 10;
-                        // We don't know other IRs yet
-                    }
+                    int channel = segment_id_header.channel_id + 1;
 
                     // Timestamp
                     std::string timestamp = current_filename.substr(46, 12);
@@ -246,9 +346,17 @@ namespace elektro
 
                     // If we can, use a better filename
                     {
-                        std::string product_name = current_filename.substr(0, 18);
+                        std::string sat_name = current_filename.substr(6, 5);
 
-                        if (product_name == "L-000-GOMS2_-GOMS2")
+                        if (sat_name == "GOMS1") // Dead... But good measure
+                        {
+                            image_id = getHRITImageFilename(&scanTimestamp, "L1", channel);
+                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L1", "221");
+                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L1", "321");
+                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L1", "231");
+                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L1", "NC");
+                        }
+                        else if (sat_name == "GOMS2")
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
@@ -256,14 +364,21 @@ namespace elektro
                             elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L2", "231");
                             elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L2", "NC");
                         }
-
-                        if (product_name == "L-000-GOMS3_-GOMS3")
+                        else if (sat_name == "GOMS3")
                         {
                             image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
                             elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L3", "321");
                             elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L3", "231");
                             elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L3", "NC");
+                        }
+                        else if (sat_name == "GOMS4") // Not launched yet, but we can expect it to be the same anyway
+                        {
+                            image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
+                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L4", "221");
+                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L4", "321");
+                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L4", "231");
+                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L4", "NC");
                         }
                     }
 
@@ -285,30 +400,13 @@ namespace elektro
                             imageStatus = RECEIVING;
                         }
 
-                        segmentedDecoder = SegmentedLRITImageDecoder(6,
+                        segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.planned_end_segment,
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      image_id);
                     }
 
-                    std::vector<std::string> header_parts2;
-                    if (header_parts.size() >= 10)
-                        header_parts2 = splitString(header_parts[9], '-');
-
-                    int seg_number = 0;
-
-                    if (header_parts2.size() >= 2)
-                    {
-                        seg_number = std::stoi(header_parts2[1]) - 1;
-                    }
-                    else
-                    {
-                        logger->critical("Could not parse segment number from filename!");
-
-                        // Fallback, maybe unreliable code
-                        SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
-                        seg_number = (segment_id_header.segment_sequence_number - 1) / image_structure_record.lines_count;
-                    }
+                    int seg_number = segment_id_header.segment_sequence_number - 1;
                     segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
                     // Composite?

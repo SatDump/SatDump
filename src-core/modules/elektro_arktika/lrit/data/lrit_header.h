@@ -206,25 +206,23 @@ namespace elektro
 
             uint8_t type;
             uint16_t record_length;
-            uint16_t image_identifier;
+            uint16_t sc_id;
+            uint8_t channel_id;
             uint16_t segment_sequence_number;
-            uint16_t start_column_of_segment;
-            uint16_t start_line_of_segment;
-            uint16_t max_segment;
-            uint16_t max_column;
-            uint16_t max_row;
+            uint16_t planned_start_segment;
+            uint16_t planned_end_segment;
+            uint8_t compression;
 
             SegmentIdentificationHeader(uint8_t *data)
             {
                 type = data[0];
                 record_length = data[1] << 8 | data[2];
-                image_identifier = data[3] << 8 | data[4];
-                segment_sequence_number = data[5] << 8 | data[6];
-                start_column_of_segment = data[7] << 8 | data[8];
-                start_line_of_segment = data[9] << 8 | data[10];
-                max_segment = data[11] << 8 | data[12];
-                max_column = data[13] << 8 | data[14];
-                max_row = data[15] << 8 | data[16];
+                sc_id = data[3] << 8 | data[4];
+                channel_id = data[5];
+                segment_sequence_number = data[6] << 8 | data[7];
+                planned_start_segment = data[8] << 8 | data[9];
+                planned_end_segment = data[10] << 8 | data[11];
+                compression = data[12];
             }
         };
 
