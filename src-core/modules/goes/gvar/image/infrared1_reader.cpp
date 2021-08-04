@@ -32,12 +32,8 @@ namespace goes
 
         void InfraredReader1::pushFrame(uint8_t *data, int counter, int word_cnt)
         {
-            // Get the current mode. Shifted?
-            bool status = data[8 + 30 + 3] >> 4 & 1;
-
             // Offset to start reading from
             int pos = 0;
-            int posb = 0;
 
             // Convert to 10 bits values
             for (int i = 0; i < 5252 * 4; i += 4)

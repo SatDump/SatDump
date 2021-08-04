@@ -82,7 +82,7 @@ void LivePipeline::start(std::shared_ptr<dsp::stream<std::complex<float>>> strea
 void LivePipeline::stop()
 {
     logger->info("Stop processing");
-    for (int i = 0; i < modules.size(); i++)
+    for (int i = 0; i < (int)modules.size(); i++)
     {
         std::shared_ptr<ProcessingModule> mod = modules[i];
 

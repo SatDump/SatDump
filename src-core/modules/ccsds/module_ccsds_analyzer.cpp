@@ -35,7 +35,6 @@ namespace ccsds
             time_t lastTime = 0;
 
             ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer(882, true);
-            uint64_t argos_cadu = 0, ccsds = 0, argos_ccsds = 0;
             uint8_t cadu[1024];
 
             logger->info("Demultiplexing and deframing...");

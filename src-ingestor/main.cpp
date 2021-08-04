@@ -22,7 +22,7 @@ bool should_stop = false;
 
 #ifndef _WIN32
 // SIGINT Handler
-void sigint_handler(int s)
+void sigint_handler(int /*s*/)
 {
     should_stop = true;
 }

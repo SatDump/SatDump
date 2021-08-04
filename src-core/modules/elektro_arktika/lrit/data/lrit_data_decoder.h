@@ -111,7 +111,7 @@ namespace elektro
             bool file_in_progress;
             std::vector<uint8_t> lrit_data;
 
-            bool is_jpeg_compressed;
+            bool is_jpeg_compressed, is_wt_compressed;
             std::string current_filename;
             std::vector<uint8_t> decompression_buffer;
             std::map<int, int> all_headers;
