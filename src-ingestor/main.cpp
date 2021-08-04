@@ -34,6 +34,7 @@ void http_handle(nng_aio *aio)
     std::string jsonstr = live_pipeline->getModulesStats().dump(4);
 
     nng_http_res *res;
+    nng_http_res_set_header(res, "Access-Control-Allow-Origin","*");
     nng_http_res_alloc(&res);
     nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
     nng_aio_set_output(aio, 0, res);
