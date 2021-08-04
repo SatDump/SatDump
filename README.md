@@ -12,7 +12,7 @@ SatDump comes in 2 variants, doing essentially the same thing :
 - A GUI version, meant to be user-friendly
 ![The UI](https://github.com/altillimity/satdump/raw/master/gui_example.png)
 - A CLI version for command-line / headless processing
-![The UI](https://github.com/altillimity/satdump/raw/master/cli_example.png)
+![The CLI](https://github.com/altillimity/satdump/raw/master/cli_example.png)
 
 Otherwise, here's roughly how SatDump works :
 - You record / get some data, often baseband from some supported satellite
@@ -44,7 +44,13 @@ satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate
 satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
 ```
 
-Live processing is now supported (but WIP) on all platform, currently only with AIRSPY support. You will have to enable it manually when building with -DBUILD_LIVE=ON.
+Live processing is now supported (but WIP) on all platforms. You will have to enable it manually when building from source with -DBUILD_LIVE=ON.   
+Supported devices currently include :   
+- HackRF Devices
+- Airspy One Devices (Mini, R2 with some temporary caveats)
+- RTL-SDR Devices
+- RTL-TCP
+- ~~SpyServer~~ (Needs to be fixed)
 
 ### Notes on Falcon-9 Camera processing
 
