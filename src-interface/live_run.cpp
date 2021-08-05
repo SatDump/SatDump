@@ -26,7 +26,7 @@ extern std::shared_ptr<SDRDevice> radio;
 float scale_max = 100.0f;
 std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
 extern std::shared_ptr<LivePipeline> live_pipeline;
-std::vector<ImGuiWindow*> moduleWins;
+std::vector<std::shared_ptr<ProcessingModule>> modules;
 
 bool process_fft = false;
 std::mutex fft_run;
@@ -130,6 +130,9 @@ void startRealLive()
     // Start pipeline
     live_pipeline->start(moduleStream, processThreadPool);
 
+    // Get pipeline module order
+    modules = live_pipeline->getModules();
+
     firstUIRun = true;
     showUI = true;
 }
@@ -225,44 +228,32 @@ void renderLive()
                     }
                 }
             }
-
-            // Draw module windows
-            live_pipeline->drawUIs();
-
-            // Get pipeline module order from first render
-            // GetCurrentContext()->Windows is sorted in display order, back to front
-            //TODO: Broken when window options are restored from settings
-            for (ImGuiWindow *win : ImGui::GetCurrentContext()->Windows)
-            {
-                // Skip ImGui debug window
-                if (win->Active && std::strcmp(win->Name, "Debug##Default"))
-                    moduleWins.push_back(win);
-            }
-
-            return;
         }
 
         // Draw module windows
         live_pipeline->drawUIs();
 
         // Draw connectors between module windows
-        for(std::size_t i = 0; i < moduleWins.size() - 1; ++i)
+        for(std::size_t i = 0; i < modules.size() - 1; ++i)
         {
-            float sx = moduleWins[i]->Pos.x + moduleWins[i]->Size.x;
-            float sy = moduleWins[i]->Pos.y + (moduleWins[i]->Size.y / 2);
-            float ex = moduleWins[i+1]->Pos.x;
-            float ey = moduleWins[i+1]->Pos.y + (moduleWins[i+1]->Size.y / 2);
+            ImGuiWindow *w0 = ImGui::FindWindowByName(modules[i]->getWindowTitle().c_str());
+            ImGuiWindow *w1 = ImGui::FindWindowByName(modules[i+1]->getWindowTitle().c_str());
+
+            float x0 = w0->Pos.x + w0->Size.x;
+            float y0 = w0->Pos.y + (w0->Size.y / 2);
+            float x1 = w1->Pos.x;
+            float y1 = w1->Pos.y + (w1->Size.y / 2);
 
             ImGui::GetBackgroundDrawList()->AddTriangleFilled(
-                {ex - 10, ey - 10},
-                {ex + 1, ey},
-                {ex - 10, ey + 10},
+                {x1 - 10, y1 - 10},
+                {x1 + 1, y1},
+                {x1 - 10, y1 + 10},
                 IM_COL32(100, 100, 100, 255)
             );
 
             ImGui::GetBackgroundDrawList()->AddBezierCubic(
-                {sx, sy}, {sx + 100, sy},
-                {ex - 100, ey}, {ex - 10, ey},
+                {x0, y0}, {x0 + 100, y0},
+                {x1 - 100, y1}, {x1 - 10, y1},
                 IM_COL32(100, 100, 100, 255),
                 3.0f
             );
