@@ -106,6 +106,11 @@ namespace goes
             isSavingInProgress = false;
             approx_progess = 0;
 
+            // Reset readers
+            infraredImageReader1.startNewFullDisk();
+            infraredImageReader2.startNewFullDisk();
+            visibleImageReader.startNewFullDisk();
+
             nonEndCount = 0;
             endCount = 0;
         }
