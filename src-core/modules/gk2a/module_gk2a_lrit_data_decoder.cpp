@@ -21,6 +21,7 @@ namespace gk2a
                                                                                                                                                                     write_additional(std::stoi(parameters["write_additional"])),
                                                                                                                                                                     write_unknown(std::stoi(parameters["write_unknown"]))
         {
+            windowTitle = "GK-2A LRIT Data Decoder";
         }
 
         std::vector<ModuleDataType> GK2ALRITDataDecoderModule::getInputTypes()
@@ -135,7 +136,7 @@ namespace gk2a
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {
