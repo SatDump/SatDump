@@ -11,16 +11,16 @@ namespace goes
         {
             imageBuffer1 = new unsigned short[HEIGHT * WIDTH];
             imageBuffer2 = new unsigned short[HEIGHT * WIDTH];
-            imageLineBuffer = new unsigned short[20000];
+            imageLineBuffer = new unsigned short[5252 * 4];
             goodLines = new bool[HEIGHT];
         }
 
         InfraredReader2::~InfraredReader2()
         {
-            // delete[] imageBuffer1;
-            // delete[] imageBuffer2;
-            // delete[] imageLineBuffer;
-            // delete[] goodLines;
+            delete[] imageBuffer1;
+            delete[] imageBuffer2;
+            delete[] imageLineBuffer;
+            delete[] goodLines;
         }
 
         void InfraredReader2::startNewFullDisk()

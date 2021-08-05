@@ -104,6 +104,7 @@ namespace goes
             frame = new uint8_t[FRAME_SIZE];
             isImageInProgress = false;
             isSavingInProgress = false;
+            approx_progess = 0;
 
             nonEndCount = 0;
             endCount = 0;
