@@ -173,8 +173,6 @@ namespace goes
 
             time_t lastTime = 0;
 
-            std::ofstream output_file("test.gvar");
-
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
