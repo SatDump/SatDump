@@ -58,8 +58,8 @@ namespace goes
             images.image4.resize(images.image4.width(), images.image4.height() * 1.75);
             images.image5.resize(images.image5.width(), images.image5.height() * 1.75);
 
-            logger->trace("VIS 1 size before " + std::to_string(images.image5.width()) + "x" + std::to_string(images.image5.height()));
-            logger->trace("IR size befpre " + std::to_string(images.image1.width()) + "x" + std::to_string(images.image1.height()));
+            //logger->trace("VIS 1 size before " + std::to_string(images.image5.width()) + "x" + std::to_string(images.image5.height()));
+            //logger->trace("IR size before " + std::to_string(images.image1.width()) + "x" + std::to_string(images.image1.height()));
 
             // VIS-1 height
             int vis_height = images.image5.height();
