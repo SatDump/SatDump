@@ -143,6 +143,7 @@ namespace goes
                     imagesVector.erase(imagesVector.begin(), imagesVector.begin() + 1);
                 }
                 imageVectorMutex.unlock();
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
 
