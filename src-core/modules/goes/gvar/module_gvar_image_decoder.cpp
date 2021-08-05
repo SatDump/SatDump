@@ -70,6 +70,8 @@ namespace goes
                 vis_height = 6895;
              else if (vis_width == 8396) // Some partial scan
                 vis_height = 4600;
+             else if (vis_width == 11012) // Some partial scan
+                vis_height = 7456;
             else if (vis_width == 20836) // Full disk
                 vis_height = 18956;
             else if (vis_width == 20824) // Full disk
