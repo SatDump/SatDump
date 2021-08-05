@@ -121,6 +121,11 @@ nlohmann::json LivePipeline::getModulesStats()
     return stats;
 }
 
+std::vector<std::shared_ptr<ProcessingModule>> LivePipeline::getModules()
+{
+    return modules;
+}
+
 void LivePipeline::drawUIs()
 {
     for (std::shared_ptr<ProcessingModule> mod : modules)

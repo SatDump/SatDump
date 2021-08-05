@@ -22,6 +22,7 @@ public:
     std::vector<std::string> getOutputFiles();
 
     nlohmann::json getModulesStats();
+    std::vector<std::shared_ptr<ProcessingModule>> getModules();
 
     void drawUIs();
 };
