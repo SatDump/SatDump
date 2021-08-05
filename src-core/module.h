@@ -39,6 +39,7 @@ protected:
     ModuleDataType input_data_type, output_data_type;
 
     bool streamingInput; // Used to know if we should treat the input as a stream or file
+    std::string windowTitle; // Title of ImGui window for module
 
 public:
     ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -48,6 +49,7 @@ public:
     void setOutputType(ModuleDataType type);
     ModuleDataType getInputType();
     ModuleDataType getOutputType();
+    virtual std::string getWindowTitle();
     virtual void init();
     virtual void stop();
     virtual void process() = 0;

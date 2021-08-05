@@ -41,6 +41,11 @@ ModuleDataType ProcessingModule::getOutputType()
     return output_data_type;
 }
 
+std::string ProcessingModule::getWindowTitle()
+{
+    return windowTitle;
+}
+
 void ProcessingModule::init()
 {
 }
