@@ -581,6 +581,8 @@ namespace goes
                     {
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
+                        if (is_goesn)
+                            segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
                         image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
 
                         // Check if this is GOES-R
