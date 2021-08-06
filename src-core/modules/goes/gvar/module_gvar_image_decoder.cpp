@@ -11,6 +11,7 @@
 #include "resources.h"
 #include "common/image/hue_saturation.h"
 #include "common/image/brightness_contrast.h"
+#include "common/thread_priority.h"
 
 #define FRAME_SIZE 32786
 
@@ -240,7 +241,10 @@ namespace goes
 
             // Start thread
             if (writeImagesAync)
+            {
                 imageSavingThread = std::thread(&GVARImageDecoderModule::writeImagesThread, this);
+                setThreadPriority(imageSavingThread, 1); // Low priority to avoid sampledrop
+            }
 
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";
 
