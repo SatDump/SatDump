@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    std::string ingestor_cfg_path = argv[1];
+
     // SatDump init
     initLogger();
     initSatdump();
@@ -73,14 +75,14 @@ int main(int argc, char *argv[])
         logger->info(std::get<0>(dev));
 
     // Settings we're gonna be using
-    if (!std::filesystem::exists("ingestor.json"))
+    if (!std::filesystem::exists(ingestor_cfg_path))
     {
-        logger->error("Could not find ingestor.json!");
+        logger->error("Could not find config file " + ingestor_cfg_path + "!");
         exit(1);
     }
     nlohmann::json ingestor_cfg;
     {
-        std::ifstream istream("ingestor.json");
+        std::ifstream istream(ingestor_cfg_path);
         istream >> ingestor_cfg;
         istream.close();
     }
