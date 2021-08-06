@@ -389,11 +389,11 @@ namespace goes
                             region = "United States";
                         else
                         {
-                            std::array<char, 32> buf;
+                            char buf[32];
                             size_t len;
                             int num = (noaa_header.product_subid % 10) - 5;
-                            len = snprintf(buf.data(), buf.size(), "Special Interest %d", num);
-                            region = std::string(buf.data(), len);
+                            len = snprintf(buf, 32, "Special Interest %d", num);
+                            region = std::string(buf, len);
                         }
 
                         // Parse scan time
