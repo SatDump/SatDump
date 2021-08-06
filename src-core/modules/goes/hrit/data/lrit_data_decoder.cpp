@@ -357,6 +357,57 @@ namespace goes
                             }
                         }
                     }
+                    // GOES-N Data, from GOES-13 to 15.
+                    else if (primary_header.file_type_code == 0 && (noaa_header.product_id == 13 ||
+                                                                    noaa_header.product_id == 14 ||
+                                                                    noaa_header.product_id == 15))
+                    {
+                        int channel = -1;
+
+                        // Parse channel
+                        if (noaa_header.product_subid <= 10)
+                            channel = 4;
+                        else if (noaa_header.product_subid <= 20)
+                            channel = 1;
+                        else if (noaa_header.product_subid <= 30)
+                            channel = 3;
+
+                        std::string region = "Others";
+
+                        // Parse Region. Had to peak in goestools again...
+                        if (noaa_header.product_subid % 10 == 1)
+                            region = "Full Disk";
+                        else if (noaa_header.product_subid % 10 == 2)
+                            region = "Northern Hemisphere";
+                        else if (noaa_header.product_subid % 10 == 3)
+                            region = "Southern Hemisphere";
+                        else if (noaa_header.product_subid % 10 == 4)
+                            region = "United States";
+                        else
+                        {
+                            std::array<char, 32> buf;
+                            size_t len;
+                            int num = (noaa_header.product_subid % 10) - 5;
+                            len = snprintf(buf.data(), buf.size(), "Special Interest %d", num);
+                            region = std::string(buf.data(), len);
+                        }
+
+                        // Parse scan time
+                        AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+                        std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                        if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
+                        {
+                            std::string scanTime = ancillary_record.meta["Time of frame start"];
+                            strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                        }
+
+                        std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + region;
+
+                        if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
+                            std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
+
+                        current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
+                    }
                     // Himawari-8 rebroadcast
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == 43)
                     {
@@ -416,7 +467,6 @@ namespace goes
                                 {
                                     if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                                     {
-                                        logger->critical(channel);
                                         if (goes_r_fc_composer_full_disk->hasData && (channel == 2 || channel == 2))
                                             goes_r_fc_composer_full_disk->save(directory);
                                     }
