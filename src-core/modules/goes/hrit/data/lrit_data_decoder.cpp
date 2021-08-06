@@ -55,6 +55,7 @@ namespace goes
         LRITDataDecoder::LRITDataDecoder(std::string dir) : directory(dir)
         {
             file_in_progress = false;
+            is_goesn = false;
             imageStatus = IDLE;
             img_height = 0;
             img_width = 0;
@@ -81,6 +82,7 @@ namespace goes
                     processLRITHeader(packet);
                     header_parsed = false;
                     file_in_progress = true;
+                    is_goesn = false;
                 }
                 else
                 {
@@ -362,6 +364,8 @@ namespace goes
                                                                     noaa_header.product_id == 14 ||
                                                                     noaa_header.product_id == 15))
                     {
+                        is_goesn = true;
+
                         int channel = -1;
 
                         // Parse channel
@@ -451,6 +455,8 @@ namespace goes
                         {
                             imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                            if (is_goesn)
+                                segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                             imageStatus = RECEIVING;
 
@@ -532,6 +538,8 @@ namespace goes
                     {
                         imageStatus = SAVING;
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        if (is_goesn)
+                            segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         imageStatus = IDLE;

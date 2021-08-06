@@ -82,6 +82,7 @@ namespace goes
             std::vector<uint8_t> lrit_data;
 
             bool is_rice_compressed;
+            bool is_goesn;
             std::string current_filename;
             SZ_com_t rice_parameters;
             std::vector<uint8_t> decompression_buffer;
