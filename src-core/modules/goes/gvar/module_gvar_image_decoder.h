@@ -43,7 +43,7 @@ namespace goes
             InfraredReader2 infraredImageReader2;
             VisibleReader visibleImageReader;
 
-            std::string getGvarFilename(int sat_number, std::tm *timeReadable, int channel);
+            std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
 
             // Async image writing
             std::string directory;

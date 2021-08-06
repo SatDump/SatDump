@@ -20,8 +20,9 @@ namespace image
     void extract_percentile(cimg_library::CImg<unsigned short> &image, float percentile1, float percentile2, int channelCount = 3);
 
     // Linear invert
-    void linear_invert(cimg_library::CImg<unsigned short> &image);
+    template <typename T>
+    void linear_invert(cimg_library::CImg<T> &image);
 
     // Contrast and brightness correction
-    void brightness_contrast(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount = 3);
+    void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount = 3);
 }

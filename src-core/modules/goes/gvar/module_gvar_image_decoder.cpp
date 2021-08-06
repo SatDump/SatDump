@@ -8,6 +8,9 @@
 #include <filesystem>
 #include "gvar_headers.h"
 #include "common/utils.h"
+#include "resources.h"
+#include "common/image/hue_saturation.h"
+#include "common/image/brightness_contrast.h"
 
 #define FRAME_SIZE 32786
 
@@ -18,9 +21,9 @@ namespace goes
 {
     namespace gvar
     {
-        std::string GVARImageDecoderModule::getGvarFilename(int sat_number, std::tm *timeReadable, int channel)
+        std::string GVARImageDecoderModule::getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel)
         {
-            std::string utc_filename = "G" + std::to_string(sat_number) + "_" + std::to_string(channel) + "_" +                                                     // Satellite name and channel
+            std::string utc_filename = "G" + std::to_string(sat_number) + "_" + channel + "_" +                                                                     // Satellite name and channel
                                        std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
@@ -68,9 +71,9 @@ namespace goes
                 vis_height = 9500;
             else if (vis_width == 11416) // Some partial scan
                 vis_height = 6895;
-             else if (vis_width == 8396) // Some partial scan
+            else if (vis_width == 8396) // Some partial scan
                 vis_height = 4600;
-             else if (vis_width == 11012) // Some partial scan
+            else if (vis_width == 11012) // Some partial scan
                 vis_height = 7456;
             else if (vis_width == 4976) // Some partial scan
                 vis_height = 4194;
@@ -92,20 +95,81 @@ namespace goes
             images.image3.crop(0, 0, ir1_width - 1, ir1_height - 1);
             images.image4.crop(0, 0, ir1_width - 1, ir1_height - 1);
 
-            logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, 1) + ".png");
-            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, 1) + ".png").c_str());
+            logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, "1") + ".png");
+            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str());
 
-            logger->info("Channel 2... " + getGvarFilename(sat_number, timeReadable, 2) + ".png");
-            images.image1.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, 2) + ".png").c_str());
+            logger->info("Channel 2... " + getGvarFilename(sat_number, timeReadable, "2") + ".png");
+            images.image1.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2") + ".png").c_str());
 
-            logger->info("Channel 3... " + getGvarFilename(sat_number, timeReadable, 3) + ".png");
-            images.image2.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, 3) + ".png").c_str());
+            logger->info("Channel 3... " + getGvarFilename(sat_number, timeReadable, "3") + ".png");
+            images.image2.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3") + ".png").c_str());
 
-            logger->info("Channel 4... " + getGvarFilename(sat_number, timeReadable, 4) + ".png");
-            images.image3.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, 4) + ".png").c_str());
+            logger->info("Channel 4... " + getGvarFilename(sat_number, timeReadable, "4") + ".png");
+            images.image3.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4") + ".png").c_str());
 
-            logger->info("Channel 5... " + getGvarFilename(sat_number, timeReadable, 5) + ".png");
-            images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, 5) + ".png").c_str());
+            logger->info("Channel 5... " + getGvarFilename(sat_number, timeReadable, "5") + ".png");
+            images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5") + ".png").c_str());
+
+            // We are done with all channels but 1 and 4. Clear others to free up memory!
+            images.image1.clear();
+            images.image2.clear();
+            images.image4.clear();
+
+            // If we can, generate false color
+            if (resources::resourceExists("goes/gvar/lut.png"))
+            {
+                logger->trace("Scale Ch1 to 8-bits...");
+                cimg_library::CImg<unsigned char> channel1(images.image5.width(), images.image5.height(), 1, 1);
+                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                    channel1[i] = images.image5[i] / 255;
+                images.image5.clear(); // We're done with Ch1. Free up memory
+
+                logger->trace("Scale Ch4 to 8-bits...");
+                cimg_library::CImg<unsigned char> channel4(images.image3.width(), images.image3.height(), 1, 1);
+                for (int i = 0; i < channel4.width() * channel4.height(); i++)
+                    channel4[i] = images.image3[i] / 255;
+                images.image3.clear(); // We're done with Ch4. Free up memory
+
+                logger->trace("Resize images...");
+                channel4.resize(channel1.width(), channel1.height());
+
+                logger->trace("Loading LUT...");
+                cimg_library::CImg<unsigned char> lutImage;
+                lutImage.load_png(resources::getResourcePath("goes/gvar/lut.png").c_str());
+                lutImage.resize(256, 256);
+
+                logger->trace("Loading correction curve...");
+                cimg_library::CImg<unsigned char> curveImage;
+                curveImage.load_png(resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
+
+                cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
+
+                logger->trace("Applying LUT...");
+                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                {
+                    uint8_t x = 255 - curveImage[channel1[i]] / 1.5;
+                    uint8_t y = channel4[i];
+
+                    for (int c = 0; c < 3; c++)
+                        compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
+                }
+
+                logger->trace("Contrast correction...");
+                image::brightness_contrast(compoImage, -10.0f / 127.0f, 24.0f / 127.0f);
+
+                logger->trace("Hue shift...");
+                image::HueSaturation hueTuning;
+                hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
+                hueTuning.overlap = 100.0 / 100.0;
+                image::hue_saturation(compoImage, hueTuning);
+
+                logger->info("False color... " + getGvarFilename(sat_number, timeReadable, "FC") + ".png");
+                compoImage.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC") + ".png").c_str());
+            }
+            else
+            {
+                logger->warn("goes/gvar/lut.png LUT is missing! False Color will not be generated");
+            }
         }
 
         GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)

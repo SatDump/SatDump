@@ -223,7 +223,7 @@ namespace fengyun
                 image338.draw_image(0, 0, 0, 1, g);
                 image338.draw_image(6, 0, 0, 2, b);
 
-                image::brightness_contrast(image338, 0.360f, 0.357f);
+                image::brightness_contrast_old(image338, 0.360f, 0.357f);
 
                 if (bowtie)
                     image338 = image::bowtie::correctGenericBowTie(image338, 3, scanHeight_1000, alpha, beta);

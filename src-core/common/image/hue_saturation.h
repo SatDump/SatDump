@@ -39,7 +39,8 @@ namespace image
     };
 
     // Apply hue saturation settings
-    void hue_saturation(cimg_library::CImg<unsigned char> &image, HueSaturation hueSaturation);
+    template <typename T>
+    void hue_saturation(cimg_library::CImg<T> &image, HueSaturation hueSaturation);
 
     void rgb_to_hsl(double r, double g, double b, double &h, double &s, double &l);
     void hsl_to_rgb(double h, double s, double l, double &r, double &g, double &b);

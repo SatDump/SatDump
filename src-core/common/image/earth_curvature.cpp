@@ -11,7 +11,8 @@ namespace image
         This was mostly based off the following document :
         https://web.archive.org/web/20200110090856if_/http://ceeserver.cee.cornell.edu:80/wdp2/cee6150/Monograph/615_04_GeomCorrect_rev01.pdf
         */
-        cimg_library::CImg<unsigned short> correct_earth_curvature(cimg_library::CImg<unsigned short> &image, float satellite_height, float swath, float resolution_km)
+        template <typename T>
+        cimg_library::CImg<T> correct_earth_curvature(cimg_library::CImg<T> &image, float satellite_height, float swath, float resolution_km)
         {
             float satellite_orbit_radius = EARTH_RADIUS + satellite_height;                                                                                        // Compute the satellite's orbit radius
             int corrected_width = round(swath / resolution_km);                                                                                                    // Compute the output image size, or number of samples from the imager
@@ -28,7 +29,7 @@ namespace image
                 correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
             }
 
-            cimg_library::CImg<unsigned short> output_image(corrected_width, image.height(), 1, image.spectrum()); // Allocate output image
+            cimg_library::CImg<T> output_image(corrected_width, image.height(), 1, image.spectrum()); // Allocate output image
 
             for (int channel = 0; channel < image.spectrum(); channel++)
             {
@@ -53,5 +54,8 @@ namespace image
 
             return output_image;
         }
+
+        template cimg_library::CImg<unsigned char> correct_earth_curvature<unsigned char>(cimg_library::CImg<unsigned char> &, float, float, float);
+        template cimg_library::CImg<unsigned short> correct_earth_curvature<unsigned short>(cimg_library::CImg<unsigned short> &, float, float, float);
     }
 }

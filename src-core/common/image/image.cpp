@@ -179,15 +179,18 @@ namespace image
         delete[] sorted_array;
     }
 
-    void linear_invert(cimg_library::CImg<unsigned short> &image)
+    template <typename T>
+    void linear_invert(cimg_library::CImg<T> &image)
     {
+        float scale = std::numeric_limits<T>::max() - 1;
+
         for (int i = 0; i < image.width() * image.height(); i++)
         {
-            image[i] = 65535 - image[i];
+            image[i] = scale - image[i];
         }
     }
 
-    void brightness_contrast(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount)
+    void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount)
     {
         float brightness_v = brightness / 2.0f;
         float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
@@ -206,4 +209,7 @@ namespace image
             image[i] = std::min<float>(65535, std::max<float>(0, v * 2.0f));
         }
     }
+
+    template void linear_invert<unsigned char>(cimg_library::CImg<unsigned char> &);
+    template void linear_invert<unsigned short>(cimg_library::CImg<unsigned short> &);
 }
