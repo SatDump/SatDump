@@ -74,6 +74,9 @@ void SDRRtlSdr::start()
     rtlsdr_set_tuner_gain_mode(dev, 1);
     rtlsdr_set_tuner_gain(dev, gain);
     rtlsdr_reset_buffer(dev);
+#ifdef HAS_RTLSDR_SET_BIAS_TEE
+    setBias(bias);
+#endif
     should_run = true;
     workThread = std::thread(&SDRRtlSdr::runThread, this);
 }
