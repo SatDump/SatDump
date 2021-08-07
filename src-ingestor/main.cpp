@@ -181,8 +181,8 @@ int main(int argc, char *argv[])
     logger->info("Stop pipeline...");
     live_pipeline->stop();
 
-    logger->info("Stopping SDR...");
-    radio->stop();
+    //logger->info("Stopping SDR...");
+    //radio->stop();
 
     logger->info("Done! Goodbye");
 }
