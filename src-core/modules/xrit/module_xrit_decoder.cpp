@@ -185,7 +185,12 @@ namespace xrit
 
                             // Write it out
                             if (errors[0] >= 0 && errors[1] >= 0 && errors[2] >= 0 && errors[3] >= 0)
-                                data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
+                            {
+                                if (output_data_type == DATA_FILE)
+                                    data_out.write((char *)&cadu, FRAME_SIZE);
+                                else
+                                    output_fifo->write(&cadu, FRAME_SIZE);
+                            }
                         }
                     }
                 }
