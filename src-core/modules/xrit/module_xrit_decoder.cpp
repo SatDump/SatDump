@@ -155,7 +155,7 @@ namespace xrit
         {
             int vout;
 
-            while (!data_in.eof())
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
                 if (input_data_type == DATA_FILE)
@@ -209,7 +209,7 @@ namespace xrit
                     lastTime = time(NULL);
                     std::string viterbi_state = stream_viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
                     std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(stream_viterbi.ber()) + ", Deframer : " + deframer_state);
                 }
             }
         }
