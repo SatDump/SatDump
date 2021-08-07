@@ -314,7 +314,9 @@
             "cadu": {
                 "xrit_decoder": {
                     "is_bpsk": "0",
-                    "diff_decode": "0"
+                    "diff_decode": "0",
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170"
                 }
             }
         }
@@ -407,7 +409,9 @@
             "cadu": {
                 "xrit_decoder": {
                     "is_bpsk": "0",
-                    "diff_decode": "0"
+                    "diff_decode": "0",
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170"
                 }
             },
             "products": {
