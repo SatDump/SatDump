@@ -189,7 +189,7 @@ namespace xrit
                                 if (output_data_type == DATA_FILE)
                                     data_out.write((char *)&cadu, FRAME_SIZE);
                                 else
-                                    output_fifo->write(&cadu, FRAME_SIZE);
+                                    output_fifo->write((char *)&cadu, FRAME_SIZE);
                             }
                         }
                     }
