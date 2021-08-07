@@ -234,7 +234,7 @@ void renderLive()
         live_pipeline->drawUIs();
 
         // Draw connectors between module windows
-        for(std::size_t i = 0; i < modules.size() - 1; ++i)
+        for(size_t i = 0; i < modules.size() - 1; i++)
         {
             ImGuiWindow *w0 = ImGui::FindWindowByName(modules[i]->getWindowTitle().c_str());
             ImGuiWindow *w1 = ImGui::FindWindowByName(modules[i+1]->getWindowTitle().c_str());
