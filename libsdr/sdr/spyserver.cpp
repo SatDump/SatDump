@@ -6,9 +6,12 @@
 #include "logger.h"
 #include <volk/volk.h>
 
+const int SpyServerFormatsBitDepths[] = {8, 16, 32};
+
 SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(digital_gain, "digital_gain");
 
     if (parameters.count("ip") == 0)
     {
@@ -20,92 +23,87 @@ SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64
         logger->error("No SpyServer Port provided! Things will not work!!!!");
     }
 
-    if (parameters.count("bit16") == 0)
+    if (parameters.count("sample_format") == 0)
     {
-        logger->error("No SpyServer bit depth provided! Things will not work!!!!");
+        logger->error("No SpyServer bit depth provided! Using F32.");
     }
 
-    bit16 = std::stoi(parameters["bit16"]);
+    sampleFormat = (SpyServerStreamFormat)std::stoi(parameters["sample_format"]);
 
-    if (bit16)
-        logger->debug("Using 16-bit samples");
-
-    client = std::make_shared<ss_client>(parameters["ip"], std::stoi(parameters["port"]), 1, 0, 0, bit16 ? 16 : 8);
+    client = spyserver::connect(parameters["ip"], std::stoi(parameters["port"]), output_stream.get());
 
     logger->info("Opened SpyServer device!");
 
-    samples = new int16_t[8192 * 2];
-    samples8 = new uint8_t[8192 * 2];
-    std::fill(frequency, &frequency[100], 0);
-}
+    if (!client->waitForDevInfo(4000))
+        logger->critical("Didn't get device infos");
 
-void SDRSpyServer::runThread()
-{
-    while (should_run)
-    {
-        if (bit16)
-        {
-            client->get_iq_data<int16_t>(8192, samples);
-            volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)samples, 1.0f / 0.00004f, 8192 * 2);
-            output_stream->swap(8192);
-        }
-        else
-        {
-            client->get_iq_data<uint8_t>(8192, samples8);
-            for (int i = 0; i < 8192; i++)
-                output_stream->writeBuf[i] = std::complex<float>((samples8[i * 2 + 0] - 127) / 128.0f, (samples8[i * 2 + 1] - 127) / 128.0f);
-            output_stream->swap(8192);
-        }
-    }
+    std::fill(frequency, &frequency[100], 0);
 }
 
 std::map<std::string, std::string> SDRSpyServer::getParameters()
 {
     d_parameters["gain"] = std::to_string(gain);
+    d_parameters["digital_gain"] = std::to_string(digital_gain);
 
     return d_parameters;
 }
 
 void SDRSpyServer::start()
 {
+    // Format
+    client->setSetting(SPYSERVER_SETTING_IQ_FORMAT, sampleFormat);
+    client->setSetting(SPYSERVER_SETTING_STREAMING_MODE, SPYSERVER_STREAM_MODE_IQ_ONLY);
+
     // Samplerate
-    client->set_sample_rate(d_samplerate);
-    client->set_sample_rate_by_decim_stage(0);
+    stageToUse = client->devInfo.MinimumIQDecimation;
+    {
+        std::vector<float> samplerates;
+        for (int i = client->devInfo.MinimumIQDecimation; i <= client->devInfo.DecimationStageCount; i++)
+        {
+            float samplerate = client->devInfo.MaximumSampleRate / (float)(1 << i);
+            samplerates.push_back(samplerate);
+            logger->trace(samplerate);
+        }
+
+        if (std::find(samplerates.begin(), samplerates.end(), d_samplerate) != samplerates.end())
+        {
+            stageToUse = std::find(samplerates.begin(), samplerates.end(), d_samplerate) - samplerates.begin();
+        }
+        else
+        {
+            logger->error("Desired samplerate not available. Default to max.");
+        }
+    }
+
+    client->setSetting(SPYSERVER_SETTING_IQ_DECIMATION, stageToUse);
 
     // Frequency
-    client->set_iq_center_freq(d_frequency);
+    client->setSetting(SPYSERVER_SETTING_IQ_FREQUENCY, d_frequency);
 
     // Gain
-    client->set_gain_mode(false);
-    client->set_gain(gain);
+    client->setSetting(SPYSERVER_SETTING_GAIN, gain);
+    if (digital_gain == 0)
+        digital_gain = client->computeDigitalGain(SpyServerFormatsBitDepths[sampleFormat], gain, stageToUse);
+    client->setSetting(SPYSERVER_SETTING_IQ_DIGITAL_GAIN, digital_gain);
 
-    // Start
-    should_run = true;
-    workThread = std::thread(&SDRSpyServer::runThread, this);
-    client->start();
+    client->startStream();
 }
 
 void SDRSpyServer::stop()
 {
-    //airspy_stop_rx(dev);
-    should_run = false;
-    client->stop();
-    if (workThread.joinable())
-        workThread.join();
+    client->stopStream();
 }
 
 SDRSpyServer::~SDRSpyServer()
 {
-    //airspy_close(dev);
-    delete[] samples;
-    delete[] samples8;
+    client->close();
 }
 
 void SDRSpyServer::drawUI()
 {
     ImGui::Begin("SpyServer Control", NULL);
 
-    ImGui::SetNextItemWidth(100);
+    //ImGui::SetNextItemWidth(100);
     ImGui::InputText("MHz", frequency, 100);
 
     ImGui::SameLine();
@@ -113,13 +111,21 @@ void SDRSpyServer::drawUI()
     if (ImGui::Button("Set"))
     {
         d_frequency = std::stof(frequency) * 1e6;
-        client->set_iq_center_freq(d_frequency);
+        client->setSetting(SPYSERVER_SETTING_IQ_FREQUENCY, d_frequency);
     }
 
-    ImGui::SetNextItemWidth(200);
-    if (ImGui::SliderInt("Gain", &gain, 0, 22))
+    //ImGui::SetNextItemWidth(200);
+    if (ImGui::SliderInt("Gain", &gain, 0, client->devInfo.MaximumGainIndex))
     {
-        client->set_gain(gain);
+        client->setSetting(SPYSERVER_SETTING_GAIN, gain);
+        digital_gain = client->computeDigitalGain(SpyServerFormatsBitDepths[sampleFormat], gain, stageToUse);
+        client->setSetting(SPYSERVER_SETTING_IQ_DIGITAL_GAIN, digital_gain);
+    }
+
+    //ImGui::SetNextItemWidth(200);
+    if (ImGui::SliderInt("Digital Gain", &digital_gain, 0, client->devInfo.MaximumGainIndex))
+    {
+        client->setSetting(SPYSERVER_SETTING_IQ_DIGITAL_GAIN, digital_gain);
     }
 
     ImGui::End();
@@ -144,9 +150,10 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRSpyServer::ge
     return results;
 }
 
-char SDRSpyServer::server_ip[100] = "localhost";
+char SDRSpyServer::server_ip[100] = "0.0.0.0";
 char SDRSpyServer::server_port[100] = "5555";
-bool SDRSpyServer::enable_bit16 = true;
+SpyServerStreamFormat SDRSpyServer::serverSampleFormat = SpyServerStreamFormat::SPYSERVER_STREAM_FORMAT_UINT8;
+int serverSampleFormatId = 0;
 
 std::map<std::string, std::string> SDRSpyServer::drawParamsUI()
 {
@@ -158,11 +165,21 @@ std::map<std::string, std::string> SDRSpyServer::drawParamsUI()
     ImGui::SameLine();
     ImGui::InputText("##spyserverport", server_port, 100);
 
-    ImGui::Text("16-bit streaming");
+    ImGui::Text("Sample format");
     ImGui::SameLine();
-    ImGui::Checkbox("##enable16bitspyserver", &enable_bit16);
+    if (ImGui::Combo("##sampleformatspyserver", &serverSampleFormatId, "uint8\0"
+                                                                       "int16\0"
+                                                                       "float32\0"))
+    {
+        if (serverSampleFormatId == 0)
+            serverSampleFormat = SpyServerStreamFormat::SPYSERVER_STREAM_FORMAT_UINT8;
+        else if (serverSampleFormatId == 1)
+            serverSampleFormat = SpyServerStreamFormat::SPYSERVER_STREAM_FORMAT_INT16;
+        else if (serverSampleFormatId == 2)
+            serverSampleFormat = SpyServerStreamFormat::SPYSERVER_STREAM_FORMAT_FLOAT;
+    }
 
-    return {{"ip", std::string(server_ip)}, {"port", std::string(server_port)}, {"bit16", std::to_string(enable_bit16)}};
+    return {{"ip", std::string(server_ip)}, {"port", std::string(server_port)}, {"sample_format", std::to_string(serverSampleFormat)}};
 }
 
 std::string SDRSpyServer::getID()
