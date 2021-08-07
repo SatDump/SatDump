@@ -105,13 +105,16 @@ Here are some generic Debian build instructions.
 
 ```
 # Linux: Install dependencies
-sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libglew-dev libglfw3-dev libnng-dev
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev # Core dependencies
+sudo apt install libnng-dev                                                                             # If this packages is not found, follow build instructions below for NNG
+sudo apt install libglew-dev libglfw3-dev                                                               # Only if you want to build the GUI Version
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
 cd nng
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
 sudo make install
 cd ../..
@@ -124,7 +127,8 @@ brew install cmake volk jpeg libpng glew glfw nng
 git clone https://github.com/quiet/libcorrect.git
 cd libcorrect
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
 sudo make install
 cd ../..
@@ -147,7 +151,11 @@ rm -rf fftw-3.3.9
 git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+# If you want to build Live-processing (required for the ingestor), add -DBUILD_LIVE=ON to the command
+# If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
+# If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
+cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
 ln -s ../pipelines . # Symlink pipelines so it can run
 ln -s ../resources . # Symlink pipelines so it can run
