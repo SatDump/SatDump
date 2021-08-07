@@ -26,9 +26,12 @@ SDRSpyServer::SDRSpyServer(std::map<std::string, std::string> parameters, uint64
     if (parameters.count("sample_format") == 0)
     {
         logger->error("No SpyServer bit depth provided! Using F32.");
+        sampleFormat = SpyServerStreamFormat::SPYSERVER_STREAM_FORMAT_FLOAT;
     }
-
-    sampleFormat = (SpyServerStreamFormat)std::stoi(parameters["sample_format"]);
+    else
+    {
+        sampleFormat = (SpyServerStreamFormat)std::stoi(parameters["sample_format"]);
+    }
 
     client = spyserver::connect(parameters["ip"], std::stoi(parameters["port"]), output_stream.get());
 
