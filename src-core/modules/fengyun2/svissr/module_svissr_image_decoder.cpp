@@ -91,7 +91,7 @@ namespace fengyun_svissr
             logger->trace("Applying LUT...");
             for (int i = 0; i < channel1.width() * channel1.height(); i++)
             {
-                uint8_t x = 255 - channel1[i] / 1.5;
+                uint8_t x = 255 - channel1[i];
                 uint8_t y = channel5[i];
 
                 for (int c = 0; c < 3; c++)
