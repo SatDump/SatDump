@@ -42,8 +42,11 @@ namespace fengyun_svissr
         // Saving is multithreaded
         std::shared_ptr<ctpl::thread_pool> imageSavingThreadPool;
 
-        std::string getSvissrFilename(std::tm *timeReadable, int channel);
+        std::string getSvissrFilename(std::tm *timeReadable, std::string channel);
         void writeImages(std::string directory);
+
+        // Stats
+        std::vector<int> scid_stats;
 
         // UI Stuff
         unsigned int textureID = 0;
