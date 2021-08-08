@@ -86,10 +86,6 @@ namespace fengyun_svissr
             lutImage.load_png(resources::getResourcePath("fy2/svissr/lut.png").c_str());
             lutImage.resize(256, 256);
 
-            //logger->trace("Loading correction curve...");
-            //cimg_library::CImg<unsigned char> curveImage;
-            //curveImage.load_png(resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
-
             cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
 
             logger->trace("Applying LUT...");
@@ -101,15 +97,6 @@ namespace fengyun_svissr
                 for (int c = 0; c < 3; c++)
                     compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
             }
-
-            //logger->trace("Contrast correction...");
-            //image::brightness_contrast(compoImage, -10.0f / 127.0f, 24.0f / 127.0f);
-
-            //logger->trace("Hue shift...");
-            //image::HueSaturation hueTuning;
-            //hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
-            //hueTuning.overlap = 100.0 / 100.0;
-            //image::hue_saturation(compoImage, hueTuning);
 
             logger->info("False color... " + getSvissrFilename(timeReadable, "FC") + ".png");
             compoImage.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC") + ".png").c_str());
