@@ -57,6 +57,8 @@ void SDRHackRF::start()
     hackrf_set_lna_gain(dev, lna_gain);
     hackrf_set_vga_gain(dev, vga_gain);
 
+    hackrf_set_antenna_enable(dev, bias);
+
     hackrf_start_rx(dev, _rx_callback, &output_stream);
 }
 
