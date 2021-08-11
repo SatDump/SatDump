@@ -21,6 +21,7 @@ namespace jason3
                                                                                                                                                     viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        windowTitle = "Jason-3 Decoder";
     }
 
     std::vector<ModuleDataType> Jason3DecoderModule::getInputTypes()
@@ -136,7 +137,7 @@ namespace jason3
 
     void Jason3DecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Jason-3 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

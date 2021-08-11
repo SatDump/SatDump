@@ -16,6 +16,7 @@ namespace meteor
 
         read_buffer = new uint8_t[BUFFER_SIZE];
         manchester_buffer = new uint8_t[BUFFER_SIZE];
+        windowTitle = "METEOR HRPT Decoder";
     }
 
     std::vector<ModuleDataType> METEORHRPTDecoderModule::getInputTypes()
@@ -96,7 +97,7 @@ namespace meteor
 
     void METEORHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

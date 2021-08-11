@@ -19,6 +19,7 @@ namespace metop
         MetOpGOMEDecoderModule::MetOpGOMEDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                               write_all(std::stoi(parameters["write_all"]))
         {
+            windowTitle = "MetOp GOME Decoder";
         }
 
         void MetOpGOMEDecoderModule::process()
@@ -125,7 +126,7 @@ namespace metop
 
         void MetOpGOMEDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp GOME Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

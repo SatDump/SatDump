@@ -20,6 +20,7 @@ namespace fengyun
         FengyunMERSI1DecoderModule::FengyunMERSI1DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                                       bowtie(std::stoi(parameters["correct_bowtie"]))
         {
+            windowTitle = "FengYun MERSI-1 Decoder";
         }
 
         void FengyunMERSI1DecoderModule::process()
@@ -304,7 +305,7 @@ namespace fengyun
 
         void FengyunMERSI1DecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MERSI-1 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

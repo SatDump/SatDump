@@ -16,6 +16,7 @@ namespace jason3
     {
         Jason3AMR2DecoderModule::Jason3AMR2DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "Jason-3 AMR-2 Decoder";
         }
 
         void Jason3AMR2DecoderModule::process()
@@ -92,7 +93,7 @@ namespace jason3
 
         void Jason3AMR2DecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Jason-3 AMR-2 Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

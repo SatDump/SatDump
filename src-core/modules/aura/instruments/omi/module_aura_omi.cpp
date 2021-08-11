@@ -17,6 +17,7 @@ namespace aura
     {
         AuraOMIDecoderModule::AuraOMIDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "Aura OMI Decoder";
         }
 
         void AuraOMIDecoderModule::process()
@@ -145,7 +146,7 @@ namespace aura
 
         void AuraOMIDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Aura OMI Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

@@ -21,6 +21,7 @@ namespace npp
         viterbi_out = new uint8_t[BUFFER_SIZE];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
+        windowTitle = "NPP HRD Decoder";
     }
 
     NPPHRDDecoderModule::~NPPHRDDecoderModule()
@@ -110,7 +111,7 @@ namespace npp
 
     void NPPHRDDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NPP HRD Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
         float ber = viterbi.ber();
 
         ImGui::BeginGroup();

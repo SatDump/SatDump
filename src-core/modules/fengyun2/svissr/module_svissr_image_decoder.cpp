@@ -120,6 +120,7 @@ namespace fengyun_svissr
         nonEndCount = 0;
         lastNonZero = 0;
         backwardScan = false;
+        windowTitle = "S-VISSR Image Decoder";
 
         vissrImageReader.reset();
 
@@ -304,7 +305,7 @@ namespace fengyun_svissr
             textureBuffer = new uint32_t[2501 * 2291];
         }
 
-        ImGui::Begin("S-VISSR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // This is outer crap...
         ImGui::BeginGroup();

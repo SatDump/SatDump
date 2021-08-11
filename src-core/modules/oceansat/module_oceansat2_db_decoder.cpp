@@ -51,6 +51,7 @@ namespace oceansat
     {
         buffer = new int8_t[BUFFER_SIZE];
         frame_count = 0;
+        windowTitle = "Oceansat-2 DB Decoder";
     }
 
     Oceansat2DBDecoderModule::~Oceansat2DBDecoderModule()
@@ -181,7 +182,7 @@ namespace oceansat
 
     void Oceansat2DBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Oceansat-2 DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

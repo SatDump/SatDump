@@ -23,6 +23,7 @@ namespace spacex
                                                                                                                                                     qpsk(std::stoi(parameters["qpsk"]))
     {
         buffer = new int8_t[BUFFER_SIZE];
+        windowTitle = "SpaceX TLM Decoder";
     }
 
     SpaceXDecoderModule::~SpaceXDecoderModule()
@@ -140,7 +141,7 @@ namespace spacex
 
     void SpaceXDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("SpaceX TLM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

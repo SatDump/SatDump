@@ -27,6 +27,7 @@ namespace jpss
                 cadu_size = 1279;
                 mpdu_size = 0;
             }
+            windowTitle = "JPSS CrIS Decoder";
         }
 
         void JPSSCrISDecoderModule::process()
@@ -113,7 +114,7 @@ namespace jpss
 
         void JPSSCrISDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("JPSS CrIS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

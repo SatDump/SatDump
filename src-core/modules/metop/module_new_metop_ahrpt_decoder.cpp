@@ -17,6 +17,7 @@ namespace metop
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
+        windowTitle = "New MetOp AHRPT Decoder";
     }
 
     std::vector<ModuleDataType> NewMetOpAHRPTDecoderModule::getInputTypes()
@@ -102,7 +103,7 @@ namespace metop
 
     void NewMetOpAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("New MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

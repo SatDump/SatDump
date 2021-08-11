@@ -32,6 +32,7 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
     sym_buffer = new int8_t[d_buffer_size * 2];
     snr = 0;
     peak_snr = 0;
+    windowTitle = "QPSK Demodulator";
 }
 
 void QPSKDemodModule::init()
@@ -193,7 +194,7 @@ void QPSKDemodModule::stop()
 
 void QPSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("QPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+    ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
     ImGui::BeginGroup();
     // Constellation

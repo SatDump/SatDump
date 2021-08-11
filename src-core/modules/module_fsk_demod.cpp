@@ -17,6 +17,7 @@ FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_h
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 10];
+    windowTitle = "FSK Demodulator";
 }
 
 void FSKDemodModule::init()
@@ -117,7 +118,7 @@ void FSKDemodModule::stop()
 
 void FSKDemodModule::drawUI(bool window)
 {
-    ImGui::Begin("FSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+    ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
     // Constellation
     constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());

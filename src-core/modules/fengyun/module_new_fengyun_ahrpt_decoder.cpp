@@ -29,6 +29,7 @@ namespace fengyun
         qSamples = new int8_t[BUFFER_SIZE];
         diff_in = new uint8_t[BUFFER_SIZE];
         diff_out = new uint8_t[BUFFER_SIZE];
+        windowTitle = "New FengYun AHRPT Decoder";
     }
 
     std::vector<ModuleDataType> NewFengyunAHRPTDecoderModule::getInputTypes()
@@ -199,7 +200,7 @@ namespace fengyun
 
     void NewFengyunAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("New FengYun AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber1 = viterbi.ber1();
         float ber2 = viterbi.ber2();

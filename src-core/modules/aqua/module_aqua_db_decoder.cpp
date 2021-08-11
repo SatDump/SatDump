@@ -21,6 +21,7 @@ namespace aqua
     AquaDBDecoderModule::AquaDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[BUFFER_SIZE];
+        windowTitle = "Aqua DB Decoder";
     }
 
     AquaDBDecoderModule::~AquaDBDecoderModule()
@@ -179,7 +180,7 @@ namespace aqua
 
     void AquaDBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Aqua DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

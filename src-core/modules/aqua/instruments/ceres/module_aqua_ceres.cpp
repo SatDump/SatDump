@@ -18,6 +18,7 @@ namespace aqua
     {
         AquaCERESDecoderModule::AquaCERESDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "Aqua CERES Decoder";
         }
 
         void AquaCERESDecoderModule::process()
@@ -180,7 +181,7 @@ namespace aqua
 
         void AquaCERESDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Aqua CERES Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

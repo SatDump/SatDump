@@ -61,6 +61,7 @@ namespace noaa
         bits_buffer = new uint8_t[d_buffer_size * 10];
         bytes_buffer = new uint8_t[d_buffer_size * 10];
         manchester_buffer = new uint8_t[d_buffer_size * 10];
+        windowTitle = "NOAA DSB Demodulator";
     }
 
     NOAADSBDemodModule::~NOAADSBDemodModule()
@@ -166,7 +167,7 @@ namespace noaa
 
     void NOAADSBDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA DSB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());

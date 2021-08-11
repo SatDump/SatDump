@@ -21,6 +21,7 @@ namespace proba
     {
         ProbaVegetationDecoderModule::ProbaVegetationDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "Proba-V Vegetation Decoder";
         }
 
         void ProbaVegetationDecoderModule::process()
@@ -97,7 +98,7 @@ namespace proba
 
         void ProbaVegetationDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Proba-V Vegetation Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

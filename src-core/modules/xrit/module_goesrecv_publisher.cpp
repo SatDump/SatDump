@@ -18,6 +18,7 @@ namespace xrit
                                                                                                                                                             port(std::stoi(parameters["port"]))
     {
         buffer = new uint8_t[FRAME_SIZE];
+        windowTitle = "xRIT GOESRECV Publisher";
     }
 
     std::vector<ModuleDataType> GOESRecvPublisherModule::getInputTypes()
@@ -91,7 +92,7 @@ namespace xrit
 
     void GOESRecvPublisherModule::drawUI(bool window)
     {
-        ImGui::Begin("xRIT GOESRECV Publisher", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();

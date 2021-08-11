@@ -20,6 +20,7 @@ namespace elektro_arktika
     RDASDecoderModule::RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
+        windowTitle = "ELEKTRO / ARKTIKA RDAS Decoder";
     }
 
     RDASDecoderModule::~RDASDecoderModule()
@@ -101,7 +102,7 @@ namespace elektro_arktika
 
     void RDASDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("ELEKTRO / ARKTIKA RDAS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

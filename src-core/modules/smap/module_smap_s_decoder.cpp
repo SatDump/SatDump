@@ -22,6 +22,7 @@ namespace smap
     SMAPSDecoderModule::SMAPSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
+        windowTitle = "SMAP S-Band Decoder";
     }
 
     SMAPSDecoderModule::~SMAPSDecoderModule()
@@ -109,7 +110,7 @@ namespace smap
 
     void SMAPSDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("SMAP S-Band Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

@@ -21,6 +21,7 @@ namespace saral
                                                                                                                                                   viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        windowTitle = "Saral Decoder";
     }
 
     std::vector<ModuleDataType> SaralDecoderModule::getInputTypes()
@@ -136,7 +137,7 @@ namespace saral
 
     void SaralDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Saral Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

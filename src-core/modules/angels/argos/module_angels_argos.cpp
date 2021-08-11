@@ -17,6 +17,7 @@ namespace angels
     {
         AngelsArgosDecoderModule::AngelsArgosDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "Angels ARGOS Decoder";
         }
 
         void AngelsArgosDecoderModule::process()
@@ -99,7 +100,7 @@ namespace angels
 
         void AngelsArgosDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Angels ARGOS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

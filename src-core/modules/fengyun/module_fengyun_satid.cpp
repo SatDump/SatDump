@@ -20,6 +20,7 @@ namespace fengyun
         FengYunSatIDModule::FengYunSatIDModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                       scid_hint(parameters.count("scid_hint") > 0 ? std::stoi(parameters["scid_hint"]) : -1)
         {
+            windowTitle = "FengYun Satellite Identifier";
         }
 
         void FengYunSatIDModule::process()
@@ -119,7 +120,7 @@ namespace fengyun
 
         void FengYunSatIDModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun Satellite Identifier", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

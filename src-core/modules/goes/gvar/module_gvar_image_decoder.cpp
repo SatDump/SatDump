@@ -187,6 +187,7 @@ namespace goes
 
             nonEndCount = 0;
             endCount = 0;
+            windowTitle = "GVAR Image Decoder";
         }
 
         std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes()
@@ -434,7 +435,7 @@ namespace goes
                 textureBuffer = new uint32_t[1354 * 2 * 5236];
             }
 
-            ImGui::Begin("GVAR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             // This is outer crap...
             ImGui::BeginGroup();

@@ -19,6 +19,7 @@ namespace terra
                                                                                                                                                       viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        windowTitle = "Terra DB Decoder";
     }
 
     TerraDBDecoderModule::~TerraDBDecoderModule()
@@ -111,7 +112,7 @@ namespace terra
 
     void TerraDBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Terra DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

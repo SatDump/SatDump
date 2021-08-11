@@ -30,6 +30,7 @@ namespace fengyun
         qSamples = new std::complex<float>[BUFFER_SIZE];
         diff_in = new uint8_t[BUFFER_SIZE];
         diff_out = new uint8_t[BUFFER_SIZE];
+        windowTitle = "FengYun MPT Decoder";
     }
 
     FengyunMPTDecoderModule::~FengyunMPTDecoderModule()
@@ -213,7 +214,7 @@ namespace fengyun
 
     void FengyunMPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("FengYun MPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber1 = viterbi1.ber();
         float ber2 = viterbi2.ber();

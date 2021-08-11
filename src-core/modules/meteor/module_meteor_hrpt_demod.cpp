@@ -18,6 +18,7 @@ namespace meteor
         bits_buffer = new uint8_t[d_buffer_size * 10];
         snr = 0;
         peak_snr = 0;
+        windowTitle = "METEOR HRPT Demodulator";
     }
 
     void METEORHRPTDemodModule::init()
@@ -149,7 +150,7 @@ namespace meteor
 
     void METEORHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         // Constellation
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());

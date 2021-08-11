@@ -20,6 +20,7 @@ namespace elektro_arktika
         real_buffer = new float[d_buffer_size * 2];
         snr = 0;
         peak_snr = 0;
+        windowTitle = "ELEKTRO-L / ARKTIKA-M TLM Demodulator";
     }
 
     void TLMDemodModule::init()
@@ -198,7 +199,7 @@ namespace elektro_arktika
 
     void TLMDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("ELEKTRO-L / ARKTIKA-M TLM Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.pushComplex(rec->output_stream->readBuf, rec->output_stream->getDataSize());

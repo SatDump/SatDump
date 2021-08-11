@@ -26,6 +26,7 @@ namespace goes
             goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso2 = std::make_shared<GOESRFalseColorComposer>();
+            windowTitle = "GOES HRIT Data Decoder";
         }
 
         std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
@@ -145,7 +146,7 @@ namespace goes
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {

@@ -20,6 +20,7 @@ namespace elektro
         {
             elektro_221_composer_full_disk = std::make_shared<ELEKTRO221Composer>();
             elektro_321_composer_full_disk = std::make_shared<ELEKTRO321Composer>();
+            windowTitle = "ELEKTRO-L LRIT Data Decoder";
         }
 
         std::vector<ModuleDataType> ELEKTROLRITDataDecoderModule::getInputTypes()
@@ -126,7 +127,7 @@ namespace elektro
 
         void ELEKTROLRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("ELEKTRO-L LRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {

@@ -18,6 +18,7 @@ namespace noaa
         bits_buffer = new uint8_t[d_buffer_size * 10];
         snr = 0;
         peak_snr = 0;
+        windowTitle = "NOAA HRPT Demodulator";
     }
 
     void NOAAHRPTDemodModule::init()
@@ -148,7 +149,7 @@ namespace noaa
 
     void NOAAHRPTDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA HRPT Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());

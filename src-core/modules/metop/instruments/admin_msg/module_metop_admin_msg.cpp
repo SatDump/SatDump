@@ -18,6 +18,7 @@ namespace metop
     {
         MetOpAdminMsgDecoderModule::MetOpAdminMsgDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "MetOp Admin Messages Decoder";
         }
 
         void MetOpAdminMsgDecoderModule::process()
@@ -107,7 +108,7 @@ namespace metop
 
         void MetOpAdminMsgDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("MetOp Admin Messages Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

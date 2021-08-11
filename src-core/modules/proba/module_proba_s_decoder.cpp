@@ -22,6 +22,7 @@ namespace proba
                                                                                                                                                     viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        windowTitle = "Proba S-Band Decoder";
     }
 
     std::vector<ModuleDataType> ProbaSDecoderModule::getInputTypes()
@@ -135,7 +136,7 @@ namespace proba
 
     void ProbaSDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Proba S-Band Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

@@ -20,6 +20,7 @@ namespace metop
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
+        windowTitle = "MetOp AHRPT Decoder";
     }
 
     MetOpAHRPTDecoderModule::~MetOpAHRPTDecoderModule()
@@ -101,7 +102,7 @@ namespace metop
 
     void MetOpAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

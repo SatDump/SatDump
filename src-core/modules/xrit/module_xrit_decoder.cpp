@@ -28,6 +28,7 @@ namespace xrit
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
+        windowTitle = "xRIT Decoder";
     }
 
     std::vector<ModuleDataType> XRITDecoderModule::getInputTypes()
@@ -222,7 +223,7 @@ namespace xrit
 
     void XRITDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("xRIT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = is_bpsk ? viterbi.ber() : stream_viterbi.ber();
 

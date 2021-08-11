@@ -15,6 +15,7 @@ namespace fengyun_svissr
     SVISSRDecoderModule::SVISSRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
+        windowTitle = "S-VISSR Decoder";
     }
 
     std::vector<ModuleDataType> SVISSRDecoderModule::getInputTypes()
@@ -130,7 +131,7 @@ namespace fengyun_svissr
 
     void SVISSRDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("S-VISSR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

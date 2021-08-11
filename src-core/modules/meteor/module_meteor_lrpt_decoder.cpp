@@ -22,6 +22,7 @@ namespace meteor
                                                                                                                                                             viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        windowTitle = "METEOR LRPT Decoder";
     }
 
     std::vector<ModuleDataType> METEORLRPTDecoderModule::getInputTypes()
@@ -144,7 +145,7 @@ namespace meteor
 
     void METEORLRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

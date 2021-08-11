@@ -15,6 +15,7 @@ namespace fengyun
     {
         FengyunMWHSDecoderModule::FengyunMWHSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            windowTitle = "FengYun MWHS Decoder";
         }
 
         void FengyunMWHSDecoderModule::process()
@@ -111,7 +112,7 @@ namespace fengyun
 
         void FengyunMWHSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MWHS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

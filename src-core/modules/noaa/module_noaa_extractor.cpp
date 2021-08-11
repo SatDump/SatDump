@@ -12,6 +12,7 @@ namespace noaa
     {
         buffer = new uint16_t[BUFFER_SIZE / 2];
         frameBuffer = new uint8_t[104];
+        windowTitle = "NOAA Frame Extractor";
     }
 
     NOAAExtractorModule::~NOAAExtractorModule()
@@ -74,7 +75,7 @@ namespace noaa
 
     void NOAAExtractorModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA Frame Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(windowTitle.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
