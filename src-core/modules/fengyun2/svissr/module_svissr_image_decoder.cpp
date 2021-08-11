@@ -4,6 +4,8 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "resources.h"
+#include "common/utils.h"
 
 #define FRAME_SIZE 44356
 
@@ -12,9 +14,9 @@ size_t getFilesize(std::string filepath);
 
 namespace fengyun_svissr
 {
-    std::string SVISSRImageDecoderModule::getSvissrFilename(std::tm *timeReadable, int channel)
+    std::string SVISSRImageDecoderModule::getSvissrFilename(std::tm *timeReadable, std::string channel)
     {
-        std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
+        std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
                                    std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
@@ -35,26 +37,74 @@ namespace fengyun_svissr
                                 (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
 
         std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait a bit
-        logger->info("Full disk finished, saving at S-VISSR_" + timestamp + "...");
+        logger->info("Full disk finished, saving at " + timestamp + "...");
 
-        std::filesystem::create_directory(directory + "/S-VISSR_" + timestamp);
+        std::filesystem::create_directory(directory + "/" + timestamp);
 
-        std::string disk_folder = directory + "/S-VISSR_" + timestamp;
+        std::string disk_folder = directory + "/" + timestamp;
 
-        logger->info("Channel 1... " + getSvissrFilename(timeReadable, 1) + ".png");
-        image5.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, 1) + ".png").c_str());
+        logger->info("Channel 1... " + getSvissrFilename(timeReadable, "1") + ".png");
+        image5.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1") + ".png").c_str());
 
-        logger->info("Channel 2... " + getSvissrFilename(timeReadable, 2) + ".png");
-        image1.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, 2) + ".png").c_str());
+        logger->info("Channel 2... " + getSvissrFilename(timeReadable, "2") + ".png");
+        image1.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2") + ".png").c_str());
 
-        logger->info("Channel 3... " + getSvissrFilename(timeReadable, 3) + ".png");
-        image2.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, 3) + ".png").c_str());
+        logger->info("Channel 3... " + getSvissrFilename(timeReadable, "3") + ".png");
+        image2.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3") + ".png").c_str());
 
-        logger->info("Channel 4... " + getSvissrFilename(timeReadable, 4) + ".png");
-        image3.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, 4) + ".png").c_str());
+        logger->info("Channel 4... " + getSvissrFilename(timeReadable, "4") + ".png");
+        image3.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4") + ".png").c_str());
 
-        logger->info("Channel 5... " + getSvissrFilename(timeReadable, 5) + ".png");
-        image4.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, 5) + ".png").c_str());
+        logger->info("Channel 5... " + getSvissrFilename(timeReadable, "5") + ".png");
+        image4.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5") + ".png").c_str());
+
+        // We are done with all channels but 1 and 4. Clear others to free up memory!
+        image1.clear();
+        image2.clear();
+        image3.clear();
+
+        // If we can, generate false color
+        if (resources::resourceExists("fy2/svissr/lut.png"))
+        {
+            logger->trace("Scale Ch1 to 8-bits...");
+            cimg_library::CImg<unsigned char> channel1(image5.width(), image5.height(), 1, 1);
+            for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                channel1[i] = image5[i] / 255;
+            image5.clear(); // We're done with Ch1. Free up memory
+
+            logger->trace("Scale Ch4 to 8-bits...");
+            cimg_library::CImg<unsigned char> channel5(image4.width(), image4.height(), 1, 1);
+            for (int i = 0; i < channel5.width() * channel5.height(); i++)
+                channel5[i] = image4[i] / 255;
+            image4.clear(); // We're done with Ch4. Free up memory
+
+            logger->trace("Resize images...");
+            channel5.resize(channel1.width(), channel1.height());
+
+            logger->trace("Loading LUT...");
+            cimg_library::CImg<unsigned char> lutImage;
+            lutImage.load_png(resources::getResourcePath("fy2/svissr/lut.png").c_str());
+            lutImage.resize(256, 256);
+
+            cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
+
+            logger->trace("Applying LUT...");
+            for (int i = 0; i < channel1.width() * channel1.height(); i++)
+            {
+                uint8_t x = 255 - channel1[i];
+                uint8_t y = channel5[i];
+
+                for (int c = 0; c < 3; c++)
+                    compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
+            }
+
+            logger->info("False color... " + getSvissrFilename(timeReadable, "FC") + ".png");
+            compoImage.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC") + ".png").c_str());
+        }
+        else
+        {
+            logger->warn("fy2/svissr/lut.png LUT is missing! False Color will not be generated");
+        }
 
         writingImage = false;
     }
@@ -130,6 +180,11 @@ namespace fengyun_svissr
                 // Parse counter
                 int counter = frame[67] << 8 | frame[68];
 
+                // Parse SCID
+                int scid = frame[89];
+
+                scid_stats.push_back(scid);
+
                 // Safeguard
                 if (counter > 2500)
                     continue;
@@ -170,6 +225,10 @@ namespace fengyun_svissr
                             image3 = vissrImageReader.getImageIR3();
                             image4 = vissrImageReader.getImageIR4();
                             image5 = vissrImageReader.getImageVIS();
+
+                            int scid = most_common(scid_stats.begin(), scid_stats.end());
+                            logger->info("Found SCID " + std::to_string(scid));
+                            scid_stats.clear();
 
                             // Write those
                             imageSavingThreadPool->push([&](int)

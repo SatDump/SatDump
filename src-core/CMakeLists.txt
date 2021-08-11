@@ -111,7 +111,7 @@ else()
     else()  
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-        target_link_libraries(satdump_core PUBLIC stdc++fs)
+        target_link_libraries(satdump_core PUBLIC stdc++fs atomic)
     endif()
 
     # NNG

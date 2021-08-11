@@ -71,8 +71,11 @@ namespace image
             return value + (v * (1.0 - value));
     }
 
-    void hue_saturation(cimg_library::CImg<unsigned char> &image, HueSaturation config)
+    template <typename T>
+    void hue_saturation(cimg_library::CImg<T> &image, HueSaturation config)
     {
+        float scale = std::numeric_limits<T>::max() - 1;
+
         double rgb_r, rgb_g, rgb_b;
         double hsl_h, hsl_s, hsl_l;
 
@@ -80,9 +83,9 @@ namespace image
 
         for (int pixel = 0; pixel < image.width() * image.height(); pixel++)
         {
-            rgb_r = image[image.width() * image.height() * 0 + pixel] / 255.0;
-            rgb_g = image[image.width() * image.height() * 1 + pixel] / 255.0;
-            rgb_b = image[image.width() * image.height() * 2 + pixel] / 255.0;
+            rgb_r = image[image.width() * image.height() * 0 + pixel] / scale;
+            rgb_g = image[image.width() * image.height() * 1 + pixel] / scale;
+            rgb_b = image[image.width() * image.height() * 2 + pixel] / scale;
 
             rgb_to_hsl(rgb_r, rgb_g, rgb_b, hsl_h, hsl_s, hsl_l);
             {
@@ -152,9 +155,9 @@ namespace image
             }
             hsl_to_rgb(hsl_h, hsl_s, hsl_l, rgb_r, rgb_g, rgb_b);
 
-            image[image.width() * image.height() * 0 + pixel] = rgb_r * 255.0f;
-            image[image.width() * image.height() * 1 + pixel] = rgb_g * 255.0f;
-            image[image.width() * image.height() * 2 + pixel] = rgb_b * 255.0f;
+            image[image.width() * image.height() * 0 + pixel] = rgb_r * scale;
+            image[image.width() * image.height() * 1 + pixel] = rgb_g * scale;
+            image[image.width() * image.height() * 2 + pixel] = rgb_b * scale;
         }
     }
 
@@ -249,4 +252,7 @@ namespace image
             b = hsl_value(m1, m2, h * 6.0 - 2.0);
         }
     }
+
+    template void hue_saturation<unsigned char>(cimg_library::CImg<unsigned char> &, HueSaturation);
+    template void hue_saturation<unsigned short>(cimg_library::CImg<unsigned short> &, HueSaturation);
 }

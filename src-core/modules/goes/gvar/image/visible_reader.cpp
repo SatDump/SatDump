@@ -10,15 +10,15 @@ namespace goes
         VisibleReader::VisibleReader()
         {
             imageBuffer = new unsigned short[HEIGHT * WIDTH];
-            imageLineBuffer = new unsigned short[WIDTH];
+            imageLineBuffer = new unsigned short[WIDTH + 10];
             goodLines = new bool[HEIGHT];
         }
 
         VisibleReader::~VisibleReader()
         {
-            // delete[] imageBuffer;
-            // delete[] imageLineBuffer;
-            // delete[] goodLines;
+            delete[] imageBuffer;
+            delete[] imageLineBuffer;
+            delete[] goodLines;
         }
 
         void VisibleReader::startNewFullDisk()

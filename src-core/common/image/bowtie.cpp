@@ -5,7 +5,8 @@ namespace image
 {
     namespace bowtie
     {
-        cimg_library::CImg<unsigned short> correctGenericBowTie(cimg_library::CImg<unsigned short> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta)
+        template <typename T>
+        cimg_library::CImg<T> correctGenericBowTie(cimg_library::CImg<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta)
         {
             // Compute everything we'll need
             const long height = inputImage.height();
@@ -14,13 +15,13 @@ namespace image
             const long halfWidth = width / 2;
 
             // Create our output image
-            cimg_library::CImg<unsigned short> outputImage = cimg_library::CImg<unsigned short>(width, height, 1, channelCount);
+            cimg_library::CImg<T> outputImage = cimg_library::CImg<T>(width, height, 1, channelCount);
 
             // Reserve our buffers
-            unsigned short *scan_buffer_input = new unsigned short[height * width];
-            unsigned short *scan_buffer_output = new unsigned short[height * width];
-            unsigned short *col_buffer_input = new unsigned short[scanHeight];
-            unsigned short *col_buffer_output = new unsigned short[scanHeight];
+            T *scan_buffer_input = new T[height * width];
+            T *scan_buffer_output = new T[height * width];
+            T *col_buffer_input = new T[scanHeight];
+            T *col_buffer_output = new T[scanHeight];
 
             for (int channel = 0; channel < channelCount; channel++)
             {
@@ -82,5 +83,8 @@ namespace image
 
             return outputImage;
         }
+
+        template cimg_library::CImg<unsigned char> correctGenericBowTie(cimg_library::CImg<unsigned char> &, const int, const long, const float, const float);
+        template cimg_library::CImg<unsigned short> correctGenericBowTie(cimg_library::CImg<unsigned short> &, const int, const long, const float, const float);
     }
 }

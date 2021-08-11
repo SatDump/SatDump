@@ -4,7 +4,7 @@ include(CheckFunctionExists)
 option(ENABLE_SDR_AIRSPY                "Enable Airspy Support"                                  ON)
 option(ENABLE_SDR_RTLSDR                "Enable RTL-SDR Support"                                 ON)
 option(ENABLE_SDR_HACKRF                "Enable HackRF Support."                                 ON)
-option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              OFF) # Currently broken so disabled by default
+option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              ON)
 option(ENABLE_SDR_RTLTCP                "Enable RTL-TCP Support."                                ON)
 
 file(GLOB_RECURSE LIBSDR_CPPS  sdr/*.cpp)

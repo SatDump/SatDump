@@ -12,6 +12,18 @@ namespace goes
 {
     namespace gvar
     {
+        struct GVARImages
+        {
+            // Images used as a buffer when writing it out
+            cimg_library::CImg<unsigned short> image1;
+            cimg_library::CImg<unsigned short> image2;
+            cimg_library::CImg<unsigned short> image3;
+            cimg_library::CImg<unsigned short> image4;
+            cimg_library::CImg<unsigned short> image5;
+            int sat_number;
+            int vis_width;
+        };
+
         class GVARImageDecoderModule : public ProcessingModule
         {
         protected:
@@ -31,15 +43,16 @@ namespace goes
             InfraredReader2 infraredImageReader2;
             VisibleReader visibleImageReader;
 
-            // Images used as a buffer when writing it out
-            cimg_library::CImg<unsigned short> image1;
-            cimg_library::CImg<unsigned short> image2;
-            cimg_library::CImg<unsigned short> image3;
-            cimg_library::CImg<unsigned short> image4;
-            cimg_library::CImg<unsigned short> image5;
+            std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
 
-            std::string getGvarFilename(int sat_number, std::tm *timeReadable, int channel);
-            void writeImages(std::string directory);
+            // Async image writing
+            std::string directory;
+            bool writeImagesAync = false;
+            std::thread imageSavingThread;
+            std::mutex imageVectorMutex;
+            std::vector<GVARImages> imagesVector;
+            void writeImages(GVARImages &images, std::string directory);
+            void writeImagesThread();
 
             int nonEndCount, endCount;
 
