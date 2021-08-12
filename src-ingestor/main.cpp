@@ -171,6 +171,9 @@ int main(int argc, char *argv[])
             {
                 continue;
             }
+
+            if (sample_buffer_vec.size() < buf_size) // Still too small
+                continue;
         }
 
         std::memcpy(pipelineStream->writeBuf, sample_buffer_vec.data(), buf_size * sizeof(std::complex<float>));

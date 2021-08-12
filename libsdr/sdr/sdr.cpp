@@ -57,6 +57,7 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 #include "rtlsdr.h"
 #include "hackrf.h"
 #include "limesdr.h"
+#include "airspyhf.h"
 #include "spyserver.h"
 #include "rtltcp.h"
 
@@ -92,6 +93,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 #if 0
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> limesdr_results = SDRLimeSDR::getDevices();
     results.insert(results.end(), limesdr_results.begin(), limesdr_results.end());
+#endif
+
+#ifndef DISABLE_SDR_AIRSPYHF
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspyhf_results = SDRAirspyHF::getDevices();
+    results.insert(results.end(), airspyhf_results.begin(), airspyhf_results.end());
 #endif
 
 #ifndef DISABLE_SDR_SPYSERVER
@@ -144,6 +150,10 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
     if (type == LIMESDR)
         return "limesdr";
 #endif
+#ifndef DISABLE_SDR_AIRSPYHF
+    if (type == AIRSPYHF)
+        return "airspyhf";
+#endif
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return "spyserver";
@@ -176,6 +186,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #if 0
     if (type == LIMESDR)
         return std::make_shared<SDRLimeSDR>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_AIRSPYHF
+    if (type == AIRSPYHF)
+        return std::make_shared<SDRAirspyHF>(parameters, id);
 #endif
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)

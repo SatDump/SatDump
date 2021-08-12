@@ -69,6 +69,9 @@ void processFFT(int)
             {
                 continue;
             }
+
+            if (sample_buffer_vec.size() < FFT_BUFFER_SIZE) // Still too small
+                continue;
         }
 
         std::memcpy(sample_buffer, sample_buffer_vec.data(), FFT_BUFFER_SIZE * sizeof(std::complex<float>));
@@ -76,7 +79,7 @@ void processFFT(int)
         moduleStream->swap(FFT_BUFFER_SIZE);
         sample_buffer_vec.erase(sample_buffer_vec.begin(), sample_buffer_vec.begin() + FFT_BUFFER_SIZE);
 
-        if (y % runs_to_wait == 0)
+        if (runs_to_wait == 0 ? true : (y % runs_to_wait == 0))
         {
             fftwf_execute(p);
 

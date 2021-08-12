@@ -21,7 +21,7 @@ jobs:
       run: sudo apt update 
     
     - name: Install dependencies
-      run: sudo apt install libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libhackrf-dev librtlsdr-dev libnng-dev
+      run: sudo apt install libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libnng-dev
 
     - name: Build libcorrect
       run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
