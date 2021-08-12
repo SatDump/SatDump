@@ -14,7 +14,10 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install dependencies
-      run: brew install cmake volk jpeg libpng glew glfw airspy airspyhf rtl-sdr hackrf nng
+      run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng
+
+    - name: Build airspyhf
+      run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
 
     - name: Build libcorrect
       run: git clone https://github.com/quiet/libcorrect.git && cd libcorrect && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
