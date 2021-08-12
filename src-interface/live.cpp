@@ -56,6 +56,11 @@ extern bool airspy_device_android_ready;
 extern int airspy_device_android_fd;
 extern std::string airspy_device_android_path;
 #include "sdr/airspy.h"
+
+extern bool airspyhf_device_android_ready;
+extern int airspyhf_device_android_fd;
+extern std::string airspyhf_device_android_path;
+#include "sdr/airspyhf.h"
 #endif
 
 void renderLiveProcessing()
@@ -258,6 +263,8 @@ void renderLiveProcessing()
                         radio = std::make_shared<SDRRtlSdr>(device_parameters, rtlsdr_device_android_fd, rtlsdr_device_android_path);
                     if (devID == "airspy")
                         radio = std::make_shared<SDRAirspy>(device_parameters, airspy_device_android_fd, airspy_device_android_path);
+                    if (devID == "airspyhf")
+                        radio = std::make_shared<SDRAirspyHF>(device_parameters, airspyhf_device_android_fd, airspyhf_device_android_path);
 #else
                     radio = getDeviceByID(devices, device_parameters, device_id);
 #endif

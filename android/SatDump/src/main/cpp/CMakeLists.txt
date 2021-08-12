@@ -94,6 +94,9 @@ if(BUILD_LIVE)
     add_subdirectory(deps/libairspy)
     include_directories(deps/libairspy)
 
+    add_subdirectory(deps/libairspyhf)
+    include_directories(deps/libairspyhf)
+
     add_subdirectory(../../../../../libsdr ${CMAKE_BINARY_DIR}/libsdr)
 endif()
 

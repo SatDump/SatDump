@@ -107,7 +107,7 @@ Here are some generic Debian build instructions.
 # Linux: Install dependencies
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev # Core dependencies
 sudo apt install libnng-dev                                                                             # If this packages is not found, follow build instructions below for NNG
-sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev                                              # All libraries required for live processing (optional)
+sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                              # All libraries required for live processing (optional)
 sudo apt install libglew-dev libglfw3-dev                                                               # Only if you want to build the GUI Version (optional)
 
 # If libnng-dev is not available, you will have to build it from source

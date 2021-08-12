@@ -79,6 +79,8 @@ public class SdrDevice {
                                         doOpenRTL(connection.getFileDescriptor(), usbDevice.getDeviceName());
                                     else if(usbDevice.getVendorId() == 7504)
                                         doOpenAirspy(connection.getFileDescriptor(), usbDevice.getDeviceName());
+                                    else if(usbDevice.getVendorId() == 1003)
+                                        doOpenAirspyHF(connection.getFileDescriptor(), usbDevice.getDeviceName());
 								}
 							} else {
                                 Log.e(TAG,"Extra permission was not granted");
@@ -110,6 +112,7 @@ public class SdrDevice {
             HashSet<Pair<Integer, Integer>> allowed = new HashSet<Pair<Integer, Integer>>();;// = {{3034, 10296}};
             allowed.add(new Pair<Integer, Integer>(3034, 10296)); // RTL-SDR
             allowed.add(new Pair<Integer, Integer>(7504, 24737)); // Airspy
+            allowed.add(new Pair<Integer, Integer>(1003, 32780)); // AirspyHF
             HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
 
             for (final Entry<String, UsbDevice> desc : deviceList.entrySet()) {
@@ -123,4 +126,5 @@ public class SdrDevice {
 
     private static native boolean doOpenRTL(int fd, String path);
     private static native boolean doOpenAirspy(int fd, String path);
+    private static native boolean doOpenAirspyHF(int fd, String path);
 }

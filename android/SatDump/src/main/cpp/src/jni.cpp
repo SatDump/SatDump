@@ -54,3 +54,17 @@ Java_com_altillimity_satdump_SdrDevice_doOpenAirspy(JNIEnv *env, jclass, jint fd
 
     return false;
 }
+
+bool airspyhf_device_android_ready = false;
+int airspyhf_device_android_fd = 0;
+std::string airspyhf_device_android_path = "";
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_altillimity_satdump_SdrDevice_doOpenAirspyHF(JNIEnv *env, jclass, jint fd, jstring path)
+{
+    airspyhf_device_android_fd = fd;
+    airspyhf_device_android_path = std::string(env->GetStringUTFChars(path, 0));
+    airspyhf_device_android_ready = true;
+
+    return false;
+}
