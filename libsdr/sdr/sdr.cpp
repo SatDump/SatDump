@@ -132,38 +132,43 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
 std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
 {
     sdr_device_type type = std::get<1>(devList[num]);
-    //uint64_t id = std::get<2>(devList[num]);
 
-#ifndef DISABLE_SDR_AIRSPY
     if (type == AIRSPY)
         return "airspy";
-#endif
-#ifndef DISABLE_SDR_RTLSDR
     if (type == RTLSDR)
         return "rtlsdr";
-#endif
-#ifndef DISABLE_SDR_HACKRF
     if (type == HACKRF)
         return "hackrf";
-#endif
-#if 0
     if (type == LIMESDR)
         return "limesdr";
-#endif
-#ifndef DISABLE_SDR_AIRSPYHF
     if (type == AIRSPYHF)
         return "airspyhf";
-#endif
-#ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
         return "spyserver";
-#endif
-#ifndef DISABLE_SDR_RTLTCP
     if (type == RTLTCP)
         return "rtltcp";
-#endif
 
-    return nullptr;
+    return "none";
+}
+
+sdr_device_type getDeviceIDbyIDString(std::string idString)
+{
+    if (idString == "airspy")
+        return AIRSPY;
+    else if (idString == "rtlsdr")
+        return RTLSDR;
+    else if (idString == "hackrf")
+        return HACKRF;
+    else if (idString == "limesdr")
+        return LIMESDR;
+    else if (idString == "airspyhf")
+        return AIRSPYHF;
+    else if (idString == "spyserver")
+        return SPYSERVER;
+    else if (idString == "rtltcp")
+        return RTLTCP;
+    else
+        return NONE;
 }
 
 std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, std::map<std::string, std::string> parameters, int num)

@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         istream.close();
     }
 
-    //sdr_device_type sdr_type = AIRSPY; // To be implemented
+    sdr_device_type sdr_type = ingestor_cfg.count("sdr_type") > 0 ? getDeviceIDbyIDString(ingestor_cfg["sdr_type"].get<std::string>()) : NONE;
     float samplerate = std::stoi(ingestor_cfg["samplerate"].get<std::string>());
     float frequency = std::stof(ingestor_cfg["frequency"].get<std::string>());
     std::map<std::string, std::string> device_parameters = ingestor_cfg["sdr_settings"].get<std::map<std::string, std::string>>();
@@ -95,18 +95,46 @@ int main(int argc, char *argv[])
     std::string output_folder = ingestor_cfg["output_folder"].get<std::string>();
     std::string http_server_url = "http://" + ingestor_cfg["http_server"].get<std::string>();
 
+    if (sdr_type == NONE)
+    {
+        logger->warn("SDR Type is invalid / unspecified! Using first device found.");
+    }
+
     // Prepare other parameters
     std::map<std::string, std::string> parameters;
     parameters.emplace("samplerate", std::to_string(samplerate));
     parameters.emplace("baseband_format", "f32");
 
     // Init the device
-    std::string devID = getDeviceIDStringByID(devices, 0);
+    std::string devID = sdr_type == NONE ? getDeviceIDStringByID(devices, 0) : ingestor_cfg["sdr_type"].get<std::string>();
     logger->debug("Device parameters " + devID + ":");
     for (const std::pair<std::string, std::string> param : device_parameters)
         logger->debug("   - " + param.first + " : " + param.second);
 
-    std::shared_ptr<SDRDevice> radio = getDeviceByID(devices, device_parameters, 0);
+    std::shared_ptr<SDRDevice> radio;
+    if (sdr_type == NONE)
+    {
+        radio = getDeviceByID(devices, device_parameters, 0);
+    }
+    else
+    {
+        bool found = false;
+        for (int i = 0; i < devices.size(); i++)
+        {
+            std::tuple<std::string, sdr_device_type, uint64_t> &devListing = devices[i];
+            if (std::get<1>(devListing) == sdr_type)
+            {
+                radio = getDeviceByID(devices, device_parameters, i);
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            logger->error("Could not requested find SDR Device!");
+            exit(1);
+        }
+    }
     radio->setFrequency(frequency * 1e6);
     radio->setSamplerate(samplerate);
     radio->start();
