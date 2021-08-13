@@ -295,7 +295,6 @@ void renderLiveProcessing()
                     "While it should be perfectly functional and work as expected, bugs and crashes could still happen... \n"
                     "Please report if any of those occur! Anyway, enjoy! :-)");
         ImGui::Text(" - Aang23");
-        ImGui::Text("PS : About saving settings between SatDump restarts, this is planned and will be implemented \nin the future. (Soon enough, it's in current priorities)");
         ImGui::TextColored(ImColor::HSV(0 / 360.0, 1, 1, 1.0), "There current is NO automatic samplerate selection \n"
                                                                "system that takes into account what the selected device can actually do. \n"
                                                                "Please ensure the selected samplerate is correct before pressing start.");

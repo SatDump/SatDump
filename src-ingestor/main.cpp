@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     else
     {
         bool found = false;
-        for (int i = 0; i < devices.size(); i++)
+        for (int i = 0; i < (int)devices.size(); i++)
         {
             std::tuple<std::string, sdr_device_type, uint64_t> &devListing = devices[i];
             if (std::get<1>(devListing) == sdr_type)
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            if (sample_buffer_vec.size() < buf_size) // Still too small
+            if ((int)sample_buffer_vec.size() < buf_size) // Still too small
                 continue;
         }
 
