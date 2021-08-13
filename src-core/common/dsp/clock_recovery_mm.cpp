@@ -11,7 +11,10 @@ namespace dsp
     {
         int nsamples = input_stream->read();
         if (nsamples <= 0)
+        {
+            input_stream->flush();
             return;
+        }
         int d_out = 0;
         try
         {
@@ -33,7 +36,10 @@ namespace dsp
     {
         int nsamples = input_stream->read();
         if (nsamples <= 0)
+        {
+            input_stream->flush();
             return;
+        }
         int d_out = 0;
         try
         {

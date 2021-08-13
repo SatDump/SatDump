@@ -19,7 +19,10 @@ namespace dsp
     {
         int nsamples = input_stream->read();
         if (nsamples <= 0)
+        {
+            input_stream->flush();
             return;
+        }
         volk_32fc_s32fc_x2_rotator_32fc(output_stream->writeBuf, input_stream->readBuf, phase_delta, &phase, nsamples);
         input_stream->flush();
         output_stream->swap(nsamples);

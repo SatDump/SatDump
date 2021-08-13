@@ -10,7 +10,10 @@ namespace dsp
     {
         int nsamples = input_stream->read();
         if (nsamples <= 0)
+        {
+            input_stream->flush();
             return;
+        }
         int d_out = d_res.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
         input_stream->flush();
         output_stream->swap(d_out);
