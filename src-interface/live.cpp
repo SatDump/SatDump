@@ -153,6 +153,11 @@ void renderLiveProcessing()
                 //frequency = it->frequencies[frequency_id];
             }
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Refresh"))
+        {
+            initLive();
+        }
 
         device_parameters = drawParamsUIForID(devices, device_id);
 
