@@ -27,9 +27,11 @@ std::string getDirPath()
     return std::string(str2);
 }
 
-bool rtlsdr_device_android_ready = false;
-int rtlsdr_device_android_fd = 0;
-std::string rtlsdr_device_android_path = "";
+extern bool rtlsdr_device_android_ready;
+extern int rtlsdr_device_android_fd;
+extern std::string rtlsdr_device_android_path;
+
+void initLive();
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_altillimity_satdump_SdrDevice_doOpenRTL(JNIEnv *env, jclass, jint fd, jstring path)
@@ -38,12 +40,14 @@ Java_com_altillimity_satdump_SdrDevice_doOpenRTL(JNIEnv *env, jclass, jint fd, j
     rtlsdr_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     rtlsdr_device_android_ready = true;
 
+    initLive();
+
     return false;
 }
 
-bool airspy_device_android_ready = false;
-int airspy_device_android_fd = 0;
-std::string airspy_device_android_path = "";
+extern bool airspy_device_android_ready;
+extern int airspy_device_android_fd;
+extern std::string airspy_device_android_path;
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_altillimity_satdump_SdrDevice_doOpenAirspy(JNIEnv *env, jclass, jint fd, jstring path)
@@ -52,12 +56,14 @@ Java_com_altillimity_satdump_SdrDevice_doOpenAirspy(JNIEnv *env, jclass, jint fd
     airspy_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     airspy_device_android_ready = true;
 
+    initLive();
+
     return false;
 }
 
-bool airspyhf_device_android_ready = false;
-int airspyhf_device_android_fd = 0;
-std::string airspyhf_device_android_path = "";
+extern bool airspyhf_device_android_ready;
+extern int airspyhf_device_android_fd;
+extern std::string airspyhf_device_android_path;
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_altillimity_satdump_SdrDevice_doOpenAirspyHF(JNIEnv *env, jclass, jint fd, jstring path)
@@ -65,6 +71,8 @@ Java_com_altillimity_satdump_SdrDevice_doOpenAirspyHF(JNIEnv *env, jclass, jint 
     airspyhf_device_android_fd = fd;
     airspyhf_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     airspyhf_device_android_ready = true;
+
+    initLive();
 
     return false;
 }

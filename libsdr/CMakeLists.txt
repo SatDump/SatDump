@@ -22,7 +22,7 @@ if(ANDROID)
         set(ENABLE_SDR_RTLSDR ON)
         set(ENABLE_SDR_HACKRF OFF)
         set(ENABLE_SDR_AIRSPYHF ON)
-        set(ENABLE_SDR_SPYSERVER OFF)
+        set(ENABLE_SDR_SPYSERVER ON)
         set(ENABLE_SDR_RTLTCP OFF)
 endif()
 

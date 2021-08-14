@@ -71,18 +71,39 @@ void initSDRs()
 #endif
 }
 
+// Android support
+#ifdef __ANDROID__
+bool rtlsdr_device_android_ready;
+int rtlsdr_device_android_fd;
+std::string rtlsdr_device_android_path;
+
+bool airspy_device_android_ready;
+int airspy_device_android_fd;
+std::string airspy_device_android_path;
+
+bool airspyhf_device_android_ready;
+int airspyhf_device_android_fd;
+std::string airspyhf_device_android_path;
+#endif
+
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 {
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
 #ifndef DISABLE_SDR_AIRSPY
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspy_results = SDRAirspy::getDevices();
-    results.insert(results.end(), airspy_results.begin(), airspy_results.end());
+#ifdef __ANDROID__
+    if (airspy_device_android_ready)
+#endif
+        results.insert(results.end(), airspy_results.begin(), airspy_results.end());
 #endif
 
 #ifndef DISABLE_SDR_RTLSDR
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> rtlsdr_results = SDRRtlSdr::getDevices();
-    results.insert(results.end(), rtlsdr_results.begin(), rtlsdr_results.end());
+#ifdef __ANDROID__
+    if (rtlsdr_device_android_ready)
+#endif
+        results.insert(results.end(), rtlsdr_results.begin(), rtlsdr_results.end());
 #endif
 
 #ifndef DISABLE_SDR_HACKRF
@@ -97,7 +118,10 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 
 #ifndef DISABLE_SDR_AIRSPYHF
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> airspyhf_results = SDRAirspyHF::getDevices();
-    results.insert(results.end(), airspyhf_results.begin(), airspyhf_results.end());
+#ifdef __ANDROID__
+    if (airspyhf_device_android_ready)
+#endif
+        results.insert(results.end(), airspyhf_results.begin(), airspyhf_results.end());
 #endif
 
 #ifndef DISABLE_SDR_SPYSERVER
@@ -178,11 +202,19 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 
 #ifndef DISABLE_SDR_AIRSPY
     if (type == AIRSPY)
+#ifdef __ANDROID__
+        return std::make_shared<SDRAirspy>(parameters, airspy_device_android_fd, airspy_device_android_path);
+#else
         return std::make_shared<SDRAirspy>(parameters, id);
+#endif
 #endif
 #ifndef DISABLE_SDR_RTLSDR
     if (type == RTLSDR)
+#ifdef __ANDROID__
+        return std::make_shared<SDRRtlSdr>(parameters, rtlsdr_device_android_fd, rtlsdr_device_android_path);
+#else
         return std::make_shared<SDRRtlSdr>(parameters, id);
+#endif
 #endif
 #ifndef DISABLE_SDR_HACKRF
     if (type == HACKRF)
@@ -194,7 +226,11 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #endif
 #ifndef DISABLE_SDR_AIRSPYHF
     if (type == AIRSPYHF)
+#ifdef __ANDROID__
+        return std::make_shared<SDRAirspyHF>(parameters, airspyhf_device_android_fd, airspyhf_device_android_path);
+#else
         return std::make_shared<SDRAirspyHF>(parameters, id);
+#endif
 #endif
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
