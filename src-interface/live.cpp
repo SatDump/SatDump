@@ -45,24 +45,6 @@ void initLive()
     devices = getAllDevices();
 }
 
-// This is VERY temporary... I hope
-#ifdef __ANDROID__
-extern bool rtlsdr_device_android_ready;
-extern int rtlsdr_device_android_fd;
-extern std::string rtlsdr_device_android_path;
-#include "sdr/rtlsdr.h"
-
-extern bool airspy_device_android_ready;
-extern int airspy_device_android_fd;
-extern std::string airspy_device_android_path;
-#include "sdr/airspy.h"
-
-extern bool airspyhf_device_android_ready;
-extern int airspyhf_device_android_fd;
-extern std::string airspyhf_device_android_path;
-#include "sdr/airspyhf.h"
-#endif
-
 void renderLiveProcessing()
 {
     ImGui::BeginGroup();
@@ -263,16 +245,8 @@ void renderLiveProcessing()
                     for (const std::pair<std::string, std::string> param : device_parameters)
                         logger->debug("   - " + param.first + " : " + param.second);
 
-#ifdef __ANDROID__
-                    if (devID == "rtlsdr")
-                        radio = std::make_shared<SDRRtlSdr>(device_parameters, rtlsdr_device_android_fd, rtlsdr_device_android_path);
-                    if (devID == "airspy")
-                        radio = std::make_shared<SDRAirspy>(device_parameters, airspy_device_android_fd, airspy_device_android_path);
-                    if (devID == "airspyhf")
-                        radio = std::make_shared<SDRAirspyHF>(device_parameters, airspyhf_device_android_fd, airspyhf_device_android_path);
-#else
                     radio = getDeviceByID(devices, device_parameters, device_id);
-#endif
+
                     radio->setFrequency(frequency * 1e6);
                     radio->setSamplerate(std::stoi(samplerate));
                     radio->start();
