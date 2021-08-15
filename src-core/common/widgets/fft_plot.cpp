@@ -4,12 +4,13 @@
 
 namespace widgets
 {
-    FFTPlot::FFTPlot(float *v, int size, float min, float max)
+    FFTPlot::FFTPlot(float *v, int size, float min, float max, float scale_res)
     {
         values = v;
         values_size = size;
         scale_min = min;
         scale_max = max;
+        scale_resolution = scale_res;
     }
 
     void FFTPlot::draw(ImVec2 size)
@@ -34,7 +35,6 @@ namespace widgets
         ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
         // Draw lines
-        float scale_resolution = 20;
         float vscale = ((scale_max - scale_min) / scale_resolution);
         float step = (frame_bb.Max.y - frame_bb.Min.y) / scale_resolution;
         float value = scale_min;

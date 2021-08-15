@@ -5,16 +5,14 @@
 #include <signal.h>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"
-#include "credits.h"
 #include "global.h"
 #include "init.h"
 #include "processing.h"
-#include "offline.h"
-#include "live.h"
-#include "live_run.h"
 #include <filesystem>
 #include "settings.h"
 #include "settingsui.h"
+#include "main_ui.h"
+#include "live/live.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -23,6 +21,8 @@
 #ifndef SATDUMP_VERSION
 #define SATDUMP_VERSION "0.0.0-dev"
 #endif
+
+extern bool recorder_running;
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -34,7 +34,7 @@ void bindImageTextureFunctions();
 int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
-    std::fill(error_message, &error_message[0], 0);
+    //std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
@@ -45,6 +45,13 @@ int main(int argc, char *argv[])
 #endif
 
     initLogger();
+
+    std::string downlink_pipeline = "";
+    std::string input_level = "";
+    std::string input_file = "";
+    std::string output_level = "products";
+    std::string output_file = "";
+    std::map<std::string, std::string> parameters;
 
     if (argc < 6)
     {
@@ -89,7 +96,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        processing = true;
+        satdumpUiStatus = OFFLINE_PROCESSING;
     }
 
     initSatdump();
@@ -117,9 +124,8 @@ int main(int argc, char *argv[])
 
     parseSettingsOrDefaults();
 
-#ifdef BUILD_LIVE
-    initLive();
-#endif
+    // Init UI
+    initMainUI();
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -180,9 +186,9 @@ int main(int argc, char *argv[])
             style::setDarkStyle((std::string)RESOURCES_PATH);
     }
 
-    if (processing)
+    if (satdumpUiStatus == OFFLINE_PROCESSING)
         processThreadPool.push([&](int)
-                               { process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
+                               { processing::process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -198,62 +204,7 @@ int main(int argc, char *argv[])
         glfwGetWindowSize(window, &wwidth, &wheight);
 
         // User rendering
-        {
-            if (processing)
-            {
-                uiCallListMutex->lock();
-                for (std::shared_ptr<ProcessingModule> module : *uiCallList)
-                {
-                    ImGui::SetNextWindowPos({0, 0});
-                    ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                    module->drawUI(false);
-                }
-                uiCallListMutex->unlock();
-            }
-#ifdef BUILD_LIVE
-            else if (live_processing)
-            {
-                renderLive();
-            }
-#endif
-            else
-            {
-                ImGui::SetNextWindowPos({0, 0});
-                ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                ImGui::Begin("Main Window", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoTitleBar);
-
-                if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
-                {
-                    if (ImGui::BeginTabItem("Offline processing"))
-                    {
-                        renderOfflineProcessing();
-                        ImGui::EndTabItem();
-                    }
-                    if (ImGui::BeginTabItem("Live processing"))
-                    {
-#ifdef BUILD_LIVE
-                        renderLiveProcessing();
-#else
-                        ImGui::Text("Live support was not enabled in this build. Please rebuild with BUILD_LIVE=ON if you wish to use it.");
-#endif
-                        ImGui::EndTabItem();
-                    }
-                    if (ImGui::BeginTabItem("Settings"))
-                    {
-                        renderSettings(wwidth, wheight);
-                        ImGui::EndTabItem();
-                    }
-                    if (ImGui::BeginTabItem("Credits"))
-                    {
-                        renderCredits(wwidth, wheight);
-                        ImGui::EndTabItem();
-                    }
-                }
-                ImGui::EndTabBar();
-
-                ImGui::End();
-            }
-        }
+        renderMainUI(wwidth, wheight);
 
         // Rendering
         ImGui::Render();

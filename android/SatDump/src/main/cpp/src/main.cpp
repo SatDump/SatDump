@@ -11,17 +11,14 @@
 #include <dirent.h>
 #include "style.h"
 #include "imgui/imgui_flags.h"
-#include "credits.h"
 #include "global.h"
 #include "init.h"
 #include "processing.h"
-#include "offline.h"
 #include "logger.h"
 #include <filesystem>
 #include "settings.h"
 #include "settingsui.h"
-#include "live.h"
-#include "live_run.h"
+#include "main_ui.h"
 
 #define NOWINDOW_FLAGS (long int)ImGuiWindowFlags_NoMove | (long int)ImGuiWindowFlags_NoCollapse | (long int)ImGuiWindowFlags_NoBringToFrontOnFocus /*| ImGuiWindowFlags_NoTitleBar*/ | (long int)ImGuiWindowFlags_NoResize | (long int)ImGuiWindowFlags_NoBackground
 
@@ -129,7 +126,6 @@ void bindImageTextureFunctions();
 int main(int argc, char **argv)
 {
     bindImageTextureFunctions();
-    std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
@@ -204,9 +200,8 @@ int main(int argc, char **argv)
         else
             style::setDarkStyle(".", dpi_scaling * manual_dpi_scaling);
 
-#ifdef BUILD_LIVE
-        initLive();
-#endif
+        // Init UI
+        initMainUI();
 
         bool render = true;
 
@@ -256,62 +251,8 @@ int main(int argc, char **argv)
                 int wwidth, wheight;
                 SDL_GetWindowSize(window, &wwidth, &wheight);
 
-                {
-                    if (processing)
-                    {
-                        uiCallListMutex->lock();
-                        for (std::shared_ptr<ProcessingModule> module : *uiCallList)
-                        {
-                            ImGui::SetNextWindowPos({0, 0});
-                            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                            module->drawUI(false);
-                        }
-                        uiCallListMutex->unlock();
-                    }
-#ifdef BUILD_LIVE
-                    else if (live_processing)
-                    {
-                        renderLive();
-                    }
-#endif
-                    else
-                    {
-                        ImGui::SetNextWindowPos({0, 0});
-                        ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                        ImGui::Begin("Main Window", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoTitleBar);
-
-                        if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
-                        {
-                            if (ImGui::BeginTabItem("Offline processing"))
-                            {
-                                renderOfflineProcessing();
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Live processing"))
-                            {
-#ifdef BUILD_LIVE
-                                renderLiveProcessing();
-#else
-                                ImGui::Text("Live processing is not yet supported on Android!");
-#endif
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Settings"))
-                            {
-                                renderSettings(wwidth, wheight);
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Credits"))
-                            {
-                                renderCredits(wwidth, wheight);
-                                ImGui::EndTabItem();
-                            }
-                        }
-                        ImGui::EndTabBar();
-
-                        ImGui::End();
-                    }
-                }
+                // User rendering
+                renderMainUI(wwidth, wheight);
 
                 ImGui::Render();
 

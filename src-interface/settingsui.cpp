@@ -17,6 +17,7 @@ bool use_light_theme;
 float manual_dpi_scaling;
 bool live_use_generated_output_folder;
 std::string default_live_output_folder;
+std::string default_recorder_output_folder;
 
 void parseSettingsOrDefaults()
 {
@@ -44,6 +45,11 @@ void parseSettingsOrDefaults()
         default_live_output_folder = settings["default_live_output_folder"].get<std::string>();
     else
         default_live_output_folder = ".";
+
+    if (settings.contains("default_recorder_output_folder"))
+        default_recorder_output_folder = settings["default_recorder_output_folder"].get<std::string>();
+    else
+        default_recorder_output_folder = ".";
 }
 
 void renderSettings(int /*wwidth*/, int /*wheight*/)
@@ -58,7 +64,7 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
 
     ImGui::Checkbox("Auto-Generate live output folders", &live_use_generated_output_folder);
 
-    if (ImGui::Button("Select Directory"))
+    if (ImGui::Button("Select Live Directory"))
     {
         logger->debug("Opening file dialog");
 #ifdef __ANDROID__
@@ -77,6 +83,26 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
     }
     ImGui::SameLine();
     ImGui::Text("Default live output directory : %s/", default_live_output_folder.c_str());
+
+    if (ImGui::Button("Select Recorder Directory"))
+    {
+        logger->debug("Opening file dialog");
+#ifdef __ANDROID__
+        default_recorder_output_folder = getDirPath();
+#else
+        auto result = pfd::select_folder("Open output directory", ".");
+        while (result.ready(1000))
+        {
+        }
+
+        if (result.result().size() > 0)
+            default_recorder_output_folder = result.result();
+#endif
+
+        logger->debug("Dir " + default_recorder_output_folder);
+    }
+    ImGui::SameLine();
+    ImGui::Text("Default recorder output directory : %s/", default_recorder_output_folder.c_str());
 
     ImGui::BeginGroup();
     if (ImGui::Button("Save"))

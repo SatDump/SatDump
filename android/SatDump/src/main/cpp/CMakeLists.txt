@@ -125,5 +125,3 @@ target_link_libraries(satdump_android PUBLIC app-glue ${log-lib})
 #add_library(libusb STATIC IMPORTED)
 #set_target_properties(libusb PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/libusb/${ANDROID_ABI}/libusb1.0.a)
 #include_directories(deps/libusb/jni/)
-
-#target_link_libraries(satdump_android PUBLIC rtlsdr libusb)
