@@ -8,7 +8,7 @@
 int SDRAirspyHF::_rx_callback(airspyhf_transfer_t *t)
 {
     std::shared_ptr<dsp::stream<std::complex<float>>> stream = *((std::shared_ptr<dsp::stream<std::complex<float>>> *)t->ctx);
-    std::memcpy(stream->writeBuf, t->samples, t->sample_count * sizeof(std::complex<float>));
+    std::memcpy(stream->writeBuf, (std::complex<float>*)t->samples, t->sample_count * sizeof(std::complex<float>));
     stream->swap(t->sample_count);
     return 0;
 };

@@ -61,7 +61,7 @@ void SDRSpyServer::start()
     stageToUse = client->devInfo.MinimumIQDecimation;
     {
         std::vector<float> samplerates;
-        for (int i = client->devInfo.MinimumIQDecimation; i <= client->devInfo.DecimationStageCount; i++)
+        for (int i = client->devInfo.MinimumIQDecimation; i <= (int)client->devInfo.DecimationStageCount; i++)
         {
             float samplerate = client->devInfo.MaximumSampleRate / (float)(1 << i);
             samplerates.push_back(samplerate);

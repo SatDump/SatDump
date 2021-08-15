@@ -50,7 +50,7 @@ namespace spyserver
         return client->isOpen();
     }
 
-    int SpyServerClientClass::computeDigitalGain(int serverBits, int deviceGain, int decimationId)
+    int SpyServerClientClass::computeDigitalGain(int /*serverBits*/, int deviceGain, int decimationId)
     {
         if (devInfo.DeviceType == SPYSERVER_DEVICE_AIRSPY_ONE)
         {
@@ -131,7 +131,7 @@ namespace spyserver
     {
         SpyServerClientClass *_this = (SpyServerClientClass *)ctx;
 
-        if (count < sizeof(SpyServerMessageHeader))
+        if (count < (int)sizeof(SpyServerMessageHeader))
         {
             _this->readSize(sizeof(SpyServerMessageHeader) - count, &buf[count]);
         }
