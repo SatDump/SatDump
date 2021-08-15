@@ -44,6 +44,7 @@ namespace recorder
     std::mutex dspMutex, fftMutex;
     void doDSP(int);
     void doFFT(int);
+    dsp::RingBuffer<std::complex<float>> circBuffer;
 
     void initRecorder()
     {
@@ -97,6 +98,8 @@ namespace recorder
         settings["recorder_sdr"][radio->getID()] = radio->getParameters();
         saveSettings();
 
+        radio->output_stream->stopWriter();
+        radio->output_stream->stopReader();
         radio->stop();
         radio.reset();
 
@@ -135,11 +138,16 @@ namespace recorder
                         data_mutex.unlock();
                     }
 
+                    circBuffer.stopReader();
+                    circBuffer.stopWriter();
+
                     fftMutex.lock();
                     fftMutex.unlock();
 
                     dspMutex.lock();
                     dspMutex.unlock();
+
+                    logger->info("Stopped");
 
                     exitRecorder();
 
@@ -211,8 +219,6 @@ namespace recorder
             radio->drawUI();
         }
     }
-
-    dsp::RingBuffer<std::complex<float>> circBuffer;
 
     float clampF(float c)
     {
@@ -295,6 +301,7 @@ namespace recorder
             delete[] converted_buffer_i16;
         //delete[] compressed_buffer;
         dspMutex.unlock();
+        logger->info("DSP Quit");
     }
 
     void doFFT(int)
@@ -366,6 +373,7 @@ namespace recorder
         volk_free(sample_buffer);
         volk_free(buffer_fft_out);
         fftMutex.unlock();
+        logger->info("FFT Quit");
     }
 };
 #endif
