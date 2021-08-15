@@ -18,7 +18,8 @@ enum sdr_device_type
     LIMESDR,
     AIRSPYHF,
     SPYSERVER,
-    RTLTCP
+    RTLTCP,
+    FILESRC
 };
 
 class SDRDevice
