@@ -117,7 +117,7 @@ namespace net
 
         if (_udp)
         {
-            int fromLen = sizeof(remoteAddr);
+            //int fromLen = sizeof(remoteAddr);
             ret = sendto(_sock, (char *)buf, count, 0, (struct sockaddr *)&remoteAddr, sizeof(remoteAddr));
         }
         else
@@ -363,7 +363,7 @@ namespace net
                 }
                 entry.handler(std::move(client), entry.ctx);
             }
-            catch (std::exception e)
+            catch (std::exception &e)
             {
                 listening = false;
                 return;
