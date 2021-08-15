@@ -15,6 +15,9 @@
 #include "imgui/imgui_image.h"
 #include "colormaps.h"
 #include "resources.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #define FFT_SIZE (8192 * 1)
 #define WATERFALL_RESOLUTION 1000
@@ -73,6 +76,11 @@ namespace recorder
         }
 
         waterfallID = makeImageTexture();
+
+#ifdef _WIN32
+        logger->info("Setting process priority to Realtime");
+        SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+#endif
 
         shouldRun = true;
 
