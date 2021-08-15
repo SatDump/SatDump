@@ -112,6 +112,7 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
         settings["manual_dpi_scaling"] = manual_dpi_scaling;
         settings["live_use_generated_output_folder"] = live_use_generated_output_folder;
         settings["default_live_output_folder"] = default_live_output_folder;
+        settings["default_recorder_output_folder"] = default_recorder_output_folder;
 
         saveSettings();
     }
