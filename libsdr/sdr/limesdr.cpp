@@ -148,11 +148,18 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRLimeSDR::getD
 {
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
-    std::vector<lime::ConnectionHandle> devs = lime::ConnectionRegistry::findConnections();
+    lms_info_str_t devices[256];
+    int cnt = LMS_GetDeviceList(devices);
 
-    for (int i = 0; i < devs.size() - 1; i++)
+    for (int i = 0; i < cnt - 1; i++)
     {
-        results.push_back({"LimeSDR " + devs[i].serial, LIMESDR, i});
+        lms_device_t *device = nullptr;
+        LMS_Open(&device, devices[i], NULL);
+        const lms_dev_info_t *device_info = LMS_GetDeviceInfo(device);
+        std::stringstream ss;
+        ss << std::hex << device_info->boardSerialNumber;
+        LMS_Close(device);
+        results.push_back({"LimeSDR " + ss.str(), LIMESDR, i});
     }
 
     return results;

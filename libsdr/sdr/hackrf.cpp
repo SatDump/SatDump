@@ -138,7 +138,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRHackRF::getDe
 
     for (int i = 0; i < devlist->devicecount; i++)
     {
-        std::stringstream ss, ss2;
+        std::stringstream ss;
         uint64_t id = 0;
         ss << devlist->serial_numbers[i];
         ss >> std::hex >> id;
