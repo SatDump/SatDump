@@ -91,7 +91,7 @@ namespace recorder
 
             radio = getDeviceByID(radio_devices, device_parameters, device_id);
 
-            radio->setFrequency(std::stoi(frequency_field) * 1e6);
+            radio->setFrequency(std::stof(frequency_field) * 1e6);
             radio->setSamplerate(std::stoi(samplerate_field));
             radio->start();
 
