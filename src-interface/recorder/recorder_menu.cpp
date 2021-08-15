@@ -91,8 +91,22 @@ namespace recorder
 
             radio = getDeviceByID(radio_devices, device_parameters, device_id);
 
-            radio->setFrequency(std::stof(frequency_field) * 1e6);
-            radio->setSamplerate(std::stoi(samplerate_field));
+            try
+            {
+                radio->setFrequency(std::stof(frequency_field) * 1e6);
+            }
+            catch (std::exception &e)
+            {
+                radio->setFrequency(0);
+            }
+            try
+            {
+                radio->setSamplerate(std::stoi(samplerate_field));
+            }
+            catch (std::exception &e)
+            {
+                logger->critical("Invalid samplerate");
+            }
             radio->start();
 
             initRecorder();
