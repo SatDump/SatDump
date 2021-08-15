@@ -3,8 +3,7 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 
-#if 0
-
+#ifndef DISABLE_SDR_LIMESDR
 SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     READ_PARAMETER_IF_EXISTS_FLOAT(gain_tia, "tia_gain");
@@ -81,15 +80,21 @@ void SDRLimeSDR::runThread()
 void SDRLimeSDR::stop()
 {
     //airspy_stop_rx(dev);
-    should_run = false;
     limeStream->Stop();
+    should_run = false;
+    logger->info("Waiting for the thread...");
+    output_stream->stopWriter();
     if (workThread.joinable())
         workThread.join();
+    logger->info("Thread stopped");
+    logger->info("Stopped LimeSDR");
 }
 
 SDRLimeSDR::~SDRLimeSDR()
 {
     limeDevice->DestroyStream(limeStream);
+    limeDevice->Reset();
+    lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
 }
 
 void SDRLimeSDR::drawUI()

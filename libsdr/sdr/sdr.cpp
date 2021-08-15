@@ -111,7 +111,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
 #endif
 
-#if 0
+#ifndef DISABLE_SDR_LIMESDR
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> limesdr_results = SDRLimeSDR::getDevices();
     results.insert(results.end(), limesdr_results.begin(), limesdr_results.end());
 #endif
@@ -220,7 +220,7 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
     if (type == HACKRF)
         return std::make_shared<SDRHackRF>(parameters, id);
 #endif
-#if 0
+#ifndef DISABLE_SDR_LIMESDR
     if (type == LIMESDR)
         return std::make_shared<SDRLimeSDR>(parameters, id);
 #endif
