@@ -31,7 +31,7 @@ extern bool rtlsdr_device_android_ready;
 extern int rtlsdr_device_android_fd;
 extern std::string rtlsdr_device_android_path;
 
-void initLive();
+void findRadioDevices();
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_altillimity_satdump_SdrDevice_doOpenRTL(JNIEnv *env, jclass, jint fd, jstring path)
@@ -40,7 +40,7 @@ Java_com_altillimity_satdump_SdrDevice_doOpenRTL(JNIEnv *env, jclass, jint fd, j
     rtlsdr_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     rtlsdr_device_android_ready = true;
 
-    initLive();
+    findRadioDevices();
 
     return false;
 }
@@ -56,7 +56,7 @@ Java_com_altillimity_satdump_SdrDevice_doOpenAirspy(JNIEnv *env, jclass, jint fd
     airspy_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     airspy_device_android_ready = true;
 
-    initLive();
+    findRadioDevices();
 
     return false;
 }
@@ -72,7 +72,7 @@ Java_com_altillimity_satdump_SdrDevice_doOpenAirspyHF(JNIEnv *env, jclass, jint 
     airspyhf_device_android_path = std::string(env->GetStringUTFChars(path, 0));
     airspyhf_device_android_ready = true;
 
-    initLive();
+    findRadioDevices();
 
     return false;
 }
