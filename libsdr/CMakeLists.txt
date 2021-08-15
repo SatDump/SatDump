@@ -5,7 +5,7 @@ option(ENABLE_SDR_AIRSPY                "Enable Airspy Support"                 
 option(ENABLE_SDR_RTLSDR                "Enable RTL-SDR Support"                                 ON)
 option(ENABLE_SDR_HACKRF                "Enable HackRF Support."                                 ON)
 option(ENABLE_SDR_AIRSPYHF              "Enable AirspyHF Support."                               ON)
-option(ENABLE_SDR_LIMESDR               "Enable LimeSDR Support."                                OFF)
+option(ENABLE_SDR_LIMESDR               "Enable LimeSDR Support."                                ON)
 option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              ON)
 option(ENABLE_SDR_RTLTCP                "Enable RTL-TCP Support."                                ON)
 
