@@ -2,7 +2,7 @@
 
 #include "sdr.h"
 
-#if 0
+#ifndef DISABLE_SDR_LIMESDR
 #include <lime/lms7_device.h>
 #include <lime/Streamer.h>
 #include <lime/ConnectionRegistry.h>
