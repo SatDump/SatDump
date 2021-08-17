@@ -147,8 +147,8 @@ void SDRFile::drawUI()
             break;
         }
 
-        uint64_t position = double(filesize / sizeof(std::complex<float>) - 1) * (file_progress / 100.0f);
-        input_file.seekg(position * sizeof(std::complex<float>));
+        uint64_t position = double(filesize / samplesize - 1) * (file_progress / 100.0f);
+        input_file.seekg(position * samplesize);
         file_mutex.unlock();
     }
 

@@ -16,9 +16,9 @@ satdump_ui_status satdumpUiStatus = MAIN_MENU;
 void initMainUI()
 {
     offline::initOfflineProcessingMenu();
-    live::initLiveProcessingMenu();
 
 #ifdef BUILD_LIVE
+    live::initLiveProcessingMenu();
     findRadioDevices();
 #endif
 }
