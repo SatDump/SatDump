@@ -31,7 +31,7 @@ namespace recorder
     bool recording = false;
     long long int recordedSize = 0;
     //long long int compressedSamples = 0;
-    float scale = 40;
+    float scale = 40, offset = 0;
     std::ofstream data_out;
     std::mutex data_mutex;
     //bool enable_compression = false;
@@ -50,6 +50,8 @@ namespace recorder
     {
         if (settings.count("recorder_scale") > 0)
             scale = settings["recorder_scale"].get<float>();
+        if (settings.count("recorder_offset") > 0)
+            offset = settings["recorder_offset"].get<float>();
 
         waterfall = (uint32_t *)volk_malloc(FFT_SIZE * 2000 * sizeof(uint32_t), volk_get_alignment());
         waterfallPallet = new uint32_t[1000];
@@ -95,6 +97,7 @@ namespace recorder
         delete[] waterfallPallet;
 
         settings["recorder_scale"] = scale;
+        settings["recorder_offset"] = offset;
         settings["recorder_sdr"][radio->getID()] = radio->getParameters();
         saveSettings();
 
@@ -156,9 +159,12 @@ namespace recorder
                 }
 
                 ImGui::SameLine();
-
-                ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 3);
+                ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 4);
                 ImGui::SliderFloat("Scale", &scale, 0, 100);
+
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 4);
+                ImGui::SliderFloat("Offset", &offset, -50, 50);
 
                 ImGui::SameLine();
                 if (recording)
@@ -347,7 +353,7 @@ namespace recorder
                 for (int i = 0; i < FFT_SIZE; i++)
                 {
                     int pos = i + (i > (FFT_SIZE / 2) ? -(FFT_SIZE / 2) : (FFT_SIZE / 2));
-                    fft_buffer[i] = (std::max<float>(0, fftb[pos]) + fft_buffer[i] * 9) / 10;
+                    fft_buffer[i] = (std::max<float>(0, fftb[pos] + offset) + fft_buffer[i] * 9) / 10;
                     if (z % 4 == 0)
                         waterfall[i] = waterfallPallet[std::min<int>(1000, std::max<int>(0, (fft_buffer[i] / scale) * 1000.0f))];
                 }
