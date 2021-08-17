@@ -27,7 +27,7 @@ namespace live
     bool live_processing = false;
     float fft_buffer[FFT_BUFFER_SIZE];
     extern std::shared_ptr<SDRDevice> radio;
-    float scale_max = 100.0f;
+    float scale_max = 100.0f, scale_offset = 0;
     std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
     extern std::shared_ptr<LivePipeline> live_pipeline;
 
@@ -92,7 +92,7 @@ namespace live
                 for (int i = 0; i < FFT_BUFFER_SIZE; i++)
                 {
                     int pos = i + (i > (FFT_BUFFER_SIZE / 2) ? -(FFT_BUFFER_SIZE / 2) : (FFT_BUFFER_SIZE / 2));
-                    fft_buffer[i] = (std::max<float>(0, fftb[pos]) + fft_buffer[i] * 9) / 10;
+                    fft_buffer[i] = (std::max<float>(0, fftb[pos] + scale_offset) + fft_buffer[i] * 9) / 10;
                 }
 
                 i++;
@@ -120,8 +120,11 @@ namespace live
         if (settings.count("fft_scale") > 0)
             scale_max = settings["fft_scale"].get<float>();
 
-        if (settings.count("fft_scale") > 0)
-            finishProcessing = settings["fft_scale"].get<int>();
+        if (settings.count("fft_offset") > 0)
+            scale_max = settings["fft_offset"].get<float>();
+
+        if (settings.count("live_finish_processing") > 0)
+            finishProcessing = settings["live_finish_processing"].get<int>();
 
 #ifdef _WIN32
         logger->info("Setting process priority to Realtime");
@@ -160,6 +163,7 @@ namespace live
 
         logger->info("Saving settings...");
         settings["fft_scale"] = scale_max;
+        settings["fft_offset"] = scale_offset;
         settings["live_finish_processing"] = finishProcessing;
         settings["sdr"][radio->getID()] = radio->getParameters();
         saveSettings();
@@ -244,7 +248,12 @@ namespace live
             fftPlotWidget.scale_max = scale_max;
             fftPlotWidget.draw({std::max<float>(ImGui::GetWindowWidth() - 3 * ui_scale, 200 * ui_scale), std::max<float>(ImGui::GetWindowHeight() - 64 * ui_scale, 100 * ui_scale)});
 
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 4);
             ImGui::SliderFloat("Scale", &scale_max, 0, 100);
+            ImGui::SameLine();
+
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 4);
+            ImGui::SliderFloat("Offset", &scale_offset, -50, 50);
             ImGui::SameLine();
 
             if (ImGui::Button("Stop"))
