@@ -111,6 +111,9 @@ namespace goes
             logger->info("Channel 5... " + getGvarFilename(sat_number, timeReadable, "5") + ".png");
             images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5") + ".png").c_str());
 
+            // Let plugins do something
+            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, disk_folder});
+
             // We are done with all channels but 1 and 4. Clear others to free up memory!
             images.image1.clear();
             images.image2.clear();
@@ -166,6 +169,9 @@ namespace goes
 
                 logger->info("False color... " + getGvarFilename(sat_number, timeReadable, "FC") + ".png");
                 compoImage.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC") + ".png").c_str());
+
+                // Let plugins do something
+                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, disk_folder});
             }
             else
             {

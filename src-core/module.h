@@ -10,6 +10,7 @@
 #include "dll_export.h"
 #include "common/dsp/buffer.h"
 #include "nlohmann/json.hpp"
+#include "plugin.h"
 
 // Utils
 #define WRITE_IMAGE(image, path)               \

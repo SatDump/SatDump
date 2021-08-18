@@ -24,6 +24,24 @@ namespace goes
             int vis_width;
         };
 
+        namespace events
+        {
+            struct GVARSaveChannelImagesEvent
+            {
+                GVARImages &images;
+                std::tm *timeReadable;
+                std::string directory;
+            };
+
+            struct GVARSaveFCImageEvent
+            {
+                cimg_library::CImg<unsigned char> &false_color_image;
+                int sat_number;
+                std::tm *timeReadable;
+                std::string directory;
+            };
+        }
+
         class GVARImageDecoderModule : public ProcessingModule
         {
         protected:
@@ -42,8 +60,6 @@ namespace goes
             InfraredReader1 infraredImageReader1;
             InfraredReader2 infraredImageReader2;
             VisibleReader visibleImageReader;
-
-            std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
 
             // Async image writing
             std::string directory;
@@ -67,6 +83,7 @@ namespace goes
         public:
             GVARImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             ~GVARImageDecoderModule();
+            static std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
             void process();
             void drawUI(bool window);
             std::vector<ModuleDataType> getInputTypes();
