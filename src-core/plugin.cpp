@@ -1,6 +1,10 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "plugin.h"
+#ifdef _WIN32
+#include "common/dlfcn.h"
+#else
 #include <dlfcn.h>
+#endif
 #include "logger.h"
 #include "settings.h"
 #include <filesystem>
