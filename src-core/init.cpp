@@ -5,14 +5,8 @@
 #include <filesystem>
 #include "settings.h"
 #include "tle.h"
-
-#ifndef RESOURCES_PATH
-#define RESOURCES_PATH "./"
-#endif
-
-#ifndef SATDUMP_VERSION
-#define SATDUMP_VERSION "0.0.0-dev"
-#endif
+#include "plugin.h"
+#include "satdump_vars.h"
 
 void initSatdump()
 {
@@ -25,23 +19,28 @@ void initSatdump()
     logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
     logger->info("");
 
+    loadConfig();
+
+    loadPlugins();
+
     registerModules();
 
+    // Load pipelines
     if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
         loadPipelines("pipelines");
     else
         loadPipelines((std::string)RESOURCES_PATH + "pipelines");
 
-    //if (std::filesystem::exists("settings.json"))
-    //    loadSettings("settings.json");
-    //else
-    //    loadSettings((std::string)RESOURCES_PATH + "settings.json");
-
+    // List them
     logger->debug("Registered pipelines :");
     for (Pipeline &pipeline : pipelines)
         logger->debug(" - " + pipeline.name);
 
+    // TLEs
     tle::loadTLEs();
+
+    // Let plugins know we started
+    satdump::eventBus->fire_event<satdump::SatDumpStartedEvent>({});
 }
 
 // This is a pretty crappy way of doing it,

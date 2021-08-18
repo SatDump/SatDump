@@ -3,10 +3,35 @@
 #include "logger.h"
 #include <fstream>
 #include <filesystem>
+#include "satdump_vars.h"
 
 SATDUMP_DLL nlohmann::json settings;
+SATDUMP_DLL nlohmann::json global_cfg;
 
 std::string settings_path;
+
+void loadConfig()
+{
+    std::string config_path = "config.json";
+
+    if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
+        config_path = "config.json";
+    else
+        config_path = (std::string)RESOURCES_PATH + "config.json";
+
+    logger->info("Loading config from file " + config_path);
+
+    if (std::filesystem::exists(config_path))
+    {
+        std::ifstream istream(config_path);
+        istream >> global_cfg;
+        istream.close();
+    }
+    else
+    {
+        logger->error("No config file found! Using defaults.");
+    }
+}
 
 void loadSettings(std::string path)
 {
