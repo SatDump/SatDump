@@ -153,3 +153,4 @@ endif()
 
 install(TARGETS satdump_core DESTINATION lib)
 install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")
