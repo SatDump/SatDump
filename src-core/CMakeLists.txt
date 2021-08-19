@@ -31,9 +31,6 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
-# Dynamic linking
-target_link_libraries(satdump_core PUBLIC dl)
-
 # Set Spdlog to build the library
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
@@ -69,7 +66,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC jpeg)
 
     # VOLK
-    target_link_libraries(satdump_core PUBLIC volk cpufeatures m log)
+    target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
 
     # LibPNG
     target_link_libraries(satdump_core PUBLIC png zlib)
@@ -149,6 +146,9 @@ else()
          target_link_libraries(satdump_core PUBLIC ${ZSTD_LIBRARY}) 
         target_compile_definitions(satdump_core PUBLIC ENABLE_DECOMPRESSION="1")
     endif()
+
+    # Dynamic linking
+    target_link_libraries(satdump_core PUBLIC dl)
 endif()
 
 install(TARGETS satdump_core DESTINATION lib)
