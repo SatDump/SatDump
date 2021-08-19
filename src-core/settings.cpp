@@ -14,7 +14,7 @@ void loadConfig()
 {
     std::string config_path = "config.json";
 
-    if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
+    if (std::filesystem::exists("config.json"))
         config_path = "config.json";
     else
         config_path = (std::string)RESOURCES_PATH + "config.json";
