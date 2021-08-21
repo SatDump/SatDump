@@ -13,6 +13,7 @@ option(BUILD_TESTING        "Build the testing program"                         
 option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_LIVE           "Build the live processing feature (WIP)"                   OFF)
 option(BUILD_ZSTD           "Build support for decompressing i8 basebands with zstd"    OFF)
+option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
 if(NOGUI)
@@ -65,6 +66,10 @@ endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
+endif()
+
+if(BUILD_PLUGINS)
+    add_subdirectory(plugins)
 endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)

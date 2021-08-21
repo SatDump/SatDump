@@ -51,7 +51,7 @@ Supported devices currently include :
 - Airspy One Devices (Mini, R2 with some temporary caveats)
 - RTL-SDR Devices
 - RTL-TCP
-- ~~SpyServer~~ (Needs to be fixed)
+- SpyServer
 
 ### Notes on Falcon-9 Camera processing
 
