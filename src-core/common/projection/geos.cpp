@@ -69,7 +69,7 @@ namespace projection
 
     void GEOSProjection::forward(double lon, double lat, double &x, double &y)
     {
-        x= y = 0; // Safety
+        x = y = 0; // Safety
 
         // Shift longitudes to use the sat's as a reference
         lon -= lon_0;
