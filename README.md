@@ -1,6 +1,7 @@
 # SatDump
 
-A generic satellite data processing software.
+A generic satellite data processing software.  
+*Thanks Mnux for the icon!*
 
 **Still WIP**
 
