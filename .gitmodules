@@ -1,3 +1,6 @@
 [submodule "android/SatDump/src/main/cpp/deps/SDL"]
 	path = android/SatDump/src/main/cpp/deps/SDL
 	url = https://github.com/libsdl-org/SDL
+[submodule "plugins"]
+	path = plugins
+	url = https://github.com/altillimity/SatDump-Plugins
