@@ -6,6 +6,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/vegetation_index.h"
 
 #define BUFFER_SIZE 8192
 
@@ -198,6 +199,8 @@ namespace metop
             image321.equalize(1000);
             image321.normalize(0, std::numeric_limits<unsigned char>::max());
             WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321-EQU.png");
+            WRITE_IMAGE(image::vegetation_index::EVI2(image1, image2), directory + "/EVI2.png");
+            WRITE_IMAGE(image::vegetation_index::NDVI(image1, image2), directory + "/NDVI.png");
         }
 
         void MetOpAVHRRDecoderModule::drawUI(bool window)
