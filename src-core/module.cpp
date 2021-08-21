@@ -2,13 +2,15 @@
 #include "module.h"
 #include "logger.h"
 
-SATDUMP_DLL float ui_scale = 1; // UI Scaling factor, set to 1 (no scaling) by default
+SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
+SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
 
 ProcessingModule::ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : d_input_file(input_file),
                                                                                                                                           d_output_file_hint(output_file_hint),
                                                                                                                                           d_parameters(parameters)
 {
     input_active = false;
+    streamingInput = false;
 }
 
 std::vector<std::string> ProcessingModule::getOutputs()
@@ -19,6 +21,9 @@ std::vector<std::string> ProcessingModule::getOutputs()
 void ProcessingModule::setInputType(ModuleDataType type)
 {
     input_data_type = type;
+
+    if (type != DATA_FILE)
+        streamingInput = true;
 }
 
 void ProcessingModule::setOutputType(ModuleDataType type)
@@ -66,6 +71,9 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/metop/instruments/amsu/module_metop_amsu.h"
 #include "modules/metop/instruments/gome/module_metop_gome.h"
 #include "modules/metop/instruments/ascat/module_metop_ascat.h"
+#include "modules/metop/instruments/admin_msg/module_metop_admin_msg.h"
+#include "modules/metop/module_metop_satid.h"
+#include "modules/metop/instruments/sem/module_metop_sem.h"
 
 #include "modules/fengyun/module_new_fengyun_ahrpt_decoder.h"
 #include "modules/fengyun/module_fengyun_ahrpt_decoder.h"
@@ -76,6 +84,14 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/fengyun/instruments/mersi2/module_fengyun_mersi2.h"
 #include "modules/fengyun/instruments/erm/module_fengyun_erm.h"
 #include "modules/fengyun/instruments/mwhs/module_fengyun_mwhs.h"
+#include "modules/fengyun/instruments/waai/module_fengyun_waai.h"
+#include "modules/fengyun/instruments/mwri/module_fengyun_mwri.h"
+#include "modules/fengyun/instruments/mwts/module_fengyun_mwts.h"
+#include "modules/fengyun/instruments/mwhs2/module_fengyun_mwhs2.h"
+#include "modules/fengyun/module_fengyun_satid.h"
+#include "modules/fengyun/instruments/mersill/module_fengyun_mersill.h"
+#include "modules/fengyun/instruments/windrad/module_fengyun_windrad.h"
+#include "modules/fengyun/instruments/mwts3/module_fengyun_mwts3.h"
 
 #include "modules/aqua/module_aqua_db_decoder.h"
 #include "modules/aqua/instruments/airs/module_aqua_airs.h"
@@ -118,6 +134,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/elektro_arktika/module_rdas_decoder.h"
 #include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
 #include "modules/elektro_arktika/module_tlm_demod.h"
+#include "modules/elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
 
 #include "modules/terra/module_terra_db_demod.h"
 #include "modules/terra/module_terra_db_decoder.h"
@@ -136,15 +153,23 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/goes/gvar/module_gvar_decoder.h"
 #include "modules/goes/gvar/module_gvar_image_decoder.h"
 
-#include "modules/goes/hrit/module_goes_hrit_decoder.h"
+#include "modules/xrit/module_xrit_decoder.h"
+#include "modules/xrit/module_goesrecv_publisher.h"
+
 #include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
 
-#include "modules/fengyun_svissr/module_svissr_decoder.h"
-#include "modules/fengyun_svissr/module_svissr_image_decoder.h"
+#include "modules/fengyun2/svissr/module_svissr_decoder.h"
+#include "modules/fengyun2/svissr/module_svissr_image_decoder.h"
 
 #include "modules/jason3/module_jason3_decoder.h"
 #include "modules/jason3/instruments/poseidon/module_jason3_poseidon.h"
 #include "modules/jason3/instruments/amr2/module_jason3_amr2.h"
+
+#include "modules/angels/argos/module_angels_argos.h"
+
+#include "modules/ccsds/module_ccsds_analyzer.h"
+
+#include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
 void registerModules()
 {
@@ -165,6 +190,9 @@ void registerModules()
     REGISTER_MODULE(metop::amsu::MetOpAMSUDecoderModule);
     REGISTER_MODULE(metop::gome::MetOpGOMEDecoderModule);
     REGISTER_MODULE(metop::ascat::MetOpASCATDecoderModule);
+    REGISTER_MODULE(metop::admin_msg::MetOpAdminMsgDecoderModule);
+    REGISTER_MODULE(metop::satid::MetOpSatIDModule);
+    REGISTER_MODULE(metop::sem::MetOpSEMDecoderModule);
 
     // FengYun-3
     REGISTER_MODULE(fengyun::NewFengyunAHRPTDecoderModule);
@@ -176,6 +204,14 @@ void registerModules()
     REGISTER_MODULE(fengyun::mersi2::FengyunMERSI2DecoderModule);
     REGISTER_MODULE(fengyun::erm::FengyunERMDecoderModule);
     REGISTER_MODULE(fengyun::mwhs::FengyunMWHSDecoderModule);
+    REGISTER_MODULE(fengyun::waai::FengyunWAAIDecoderModule);
+    REGISTER_MODULE(fengyun::mwri::FengyunMWRIDecoderModule);
+    REGISTER_MODULE(fengyun::mwts::FengyunMWTSDecoderModule);
+    REGISTER_MODULE(fengyun::mwhs2::FengyunMWHS2DecoderModule);
+    REGISTER_MODULE(fengyun::satid::FengYunSatIDModule);
+    REGISTER_MODULE(fengyun::mersill::FengyunMERSILLDecoderModule);
+    REGISTER_MODULE(fengyun::windrad::FengyunWindRADDecoderModule);
+    REGISTER_MODULE(fengyun::mwts3::FengyunMWTS3DecoderModule);
 
     // Aqua
     REGISTER_MODULE(aqua::AquaDBDecoderModule);
@@ -227,6 +263,7 @@ void registerModules()
     REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
+    REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
@@ -247,15 +284,18 @@ void registerModules()
     REGISTER_MODULE(saral::SaralDecoderModule);
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
+    // xRIT
+    REGISTER_MODULE(xrit::XRITDecoderModule);
+    REGISTER_MODULE(xrit::GOESRecvPublisherModule);
+
     // GOES - GVAR
     REGISTER_MODULE(goes::gvar::GVARDecoderModule);
     REGISTER_MODULE(goes::gvar::GVARImageDecoderModule);
 
     // GOES - HRIT
-    REGISTER_MODULE(goes::hrit::GOESHRITDecoderModule);
     REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
 
-    // FengYun2 - S-VISSR
+    // FengYun2 - S-VISSR / LRIT
     REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
     REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
 
@@ -263,6 +303,15 @@ void registerModules()
     REGISTER_MODULE(jason3::Jason3DecoderModule);
     REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
     REGISTER_MODULE(jason3::amr2::Jason3AMR2DecoderModule);
+
+    // ANGELS
+    REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
+
+    // CCSDS
+    REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
+    
+    // GK-2A
+    REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

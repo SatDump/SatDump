@@ -2,6 +2,9 @@
 
 #ifndef DISABLE_SDR_RTLSDR
 #include "sdr.h"
+#ifdef __ANDROID__
+#include <rtl-sdr-android.h>
+#endif
 #include <rtl-sdr.h>
 #include <thread>
 
@@ -21,6 +24,9 @@ private:
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
 public:
+#ifdef __ANDROID__
+    SDRRtlSdr(std::map<std::string, std::string> parameters, int fileDescriptor, std::string devicePath);
+#endif
     SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id = 0);
     ~SDRRtlSdr();
     std::map<std::string, std::string> getParameters();

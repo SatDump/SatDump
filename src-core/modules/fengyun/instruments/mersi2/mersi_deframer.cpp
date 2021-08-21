@@ -37,19 +37,19 @@ namespace fengyun
             }
         }
 
-        std::vector<std::vector<uint8_t>> MersiDeframer::work(std::vector<uint8_t> &data)
+        std::vector<std::vector<uint8_t>> MersiDeframer::work(uint8_t *input, int size)
         {
             // Output buffer
             std::vector<std::vector<uint8_t>> framesOut;
 
             // Loop in all bytes
-            for (uint8_t &byte : data)
+            for (int byteInBuf = 0; byteInBuf < size; byteInBuf++)
             {
                 // Loop in all bits!
                 for (int i = 7; i >= 0; i--)
                 {
                     // Get a bit, push it
-                    uint8_t bit = getBit<uint8_t>(byte, i);
+                    uint8_t bit = getBit<uint8_t>(input[byteInBuf], i);
 
                     shifter = ((shifter << 1 | bit) % (int)pow(2, 28));
 

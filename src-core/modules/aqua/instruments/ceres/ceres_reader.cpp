@@ -18,7 +18,7 @@ namespace aqua
                 delete[] channels[i];
         }
 
-        void CERESReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void CERESReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() != 6988)

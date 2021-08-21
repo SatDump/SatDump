@@ -129,10 +129,6 @@ namespace goes
                 data_in.close();
         }
 
-        const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-        const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-        const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
         void GVARDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GVAR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -159,7 +155,8 @@ namespace goes
             }
             ImGui::EndGroup();
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            if (!streamingInput)
+                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

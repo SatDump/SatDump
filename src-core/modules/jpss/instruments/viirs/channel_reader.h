@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <cmath>
 #include "packets.h"
 #include <vector>
@@ -28,7 +28,7 @@ namespace jpss
             Channel channelSettings;
             VIIRSReader(Channel &ch);
             ~VIIRSReader();
-            void feed(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+            void feed(ccsds::CCSDSPacket &packet);
             void differentialDecode(VIIRSReader &channelSource, int deci);
             cimg_library::CImg<unsigned short> getImage();
         };

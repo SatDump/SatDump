@@ -1,0 +1,48 @@
+#include "lrit_data_decoder.h"
+
+namespace goes
+{
+    namespace hrit
+    {
+        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder()
+        {
+            seg_count = 0;
+            seg_height = 0;
+            seg_width = 0;
+            image_id = -1;
+        }
+
+        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder(int max_seg, int segment_width, int segment_height, uint16_t id) : seg_count(max_seg), image_id(id)
+        {
+            segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
+                                                  { delete[] p; });
+            std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
+
+            image = cimg_library::CImg<unsigned char>(segment_width, segment_height * max_seg, 1);
+            seg_height = segment_height;
+            seg_width = segment_width;
+
+            image.fill(0);
+        }
+
+        SegmentedLRITImageDecoder::~SegmentedLRITImageDecoder()
+        {
+        }
+
+        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, int segc)
+        {
+            if (segc >= seg_count)
+                return;
+            std::memcpy(&image[(seg_height * seg_width) * segc], data, seg_height * seg_width);
+            segments_done.get()[segc] = true;
+        }
+
+        bool SegmentedLRITImageDecoder::isComplete()
+        {
+            bool complete = true;
+            for (int i = 0; i < seg_count; i++)
+                complete = complete && segments_done.get()[i];
+            return complete;
+        }
+    }
+}

@@ -1,9 +1,6 @@
 #include "resources.h"
 #include <filesystem>
-
-#ifndef RESOURCES_PATH
-#define RESOURCES_PATH "./"
-#endif
+#include "satdump_vars.h"
 
 namespace resources
 {

@@ -1,19 +1,9 @@
 # SatDump
 
-A generic satellite data processing software.
+A generic satellite data processing software.  
+*Thanks Mnux for the icon!*
 
 **Still WIP**
-
-# Important - Possible issues with VOLK Viterbi decoding (Windows users can probably ignore this)
-
-/!\ Some decoders utilize VOLK's Viterbi decoder. But as of writing this, only the "spiral" (SSE) implementation performs as intended. Please ensure you have it set as such in your volk_config or things may not work as expected! /!\
-
-On Windows, this should not be necessary as it this will (should!) be the default already.
-
-On Linux, Mac OS and similar platforms, please edit your ~/.volk/volk_config file.  
-Find the line referring to `volk_8u_x4_conv_k7_r2_8u`, and make sure it contains the following : `volk_8u_x4_conv_k7_r2_8u spiral spiral`.
-
-If you are using an ARM-based machine (Raspbery Pi, most Android devices), there is unfortunately no way around poorer decoding performances of the "generic" kernel... Until this gets fixed in VOLK itself.
 
 # Usage
 
@@ -23,7 +13,7 @@ SatDump comes in 2 variants, doing essentially the same thing :
 - A GUI version, meant to be user-friendly
 ![The UI](https://github.com/altillimity/satdump/raw/master/gui_example.png)
 - A CLI version for command-line / headless processing
-![The UI](https://github.com/altillimity/satdump/raw/master/cli_example.png)
+![The CLI](https://github.com/altillimity/satdump/raw/master/cli_example.png)
 
 Otherwise, here's roughly how SatDump works :
 - You record / get some data, often baseband from some supported satellite
@@ -55,7 +45,13 @@ satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate
 satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
 ```
 
-Live processing is now supported (but WIP) on all platform, currently only with AIRSPY support. You will have to enable it manually when building with -DBUILD_LIVE=ON.
+Live processing is now supported (but WIP) on all platforms. You will have to enable it manually when building from source with -DBUILD_LIVE=ON.   
+Supported devices currently include :   
+- HackRF Devices
+- Airspy One Devices (Mini, R2 with some temporary caveats)
+- RTL-SDR Devices
+- RTL-TCP
+- SpyServer
 
 ### Notes on Falcon-9 Camera processing
 
@@ -110,16 +106,31 @@ Here are some generic Debian build instructions.
 
 ```
 # Linux: Install dependencies
-sudo apt install git build-essential cmake g++ libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev libglew-dev libglfw3-dev
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev # Core dependencies
+sudo apt install libnng-dev                                                                             # If this packages is not found, follow build instructions below for NNG
+sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                              # All libraries required for live processing (optional)
+sudo apt install libglew-dev libglfw3-dev                                                               # Only if you want to build the GUI Version (optional)
+
+# If libnng-dev is not available, you will have to build it from source
+git clone https://github.com/nanomsg/nng.git
+cd nng
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+make -j4
+sudo make install
+cd ../..
+rm -rf nng
 
 # macOS: Install dependencies
-brew install cmake volk jpeg libpng glew glfw
+brew install cmake volk jpeg libpng glew glfw nng
 
 # Build and install libcorrect
 git clone https://github.com/quiet/libcorrect.git
 cd libcorrect
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
 sudo make install
 cd ../..
@@ -142,7 +153,11 @@ rm -rf fftw-3.3.9
 git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+# If you want to build Live-processing (required for the ingestor), add -DBUILD_LIVE=ON to the command
+# If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
+# If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
+cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
 ln -s ../pipelines . # Symlink pipelines so it can run
 ln -s ../resources . # Symlink pipelines so it can run

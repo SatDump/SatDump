@@ -23,32 +23,6 @@ namespace metop
             }
         }
 
-        std::vector<uint16_t> repackBitsIASI(uint8_t *in, int dst_bits, int skip, int lengthToConvert)
-        {
-            std::vector<uint16_t> result;
-            uint16_t shifter;
-            int inShiter = 0;
-            for (int i = 0; i < lengthToConvert; i++)
-            {
-                for (int b = 7; b >= 0; b--)
-                {
-                    if (--skip > 0)
-                        continue;
-
-                    bool bit = getBit<uint8_t>(in[i], b);
-                    shifter = (shifter << 1 | bit) % (int)pow(2, dst_bits);
-                    inShiter++;
-                    if (inShiter == dst_bits)
-                    {
-                        result.push_back(shifter);
-                        inShiter = 0;
-                    }
-                }
-            }
-
-            return result;
-        }
-
         struct unsigned_int16
         {
             operator unsigned short(void) const
@@ -71,7 +45,7 @@ namespace metop
         int band_starts[6] = {0, 659, 0, 71, 0, 0};
         int band_ends[6] = {658, 1023, 70, 1023, 1023, 1023};
 
-        void GOMEReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void GOMEReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 18732)
                 return;
@@ -79,6 +53,15 @@ namespace metop
             unsigned_int16 *header = (unsigned_int16 *)&packet.payload[14];
 
             int counter = header[6];
+
+            // Detect GOME mode
+            if ((counter & 3) == 3)
+            {
+                band_starts[1] = header[268] + 1;
+                band_starts[3] = header[269] + 1;
+                band_ends[0] = header[268];
+                band_ends[2] = header[269];
+            }
 
             GBand bands[2][4];
             std::memcpy(&bands[0][0], &header[478 + 680], sizeof(bands));

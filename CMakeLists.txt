@@ -6,11 +6,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_compile_definitions(SATDUMP_VERSION="0.0.37")
+
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_LIVE           "Build the live processing feature (WIP)"                   OFF)
 option(BUILD_ZSTD           "Build support for decompressing i8 basebands with zstd"    OFF)
+option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
 if(NOGUI)
@@ -36,6 +39,8 @@ else()
 endif()
 
 if(MSVC OR BUILD_MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8") # Speed up this to object-level
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8") # Speed up this to object-level
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
@@ -55,13 +60,27 @@ if(NOT NOGUI)
     add_subdirectory(src-ui)
 endif()
 
+if(BUILD_LIVE)
+    add_subdirectory(src-ingestor)
+endif()
+
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
+endif()
+
+if(BUILD_PLUGINS)
+    add_subdirectory(plugins)
 endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
 install(FILES ${CMAKE_SOURCE_DIR}/Roboto-Medium.ttf DESTINATION share/satdump)
+install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/satdump)
+configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop @ONLY)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION /usr/share/applications)
+endif ()
 
 # Create uninstall target
 configure_file(${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake @ONLY)

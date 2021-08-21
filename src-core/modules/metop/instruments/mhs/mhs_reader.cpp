@@ -1,4 +1,5 @@
 #include "mhs_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -17,7 +18,7 @@ namespace metop
                 delete[] channels[i];
         }
 
-        void MHSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void MHSReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1302)
                 return;
@@ -35,7 +36,7 @@ namespace metop
             {
                 for (int i = 0; i < 90; i++)
                 {
-                    channels[4 - channel][lines * 90 + 90 - i] = lineBuffer[i * 6 + channel + 3];
+                    channels[4 - channel][lines * 90 + 89 - i] = lineBuffer[i * 6 + channel + 3];
                 }
             }
 
@@ -47,6 +48,7 @@ namespace metop
         {
             cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 90, lines);
             img.equalize(1000);
+            img.normalize(0, 65535);
             return img;
         }
     } // namespace mhs

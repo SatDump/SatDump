@@ -13,6 +13,8 @@
 #include "common/dsp/file_source.h"
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "common/widgets/constellation.h"
+#include "common/snr_estimator.h"
+#include "common/widgets/snr_plot.h"
 
 namespace meteor
 {
@@ -41,8 +43,12 @@ namespace meteor
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
+        M2M4SNREstimator snr_estimator;
+        float snr, peak_snr;
+
         // UI Stuff
         widgets::ConstellationViewer constellation;
+        widgets::SNRPlotViewer snr_plot;
 
     public:
         METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -56,6 +62,7 @@ namespace meteor
 
     public:
         static std::string getID();
+        virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     };

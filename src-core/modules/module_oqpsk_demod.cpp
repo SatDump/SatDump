@@ -21,20 +21,22 @@ OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_fi
                                                                                                                                           d_clock_mu(std::stof(parameters["clock_mu"])),
                                                                                                                                           d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
                                                                                                                                           d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
-                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f)
+                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
     snr = 0;
+    peak_snr = 0;
 }
 
 void OQPSKDemodModule::init()
 {
-    float input_sps = (float)d_samplerate / (float)d_symbolrate;         // Compute input SPS
-    resample = input_sps > MAX_SPS;                                      // If SPS is over MAX_SPS, we resample
-    float samplerate = resample ? d_symbolrate * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
-    float decimation_factor = d_samplerate / samplerate;                 // Decimation factor to rescale our input buffer
+    float input_sps = (float)d_samplerate / (float)d_symbolrate;                                  // Compute input SPS
+    resample = input_sps > MAX_SPS;                                                               // If SPS is over MAX_SPS, we resample
+    int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1));                          // Avoid complex resampling
+    float samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+    float decimation_factor = d_samplerate / samplerate;                                          // Decimation factor to rescale our input buffer
 
     if (resample)
         d_buffer_size *= round(decimation_factor);
@@ -134,10 +136,13 @@ void OQPSKDemodModule::process()
         snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
         snr = snr_estimator.snr();
 
+        if (snr > peak_snr)
+            peak_snr = snr;
+
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * d_const_scale);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * d_const_scale);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real() * d_const_scale);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag() * d_const_scale);
         }
 
         rec->output_stream->flush();
@@ -147,12 +152,15 @@ void OQPSKDemodModule::process()
         else
             output_fifo->write((uint8_t *)sym_buffer, dat_size * 2);
 
+        // Update module stats
+        module_stats["snr"] = snr;
+
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
         }
     }
 
@@ -182,10 +190,6 @@ void OQPSKDemodModule::stop()
         data_out.close();
 }
 
-const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
 void OQPSKDemodModule::drawUI(bool window)
 {
     ImGui::Begin("OQPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -199,21 +203,14 @@ void OQPSKDemodModule::drawUI(bool window)
 
     ImGui::BeginGroup();
     {
+        // Show SNR information
         ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-        {
-            ImGui::Text("SNR (dB) : ");
-            ImGui::SameLine();
-            ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
-
-            std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-            snr_history[200 - 1] = snr;
-
-            ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-        }
+        snr_plot.draw(snr, peak_snr);
     }
     ImGui::EndGroup();
 
-    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+    if (!streamingInput)
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
     ImGui::End();
 }

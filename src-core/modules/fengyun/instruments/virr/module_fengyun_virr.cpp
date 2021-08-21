@@ -6,6 +6,9 @@
 #include "virr_reader.h"
 #include "common/image/xfr.h"
 #include "imgui/imgui.h"
+#include "common/image/earth_curvature.h"
+#include "modules/fengyun/fengyun3.h"
+#include "nlohmann/json_utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -61,7 +64,21 @@ namespace fengyun
 
             logger->info("Demultiplexing and deframing...");
 
-            std::string c10_filename = "FY3x_" + getHRPTReaderTimeStamp() + ".C10";
+            // Get satellite info
+            nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+            int scid = satData.contains("scid") > 0 ? satData["scid"].get<int>() : 0;
+
+            // Name the file properly
+            std::string hpt_prefix = "FY3x_";
+
+            if (scid == FY3_A_SCID)
+                hpt_prefix = "FY3A_";
+            else if (scid == FY3_B_SCID)
+                hpt_prefix = "FY3B_";
+            else if (scid == FY3_C_SCID)
+                hpt_prefix = "FY3C_";
+
+            std::string c10_filename = hpt_prefix + getHRPTReaderTimeStamp() + ".C10";
             std::ofstream output_hrpt_reader(directory + "/" + c10_filename, std::ios::binary);
             d_output_files.push_back(directory + "/" + c10_filename);
 
@@ -80,9 +97,7 @@ namespace fengyun
                     vcidFrames++;
 
                     // Deframe MERSI
-                    std::vector<uint8_t> defraVec;
-                    defraVec.insert(defraVec.end(), &buffer[14], &buffer[14 + 882]);
-                    std::vector<std::vector<uint8_t>> out = virrDefra.work(defraVec);
+                    std::vector<std::vector<uint8_t>> out = virrDefra.work(&buffer[14], 882);
 
                     for (std::vector<uint8_t> frameVec : out)
                     {
@@ -187,106 +202,170 @@ namespace fengyun
             WRITE_IMAGE(image10, directory + "/VIRR-10.png");
 
             logger->info("221 Composite...");
-            cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
             {
-                image221.draw_image(0, 0, 0, 0, image2);
-                image221.draw_image(0, 0, 0, 1, image2);
-                image221.draw_image(0, 0, 0, 2, image1);
+                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
+                {
+                    image221.draw_image(0, 0, 0, 0, image2);
+                    image221.draw_image(0, 0, 0, 1, image2);
+                    image221.draw_image(0, 0, 0, 2, image1);
+                }
+                WRITE_IMAGE(image221, directory + "/VIRR-RGB-221.png");
+                image221.equalize(1000);
+                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image221, directory + "/VIRR-RGB-221-EQU.png");
+                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_VIRR_SWATH,
+                                                                                                                  FY3_VIRR_RES);
+                WRITE_IMAGE(corrected221, directory + "/VIRR-RGB-221-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image221, directory + "/VIRR-RGB-221.png");
-            image221.equalize(1000);
-            image221.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image221, directory + "/VIRR-RGB-221-EQU.png");
 
             logger->info("621 Composite...");
-            cimg_library::CImg<unsigned short> image621(2048, reader.lines, 1, 3);
             {
-                image621.draw_image(2, 1, 0, 0, image6);
-                image621.draw_image(0, 0, 0, 1, image2);
-                image621.draw_image(0, 0, 0, 2, image1);
+                cimg_library::CImg<unsigned short> image621(2048, reader.lines, 1, 3);
+                {
+                    image621.draw_image(2, 1, 0, 0, image6);
+                    image621.draw_image(0, 0, 0, 1, image2);
+                    image621.draw_image(0, 0, 0, 2, image1);
+                }
+                WRITE_IMAGE(image621, directory + "/VIRR-RGB-621.png");
+                image621.equalize(1000);
+                image621.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image621, directory + "/VIRR-RGB-621-EQU.png");
+                cimg_library::CImg<unsigned short> corrected621 = image::earth_curvature::correct_earth_curvature(image621,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_VIRR_SWATH,
+                                                                                                                  FY3_VIRR_RES);
+                WRITE_IMAGE(corrected621, directory + "/VIRR-RGB-621-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image621, directory + "/VIRR-RGB-621.png");
-            image621.equalize(1000);
-            image621.normalize(0, std::numeric_limits<unsigned char>::max());
-            WRITE_IMAGE(image621, directory + "/VIRR-RGB-621-EQU.png");
 
             logger->info("197 Composite...");
-            cimg_library::CImg<unsigned short> image197(2048, reader.lines, 1, 3);
             {
-                image197.draw_image(1, 0, 0, 0, image1);
-                image197.draw_image(0, 0, 0, 1, image9);
-                image197.draw_image(-2, 0, 0, 2, image7);
+                cimg_library::CImg<unsigned short> image197(2048, reader.lines, 1, 3);
+                {
+                    image197.draw_image(1, 0, 0, 0, image1);
+                    image197.draw_image(0, 0, 0, 1, image9);
+                    image197.draw_image(-2, 0, 0, 2, image7);
+                }
+                WRITE_IMAGE(image197, directory + "/VIRR-RGB-197.png");
+                cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
+                    tempImage9.equalize(1000);
+                    tempImage1.equalize(1000);
+                    tempImage7.equalize(1000);
+                    image197equ.draw_image(1, 0, 0, 0, tempImage1);
+                    image197equ.draw_image(0, 0, 0, 1, tempImage9);
+                    image197equ.draw_image(-2, 0, 0, 2, tempImage7);
+                    image197equ.equalize(1000);
+                    image197equ.normalize(0, std::numeric_limits<unsigned char>::max());
+                }
+                WRITE_IMAGE(image197equ, directory + "/VIRR-RGB-197-EQU.png");
+                cimg_library::CImg<unsigned short> corrected197 = image::earth_curvature::correct_earth_curvature(image197equ,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_VIRR_SWATH,
+                                                                                                                  FY3_VIRR_RES);
+                WRITE_IMAGE(corrected197, directory + "/VIRR-RGB-197-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image197, directory + "/VIRR-RGB-197.png");
-            cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
-            {
-                cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
-                tempImage9.equalize(1000);
-                tempImage1.equalize(1000);
-                tempImage7.equalize(1000);
-                image197equ.draw_image(1, 0, 0, 0, tempImage1);
-                image197equ.draw_image(0, 0, 0, 1, tempImage9);
-                image197equ.draw_image(-2, 0, 0, 2, tempImage7);
-                image197equ.equalize(1000);
-                image197equ.normalize(0, std::numeric_limits<unsigned char>::max());
-            }
-            WRITE_IMAGE(image197equ, directory + "/VIRR-RGB-197-EQU.png");
 
             logger->info("917 Composite...");
-            cimg_library::CImg<unsigned short> image917(2048, reader.lines, 1, 3);
             {
-                image917.draw_image(0, 0, 0, 0, image9);
-                image917.draw_image(1, 0, 0, 1, image1);
-                image917.draw_image(-1, 0, 0, 2, image7);
+                cimg_library::CImg<unsigned short> image917(2048, reader.lines, 1, 3);
+                {
+                    image917.draw_image(0, 0, 0, 0, image9);
+                    image917.draw_image(1, 0, 0, 1, image1);
+                    image917.draw_image(-1, 0, 0, 2, image7);
+                }
+                WRITE_IMAGE(image917, directory + "/VIRR-RGB-917.png");
+                cimg_library::CImg<unsigned short> image917equ(2048, reader.lines, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
+                    tempImage9.equalize(1000);
+                    tempImage1.equalize(1000);
+                    tempImage7.equalize(1000);
+                    image917equ.draw_image(0, 0, 0, 0, tempImage9);
+                    image917equ.draw_image(1, 0, 0, 1, tempImage1);
+                    image917equ.draw_image(-1, 0, 0, 2, tempImage7);
+                    image917equ.equalize(1000);
+                    image917equ.normalize(0, std::numeric_limits<unsigned char>::max());
+                }
+                WRITE_IMAGE(image917equ, directory + "/VIRR-RGB-917-EQU.png");
+                cimg_library::CImg<unsigned short> corrected917equ = image::earth_curvature::correct_earth_curvature(image917equ,
+                                                                                                                     FY3_ORBIT_HEIGHT,
+                                                                                                                     FY3_VIRR_SWATH,
+                                                                                                                     FY3_VIRR_RES);
+                WRITE_IMAGE(corrected917equ, directory + "/VIRR-RGB-917-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image917, directory + "/VIRR-RGB-917.png");
-            cimg_library::CImg<unsigned short> image917equ(2048, reader.lines, 1, 3);
-            {
-                cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
-                tempImage9.equalize(1000);
-                tempImage1.equalize(1000);
-                tempImage7.equalize(1000);
-                image917equ.draw_image(0, 0, 0, 0, tempImage9);
-                image917equ.draw_image(1, 0, 0, 1, tempImage1);
-                image917equ.draw_image(-1, 0, 0, 2, tempImage7);
-                image917equ.equalize(1000);
-                image917equ.normalize(0, std::numeric_limits<unsigned char>::max());
-            }
-            WRITE_IMAGE(image917equ, directory + "/VIRR-RGB-917-EQU.png");
 
             logger->info("197 True Color XFR Composite... (by ZbychuButItWasTaken)");
-            cimg_library::CImg<unsigned short> image197truecolorxfr(2048, reader.lines, 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
+                cimg_library::CImg<unsigned short> image197truecolorxfr(2048, reader.lines, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
-                image::xfr::XFR trueColor(26, 663, 165, 34, 999, 162, 47, 829, 165);
+                    image::xfr::XFR trueColor(26, 663, 165, 34, 999, 162, 47, 829, 165);
 
-                image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
+                    image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
-                image197truecolorxfr.draw_image(1, 0, 0, 0, tempImage1);
-                image197truecolorxfr.draw_image(0, 0, 0, 1, tempImage9);
-                image197truecolorxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                    image197truecolorxfr.draw_image(1, 0, 0, 0, tempImage1);
+                    image197truecolorxfr.draw_image(0, 0, 0, 1, tempImage9);
+                    image197truecolorxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                }
+                WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR.png");
+                cimg_library::CImg<unsigned short> corrected197truecolorxfr = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
+                                                                                                                              FY3_ORBIT_HEIGHT,
+                                                                                                                              FY3_VIRR_SWATH,
+                                                                                                                              FY3_VIRR_RES);
+                WRITE_IMAGE(corrected197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-CORRECTED.png");
+                image197truecolorxfr.equalize(1000);
+                WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-EQU.png");
+                cimg_library::CImg<unsigned short> corrected197truecolorxfrequ = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
+                                                                                                                                 FY3_ORBIT_HEIGHT,
+                                                                                                                                 FY3_VIRR_SWATH,
+                                                                                                                                 FY3_VIRR_RES);
+                WRITE_IMAGE(corrected197truecolorxfrequ, directory + "/VIRR-RGB-197-TRUECOLOR-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR.png");
-            image197truecolorxfr.equalize(1000);
-            WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-EQU.png");
 
             logger->info("197 Night XFR Composite... (by ZbychuButItWasTaken)");
-            cimg_library::CImg<unsigned short> image197nightxfr(2048, reader.lines, 1, 3);
             {
-                cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
+                cimg_library::CImg<unsigned short> image197nightxfr(2048, reader.lines, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
-                image::xfr::XFR trueColor(23, 610, 153, 34, 999, 162, 39, 829, 165);
+                    image::xfr::XFR trueColor(23, 610, 153, 34, 999, 162, 39, 829, 165);
 
-                image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
+                    image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
-                image197nightxfr.draw_image(1, 0, 0, 0, tempImage1);
-                image197nightxfr.draw_image(0, 0, 0, 1, tempImage9);
-                image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                    image197nightxfr.draw_image(1, 0, 0, 0, tempImage1);
+                    image197nightxfr.draw_image(0, 0, 0, 1, tempImage9);
+                    image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                }
+                WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
+                cimg_library::CImg<unsigned short> corrected97nightxfr = image::earth_curvature::correct_earth_curvature(image197nightxfr,
+                                                                                                                         FY3_ORBIT_HEIGHT,
+                                                                                                                         FY3_VIRR_SWATH,
+                                                                                                                         FY3_VIRR_RES);
+                WRITE_IMAGE(corrected97nightxfr, directory + "/VIRR-RGB-197-NIGHT-CORRECTED.png");
+                image197nightxfr.equalize(1000);
+                WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT-EQU.png");
+                cimg_library::CImg<unsigned short> corrected97nightxfrequ = image::earth_curvature::correct_earth_curvature(image197nightxfr,
+                                                                                                                            FY3_ORBIT_HEIGHT,
+                                                                                                                            FY3_VIRR_SWATH,
+                                                                                                                            FY3_VIRR_RES);
+                WRITE_IMAGE(corrected97nightxfrequ, directory + "/VIRR-RGB-197-NIGHT-EQU-CORRECTED.png");
             }
-            WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
-            image197nightxfr.equalize(1000);
-            WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT_EQU.png");
+
+            logger->info("Equalized Ch 4...");
+            {
+                image4.equalize(1000);
+                image4.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image4, directory + "/VIRR-4-EQU.png");
+                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
+                                                                                                                FY3_ORBIT_HEIGHT,
+                                                                                                                FY3_VIRR_SWATH,
+                                                                                                                FY3_VIRR_RES);
+                WRITE_IMAGE(corrected4, directory + "/VIRR-4-EQU-CORRECTED.png");
+            }
         }
 
         void FengyunVIRRDecoderModule::drawUI(bool window)

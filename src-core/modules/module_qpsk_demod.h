@@ -14,6 +14,7 @@
 #include "common/dsp/rational_resampler.h"
 #include "common/snr_estimator.h"
 #include "common/widgets/constellation.h"
+#include "common/widgets/snr_plot.h"
 
 class QPSKDemodModule : public ProcessingModule
 {
@@ -36,6 +37,11 @@ protected:
     const bool d_dc_block;
     const bool d_iq_swap;
 
+    const float d_clock_gain_omega;
+    const float d_clock_mu;
+    const float d_clock_gain_mu;
+    const float d_clock_omega_relative_limit;
+
     const int MAX_SPS = 3; // Maximum sample per symbol the demodulator will accept before resampling the input
     bool resample = false;
 
@@ -56,11 +62,11 @@ protected:
     std::atomic<uint64_t> progress;
 
     M2M4SNREstimator snr_estimator;
-    float snr;
+    float snr, peak_snr;
 
     // UI Stuff
-    float snr_history[200];
     widgets::ConstellationViewer constellation;
+    widgets::SNRPlotViewer snr_plot;
 
 public:
     QPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -74,6 +80,7 @@ public:
 
 public:
     static std::string getID();
+    virtual std::string getIDM() { return getID(); };
     static std::vector<std::string> getParameters();
     static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
 };

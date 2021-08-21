@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
-#include <vector>
+#include "common/ccsds/ccsds.h"
+#include <map>
+#include <array>
 
 #define cimg_use_png
 #define cimg_display 0
@@ -11,26 +12,18 @@ namespace fengyun
 {
     namespace mwhs
     {
-        class MWHSImage
-        {
-        public:
-            unsigned short channels[6][99 * 32];
-            int mk = -1;
-            int lastMkMatch;
-        };
-
         class MWHSReader
         {
         private:
-            std::vector<MWHSImage> imageVector;
-            uint8_t byteBufShift[3];
+            std::map<time_t, std::array<std::array<unsigned short, 98>, 6>> imageData;
+            time_t lastTime;
             unsigned short lineBuf[1000];
 
         public:
             MWHSReader();
             ~MWHSReader();
             int lines;
-            void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);
         };
     }

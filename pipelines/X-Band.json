@@ -18,7 +18,7 @@
                 }
             },
             "cadu": {
-                "fengyun_mpt_decoder": {
+                "new_fengyun_mpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"
@@ -50,7 +50,7 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "new_fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1",
@@ -58,9 +58,54 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "52"
+                },
                 "fengyun_mersi2": {
                     "correct_bowtie": "1"
+                },
+                "fengyun_waai": {},
+                "fengyun_mwri": {},
+                "fengyun_mwhs2": {}
+            }
+        }
+    },
+    "fengyun3_e_ahrpt": {
+        "name": "FengYun-3 E AHRPT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "38400000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0189",
+                    "buffer_size": "8192"
                 }
+            },
+            "cadu": {
+                "new_fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1",
+                    "invert_second_viterbi": "1"
+                }
+            },
+            "products": {
+                "fengyun_satid": {
+                    "scid_hint": "56"
+                },
+                "fengyun_mersill": {
+                    "correct_bowtie": "1"
+                },
+                "fengyun_windrad": {},
+                "fengyun_mwts3": {},
+                "fengyun_mwhs2": {}
             }
         }
     },
@@ -152,7 +197,7 @@
                 }
             },
             "cadu": {
-                "npp_hrd_decoder": {
+                "new_npp_hrd_decoder": {
                     "viterbi_outsync_after": "5",
                     "viterbi_ber_thresold": "0.170",
                     "soft_symbols": "1"

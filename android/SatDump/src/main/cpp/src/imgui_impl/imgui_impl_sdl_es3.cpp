@@ -214,7 +214,11 @@ bool ImGui_ImplSdlGLES3_ProcessEvent(SDL_Event* event)
     case SDL_KEYUP:
         {
             int key = event->key.keysym.sym & ~SDLK_SCANCODE_MASK;
-            io.KeysDown[key] = (event->type == SDL_KEYDOWN);
+            if (key == SDLK_BACKSPACE) {
+                io.KeysDown[SDLK_BACKSPACE] = 1;
+            } else {
+                io.KeysDown[key] = (event->type == SDL_KEYDOWN);
+            }
             io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
             io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
             io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);

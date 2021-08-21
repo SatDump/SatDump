@@ -4,7 +4,7 @@
 
 namespace widgets
 {
-    ConstellationViewer::ConstellationViewer(float hscale, float vscale) : d_hscale(hscale), d_vscale(vscale)
+    ConstellationViewer::ConstellationViewer(float hscale, float vscale, int constellation_size) : d_hscale(hscale), d_vscale(vscale), d_constellation_size(constellation_size)
     {
     }
 
@@ -39,17 +39,17 @@ namespace widgets
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                 ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
+                                 ImVec2(ImGui::GetCursorScreenPos().x + d_constellation_size * ui_scale, ImGui::GetCursorScreenPos().y + d_constellation_size * ui_scale),
                                  ImColor::HSV(0, 0, 0));
 
         for (int i = 0; i < CONST_SIZE; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + sample_buffer_complex_float[i].real() * 100 * d_hscale * ui_scale) % int(200 * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + sample_buffer_complex_float[i].imag() * 100 * d_vscale * ui_scale) % int(200 * ui_scale)),
-                                       2 * ui_scale,
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].real() * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].imag() * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
+                                       2 * ui_scale * (d_constellation_size / 200.0f),
                                        ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
         }
 
-        ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
+        ImGui::Dummy(ImVec2(d_constellation_size * ui_scale + 3, d_constellation_size * ui_scale + 3));
     }
 }

@@ -11,11 +11,15 @@
 
 enum sdr_device_type
 {
+    NONE,
     AIRSPY,
     RTLSDR,
     HACKRF,
     LIMESDR,
-    SPYSERVER
+    AIRSPYHF,
+    SPYSERVER,
+    RTLTCP,
+    FILESRC
 };
 
 class SDRDevice
@@ -46,4 +50,5 @@ void initSDRs();
 std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices();
 std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num);
 std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num);
+sdr_device_type getDeviceIDbyIDString(std::string idString);
 std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, std::map<std::string, std::string> parameters, int num);

@@ -56,7 +56,7 @@ namespace image
 
     int pixel_imag(int row, int col, int h, int w)
     {
-        if (row == 0 && h % 2 == 0 || row == h / 2)
+        if ((row == 0 && h % 2 == 0) || row == h / 2)
             return col > w / 2;
         else
             return row > h / 2;

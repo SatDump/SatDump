@@ -36,7 +36,24 @@ SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, uint64_t id)
         return;
     }
     logger->info("Opened RTL-SDR device!");
+    std::fill(frequency, &frequency[100], 0);
 }
+
+#ifdef __ANDROID__
+SDRRtlSdr::SDRRtlSdr(std::map<std::string, std::string> parameters, int fileDescriptor, std::string devicePath) : SDRDevice(parameters, 0)
+{
+    READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(bias, "bias");
+
+    if (rtlsdr_open2(&dev, fileDescriptor, devicePath.c_str()) > 0)
+    {
+        logger->critical("Could not open RTL-SDR device!");
+        return;
+    }
+    logger->info("Opened RTL-SDR device!");
+    std::fill(frequency, &frequency[100], 0);
+}
+#endif
 
 std::map<std::string, std::string> SDRRtlSdr::getParameters()
 {
@@ -57,6 +74,9 @@ void SDRRtlSdr::start()
     rtlsdr_set_tuner_gain_mode(dev, 1);
     rtlsdr_set_tuner_gain(dev, gain);
     rtlsdr_reset_buffer(dev);
+#ifdef HAS_RTLSDR_SET_BIAS_TEE
+    setBias(bias);
+#endif
     should_run = true;
     workThread = std::thread(&SDRRtlSdr::runThread, this);
 }
@@ -78,7 +98,7 @@ void SDRRtlSdr::drawUI()
 {
     ImGui::Begin("RTL-SDR Control", NULL);
 
-    ImGui::SetNextItemWidth(100);
+    //ImGui::SetNextItemWidth(100);
     ImGui::InputText("MHz", frequency, 100);
 
     ImGui::SameLine();
@@ -89,7 +109,7 @@ void SDRRtlSdr::drawUI()
         setFrequency(d_frequency);
     }
 
-    ImGui::SetNextItemWidth(200);
+    //ImGui::SetNextItemWidth(200);
     if (ImGui::SliderInt("Gain", &gain, 0, 49))
     {
         setGain(gain);
@@ -181,6 +201,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRRtlSdr::getDe
         const char *name = rtlsdr_get_device_name(i);
         results.push_back({std::string(name) + " #" + std::to_string(i), RTLSDR, i});
     }
+
+#ifdef __ANDROID__
+    results.push_back({"RTL-SDR Device", RTLSDR, 0});
+#endif
+
     return results;
 }
 

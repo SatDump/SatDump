@@ -2,7 +2,7 @@
 
 #include "module.h"
 #include <complex>
-#include "common/sathelper/viterbi27.h"
+#include "common/codings/viterbi/viterbi27.h"
 #include <fstream>
 #include "common/dsp/lib/random.h"
 
@@ -11,12 +11,7 @@ namespace terra
     class TerraDBDecoderModule : public ProcessingModule
     {
     protected:
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
-
-        void shiftWithConstantSize(uint8_t *arr, int pos, int length);
-
-        uint8_t *buffer, *buffer_2;
+        uint8_t *buffer;
 
         std::ifstream data_in;
         std::ofstream data_out;
@@ -25,9 +20,9 @@ namespace terra
 
         bool locked = false;
         int errors[4];
-        uint32_t cor;
+        int cor;
 
-        sathelper::Viterbi27 viterbi;
+        viterbi::Viterbi27 viterbi;
 
         // UI Stuff
         float ber_history[200];
@@ -43,6 +38,7 @@ namespace terra
 
     public:
         static std::string getID();
+        virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     };

@@ -89,7 +89,7 @@ namespace fengyun
                 for (int i = 0; i < BUFFER_SIZE; i++)
                 {
                     using namespace std::complex_literals;
-                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 1] / 127.0f) + ((float)soft_buffer[i * 2] / 127.0f) * 1if;
+                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 0] / 127.0f) + ((float)soft_buffer[i * 2 + 1] / 127.0f) * 1if;
                 }
             }
             else
@@ -111,8 +111,10 @@ namespace fengyun
             }
 
             // Run Viterbi!
-            v1_fut = viterbi_pool.push([&](int) { v1 = viterbi1.work(qSamples, inQ, viterbi1_out); });
-            v2_fut = viterbi_pool.push([&](int) { v2 = viterbi2.work(iSamples, inI, viterbi2_out); });
+            v1_fut = viterbi_pool.push([&](int)
+                                       { v1 = viterbi1.work(qSamples, inQ, viterbi1_out); });
+            v2_fut = viterbi_pool.push([&](int)
+                                       { v2 = viterbi2.work(iSamples, inI, viterbi2_out); });
             v1_fut.get();
             v2_fut.get();
 
@@ -210,10 +212,6 @@ namespace fengyun
         data_in.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void FengyunAHRPTDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("FengYun AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -249,11 +247,11 @@ namespace fengyun
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(colorNosync, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(colorSyncing, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
                     else
-                        ImGui::TextColored(colorSynced, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
                 }
             }
         }
@@ -271,13 +269,13 @@ namespace fengyun
                 ImGui::SameLine();
 
                 if (viterbi1.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi1.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber1));
+                ImGui::TextColored(viterbi1.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber1));
 
                 std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
@@ -292,13 +290,13 @@ namespace fengyun
                 ImGui::SameLine();
 
                 if (viterbi2.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi2.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber2));
+                ImGui::TextColored(viterbi2.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber2));
 
                 std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
@@ -315,11 +313,11 @@ namespace fengyun
                 ImGui::SameLine();
 
                 if (deframer.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (deframer.getState() == 2 || deframer.getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
             }
         }
         ImGui::EndGroup();

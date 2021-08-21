@@ -12,22 +12,39 @@ namespace meteor
     METEORHRPTDemodModule::METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                         d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                        constellation(90.0f / 100.0f, 15.0f / 100.0f)
+                                                                                                                                                        constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
+        snr = 0;
+        peak_snr = 0;
     }
 
     void METEORHRPTDemodModule::init()
     {
+        float symbolrate = 665400;
+        float sps = float(d_samplerate) / symbolrate;
+
+        logger->info("SPS : " + std::to_string(sps));
+
         // Init DSP blocks
         if (input_data_type == DATA_FILE)
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+
+        // AGC
         agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, 665400.0f * 2.2f, 0.5f, 31));
+
+        // RRC
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, symbolrate * 2.2f, 0.5f, 31));
+
+        // PLL
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(rrc->output_stream, 0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
-        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(((float)d_samplerate / (float)665400) / 2.0f), 1.0 / round(((float)d_samplerate / (float)665400) / 2.0f), d_buffer_size, 1);
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, ((float)d_samplerate / (float)665400) / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.001f);
+
+        // Moving AVG
+        mov = std::make_shared<dsp::FFMovingAverageBlock>(pll->output_stream, round(sps / 2.0f), 1.0 / round(sps / 2.0f), d_buffer_size, 1);
+
+        // Clock recovery
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(mov->output_stream, sps / 2.0f, powf(40e-3, 2) / 4.0f, 1.0f, 40e-3, 0.001f);
     }
 
     std::vector<ModuleDataType> METEORHRPTDemodModule::getInputTypes()
@@ -81,6 +98,13 @@ namespace meteor
             if (dat_size <= 0)
                 continue;
 
+            // Estimate SNR, only on part of the samples to limit CPU usage
+            snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
+            snr = snr_estimator.snr();
+
+            if (snr > peak_snr)
+                peak_snr = snr;
+
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
             rec->output_stream->flush();
@@ -131,7 +155,18 @@ namespace meteor
         constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
         constellation.draw();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            // Show SNR information
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            snr_plot.draw(snr, peak_snr);
+        }
+        ImGui::EndGroup();
+
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

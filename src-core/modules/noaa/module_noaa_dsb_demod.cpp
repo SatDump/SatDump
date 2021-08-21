@@ -13,8 +13,11 @@ namespace noaa
     NOAADSBDemodModule::NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                   d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                   d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                  constellation(90.0f / 100.0f, 15.0f / 100.0f)
+                                                                                                                                                  constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
+        snr = 0;
+        peak_snr = 0;
+
         float symbolrate = 8320;                                           // Symbolrate
         float input_sps = (float)d_samplerate / symbolrate;                // Compute input SPS
         resample = input_sps > MAX_SPS;                                    // If SPS is over MAX_SPS, we resample
@@ -103,6 +106,13 @@ namespace noaa
             if (dat_size <= 0)
                 continue;
 
+            // Estimate SNR, only on part of the samples to limit CPU usage
+            snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
+            snr = snr_estimator.snr();
+
+            if (snr > peak_snr)
+                peak_snr = snr;
+
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, rec->output_stream->readBuf, dat_size);
 
             rec->output_stream->flush();
@@ -154,10 +164,6 @@ namespace noaa
         data_out.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void NOAADSBDemodModule::drawUI(bool window)
     {
         ImGui::Begin("NOAA DSB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -171,6 +177,10 @@ namespace noaa
 
         ImGui::BeginGroup();
         {
+            // Show SNR information
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            snr_plot.draw(snr, peak_snr);
+
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
@@ -178,11 +188,11 @@ namespace noaa
                 ImGui::SameLine();
 
                 if (def->getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (def->getState() == 2 || def->getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("Frames : ");
 
@@ -193,7 +203,8 @@ namespace noaa
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

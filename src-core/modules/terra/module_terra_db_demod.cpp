@@ -12,7 +12,7 @@ namespace terra
                                                                                                                                                   d_samplerate(std::stoi(parameters["samplerate"])),
                                                                                                                                                   d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                                   d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
-                                                                                                                                                  constellation(0.5f, 0.5f)
+                                                                                                                                                  constellation(0.5f, 0.5f, demod_constellation_size)
     {
         // Init DSP blocks
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
@@ -24,6 +24,7 @@ namespace terra
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
         snr = 0;
+        peak_snr = 0;
     }
 
     std::vector<ModuleDataType> TerraDBDemodModule::getInputTypes()
@@ -79,6 +80,9 @@ namespace terra
             snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
 
+            if (snr > peak_snr)
+                peak_snr = snr;
+
             for (int i = 0; i < dat_size; i++)
             {
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real() * 50);
@@ -92,7 +96,7 @@ namespace terra
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
@@ -108,10 +112,6 @@ namespace terra
         data_out.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void TerraDBDemodModule::drawUI(bool window)
     {
         ImGui::Begin("Terra DB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -125,17 +125,9 @@ namespace terra
 
         ImGui::BeginGroup();
         {
+            // Show SNR information
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-            {
-                ImGui::Text("SNR (dB) : ");
-                ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
-
-                std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-                snr_history[200 - 1] = snr;
-
-                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-            }
+            snr_plot.draw(snr, peak_snr);
         }
         ImGui::EndGroup();
 

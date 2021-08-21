@@ -8,6 +8,11 @@ include(CheckCCompilerFlag)
 file(GLOB_RECURSE SatDump_core_CPPS  *.cpp 
                                      common/aec/*.c
                                      common/predict/*.c
+                                     common/bzlib/*.c
+                                     common/miniz/*.c
+                                     common/libtom/*.c
+                                     common/jpeg/*.c
+                                     common/dlfcn/dlfcn.c
 )
 
 find_package(PkgConfig)
@@ -35,6 +40,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
+    target_link_libraries(satdump_core PUBLIC nng.dll)
 
     if(USE_VIDEO_ENCODER)
         target_link_libraries(satdump_core PUBLIC libavcodec.dll)
@@ -60,13 +66,16 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC jpeg)
 
     # VOLK
-    target_link_libraries(satdump_core PUBLIC volk cpufeatures m log)
+    target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
 
     # LibPNG
     target_link_libraries(satdump_core PUBLIC png zlib)
 
     # FFTW3
     target_link_libraries(satdump_core PUBLIC fftw)
+
+    # NNG
+    #target_link_libraries(satdump_core PUBLIC nng)
 else()
     # LibCorrect
     find_library(CORRECT_LIBRARY correct REQUIRED)
@@ -103,8 +112,12 @@ else()
     else()  
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-        target_link_libraries(satdump_core PUBLIC stdc++fs)
+        target_link_libraries(satdump_core PUBLIC stdc++fs atomic)
     endif()
+
+    # NNG
+    find_library(NNG_LIBRARY nng REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${NNG_LIBRARY})
     
     if(USE_VIDEO_ENCODER)
         # libavcodec
@@ -133,6 +146,11 @@ else()
          target_link_libraries(satdump_core PUBLIC ${ZSTD_LIBRARY}) 
         target_compile_definitions(satdump_core PUBLIC ENABLE_DECOMPRESSION="1")
     endif()
+
+    # Dynamic linking
+    target_link_libraries(satdump_core PUBLIC dl)
 endif()
 
 install(TARGETS satdump_core DESTINATION lib)
+install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")

@@ -10,3 +10,5 @@ SATDUMP_DLL extern std::function<void(unsigned int, uint32_t *, int, int)> updat
 SATDUMP_DLL extern std::function<void(unsigned int)> deleteImageTexture;
 
 void ushort_to_rgba(uint16_t *input, uint32_t *output, int size, int channels = 1);
+
+void uchar_to_rgba(uint8_t *input, uint32_t *output, int size, int channels = 1);

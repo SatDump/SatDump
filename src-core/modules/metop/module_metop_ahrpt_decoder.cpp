@@ -54,7 +54,7 @@ namespace metop
                 for (int i = 0; i < BUFFER_SIZE; i++)
                 {
                     using namespace std::complex_literals;
-                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 1] / 127.0f) + ((float)soft_buffer[i * 2] / 127.0f) * 1if;
+                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 0] / 127.0f) + ((float)soft_buffer[i * 2 + 1] / 127.0f) * 1if;
                 }
             }
             else
@@ -99,10 +99,6 @@ namespace metop
         data_in.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void MetOpAHRPTDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("MetOp AHRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -142,13 +138,13 @@ namespace metop
                 ImGui::SameLine();
 
                 if (viterbi.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? colorNosync : colorSynced, UITO_C_STR(ber));
+                ImGui::TextColored(viterbi.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
@@ -165,11 +161,11 @@ namespace metop
                 ImGui::SameLine();
 
                 if (deframer.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (deframer.getState() == 2 || deframer.getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -182,11 +178,11 @@ namespace metop
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(colorNosync, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(colorSyncing, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
                     else
-                        ImGui::TextColored(colorSynced, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
                 }
             }
         }

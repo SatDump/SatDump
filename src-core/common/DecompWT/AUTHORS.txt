@@ -1,0 +1,4 @@
+PublicDecompWT
+Copyright 2019 EUMETSAT
+
+This product includes softwar edeveloped at EUMETSAT (http://www.eumetsat.int/).

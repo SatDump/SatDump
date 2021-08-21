@@ -1,6 +1,9 @@
 #include "image.h"
-#include <jpeglib.h>
 #include <stdexcept>
+extern "C"
+{
+#include "common/jpeg/jpeglib.h"
+}
 
 namespace image
 {
@@ -59,9 +62,14 @@ namespace image
         longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length)
+    static void libjpeg_error_func_ignore(j_common_ptr /*cinfo*/)
     {
-        cimg_library::CImg<unsigned short> img;
+        //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
+    }
+
+    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
+    {
+        cimg_library::CImg<unsigned char> img;
         unsigned char *jpeg_decomp = NULL;
 
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
@@ -70,7 +78,7 @@ namespace image
 
         // Init
         cinfo.err = jpeg_std_error(&jerr.pub);
-        jerr.pub.error_exit = libjpeg_error_func;
+        jerr.pub.error_exit = ignore_errors ? libjpeg_error_func_ignore : libjpeg_error_func;
 
         if (setjmp(jerr.setjmp_buffer))
         {
@@ -82,7 +90,7 @@ namespace image
         jpeg_create_decompress(&cinfo);
 
         // Parse and start decompressing
-        jpeg_mem_src(&cinfo, data, length);
+        jpeg_mem__src(&cinfo, data, length);
         jpeg_read_header(&cinfo, FALSE);
         jpeg_start_decompress(&cinfo);
 
@@ -102,7 +110,7 @@ namespace image
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
-        img = cimg_library::CImg<unsigned short>(cinfo.image_width, cinfo.image_height, 1, 1);
+        img = cimg_library::CImg<unsigned char>(cinfo.image_width, cinfo.image_height, 1, 1);
 
         // Copy over
         for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
@@ -171,11 +179,37 @@ namespace image
         delete[] sorted_array;
     }
 
-    void linear_invert(cimg_library::CImg<unsigned short> &image)
+    template <typename T>
+    void linear_invert(cimg_library::CImg<T> &image)
     {
+        float scale = std::numeric_limits<T>::max() - 1;
+
         for (int i = 0; i < image.width() * image.height(); i++)
         {
-            image[i] = 65535 - image[i];
+            image[i] = scale - image[i];
         }
     }
+
+    void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount)
+    {
+        float brightness_v = brightness / 2.0f;
+        float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
+
+        for (int i = 0; i < image.height() * image.width() * channelCount; i++)
+        {
+            float v = image[i];
+
+            if (brightness_v < 0.0f)
+                v = v * (65535.0f + brightness_v);
+            else
+                v = v + ((65535.0f - v) * brightness_v);
+
+            v = (v - 32767.5f) * slant + 32767.5f;
+
+            image[i] = std::min<float>(65535, std::max<float>(0, v * 2.0f));
+        }
+    }
+
+    template void linear_invert<unsigned char>(cimg_library::CImg<unsigned char> &);
+    template void linear_invert<unsigned short>(cimg_library::CImg<unsigned short> &);
 }

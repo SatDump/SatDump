@@ -37,7 +37,7 @@ namespace fengyun
             for (int i = 0; i < 8192; i++)
             {
                 uint16_t pixel = mersiLineBuffer[i];
-                imageBuffer[frames * 8192 + (8192 - i)] = pixel * 15;
+                imageBuffer[frames * 8192 + (8191 - i)] = pixel * 15;
             }
 
             // Frame counter
@@ -52,5 +52,5 @@ namespace fengyun
         {
             return cimg_library::CImg<unsigned short>(&imageBuffer[0], 8192, frames);
         }
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

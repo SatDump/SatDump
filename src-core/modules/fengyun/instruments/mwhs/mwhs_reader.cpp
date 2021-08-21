@@ -1,4 +1,6 @@
 #include "mwhs_reader.h"
+#include "common/ccsds/ccsds_time.h"
+#include "logger.h"
 
 namespace fengyun
 {
@@ -6,7 +8,6 @@ namespace fengyun
     {
         MWHSReader::MWHSReader()
         {
-            imageVector.push_back(MWHSImage());
             lines = 6;
         }
 
@@ -14,120 +15,69 @@ namespace fengyun
         {
         }
 
-        void MWHSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void MWHSReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1018)
                 return;
 
+            time_t currentTime = ccsds::parseCCSDSTime(packet, 10957) + 12 * 3600;
             int marker = packet.payload[350] & 2;
 
-            int counter = packet.payload[79] & 0b00011111;
-            int mk = (packet.payload[79] >> 5) & 1;
-
-            int pos = 172 + 30 * 6;
-
-            int shift = 3;
-
-            for (int i = 0; i < 500; i++)
+            if (imageData.count(currentTime) <= 0 && marker == 0)
             {
-                byteBufShift[0] = packet.payload[pos + i * 2 + 0] << shift | packet.payload[pos + i * 2 + 1] >> (8 - shift);
-                byteBufShift[1] = packet.payload[pos + i * 2 + 1] << shift | packet.payload[pos + i * 2 + 2] >> (8 - shift);
-
-                lineBuf[i] = byteBufShift[0] << 8 | byteBufShift[1];
+                imageData.insert(std::pair<time_t, std::array<std::array<unsigned short, 98>, 6>>(currentTime, std::array<std::array<unsigned short, 98>, 6>()));
+                lines++;
+                lastTime = currentTime;
             }
 
-            if (imageVector[imageVector.size() - 1].mk == -1)
-                imageVector[imageVector.size() - 1].mk = mk;
+            if (marker == 2)
+                currentTime = lastTime;
 
-            if (mk == imageVector[imageVector.size() - 1].mk)
+            int pos = 172 + 30 * 6;
+            for (int i = 0; i < 500; i++)
             {
-                imageVector[imageVector.size() - 1].lastMkMatch = counter;
+                lineBuf[i] = packet.payload[pos + i * 2 + 0] << 8 | packet.payload[pos + i * 2 + 1];
             }
 
             for (int i = 0; i < 49; i++)
             {
-                imageVector[imageVector.size() - 1].channels[0][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 0];
-                imageVector[imageVector.size() - 1].channels[1][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 1];
-                imageVector[imageVector.size() - 1].channels[2][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 2];
-                imageVector[imageVector.size() - 1].channels[3][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 3];
-                imageVector[imageVector.size() - 1].channels[4][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 4];
-                imageVector[imageVector.size() - 1].channels[5][counter * 99 + (marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 5];
+                imageData[currentTime][0][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 0];
+                imageData[currentTime][1][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 1];
+                imageData[currentTime][2][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 2];
+                imageData[currentTime][3][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 3];
+                imageData[currentTime][4][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 4];
+                imageData[currentTime][5][(marker == 0 ? 49 : 0) + i] = lineBuf[i * 6 + 5];
             }
-
-            for (int i = 0; i < 6; i++)
-            {
-                if (mk == 1)
-                    imageVector[imageVector.size() - 1].channels[i][counter * 99 + 98] = 65535;
-                else
-                    imageVector[imageVector.size() - 1].channels[i][counter * 99 + 98] = 0;
-            }
-
-            if (counter == 31 && marker == 0)
-            {
-                imageVector.push_back(MWHSImage());
-                lines += 6;
-            }
-
-            lines++;
         }
 
         cimg_library::CImg<unsigned short> MWHSReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img(98, imageVector.size() * 6, 1, 1);
+            std::vector<std::pair<time_t, std::array<std::array<unsigned short, 98>, 6>>> imageVector(imageData.begin(), imageData.end());
 
-            int line = 0;
-            int last = 1;
+            // Sort by timestamp
+            std::sort(imageVector.begin(), imageVector.end(),
+                      [](std::pair<time_t, std::array<std::array<unsigned short, 98>, 6>> &el1,
+                         std::pair<time_t, std::array<std::array<unsigned short, 98>, 6>> &el2)
+                      {
+                          return el1.first < el2.first;
+                      });
 
-            // Reconstitute the image. Works "OK", not perfect...
-            for (int cnt = 0; cnt < (int)imageVector.size(); cnt++)
+            cimg_library::CImg<unsigned short> img(98, imageVector.size(), 1, 1);
+
+            if (imageVector.size() > 0)
             {
-                // Count 0s on the side
-                int zeros = 0;
-                for (int i = 0; i < 31; i++)
+                int line = 0;
+
+                // Reconstitute the image. Works "OK", not perfect...
+                for (const std::pair<time_t, std::array<std::array<unsigned short, 98>, 6>> &lineData : imageVector)
                 {
-                    if (imageVector[imageVector.size() - cnt].channels[channel][i * 99] == 0)
-                        zeros++;
-                }
-
-                if (zeros > 10)
-                    continue;
-
-                int differences = 0;
-                int lastMarker = imageVector[imageVector.size() - cnt].channels[channel][0 * 99 + 98];
-                for (int i = 1; i < 31; i++)
-                {
-                    if (imageVector[imageVector.size() - cnt].channels[channel][i * 99 + 98] != lastMarker)
-                        differences++;
-                    lastMarker = imageVector[imageVector.size() - cnt].channels[channel][i * 99 + 98];
-                }
-
-                if (differences == 0 && last != 0)
-                {
-                    imageVector[imageVector.size() - cnt].lastMkMatch = imageVector[imageVector.size() - (cnt + 1)].lastMkMatch + 6;
-
-                    if (imageVector[imageVector.size() - cnt].lastMkMatch > 31)
-                        imageVector[imageVector.size() - cnt].lastMkMatch -= 32;
-                }
-                else if (differences == 0 && last == 0)
-                {
-                    continue;
-                }
-
-                last = differences;
-
-                for (int i = 0; i < 6; i++)
-                {
-                    std::memcpy(&img.data()[line * 98], &imageVector[imageVector.size() - cnt].channels[channel][(imageVector[imageVector.size() - cnt].lastMkMatch - i) * 99], 2 * 98);
+                    std::memcpy(&img.data()[line * 98], lineData.second[channel].data(), 2 * 98);
                     line++;
                 }
+
+                img.normalize(0, 65535);
+                img.equalize(1000);
             }
-
-            img.normalize(0, 65535);
-            img.equalize(1000);
-
-            img.crop(0, 0, 98, line);
-
-            img.mirror('x');
 
             return img;
         }

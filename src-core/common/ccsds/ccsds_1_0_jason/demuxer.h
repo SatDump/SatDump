@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "ccsds.h"
+#include "../ccsds.h"
 
 namespace ccsds
 {

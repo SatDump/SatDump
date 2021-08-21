@@ -7,8 +7,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX14_EXTENSION_COMPILE_OPTION "-std=c++17")
 
 # Build in release mod so it isn't unusably slow
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+# We have to disable fortify... Or some stuff doesn't build
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_RELEASE   "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_DEBUG     "-O3 -D_FORTIFY_SOURCE=0")
 
 #set(CFLAGS "${CFLAGS} -D__ANDROID_API__=29")
 #set(CMAKE_CXX_FLAGS "-fPIE ${CMAKE_CXX_FLAGS}")
@@ -28,10 +31,10 @@ file(GLOB_RECURSE SATDUMP_ANDROID_FILES
     src/*.cpp
 )
 
-set(SATDUM_ANDROID_SOURCES ${IMGUI_FILES} ${SATDUMP_ANDROID_FILES} ${GLLOAD_FILES})
+set(SATDUMP_ANDROID_SOURCES ${IMGUI_FILES} ${SATDUMP_ANDROID_FILES} ${GLLOAD_FILES})
 
 # Build as a library for Android, as an executable otherwise
-add_library(satdump_android SHARED ${SATDUM_ANDROID_SOURCES})
+add_library(satdump_android SHARED ${SATDUMP_ANDROID_SOURCES})
 
 target_link_libraries(satdump_android PUBLIC ${SDL2_LIBRARY} GLESv2)
 target_include_directories(satdump_android PRIVATE src/)
@@ -74,13 +77,26 @@ add_library(fftw STATIC IMPORTED)
 set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fftw3/${ANDROID_ABI}/libfftw3f.a)
 include_directories(deps/fftw3/jni)
 
+# LIBNNG
+#add_library(nng STATIC IMPORTED)
+#set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/nng/${ANDROID_ABI}/libnng.a)
+#include_directories(deps/nng/jni)
+
 # Enable live processing for remove devices. WIP
-set(BUILD_LIVE OFF)
+set(BUILD_LIVE ON)
 if(BUILD_LIVE)
-    set(ENABLE_SDR_AIRSPY OFF)
-    set(ENABLE_SDR_RTLSDR OFF)
-    set(ENABLE_SDR_HACKRF OFF)
-    set(ENABLE_SDR_SPYSERVER ON)
+    add_subdirectory(deps/libusb)
+    include_directories(deps/libusb)
+
+    add_subdirectory(deps/librtlsdr)
+    include_directories(deps/librtlsdr)
+
+    add_subdirectory(deps/libairspy)
+    include_directories(deps/libairspy)
+
+    add_subdirectory(deps/libairspyhf)
+    include_directories(deps/libairspyhf)
+
     add_subdirectory(../../../../../libsdr ${CMAKE_BINARY_DIR}/libsdr)
 endif()
 
@@ -100,7 +116,6 @@ target_include_directories(satdump_android PRIVATE ${ANDROID_NDK}/sources/androi
 # You need to link static libraries against your shared native library.
 target_link_libraries(satdump_android PUBLIC app-glue ${log-lib})
 
-
 # LIBRTL-SDR
 #add_library(rtlsdr STATIC IMPORTED)
 #set_target_properties(rtlsdr PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/rtlsdr/${ANDROID_ABI}/librtlsdr.a)
@@ -110,5 +125,3 @@ target_link_libraries(satdump_android PUBLIC app-glue ${log-lib})
 #add_library(libusb STATIC IMPORTED)
 #set_target_properties(libusb PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/libusb/${ANDROID_ABI}/libusb1.0.a)
 #include_directories(deps/libusb/jni/)
-
-#target_link_libraries(satdump_android PUBLIC rtlsdr libusb)

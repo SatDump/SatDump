@@ -2,7 +2,11 @@
 
 #ifndef DISABLE_SDR_AIRSPY
 #include "sdr.h"
+#ifdef __ANDROID__
+#include <airspy.h>
+#else
 #include <libairspy/airspy.h>
+#endif
 
 class SDRAirspy : public SDRDevice
 {
@@ -15,6 +19,9 @@ private:
     static int _rx_callback(airspy_transfer *t);
 
 public:
+#ifdef __ANDROID__
+    SDRAirspy(std::map<std::string, std::string> parameters, int fileDescriptor, std::string devicePath);
+#endif
     SDRAirspy(std::map<std::string, std::string> parameters, uint64_t id = 0);
     ~SDRAirspy();
     std::map<std::string, std::string> getParameters();
