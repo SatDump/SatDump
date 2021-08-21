@@ -103,9 +103,12 @@ namespace metop
             cimg_library::CImg<unsigned short> image1 = ascatreader.getChannel(0);
             cimg_library::CImg<unsigned short> image2 = ascatreader.getChannel(1);
             cimg_library::CImg<unsigned short> image3 = ascatreader.getChannel(2);
+            image3.mirror('x');
             cimg_library::CImg<unsigned short> image4 = ascatreader.getChannel(3);
+            image4.mirror('x');
             cimg_library::CImg<unsigned short> image5 = ascatreader.getChannel(4);
             cimg_library::CImg<unsigned short> image6 = ascatreader.getChannel(5);
+            image5.mirror('x');
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
@@ -114,16 +117,16 @@ namespace metop
                 int height = ascatreader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(256 * 0, 0, 0, 0, image1);
-                imageAll.draw_image(256 * 1, 0, 0, 0, image4);
+                imageAll.draw_image(256 * 0, 0, 0, 0, image6);
+                imageAll.draw_image(256 * 1, 0, 0, 0, image3);
 
                 // Row 2
-                imageAll.draw_image(256 * 0, height, 0, 0, image2);
-                imageAll.draw_image(256 * 1, height, 0, 0, image5);
+                imageAll.draw_image(256 * 0, height, 0, 0, image5);
+                imageAll.draw_image(256 * 1, height, 0, 0, image2);
 
                 // Row 3
-                imageAll.draw_image(256 * 0, height * 2, 0, 0, image3);
-                imageAll.draw_image(256 * 1, height * 2, 0, 0, image6);
+                imageAll.draw_image(256 * 0, height * 2, 0, 0, image4);
+                imageAll.draw_image(256 * 1, height * 2, 0, 0, image1);
             }
             WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL.png");
 
@@ -140,16 +143,16 @@ namespace metop
                 int height = ascatreader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(256 * 0, 0, 0, 0, image1);
-                imageAll.draw_image(256 * 1, 0, 0, 0, image4);
+                imageAll.draw_image(256 * 0, 0, 0, 0, image6);
+                imageAll.draw_image(256 * 1, 0, 0, 0, image3);
 
                 // Row 2
-                imageAll.draw_image(256 * 0, height, 0, 0, image2);
-                imageAll.draw_image(256 * 1, height, 0, 0, image5);
+                imageAll.draw_image(256 * 0, height, 0, 0, image5);
+                imageAll.draw_image(256 * 1, height, 0, 0, image2);
 
                 // Row 3
-                imageAll.draw_image(256 * 0, height * 2, 0, 0, image3);
-                imageAll.draw_image(256 * 1, height * 2, 0, 0, image6);
+                imageAll.draw_image(256 * 0, height * 2, 0, 0, image4);
+                imageAll.draw_image(256 * 1, height * 2, 0, 0, image1);
             }
             WRITE_IMAGE(imageAll, directory + "/ASCAT-EQU-ALL.png");
         }
