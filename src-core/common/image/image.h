@@ -11,7 +11,7 @@ namespace image
     void white_balance(cimg_library::CImg<unsigned short> &image, float percentileValue = 0.05f, int channelCount = 3);
 
     // Decompress JPEG Data from memory
-    cimg_library::CImg<unsigned short> decompress_jpeg(uint8_t *data, int length);
+    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors = false);
 
     // Simple despeckle
     void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold);
@@ -20,5 +20,9 @@ namespace image
     void extract_percentile(cimg_library::CImg<unsigned short> &image, float percentile1, float percentile2, int channelCount = 3);
 
     // Linear invert
-    void linear_invert(cimg_library::CImg<unsigned short> &image);
+    template <typename T>
+    void linear_invert(cimg_library::CImg<T> &image);
+
+    // Contrast and brightness correction
+    void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount = 3);
 }

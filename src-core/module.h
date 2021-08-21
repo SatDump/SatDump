@@ -9,11 +9,19 @@
 #include "imgui/imgui_flags.h"
 #include "dll_export.h"
 #include "common/dsp/buffer.h"
+#include "nlohmann/json.hpp"
+#include "plugin.h"
 
+// Utils
 #define WRITE_IMAGE(image, path)               \
     image.save_png(std::string(path).c_str()); \
     d_output_files.push_back(path);
 #define UITO_C_STR(input) "%s", std::to_string(input).c_str()
+
+// Colors
+#define IMCOLOR_NOSYNC ImColor::HSV(0 / 360.0, 1, 1, 1.0)
+#define IMCOLOR_SYNCING ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0)
+#define IMCOLOR_SYNCED ImColor::HSV(113.0 / 360.0, 1, 1, 1.0)
 
 enum ModuleDataType
 {
@@ -30,6 +38,8 @@ protected:
     std::vector<std::string> d_output_files;
     std::map<std::string, std::string> d_parameters;
     ModuleDataType input_data_type, output_data_type;
+
+    bool streamingInput; // Used to know if we should treat the input as a stream or file
 
 public:
     ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -53,7 +63,11 @@ public:
     std::atomic<bool> input_active;
 
 public:
+    nlohmann::json module_stats;
+
+public:
     static std::string getID();
+    virtual std::string getIDM() = 0;
     static std::vector<std::string> getParameters();
     static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
 };
@@ -62,4 +76,5 @@ SATDUMP_DLL extern std::map<std::string, std::function<std::shared_ptr<Processin
 
 void registerModules();
 
-SATDUMP_DLL extern float ui_scale; // UI Scaling factor, for DPI scaling
+SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
+SATDUMP_DLL extern int demod_constellation_size; // Demodulator constellation size

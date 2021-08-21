@@ -16,6 +16,7 @@ LivePipeline::LivePipeline(Pipeline pipeline,
             else
                 final_parameters.emplace(param.first, param.second);
 
+        logger->info("Module " + pipeline.steps[currentModule.first].modules[currentModule.second].module_name);
         logger->debug("Parameters :");
         for (const std::pair<std::string, std::string> param : final_parameters)
             logger->debug("   - " + param.first + " : " + param.second);
@@ -39,11 +40,11 @@ void LivePipeline::start(std::shared_ptr<dsp::stream<std::complex<float>>> strea
     modules[0]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
     modules[0]->init();
     modules[0]->input_active = true;
-    threadPool.push([=](int)
-                    {
-                        logger->info("Start processing...");
-                        modules[0]->process();
-                    });
+    moduleFutures.push_back(threadPool.push([=](int)
+                                            {
+                                                logger->info("Start processing...");
+                                                modules[0]->process();
+                                            }));
 
     // Init whatever's in the middle
     for (int i = 1; i < (int)modules.size() - 1; i++)
@@ -54,11 +55,11 @@ void LivePipeline::start(std::shared_ptr<dsp::stream<std::complex<float>>> strea
         modules[i]->setOutputType(DATA_STREAM);
         modules[i]->init();
         modules[i]->input_active = true;
-        threadPool.push([=](int)
-                        {
-                            logger->info("Start processing...");
-                            modules[i]->process();
-                        });
+        moduleFutures.push_back(threadPool.push([=](int)
+                                                {
+                                                    logger->info("Start processing...");
+                                                    modules[i]->process();
+                                                }));
     }
 
     // Init the last module
@@ -70,19 +71,21 @@ void LivePipeline::start(std::shared_ptr<dsp::stream<std::complex<float>>> strea
         modules[num]->setOutputType(DATA_FILE);
         modules[num]->init();
         modules[num]->input_active = true;
-        threadPool.push([=](int)
-                        {
-                            logger->info("Start processing...");
-                            modules[num]->process();
-                        });
+        moduleFutures.push_back(threadPool.push([=](int)
+                                                {
+                                                    logger->info("Start processing...");
+                                                    modules[num]->process();
+                                                }));
     }
 }
 
 void LivePipeline::stop()
 {
     logger->info("Stop processing");
-    for (std::shared_ptr<ProcessingModule> mod : modules)
+    for (int i = 0; i < (int)modules.size(); i++)
     {
+        std::shared_ptr<ProcessingModule> mod = modules[i];
+
         mod->input_active = false;
 
         if (mod->getInputType() == DATA_DSP_STREAM)
@@ -97,6 +100,7 @@ void LivePipeline::stop()
         }
         //logger->info("mod");
         mod->stop();
+        moduleFutures[i].get();
     }
 }
 
@@ -104,6 +108,17 @@ std::vector<std::string> LivePipeline::getOutputFiles()
 {
     int num = modules.size() - 1;
     return modules[num]->getOutputs();
+}
+
+nlohmann::json LivePipeline::getModulesStats()
+{
+    nlohmann::json stats;
+    for (std::shared_ptr<ProcessingModule> mod : modules)
+    {
+        if (mod->module_stats.size() > 0)
+            stats[mod->getIDM()] = mod->module_stats;
+    }
+    return stats;
 }
 
 void LivePipeline::drawUIs()

@@ -10,7 +10,8 @@ namespace elektro_arktika
 {
     TLMDemodModule::TLMDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                           d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"]))
+                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"])),
+                                                                                                                                          constellation(1, 1, demod_constellation_size)
     {
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
@@ -18,6 +19,7 @@ namespace elektro_arktika
         repacked_buffer = new uint8_t[d_buffer_size * 2];
         real_buffer = new float[d_buffer_size * 2];
         snr = 0;
+        peak_snr = 0;
     }
 
     void TLMDemodModule::init()
@@ -134,6 +136,9 @@ namespace elektro_arktika
             snr_estimator.update(rec->output_stream->readBuf, dat_size);
             snr = snr_estimator.snr();
 
+            if (snr > peak_snr)
+                peak_snr = snr;
+
             rec->output_stream->flush();
 
             volk_32fc_deinterleave_real_32f(real_buffer, rec->output_stream->readBuf, dat_size);
@@ -150,6 +155,10 @@ namespace elektro_arktika
                 else
                     output_fifo->write((uint8_t *)&cadu, CADU_SIZE);
             }
+
+            // Update module stats
+            module_stats["snr"] = snr;
+            module_stats["lock_state"] = deframer.getState();
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -187,10 +196,6 @@ namespace elektro_arktika
             data_out.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void TLMDemodModule::drawUI(bool window)
     {
         ImGui::Begin("ELEKTRO-L / ARKTIKA-M TLM Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -206,14 +211,9 @@ namespace elektro_arktika
         {
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             {
-                ImGui::Text("SNR (dB) : ");
-                ImGui::SameLine();
-                ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
-
-                std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-                snr_history[200 - 1] = snr;
-
-                ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                // Show SNR information
+                ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+                snr_plot.draw(snr, peak_snr);
             }
 
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
@@ -223,16 +223,17 @@ namespace elektro_arktika
                 ImGui::SameLine();
 
                 if (deframer.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (deframer.getState() == 2 || deframer.getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
             }
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

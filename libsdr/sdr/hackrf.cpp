@@ -31,6 +31,7 @@ SDRHackRF::SDRHackRF(std::map<std::string, std::string> parameters, uint64_t id)
     }
     hackrf_reset(dev);
     logger->info("Opened HackRF device!");
+    std::fill(frequency, &frequency[100], 0);
 }
 
 std::map<std::string, std::string> SDRHackRF::getParameters()
@@ -55,6 +56,8 @@ void SDRHackRF::start()
     hackrf_set_amp_enable(dev, amp);
     hackrf_set_lna_gain(dev, lna_gain);
     hackrf_set_vga_gain(dev, vga_gain);
+
+    hackrf_set_antenna_enable(dev, bias);
 
     hackrf_start_rx(dev, _rx_callback, &output_stream);
 }
@@ -135,7 +138,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRHackRF::getDe
 
     for (int i = 0; i < devlist->devicecount; i++)
     {
-        std::stringstream ss, ss2;
+        std::stringstream ss;
         uint64_t id = 0;
         ss << devlist->serial_numbers[i];
         ss >> std::hex >> id;

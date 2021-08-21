@@ -186,7 +186,7 @@ bool ImGui_ImplSdlGLES2_ProcessEvent(SDL_Event* event)
             // We have to handle the Backspace key as a special case here
             int key = event->key.keysym.sym & ~SDLK_SCANCODE_MASK;
             if (key == SDLK_BACKSPACE) {
-                io.KeysDown[key] = 1;
+                io.KeysDown[SDLK_BACKSPACE] = 1;
             } else {
                 io.KeysDown[key] = (event->type == SDL_KEYDOWN);
             }

@@ -17,7 +17,7 @@ namespace aqua
                 delete[] channels[i];
         }
 
-        void AMSUA1Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void AMSUA1Reader::work(ccsds::CCSDSPacket &packet)
         {
             // First part of the scan
             if (packet.header.apid == 261)

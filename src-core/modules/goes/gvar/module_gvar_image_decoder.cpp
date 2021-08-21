@@ -6,6 +6,12 @@
 #include "gvar_derand.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "gvar_headers.h"
+#include "common/utils.h"
+#include "resources.h"
+#include "common/image/hue_saturation.h"
+#include "common/image/brightness_contrast.h"
+#include "common/thread_priority.h"
 
 #define FRAME_SIZE 32786
 
@@ -16,9 +22,9 @@ namespace goes
 {
     namespace gvar
     {
-        std::string GVARImageDecoderModule::getGvarFilename(std::tm *timeReadable, int channel)
+        std::string GVARImageDecoderModule::getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel)
         {
-            std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
+            std::string utc_filename = "G" + std::to_string(sat_number) + "_" + channel + "_" +                                                                     // Satellite name and channel
                                        std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
@@ -28,7 +34,7 @@ namespace goes
             return utc_filename;
         }
 
-        void GVARImageDecoderModule::writeImages(std::string directory)
+        void GVARImageDecoderModule::writeImages(GVARImages &images, std::string directory)
         {
             const time_t timevalue = time(0);
             std::tm *timeReadable = gmtime(&timevalue);
@@ -38,46 +44,155 @@ namespace goes
                                     (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                     (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
 
-            std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait a bit
-            logger->info("Full disk finished, saving at GVAR_" + timestamp + "...");
+            // Get stats. This is done over a lot of data to allow decoding at low SNR
+            int sat_number = images.sat_number;
+            int vis_width = images.vis_width;
 
-            std::filesystem::create_directory(directory + "/GVAR_" + timestamp);
+            std::string dir_name = "GOES-" + std::to_string(sat_number) + "/" + timestamp;
+            logger->info("Full disk finished, saving at " + dir_name + "...");
 
-            std::string disk_folder = directory + "/GVAR_" + timestamp;
+            std::filesystem::create_directories(directory + "/" + dir_name);
+
+            std::string disk_folder = directory + "/" + dir_name;
 
             logger->info("Resizing...");
-            image1.resize(image1.width(), image1.height() * 1.75);
-            image2.resize(image2.width(), image2.height() * 1.75);
-            image3.resize(image3.width(), image3.height() * 1.75);
-            image4.resize(image4.width(), image4.height() * 1.75);
-            image5.resize(image5.width(), image5.height() * 1.75);
+            images.image1.resize(images.image1.width(), images.image1.height() * 1.75);
+            images.image2.resize(images.image2.width(), images.image2.height() * 1.75);
+            images.image3.resize(images.image3.width(), images.image3.height() * 1.75);
+            images.image4.resize(images.image4.width(), images.image4.height() * 1.75);
+            images.image5.resize(images.image5.width(), images.image5.height() * 1.75);
 
-            logger->info("Channel 1... " + getGvarFilename(timeReadable, 1) + ".png");
-            image5.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 1) + ".png").c_str());
+            //logger->trace("VIS 1 size before " + std::to_string(images.image5.width()) + "x" + std::to_string(images.image5.height()));
+            //logger->trace("IR size before " + std::to_string(images.image1.width()) + "x" + std::to_string(images.image1.height()));
 
-            logger->info("Channel 2... " + getGvarFilename(timeReadable, 2) + ".png");
-            image1.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 2) + ".png").c_str());
+            // VIS-1 height
+            int vis_height = images.image5.height();
 
-            logger->info("Channel 3... " + getGvarFilename(timeReadable, 3) + ".png");
-            image2.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 3) + ".png").c_str());
+            if (vis_width == 13216) // Some partial scan
+                vis_height = 9500;
+            else if (vis_width == 11416) // Some partial scan
+                vis_height = 6895;
+            else if (vis_width == 8396) // Some partial scan
+                vis_height = 4600;
+            else if (vis_width == 11012) // Some partial scan
+                vis_height = 7456;
+            else if (vis_width == 4976) // Some partial scan
+                vis_height = 4194;
+            else if (vis_width == 20836) // Full disk
+                vis_height = 18956;
+            else if (vis_width == 20824) // Full disk
+                vis_height = 18956;
 
-            logger->info("Channel 4... " + getGvarFilename(timeReadable, 4) + ".png");
-            image3.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 4) + ".png").c_str());
+            // IR height
+            int ir1_width = vis_width / 4;
+            int ir1_height = vis_height / 4;
 
-            logger->info("Channel 5... " + getGvarFilename(timeReadable, 5) + ".png");
-            image4.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 5) + ".png").c_str());
+            logger->info("Cropping to transmited size...");
+            logger->debug("VIS 1 size " + std::to_string(vis_width) + "x" + std::to_string(vis_height));
+            images.image5.crop(0, 0, vis_width - 1, vis_height - 1);
+            logger->debug("IR size " + std::to_string(ir1_width) + "x" + std::to_string(ir1_height));
+            images.image1.crop(0, 0, ir1_width - 1, ir1_height - 1);
+            images.image2.crop(0, 0, ir1_width - 1, ir1_height - 1);
+            images.image3.crop(0, 0, ir1_width - 1, ir1_height - 1);
+            images.image4.crop(0, 0, ir1_width - 1, ir1_height - 1);
 
-            writingImage = false;
+            logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, "1") + ".png");
+            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str());
+
+            logger->info("Channel 2... " + getGvarFilename(sat_number, timeReadable, "2") + ".png");
+            images.image1.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2") + ".png").c_str());
+
+            logger->info("Channel 3... " + getGvarFilename(sat_number, timeReadable, "3") + ".png");
+            images.image2.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3") + ".png").c_str());
+
+            logger->info("Channel 4... " + getGvarFilename(sat_number, timeReadable, "4") + ".png");
+            images.image3.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4") + ".png").c_str());
+
+            logger->info("Channel 5... " + getGvarFilename(sat_number, timeReadable, "5") + ".png");
+            images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5") + ".png").c_str());
+
+            // Let plugins do something
+            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, disk_folder});
+
+            // We are done with all channels but 1 and 4. Clear others to free up memory!
+            images.image1.clear();
+            images.image2.clear();
+            images.image4.clear();
+
+            // If we can, generate false color
+            if (resources::resourceExists("goes/gvar/lut.png"))
+            {
+                logger->trace("Scale Ch1 to 8-bits...");
+                cimg_library::CImg<unsigned char> channel1(images.image5.width(), images.image5.height(), 1, 1);
+                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                    channel1[i] = images.image5[i] / 255;
+                images.image5.clear(); // We're done with Ch1. Free up memory
+
+                logger->trace("Scale Ch4 to 8-bits...");
+                cimg_library::CImg<unsigned char> channel4(images.image3.width(), images.image3.height(), 1, 1);
+                for (int i = 0; i < channel4.width() * channel4.height(); i++)
+                    channel4[i] = images.image3[i] / 255;
+                images.image3.clear(); // We're done with Ch4. Free up memory
+
+                logger->trace("Resize images...");
+                channel4.resize(channel1.width(), channel1.height());
+
+                logger->trace("Loading LUT...");
+                cimg_library::CImg<unsigned char> lutImage;
+                lutImage.load_png(resources::getResourcePath("goes/gvar/lut.png").c_str());
+                lutImage.resize(256, 256);
+
+                logger->trace("Loading correction curve...");
+                cimg_library::CImg<unsigned char> curveImage;
+                curveImage.load_png(resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
+
+                cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
+
+                logger->trace("Applying LUT...");
+                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                {
+                    uint8_t x = 255 - curveImage[channel1[i]] / 1.5;
+                    uint8_t y = channel4[i];
+
+                    for (int c = 0; c < 3; c++)
+                        compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
+                }
+
+                logger->trace("Contrast correction...");
+                image::brightness_contrast(compoImage, -10.0f / 127.0f, 24.0f / 127.0f);
+
+                logger->trace("Hue shift...");
+                image::HueSaturation hueTuning;
+                hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
+                hueTuning.overlap = 100.0 / 100.0;
+                image::hue_saturation(compoImage, hueTuning);
+
+                logger->info("False color... " + getGvarFilename(sat_number, timeReadable, "FC") + ".png");
+                compoImage.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC") + ".png").c_str());
+
+                // Let plugins do something
+                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, disk_folder});
+            }
+            else
+            {
+                logger->warn("goes/gvar/lut.png LUT is missing! False Color will not be generated");
+            }
         }
 
-        GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                              sat_name(parameters["satname"])
+        GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
             frame = new uint8_t[FRAME_SIZE];
-            writingImage = false;
+            isImageInProgress = false;
+            isSavingInProgress = false;
+            approx_progess = 0;
 
-            // Init thread pool
-            imageSavingThreadPool = std::make_shared<ctpl::thread_pool>(1);
+            // Reset readers
+            infraredImageReader1.startNewFullDisk();
+            infraredImageReader2.startNewFullDisk();
+            visibleImageReader.startNewFullDisk();
+
+            nonEndCount = 0;
+            endCount = 0;
         }
 
         std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes()
@@ -101,6 +216,23 @@ namespace goes
             }
         }
 
+        void GVARImageDecoderModule::writeImagesThread()
+        {
+            logger->info("Started saving thread...");
+            while (writeImagesAync)
+            {
+                imageVectorMutex.lock();
+                int imagesCount = imagesVector.size();
+                if (imagesCount > 0)
+                {
+                    writeImages(imagesVector[0], directory);
+                    imagesVector.erase(imagesVector.begin(), imagesVector.begin() + 1);
+                }
+                imageVectorMutex.unlock();
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
+
         void GVARImageDecoderModule::process()
         {
             if (input_data_type == DATA_FILE)
@@ -110,7 +242,17 @@ namespace goes
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";
+            if (input_data_type != DATA_FILE)
+                writeImagesAync = true;
+
+            // Start thread
+            if (writeImagesAync)
+            {
+                imageSavingThread = std::thread(&GVARImageDecoderModule::writeImagesThread, this);
+                setThreadPriority(imageSavingThread, 1); // Low priority to avoid sampledrop
+            }
+
+            directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -128,136 +270,174 @@ namespace goes
                 else
                     input_fifo->read((uint8_t *)frame, FRAME_SIZE);
 
-                // Do the actual work
+                // Parse main header
+                PrimaryBlockHeader block_header = *((PrimaryBlockHeader *)&frame[8]);
+
+                // Is this imagery? Blocks 1 to 10 are imagery
+                if (block_header.block_id >= 1 && block_header.block_id <= 10)
                 {
-                    // Get block number
-                    int block_number = frame[8];
+                    // This is imagery, so we can parse the line information header
+                    LineDocumentationHeader line_header(&frame[8 + 30 * 3]);
 
-                    //if (block_number == 11)
-                    //{
-                    //   uint16_t product = frame[12] << 8 | frame[13];
-                    //   logger->info(product );
-                    //   if (product == 15)
-                    //       testFile.write((char *)&frame.data()[8], 32786 - 8);
-                    // }
+                    // SCID Stats
+                    scid_stats.push_back(line_header.sc_id);
 
-                    // IR Channels 1-2 (Reader 1)
-                    if (block_number == 1)
+                    // Internal line counter should NEVER be over 1974. Discard frame if it is
+                    // Though we know the max in normal operations is 1354 for a full disk....
+                    // So we use that
+                    if (line_header.relative_scan_count > 1354)
+                        continue;
+
+                    // Is this VIS Channel 1?
+                    if (block_header.block_id >= 3 && block_header.block_id <= 10)
                     {
-                        // Read counter
-                        uint16_t counter = frame[105] << 6 | frame[106] >> 2;
+                        // Push width stats
+                        vis_width_stats.push_back(line_header.pixel_count);
 
-                        // Safeguard
-                        if (counter > 1353)
-                            continue;
+                        // Push into decoder
+                        visibleImageReader.pushFrame(frame, block_header.block_id, line_header.relative_scan_count);
 
-                        // Easy way of showing an approximate progress percentage
-                        approx_progess = round(((float)counter / 1353.0f) * 1000.0f) / 10.0f;
-
-                        // Process it!
-                        infraredImageReader1.pushFrame(frame, counter);
-                    }
-                    // IR Channels 3-4 (Reader 2)
-                    else if (block_number == 2)
-                    {
-                        // Read counter
-                        uint16_t counter = frame[105] << 6 | frame[106] >> 2;
-
-                        // Safeguard
-                        if (counter > 1353)
-                            continue;
-
-                        // Process it!
-                        infraredImageReader2.pushFrame(frame, counter);
-                    }
-                    // VIS 1
-                    else if (block_number >= 3 && block_number <= 10)
-                    {
-                        //testFile.write((char *)&frame.data()[8], 32786 - 8);
-                        // Read counter
-                        uint16_t counter = frame[105] << 6 | frame[106] >> 2;
-
-                        // Safeguard
-                        if (counter > 1353)
-                            continue;
-
-                        visibleImageReader.pushFrame(frame, block_number, counter);
-
-                        if (counter == 1353)
+                        // Detect full disk end
+                        if (line_header.relative_scan_count < 2)
                         {
-                            logger->info("Full disk end detected!");
+                            nonEndCount = 0;
+                            endCount += 2;
 
-                            if (!writingImage)
+                            if (endCount > 6)
                             {
-                                writingImage = true;
+                                logger->info("Image start detected!");
 
-                                // Backup images
-                                image1 = infraredImageReader1.getImage1();
-                                image2 = infraredImageReader1.getImage2();
-                                image3 = infraredImageReader2.getImage1();
-                                image4 = infraredImageReader2.getImage2();
-                                image5 = visibleImageReader.getImage();
+                                if (isImageInProgress)
+                                {
+                                    if (writeImagesAync)
+                                    {
+                                        logger->debug("Saving Async...");
+                                        isImageInProgress = false;
+                                        isSavingInProgress = true;
+                                        imageVectorMutex.lock();
+                                        imagesVector.push_back({infraredImageReader1.getImage1(),
+                                                                infraredImageReader1.getImage2(),
+                                                                infraredImageReader2.getImage1(),
+                                                                infraredImageReader2.getImage2(),
+                                                                visibleImageReader.getImage(),
+                                                                most_common(scid_stats.begin(), scid_stats.end()),
+                                                                most_common(vis_width_stats.begin(), vis_width_stats.end())});
+                                        imageVectorMutex.unlock();
+                                        isSavingInProgress = false;
+                                    }
+                                    else
+                                    {
+                                        logger->debug("Saving...");
+                                        isImageInProgress = false;
+                                        isSavingInProgress = true;
+                                        GVARImages images = {infraredImageReader1.getImage1(),
+                                                             infraredImageReader1.getImage2(),
+                                                             infraredImageReader2.getImage1(),
+                                                             infraredImageReader2.getImage2(),
+                                                             visibleImageReader.getImage(),
+                                                             most_common(scid_stats.begin(), scid_stats.end()),
+                                                             most_common(vis_width_stats.begin(), vis_width_stats.end())};
+                                        writeImages(images, directory);
+                                        isSavingInProgress = false;
+                                    }
 
-                                // Write those
-                                imageSavingThreadPool->push([directory, this](int) {
-                                    writeImages(directory);
-                                });
+                                    scid_stats.clear();
+                                    vis_width_stats.clear();
+                                    ir_width_stats.clear();
 
-                                // Reset readers
-                                infraredImageReader1.startNewFullDisk();
-                                infraredImageReader2.startNewFullDisk();
-                                visibleImageReader.startNewFullDisk();
+                                    // Reset readers
+                                    infraredImageReader1.startNewFullDisk();
+                                    infraredImageReader2.startNewFullDisk();
+                                    visibleImageReader.startNewFullDisk();
+                                }
+
+                                endCount = 0;
                             }
                         }
+                        else
+                        {
+                            if (endCount > 0)
+                                endCount--;
+
+                            nonEndCount++;
+
+                            if (nonEndCount > 100 && !isImageInProgress)
+                                isImageInProgress = true;
+                        }
+                    }
+                    // Is this IR?
+                    else if (block_header.block_id == 1 || block_header.block_id == 2)
+                    {
+                        // Easy way of showing an approximate progress percentage
+                        approx_progess = round(((float)line_header.relative_scan_count / 1353.0f) * 1000.0f) / 10.0f;
+
+                        // Push frame size stats
+                        ir_width_stats.push_back(line_header.word_count);
+
+                        // Get current stats
+                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end());
+
+                        // Safeguard
+                        if (current_words > 6565)
+                            current_words = 6530; // Default to fulldisk size
+
+                        // Is this IR Channel 1-2?
+                        if (block_header.block_id == 1)
+                            infraredImageReader1.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
+                        else if (block_header.block_id == 2)
+                            infraredImageReader2.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
                     }
                 }
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
 
+                // Update module stats
+                module_stats["full_disk_progress"] = approx_progess;
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) +
+                                 "%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%");
                 }
             }
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
 
-            logger->info("Wait for in-progress images...");
-            while (writingImage)
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-
-            logger->info("Dump remaining data...");
-            if (input_data_type == DATA_FILE)
+            if (writeImagesAync)
             {
-                writingImage = true;
-
-                // Backup images
-                image1 = infraredImageReader1.getImage1();
-                image2 = infraredImageReader1.getImage2();
-                image3 = infraredImageReader2.getImage1();
-                image4 = infraredImageReader2.getImage2();
-                image5 = visibleImageReader.getImage();
-
-                // Write those
-                writeImages(directory);
+                logger->info("Exit async thread...");
+                writeImagesAync = false;
+                if (imageSavingThread.joinable())
+                    imageSavingThread.join();
             }
 
-            imageSavingThreadPool->stop();
+            logger->info("Dump remaining data...");
+            if (isImageInProgress)
+            {
+                isImageInProgress = false;
+                isSavingInProgress = true;
+                // Backup images
+                GVARImages images = {infraredImageReader1.getImage1(),
+                                     infraredImageReader1.getImage2(),
+                                     infraredImageReader2.getImage1(),
+                                     infraredImageReader2.getImage2(),
+                                     visibleImageReader.getImage(),
+                                     most_common(scid_stats.begin(), scid_stats.end()),
+                                     most_common(vis_width_stats.begin(), vis_width_stats.end())};
+                // Write those
+                writeImages(images, directory);
+            }
         }
-
-        const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-        const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-        const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
         void GVARImageDecoderModule::drawUI(bool window)
         {
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[1354 * 2 * 5206];
+                textureBuffer = new uint32_t[1354 * 2 * 5236];
             }
 
             ImGui::Begin("GVAR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -265,8 +445,8 @@ namespace goes
             // This is outer crap...
             ImGui::BeginGroup();
             {
-                ushort_to_rgba(infraredImageReader1.imageBuffer1, textureBuffer, 5206 * 1354 * 2);
-                updateImageTexture(textureID, textureBuffer, 5206, 1354 * 2);
+                ushort_to_rgba(infraredImageReader1.imageBuffer1, textureBuffer, 5236 * 1354 * 2);
+                updateImageTexture(textureID, textureBuffer, 5236, 1354 * 2);
                 ImGui::Image((void *)(intptr_t)textureID, {200 * ui_scale, 200 * ui_scale});
             }
             ImGui::EndGroup();
@@ -279,14 +459,17 @@ namespace goes
                 ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
                 ImGui::Text("State : ");
                 ImGui::SameLine();
-                if (writingImage)
-                    ImGui::TextColored(colorSynced, "Writing images...");
+                if (isSavingInProgress)
+                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
+                else if (isImageInProgress)
+                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
                 else
-                    ImGui::TextColored(colorSyncing, "Receiving...");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "IDLE");
             }
             ImGui::EndGroup();
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            if (!streamingInput)
+                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }
@@ -298,7 +481,7 @@ namespace goes
 
         std::vector<std::string> GVARImageDecoderModule::getParameters()
         {
-            return {"satname"};
+            return {};
         }
 
         std::shared_ptr<ProcessingModule> GVARImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

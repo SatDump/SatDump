@@ -19,7 +19,7 @@ time_t mktime_utc(const struct tm *timeinfo_utc)
 	//get UTC time, interpret resulting tm as a localtime
 	struct tm timeinfo_gmt;
 #ifdef _WIN32
-	gmtime(&curr_time, &timeinfo_gmt);
+	memcpy(&timeinfo_gmt, gmtime(&curr_time), sizeof(struct tm));
 #else
 	gmtime_r(&curr_time, &timeinfo_gmt);
 #endif
@@ -28,7 +28,7 @@ time_t mktime_utc(const struct tm *timeinfo_utc)
 	//get localtime, interpret resulting tm as localtime
 	struct tm timeinfo_local;
 #ifdef _WIN32
-	localtime(&curr_time, &timeinfo_local);
+	memcpy(&timeinfo_local, localtime(&curr_time), sizeof(struct tm));
 #else
 	localtime_r(&curr_time, &timeinfo_local);
 #endif

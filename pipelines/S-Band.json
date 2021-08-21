@@ -6,6 +6,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [
@@ -43,6 +47,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [
@@ -78,6 +86,10 @@
         "live_cfg": [
             [
                 1,
+                0
+            ],
+            [
+                2,
                 0
             ]
         ],
@@ -130,7 +142,17 @@
     },
     "jason3_link": {
         "name": "Jason-3 S-Band Link",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [],
         "samplerate": 3e6,
         "baseband_type": "i16",
@@ -142,7 +164,7 @@
                     "agc_rate": "0.00001",
                     "rrc_alpha": "0.7",
                     "rrc_taps": "31",
-                    "costas_bw": "0.001",
+                    "costas_bw": "0.005",
                     "buffer_size": "8192"
                 }
             },

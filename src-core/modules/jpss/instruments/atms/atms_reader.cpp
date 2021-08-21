@@ -19,7 +19,7 @@ namespace jpss
                 delete[] channels[i];
         }
 
-        void ATMSReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void ATMSReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() < 55)

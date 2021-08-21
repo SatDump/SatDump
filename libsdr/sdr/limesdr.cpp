@@ -3,8 +3,7 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 
-#if 0
-
+#ifndef DISABLE_SDR_LIMESDR
 SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     READ_PARAMETER_IF_EXISTS_FLOAT(gain_tia, "tia_gain");
@@ -15,6 +14,7 @@ SDRLimeSDR::SDRLimeSDR(std::map<std::string, std::string> parameters, uint64_t i
     logger->info("Opened " + std::string(limeDevice->GetInfo()->deviceName) + " device!");
 
     limeDevice->Init();
+    std::fill(frequency, &frequency[100], 0);
 }
 
 void SDRLimeSDR::start()
@@ -80,15 +80,21 @@ void SDRLimeSDR::runThread()
 void SDRLimeSDR::stop()
 {
     //airspy_stop_rx(dev);
-    should_run = false;
     limeStream->Stop();
+    should_run = false;
+    logger->info("Waiting for the thread...");
+    output_stream->stopWriter();
     if (workThread.joinable())
         workThread.join();
+    logger->info("Thread stopped");
+    logger->info("Stopped LimeSDR");
 }
 
 SDRLimeSDR::~SDRLimeSDR()
 {
     limeDevice->DestroyStream(limeStream);
+    limeDevice->Reset();
+    lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
 }
 
 void SDRLimeSDR::drawUI()
@@ -142,11 +148,18 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRLimeSDR::getD
 {
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> results;
 
-    std::vector<lime::ConnectionHandle> devs = lime::ConnectionRegistry::findConnections();
+    lms_info_str_t devices[256];
+    int cnt = LMS_GetDeviceList(devices);
 
-    for (int i = 0; i < devs.size() - 1; i++)
+    for (int i = 0; i < cnt - 1; i++)
     {
-        results.push_back({"LimeSDR " + devs[i].serial, LIMESDR, i});
+        lms_device_t *device = nullptr;
+        LMS_Open(&device, devices[i], NULL);
+        const lms_dev_info_t *device_info = LMS_GetDeviceInfo(device);
+        std::stringstream ss;
+        ss << std::hex << device_info->boardSerialNumber;
+        LMS_Close(device);
+        results.push_back({"LimeSDR " + ss.str(), LIMESDR, i});
     }
 
     return results;

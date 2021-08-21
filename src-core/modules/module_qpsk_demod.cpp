@@ -22,19 +22,25 @@ QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                                         d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                         d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
                                                                                                                                         d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0),
-                                                                                                                                        constellation(100.0f / 127.0f, 100.0f / 127.0f)
+                                                                                                                                        d_clock_gain_omega(parameters.count("clock_gain_omega") > 0 ? std::stof(parameters["clock_gain_omega"]) : (pow(8.7e-3, 2) / 4.0)),
+                                                                                                                                        d_clock_mu(parameters.count("clock_mu") > 0 ? std::stof(parameters["clock_mu"]) : 0.5f),
+                                                                                                                                        d_clock_gain_mu(parameters.count("clock_gain_mu") > 0 ? std::stof(parameters["clock_gain_mu"]) : 8.7e-3),
+                                                                                                                                        d_clock_omega_relative_limit(parameters.count("clock_omega_relative_limit") > 0 ? std::stof(parameters["clock_omega_relative_limit"]) : 0.005f),
+                                                                                                                                        constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
     snr = 0;
+    peak_snr = 0;
 }
 
 void QPSKDemodModule::init()
 {
-    float input_sps = (float)d_samplerate / (float)d_symbolrate;         // Compute input SPS
-    resample = input_sps > MAX_SPS;                                      // If SPS is over MAX_SPS, we resample
-    float samplerate = resample ? d_symbolrate * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
-    float decimation_factor = d_samplerate / samplerate;                 // Decimation factor to rescale our input buffer
+    float input_sps = (float)d_samplerate / (float)d_symbolrate;                                  // Compute input SPS
+    resample = input_sps > MAX_SPS;                                                               // If SPS is over MAX_SPS, we resample
+    int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1));                          // Avoid complex resampling
+    float samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+    float decimation_factor = d_samplerate / samplerate;                                          // Decimation factor to rescale our input buffer
 
     if (resample)
         d_buffer_size *= round(decimation_factor);
@@ -70,7 +76,8 @@ void QPSKDemodModule::init()
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
 
     // Clock recovery
-    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+    //rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
 }
 
 std::vector<ModuleDataType> QPSKDemodModule::getInputTypes()
@@ -131,10 +138,13 @@ void QPSKDemodModule::process()
         snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
         snr = snr_estimator.snr();
 
+        if (snr > peak_snr)
+            peak_snr = snr;
+
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].imag() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].real() * 100);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real() * 100);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag() * 100);
         }
 
         rec->output_stream->flush();
@@ -144,12 +154,15 @@ void QPSKDemodModule::process()
         else
             output_fifo->write((uint8_t *)sym_buffer, dat_size * 2);
 
+        // Update module stats
+        module_stats["snr"] = snr;
+
         if (input_data_type == DATA_FILE)
             progress = file_source->getPosition();
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
-            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB");
+            logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
         }
     }
 
@@ -178,10 +191,6 @@ void QPSKDemodModule::stop()
         data_out.close();
 }
 
-const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
 void QPSKDemodModule::drawUI(bool window)
 {
     ImGui::Begin("QPSK Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -196,21 +205,14 @@ void QPSKDemodModule::drawUI(bool window)
 
     ImGui::BeginGroup();
     {
+        // Show SNR information
         ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-        {
-            ImGui::Text("SNR (dB) : ");
-            ImGui::SameLine();
-            ImGui::TextColored(snr > 2 ? snr > 10 ? colorSynced : colorSyncing : colorNosync, UITO_C_STR(snr));
-
-            std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
-            snr_history[200 - 1] = snr;
-
-            ImGui::PlotLines("", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-        }
+        snr_plot.draw(snr, peak_snr);
     }
     ImGui::EndGroup();
 
-    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+    if (!streamingInput)
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
     ImGui::End();
 }
@@ -222,7 +224,7 @@ std::string QPSKDemodModule::getID()
 
 std::vector<std::string> QPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit"};
 }
 
 std::shared_ptr<ProcessingModule> QPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

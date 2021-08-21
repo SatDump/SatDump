@@ -35,44 +35,35 @@
             }
         }
     },
-    "goes_hrit": {
-        "name": "GOES-R HRIT",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            1694.1
-        ],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
+    "gcom_w1": {
+        "name": "GCOM-W1 DB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 20e6,
+        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": "927000",
-                    "agc_rate": "0.00001",
+                "oqpsk_demod": {
+                    "symbolrate": "20000000",
+                    "agc_rate": "0.1",
                     "rrc_alpha": "0.5",
                     "rrc_taps": "31",
-                    "costas_bw": "0.02",
+                    "costas_bw": "0.006",
+                    "clock_gain_omega": "0.8",
+                    "clock_mu": "0.9",
+                    "clock_gain_mu": "0.037",
+                    "clock_omega_relative_limit": "0.0001",
+                    "dc_block": "1",
+                    "constellation_scale": "100",
                     "buffer_size": "8192"
                 }
             },
             "cadu": {
-                "goes_hrit_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170"
-                }
+                "jason3_decoder": {}
             },
             "products": {
-                "goes_lrit_data_decoder": {}
+                "gcom_amsr2": {}
             }
         }
     }

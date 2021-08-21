@@ -51,11 +51,11 @@ namespace jason3
 
                 if (vcid == 1)
                 {
-                    std::vector<ccsds::ccsds_1_0_jason::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
+                    std::vector<ccsds::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
 
                     if (pkts.size() > 0)
                     {
-                        for (ccsds::ccsds_1_0_jason::CCSDSPacket pkt : pkts)
+                        for (ccsds::CCSDSPacket pkt : pkts)
                         {
                             if (pkt.header.apid == 2047)
                                 continue;

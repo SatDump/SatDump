@@ -17,7 +17,7 @@ namespace metop
                 delete[] channels[i];
         }
 
-        void AMSUA1Reader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void AMSUA1Reader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 2096)
                 return;
@@ -93,7 +93,7 @@ namespace metop
             {
                 for (int i = 0; i < 30; i++)
                 {
-                    channels[channel][lines * 30 + 30 - i] = lineBuffer[i * 26 + channel];
+                    channels[channel][lines * 30 + 29 - i] = lineBuffer[i * 26 + channel];
                     ;
                 }
             }

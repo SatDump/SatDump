@@ -15,6 +15,8 @@
 #include "common/dsp/rational_resampler.h"
 #include "dsb_deframer.h"
 #include "common/widgets/constellation.h"
+#include "common/snr_estimator.h"
+#include "common/widgets/snr_plot.h"
 
 namespace noaa
 {
@@ -48,8 +50,12 @@ namespace noaa
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
+        M2M4SNREstimator snr_estimator;
+        float snr, peak_snr;
+
         // UI Stuff
         widgets::ConstellationViewer constellation;
+        widgets::SNRPlotViewer snr_plot;
 
     public:
         NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -59,6 +65,7 @@ namespace noaa
 
     public:
         static std::string getID();
+        virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     };

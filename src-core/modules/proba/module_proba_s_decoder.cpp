@@ -6,6 +6,8 @@
 #include "common/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 #include <cmath>
+#include "common/codings/correlator.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 
 #define FRAME_SIZE 1279
 #define ENCODED_FRAME_SIZE 1279 * 8 * 2
@@ -17,22 +19,34 @@ namespace proba
 {
     ProbaSDecoderModule::ProbaSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                     derandomize(std::stoi(parameters["derandomize"])),
-                                                                                                                                                    viterbi(ENCODED_FRAME_SIZE / 2)
+                                                                                                                                                    viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
-        buffer_2 = new uint8_t[ENCODED_FRAME_SIZE];
+    }
+
+    std::vector<ModuleDataType> ProbaSDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> ProbaSDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
     }
 
     ProbaSDecoderModule::~ProbaSDecoderModule()
     {
         delete[] buffer;
-        delete[] buffer_2;
     }
 
     void ProbaSDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -42,12 +56,7 @@ namespace proba
         time_t lastTime = 0;
 
         // Correlator
-        sathelper::Correlator correlator;
-
-        // All encoded sync words. Though PROBAs are BPSK. So we only have 2!
-        // Weirdly enough... IQ inversed and always 90/270 deg phase shift weirdness? Well it works so whatever I guess!
-        correlator.addWord((uint64_t)0xa9f7e368e558c2c1);
-        correlator.addWord((uint64_t)0x56081c971aa73d3e);
+        Correlator correlator(BPSK, 0xa9f7e368e558c2c1);
 
         // Viterbi, rs, etc
         sathelper::PacketFixer packetFixer;
@@ -57,109 +66,78 @@ namespace proba
         // Other buffers
         uint8_t frameBuffer[FRAME_SIZE];
 
-        while (!data_in.eof())
+        phase_t phase;
+        bool swap;
+
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            // Read buffer
-            data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
-
-            // Correlate less if we're locked to go faster
-            if (!locked)
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-            {
-                correlator.correlate(buffer, ENCODED_FRAME_SIZE / 64);
-                if (correlator.getHighestCorrelationPosition() != 0)
-                {
-                    correlator.correlate(buffer, ENCODED_FRAME_SIZE);
-                    if (correlator.getHighestCorrelationPosition() > 30)
-                        locked = false;
-                }
-            }
-
-            // Correlator statistics
-            cor = correlator.getHighestCorrelation();
-            uint32_t word = correlator.getCorrelationWordNumber();
-            uint32_t pos = correlator.getHighestCorrelationPosition();
-
-            if (cor > 10)
-            {
-                if (pos != 0)
-                {
-                    shiftWithConstantSize(buffer, pos, ENCODED_FRAME_SIZE);
-                    uint32_t offset = ENCODED_FRAME_SIZE - pos;
-
-                    data_in.read((char *)buffer_2, pos);
-
-                    for (int i = offset; i < ENCODED_FRAME_SIZE; i++)
-                    {
-                        buffer[i] = buffer_2[i - offset];
-                    }
-                }
-
-                // Correct phase ambiguity
-                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, word == 0 ? sathelper::PhaseShift::DEG_90 : sathelper::PhaseShift::DEG_270, true);
-
-                // Viterbi
-                viterbi.decode(buffer, frameBuffer);
-
-                if (derandomize)
-                {
-                    // Derandomize that frame
-                    derand.work(&frameBuffer[4], FRAME_SIZE - 4);
-                }
-
-                // RS Correction
-                rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
-
-                // Write it out if it's not garbage
-                if (cor > 50)
-                    locked = true;
-
-                if (locked)
-                {
-                    //data_out_total += FRAME_SIZE;
-                    data_out.put(0x1a);
-                    data_out.put(0xcf);
-                    data_out.put(0xfc);
-                    data_out.put(0x1d);
-                    data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
-                }
-            }
+            // Read a buffer
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
             else
+                input_fifo->read((uint8_t *)buffer, ENCODED_FRAME_SIZE);
+
+            int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
+
+            locked = pos == 0; // Update locking state
+
+            if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
-                locked = false;
+                std::memmove(buffer, &buffer[pos], pos);
+
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
+                else
+                    input_fifo->read((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
             }
 
-            progress = data_in.tellg();
+            // Correct phase ambiguity
+            // It is using inverted vectors in the Viterbi.... Hence that weird crap
+            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, phase ? sathelper::PhaseShift::DEG_90 : sathelper::PhaseShift::DEG_270, true);
+
+            // Viterbi
+            viterbi.work((int8_t *)buffer, frameBuffer);
+
+            if (derandomize)
+            {
+                // Derandomize that frame
+                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+            }
+
+            // RS Correction
+            rs.decode_interlaved(&frameBuffer[4], true, 5, errors);
+
+            // Write it out
+            if (cor > 50 || pos == 0)
+            {
+                data_out.put(0x1a);
+                data_out.put(0xcf);
+                data_out.put(0xfc);
+                data_out.put(0x1d);
+                data_out.write((char *)&frameBuffer[4], FRAME_SIZE - 4);
+            }
+
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.GetPercentBER()) + "%, Lock : " + lock_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.ber() * 100) + "%, Lock : " + lock_state);
             }
         }
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
-
-    void ProbaSDecoderModule::shiftWithConstantSize(uint8_t *arr, int pos, int length)
-    {
-        for (int i = 0; i < length - pos; i++)
-        {
-            arr[i] = arr[pos + i];
-        }
-    }
-
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
     void ProbaSDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("Proba S-Band Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-        float ber = viterbi.GetPercentBER() / 100.0f;
+        float ber = viterbi.ber();
 
         ImGui::BeginGroup();
         {
@@ -172,8 +150,8 @@ namespace proba
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 6 * ui_scale) % int(200 * ui_scale)),
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
@@ -191,12 +169,12 @@ namespace proba
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(locked ? colorSynced : colorSyncing, UITO_C_STR(cor));
+                ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -205,7 +183,7 @@ namespace proba
             {
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ber < 0.22 ? colorSynced : colorNosync, UITO_C_STR(ber));
+                ImGui::TextColored(ber < 0.22 ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
@@ -223,17 +201,18 @@ namespace proba
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(colorNosync, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(colorSyncing, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
                     else
-                        ImGui::TextColored(colorSynced, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
                 }
             }
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }
@@ -245,7 +224,7 @@ namespace proba
 
     std::vector<std::string> ProbaSDecoderModule::getParameters()
     {
-        return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols"};
+        return {"derandomize"};
     }
 
     std::shared_ptr<ProcessingModule> ProbaSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)

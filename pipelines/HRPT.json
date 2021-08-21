@@ -33,6 +33,7 @@
                 }
             },
             "products": {
+                "metop_satid": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -42,7 +43,9 @@
                 "metop_gome": {
                     "write_all": "0"
                 },
-                "metop_ascat": {}
+                "metop_ascat": {},
+                "metop_sem": {},
+                "metop_admin_msg": {}
             }
         }
     },
@@ -84,6 +87,7 @@
                 }
             },
             "products": {
+                "metop_satid": {},
                 "metop_avhrr": {},
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -93,7 +97,9 @@
                 "metop_gome": {
                     "write_all": "0"
                 },
-                "metop_ascat": {}
+                "metop_ascat": {},
+                "metop_sem": {},
+                "metop_admin_msg": {}
             }
         }
     },
@@ -132,9 +138,11 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_virr": {},
                 "fengyun_erm": {},
-                "fengyun_mwhs": {}
+                "fengyun_mwhs": {},
+                "fengyun_mwts": {}
             }
         }
     },
@@ -177,6 +185,7 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_virr": {},
                 "fengyun_erm": {},
                 "fengyun_mwhs": {}
@@ -218,9 +227,12 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "51"
+                },
                 "fengyun_virr": {},
                 "fengyun_erm": {},
-                "fengyun_mwhs": {}
+                "fengyun_mwhs2": {}
             }
         }
     },
@@ -263,9 +275,12 @@
                 }
             },
             "products": {
+                "fengyun_satid": {
+                    "scid_hint": "51"
+                },
                 "fengyun_virr": {},
                 "fengyun_erm": {},
-                "fengyun_mwhs": {}
+                "fengyun_mwhs2": {}
             }
         }
     },
@@ -290,7 +305,7 @@
             "frames": {
                 "noaa_hrpt_demod": {
                     "buffer_size": "8192",
-                    "deframer_thresold": "0"
+                    "deframer_thresold": "10"
                 }
             },
             "products": {
@@ -349,6 +364,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [
@@ -373,6 +392,48 @@
             },
             "products": {
                 "saral_argos": {}
+            }
+        }
+    },
+    "angels_l_band": {
+        "name": "ANGELS L-Band",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1698.4
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "400000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.004",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "saral_decoder": {}
+            },
+            "products": {
+                "angels_argos": {}
             }
         }
     },

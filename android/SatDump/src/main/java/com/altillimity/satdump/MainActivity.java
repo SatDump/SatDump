@@ -49,6 +49,8 @@ import android.content.BroadcastReceiver;
 
 import java.util.Iterator;
 
+import com.altillimity.satdump.SdrDevice;
+
 /**
  * Original work by sf on 8/7/17.
  * https://github.com/sfalexrog/Imgui_Android
@@ -133,10 +135,13 @@ public class MainActivity extends SDLActivity {
          * in our native code. */
         Log.v(TAG, "Copying assets to accessible locations");
 
+        SdrDevice.openSDRDevice(getApplicationContext());
+
         copyFileOrDir("resources");
         copyFileOrDir("pipelines");
         copyFileOrDir("Roboto-Medium.ttf");
 
+        Log.v(TAG, getFilesDir().getAbsolutePath());
         Log.v(TAG, getExternalFilesDir(null).getAbsolutePath());
     }
 

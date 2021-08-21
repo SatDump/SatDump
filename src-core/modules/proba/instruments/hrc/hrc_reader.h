@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_proba/ccsds.h"
+#include "common/ccsds/ccsds.h"
 
 #define cimg_use_png
 #define cimg_display 0
@@ -24,7 +24,7 @@ namespace proba
             HRCReader(std::string &outputfolder);
             ~HRCReader();
             void save();
-            void work(ccsds::ccsds_1_0_proba::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
         };
     } // namespace hrc
 } // namespace proba

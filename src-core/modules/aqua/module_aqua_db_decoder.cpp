@@ -67,8 +67,8 @@ namespace aqua
             // Demodulate QPSK... This is the crappy way but it works
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                int8_t sample_i = clamp(*((int8_t *)&buffer[i * 2]));
-                int8_t sample_q = clamp(*((int8_t *)&buffer[i * 2 + 1]));
+                int8_t sample_i = clamp(*((int8_t *)&buffer[i * 2 + 1]));
+                int8_t sample_q = clamp(*((int8_t *)&buffer[i * 2 + 0]));
 
                 if (sample_i == -1 && sample_q == -1)
                 {
@@ -177,10 +177,6 @@ namespace aqua
         data_in.close();
     }
 
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
-
     void AquaDBDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("Aqua DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -218,11 +214,11 @@ namespace aqua
                 ImGui::SameLine();
 
                 if (deframer.getState() == 0)
-                    ImGui::TextColored(colorNosync, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else if (deframer.getState() == 2 || deframer.getState() == 6)
-                    ImGui::TextColored(colorSyncing, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
-                    ImGui::TextColored(colorSynced, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -235,11 +231,11 @@ namespace aqua
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(colorNosync, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(colorSyncing, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
                     else
-                        ImGui::TextColored(colorSynced, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
                 }
             }
         }

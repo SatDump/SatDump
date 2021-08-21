@@ -11,17 +11,14 @@
 #include <dirent.h>
 #include "style.h"
 #include "imgui/imgui_flags.h"
-#include "credits.h"
 #include "global.h"
 #include "init.h"
 #include "processing.h"
-#include "offline.h"
 #include "logger.h"
 #include <filesystem>
 #include "settings.h"
 #include "settingsui.h"
-#include "live.h"
-#include "live_run.h"
+#include "main_ui.h"
 
 #define NOWINDOW_FLAGS (long int)ImGuiWindowFlags_NoMove | (long int)ImGuiWindowFlags_NoCollapse | (long int)ImGuiWindowFlags_NoBringToFrontOnFocus /*| ImGuiWindowFlags_NoTitleBar*/ | (long int)ImGuiWindowFlags_NoResize | (long int)ImGuiWindowFlags_NoBackground
 
@@ -124,40 +121,11 @@ static SDL_GLContext createCtx(SDL_Window *w)
     return ctx;
 }
 
-#include <jni.h>
-#include <android_native_app_glue.h>
-
-/** @return the id of the button clicked if model is true, or 0 */
-std::string getFilePath()
-{
-    JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
-    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
-    jclass cls = env->GetObjectClass(activity);
-    //jclass localcls = reinterpret_cast<jclass>(env->NewGlobalRef(cls));
-    jmethodID getFilePath = env->GetMethodID(cls, "getFilePath", "()Ljava/lang/String;");
-    jstring str = (jstring)env->CallObjectMethod(activity, getFilePath);
-    const char *str2 = env->GetStringUTFChars(str, 0);
-    return std::string(str2);
-}
-
-std::string getDirPath()
-{
-    JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
-    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
-    jclass cls = env->GetObjectClass(activity);
-    //jclass localcls = reinterpret_cast<jclass>(env->NewGlobalRef(cls));
-    jmethodID getFilePath = env->GetMethodID(cls, "getFilePath1", "()Ljava/lang/String;");
-    jstring str = (jstring)env->CallObjectMethod(activity, getFilePath);
-    const char *str2 = env->GetStringUTFChars(str, 0);
-    return std::string(str2);
-}
-
 void bindImageTextureFunctions();
 
 int main(int argc, char **argv)
 {
     bindImageTextureFunctions();
-    std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
@@ -209,8 +177,6 @@ int main(int argc, char **argv)
     {
 
         bool done = false;
-        float teapotRotation = 0;
-        bool rotateSync = false;
 
         int deltaX = 0, deltaY = 0;
         int prevX, prevY;
@@ -219,39 +185,29 @@ int main(int argc, char **argv)
         int major;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
 
-        if (std::filesystem::exists("settings.json"))
-        {
-            loadSettings("settings.json");
-        }
-
-        parseSettingsOrDefaults();
-
         float ddpi, hdpi, vdpi;
         SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
         float dpi_scaling = ddpi / (72.f * 3);
 
-        if (use_light_theme)
-            style::setLightStyle(".", dpi_scaling);
-        else
-            style::setDarkStyle(".", dpi_scaling);
-
         initLogger();
         initSatdump();
 
-#ifdef BUILD_LIVE
-        initLive();
-#endif
+        loadSettings("settings.json");
+        parseSettingsOrDefaults();
+
+        if (use_light_theme)
+            style::setLightStyle(".", dpi_scaling * manual_dpi_scaling);
+        else
+            style::setDarkStyle(".", dpi_scaling * manual_dpi_scaling);
+
+        // Init UI
+        initMainUI();
 
         bool render = true;
 
         while (!done)
         {
             SDL_Event e;
-
-            deltaX = 0;
-            deltaY = 0;
-
-            float deltaZoom = 0.0f;
 
             while (SDL_PollEvent(&e))
             {
@@ -262,28 +218,6 @@ int main(int argc, char **argv)
                     case SDL_QUIT:
                         done = true;
                         break;
-                    case SDL_MOUSEBUTTONDOWN:
-                        prevX = e.button.x;
-                        prevY = e.button.y;
-                        break;
-                    case SDL_MOUSEMOTION:
-                        if (e.motion.state & SDL_BUTTON_LMASK)
-                        {
-                            deltaX += prevX - e.motion.x;
-                            deltaY += prevY - e.motion.y;
-                            prevX = e.motion.x;
-                            prevY = e.motion.y;
-                        }
-                        break;
-                    case SDL_MULTIGESTURE:
-                        if (e.mgesture.numFingers > 1)
-                        {
-                            deltaZoom += e.mgesture.dDist * 10.0f;
-                        }
-                        break;
-                    case SDL_MOUSEWHEEL:
-                        deltaZoom += e.wheel.y / 100.0f;
-                        break;
                     case SDL_APP_WILLENTERBACKGROUND:
                         render = false;
                         shutdown();
@@ -293,10 +227,8 @@ int main(int argc, char **argv)
                         render = true;
                         ctx = createCtx(window);
                         initImgui(window);
-                        //SDLActivity.createEGLSurface();
                         break;
                     case SDL_WINDOWEVENT_RESIZED:
-                        logger->info("RESIZING");
                         break;
                     default:
                         break;
@@ -316,66 +248,11 @@ int main(int argc, char **argv)
             {
                 newFrame(window);
 
-                ImGui::SetNextWindowPos({0, 0});
                 int wwidth, wheight;
                 SDL_GetWindowSize(window, &wwidth, &wheight);
 
-                {
-                    if (processing)
-                    {
-                        uiCallListMutex->lock();
-                        for (std::shared_ptr<ProcessingModule> module : *uiCallList)
-                        {
-                            ImGui::SetNextWindowPos({0, 0});
-                            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                            module->drawUI(false);
-                        }
-                        uiCallListMutex->unlock();
-                    }
-#ifdef BUILD_LIVE
-                    else if (live_processing)
-                    {
-                        renderLive();
-                    }
-#endif
-                    else
-                    {
-                        ImGui::SetNextWindowPos({0, 0});
-                        ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-                        ImGui::Begin("Main Window", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoTitleBar);
-
-                        if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
-                        {
-                            if (ImGui::BeginTabItem("Offline processing"))
-                            {
-                                renderOfflineProcessing();
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Live processing"))
-                            {
-#ifdef BUILD_LIVE
-                                renderLiveProcessing();
-#else
-                                ImGui::Text("Live processing is not yet supported on Android!");
-#endif
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Settings"))
-                            {
-                                renderSettings(wwidth, wheight);
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Credits"))
-                            {
-                                renderCredits(wwidth, wheight);
-                                ImGui::EndTabItem();
-                            }
-                        }
-                        ImGui::EndTabBar();
-
-                        ImGui::End();
-                    }
-                }
+                // User rendering
+                renderMainUI(wwidth, wheight);
 
                 ImGui::Render();
 
@@ -397,6 +274,10 @@ int main(int argc, char **argv)
                     ImGui_ImplSdlGLES2_RenderDrawLists(ImGui::GetDrawData());
 
                 SDL_GL_SwapWindow(window);
+
+                // We have to do that here to avoid backspace repeating
+                if (io.KeysDown[SDLK_BACKSPACE] == 1)
+                    io.KeysDown[SDLK_BACKSPACE] = 0;
             }
         }
     }

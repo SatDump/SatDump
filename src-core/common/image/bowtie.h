@@ -8,6 +8,7 @@ namespace image
 {
     namespace bowtie
     {
-        cimg_library::CImg<unsigned short> correctGenericBowTie(cimg_library::CImg<unsigned short> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta);
+        template <typename T>
+        cimg_library::CImg<T> correctGenericBowTie(cimg_library::CImg<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta);
     }
 }

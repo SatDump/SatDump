@@ -9,6 +9,8 @@
 #include "common/image/bowtie.h"
 #include "common/image/image.h"
 #include "common/utils.h"
+#include "common/image/earth_curvature.h"
+#include "modules/eos/eos.h"
 
 #define BUFFER_SIZE 8192
 
@@ -72,10 +74,10 @@ namespace eos
                         modis_cadu++;
 
                         // Demux
-                        std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                         // Push into processor (filtering APID 64)
-                        for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         {
                             if (pkt.header.apid == 64)
                             {
@@ -133,13 +135,13 @@ namespace eos
                     modis_cadu++;
 
                     // Demux
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 64)
                         {
@@ -258,8 +260,18 @@ namespace eos
                         image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
+                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                  EOS_ORBIT_HEIGHT,
+                                                                                                                  EOS_MODIS_SWATH,
+                                                                                                                  EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected221, directory + "/MODIS-RGB-221-CORRECTED.png");
                 image221.equalize(1000);
                 WRITE_IMAGE(image221, directory + "/MODIS-RGB-221-EQU.png");
+                cimg_library::CImg<unsigned short> corrected221equ = image::earth_curvature::correct_earth_curvature(image221,
+                                                                                                                     EOS_ORBIT_HEIGHT,
+                                                                                                                     EOS_MODIS_SWATH,
+                                                                                                                     EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected221equ, directory + "/MODIS-RGB-221-EQU-CORRECTED.png");
             }
 
             logger->info("121 Composite...");
@@ -277,6 +289,11 @@ namespace eos
                         image121 = image::bowtie::correctGenericBowTie(image121, 3, scanHeight_250, alpha, beta);
                 }
                 WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
+                cimg_library::CImg<unsigned short> corrected121 = image::earth_curvature::correct_earth_curvature(image121,
+                                                                                                                  EOS_ORBIT_HEIGHT,
+                                                                                                                  EOS_MODIS_SWATH,
+                                                                                                                  EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected121, directory + "/MODIS-RGB-121-EQU-CORRECTED.png");
             }
 
             logger->info("143 Composite...");
@@ -307,9 +324,37 @@ namespace eos
                     }
                 }
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
+                cimg_library::CImg<unsigned short> corrected143 = image::earth_curvature::correct_earth_curvature(image143,
+                                                                                                                  EOS_ORBIT_HEIGHT,
+                                                                                                                  EOS_MODIS_SWATH,
+                                                                                                                  EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected143, directory + "/MODIS-RGB-143-CORRECTED.png");
                 image143.equalize(1000);
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143-EQU.png");
+                cimg_library::CImg<unsigned short> corrected143equ = image::earth_curvature::correct_earth_curvature(image143,
+                                                                                                                     EOS_ORBIT_HEIGHT,
+                                                                                                                     EOS_MODIS_SWATH,
+                                                                                                                     EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected143equ, directory + "/MODIS-RGB-143-EQU-CORRECTED.png");
                 WRITE_IMAGE(pre_wb, directory + "/MODIS-RGB-143-EQURAW.png");
+                cimg_library::CImg<unsigned short> corrected143equraw = image::earth_curvature::correct_earth_curvature(pre_wb,
+                                                                                                                        EOS_ORBIT_HEIGHT,
+                                                                                                                        EOS_MODIS_SWATH,
+                                                                                                                        EOS_MODIS_RES250);
+                WRITE_IMAGE(corrected143equraw, directory + "/MODIS-RGB-143-EQURAW-CORRECTED.png");
+            }
+
+            logger->info("Equalized Ch 29...");
+            {
+                cimg_library::CImg<unsigned short> image23 = reader.getImage1000m(23);
+                image::linear_invert(image23);
+                image23.equalize(1000);
+                WRITE_IMAGE(image23, directory + "/MODIS-29-EQU.png");
+                cimg_library::CImg<unsigned short> corrected23 = image::earth_curvature::correct_earth_curvature(image23,
+                                                                                                                EOS_ORBIT_HEIGHT,
+                                                                                                                EOS_MODIS_SWATH,
+                                                                                                                EOS_MODIS_RES1000);
+                WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
             }
         }
 

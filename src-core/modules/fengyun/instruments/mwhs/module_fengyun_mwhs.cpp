@@ -54,10 +54,10 @@ namespace fengyun
                 {
                     vcidFrames++;
 
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(buffer);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(buffer);
                     ccsds_frames += ccsdsFrames.size();
 
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 16)
                             mwhs_reader.work(pkt);
@@ -111,7 +111,7 @@ namespace fengyun
 
         void FengyunMWHSDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("FengYun MWHS Decoder (WIP!)", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("FengYun MWHS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

@@ -11,6 +11,7 @@
 #include "common/dsp/file_source.h"
 #include "common/snr_estimator.h"
 #include "common/widgets/constellation.h"
+#include "common/widgets/snr_plot.h"
 
 namespace terra
 {
@@ -44,11 +45,11 @@ namespace terra
         std::atomic<uint64_t> progress;
 
         M2M4SNREstimator snr_estimator;
-        float snr;
+        float snr, peak_snr;
 
         // UI Stuff
-        float snr_history[200];
         widgets::ConstellationViewer constellation;
+        widgets::SNRPlotViewer snr_plot;
 
     public:
         TerraDBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
@@ -60,6 +61,7 @@ namespace terra
 
     public:
         static std::string getID();
+        virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
     };

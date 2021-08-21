@@ -19,7 +19,7 @@ namespace metop
                 delete[] channels[i];
         }
 
-        void ASCATReader::work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet)
+        void ASCATReader::work(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 654)
                 return;

@@ -60,13 +60,13 @@ namespace metop
                     iasi_cadu++;
 
                     // Demux
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = ccsdsDemuxer.work(cadu);
 
                     // Count frames
                     ccsds += ccsdsFrames.size();
 
                     // Push into processor (filtering APID 64)
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsdsFrames)
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 150)
                         {
@@ -120,22 +120,25 @@ namespace metop
             iasi_imaging_equ.normalize(0, 65535);
             WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG.png");
 
-            image::simple_despeckle(iasi_imaging, 10);
-            image::fft_forward(iasi_imaging);
-            image::extract_percentile(iasi_imaging, 4.0, 94.0, 1);
-            image::fft_inverse(iasi_imaging);
+            if (iasi_imaging.height() > 0)
+            {
+                image::simple_despeckle(iasi_imaging, 10);
+                image::fft_forward(iasi_imaging);
+                image::extract_percentile(iasi_imaging, 4.0, 94.0, 1);
+                image::fft_inverse(iasi_imaging);
 
-            cimg_library::CImg<unsigned short> iasi_imaging_equ_denoised = iasi_imaging;
-            iasi_imaging_equ_denoised.equalize(1000);
-            iasi_imaging_equ_denoised.normalize(0, 65535);
+                cimg_library::CImg<unsigned short> iasi_imaging_equ_denoised = iasi_imaging;
+                iasi_imaging_equ_denoised.equalize(1000);
+                iasi_imaging_equ_denoised.normalize(0, 65535);
 
-            WRITE_IMAGE(iasi_imaging_equ_denoised, directory + "/IASI-IMG-DENOISED-EQU.png");
+                WRITE_IMAGE(iasi_imaging_equ_denoised, directory + "/IASI-IMG-DENOISED-EQU.png");
 
-            image::linear_invert(iasi_imaging);
-            iasi_imaging.equalize(1000);
-            iasi_imaging.normalize(0, 65535);
+                image::linear_invert(iasi_imaging);
+                iasi_imaging.equalize(1000);
+                iasi_imaging.normalize(0, 65535);
 
-            WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG-DENOISED-EQU-INV.png");
+                WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG-DENOISED-EQU-INV.png");
+            }
 
             // Output a few nice composites as well
             logger->info("Global Composite...");

@@ -1,0 +1,5 @@
+#pragma once
+
+#define METEOR_ORBIT_HEIGHT 820
+#define METEOR_MSUMR_SWATH 2800
+#define METEOR_MSUMR_RES 1

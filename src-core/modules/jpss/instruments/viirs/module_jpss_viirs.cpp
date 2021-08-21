@@ -95,11 +95,11 @@ namespace jpss
                 {
                     virr_cadu++;
 
-                    std::vector<ccsds::ccsds_1_0_1024::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsds2 = ccsdsDemux.work(cadu);
 
                     ccsds_frames += ccsds2.size();
 
-                    for (ccsds::ccsds_1_0_1024::CCSDSPacket &pkt : ccsds2)
+                    for (ccsds::CCSDSPacket &pkt : ccsds2)
                     {
                         // Moderate resolution channels
                         reader_m4.feed(pkt);
@@ -318,7 +318,7 @@ namespace jpss
             logger->info("Making DNB night version...");
             cimg_library::CImg<unsigned short> image_dnb_night = image_dnb;
             for (int i = 0; i < image_dnb_night.height() * image_dnb_night.width(); i++)
-                image_dnb_night.data()[i] *= 15;
+                image_dnb_night[i] = std::min(65535, 20 * image_dnb_night[i]);
 
             // Takes a while so we say how we're doing
             if (image_m1.height() > 0)
@@ -576,7 +576,7 @@ namespace jpss
                     tempImageDNB.resize(tempImage5.width(), tempImage5.height());
 
                     for (int i = 0; i < tempImageDNB.height() * tempImageDNB.width(); i++)
-                        tempImageDNB.data()[i] *= 15;
+                        tempImageDNB[i] = std::min(65535, 20 * tempImageDNB[i]);
 
                     imagem16dnb = cimg_library::CImg<unsigned short>(3200 - 50, tempImage5.height(), 1, 1);
                     tempImage5.equalize(1000);
@@ -587,6 +587,14 @@ namespace jpss
                     imagem16dnb.mirror('x');
                 }
                 WRITE_IMAGE(imagem16dnb, directory + "/VIIRS-M16-DNB.png");
+            }
+
+            if (image_i4.height() > 0)
+            {
+                logger->info("Equalized Ch 4...");
+                image_i4.equalize(1000);
+                image_i4.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image_i4, directory + "/VIIRS-I4-EQU.png");
             }
         }
 

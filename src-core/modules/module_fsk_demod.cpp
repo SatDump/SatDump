@@ -13,7 +13,7 @@ FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_h
                                                                                                                                       d_buffer_size(std::stoi(parameters["buffer_size"])),
                                                                                                                                       d_lpf_cutoff(std::stoi(parameters["lpf_cutoff"])),
                                                                                                                                       d_lpf_transition_width(std::stoi(parameters["lpf_transition_width"])),
-                                                                                                                                      constellation(45.0f / 100.0f, 15.0f / 100.0f)
+                                                                                                                                      constellation(45.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 10];
@@ -123,7 +123,8 @@ void FSKDemodModule::drawUI(bool window)
     constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
     constellation.draw();
 
-    ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+    if (!streamingInput)
+        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
     ImGui::End();
 }

@@ -28,7 +28,7 @@ namespace fengyun
 
         public:
             MersiDeframer();
-            std::vector<std::vector<uint8_t>> work(std::vector<uint8_t> &data);
+            std::vector<std::vector<uint8_t>> work(uint8_t *input, int size);
         };
     } // namespace mersi1
 } // namespace fengyun

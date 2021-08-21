@@ -52,5 +52,5 @@ namespace fengyun
         {
             return cimg_library::CImg<unsigned short>(&imageBuffer[0], 2048, frames);
         }
-    } // namespace mersi2
+    } // namespace mersi1
 } // namespace fengyun

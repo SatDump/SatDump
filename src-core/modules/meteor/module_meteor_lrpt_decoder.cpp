@@ -89,9 +89,9 @@ namespace meteor
                 std::memmove(buffer, &buffer[pos], pos);
 
                 if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                    data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
                 else
-                    input_fifo->read((uint8_t *)&buffer[pos], ENCODED_FRAME_SIZE - pos);
+                    input_fifo->read((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
             }
 
             // Correct phase ambiguity
@@ -105,6 +105,13 @@ namespace meteor
 
             // Derandomize that frame
             derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+
+            // There is a VERY rare edge case where CADUs end up inverted... Better cover it to be safe
+            if (frameBuffer[9] == 0xFF)
+            {
+                for (int i = 0; i < FRAME_SIZE; i++)
+                    frameBuffer[i] ^= 0xFF;
+            }
 
             // RS Correction
             rs.decode_interlaved(&frameBuffer[4], false, 4, errors);
@@ -134,10 +141,6 @@ namespace meteor
         if (input_data_type == DATA_FILE)
             data_in.close();
     }
-
-    const ImColor colorNosync = ImColor::HSV(0 / 360.0, 1, 1, 1.0);
-    const ImColor colorSyncing = ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0);
-    const ImColor colorSynced = ImColor::HSV(113.0 / 360.0, 1, 1, 1.0);
 
     void METEORLRPTDecoderModule::drawUI(bool window)
     {
@@ -175,12 +178,12 @@ namespace meteor
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(locked ? colorSynced : colorSyncing, UITO_C_STR(cor));
+                ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 50.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -189,7 +192,7 @@ namespace meteor
             {
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ber < 0.22 ? colorSynced : colorNosync, UITO_C_STR(ber));
+                ImGui::TextColored(ber < 0.22 ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
@@ -207,17 +210,18 @@ namespace meteor
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(colorNosync, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(colorSyncing, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
                     else
-                        ImGui::TextColored(colorSynced, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
                 }
             }
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

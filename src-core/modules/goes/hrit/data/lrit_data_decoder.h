@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ccsds/ccsds_1_0_1024/ccsds.h"
+#include "common/ccsds/ccsds.h"
 #include <cmath>
 #define cimg_use_png
 #define cimg_display 0
@@ -35,6 +35,44 @@ namespace goes
             int image_id = -1;
         };
 
+        enum lrit_image_status
+        {
+            RECEIVING,
+            SAVING,
+            IDLE
+        };
+
+        class GOESRFalseColorComposer
+        {
+        private:
+            cimg_library::CImg<unsigned char> ch2_curve, fc_lut;
+            cimg_library::CImg<unsigned char> ch2, ch13, falsecolor;
+            time_t time2, time13;
+
+            void generateCompo();
+
+        public:
+            GOESRFalseColorComposer();
+            ~GOESRFalseColorComposer();
+
+            bool hasData = false;
+
+            std::string filename;
+
+            void save(std::string directory);
+
+            void push2(cimg_library::CImg<unsigned char> img, time_t time);
+            void push13(cimg_library::CImg<unsigned char> img, time_t time);
+
+        public:
+            // UI Stuff
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
+        };
+
         class LRITDataDecoder
         {
         private:
@@ -44,23 +82,46 @@ namespace goes
             std::vector<uint8_t> lrit_data;
 
             bool is_rice_compressed;
+            bool is_goesn;
             std::string current_filename;
             SZ_com_t rice_parameters;
             std::vector<uint8_t> decompression_buffer;
             std::map<int, int> all_headers;
             SegmentedLRITImageDecoder segmentedDecoder;
 
-            void processLRITHeader(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt);
+            bool header_parsed = false;
+
+            void processLRITHeader(ccsds::CCSDSPacket &pkt);
             void parseHeader();
-            void processLRITData(ccsds::ccsds_1_0_1024::CCSDSPacket &pkt);
+            void processLRITData(ccsds::CCSDSPacket &pkt);
             void finalizeLRITData();
+
+        public: // Other things
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
+            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
 
         public:
             LRITDataDecoder(std::string dir);
             ~LRITDataDecoder();
-            
+
+            bool write_images = true;
+            bool write_emwin = true;
+            bool write_messages = true;
+            bool write_dcs = true;
+            bool write_unknown = true;
+
             void save();
-            void work(ccsds::ccsds_1_0_1024::CCSDSPacket &packet);
+            void work(ccsds::CCSDSPacket &packet);
+
+            lrit_image_status imageStatus;
+            int img_width, img_height;
+
+        public:
+            // UI Stuff
+            bool hasToUpdate = false;
+            unsigned int textureID = 0;
+            uint32_t *textureBuffer;
         };
     } // namespace atms
 } // namespace jpss
