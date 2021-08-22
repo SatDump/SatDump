@@ -4,3 +4,4 @@
 [submodule "plugins"]
 	path = plugins
 	url = https://github.com/altillimity/SatDump-Plugins
+	branch = master
