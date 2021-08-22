@@ -112,7 +112,7 @@ namespace goes
             images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5") + ".png").c_str());
 
             // Let plugins do something
-            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, disk_folder});
+            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, timevalue, disk_folder});
 
             // We are done with all channels but 1 and 4. Clear others to free up memory!
             images.image1.clear();
@@ -171,7 +171,7 @@ namespace goes
                 compoImage.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC") + ".png").c_str());
 
                 // Let plugins do something
-                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, disk_folder});
+                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, timevalue, disk_folder});
             }
             else
             {
