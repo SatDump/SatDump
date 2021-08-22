@@ -30,6 +30,7 @@ namespace goes
             {
                 GVARImages &images;
                 std::tm *timeReadable;
+                time_t timeUTC;
                 std::string directory;
             };
 
@@ -38,6 +39,7 @@ namespace goes
                 cimg_library::CImg<unsigned char> &false_color_image;
                 int sat_number;
                 std::tm *timeReadable;
+                time_t timeUTC;
                 std::string directory;
             };
         }
