@@ -1,6 +1,6 @@
 name: Windows Build
 
-on: [push]
+on: [push, workflow_dispatch]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
