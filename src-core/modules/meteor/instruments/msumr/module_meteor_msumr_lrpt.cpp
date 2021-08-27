@@ -106,14 +106,17 @@ namespace meteor
                     image221.draw_image(0, 0, 0, 2, image1);
                 }
                 WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
                 cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
                                                                                                                   METEOR_ORBIT_HEIGHT,
                                                                                                                   METEOR_MSUMR_SWATH,
                                                                                                                   METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-CORRECTED.png");
+                image221.equalize(1000);
+                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
+                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
+                corrected221.equalize(1000);
+                corrected221.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-EQU-CORRECTED.png");
             }
 
@@ -134,14 +137,17 @@ namespace meteor
                     image321.draw_image(0, 0, 0, 2, image1);
                 }
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321.png");
-                image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
                 cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
                                                                                                                   METEOR_ORBIT_HEIGHT,
                                                                                                                   METEOR_MSUMR_SWATH,
                                                                                                                   METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-CORRECTED.png");
+                image321.equalize(1000);
+                image321.normalize(0, std::numeric_limits<unsigned char>::max());
+                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
+                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
+                corrected321.equalize(1000);
+                corrected321.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
             }
 
