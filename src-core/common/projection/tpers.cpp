@@ -1,5 +1,8 @@
 #include "tpers.h"
 #include <cmath>
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923 /* pi/2 */
+#endif
 
 /*
 ** This file was adapted and simplified from libproj, and the below
