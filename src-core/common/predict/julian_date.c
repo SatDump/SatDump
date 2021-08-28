@@ -74,6 +74,11 @@ predict_julian_date_t predict_to_julian(time_t input_time)
 	return seconds / SECONDS_PER_DAY;
 }
 
+predict_julian_date_t predict_to_julian_double(double time) 
+{
+ 	return predict_to_julian(time) + (fmod(time, 1.0) / SECONDS_PER_DAY);
+}
+
 time_t predict_from_julian(predict_julian_date_t date)
 {
 	double seconds_since = date * SECONDS_PER_DAY;
