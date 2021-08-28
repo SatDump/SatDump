@@ -35,7 +35,7 @@
 
 namespace projection
 {
-    void GEOSProjection::init(double height, double longitude, bool sweep_x )
+    void GEOSProjection::init(double height, double longitude, bool sweep_x)
     {
         lon_0 = longitude; // The satellite's longitude
 
@@ -54,7 +54,7 @@ namespace projection
         radius_g_1 = h / a;
         if (radius_g_1 <= 0 || radius_g_1 > 1e10)
         {
-            // Illegal case. 
+            // Illegal case.
             // Kept just in case but we shouldn't end up there unless the user makes a mistake...
         }
 
@@ -160,5 +160,12 @@ namespace projection
         // To degs
         lat = phi * 57.29578;
         lon = lam * 57.29578;
+
+        // Shift longitudes back to reference 0
+        lon += lon_0;
+        if (lon < -180)
+            lon = lon + 360;
+        if (lon > 180)
+            lon = lon - 360;
     }
 };
