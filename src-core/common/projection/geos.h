@@ -28,6 +28,10 @@ namespace projection
         double lon_0;
 
     public:
+        GEOSProjection()
+        {
+            init(0, 0);
+        }
         GEOSProjection(double height, double longitude, bool sweep_x = false)
         {
             init(height, longitude, sweep_x);
