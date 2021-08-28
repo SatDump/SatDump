@@ -45,12 +45,12 @@ namespace projection
         {
             init(0, 0, 0, 0, 0);
         }
-        TPERSProjection(double height, double longitude, double latitude, double tilt, double azi)
+        TPERSProjection(double altitude, double longitude, double latitude, double tilt, double azi)
         {
-            init(height, longitude, latitude, tilt, azi);
+            init(altitude, longitude, latitude, tilt, azi);
         }
 
-        void init(double height, double longitude, double latitude, double tilt, double azi);
+        void init(double altitude, double longitude, double latitude, double tilt, double azi);
         void forward(double lon, double lat, double &x, double &y);
         void inverse(double x, double y, double &lon, double &lat);
     };

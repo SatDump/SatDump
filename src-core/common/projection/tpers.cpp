@@ -31,7 +31,7 @@
 
 namespace projection
 {
-    void TPERSProjection::init(double height, double longitude, double latitude, double tilt, double azi)
+    void TPERSProjection::init(double altitude, double longitude, double latitude, double tilt, double azi)
     {
         lon_0 = longitude;
 
@@ -44,7 +44,7 @@ namespace projection
         cw = cos(omega);
         sw = sin(omega);
 
-        this->height = height;
+        height = altitude;
         phi0 = latitude * 0.01745329;
         a = 6.37814e+06;
 
@@ -59,13 +59,13 @@ namespace projection
             cosph0 = cos(phi0);
         }
 
-        pn1 = this->height / a; // normalize by radius
+        pn1 = height / a; // normalize by radius
 
         if (pn1 <= 0 || pn1 > 1e10)
         {
             // Illegal!!
         }
-        
+
         p = 1. + pn1;
         rp = 1. / p;
         h = 1. / pn1;
