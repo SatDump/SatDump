@@ -4,6 +4,7 @@
 Implementation of a standard GEOS projection, adapted from libproj.
 Some variables are hardcoded for the intended usecase, making some
 degree of tuning unecessary.
+Uses the WGS84 ellipsoid.
 */
 namespace projection
 {
