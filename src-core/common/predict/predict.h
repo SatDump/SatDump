@@ -63,6 +63,15 @@ typedef double predict_julian_date_t;
 predict_julian_date_t predict_to_julian(time_t time);
 
 /**
+ * Convert double in UTC to Julian date in UTC.
+ * This allows accuracy of under a second when necessary
+ *
+ * \param time Time in UTC
+ * \return Julian day in UTC
+ **/
+predict_julian_date_t predict_to_julian_double(double time);
+
+/**
  * Convert Julian date in UTC back to a time_t in UTC. 
  *
  * \param date Julian date in UTC

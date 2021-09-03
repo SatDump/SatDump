@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 #include "defs.h"
 
@@ -72,6 +73,11 @@ predict_julian_date_t predict_to_julian(time_t input_time)
 	//get number of seconds since 1979-12-31 00:00:00 UTC, convert to days
 	double seconds = difftime(input_time, get_julian_start_day());
 	return seconds / SECONDS_PER_DAY;
+}
+
+predict_julian_date_t predict_to_julian_double(double time) 
+{
+ 	return predict_to_julian(time) + (fmod(time, 1.0) / SECONDS_PER_DAY);
 }
 
 time_t predict_from_julian(predict_julian_date_t date)
