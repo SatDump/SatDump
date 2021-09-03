@@ -22,6 +22,8 @@ target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
+# Tell FindOpengl to use modern GL lib system
+set(OpenGL_GL_PREFERENCE GLVND)
 target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
 
