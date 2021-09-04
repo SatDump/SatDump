@@ -84,9 +84,17 @@ namespace projection
                 az = atan(((geo_cc1.second - geo_cc2.second)) / (geo_cc1.first - geo_cc2.first)) * 57.29578;
             }
 
+            bool invertOffset = az > 0;
+
             az -= 90;
 
-            az += az_offset; // If any Az offset is required
+            // If any Az offset is required
+            // This has to be relative to the sat vector so...
+            // We swap it out when require
+            if (invertOffset)
+                az -= az_offset;
+            else
+                az += az_offset;
 
             // Get real point of view aligned with the sat's vector
             pj.init(satellite_orbit.altitude * 1000, satellite_orbit.longitude * 57.29578, satellite_orbit.latitude * 57.29578, tilt_offset, az);

@@ -251,16 +251,16 @@ namespace metop
             // Reproject to an equirectangular proj
             {
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                image4.equalize(1000);
+                //image4.equalize(1000);
 
                 // Setup Projecition
                 projection::LEOScanProjector projector(5,                           // Pixel offset
-                                                       1950,                        // Correction swath
+                                                       2050,                        // Correction swath
                                                        1,                           // Instrument res
                                                        800,                         // Orbit height
                                                        METOP_AVHRR_SWATH,           // Instrument swath
-                                                       2.54,                        // Scale
-                                                       -0.6,                        // Az offset
+                                                       2.515,                        // Scale
+                                                       0.6,                         // Az offset
                                                        0,                           // Tilt
                                                        0.7,                         // Time offset
                                                        image4.width(),              // Image width
@@ -272,6 +272,17 @@ namespace metop
                 logger->info("Projected channel 4...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
+
+                cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
+                {
+                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(0, 0, 0, 1, image2);
+                    image321.draw_image(0, 0, 0, 2, image1);
+                }
+
+                logger->info("Projected channel 4...");
+                projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
             }
         }
 
