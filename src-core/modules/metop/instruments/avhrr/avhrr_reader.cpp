@@ -1,5 +1,5 @@
 #include "avhrr_reader.h"
-#include "logger.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -43,6 +43,8 @@ namespace metop
                     channels[channel][lines * 2048 + i] = pixel * 60;
                 }
             }
+
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
             // Frame counter
             lines++;

@@ -6,14 +6,16 @@ namespace ccsds
     {
         uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
         uint32_t milliseconds_of_day = pkt.payload[2] << 24 | pkt.payload[3] << 16 | pkt.payload[4] << 8 | pkt.payload[5];
-        //uint16_t milliseconds_of_millisecond = pkt.payload[6] << 8 | pkt.payload[7];
 
         return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
     }
 
-    int parseCCSDSTimeMillisecondOfMs(CCSDSPacket &pkt, int /*offset*/)
+    double parseCCSDSTimeFull(CCSDSPacket &pkt, int offset, int ms_scale, int us_of_ms_scale)
     {
-        uint16_t milliseconds_of_millisecond = pkt.payload[6] << 8 | pkt.payload[7];
-        return milliseconds_of_millisecond;
+        uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
+        uint32_t milliseconds_of_day = pkt.payload[2] << 24 | pkt.payload[3] << 16 | pkt.payload[4] << 8 | pkt.payload[5];
+        uint16_t microseconds_of_millisecond = pkt.payload[6] << 8 | pkt.payload[7];
+
+        return double(offset + days) * 86400.0 + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / double(us_of_ms_scale);
     }
 }

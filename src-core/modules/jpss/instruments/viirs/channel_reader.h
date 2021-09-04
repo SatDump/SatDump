@@ -30,6 +30,7 @@ namespace jpss
             ~VIIRSReader();
             void feed(ccsds::CCSDSPacket &packet);
             void differentialDecode(VIIRSReader &channelSource, int deci);
+            std::vector<double> timestamps;
             cimg_library::CImg<unsigned short> getImage();
         };
     } // namespace viirs

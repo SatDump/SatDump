@@ -1,3 +1,4 @@
+#define cimg_use_jpeg
 #include "module_fengyun_mwhs.h"
 #include <fstream>
 #include "logger.h"
@@ -5,6 +6,8 @@
 #include "imgui/imgui.h"
 #include "mwhs_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -107,6 +110,37 @@ namespace fengyun
                 imageAll.draw_image(98 * 2, height, 0, 0, mwhs_reader.getChannel(5));
             }
             WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
+
+            // Reproject to an equirectangular proj
+            {
+                // Get satellite info
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(8,                                 // Pixel offset
+                                                       1800,                              // Correction swath
+                                                       16.0 / 4,                          // Instrument res
+                                                       827.0,                             // Orbit height
+                                                       2800,                              // Instrument swath
+                                                       2.55,                               // Scale
+                                                       0,                                 // Az offset
+                                                       0,                                 // Tilt
+                                                       -4,                                // Time offset
+                                                       mwhs_reader.getChannel(0).width(), // Image width
+                                                       true,                              // Invert scan
+                                                       tle::getTLEfromNORAD(norad),       // TLEs
+                                                       mwhs_reader.timestamps             // Timestamps
+                );
+
+                for (int i = 0; i < 5; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = mwhs_reader.getChannel(i);
+                    logger->info("Projected Channel " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    WRITE_IMAGE(projected_image, directory + "/MWHS-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+            }
         }
 
         void FengyunMWHSDecoderModule::drawUI(bool window)

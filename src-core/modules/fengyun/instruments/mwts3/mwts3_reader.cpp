@@ -1,5 +1,4 @@
 #include "mwts3_reader.h"
-#include "logger.h"
 
 namespace fengyun
 {

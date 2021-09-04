@@ -9,6 +9,7 @@
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
 #include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -84,6 +85,8 @@ namespace fengyun
 
             uint8_t c10_buffer[27728];
 
+            //std::vector<double> timestamps;
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -138,6 +141,37 @@ namespace fengyun
                             // Write it out
                             output_hrpt_reader.write((char *)c10_buffer, 27728);
                         }
+
+                        // Parse timestamp
+                        /*{
+                            uint8_t timestamp[8];
+                            timestamp[0] = (frameVec[26041] & 0b111111) << 2 | frameVec[26042] >> 6;
+                            timestamp[1] = (frameVec[26042] & 0b111111) << 2 | frameVec[26043] >> 6;
+                            timestamp[2] = (frameVec[26043] & 0b111111) << 2 | frameVec[26044] >> 6;
+                            timestamp[3] = (frameVec[26044] & 0b111111) << 2 | frameVec[26045] >> 6;
+                            timestamp[4] = (frameVec[26045] & 0b111111) << 2 | frameVec[26046] >> 6;
+                            timestamp[6] = (frameVec[26046] & 0b111111) << 2 | frameVec[26047] >> 6;
+                            timestamp[7] = (frameVec[26047] & 0b111111) << 2 | frameVec[26048] >> 6;
+
+                            uint16_t days = (timestamp[1] & 0b11) << 10 | timestamp[2] << 2 | timestamp[3] >> 6; // Appears to be days since launch
+                            uint32_t milliseconds_of_day = timestamp[4] << 16 | timestamp[6] << 8 | timestamp[7];
+                            double currentTime = double(14923 + days) * 86400.0 + double(milliseconds_of_day) / double(1000) + 12 * 3600;
+
+                            timestamps.push_back(currentTime);
+
+                            
+                            time_t tttime = currentTime;
+                            std::tm *timeReadable = gmtime(&tttime);
+                            std::string timestampr = std::to_string(timeReadable->tm_year + 1900) + "/" +
+                                                     (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
+                                                     (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + " " +
+                                                     (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
+                                                     (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
+                                                     (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+                            logger->info(std::to_string(days) + " " + timestampr);
+                            
+                        }*/
                     }
                 }
 
@@ -169,6 +203,45 @@ namespace fengyun
             cimg_library::CImg<unsigned short> image8 = reader.getChannel(7);
             cimg_library::CImg<unsigned short> image9 = reader.getChannel(8);
             cimg_library::CImg<unsigned short> image10 = reader.getChannel(9);
+
+            // Reproject to an equirectangular proj
+            /*{
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
+                    tempImage9.equalize(1000);
+                    tempImage1.equalize(1000);
+                    tempImage7.equalize(1000);
+                    image197equ.draw_image(0, 0, 0, 0, tempImage1);
+                    image197equ.draw_image(0, 0, 0, 1, tempImage9);
+                    image197equ.draw_image(0, 0, 0, 2, tempImage7);
+                    image197equ.equalize(1000);
+                    image197equ.normalize(0, std::numeric_limits<unsigned char>::max());
+                }
+
+                image4.equalize(1000);
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(0,                           // Pixel offset
+                                                       2100,                        // Correction swath
+                                                       1.1,                         // Instrument res
+                                                       830,                         // Orbit height
+                                                       2800,                        // Instrument swath
+                                                       2.4,                        // Scale
+                                                       -1,                           // Az offset
+                                                       0,                           // Tilt
+                                                       -3,                          // Time offset
+                                                       image1.width(),              // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(37214), // TLEs
+                                                       timestamps                   // Timestamps
+                );
+
+                logger->info("Projected channel 197...");
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                WRITE_IMAGE(projected_image, directory + "/VIRR-RGB-197-PROJ.png");
+            }*/
 
             // Takes a while so we say how we're doing
             logger->info("Channel 1...");

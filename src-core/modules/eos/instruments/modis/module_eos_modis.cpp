@@ -351,9 +351,9 @@ namespace eos
                 image23.equalize(1000);
                 WRITE_IMAGE(image23, directory + "/MODIS-29-EQU.png");
                 cimg_library::CImg<unsigned short> corrected23 = image::earth_curvature::correct_earth_curvature(image23,
-                                                                                                                EOS_ORBIT_HEIGHT,
-                                                                                                                EOS_MODIS_SWATH,
-                                                                                                                EOS_MODIS_RES1000);
+                                                                                                                 EOS_ORBIT_HEIGHT,
+                                                                                                                 EOS_MODIS_SWATH,
+                                                                                                                 EOS_MODIS_RES1000);
                 WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
             }
         }

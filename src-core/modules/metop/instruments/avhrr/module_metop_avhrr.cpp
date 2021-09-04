@@ -10,6 +10,8 @@
 #include "common/image/earth_curvature.h"
 #include "modules/metop/metop.h"
 #include "nlohmann/json_utils.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -206,7 +208,7 @@ namespace metop
                 }
                 WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
                 image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                image221.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
                 cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
                                                                                                                   METOP_ORBIT_HEIGHT,
@@ -225,7 +227,7 @@ namespace metop
                 }
                 WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321.png");
                 image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned char>::max());
+                image321.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321-EQU.png");
                 cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
                                                                                                                   METOP_ORBIT_HEIGHT,
@@ -237,13 +239,39 @@ namespace metop
             logger->info("Equalized Ch 4...");
             {
                 image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned char>::max());
+                image4.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image4, directory + "/AVHRR-4-EQU.png");
                 cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
                                                                                                                 METOP_ORBIT_HEIGHT,
                                                                                                                 METOP_AVHRR_SWATH,
                                                                                                                 METOP_AVHRR_RES);
                 WRITE_IMAGE(corrected4, directory + "/AVHRR-4-EQU-CORRECTED.png");
+            }
+
+            // Reproject to an equirectangular proj
+            {
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                image4.equalize(1000);
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(5,                           // Pixel offset
+                                                       1950,                        // Correction swath
+                                                       1,                           // Instrument res
+                                                       800,                         // Orbit height
+                                                       METOP_AVHRR_SWATH,           // Instrument swath
+                                                       2.54,                        // Scale
+                                                       -0.6,                        // Az offset
+                                                       0,                           // Tilt
+                                                       0.7,                         // Time offset
+                                                       image4.width(),              // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(norad), // TLEs
+                                                       reader.timestamps            // Timestamps
+                );
+
+                logger->info("Projected channel 4...");
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
             }
         }
 

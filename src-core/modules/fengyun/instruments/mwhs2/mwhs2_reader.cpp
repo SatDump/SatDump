@@ -14,17 +14,18 @@ namespace fengyun
         {
         }
 
-        void MWHS2Reader::work(ccsds::CCSDSPacket &packet)
+        void MWHS2Reader::work(ccsds::CCSDSPacket &packet, bool fy3e_mode)
         {
             if (packet.payload.size() < 1018)
                 return;
 
-            time_t currentTime = ccsds::parseCCSDSTime(packet, 0);
+            double currentTime = fy3e_mode ? ccsds::parseCCSDSTimeFull(packet, 10957, 10000, 10000) + 12 * 3600 : // What the heck? Why use different values that way... Well, it works anyway
+                                     ccsds::parseCCSDSTimeFull(packet, 10957) + 12 * 3600;                        // And of course normal on 3D...
             int marker = (packet.payload[35] >> 2) & 0b11;
 
             if (imageData.count(currentTime) <= 0 && marker == 0)
             {
-                imageData.insert(std::pair<time_t, std::array<std::array<unsigned short, 98>, 15>>(currentTime, std::array<std::array<unsigned short, 98>, 15>()));
+                imageData.insert(std::pair<double, std::array<std::array<unsigned short, 98>, 15>>(currentTime, std::array<std::array<unsigned short, 98>, 15>()));
                 lines++;
                 lastTime = currentTime;
             }
@@ -72,12 +73,13 @@ namespace fengyun
 
         cimg_library::CImg<unsigned short> MWHS2Reader::getChannel(int channel)
         {
-            std::vector<std::pair<time_t, std::array<std::array<unsigned short, 98>, 15>>> imageVector(imageData.begin(), imageData.end());
+            timestamps.clear();
+            std::vector<std::pair<double, std::array<std::array<unsigned short, 98>, 15>>> imageVector(imageData.begin(), imageData.end());
 
             // Sort by timestamp
             std::sort(imageVector.begin(), imageVector.end(),
-                      [](std::pair<time_t, std::array<std::array<unsigned short, 98>, 15>> &el1,
-                         std::pair<time_t, std::array<std::array<unsigned short, 98>, 15>> &el2)
+                      [](std::pair<double, std::array<std::array<unsigned short, 98>, 15>> &el1,
+                         std::pair<double, std::array<std::array<unsigned short, 98>, 15>> &el2)
                       {
                           return el1.first < el2.first;
                       });
@@ -89,10 +91,11 @@ namespace fengyun
                 int line = 0;
 
                 // Reconstitute the image. Works "OK", not perfect...
-                for (const std::pair<time_t, std::array<std::array<unsigned short, 98>, 15>> &lineData : imageVector)
+                for (const std::pair<double, std::array<std::array<unsigned short, 98>, 15>> &lineData : imageVector)
                 {
                     std::memcpy(&img.data()[line * 98], lineData.second[channel].data(), 2 * 98);
                     line++;
+                    timestamps.push_back(lineData.first);
                 }
 
                 img.normalize(0, 65535);
