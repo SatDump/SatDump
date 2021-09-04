@@ -6,6 +6,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -378,6 +380,49 @@ namespace jpss
                 imageRgbAll.draw_image(96 * 4, image1.height(), 0, 0, image17166);
             }
             WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
+
+            // Reproject to an equirectangular proj
+            {
+                // Get satellite info
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(3,                           // Pixel offset
+                                                       1700,                        // Correction swath
+                                                       16.0 / 4,                    // Instrument res
+                                                       827.0,                       // Orbit height
+                                                       2200,                        // Instrument swath
+                                                       2.14,                        // Scale
+                                                       -3,                          // Az offset
+                                                       0,                           // Tilt
+                                                       -1.0,                        // Time offset
+                                                       image1.width(),              // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(norad), // TLEs
+                                                       reader.timestamps            // Timestamps
+                );
+
+                for (int i = 0; i < 22; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = reader.getImage(i);
+                    image.equalize(1000);
+                    logger->info("Projected channel " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    WRITE_IMAGE(projected_image, directory + "/ATMS-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+
+                cimg_library::CImg<unsigned short> image3417(96, image1.height(), 1, 3);
+                {
+                    image3417.draw_image(0, 0, 0, 0, image3);
+                    image3417.draw_image(0, 0, 0, 1, image4);
+                    image3417.draw_image(0, 0, 0, 2, image17);
+                }
+                image3417.equalize(1000);
+
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
+                WRITE_IMAGE(projected_image, directory + "/ATMS-RGB-3.4.17-PROJ.png");
+            }
         }
 
         void JPSSATMSDecoderModule::drawUI(bool window)

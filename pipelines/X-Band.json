@@ -204,6 +204,9 @@
                 }
             },
             "products": {
+                "jpss_satid": {
+                    "npp_mode": "1"
+                },
                 "jpss_viirs": {
                     "npp_mode": "1"
                 },
