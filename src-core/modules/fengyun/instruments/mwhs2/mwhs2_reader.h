@@ -15,15 +15,16 @@ namespace fengyun
         class MWHS2Reader
         {
         private:
-            std::map<time_t, std::array<std::array<unsigned short, 98>, 15>> imageData;
-            time_t lastTime;
+            std::map<double, std::array<std::array<unsigned short, 98>, 15>> imageData;
+            double lastTime;
             unsigned short lineBuf[1000];
 
         public:
             MWHS2Reader();
             ~MWHS2Reader();
             int lines;
-            void work(ccsds::CCSDSPacket &packet);
+            std::vector<double> timestamps;
+            void work(ccsds::CCSDSPacket &packet, bool fy3d_mode);
             cimg_library::CImg<unsigned short> getChannel(int channel);
         };
     }

@@ -5,6 +5,9 @@
 #include "imgui/imgui.h"
 #include "mwhs2_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
+#include "modules/fengyun/fengyun3.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -36,6 +39,10 @@ namespace fengyun
 
             logger->info("Demultiplexing and deframing... (WIP!)");
 
+            // Get satellite info
+            nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+            int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
             // Demuxer
             ccsds::ccsds_1_0_1024::Demuxer ccsdsDemuxer = ccsds::ccsds_1_0_1024::Demuxer(882, true);
 
@@ -60,7 +67,7 @@ namespace fengyun
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 16)
-                            mwhs_reader.work(pkt);
+                            mwhs_reader.work(pkt, norad == FY3_E_NORAD);
                     }
                 }
 
@@ -120,6 +127,33 @@ namespace fengyun
                 imageAll.draw_image(98 * 2, height * 3, 0, 0, mwhs_reader.getChannel(14));
             }
             WRITE_IMAGE(imageAll, directory + "/MWHS2-ALL.png");
+
+            // Reproject to an equirectangular proj
+            {
+                // Setup Projecition
+                projection::LEOScanProjector projector(4,                                 // Pixel offset
+                                                       1550,                              // Correction swath
+                                                       16.0 / 4,                          // Instrument res
+                                                       827.0,                             // Orbit height
+                                                       2800,                              // Instrument swath
+                                                       2.65,                              // Scale
+                                                       0,                                 // Az offset
+                                                       0,                                 // Tilt
+                                                       3,                                 // Time offset
+                                                       mwhs_reader.getChannel(0).width(), // Image width
+                                                       true,                              // Invert scan
+                                                       tle::getTLEfromNORAD(norad),       // TLEs
+                                                       mwhs_reader.timestamps             // Timestamps
+                );
+
+                for (int i = 0; i < 15; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = mwhs_reader.getChannel(i);
+                    logger->info("Projected Channel " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    WRITE_IMAGE(projected_image, directory + "/MWHS2-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+            }
         }
 
         void FengyunMWHS2DecoderModule::drawUI(bool window)

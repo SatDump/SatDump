@@ -15,12 +15,13 @@ namespace fengyun
         class ERMReader
         {
         private:
-            std::map<time_t, std::array<unsigned short, 151>> imageData;
+            std::map<double, std::array<unsigned short, 151>> imageData;
 
         public:
             ERMReader();
             ~ERMReader();
             int lines;
+            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel();
         };

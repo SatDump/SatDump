@@ -20,6 +20,7 @@ namespace metop
             AVHRRReader();
             ~AVHRRReader();
             int lines;
+            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);
         };

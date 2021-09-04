@@ -7,6 +7,8 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "modules/meteor/meteor.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -44,6 +46,11 @@ namespace meteor
 
             logger->info("Demultiplexing and deframing...");
 
+            //time_t currentDay = time(0);
+            //time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 4; // Requires the day to be known from another source
+
+            //std::vector<double> timestamps;
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -59,7 +66,25 @@ namespace meteor
                 std::vector<std::vector<uint8_t>> msumr_frames = msumrDefra.work(msumrData);
 
                 for (std::vector<uint8_t> frame : msumr_frames)
+                {
                     reader.work(frame.data());
+
+                    //double timestamp = dayValue + (frame[8] - 3.0) * 3600.0 + (frame[9]) * 60.0 + (frame[10] + 0.0) + double(frame[11] / 255.0);
+                    //timestamps.push_back(timestamp);
+
+                    /*
+                    time_t tttime = timestamp;
+                    std::tm *timeReadable = gmtime(&tttime);
+                    std::string timestampr = std::to_string(timeReadable->tm_year + 1900) + "/" +
+                                             (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
+                                             (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + " " +
+                                             (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
+                                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
+                                             (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+                    logger->info(std::to_string(timestamp) + " " + timestampr);
+                    */
+                }
 
                 msumrData.clear();
 
@@ -87,6 +112,37 @@ namespace meteor
             cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
             cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
             cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
+
+            // Reproject to an equirectangular proj
+            /*{
+                //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
+                {
+                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(0, 0, 0, 1, image2);
+                    image321.draw_image(0, 0, 0, 2, image1);
+                }
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(1,                           // Pixel offset
+                                                       2070,                        // Correction swath
+                                                       1.1,                         // Instrument res
+                                                       830,                         // Orbit height
+                                                       METEOR_MSUMR_SWATH,          // Instrument swath
+                                                       2.46,                        // Scale
+                                                       2.6,                         // Az offset
+                                                       0,                           // Tilt
+                                                       1,                           // Time offset
+                                                       image1.width(),              // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(44387), // TLEs
+                                                       timestamps                   // Timestamps
+                );
+
+                logger->info("Projected RGB 321...");
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-321-PROJ.png");
+            }*/
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/MSU-MR-1.png");

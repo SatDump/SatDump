@@ -40,6 +40,8 @@ namespace metop
                 }
             }
 
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+
             // Frame counter
             lines++;
         }

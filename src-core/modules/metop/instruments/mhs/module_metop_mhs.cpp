@@ -6,6 +6,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -111,6 +113,37 @@ namespace metop
                 imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4));
             }
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
+
+            // Reproject to an equirectangular proj
+            {
+                // Get satellite info
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(3,                               // Pixel offset
+                                                       2070,                            // Correction swath
+                                                       16.0 / 4,                        // Instrument res
+                                                       827.0,                           // Orbit height
+                                                       2180,                            // Instrument swath
+                                                       2.18,                            // Scale
+                                                       0,                               // Az offset
+                                                       0,                               // Tilt
+                                                       2.0,                             // Time offset
+                                                       mhsreader.getChannel(0).width(), // Image width
+                                                       true,                            // Invert scan
+                                                       tle::getTLEfromNORAD(norad),     // TLEs
+                                                       mhsreader.timestamps             // Timestamps
+                );
+
+                for (int i = 0; i < 5; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i);
+                    logger->info("Projected channel " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+            }
         }
 
         void MetOpMHSDecoderModule::drawUI(bool window)

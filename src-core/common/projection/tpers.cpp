@@ -182,6 +182,8 @@ namespace projection
             if (sinz < 0.)
             {
                 // Illegal
+                lon = lat = 2e10; // Trigger error
+                return;
             }
 
             sinz = (p - sqrt(sinz)) / (pn1 / rh + rh / pn1);
