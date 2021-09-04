@@ -15,13 +15,15 @@ namespace fengyun
         class MWTSReader
         {
         private:
-            std::map<time_t, std::array<std::array<unsigned short, 15>, 26>> imageData;
+            std::map<double, std::array<std::array<unsigned short, 60>, 27>> imageData;
+            double lastTime;
             unsigned short lineBuf[1000];
 
         public:
             MWTSReader();
             ~MWTSReader();
             int lines;
+            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getChannel(int channel);
         };
