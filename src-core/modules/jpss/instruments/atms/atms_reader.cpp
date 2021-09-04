@@ -1,4 +1,5 @@
 #include "atms_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace jpss
 {
@@ -32,6 +33,8 @@ namespace jpss
             if (scan_synch == 1)
             {
                 lines++;
+                timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
+
                 endSequenceCount = packet.header.packet_sequence_count + 96;
                 inScan = true;
             }

@@ -21,6 +21,7 @@ namespace jpss
             ATMSReader();
             ~ATMSReader();
             int lines;
+            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getImage(int channel);
         };
