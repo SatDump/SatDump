@@ -1,4 +1,5 @@
 #include "amsu_a2_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -73,6 +74,8 @@ namespace metop
                     channels[channel][lines * 30 + 29 - i] = pixel;
                 }
             }
+
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
             // Frame counter
             lines++;

@@ -7,6 +7,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -135,6 +137,64 @@ namespace metop
                 imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
+
+            // Reproject to an equirectangular proj
+            {
+                // Get satellite info
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+                // Setup Projecition. Twice with the same parameters except we need different timestamps
+                // There is no "real" guarantee the A1 / A2 output will always be identical
+                // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
+                // in the resulting image...
+                projection::LEOScanProjector projector_a1(40,                             // Pixel offset
+                                                          1900,                           // Correction swath
+                                                          48.0 / 40,                      // Instrument res
+                                                          827.0,                          // Orbit height
+                                                          2250,                           // Instrument swath
+                                                          2.2,                            // Scale
+                                                          0,                              // Az offset
+                                                          0,                              // Tilt
+                                                          2.0,                            // Time offset
+                                                          a1reader.getChannel(0).width(), // Image width
+                                                          true,                           // Invert scan
+                                                          tle::getTLEfromNORAD(norad),    // TLEs
+                                                          a1reader.timestamps             // Timestamps
+                );
+                projection::LEOScanProjector projector_a2(40,                             // Pixel offset
+                                                          1900,                           // Correction swath
+                                                          48.0 / 40,                      // Instrument res
+                                                          827.0,                          // Orbit height
+                                                          2250,                           // Instrument swath
+                                                          2.2,                            // Scale
+                                                          0,                              // Az offset
+                                                          0,                              // Tilt
+                                                          2.0,                            // Time offset
+                                                          a2reader.getChannel(0).width(), // Image width
+                                                          true,                           // Invert scan
+                                                          tle::getTLEfromNORAD(norad),    // TLEs
+                                                          a2reader.timestamps             // Timestamps
+                );
+
+                for (int i = 0; i < 13; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = a1reader.getChannel(i);
+                    image.equalize(1000);
+                    logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
+                    WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
+                }
+
+                for (int i = 0; i < 2; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = a2reader.getChannel(i);
+                    image.equalize(1000);
+                    logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
+                    WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+            }
         }
 
         void MetOpAMSUDecoderModule::drawUI(bool window)
