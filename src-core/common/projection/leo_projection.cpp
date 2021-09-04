@@ -122,7 +122,7 @@ namespace projection
             latlon_lut.push_back(lineVec);
         }
 
-        logger->critical(latlon_lut.size());
+        //logger->critical(latlon_lut.size());
     }
 
     LEOScanProjector::LEOScanProjector(double proj_offset,

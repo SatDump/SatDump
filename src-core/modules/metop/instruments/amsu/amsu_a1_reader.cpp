@@ -1,4 +1,5 @@
 #include "amsu_a1_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -97,6 +98,8 @@ namespace metop
                     ;
                 }
             }
+
+            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
             // Frame counter
             lines++;
