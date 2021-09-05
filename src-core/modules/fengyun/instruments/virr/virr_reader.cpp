@@ -47,6 +47,24 @@ namespace fengyun
             // Frame counter
             lines++;
 
+            // Parse timestamp
+            {
+                uint8_t timestamp[8];
+                timestamp[0] = (packet[26041] & 0b111111) << 2 | packet[26042] >> 6;
+                timestamp[1] = (packet[26042] & 0b111111) << 2 | packet[26043] >> 6;
+                timestamp[2] = (packet[26043] & 0b111111) << 2 | packet[26044] >> 6;
+                timestamp[3] = (packet[26044] & 0b111111) << 2 | packet[26045] >> 6;
+                timestamp[4] = (packet[26045] & 0b111111) << 2 | packet[26046] >> 6;
+                timestamp[6] = (packet[26046] & 0b111111) << 2 | packet[26047] >> 6;
+                timestamp[7] = (packet[26047] & 0b111111) << 2 | packet[26048] >> 6;
+
+                uint16_t days = (timestamp[1] & 0b11) << 10 | timestamp[2] << 2 | timestamp[3] >> 6; // Appears to be days since launch?
+                uint32_t milliseconds_of_day = timestamp[4] << 16 | timestamp[6] << 8 | timestamp[7];
+                double currentTime = double(14923 + days) * 86400.0 + double(milliseconds_of_day) / double(1000) + 12 * 3600;
+
+                timestamps.push_back(currentTime);
+            }
+
             // Make sure we have enough room
             if (lines * 2048 >= (int)channels[0].size())
             {
