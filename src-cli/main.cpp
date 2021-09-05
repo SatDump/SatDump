@@ -16,9 +16,10 @@ int main(int argc, char *argv[])
 
     initLogger();
 
-    if (argc < 6)
+    if (argc < 6 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
     {
-        logger->info("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory]");
+        logger->info("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
+        logger->info("Extra options : -samplerate [bits_per_second] -baseband_format [f32/i16/i8/w8] -dc_block -iq_swap");
         exit(1);
     }
 
