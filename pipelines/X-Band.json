@@ -25,6 +25,7 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_mersi1": {
                     "correct_bowtie": "1"
                 }
@@ -321,6 +322,7 @@
                 }
             },
             "products": {
+                "fengyun_satid": {},
                 "fengyun_mersi1": {
                     "correct_bowtie": "1"
                 },
