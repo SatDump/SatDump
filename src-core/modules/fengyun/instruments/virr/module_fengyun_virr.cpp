@@ -172,7 +172,7 @@ namespace fengyun
             cimg_library::CImg<unsigned short> image10 = reader.getChannel(9);
 
             // Takes a while so we say how we're doing
-            /*logger->info("Channel 1...");
+            logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/VIRR-1.png");
 
             logger->info("Channel 2...");
@@ -366,7 +366,7 @@ namespace fengyun
                                                                                                                 FY3_VIRR_SWATH,
                                                                                                                 FY3_VIRR_RES);
                 WRITE_IMAGE(corrected4, directory + "/VIRR-4-EQU-CORRECTED.png");
-            }*/
+            }
 
             // Reproject to an equirectangular proj
             {
