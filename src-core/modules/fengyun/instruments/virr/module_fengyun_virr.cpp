@@ -172,7 +172,7 @@ namespace fengyun
             cimg_library::CImg<unsigned short> image10 = reader.getChannel(9);
 
             // Takes a while so we say how we're doing
-            logger->info("Channel 1...");
+            /*logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/VIRR-1.png");
 
             logger->info("Channel 2...");
@@ -366,22 +366,22 @@ namespace fengyun
                                                                                                                 FY3_VIRR_SWATH,
                                                                                                                 FY3_VIRR_RES);
                 WRITE_IMAGE(corrected4, directory + "/VIRR-4-EQU-CORRECTED.png");
-            }
+            }*/
 
             // Reproject to an equirectangular proj
             {
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(0,                           // Pixel offset
-                                                       2200,                        // Correction swath
+                projection::LEOScanProjector projector(3,                           // Pixel offset
+                                                       2100,                        // Correction swath
                                                        1.1,                         // Instrument res
                                                        830,                         // Orbit height
                                                        2800,                        // Instrument swath
-                                                       2.32,                        // Scale
-                                                       -2.3,                        // Az offset
+                                                       2.38,                        // Scale
+                                                       -2.5,                        // Az offset
                                                        0,                           // Tilt
-                                                       -4,                          // Time offset
+                                                       -1,                          // Time offset
                                                        image1.width(),              // Image width
                                                        true,                        // Invert scan
                                                        tle::getTLEfromNORAD(norad), // TLEs
