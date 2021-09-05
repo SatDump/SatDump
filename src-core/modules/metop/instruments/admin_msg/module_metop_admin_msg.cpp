@@ -6,13 +6,9 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/bzlib/bzlib.h"
-#include "rapidxml.hpp"
-
+#include "common/rapidxml.hpp"
 
 #define MAX_MSG_SIZE 1000000
-
-rapidxml::xml_document<> doc;
-rapidxml::xml_node<> * root_node = NULL;
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -47,6 +43,10 @@ namespace metop
             logger->info("Demultiplexing and deframing...");
 
             uint8_t *message_out = new uint8_t[MAX_MSG_SIZE];
+
+            // XML Parser
+            rapidxml::xml_document<> doc;
+            rapidxml::xml_node<> *root_node = NULL;
 
             while (!data_in.eof())
             {
@@ -88,33 +88,38 @@ namespace metop
                             std::ofstream outputMessageFile(outputFileName);
                             d_output_files.push_back(outputFileName);
                             outputMessageFile.write((char *)message_out, outsize);
-                            
-                            logger->info("Parsing TLEs...");
-                            std::string inputtle(message_out, &message_out[outsize]);
-                            std::string outputTLEFileName = directory + "/wxsats" + ".tle";
-                            std::ofstream tlefile(outputTLEFileName); 
-                                char chartle[inputtle.length()];
-                                strcpy(chartle, inputtle.c_str());
-                                    doc.parse<0>(chartle);
-                                    root_node = doc.first_node("multi-mission-administrative-message");
-       
-                                    for (rapidxml::xml_node<> * sat_node = root_node->first_node("message"); sat_node; 
-                                        sat_node = sat_node->next_sibling())
+
+                            // TLE Parsing
+                            {
+                                logger->info("Parsing TLEs...");
+
+                                // Create output file
+                                std::ofstream tle_file(directory + "/wxsats_" + std::to_string(pkt.header.packet_sequence_count) + ".tle");
+
+                                // Parse
+                                doc.parse<0>((char *)std::string(message_out, &message_out[outsize]).c_str()); // const char * to char * is needed...
+                                root_node = doc.first_node("multi-mission-administrative-message");
+
+                                // Convert to a standard TLE file usable by most SW
+                                for (rapidxml::xml_node<> *sat_node = root_node->first_node("message"); sat_node; sat_node = sat_node->next_sibling())
+                                {
+                                    tle_file << sat_node->first_attribute("satellite")->value() << "\n";
+
+                                    for (rapidxml::xml_node<> *sat_tle_node = sat_node->first_node("navigation"); sat_tle_node; sat_tle_node = sat_tle_node->next_sibling())
+                                    {
+                                        for (rapidxml::xml_node<> *tle_node = sat_tle_node->first_node("two-line-elements"); tle_node; tle_node = tle_node->next_sibling())
                                         {
-                                            tlefile << sat_node->first_attribute("satellite")->value() << "\n";
-                                            for(rapidxml::xml_node<> * sat_tle_node = sat_node->first_node("navigation"); sat_tle_node; 
-                                                sat_tle_node = sat_tle_node->next_sibling())
-                                                {
-                                                    for(rapidxml::xml_node<> * tle_node = sat_tle_node->first_node("two-line-elements"); tle_node; 
-                                                        tle_node = tle_node->next_sibling())
-                                                {
-                                                    for(rapidxml::xml_node<> * line1_node = tle_node->first_node("line-1"); line1_node; 
-                                                        line1_node = line1_node->next_sibling()) 
-                                                        tlefile  << line1_node->value() << "\n";
-                                                }                       
-                                            }  
+                                            for (rapidxml::xml_node<> *line1_node = tle_node->first_node("line-1"); line1_node; line1_node = line1_node->next_sibling())
+                                            {
+                                                tle_file << line1_node->value() << "\n";
+                                            }
                                         }
-                                tlefile.close();
+                                    }
+                                }
+
+                                // Done
+                                tle_file.close();
+                            }
                         }
                     }
                 }

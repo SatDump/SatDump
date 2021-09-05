@@ -122,7 +122,7 @@ namespace metop
 
             if (iasi_imaging.height() > 0)
             {
-                image::simple_despeckle(iasi_imaging, 10);
+                /*image::simple_despeckle(iasi_imaging, 10);
                 image::fft_forward(iasi_imaging);
                 image::extract_percentile(iasi_imaging, 4.0, 94.0, 1);
                 image::fft_inverse(iasi_imaging);
@@ -138,6 +138,7 @@ namespace metop
                 iasi_imaging.normalize(0, 65535);
 
                 WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG-DENOISED-EQU-INV.png");
+                */
             }
 
             // Output a few nice composites as well
