@@ -18,4 +18,13 @@ namespace ccsds
 
         return double(offset + days) * 86400.0 + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / double(us_of_ms_scale);
     }
+
+    double parseCCSDSTimeFullRaw(uint8_t *data, int offset, int ms_scale, int us_of_ms_scale)
+    {
+        uint16_t days = data[0] << 8 | data[1];
+        uint32_t milliseconds_of_day = data[2] << 24 | data[3] << 16 | data[4] << 8 | data[5];
+        uint16_t microseconds_of_millisecond = data[6] << 8 | data[7];
+
+        return double(offset + days) * 86400.0 + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / double(us_of_ms_scale);
+    }
 }
