@@ -1,4 +1,5 @@
 #include "mwts3_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace fengyun
 {
@@ -34,6 +35,8 @@ namespace fengyun
                         channels[c][lines * 98 + i] = packet.payload[pos + (18 * i + c) * 2 + 0] << 8 | packet.payload[pos + (18 * i + c) * 2 + 1];
                 }
 
+                double currentTime = ccsds::parseCCSDSTimeFullRaw(&packet.payload[2], 10957, 10000, 10000) + 12 * 3600;
+                timestamps.push_back(currentTime);
                 lines++;
             }
             else if (marker == 2)
