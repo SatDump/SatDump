@@ -5,6 +5,7 @@
 #define cimg_display 0
 #include "CImg.h"
 #include <map>
+#include <array>
 
 namespace fengyun
 {
