@@ -55,6 +55,9 @@ namespace eos
             MODISReader();
             ~MODISReader();
             int day_count, night_count, lines;
+            std::vector<double> timestamps_1000;
+            std::vector<double> timestamps_500;
+            std::vector<double> timestamps_250;
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned short> getImage250m(int channel);
             cimg_library::CImg<unsigned short> getImage500m(int channel);

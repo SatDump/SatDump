@@ -11,6 +11,8 @@
 #include "common/utils.h"
 #include "common/image/earth_curvature.h"
 #include "modules/eos/eos.h"
+#include "nlohmann/json_utils.h"
+#include "common/projection/leo_to_equirect.h"
 
 #define BUFFER_SIZE 8192
 
@@ -175,6 +177,9 @@ namespace eos
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            // Get NORAD
+            int norad = terra ? EOS_TERRA_NORAD : EOS_AQUA_NORAD;
 
             // BowTie values
             const float alpha = 1.0 / 1.8;
@@ -342,6 +347,31 @@ namespace eos
                                                                                                                         EOS_MODIS_SWATH,
                                                                                                                         EOS_MODIS_RES250);
                 WRITE_IMAGE(corrected143equraw, directory + "/MODIS-RGB-143-EQURAW-CORRECTED.png");
+
+                // Reproject to an equirectangular proj
+                {
+                    pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
+
+                    // Setup Projecition
+                    projection::LEOScanProjector projector(5,                           // Pixel offset
+                                                           1950,                        // Correction swath
+                                                           EOS_MODIS_RES1000,           // Instrument res
+                                                           800,                         // Orbit height
+                                                           EOS_MODIS_SWATH,             // Instrument swath
+                                                           2.45,                        // Scale
+                                                           -2,                          // Az offset
+                                                           0,                           // Tilt
+                                                           -2.2,                        // Time offset
+                                                           pre_wb.width(),              // Image width
+                                                           true,                        // Invert scan
+                                                           tle::getTLEfromNORAD(norad), // TLEs
+                                                           reader.timestamps_1000       // Timestamps
+                    );
+
+                    logger->info("Projected Channel 143 EQURAW...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(pre_wb, projector, 2048 * 4, 1024 * 4, 3);
+                    WRITE_IMAGE(projected_image, directory + "/MODIS-143-EQURAW-PROJ.png");
+                }
             }
 
             logger->info("Equalized Ch 29...");
@@ -349,12 +379,37 @@ namespace eos
                 cimg_library::CImg<unsigned short> image23 = reader.getImage1000m(23);
                 image::linear_invert(image23);
                 image23.equalize(1000);
+                if (bowtie)
+                    image23 = image::bowtie::correctGenericBowTie(image23, 1, scanHeight_1000, alpha, beta);
                 WRITE_IMAGE(image23, directory + "/MODIS-29-EQU.png");
                 cimg_library::CImg<unsigned short> corrected23 = image::earth_curvature::correct_earth_curvature(image23,
                                                                                                                  EOS_ORBIT_HEIGHT,
                                                                                                                  EOS_MODIS_SWATH,
                                                                                                                  EOS_MODIS_RES1000);
                 WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
+
+                // Reproject to an equirectangular proj
+                {
+                    // Setup Projecition
+                    projection::LEOScanProjector projector(5,                           // Pixel offset
+                                                           1950,                        // Correction swath
+                                                           EOS_MODIS_RES1000,           // Instrument res
+                                                           800,                         // Orbit height
+                                                           EOS_MODIS_SWATH,             // Instrument swath
+                                                           2.45,                        // Scale
+                                                           -2,                          // Az offset
+                                                           0,                           // Tilt
+                                                           -2.2,                        // Time offset
+                                                           image23.width(),             // Image width
+                                                           true,                        // Invert scan
+                                                           tle::getTLEfromNORAD(norad), // TLEs
+                                                           reader.timestamps_1000       // Timestamps
+                    );
+
+                    logger->info("Projected Channel 29...");
+                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image23, projector, 2048 * 4, 1024 * 4, 1);
+                    WRITE_IMAGE(projected_image, directory + "/MODIS-29-EQU-PROJ.png");
+                }
             }
         }
 

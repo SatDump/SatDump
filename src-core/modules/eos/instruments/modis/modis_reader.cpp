@@ -1,6 +1,7 @@
 #include "modis_reader.h"
 
 #include <map>
+#include "common/ccsds/ccsds_time.h"
 
 #define DAY_GROUP 0b000
 #define NIGHT_GROUP 0b001
@@ -62,6 +63,14 @@ namespace eos
             if (position == 0 && packet.header.sequence_flag == 1 && lastScanCount != header.scan_count)
             {
                 lines += 10;
+
+                double timestamp = ccsds::parseCCSDSTimeFull(packet, -4383);
+                for (int i = -5; i < 5; i++)
+                    timestamps_1000.push_back(timestamp + i * 0.162); // 1000m timestamps
+                for (int i = -10; i < 10; i++)
+                    timestamps_500.push_back(timestamp + i * 0.081); // 500m timestamps
+                for (int i = -20; i < 20; i++)
+                    timestamps_250.push_back(timestamp + i * 0.0405); // 250m timestamps
             }
 
             lastScanCount = header.scan_count;
@@ -175,6 +184,14 @@ namespace eos
             if (position == 0 && lastScanCount != header.scan_count)
             {
                 lines += 10;
+
+                double timestamp = ccsds::parseCCSDSTimeFull(packet, -4383);
+                for (int i = -5; i < 5; i++)
+                    timestamps_1000.push_back(timestamp + i * 0.162); // 1000m timestamps
+                for (int i = -10; i < 10; i++)
+                    timestamps_500.push_back(timestamp + i * 0.081); // 500m timestamps
+                for (int i = -20; i < 20; i++)
+                    timestamps_250.push_back(timestamp + i * 0.0405); // 250m timestamps
             }
 
             lastScanCount = header.scan_count;
