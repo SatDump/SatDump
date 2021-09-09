@@ -3,9 +3,6 @@
 #include <map>
 #include "common/ccsds/ccsds_time.h"
 
-#define DAY_GROUP 0b000
-#define NIGHT_GROUP 0b001
-
 namespace eos
 {
     namespace modis
@@ -214,8 +211,6 @@ namespace eos
             }
         }
 
-        int i = 0;
-
         void MODISReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
@@ -232,7 +227,7 @@ namespace eos
             if (modisHeader.coarse_time > common_coarse + (common_coarse / 10) || modisHeader.coarse_time < common_coarse - (common_coarse / 10))
                 return;
 
-            if (modisHeader.packet_type == DAY_GROUP)
+            if (modisHeader.packet_type == MODISHeader::DAY_GROUP)
             {
                 if (packet.payload.size() < 622)
                     return;
@@ -240,7 +235,7 @@ namespace eos
                 day_count++;
                 processDayPacket(packet, modisHeader);
             }
-            else if (modisHeader.packet_type == NIGHT_GROUP)
+            else if (modisHeader.packet_type == MODISHeader::NIGHT_GROUP)
             {
                 if (packet.payload.size() < 256)
                     return;
