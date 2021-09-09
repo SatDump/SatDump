@@ -19,6 +19,7 @@ enum sdr_device_type
     AIRSPYHF,
     SPYSERVER,
     RTLTCP,
+    PLUTO,
     FILESRC
 };
 

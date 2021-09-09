@@ -8,6 +8,7 @@ option(ENABLE_SDR_AIRSPYHF              "Enable AirspyHF Support."              
 option(ENABLE_SDR_LIMESDR               "Enable LimeSDR Support."                                ON)
 option(ENABLE_SDR_SPYSERVER             "Enable SpyServer Support."                              ON)
 option(ENABLE_SDR_RTLTCP                "Enable RTL-TCP Support."                                ON)
+option(ENABLE_SDR_PLUTO                 "Enable Adalm-Pluto Support."                            OFF)
 
 file(GLOB_RECURSE LIBSDR_CPPS  sdr/*.cpp)
 
@@ -26,6 +27,7 @@ if(ANDROID)
         set(ENABLE_SDR_LIMESDR OFF)
         set(ENABLE_SDR_SPYSERVER ON)
         set(ENABLE_SDR_RTLTCP OFF)
+        set(ENABLE_SDR_PLUTO OFF)
 endif()
 
 if(NOT ENABLE_SDR_AIRSPY)
@@ -48,6 +50,9 @@ target_compile_definitions(sdr PUBLIC DISABLE_SDR_SPYSERVER="1")
 endif()
 if(NOT ENABLE_SDR_RTLTCP)
 target_compile_definitions(sdr PUBLIC DISABLE_SDR_RTLTCP="1")
+endif()
+if(NOT ENABLE_SDR_PLUTO)
+target_compile_definitions(sdr PUBLIC DISABLE_SDR_PLUTO="1")
 endif()
 
 if(MSVC)
@@ -87,6 +92,7 @@ else()
                 find_library(HACKRF_LIBRARY hackrf)
                 find_library(AIRSPYHF_LIBRARY airspyhf)
                 find_library(LIMESUITE_LIBRARY LimeSuite)
+                find_library(PLUTO_LIBRARY iio)
 
                 if(ENABLE_SDR_AIRSPY AND AIRSPY_LIBRARY)
                         # Airspy
@@ -122,6 +128,13 @@ else()
                         target_link_libraries(sdr PUBLIC ${LIMESUITE_LIBRARY})
                 else()
                         target_compile_definitions(sdr PUBLIC DISABLE_SDR_LIMESDR="1")
+                endif()
+                if(ENABLE_SDR_PLUTO AND PLUTO_LIBRARY)
+                # Pluto
+                message("Building with Pluto support")
+                        target_link_libraries(sdr PUBLIC ${PLUTO_LIBRARY})
+                else()
+                        target_compile_definitions(sdr PUBLIC DISABLE_SDR_PLUTO="1")
                 endif()
                 # LimeSDR
                 #find_library(LIME_LIBRARY LimeSuite REQUIRED)

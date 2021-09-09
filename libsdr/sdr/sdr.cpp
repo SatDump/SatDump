@@ -60,6 +60,7 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 #include "airspyhf.h"
 #include "spyserver.h"
 #include "rtltcp.h"
+#include "pluto.h"
 #include "file.h"
 
 void initSDRs()
@@ -135,6 +136,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     results.insert(results.end(), rtltcp_results.begin(), rtltcp_results.end());
 #endif
 
+#ifndef DISABLE_SDR_PLUTO
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> pluto_results = SDRPluto::getDevices();
+    results.insert(results.end(), pluto_results.begin(), pluto_results.end());
+#endif
+
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> file_results = SDRFile::getDevices();
     results.insert(results.end(), file_results.begin(), file_results.end());
 
@@ -152,6 +158,10 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
 #ifndef DISABLE_SDR_RTLTCP
     if (type == RTLTCP)
         return SDRRtlTcp::drawParamsUI();
+#endif
+#ifndef DISABLE_SDR_PLUTO
+    if (type == PLUTO)
+        return SDRPluto::drawParamsUI();
 #endif
     if (type == FILESRC)
         return SDRFile::drawParamsUI();
@@ -177,6 +187,8 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
         return "spyserver";
     if (type == RTLTCP)
         return "rtltcp";
+    if (type == PLUTO)
+        return "pluto";
     if (type == FILESRC)
         return "file";
 
@@ -199,6 +211,8 @@ sdr_device_type getDeviceIDbyIDString(std::string idString)
         return SPYSERVER;
     else if (idString == "rtltcp")
         return RTLTCP;
+    else if (idString == "pluto")
+        return PLUTO;
     else if (idString == "file")
         return FILESRC;
     else
@@ -249,6 +263,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #ifndef DISABLE_SDR_RTLTCP
     if (type == RTLTCP)
         return std::make_shared<SDRRtlTcp>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_PLUTO
+    if (type == PLUTO)
+        return std::make_shared<SDRPluto>(parameters, id);
 #endif
     if (type == FILESRC)
         return std::make_shared<SDRFile>(parameters, id);
