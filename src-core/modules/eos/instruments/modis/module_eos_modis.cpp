@@ -123,6 +123,10 @@ namespace eos
             reader.common_day = common_day;
             reader.common_coarse = common_coarse;
 
+            std::ofstream data_out(directory + "/modis_ccsds.bin", std::ios::binary);
+            logger->info("Writing CCSDS frames to " + directory + "/modis_ccsds.bin");
+            uint8_t ccsds_modis[642];
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -149,6 +153,12 @@ namespace eos
                         {
                             modis_ccsds++;
                             reader.work(pkt);
+
+                            // Write it out
+                            std::fill(&ccsds_modis[0], &ccsds_modis[642], 0);
+                            std::memcpy(&ccsds_modis[0], pkt.header.raw, 6);
+                            std::memcpy(&ccsds_modis[6], pkt.payload.data(), std::min<size_t>(pkt.payload.size(), 636));
+                            data_out.write((char *)ccsds_modis, 642);
                         }
                     }
                 }
@@ -163,6 +173,7 @@ namespace eos
             }
 
             data_in.close();
+            data_out.close();
 
             logger->info("VCID 30 (MODIS) Frames : " + std::to_string(modis_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));

@@ -102,7 +102,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/aura/instruments/omi/module_aura_omi.h"
 
 #include "modules/eos/instruments/modis/module_eos_modis.h"
-#include "modules/eos/instruments/modis/module_eos_modis_extractor.h"
 
 #include "modules/noaa/module_noaa_hrpt_demod.h"
 #include "modules/noaa/module_noaa_dsb_demod.h"
@@ -227,7 +226,6 @@ void registerModules()
 
     // EOS
     REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
-    REGISTER_MODULE(eos::modis::EOSMODISExtractorModule);
 
     // NOAA
     REGISTER_MODULE(noaa::NOAAHRPTDemodModule);
