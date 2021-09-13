@@ -327,6 +327,51 @@
             }
         }
     },
+    "metop_dump": {
+        "name": "MetOp X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [
+            7800
+        ],
+        "samplerate": 45e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "35000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0189",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "new_metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": "5",
+                    "viterbi_ber_thresold": "0.170",
+                    "soft_symbols": "1"
+                }
+            },
+            "products": {
+                "metop_satid": {},
+                "metop_avhrr": {},
+                "metop_mhs": {},
+                "metop_amsu": {},
+                "metop_iasi": {
+                    "write_all": "0"
+                },
+                "metop_gome": {
+                    "write_all": "0"
+                },
+                "metop_ascat": {},
+                "metop_sem": {},
+                "metop_admin_msg": {}
+            }
+        }
+    },
     "aura_db": {
         "name": "Aura DB",
         "live": false,

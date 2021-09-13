@@ -18,7 +18,8 @@ namespace metop
         {
             for (int i = 0; i < 8461; i++)
             {
-                delete[] channels[i];
+                // Already deleted by CImg...
+                //delete[] channels[i];
             }
         }
 

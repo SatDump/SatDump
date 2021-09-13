@@ -5,6 +5,7 @@
 #define cimg_use_png
 #define cimg_display 0
 #include "CImg.h"
+#include "common/resizeable_buffer.h"
 
 namespace metop
 {
@@ -13,7 +14,7 @@ namespace metop
         class AVHRRReader
         {
         private:
-            unsigned short *channels[5];
+            ResizeableBuffer<unsigned short> channels[5];
             uint16_t avhrrBuffer[12944];
 
         public:

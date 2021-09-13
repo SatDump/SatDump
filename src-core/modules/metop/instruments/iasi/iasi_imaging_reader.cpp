@@ -7,13 +7,13 @@ namespace metop
     {
         IASIIMGReader::IASIIMGReader()
         {
-            ir_channel = new unsigned short[10000 * 64 * 30];
+            ir_channel.create(10000 * 64 * 30);
             lines = 0;
         }
 
         IASIIMGReader::~IASIIMGReader()
         {
-            delete[] ir_channel;
+            ir_channel.destroy();
         }
 
         void IASIIMGReader::work(ccsds::CCSDSPacket &packet)
@@ -42,6 +42,12 @@ namespace metop
             // Frame counter
             if (counter == 36)
                 lines++;
+
+            // Make sure we have enough room
+            if (lines * 64 * 30 >= (int)ir_channel.size())
+            {
+                ir_channel.resize((lines + 1000) * 64 * 30);
+            }
         }
 
         int percentile(unsigned short *array, int size, float percentile)
@@ -57,7 +63,7 @@ namespace metop
 
         cimg_library::CImg<unsigned short> IASIIMGReader::getIRChannel()
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(ir_channel, 30 * 64, lines * 64);
+            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(ir_channel.buf, 30 * 64, lines * 64);
             img.mirror('x');
             return img;
         }

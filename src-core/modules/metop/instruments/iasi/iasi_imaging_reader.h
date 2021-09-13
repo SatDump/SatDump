@@ -5,6 +5,7 @@
 #define cimg_use_png
 #define cimg_display 0
 #include "CImg.h"
+#include "common/resizeable_buffer.h"
 
 namespace metop
 {
@@ -13,7 +14,7 @@ namespace metop
         class IASIIMGReader
         {
         private:
-            unsigned short *ir_channel;
+            ResizeableBuffer<unsigned short> ir_channel;
 
         public:
             IASIIMGReader();

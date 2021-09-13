@@ -8,14 +8,14 @@ namespace metop
         AVHRRReader::AVHRRReader()
         {
             for (int i = 0; i < 5; i++)
-                channels[i] = new unsigned short[10000 * 2048];
+                channels[i].create(10000 * 2048);
             lines = 0;
         }
 
         AVHRRReader::~AVHRRReader()
         {
             for (int i = 0; i < 5; i++)
-                delete[] channels[i];
+                channels[i].destroy();
         }
 
         void AVHRRReader::work(ccsds::CCSDSPacket &packet)
@@ -48,11 +48,18 @@ namespace metop
 
             // Frame counter
             lines++;
+
+            // Make sure we have enough room
+            if (lines * 2048 >= (int)channels[0].size())
+            {
+                for (int i = 0; i < 5; i++)
+                    channels[i].resize((lines + 1000) * 2048);
+            }
         }
 
         cimg_library::CImg<unsigned short> AVHRRReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 2048, lines);
+            return cimg_library::CImg<unsigned short>(channels[channel].buf, 2048, lines);
         }
     } // namespace avhrr
 } // namespace metop
