@@ -282,5 +282,5 @@ namespace live
         }
         ImGui::EndGroup();
     }
-#endif
 };
+#endif
