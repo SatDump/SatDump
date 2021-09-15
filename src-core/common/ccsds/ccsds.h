@@ -30,4 +30,4 @@ namespace ccsds
 
     // Parse CCSDS header
     CCSDSHeader parseCCSDSHeader(uint8_t *header);
-} // namespace proba
+} // namespace ccsds

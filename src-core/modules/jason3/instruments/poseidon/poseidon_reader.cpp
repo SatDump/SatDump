@@ -60,7 +60,7 @@ namespace jason3
                 int firstOverThresold = 0;
                 for (int i = 0; i < 104; i++)
                 {
-                    if (packet.payload[102 + (104 * y) + i] > thresold)
+                    if (packet.payload[96 + (104 * y) + i] > thresold)
                     {
                         firstOverThresold = i;
                         break;
@@ -70,7 +70,7 @@ namespace jason3
                 int countOverThresold = 0;
                 for (int i = 0; i < 104; i++)
                 {
-                    if (packet.payload[102 + (104 * y) + i] > thresold)
+                    if (packet.payload[96 + (104 * y) + i] > thresold)
                         countOverThresold++;
                 }
 
