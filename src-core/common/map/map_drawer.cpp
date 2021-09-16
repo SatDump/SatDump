@@ -1,6 +1,7 @@
 #include "map_drawer.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
+#include "shapefile.h"
 
 namespace map
 {
@@ -137,4 +138,72 @@ namespace map
 
     template void drawProjectedMap(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
     template void drawProjectedMap(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+
+    template <typename T>
+    void drawProjectedMapShapefile(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    {
+        for (std::string currentShapeFile : shapeFiles)
+        {
+            std::ifstream inputFile(currentShapeFile, std::ios::binary);
+            shapefile::Shapefile shape_file(inputFile);
+
+            std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
+            {
+                for (std::vector<shapefile::point_t> coordinates : parts)
+                {
+                    for (int i = 0; i < (int)coordinates.size() - 1; i++)
+                    {
+                        std::pair<float, float> start = projectionFunc(coordinates[i].y, coordinates[i].x,
+                                                                       map_image.height(), map_image.width());
+                        std::pair<float, float> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
+                                                                     map_image.height(), map_image.width());
+
+                        if (start.first == -1 || end.first == -1)
+                            return;
+
+                        map_image.draw_line(start.first, start.second, end.first, end.second, color);
+                    }
+
+                    {
+                        std::pair<float, float> start = projectionFunc(coordinates[0].y, coordinates[0].x,
+                                                                       map_image.height(), map_image.width());
+                        std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].y, coordinates[coordinates.size() - 1].x,
+                                                                     map_image.height(), map_image.width());
+
+                        if (start.first == -1 || end.first == -1)
+                            return;
+
+                        map_image.draw_line(start.first, start.second, end.first, end.second, color);
+                    }
+                }
+            };
+
+            std::function<void(shapefile::point_t)> pointDraw = [color, &map_image, &projectionFunc](shapefile::point_t coordinates)
+            {
+                std::pair<float, float> cc = projectionFunc(coordinates.y, coordinates.x,
+                                                            map_image.height(), map_image.width());
+
+                if (cc.first == -1 || cc.first == -1)
+                    return;
+
+                map_image.draw_point(cc.first, cc.second, color);
+            };
+
+            for (shapefile::PolyLineRecord polylineRecord : shape_file.polyline_records)
+                polylineDraw(polylineRecord.parts_points);
+
+            for (shapefile::PolygonRecord polygonRecord : shape_file.polygon_records)
+                polylineDraw(polygonRecord.parts_points);
+
+            for (shapefile::PointRecord pointRecord : shape_file.point_records)
+                pointDraw(pointRecord.point);
+
+            for (shapefile::MultiPointRecord multipointRecord : shape_file.multipoint_records)
+                for (shapefile::point_t p : multipointRecord.points)
+                    pointDraw(p);
+        }
+    }
+
+    template void drawProjectedMapShapefile(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
 }

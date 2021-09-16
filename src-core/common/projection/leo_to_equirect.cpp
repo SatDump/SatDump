@@ -25,7 +25,7 @@ namespace projection
         cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
 
         // Reproject
-        for (int currentScan = 0; currentScan < image.height(); currentScan++)
+        for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
         {
             // Now compute each pixel's lat / lon and plot it
             for (double px = 0; px < image.width() - 1; px++)
@@ -65,14 +65,14 @@ namespace projection
 
         unsigned char color[3] = {0, 255, 0};
 
-        map::drawProjectedMap(projected_image,
-                              {resources::getResourcePath("maps/ne_10m_admin_0_countries.json")},
-                              color,
-                              [&toMapCoords](float lat, float lon, int height, int width) -> std::pair<int, int>
-                              {
-                                  std::pair<float, float> map_cc = toMapCoords(lat, lon, height, width);
-                                  return {map_cc.first, map_cc.second};
-                              });
+        map::drawProjectedMapShapefile(projected_image,
+                                       {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       color,
+                                       [&toMapCoords](float lat, float lon, int height, int width) -> std::pair<int, int>
+                                       {
+                                           std::pair<float, float> map_cc = toMapCoords(lat, lon, height, width);
+                                           return {map_cc.first, map_cc.second};
+                                       });
 
         return projected_image;
     }

@@ -10,5 +10,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMap(cimg_library::CImg<T> &image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+    void drawProjectedMapGeoJson(cimg_library::CImg<T> &image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+    template <typename T>
+    void drawProjectedMapShapefile(cimg_library::CImg<T> &image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
 }
