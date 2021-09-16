@@ -121,7 +121,7 @@ namespace live
             scale_max = settings["fft_scale"].get<float>();
 
         if (settings.count("fft_offset") > 0)
-            scale_max = settings["fft_offset"].get<float>();
+            scale_offset = settings["fft_offset"].get<float>();
 
         if (settings.count("live_finish_processing") > 0)
             finishProcessing = settings["live_finish_processing"].get<int>();
