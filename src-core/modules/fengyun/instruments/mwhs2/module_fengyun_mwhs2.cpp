@@ -129,6 +129,7 @@ namespace fengyun
             WRITE_IMAGE(imageAll, directory + "/MWHS2-ALL.png");
 
             // Reproject to an equirectangular proj
+            if (mwhs_reader.lines > 0)
             {
                 // Setup Projecition
                 projection::LEOScanProjector projector(4,                                 // Pixel offset

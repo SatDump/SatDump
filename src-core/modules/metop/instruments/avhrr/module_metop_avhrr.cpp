@@ -249,6 +249,7 @@ namespace metop
             }
 
             // Reproject to an equirectangular proj
+            if (image1.height() > 0)
             {
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
                 //image4.equalize(1000);
@@ -259,7 +260,7 @@ namespace metop
                                                        1,                           // Instrument res
                                                        800,                         // Orbit height
                                                        METOP_AVHRR_SWATH,           // Instrument swath
-                                                       2.515,                        // Scale
+                                                       2.515,                       // Scale
                                                        0.6,                         // Az offset
                                                        0,                           // Tilt
                                                        0.7,                         // Time offset

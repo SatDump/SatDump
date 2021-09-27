@@ -107,6 +107,7 @@ namespace fengyun
             // Reproject to an equirectangular proj.
             // This instrument was a PAIN to align... So it's not perfect
             // Also the low sampling rate doesn't help
+            if (mwts_reader.lines > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");

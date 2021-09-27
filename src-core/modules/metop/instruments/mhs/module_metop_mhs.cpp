@@ -115,6 +115,7 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
 
             // Reproject to an equirectangular proj
+            if (mhsreader.lines > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");

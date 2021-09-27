@@ -139,6 +139,7 @@ namespace metop
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
 
             // Reproject to an equirectangular proj
+            if (a1reader.lines > 0 && a2reader.lines > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");

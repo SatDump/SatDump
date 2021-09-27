@@ -369,6 +369,7 @@ namespace fengyun
             }
 
             // Reproject to an equirectangular proj
+            if (image1.height() > 0)
             {
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 

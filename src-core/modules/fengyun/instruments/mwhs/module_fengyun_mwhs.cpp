@@ -112,6 +112,7 @@ namespace fengyun
             WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
 
             // Reproject to an equirectangular proj
+            if (mwhs_reader.lines > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
