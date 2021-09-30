@@ -9,6 +9,8 @@
 #include "modules/meteor/meteor.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/image/brightness_contrast.h"
+#include "common/image/image.h"
 
 #define BUFFER_SIZE 8192
 
@@ -46,10 +48,10 @@ namespace meteor
 
             logger->info("Demultiplexing and deframing...");
 
-            //time_t currentDay = time(0);
-            //time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 4; // Requires the day to be known from another source
+            time_t currentDay = time(0);
+            time_t dayValue = currentDay - (currentDay % 86400); //- 86400 * 4; // Requires the day to be known from another source
 
-            //std::vector<double> timestamps;
+            std::vector<double> timestamps;
 
             while (!data_in.eof())
             {
@@ -69,8 +71,8 @@ namespace meteor
                 {
                     reader.work(frame.data());
 
-                    //double timestamp = dayValue + (frame[8] - 3.0) * 3600.0 + (frame[9]) * 60.0 + (frame[10] + 0.0) + double(frame[11] / 255.0);
-                    //timestamps.push_back(timestamp);
+                    double timestamp = dayValue + (frame[8] - 3.0) * 3600.0 + (frame[9]) * 60.0 + (frame[10] + 0.0) + double(frame[11] / 255.0);
+                    timestamps.push_back(timestamp);
 
                     /*
                     time_t tttime = timestamp;
@@ -113,37 +115,6 @@ namespace meteor
             cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
             cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
 
-            // Reproject to an equirectangular proj
-            /*{
-                //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
-                {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
-                }
-
-                // Setup Projecition
-                projection::LEOScanProjector projector(1,                           // Pixel offset
-                                                       2070,                        // Correction swath
-                                                       1.1,                         // Instrument res
-                                                       830,                         // Orbit height
-                                                       METEOR_MSUMR_SWATH,          // Instrument swath
-                                                       2.46,                        // Scale
-                                                       2.6,                         // Az offset
-                                                       0,                           // Tilt
-                                                       1,                           // Time offset
-                                                       image1.width(),              // Image width
-                                                       true,                        // Invert scan
-                                                       tle::getTLEfromNORAD(44387), // TLEs
-                                                       timestamps                   // Timestamps
-                );
-
-                logger->info("Projected RGB 321...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-321-PROJ.png");
-            }*/
-
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/MSU-MR-1.png");
 
@@ -172,7 +143,7 @@ namespace meteor
                 }
                 WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221.png");
                 image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                image221.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
                 cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
                                                                                                                   METEOR_ORBIT_HEIGHT,
@@ -189,27 +160,86 @@ namespace meteor
                     image321.draw_image(0, 0, 0, 1, image2);
                     image321.draw_image(0, 0, 0, 2, image1);
                 }
+                cimg_library::CImg<unsigned short> image321_contrast = image321;
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321.png");
                 image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned char>::max());
+                image321.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
                 cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
                                                                                                                   METEOR_ORBIT_HEIGHT,
                                                                                                                   METEOR_MSUMR_SWATH,
                                                                                                                   METEOR_MSUMR_RES);
                 WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
+
+                image::brightness_contrast(image321_contrast, 0.179 * 2, 0.253 * 2, 3);
+                WRITE_IMAGE(image321_contrast, directory + "/MSU-MR-RGB-321-CONT.png");
+                cimg_library::CImg<unsigned short> corrected321_contrast = image::earth_curvature::correct_earth_curvature(image321_contrast,
+                                                                                                                           METEOR_ORBIT_HEIGHT,
+                                                                                                                           METEOR_MSUMR_SWATH,
+                                                                                                                           METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected321_contrast, directory + "/MSU-MR-RGB-321-CONT-CORRECTED.png");
+            }
+
+            logger->info("Equalized Ch 4...");
+            {
+                image::linear_invert(image4);
+                image4.equalize(1000);
+                image4.normalize(0, std::numeric_limits<unsigned short>::max());
+                WRITE_IMAGE(image4, directory + "/MSU-MR-4-EQU.png");
+                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
+                                                                                                                METEOR_ORBIT_HEIGHT,
+                                                                                                                METEOR_MSUMR_SWATH,
+                                                                                                                METEOR_MSUMR_RES);
+                WRITE_IMAGE(corrected4, directory + "/MSU-MR-4-EQU-CORRECTED.png");
             }
 
             logger->info("Equalized Ch 5...");
             {
                 image5.equalize(1000);
-                image5.normalize(0, std::numeric_limits<unsigned char>::max());
+                image5.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image5, directory + "/MSU-MR-5-EQU.png");
                 cimg_library::CImg<unsigned short> corrected5 = image::earth_curvature::correct_earth_curvature(image5,
                                                                                                                 METEOR_ORBIT_HEIGHT,
                                                                                                                 METEOR_MSUMR_SWATH,
                                                                                                                 METEOR_MSUMR_RES);
                 WRITE_IMAGE(corrected5, directory + "/MSU-MR-5-EQU-CORRECTED.png");
+            }
+
+            // Reproject to an equirectangular proj
+            {
+                //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
+                {
+                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(0, 0, 0, 1, image2);
+                    image321.draw_image(0, 0, 0, 2, image1);
+                }
+
+                image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(4,                           // Pixel offset
+                                                       2070,                        // Correction swath
+                                                       1.1,                         // Instrument res
+                                                       830,                         // Orbit height
+                                                       METEOR_MSUMR_SWATH,          // Instrument swath
+                                                       2.46,                        // Scale
+                                                       -2,                          // Az offset
+                                                       0,                           // Tilt
+                                                       1,                           // Time offset
+                                                       image1.width(),              // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(44387), // TLEs
+                                                       timestamps                   // Timestamps
+                );
+
+                logger->info("Projected RGB 321...");
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-321-PROJ.png");
+
+                logger->info("Projected Channel 4...");
+                projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                WRITE_IMAGE(projected_image, directory + "/MSU-MR-4-PROJ.png");
             }
         }
 

@@ -6,7 +6,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMap(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapGeoJson(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -136,8 +136,54 @@ namespace map
         }
     }
 
-    template void drawProjectedMap(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMap(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapGeoJson(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapGeoJson(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+
+    template <typename T>
+    void drawProjectedCapitalsGeoJson(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    {
+        for (std::string currentShapeFile : shapeFiles)
+        {
+            nlohmann::json shapeFile;
+            {
+                std::ifstream istream(currentShapeFile);
+                istream >> shapeFile;
+                istream.close();
+            }
+
+            for (const nlohmann::json &mapStruct : shapeFile.at("features"))
+            {
+                if (mapStruct["type"] != "Feature")
+                    continue;
+
+                std::string geometryType = mapStruct["geometry"]["type"];
+
+                if (geometryType == "Point")
+                {
+                    if (mapStruct["properties"]["featurecla"].get<std::string>() == "Admin-0 capital")
+                    {
+                        std::pair<float, float> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<float, float>>();
+                        std::pair<float, float> cc = projectionFunc(coordinates.second, coordinates.first,
+                                                                    map_image.height(), map_image.width());
+
+                        if (cc.first == -1 || cc.first == -1)
+                            continue;
+
+                        map_image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
+                        map_image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
+                        map_image.draw_circle(cc.first, cc.second, 10 * ratio, color);
+
+                        std::string name = mapStruct["properties"]["nameascii"];
+
+                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
+                    }
+                }
+            }
+        }
+    }
+
+    template void drawProjectedCapitalsGeoJson(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 
     template <typename T>
     void drawProjectedMapShapefile(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)

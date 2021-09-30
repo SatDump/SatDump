@@ -6,6 +6,9 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+//#include "common/projection/leo_to_equirect.h"
+//#include "nlohmann/json_utils.h"
+//#include "common/projection/ref_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -155,6 +158,55 @@ namespace metop
                 imageAll.draw_image(256 * 1, height * 2, 0, 0, image1);
             }
             WRITE_IMAGE(imageAll, directory + "/ASCAT-EQU-ALL.png");
+
+            /*
+            // Reproject to an equirectangular proj
+            if (image1.height() > 0)
+            {
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                //image4.equalize(1000);
+
+                int compo_size = 790;
+
+                // Setup Projecition
+                projection::LEOScanProjector projector(0,                           // Pixel offset
+                                                       910,                         // Correction swath
+                                                       1,                           // Instrument res
+                                                       800,                         // Orbit height
+                                                       1800,                        // Instrument swath
+                                                       1.9,                         // Scale
+                                                       -1,                          // Az offset
+                                                       0,                           // Tilt
+                                                       -0,                          // Time offset
+                                                       compo_size,                  // Image width
+                                                       true,                        // Invert scan
+                                                       tle::getTLEfromNORAD(norad), // TLEs
+                                                       ascatreader.timestamps[1]    // Timestamps
+                );
+
+                /*{
+                    projection::ref_file::LEO_GeodeticReferenceFile geofile = projection::ref_file::leoRefFileFromProjector(projector,
+                                                                                                                            ascatreader.timestamps[1],
+                                                                                                                            norad,
+                                                                                                                            2048,
+                                                                                                                            reader.lines);
+                    logger->info("GEO Reference file...");
+                    projection::ref_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                }*/
+            /*
+                logger->info("Projected channel 2...");
+                cimg_library::CImg<unsigned short> image_recomp(compo_size, ascatreader.lines[1], 1, 1, 0);
+                {
+
+                    image_recomp.draw_image(0, 0, 0, 0, image5);
+                    image_recomp.draw_image(compo_size - 256, 0, 0, 0, image2);
+                }
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image_recomp, projector, 2048 * 8, 1024 * 8, 1);
+                WRITE_IMAGE(image_recomp, directory + "/ASCAT-MIDDLE.png");
+                WRITE_IMAGE(projected_image, directory + "/ASCAT-MIDDLE-PROJ.png");
+            }
+            */
         }
 
         void MetOpASCATDecoderModule::drawUI(bool window)

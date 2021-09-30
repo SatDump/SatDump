@@ -12,6 +12,8 @@
 #include "nlohmann/json_utils.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/image/brightness_contrast.h"
+#include "common/image/xfr.h"
 
 #define BUFFER_SIZE 8192
 
@@ -236,6 +238,45 @@ namespace metop
                 WRITE_IMAGE(corrected321, directory + "/AVHRR-RGB-321-EQU-CORRECTED.png");
             }
 
+            logger->info("(23)21 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image221_321(2048, reader.lines, 1, 3);
+                {
+                    image221_321.draw_image(0, 0, 0, 0, image3, 0.4);
+                    image221_321.draw_image(0, 0, 0, 0, image2, 0.6);
+                    image221_321.draw_image(0, 0, 0, 1, image2);
+                    image221_321.draw_image(0, 0, 0, 2, image1);
+                }
+                image::xfr::XFR curveCorrection(0, 1023, 100, 0, 1023, 100, 0, 1023, 90);
+                image::xfr::applyXFR(curveCorrection, image221_321);
+                image::brightness_contrast(image221_321, 0.304 * 2, 0.292 * 2, 3);
+                WRITE_IMAGE(image221_321, directory + "/AVHRR-RGB-(23)21.png");
+                cimg_library::CImg<unsigned short> corrected221_321 = image::earth_curvature::correct_earth_curvature(image221_321,
+                                                                                                                      METOP_ORBIT_HEIGHT,
+                                                                                                                      METOP_AVHRR_SWATH,
+                                                                                                                      METOP_AVHRR_RES);
+                WRITE_IMAGE(corrected221_321, directory + "/AVHRR-RGB-(23)21-CORRECTED.png");
+            }
+
+            logger->info("345 Composite...");
+            {
+                cimg_library::CImg<unsigned short> image345(2048, reader.lines, 1, 3);
+                {
+                    image345.draw_image(0, 0, 0, 0, image3);
+                    image345.draw_image(0, 0, 0, 1, image4);
+                    image345.draw_image(0, 0, 0, 2, image5);
+                }
+                image::xfr::XFR curveCorrection(0, 1023, 30, 0, 1023, 100, 0, 1023, 100);
+                image::xfr::applyXFR(curveCorrection, image345);
+                image::brightness_contrast(image345, -0.208 * 2, 0.326 * 2, 3);
+                WRITE_IMAGE(image345, directory + "/AVHRR-RGB-345.png");
+                cimg_library::CImg<unsigned short> corrected345 = image::earth_curvature::correct_earth_curvature(image345,
+                                                                                                                  METOP_ORBIT_HEIGHT,
+                                                                                                                  METOP_AVHRR_SWATH,
+                                                                                                                  METOP_AVHRR_RES);
+                WRITE_IMAGE(corrected345, directory + "/AVHRR-RGB-345-CORRECTED.png");
+            }
+
             logger->info("Equalized Ch 4...");
             {
                 image4.equalize(1000);
@@ -261,9 +302,9 @@ namespace metop
                                                        800,                         // Orbit height
                                                        METOP_AVHRR_SWATH,           // Instrument swath
                                                        2.515,                       // Scale
-                                                       0.6,                         // Az offset
+                                                       0.4,                         // Az offset
                                                        0,                           // Tilt
-                                                       0.7,                         // Time offset
+                                                       -0.3,                        // Time offset
                                                        image4.width(),              // Image width
                                                        true,                        // Invert scan
                                                        tle::getTLEfromNORAD(norad), // TLEs
@@ -281,7 +322,7 @@ namespace metop
                     image321.draw_image(0, 0, 0, 2, image1);
                 }
 
-                logger->info("Projected channel 4...");
+                logger->info("Projected channel 321...");
                 projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
             }

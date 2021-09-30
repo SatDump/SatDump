@@ -26,6 +26,19 @@ T most_common(InputIt begin, InputIt end)
         ->first;
 }
 
+template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
+T average_common(InputIt begin, InputIt end)
+{
+    T avg = 0;
+    size_t count = 0;
+    for (InputIt it = begin; it != end; ++it)
+    {
+        avg += *it;
+        count++;
+    }
+    return avg / T(count);
+}
+
 template <typename T>
 std::string to_string_with_precision(const T a_value, const int n = 6)
 {

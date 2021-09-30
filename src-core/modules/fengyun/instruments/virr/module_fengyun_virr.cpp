@@ -73,11 +73,20 @@ namespace fengyun
             std::string hpt_prefix = "FY3x_";
 
             if (scid == FY3_A_SCID)
+            {
                 hpt_prefix = "FY3A_";
+                reader.day_offset = 14923; // Unknown, but I don't have any data to calibrate so...
+            }
             else if (scid == FY3_B_SCID)
+            {
                 hpt_prefix = "FY3B_";
+                reader.day_offset = 14923;
+            }
             else if (scid == FY3_C_SCID)
+            {
                 hpt_prefix = "FY3C_";
+                reader.day_offset = 17620;
+            }
 
             std::string c10_filename = hpt_prefix + getHRPTReaderTimeStamp() + ".C10";
             std::ofstream output_hrpt_reader(directory + "/" + c10_filename, std::ios::binary);
@@ -379,10 +388,10 @@ namespace fengyun
                                                        1.1,                         // Instrument res
                                                        830,                         // Orbit height
                                                        2800,                        // Instrument swath
-                                                       2.38,                        // Scale
-                                                       -2.5,                        // Az offset
+                                                       2.406,                       // Scale
+                                                       -2.7,                        // Az offset
                                                        0,                           // Tilt
-                                                       -1,                          // Time offset
+                                                       -0.1,                        // Time offset
                                                        image1.width(),              // Image width
                                                        true,                        // Invert scan
                                                        tle::getTLEfromNORAD(norad), // TLEs

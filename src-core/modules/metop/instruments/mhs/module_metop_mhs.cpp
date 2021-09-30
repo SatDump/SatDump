@@ -122,7 +122,7 @@ namespace metop
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(3,                               // Pixel offset
+                projection::LEOScanProjector projector(2,                               // Pixel offset
                                                        2070,                            // Correction swath
                                                        16.0 / 4,                        // Instrument res
                                                        827.0,                           // Orbit height
@@ -130,7 +130,7 @@ namespace metop
                                                        2.18,                            // Scale
                                                        0,                               // Az offset
                                                        0,                               // Tilt
-                                                       2.0,                             // Time offset
+                                                       1,                               // Time offset
                                                        mhsreader.getChannel(0).width(), // Image width
                                                        true,                            // Invert scan
                                                        tle::getTLEfromNORAD(norad),     // TLEs

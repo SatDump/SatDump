@@ -57,7 +57,7 @@ namespace projection
             return {image_x, (map_height - 1) - image_y};
         };
 
-        for (int currentScan = 0; currentScan < utc_timestamps.size(); currentScan++)
+        for (int currentScan = 0; currentScan < (int)utc_timestamps.size(); currentScan++)
         {
             double currentTimestamp = utc_timestamps[currentScan] + time_offset;
 

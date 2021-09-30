@@ -70,6 +70,9 @@ namespace metop
             {
                 for (int channel = 0; channel < 1024; channel++)
                 {
+                    if (band_starts[band] >= 1024)
+                        continue;
+                        
                     if ((header[17] >> (10 - band * 2)) & 3)
                     {
                         int val = bands[0][band_channels[band]].data[band_starts[band] + channel];

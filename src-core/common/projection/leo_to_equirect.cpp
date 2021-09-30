@@ -9,7 +9,8 @@ namespace projection
                                                                         projection::LEOScanProjector projector,
                                                                         int output_width,
                                                                         int output_height,
-                                                                        int channels
+                                                                        int channels,
+                                                                        cimg_library::CImg<unsigned char> projected_image
 
     )
     {
@@ -22,7 +23,8 @@ namespace projection
         };
 
         // Output mapped data
-        cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
+        if (projected_image.width() == 1 && projected_image.height() == 1)
+            projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
 
         // Reproject
         for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
@@ -54,11 +56,25 @@ namespace projection
                     color[2] = image[currentScan * image.width() + int(px)] >> 8;
                 }
 
-                if (map_cc1.first == map_cc2.first && map_cc1.second == map_cc2.second)
-                    projected_image.draw_point(map_cc1.first, map_cc1.second, color);
-                else if (abs(map_cc1.first - map_cc2.first) < 20 && abs(map_cc1.second - map_cc2.second) < 20)
-                    projected_image.draw_rectangle(map_cc1.first, map_cc1.second, map_cc2.first, map_cc2.second, color);
+                if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
+                    continue;
+
+                if (abs(map_cc1.first - map_cc2.first) < 50 && abs(map_cc1.second - map_cc2.second) < 50)
+                {
+                    double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
+                    projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color, 0.4);
+                }
+
+                //if (abs(map_cc1.first - map_cc2.first) < 20 && abs(map_cc1.second - map_cc2.second) < 20)
+                //    projected_image.draw_point(map_cc1.first, map_cc1.second, color);
+
+                //if (map_cc1.first == map_cc2.first && map_cc1.second == map_cc2.second)
+                //    projected_image.draw_point(map_cc1.first, map_cc1.second, color);
+                //else if (abs(map_cc1.first - map_cc2.first) < 20 && abs(map_cc1.second - map_cc2.second) < 20)
+                //    projected_image.draw_rectangle(map_cc1.first, map_cc1.second, map_cc2.first, map_cc2.second, color);
             }
+
+            //logger->info(std::to_string(currentScan));
 
             //logger->critical(std::to_string(currentScan));
         }

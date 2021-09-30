@@ -116,9 +116,10 @@ namespace metop
             logger->info("Channel IR imaging...");
             cimg_library::CImg<unsigned short> iasi_imaging = iasireader_img.getIRChannel();
             cimg_library::CImg<unsigned short> iasi_imaging_equ = iasi_imaging;
+            WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
             iasi_imaging_equ.equalize(1000);
             iasi_imaging_equ.normalize(0, 65535);
-            WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG.png");
+            WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG-EQU.png");
 
             if (iasi_imaging.height() > 0)
             {

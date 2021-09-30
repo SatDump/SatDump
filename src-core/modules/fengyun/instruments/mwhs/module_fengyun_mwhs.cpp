@@ -124,7 +124,7 @@ namespace fengyun
                                                        16.0 / 4,                          // Instrument res
                                                        827.0,                             // Orbit height
                                                        2800,                              // Instrument swath
-                                                       2.55,                               // Scale
+                                                       2.55,                              // Scale
                                                        0,                                 // Az offset
                                                        0,                                 // Tilt
                                                        -4,                                // Time offset

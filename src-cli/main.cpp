@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    initSatdump();
+
     std::string downlink_pipeline = argv[1];
     std::string input_level = argv[2];
     std::string input_file = argv[3];
@@ -61,8 +63,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    initSatdump();
-
     logger->info("Starting processing pipeline " + downlink_pipeline + "...");
     logger->debug("Input file (" + input_level + ") : " + input_file);
     logger->debug("Output file (" + output_level + ") : " + output_file);
@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
 
     std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
                                                       pipelines.end(),
-                                                      [&downlink_pipeline](const Pipeline &e) {
+                                                      [&downlink_pipeline](const Pipeline &e)
+                                                      {
                                                           return e.name == downlink_pipeline;
                                                       });
 

@@ -9,6 +9,7 @@
 #include "common/image/image.h"
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
+#include "common/projection/leo_to_equirect.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -231,6 +232,26 @@ namespace fengyun
                                                                                                                   FY3_MERSI_SWATH,
                                                                                                                   FY3_MERSI_RES250);
                 WRITE_IMAGE(corrected441, directory + "/MERSI1-RGB-441-CORRECTED.png");
+            }
+
+            logger->info("321 RAW Composite...");
+            {
+                cimg_library::CImg<unsigned short> image321(8192, mersiCorrelator->image1.height(), 1, 3);
+                {
+                    cimg_library::CImg<unsigned short> tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
+                    image321.draw_image(8, 0, 0, 0, tempImage3);
+                    image321.draw_image(0, 0, 0, 1, tempImage2);
+                    image321.draw_image(8, 0, 0, 2, tempImage1);
+
+                    if (bowtie)
+                        image321 = image::bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
+                }
+                WRITE_IMAGE(image321, directory + "/MERSI1-RGB-321-RAW.png");
+                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_MERSI_SWATH,
+                                                                                                                  FY3_MERSI_RES250);
+                WRITE_IMAGE(corrected321, directory + "/MERSI1-RGB-321-RAW-CORRECTED.png");
             }
 
             logger->info("321 Composite...");

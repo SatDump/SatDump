@@ -88,6 +88,25 @@ namespace image
             }
         }
 
+        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &image)
+        {
+            // Apply XFR
+            for (int i = 0; i < image.height() * image.width(); i++)
+            {
+                unsigned short &currentR = image.data()[image.height() * image.width() * 0 + i];
+                unsigned short &currentG = image.data()[image.height() * image.width() * 1 + i];
+                unsigned short &currentB = image.data()[image.height() * image.width() * 2 + i];
+
+                currentR /= 60.0f;
+                currentG /= 60.0f;
+                currentB /= 60.0f;
+
+                currentR = xfr.red_lut[currentR] * 60.0f;
+                currentG = xfr.green_lut[currentG] * 60.0f;
+                currentB = xfr.blue_lut[currentB] * 60.0f;
+            }
+        }
+
         XFR loadXFRFromFile(std::string path)
         {
             std::ifstream xfrFile(path);

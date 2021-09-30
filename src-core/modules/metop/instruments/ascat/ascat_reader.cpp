@@ -1,4 +1,5 @@
 #include "ascat_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -70,6 +71,8 @@ namespace metop
 
                 channels[channel][lines[channel] * 256 + i] = value / 100;
             }
+
+            timestamps[channel].push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
             // Frame counter
             lines[channel]++;

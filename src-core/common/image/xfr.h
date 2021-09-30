@@ -30,6 +30,7 @@ namespace image
 
         // Apply color curve correction
         void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &r, cimg_library::CImg<unsigned short> &g, cimg_library::CImg<unsigned short> &b);
+        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &image);
 
         // Load XFR file
         XFR loadXFRFromFile(std::string path);

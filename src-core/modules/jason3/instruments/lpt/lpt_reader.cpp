@@ -35,7 +35,7 @@ namespace jason3
 
         void LPTReader::work(ccsds::CCSDSPacket &packet)
         {
-            if (packet.payload.size() < pkt_size)
+            if ((int)packet.payload.size() < pkt_size)
                 return;
 
             // We need to know where the satellite was when that packet was created

@@ -59,8 +59,8 @@ namespace fengyun
                 timestamp[7] = (packet[26047] & 0b111111) << 2 | packet[26048] >> 6;
 
                 uint16_t days = (timestamp[1] & 0b11) << 10 | timestamp[2] << 2 | timestamp[3] >> 6; // Appears to be days since launch?
-                uint32_t milliseconds_of_day = timestamp[4] << 16 | timestamp[6] << 8 | timestamp[7];
-                double currentTime = double(14923 + days) * 86400.0 + double(milliseconds_of_day) / double(1000) + 12 * 3600;
+                uint32_t milliseconds_of_day = (timestamp[3] & 0b11) << 24 | timestamp[4] << 16 | timestamp[6] << 8 | timestamp[7];
+                double currentTime = double(day_offset + days) * 86400.0 + double(milliseconds_of_day) / double(1000) + 12 * 3600;
 
                 timestamps.push_back(currentTime);
             }

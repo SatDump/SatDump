@@ -339,6 +339,7 @@ namespace eos
                         pre_wb = image::bowtie::correctGenericBowTie(pre_wb, 3, scanHeight_250, alpha, beta);
                     }
                 }
+
                 WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
                 cimg_library::CImg<unsigned short> corrected143 = image::earth_curvature::correct_earth_curvature(image143,
                                                                                                                   EOS_ORBIT_HEIGHT,
@@ -361,22 +362,22 @@ namespace eos
 
                 // Reproject to an equirectangular proj
                 {
-                    pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
+                    //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
 
                     // Setup Projecition
-                    projection::LEOScanProjector projector(5,                           // Pixel offset
+                    projection::LEOScanProjector projector(0,                           // Pixel offset
                                                            1950,                        // Correction swath
-                                                           EOS_MODIS_RES1000,           // Instrument res
+                                                           EOS_MODIS_RES250,            // Instrument res
                                                            800,                         // Orbit height
-                                                           EOS_MODIS_SWATH,             // Instrument swath
+                                                           2220,                        // Instrument swath
                                                            2.45,                        // Scale
-                                                           -2,                          // Az offset
+                                                           -2.2,                        // Az offset
                                                            0,                           // Tilt
                                                            -2.2,                        // Time offset
                                                            pre_wb.width(),              // Image width
                                                            true,                        // Invert scan
                                                            tle::getTLEfromNORAD(norad), // TLEs
-                                                           reader.timestamps_1000       // Timestamps
+                                                           reader.timestamps_250        // Timestamps
                     );
 
                     logger->info("Projected Channel 143 EQURAW...");
@@ -402,13 +403,13 @@ namespace eos
                 // Reproject to an equirectangular proj
                 {
                     // Setup Projecition
-                    projection::LEOScanProjector projector(5,                           // Pixel offset
+                    projection::LEOScanProjector projector(0,                           // Pixel offset
                                                            1950,                        // Correction swath
-                                                           EOS_MODIS_RES1000,           // Instrument res
+                                                           EOS_MODIS_RES250,            // Instrument res
                                                            800,                         // Orbit height
-                                                           EOS_MODIS_SWATH,             // Instrument swath
+                                                           2220,                        // Instrument swath
                                                            2.45,                        // Scale
-                                                           -2,                          // Az offset
+                                                           -2.2,                        // Az offset
                                                            0,                           // Tilt
                                                            -2.2,                        // Time offset
                                                            image23.width(),             // Image width
