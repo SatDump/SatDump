@@ -37,8 +37,8 @@ namespace projection
             init(height, longitude, sweep_x);
         }
 
-        void init(double height, double longitude, bool sweep_x = false);
-        void forward(double lon, double lat, double &x, double &y);
-        void inverse(double x, double y, double &lon, double &lat);
+        int init(double height, double longitude, bool sweep_x = false); // return value of 1 => Error
+        int forward(double lon, double lat, double &x, double &y);       // return value of 1 => Error
+        int inverse(double x, double y, double &lon, double &lat);       // return value of 1 => Error
     };
 };

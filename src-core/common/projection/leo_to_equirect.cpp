@@ -6,7 +6,7 @@
 namespace projection
 {
     cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,
-                                                                        projection::LEOScanProjector projector,
+                                                                        projection::LEOScanProjector &projector,
                                                                         int output_width,
                                                                         int output_height,
                                                                         int channels,
@@ -33,8 +33,11 @@ namespace projection
             for (double px = 0; px < image.width() - 1; px++)
             {
                 double lat1, lon1, lat2, lon2;
-                projector.inverse(px, currentScan, lat1, lon1);
-                projector.inverse(px + 1, currentScan, lat2, lon2);
+                int ret1 = projector.inverse(px, currentScan, lat1, lon1);
+                int ret2 = projector.inverse(px + 1, currentScan, lat2, lon2);
+
+                if (ret1 || ret2)
+                    continue;
 
                 if (fabs(lat1) > 1e10f || fabs(lon1) > 1e10f || fabs(lat2) > 1e10f || fabs(lon2) > 1e10f)
                     continue;

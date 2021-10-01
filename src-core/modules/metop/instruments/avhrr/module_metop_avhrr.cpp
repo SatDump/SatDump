@@ -296,20 +296,21 @@ namespace metop
                 //image4.equalize(1000);
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(5,                           // Pixel offset
-                                                       2050,                        // Correction swath
-                                                       1,                           // Instrument res
-                                                       800,                         // Orbit height
-                                                       METOP_AVHRR_SWATH,           // Instrument swath
-                                                       2.515,                       // Scale
-                                                       0.4,                         // Az offset
-                                                       0,                           // Tilt
-                                                       -0.3,                        // Time offset
-                                                       image4.width(),              // Image width
-                                                       true,                        // Invert scan
-                                                       tle::getTLEfromNORAD(norad), // TLEs
-                                                       reader.timestamps            // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    5,                           // Pixel offset
+                    2050,                        // Correction swath
+                    1,                           // Instrument res
+                    800,                         // Orbit height
+                    METOP_AVHRR_SWATH,           // Instrument swath
+                    2.515,                       // Scale
+                    0.4,                         // Az offset
+                    0,                           // Tilt
+                    -0.3,                        // Time offset
+                    image4.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    reader.timestamps            // Timestamps
+                });
 
                 logger->info("Projected channel 4...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);

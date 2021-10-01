@@ -99,20 +99,21 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(6,                               // Pixel offset
-                                                       1500,                            // Correction swath
-                                                       16.0 / 4,                        // Instrument res
-                                                       827.0,                           // Orbit height
-                                                       2300,                            // Instrument swath
-                                                       2.4,                             // Scale
-                                                       1,                               // Az offset
-                                                       0,                               // Tilt
-                                                       1.5,                             // Time offset
-                                                       erm_reader.getChannel().width(), // Image width
-                                                       true,                            // Invert scan
-                                                       tle::getTLEfromNORAD(norad),     // TLEs
-                                                       erm_reader.timestamps            // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    6,                               // Pixel offset
+                    1500,                            // Correction swath
+                    16.0 / 4,                        // Instrument res
+                    827.0,                           // Orbit height
+                    2300,                            // Instrument swath
+                    2.4,                             // Scale
+                    1,                               // Az offset
+                    0,                               // Tilt
+                    1.5,                             // Time offset
+                    erm_reader.getChannel().width(), // Image width
+                    true,                            // Invert scan
+                    tle::getTLEfromNORAD(norad),     // TLEs
+                    erm_reader.timestamps            // Timestamps
+                });
 
                 cimg_library::CImg<unsigned short> image = erm_reader.getChannel();
                 logger->info("Projected Channel 1...");

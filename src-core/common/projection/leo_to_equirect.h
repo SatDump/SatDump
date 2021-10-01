@@ -14,7 +14,7 @@ namespace projection
 {
     // Reproject LEO imagery to an equirectangular projection
     cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,                                                            // Input image to project
-                                                                        projection::LEOScanProjector projector,                                                              // LEO Projector
+                                                                        projection::LEOScanProjector &projector,                                                             // LEO Projector
                                                                         int output_width,                                                                                    // Output map width
                                                                         int output_height,                                                                                   // Output map height
                                                                         int channels = 1,                                                                                    // Channel count

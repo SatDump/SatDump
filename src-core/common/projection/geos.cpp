@@ -35,7 +35,7 @@
 
 namespace projection
 {
-    void GEOSProjection::init(double height, double longitude, bool sweep_x)
+    int GEOSProjection::init(double height, double longitude, bool sweep_x)
     {
         lon_0 = longitude; // The satellite's longitude
 
@@ -56,6 +56,7 @@ namespace projection
         {
             // Illegal case.
             // Kept just in case but we shouldn't end up there unless the user makes a mistake...
+            return 1;
         }
 
         // Init the rest
@@ -65,9 +66,11 @@ namespace projection
         radius_p = sqrt(one_es);
         radius_p2 = one_es;
         radius_p_inv2 = one_es;
+
+        return 0;
     }
 
-    void GEOSProjection::forward(double lon, double lat, double &x, double &y)
+    int GEOSProjection::forward(double lon, double lat, double &x, double &y)
     {
         x = y = 0; // Safety
 
@@ -96,7 +99,7 @@ namespace projection
         if (((radius_g - Vx) * Vx - Vy * Vy - Vz * Vz * radius_p_inv2) < 0.)
         {
             x = y = 2e10; // Trigger error
-            return;
+            return 1;
         }
 
         // Calculation based on view angles from satellite.
@@ -112,9 +115,11 @@ namespace projection
             x = radius_g_1 * atan(Vy / tmp);
             y = radius_g_1 * atan(Vz / hypot(Vy, tmp));
         }
+
+        return 0;
     }
 
-    void GEOSProjection::inverse(double x, double y, double &lon, double &lat)
+    int GEOSProjection::inverse(double x, double y, double &lon, double &lat)
     {
         lon = lat = 0.0;
         double phi = 0, lam = 0;
@@ -143,7 +148,7 @@ namespace projection
         if (det < 0.0)
         {
             lon = lat = 2e10; // Trigger error
-            return;
+            return 1;
         }
 
         // Calculation of three components of vector from satellite to position.
@@ -167,5 +172,7 @@ namespace projection
             lon = lon + 360;
         if (lon > 180)
             lon = lon - 360;
+
+        return 0;
     }
 };

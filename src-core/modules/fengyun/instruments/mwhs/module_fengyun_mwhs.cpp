@@ -119,20 +119,21 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(8,                                 // Pixel offset
-                                                       1800,                              // Correction swath
-                                                       16.0 / 4,                          // Instrument res
-                                                       827.0,                             // Orbit height
-                                                       2800,                              // Instrument swath
-                                                       2.55,                              // Scale
-                                                       0,                                 // Az offset
-                                                       0,                                 // Tilt
-                                                       -4,                                // Time offset
-                                                       mwhs_reader.getChannel(0).width(), // Image width
-                                                       true,                              // Invert scan
-                                                       tle::getTLEfromNORAD(norad),       // TLEs
-                                                       mwhs_reader.timestamps             // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    8,                                 // Pixel offset
+                    1800,                              // Correction swath
+                    16.0 / 4,                          // Instrument res
+                    827.0,                             // Orbit height
+                    2800,                              // Instrument swath
+                    2.55,                              // Scale
+                    0,                                 // Az offset
+                    0,                                 // Tilt
+                    -4,                                // Time offset
+                    mwhs_reader.getChannel(0).width(), // Image width
+                    true,                              // Invert scan
+                    tle::getTLEfromNORAD(norad),       // TLEs
+                    mwhs_reader.timestamps             // Timestamps
+                });
 
                 for (int i = 0; i < 5; i++)
                 {

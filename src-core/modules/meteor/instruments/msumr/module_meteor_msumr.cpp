@@ -218,20 +218,21 @@ namespace meteor
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(4,                           // Pixel offset
-                                                       2070,                        // Correction swath
-                                                       1.1,                         // Instrument res
-                                                       830,                         // Orbit height
-                                                       METEOR_MSUMR_SWATH,          // Instrument swath
-                                                       2.46,                        // Scale
-                                                       -2,                          // Az offset
-                                                       0,                           // Tilt
-                                                       1,                           // Time offset
-                                                       image1.width(),              // Image width
-                                                       true,                        // Invert scan
-                                                       tle::getTLEfromNORAD(44387), // TLEs
-                                                       timestamps                   // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    4,                           // Pixel offset
+                    2070,                        // Correction swath
+                    1.1,                         // Instrument res
+                    830,                         // Orbit height
+                    METEOR_MSUMR_SWATH,          // Instrument swath
+                    2.46,                        // Scale
+                    -2,                          // Az offset
+                    0,                           // Tilt
+                    1,                           // Time offset
+                    image1.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(44387), // TLEs
+                    timestamps                   // Timestamps
+                });
 
                 logger->info("Projected RGB 321...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);

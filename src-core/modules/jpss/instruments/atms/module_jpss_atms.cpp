@@ -382,27 +382,28 @@ namespace jpss
             WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
 
             // Reproject to an equirectangular proj
-            if(reader.lines > 0)
+            if (reader.lines > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(3,                           // Pixel offset
-                                                       1700,                        // Correction swath
-                                                       16.0 / 4,                    // Instrument res
-                                                       827.0,                       // Orbit height
-                                                       2200,                        // Instrument swath
-                                                       2.14,                        // Scale
-                                                       -3,                          // Az offset
-                                                       0,                           // Tilt
-                                                       -1.0,                        // Time offset
-                                                       image1.width(),              // Image width
-                                                       true,                        // Invert scan
-                                                       tle::getTLEfromNORAD(norad), // TLEs
-                                                       reader.timestamps            // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    3,                           // Pixel offset
+                    1700,                        // Correction swath
+                    16.0 / 4,                    // Instrument res
+                    827.0,                       // Orbit height
+                    2200,                        // Instrument swath
+                    2.14,                        // Scale
+                    -3,                          // Az offset
+                    0,                           // Tilt
+                    -1.0,                        // Time offset
+                    image1.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    reader.timestamps            // Timestamps
+                });
 
                 for (int i = 0; i < 22; i++)
                 {

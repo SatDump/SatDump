@@ -6,6 +6,8 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "modules/noaa/noaa.h"
+#include "common/projection/leo_to_equirect.h"
+#include "nlohmann/json_utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -38,12 +40,41 @@ namespace noaa
 
             logger->info("Demultiplexing and deframing...");
 
+            std::vector<double> timestamps;
+
+            time_t dayYearValue = 0; // Start of year
+
+            {
+                time_t curr_time = time(NULL);
+                struct tm timeinfo_struct;
+#ifdef _WIN32
+                memcpy(&timeinfo_struct, gmtime(&curr_time), sizeof(struct tm));
+#else
+                gmtime_r(&curr_time, &timeinfo_struct);
+#endif
+
+                // Reset to be year
+                timeinfo_struct.tm_mday = 0;
+                timeinfo_struct.tm_wday = 0;
+                timeinfo_struct.tm_yday = 0;
+                timeinfo_struct.tm_mon = 0;
+
+                dayYearValue = mktime(&timeinfo_struct);
+                dayYearValue = dayYearValue - (dayYearValue % 86400);
+            }
+
             while (!data_in.eof())
             {
                 // Read buffer
                 data_in.read((char *)buffer, 11090 * 2);
 
                 reader.work(buffer);
+
+                // Parse timestamp
+                int day_of_year = buffer[8] >> 1;
+                uint64_t milliseconds = (buffer[9] & 0x7F) << 20 | (buffer[10] << 10) | buffer[11];
+                double timestamp = dayYearValue + (day_of_year * 86400) + double(milliseconds) / 1000.0;
+                timestamps.push_back(timestamp);
 
                 progress = data_in.tellg();
 
@@ -94,7 +125,7 @@ namespace noaa
                 }
                 WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
                 image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned char>::max());
+                image221.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
                 cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
                                                                                                                   NOAA_ORBIT_HEIGHT,
@@ -106,13 +137,53 @@ namespace noaa
             logger->info("Equalized Ch 4...");
             {
                 image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned char>::max());
+                image4.normalize(0, std::numeric_limits<unsigned short>::max());
                 WRITE_IMAGE(image4, directory + "/AVHRR-4-EQU.png");
                 cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
                                                                                                                 NOAA_ORBIT_HEIGHT,
                                                                                                                 NOAA_AVHRR_SWATH,
                                                                                                                 NOAA_AVHRR_RES);
                 WRITE_IMAGE(corrected4, directory + "/AVHRR-4-EQU-CORRECTED.png");
+            }
+
+            // Reproject to an equirectangular proj
+            if (image1.height() > 0)
+            {
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                //image4.equalize(1000);
+
+                // Setup Projecition
+                projection::LEOScanProjector projector({
+                    2,                           // Pixel offset
+                    2050,                        // Correction swath
+                    1,                           // Instrument res
+                    800,                         // Orbit height
+                    NOAA_AVHRR_SWATH,            // Instrument swath
+                    2.399,                       // Scale
+                    -2.9,                        // Az offset
+                    0,                           // Tilt
+                    0.3,                         // Time offset
+                    image4.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(28654), // TLEs
+                    timestamps                   // Timestamps
+                });
+
+                logger->info("Projected channel 4...");
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 20, 1024 * 20, 1);
+                WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
+
+                cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
+                {
+                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(0, 0, 0, 1, image2);
+                    image321.draw_image(0, 0, 0, 2, image1);
+                }
+
+                logger->info("Projected channel 321...");
+                projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
             }
         }
 

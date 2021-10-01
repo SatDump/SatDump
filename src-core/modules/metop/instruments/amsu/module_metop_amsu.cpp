@@ -149,34 +149,36 @@ namespace metop
                 // There is no "real" guarantee the A1 / A2 output will always be identical
                 // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
                 // in the resulting image...
-                projection::LEOScanProjector projector_a1(0,                              // Pixel offset
-                                                          1900,                           // Correction swath
-                                                          48.0 / 40,                      // Instrument res
-                                                          827.0,                          // Orbit height
-                                                          2250,                           // Instrument swath
-                                                          2.2,                            // Scale
-                                                          0,                              // Az offset
-                                                          0,                              // Tilt
-                                                          4.0,                            // Time offset
-                                                          a1reader.getChannel(0).width(), // Image width
-                                                          true,                           // Invert scan
-                                                          tle::getTLEfromNORAD(norad),    // TLEs
-                                                          a1reader.timestamps             // Timestamps
-                );
-                projection::LEOScanProjector projector_a2(0,                              // Pixel offset
-                                                          1900,                           // Correction swath
-                                                          48.0 / 40,                      // Instrument res
-                                                          827.0,                          // Orbit height
-                                                          2250,                           // Instrument swath
-                                                          2.2,                            // Scale
-                                                          0,                              // Az offset
-                                                          0,                              // Tilt
-                                                          4.0,                            // Time offset
-                                                          a2reader.getChannel(0).width(), // Image width
-                                                          true,                           // Invert scan
-                                                          tle::getTLEfromNORAD(norad),    // TLEs
-                                                          a2reader.timestamps             // Timestamps
-                );
+                projection::LEOScanProjector projector_a1({
+                    0,                              // Pixel offset
+                    1900,                           // Correction swath
+                    48.0 / 40,                      // Instrument res
+                    827.0,                          // Orbit height
+                    2250,                           // Instrument swath
+                    2.2,                            // Scale
+                    0,                              // Az offset
+                    0,                              // Tilt
+                    4.0,                            // Time offset
+                    a1reader.getChannel(0).width(), // Image width
+                    true,                           // Invert scan
+                    tle::getTLEfromNORAD(norad),    // TLEs
+                    a1reader.timestamps             // Timestamps
+                });
+                projection::LEOScanProjector projector_a2({
+                    0,                              // Pixel offset
+                    1900,                           // Correction swath
+                    48.0 / 40,                      // Instrument res
+                    827.0,                          // Orbit height
+                    2250,                           // Instrument swath
+                    2.2,                            // Scale
+                    0,                              // Az offset
+                    0,                              // Tilt
+                    4.0,                            // Time offset
+                    a2reader.getChannel(0).width(), // Image width
+                    true,                           // Invert scan
+                    tle::getTLEfromNORAD(norad),    // TLEs
+                    a2reader.timestamps             // Timestamps
+                });
 
                 for (int i = 0; i < 13; i++)
                 {

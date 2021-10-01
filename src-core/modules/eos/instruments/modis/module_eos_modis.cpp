@@ -365,20 +365,21 @@ namespace eos
                     //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
 
                     // Setup Projecition
-                    projection::LEOScanProjector projector(0,                           // Pixel offset
-                                                           1950,                        // Correction swath
-                                                           EOS_MODIS_RES250,            // Instrument res
-                                                           800,                         // Orbit height
-                                                           2220,                        // Instrument swath
-                                                           2.45,                        // Scale
-                                                           -2.2,                        // Az offset
-                                                           0,                           // Tilt
-                                                           -2.2,                        // Time offset
-                                                           pre_wb.width(),              // Image width
-                                                           true,                        // Invert scan
-                                                           tle::getTLEfromNORAD(norad), // TLEs
-                                                           reader.timestamps_250        // Timestamps
-                    );
+                    projection::LEOScanProjector projector({
+                        0,                           // Pixel offset
+                        1950,                        // Correction swath
+                        EOS_MODIS_RES250,            // Instrument res
+                        800,                         // Orbit height
+                        2220,                        // Instrument swath
+                        2.45,                        // Scale
+                        -2.2,                        // Az offset
+                        0,                           // Tilt
+                        -2.2,                        // Time offset
+                        pre_wb.width(),              // Image width
+                        true,                        // Invert scan
+                        tle::getTLEfromNORAD(norad), // TLEs
+                        reader.timestamps_250        // Timestamps
+                    });
 
                     logger->info("Projected Channel 143 EQURAW...");
                     cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(pre_wb, projector, 2048 * 4, 1024 * 4, 3);
@@ -403,20 +404,21 @@ namespace eos
                 // Reproject to an equirectangular proj
                 {
                     // Setup Projecition
-                    projection::LEOScanProjector projector(0,                           // Pixel offset
-                                                           1950,                        // Correction swath
-                                                           EOS_MODIS_RES250,            // Instrument res
-                                                           800,                         // Orbit height
-                                                           2220,                        // Instrument swath
-                                                           2.45,                        // Scale
-                                                           -2.2,                        // Az offset
-                                                           0,                           // Tilt
-                                                           -2.2,                        // Time offset
-                                                           image23.width(),             // Image width
-                                                           true,                        // Invert scan
-                                                           tle::getTLEfromNORAD(norad), // TLEs
-                                                           reader.timestamps_1000       // Timestamps
-                    );
+                    projection::LEOScanProjector projector({
+                        0,                           // Pixel offset
+                        1950,                        // Correction swath
+                        EOS_MODIS_RES250,            // Instrument res
+                        800,                         // Orbit height
+                        2220,                        // Instrument swath
+                        2.45,                        // Scale
+                        -2.2,                        // Az offset
+                        0,                           // Tilt
+                        -2.2,                        // Time offset
+                        image23.width(),             // Image width
+                        true,                        // Invert scan
+                        tle::getTLEfromNORAD(norad), // TLEs
+                        reader.timestamps_1000       // Timestamps
+                    });
 
                     logger->info("Projected Channel 29...");
                     cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image23, projector, 2048 * 4, 1024 * 4, 1);

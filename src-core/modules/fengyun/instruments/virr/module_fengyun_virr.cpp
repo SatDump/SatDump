@@ -383,20 +383,21 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector(3,                           // Pixel offset
-                                                       2100,                        // Correction swath
-                                                       1.1,                         // Instrument res
-                                                       830,                         // Orbit height
-                                                       2800,                        // Instrument swath
-                                                       2.406,                       // Scale
-                                                       -2.7,                        // Az offset
-                                                       0,                           // Tilt
-                                                       -0.1,                        // Time offset
-                                                       image1.width(),              // Image width
-                                                       true,                        // Invert scan
-                                                       tle::getTLEfromNORAD(norad), // TLEs
-                                                       reader.timestamps            // Timestamps
-                );
+                projection::LEOScanProjector projector({
+                    3,                           // Pixel offset
+                    2100,                        // Correction swath
+                    1.1,                         // Instrument res
+                    830,                         // Orbit height
+                    2800,                        // Instrument swath
+                    2.406,                       // Scale
+                    -2.7,                        // Az offset
+                    0,                           // Tilt
+                    -0.1,                        // Time offset
+                    image1.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    reader.timestamps            // Timestamps
+                });
 
                 cimg_library::CImg<unsigned char> projected_image;
                 {

@@ -34,7 +34,7 @@
 
 namespace projection
 {
-    void TPERSProjection::init(double altitude, double longitude, double latitude, double tilt, double azi)
+    int TPERSProjection::init(double altitude, double longitude, double latitude, double tilt, double azi)
     {
         lon_0 = longitude;
 
@@ -67,6 +67,7 @@ namespace projection
         if (pn1 <= 0 || pn1 > 1e10)
         {
             // Illegal!!
+            return 1;
         }
 
         p = 1. + pn1;
@@ -74,9 +75,11 @@ namespace projection
         h = 1. / pn1;
         pfact = (p + 1.) * h;
         es = 0.;
+
+        return 0;
     }
 
-    void TPERSProjection::forward(double lon, double lat, double &x, double &y)
+    int TPERSProjection::forward(double lon, double lat, double &x, double &y)
     {
         x = y = 0; // Safety
 
@@ -115,7 +118,7 @@ namespace projection
         if (y < rp)
         {
             x = y = 2e10; // Trigger error
-            return;
+            return 1;
         }
 
         y = pn1 / (p - y);
@@ -147,9 +150,11 @@ namespace projection
             x = (x * cg - y * sg) * cw * ba;
             y = yt * ba;
         }
+
+        return 0;
     }
 
-    void TPERSProjection::inverse(double x, double y, double &lon, double &lat)
+    int TPERSProjection::inverse(double x, double y, double &lon, double &lat)
     {
         lon = lat = 0.0;
 
@@ -183,7 +188,7 @@ namespace projection
             {
                 // Illegal
                 lon = lat = 2e10; // Trigger error
-                return;
+                return 1;
             }
 
             sinz = (p - sqrt(sinz)) / (pn1 / rh + rh / pn1);
@@ -223,5 +228,7 @@ namespace projection
             lon = lon + 360;
         if (lon > 180)
             lon = lon - 360;
+
+        return 0;
     }
 };

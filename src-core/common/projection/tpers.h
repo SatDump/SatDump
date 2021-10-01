@@ -50,8 +50,8 @@ namespace projection
             init(altitude, longitude, latitude, tilt, azi);
         }
 
-        void init(double altitude, double longitude, double latitude, double tilt, double azi);
-        void forward(double lon, double lat, double &x, double &y);
-        void inverse(double x, double y, double &lon, double &lat);
+        int init(double altitude, double longitude, double latitude, double tilt, double azi); // return value of 1 => Error
+        int forward(double lon, double lat, double &x, double &y);                             // return value of 1 => Error
+        int inverse(double x, double y, double &lon, double &lat);                             // return value of 1 => Error
     };
 };
