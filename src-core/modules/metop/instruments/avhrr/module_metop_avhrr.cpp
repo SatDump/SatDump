@@ -14,6 +14,7 @@
 #include "common/projection/leo_to_equirect.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/xfr.h"
+#include "common/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -296,7 +297,7 @@ namespace metop
                 //image4.equalize(1000);
 
                 // Setup Projecition
-                projection::LEOScanProjector projector({
+                projection::LEOScanProjectorSettings proj_settings = {
                     5,                           // Pixel offset
                     2050,                        // Correction swath
                     1,                           // Instrument res
@@ -310,7 +311,13 @@ namespace metop
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                }
 
                 logger->info("Projected channel 4...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);

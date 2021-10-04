@@ -8,6 +8,8 @@
 #include "modules/noaa/noaa.h"
 #include "common/projection/leo_to_equirect.h"
 #include "nlohmann/json_utils.h"
+#include "common/projection/proj_file.h"
+#include "common/utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -63,6 +65,8 @@ namespace noaa
                 dayYearValue = dayYearValue - (dayYearValue % 86400);
             }
 
+            std::vector<int> spacecraft_ids;
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -75,6 +79,9 @@ namespace noaa
                 uint64_t milliseconds = (buffer[9] & 0x7F) << 20 | (buffer[10] << 10) | buffer[11];
                 double timestamp = dayYearValue + (day_of_year * 86400) + double(milliseconds) / 1000.0;
                 timestamps.push_back(timestamp);
+
+                // Parse ID
+                spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
 
                 progress = data_in.tellg();
 
@@ -149,29 +156,64 @@ namespace noaa
             // Reproject to an equirectangular proj
             if (image1.height() > 0)
             {
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                //image4.equalize(1000);
+                //nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = 0; //28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                image4.equalize(1000);
 
-                // Setup Projecition
-                projection::LEOScanProjector projector({
-                    2,                           // Pixel offset
-                    2050,                        // Correction swath
-                    1,                           // Instrument res
-                    800,                         // Orbit height
-                    NOAA_AVHRR_SWATH,            // Instrument swath
-                    2.399,                       // Scale
-                    -2.9,                        // Az offset
-                    0,                           // Tilt
-                    0.3,                         // Time offset
-                    image4.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(28654), // TLEs
-                    timestamps                   // Timestamps
-                });
+                // Setup Projecition, based off N18
+                projection::LEOScanProjectorSettings proj_settings = {
+                    2,                // Pixel offset
+                    2050,             // Correction swath
+                    1,                // Instrument res
+                    800,              // Orbit height
+                    NOAA_AVHRR_SWATH, // Instrument swath
+                    2.399,            // Scale
+                    -2.9,             // Az offset
+                    0,                // Tilt
+                    0.3,              // Time offset
+                    image4.width(),   // Image width
+                    true,             // Invert scan
+                    tle::TLE(),       // TLEs
+                    timestamps        // Timestamps
+                };
+
+                // Identify satellite, and apply per-sat settings...
+                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
+                if (scid == 7) // N15
+                {
+                    norad = 25338;
+                    logger->info("Identified NOAA-15!");
+                }
+                else if (scid == 13) // N18
+                {
+                    norad = 25338;
+                    logger->info("Identified NOAA-18!");
+                }
+                else if (scid == 15) // N19
+                {
+                    norad = 33591;
+                    logger->info("Identified NOAA-19!");
+                    proj_settings.az_offset = -1.5;
+                    proj_settings.proj_scale = 2.339;
+                }
+                else
+                {
+                    logger->error("Unknwon NOAA Satellite! Only the KLM series 15, 18 and 19 are supported as others were decomissioned!");
+                }
+
+                // Load TLEs now
+                proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
+
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                }
 
                 logger->info("Projected channel 4...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 20, 1024 * 20, 1);
+                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                projected_image.crop(18634, 3432, 18634 + 5495, 3432 + 3141);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
 
                 cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);

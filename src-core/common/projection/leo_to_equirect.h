@@ -13,12 +13,18 @@ will have to fix at some point... Still thinking about the best approach :-)
 namespace projection
 {
     // Reproject LEO imagery to an equirectangular projection
-    cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,                                                            // Input image to project
-                                                                        projection::LEOScanProjector &projector,                                                             // LEO Projector
-                                                                        int output_width,                                                                                    // Output map width
-                                                                        int output_height,                                                                                   // Output map height
-                                                                        int channels = 1,                                                                                    // Channel count
-                                                                        cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(1, 1, 1, 1, 0) // Optional input image
-
+    cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(
+        cimg_library::CImg<unsigned short> image,                                                             // Input image to project
+        projection::LEOScanProjector &projector,                                                              // LEO Projector
+        int output_width,                                                                                     // Output map width
+        int output_height,                                                                                    // Output map height
+        int channels = 1,                                                                                     // Channel count
+        cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(1, 1, 1, 1, 0), // Optional input image
+        std::function<std::pair<int, int>(float, float, int, int)> toMapCoords = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+        {
+            int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;
+            int imageLon = (lon / 360.0f) * map_width + (map_width / 2);
+            return {imageLon, imageLat};
+        } // Optional projection function, default is equirectangular
     );
 };

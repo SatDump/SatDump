@@ -9,6 +9,7 @@
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -149,7 +150,7 @@ namespace metop
                 // There is no "real" guarantee the A1 / A2 output will always be identical
                 // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
                 // in the resulting image...
-                projection::LEOScanProjector projector_a1({
+                projection::LEOScanProjectorSettings proj_settings_a1 = {
                     0,                              // Pixel offset
                     1900,                           // Correction swath
                     48.0 / 40,                      // Instrument res
@@ -163,8 +164,8 @@ namespace metop
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a1reader.timestamps             // Timestamps
-                });
-                projection::LEOScanProjector projector_a2({
+                };
+                projection::LEOScanProjectorSettings proj_settings_a2 = {
                     0,                              // Pixel offset
                     1900,                           // Correction swath
                     48.0 / 40,                      // Instrument res
@@ -178,7 +179,16 @@ namespace metop
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a2reader.timestamps             // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector_a1(proj_settings_a1);
+                projection::LEOScanProjector projector_a2(proj_settings_a2);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
+                    projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile_a2 = projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a2);
+                    projection::proj_file::writeReferenceFile(geofile_a2, directory + "/AMSU-A2.georef");
+                }
 
                 for (int i = 0; i < 13; i++)
                 {

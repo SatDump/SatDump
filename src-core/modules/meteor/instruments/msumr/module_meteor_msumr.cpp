@@ -11,6 +11,8 @@
 #include "common/projection/leo_to_equirect.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/image.h"
+#include "common/projection/proj_file.h"
+#include "common/utils.h"
 
 #define BUFFER_SIZE 8192
 
@@ -49,9 +51,11 @@ namespace meteor
             logger->info("Demultiplexing and deframing...");
 
             time_t currentDay = time(0);
-            time_t dayValue = currentDay - (currentDay % 86400); //- 86400 * 4; // Requires the day to be known from another source
+            time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 0; // Requires the day to be known from another source
 
             std::vector<double> timestamps;
+
+            std::vector<int> msumr_ids;
 
             while (!data_in.eof())
             {
@@ -73,6 +77,8 @@ namespace meteor
 
                     double timestamp = dayValue + (frame[8] - 3.0) * 3600.0 + (frame[9]) * 60.0 + (frame[10] + 0.0) + double(frame[11] / 255.0);
                     timestamps.push_back(timestamp);
+
+                    msumr_ids.push_back(frame[12] >> 4);
 
                     /*
                     time_t tttime = timestamp;
@@ -207,7 +213,9 @@ namespace meteor
 
             // Reproject to an equirectangular proj
             {
+                int norad = 0;
                 //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
                 cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
                 {
                     image321.draw_image(0, 0, 0, 0, image3);
@@ -217,22 +225,56 @@ namespace meteor
 
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
-                // Setup Projecition
-                projection::LEOScanProjector projector({
-                    4,                           // Pixel offset
-                    2070,                        // Correction swath
-                    1.1,                         // Instrument res
-                    830,                         // Orbit height
-                    METEOR_MSUMR_SWATH,          // Instrument swath
-                    2.46,                        // Scale
-                    -2,                          // Az offset
-                    0,                           // Tilt
-                    1,                           // Time offset
-                    image1.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(44387), // TLEs
-                    timestamps                   // Timestamps
-                });
+                // Setup Projecition, tuned for 2-2
+                projection::LEOScanProjectorSettings proj_settings = {
+                    4,                  // Pixel offset
+                    2070,               // Correction swath
+                    1.1,                // Instrument res
+                    830,                // Orbit height
+                    METEOR_MSUMR_SWATH, // Instrument swath
+                    2.46,               // Scale
+                    -2,                 // Az offset
+                    0,                  // Tilt
+                    1,                  // Time offset
+                    image1.width(),     // Image width
+                    true,               // Invert scan
+                    tle::TLE(),         // TLEs
+                    timestamps          // Timestamps
+                };
+
+                // Identify satellite, and apply per-sat settings...
+                int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
+                if (msumr_serial_number == 0) // METEOR-M 2, weirdly enough it has ID 0
+                {
+                    norad = 40069;
+                    logger->info("Identified METEOR-M 2! Projection support is WIP!");
+                    proj_settings.proj_offset = -40;
+                    proj_settings.proj_scale = 2.330;
+                }
+                else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
+                {
+                    norad = 0;
+                    logger->info("Identified METEOR-M 2-1! But that is not supposed to happen...");
+                }
+                else if (msumr_serial_number == 2) // METEOR-M 2-2
+                {
+                    norad = 44387;
+                    logger->info("Identified METEOR-M 2-2!");
+                }
+                else
+                {
+                    logger->error("Unknwon METEOR Satellite!");
+                }
+
+                // Load TLEs now
+                proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
+
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR.georef");
+                }
 
                 logger->info("Projected RGB 321...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);

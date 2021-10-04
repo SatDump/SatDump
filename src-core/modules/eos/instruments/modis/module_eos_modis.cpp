@@ -406,11 +406,11 @@ namespace eos
                     // Setup Projecition
                     projection::LEOScanProjector projector({
                         0,                           // Pixel offset
-                        1950,                        // Correction swath
+                        1800,                        // Correction swath
                         EOS_MODIS_RES250,            // Instrument res
-                        800,                         // Orbit height
-                        2220,                        // Instrument swath
-                        2.45,                        // Scale
+                        710,                         // Orbit height
+                        2230,                        // Instrument swath
+                        2.435,                       // Scale
                         -2.2,                        // Az offset
                         0,                           // Tilt
                         -2.2,                        // Time offset

@@ -7,6 +7,7 @@
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -99,7 +100,7 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector({
+                projection::LEOScanProjectorSettings proj_settings = {
                     6,                               // Pixel offset
                     1500,                            // Correction swath
                     16.0 / 4,                        // Instrument res
@@ -113,7 +114,13 @@ namespace fengyun
                     true,                            // Invert scan
                     tle::getTLEfromNORAD(norad),     // TLEs
                     erm_reader.timestamps            // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
+                }
 
                 cimg_library::CImg<unsigned short> image = erm_reader.getChannel();
                 logger->info("Projected Channel 1...");

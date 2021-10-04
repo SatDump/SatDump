@@ -7,6 +7,7 @@
 #include "mwts3_reader.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -143,7 +144,7 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector({
+                projection::LEOScanProjectorSettings proj_settings = {
                     48,                                // Pixel offset
                     1600,                              // Correction swath
                     17.4 / 20,                         // Instrument res
@@ -157,7 +158,13 @@ namespace fengyun
                     true,                              // Invert scan
                     tle::getTLEfromNORAD(norad),       // TLEs
                     mwts_reader.timestamps             // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/MWTS-3.georef");
+                }
 
                 for (int i = 0; i < 18; i++)
                 {

@@ -10,6 +10,7 @@
 #include "modules/fengyun/fengyun3.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
+#include "common/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -383,7 +384,7 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjector projector({
+                projection::LEOScanProjectorSettings proj_settings = {
                     3,                           // Pixel offset
                     2100,                        // Correction swath
                     1.1,                         // Instrument res
@@ -397,7 +398,13 @@ namespace fengyun
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
+                }
 
                 cimg_library::CImg<unsigned char> projected_image;
                 {

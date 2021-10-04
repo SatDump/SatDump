@@ -10,18 +10,11 @@ namespace projection
                                                                         int output_width,
                                                                         int output_height,
                                                                         int channels,
-                                                                        cimg_library::CImg<unsigned char> projected_image
+                                                                        cimg_library::CImg<unsigned char> projected_image,
+                                                                        std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
 
     )
     {
-        // Equirectangular proj
-        std::function<std::pair<int, int>(float, float, int, int)> toMapCoords = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-        {
-            int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;
-            int imageLon = (lon / 360.0f) * map_width + (map_width / 2);
-            return {imageLon, imageLat};
-        };
-
         // Output mapped data
         if (projected_image.width() == 1 && projected_image.height() == 1)
             projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
@@ -62,6 +55,7 @@ namespace projection
                 if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
                     continue;
 
+                // This seems to glitch out sometimes... Need to check
                 if (abs(map_cc1.first - map_cc2.first) < 50 && abs(map_cc1.second - map_cc2.second) < 50)
                 {
                     double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
@@ -87,11 +81,7 @@ namespace projection
         map::drawProjectedMapShapefile(projected_image,
                                        {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                        color,
-                                       [&toMapCoords](float lat, float lon, int height, int width) -> std::pair<int, int>
-                                       {
-                                           std::pair<float, float> map_cc = toMapCoords(lat, lon, height, width);
-                                           return {map_cc.first, map_cc.second};
-                                       });
+                                       toMapCoords);
 
         return projected_image;
     }

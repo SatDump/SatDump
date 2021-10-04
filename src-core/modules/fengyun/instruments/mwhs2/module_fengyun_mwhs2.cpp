@@ -8,6 +8,7 @@
 #include "nlohmann/json_utils.h"
 #include "common/projection/leo_to_equirect.h"
 #include "modules/fengyun/fengyun3.h"
+#include "common/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -132,7 +133,7 @@ namespace fengyun
             if (mwhs_reader.lines > 0)
             {
                 // Setup Projecition
-                projection::LEOScanProjector projector({
+                projection::LEOScanProjectorSettings proj_settings = {
                     4,                                 // Pixel offset
                     1550,                              // Correction swath
                     16.0 / 4,                          // Instrument res
@@ -146,7 +147,13 @@ namespace fengyun
                     true,                              // Invert scan
                     tle::getTLEfromNORAD(norad),       // TLEs
                     mwhs_reader.timestamps             // Timestamps
-                });
+                };
+                projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    projection::proj_file::writeReferenceFile(geofile, directory + "/MWHS-2.georef");
+                }
 
                 for (int i = 0; i < 15; i++)
                 {
