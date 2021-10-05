@@ -13,6 +13,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/libtom/*.c
                                      common/jpeg/*.c
                                      common/dlfcn/dlfcn.c
+                                     common/map/maidenhead.c
 )
 
 find_package(PkgConfig)

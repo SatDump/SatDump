@@ -7,7 +7,7 @@
 
 #include "common/projection/stereo.h"
 #include "common/projection/geos.h"
-#include "maidenhead.h"
+#include "common/map/maidenhead.h"
 
 int project(int argc, char *argv[])
 {
