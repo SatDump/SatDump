@@ -169,14 +169,14 @@ namespace projection
         if (draw_borders)
         {
             unsigned char color[3] = {0, 255, 0};
-            map::drawProjectedMapShapefile(projected_image, {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, color, projectionFunc);
+            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, projected_image, color, projectionFunc);
         }
 
         // Should we draw cities?
         if (draw_cities)
         {
             unsigned char color[3] = {255, 0, 0};
-            map::drawProjectedCapitalsGeoJson(projected_image, {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, color, projectionFunc, cities_size_ratio);
+            map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, projected_image, color, projectionFunc, cities_size_ratio);
         }
 
         // Finally, update image

@@ -128,10 +128,10 @@ int project(int argc, char *argv[])
     }
 
     unsigned char color[3] = {0, 255, 0};
-    map::drawProjectedMapShapefile(projected_image, {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, color, projectionFunc);
+    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, projected_image, color, projectionFunc);
 
     unsigned char color2[3] = {255, 0, 0};
-    map::drawProjectedCapitalsGeoJson(projected_image, {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, color2, projectionFunc);
+    map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, projected_image, color2, projectionFunc);
 
     logger->info("Saving...");
     projected_image.save_png(output_name.c_str());

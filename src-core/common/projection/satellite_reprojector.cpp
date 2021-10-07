@@ -166,8 +166,8 @@ namespace projection
         reprojectLEOtoProj(image, projector, projected_image, channels, toMapCoords);
 
         unsigned char color[3] = {0, 255, 0};
-        map::drawProjectedMapShapefile(projected_image,
-                                       {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       projected_image,
                                        color,
                                        toMapCoords);
 

@@ -6,7 +6,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -136,11 +136,11 @@ namespace map
         }
     }
 
-    template void drawProjectedMapGeoJson(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapGeoJson(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
 
     template <typename T>
-    void drawProjectedCapitalsGeoJson(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -182,11 +182,11 @@ namespace map
         }
     }
 
-    template void drawProjectedCapitalsGeoJson(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedCapitalsGeoJson(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 
     template <typename T>
-    void drawProjectedMapShapefile(cimg_library::CImg<T> &map_image, std::vector<std::string> shapeFiles, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -250,6 +250,6 @@ namespace map
         }
     }
 
-    template void drawProjectedMapShapefile(cimg_library::CImg<unsigned char> &, std::vector<std::string>, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapShapefile(cimg_library::CImg<unsigned short> &, std::vector<std::string>, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
 }
