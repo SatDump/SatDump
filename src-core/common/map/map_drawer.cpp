@@ -1,3 +1,4 @@
+#define _CRT_NO_VA_START_VALIDATION
 #include "map_drawer.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
@@ -174,8 +175,7 @@ namespace map
                         map_image.draw_circle(cc.first, cc.second, 10 * ratio, color);
 
                         std::string name = mapStruct["properties"]["nameascii"];
-                        cimg_library::CImgList<unsigned char> font = cimg_library::CImgList<unsigned char>::font(50 * ratio, true);
-                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, font);
+                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
                     }
                 }
             }

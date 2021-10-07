@@ -197,7 +197,7 @@ namespace projection
                 (double)geofile.time_offset,
                 (int)geofile.image_width,
                 (bool)geofile.invert_scan,
-                (tle::TLE){(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
+                {(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
                 geofile.utc_timestamps};
 
             return projector_settings;
