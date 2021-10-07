@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "leo_projection.h"
+#include <memory>
 
 namespace projection
 {
@@ -46,6 +47,20 @@ namespace projection
             uint32_t norad;            // NORAD ID of the GEO Satellite
             double position_longitude; // Longitude of the satellite at the time of aquisition
             double position_height;    // Orbit height at the time of acquisition
+            uint8_t projection_type;   // 0 is full disk, 1 is cropped, etc
+            uint32_t image_width;      // Width of the image
+            uint32_t image_height;     // Height of the image
+            double horizontal_scale;   // Horizontal scaling
+            double vertical_scale;     // Vertical scaling
+            double horizontal_offset;  // Horizontal offset
+            double vertical_offset;    // Vertical offset
+            bool proj_sweep_x;         // Scan axis
+
+            GEO_GeodeticReferenceFile()
+            {
+                projection_type = 0;
+                file_type = GEO_TYPE;
+            }
         };
 
         /*
@@ -90,7 +105,7 @@ namespace projection
 
         // Functions
         void writeReferenceFile(GeodeticReferenceFile &geofile, std::string output_file);
-        LEO_GeodeticReferenceFile readLEOReferenceFile(std::string input_file);
+        std::shared_ptr<GeodeticReferenceFile> readReferenceFile(std::string input_file);
         LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, LEOScanProjectorSettings projector_settings);
         LEOScanProjectorSettings leoProjectionRefFile(LEO_GeodeticReferenceFile geofile);
     };

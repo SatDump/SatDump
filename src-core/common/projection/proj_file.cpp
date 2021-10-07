@@ -16,6 +16,24 @@ namespace projection
 
             if (geofile.file_type == GEO_TYPE)
             {
+                GEO_GeodeticReferenceFile &gsofile = (GEO_GeodeticReferenceFile &)geofile;
+
+                // Write main header
+                output_stream.write((char *)&gsofile.file_type, 1);
+                output_stream.write((char *)&gsofile.utc_timestamp_seconds, 8);
+
+                // Write GEO header
+                output_stream.write((char *)&gsofile.norad, 4);
+                output_stream.write((char *)&gsofile.position_longitude, 8);
+                output_stream.write((char *)&gsofile.position_height, 8);
+                output_stream.write((char *)&gsofile.projection_type, 1);
+                output_stream.write((char *)&gsofile.image_width, 4);
+                output_stream.write((char *)&gsofile.image_height, 4);
+                output_stream.write((char *)&gsofile.horizontal_scale, 8);
+                output_stream.write((char *)&gsofile.vertical_scale, 8);
+                output_stream.write((char *)&gsofile.horizontal_offset, 8);
+                output_stream.write((char *)&gsofile.vertical_offset, 8);
+                output_stream.write((char *)&gsofile.proj_sweep_x, 1);
             }
             else if (geofile.file_type == LEO_TYPE)
             {
@@ -57,14 +75,35 @@ namespace projection
             output_stream.close();
         }
 
-        LEO_GeodeticReferenceFile readLEOReferenceFile(std::string input_file)
+        std::shared_ptr<GeodeticReferenceFile> readReferenceFile(std::string input_file)
         {
             std::ifstream input_stream(input_file, std::ios::binary);
 
             uint8_t file_type;
             input_stream.read((char *)&file_type, 1);
+            if (file_type == GEO_TYPE)
+            {
+                GEO_GeodeticReferenceFile geofile;
 
-            if (file_type == LEO_TYPE)
+                // Main header
+                input_stream.read((char *)&geofile.utc_timestamp_seconds, 8);
+
+                // Read GEO header
+                input_stream.read((char *)&geofile.norad, 4);
+                input_stream.read((char *)&geofile.position_longitude, 8);
+                input_stream.read((char *)&geofile.position_height, 8);
+                input_stream.read((char *)&geofile.projection_type, 1);
+                input_stream.read((char *)&geofile.image_width, 4);
+                input_stream.read((char *)&geofile.image_height, 4);
+                input_stream.read((char *)&geofile.horizontal_scale, 8);
+                input_stream.read((char *)&geofile.vertical_scale, 8);
+                input_stream.read((char *)&geofile.horizontal_offset, 8);
+                input_stream.read((char *)&geofile.vertical_offset, 8);
+                input_stream.read((char *)&geofile.proj_sweep_x, 1);
+                input_stream.close();
+                return std::make_shared<GEO_GeodeticReferenceFile>(geofile);
+            }
+            else if (file_type == LEO_TYPE)
             {
                 LEO_GeodeticReferenceFile leofile;
 
@@ -108,12 +147,12 @@ namespace projection
                 }
 
                 input_stream.close();
-                return leofile;
+                return std::make_shared<LEO_GeodeticReferenceFile>(leofile);
             }
             else
             {
                 // Unknown
-                return LEO_GeodeticReferenceFile();
+                return std::make_shared<GeodeticReferenceFile>();
             }
         }
 
@@ -147,18 +186,18 @@ namespace projection
         LEOScanProjectorSettings leoProjectionRefFile(LEO_GeodeticReferenceFile geofile)
         {
             LEOScanProjectorSettings projector_settings = {
-                geofile.proj_offset,
-                geofile.correction_swath,
-                geofile.correction_res,
-                geofile.correction_height,
-                geofile.instrument_swath,
-                geofile.proj_scale,
-                geofile.az_offset,
-                geofile.tilt_offset,
-                geofile.time_offset,
-                geofile.image_width,
-                geofile.invert_scan,
-                (tle::TLE){geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
+                (double)geofile.proj_offset,
+                (int)geofile.correction_swath,
+                (double)geofile.correction_res,
+                (float)geofile.correction_height,
+                (double)geofile.instrument_swath,
+                (double)geofile.proj_scale,
+                (double)geofile.az_offset,
+                (double)geofile.tilt_offset,
+                (double)geofile.time_offset,
+                (int)geofile.image_width,
+                (bool)geofile.invert_scan,
+                (tle::TLE){(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
                 geofile.utc_timestamps};
 
             return projector_settings;
