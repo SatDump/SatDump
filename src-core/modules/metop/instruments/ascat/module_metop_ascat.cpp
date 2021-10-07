@@ -185,16 +185,16 @@ namespace metop
                                                        ascatreader.timestamps[1]    // Timestamps
                 );
 
-                /*{
+                {
                     projection::ref_file::LEO_GeodeticReferenceFile geofile = projection::ref_file::leoRefFileFromProjector(projector,
                                                                                                                             ascatreader.timestamps[1],
                                                                                                                             norad,
                                                                                                                             2048,
                                                                                                                             reader.lines);
                     logger->info("GEO Reference file...");
-                    projection::ref_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
-                }*/
-            /*
+                    projection::ref_file::writeReferenceFile(geofile, directory + "/ASCAT.georef");
+                }
+            
                 logger->info("Projected channel 2...");
                 cimg_library::CImg<unsigned short> image_recomp(compo_size, ascatreader.lines[1], 1, 1, 0);
                 {

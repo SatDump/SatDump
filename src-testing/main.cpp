@@ -11,6 +11,7 @@
  **********************************************************************/
 
 #include <iostream>
+
 #include "common/viterbi/cc_decoder_impl.h"
 
 // Returns the asked bit!

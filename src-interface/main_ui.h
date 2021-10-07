@@ -5,6 +5,7 @@ enum satdump_ui_status
     OFFLINE_PROCESSING,
     LIVE_PROCESSING,
     BASEBAND_RECORDER,
+    PROJECTION,
     MAIN_MENU
 };
 

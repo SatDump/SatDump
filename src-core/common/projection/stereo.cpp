@@ -55,7 +55,7 @@ namespace projection
         return (tan(.5 * (M_PI_2 + phit)) * pow((1. - sinphi) / (1. + sinphi), .5 * eccen));
     }
 
-    int StereoProjection::init(double latitude, double longitude, double x_0, double y_0)
+    int StereoProjection::init(double latitude, double longitude)
     {
         lon_0 = longitude; // The projection's longitude
 

@@ -10,12 +10,15 @@
 #include "processing.h"
 #include "live/live.h"
 #include "live/live_run.h"
+#include "projection/projection.h"
+#include "projection/projection_menu.h"
 
 satdump_ui_status satdumpUiStatus = MAIN_MENU;
 
 void initMainUI()
 {
     offline::initOfflineProcessingMenu();
+    projection::initProjectionMenu();
 
 #ifdef BUILD_LIVE
     live::initLiveProcessingMenu();
@@ -46,6 +49,10 @@ void renderMainUI(int wwidth, int wheight)
         recorder::renderRecorder(wwidth, wheight);
     }
 #endif
+    else if (satdumpUiStatus == PROJECTION)
+    {
+        projection::renderProjection(wwidth, wheight);
+    }
     else if (satdumpUiStatus == MAIN_MENU)
     {
         ImGui::SetNextWindowPos({0, 0});
@@ -75,6 +82,11 @@ void renderMainUI(int wwidth, int wheight)
 #else
                 ImGui::Text("Live support was not enabled in this build. Please rebuild with BUILD_LIVE=ON if you wish to use it.");
 #endif
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Projection"))
+            {
+                projection::renderProjectionMenu(wwidth, wheight);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))

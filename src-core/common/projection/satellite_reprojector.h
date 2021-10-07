@@ -3,6 +3,7 @@
 #define cimg_display 0
 #include "CImg.h"
 #include "leo_projection.h"
+#include "geo_projection.h"
 
 /*
 Implementation of a function capable of plotting LEO satellite image (or anything that
@@ -12,6 +13,29 @@ will have to fix at some point... Still thinking about the best approach :-)
 */
 namespace projection
 {
+    // Reproject LEO imagery
+    void reprojectLEOtoProj(
+        cimg_library::CImg<unsigned short> image,                                     // Input image to project
+        projection::LEOScanProjector &projector,                                      // LEO Projector
+        cimg_library::CImg<unsigned char> &projected_image,                           // Optional input image
+        int channels,                                                                 // Channels
+        std::function<std::pair<int, int>(float, float, int, int)> projectionFunction // Optional projection function, default is equirectangular
+    );
+
+    // Reproject GEO imagery
+    void reprojectGEOtoProj(
+        cimg_library::CImg<unsigned short> image,                                     // Input image to project
+        projection::GEOProjector &projector,                                          // GEO Projector
+        cimg_library::CImg<unsigned char> &projected_image,                           // Optional input image
+        int channels,                                                                 // Channels
+        std::function<std::pair<int, int>(float, float, int, int)> projectionFunction // Optional projection function, default is equirectangular
+    );
+
+    void projectEQUIToproj(cimg_library::CImg<unsigned short> image,
+                           cimg_library::CImg<unsigned char> &projected_image,
+                           int channels,
+                           std::function<std::pair<int, int>(float, float, int, int)> toMapCoords);
+
     // Reproject LEO imagery to an equirectangular projection
     cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(
         cimg_library::CImg<unsigned short> image,                                                             // Input image to project

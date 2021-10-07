@@ -8,7 +8,7 @@
 #include "common/image/earth_curvature.h"
 #include "modules/meteor/meteor.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/image.h"
 #include "common/projection/proj_file.h"

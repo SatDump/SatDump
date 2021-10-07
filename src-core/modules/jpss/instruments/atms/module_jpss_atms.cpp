@@ -7,7 +7,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/projection/proj_file.h"
 
 // Return filesize

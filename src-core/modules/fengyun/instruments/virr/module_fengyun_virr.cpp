@@ -9,7 +9,7 @@
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192

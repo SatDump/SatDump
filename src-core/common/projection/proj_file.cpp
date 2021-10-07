@@ -202,5 +202,19 @@ namespace projection
 
             return projector_settings;
         }
+
+        GEOProjector geoProjectionRefFile(GEO_GeodeticReferenceFile geofile)
+        {
+            GEOProjector projector(geofile.position_longitude,
+                                   geofile.position_height,
+                                   geofile.image_width,
+                                   geofile.image_height,
+                                   geofile.horizontal_scale,
+                                   geofile.vertical_scale,
+                                   geofile.horizontal_offset,
+                                   geofile.horizontal_offset,
+                                   geofile.proj_sweep_x);
+            return projector;
+        }
     };
 };

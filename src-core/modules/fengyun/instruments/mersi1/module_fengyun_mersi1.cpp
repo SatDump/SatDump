@@ -9,7 +9,6 @@
 #include "common/image/image.h"
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
-#include "common/projection/leo_to_equirect.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

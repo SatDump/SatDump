@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "modules/noaa/noaa.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "nlohmann/json_utils.h"
 #include "common/projection/proj_file.h"
 #include "common/utils.h"
@@ -213,19 +213,18 @@ namespace noaa
 
                 logger->info("Projected channel 4...");
                 cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
-                projected_image.crop(18634, 3432, 18634 + 5495, 3432 + 3141);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
 
                 cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
                 {
-                    image321.draw_image(0, 0, 0, 0, image3);
+                    image321.draw_image(0, 0, 0, 0, image2);
                     image321.draw_image(0, 0, 0, 1, image2);
                     image321.draw_image(0, 0, 0, 2, image1);
                 }
 
-                logger->info("Projected channel 321...");
+                logger->info("Projected channel 221...");
                 projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
+                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-221-PROJ.png");
             }
         }
 

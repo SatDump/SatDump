@@ -11,7 +11,7 @@
 #include "modules/metop/metop.h"
 #include "nlohmann/json_utils.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/xfr.h"
 #include "common/projection/proj_file.h"

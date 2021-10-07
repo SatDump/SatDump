@@ -6,7 +6,7 @@
 #include "mwts_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/projection/proj_file.h"
 
 // Return filesize

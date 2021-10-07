@@ -43,13 +43,13 @@ namespace projection
         {
             init(false, 0);
         }
-        StereoProjection(double latitude, double longitude, double x_0 = 0, double y_0 = 0)
+        StereoProjection(double latitude, double longitude)
         {
-            init(latitude, longitude, x_0, y_0);
+            init(latitude, longitude);
         }
 
-        int init(double latitude, double longitude, double x_0 = 0, double y_0 = 0); // return value of 1 => Error
-        int forward(double lon, double lat, double &x, double &y);                   // return value of 1 => Error
-        int inverse(double x, double y, double &lon, double &lat);                   // return value of 1 => Error
+        int init(double latitude, double longitude);               // return value of 1 => Error
+        int forward(double lon, double lat, double &x, double &y); // return value of 1 => Error
+        int inverse(double x, double y, double &lon, double &lat); // return value of 1 => Error
     };
 };

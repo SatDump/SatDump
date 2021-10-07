@@ -7,7 +7,7 @@
 #include "mwhs_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/leo_to_equirect.h"
+#include "common/projection/satellite_reprojector.h"
 #include "common/projection/proj_file.h"
 
 // Return filesize
@@ -113,7 +113,7 @@ namespace fengyun
             WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
 
             // Reproject to an equirectangular proj
-            if (mwhs_reader.lines > 0)
+            if (mwhs_reader.lines > 0 && mwhs_reader.timestamps.size() > 0)
             {
                 // Get satellite info
                 nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");

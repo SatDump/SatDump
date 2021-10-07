@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "leo_projection.h"
+#include "geo_projection.h"
 #include <memory>
 
 namespace projection
@@ -108,5 +109,6 @@ namespace projection
         std::shared_ptr<GeodeticReferenceFile> readReferenceFile(std::string input_file);
         LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, LEOScanProjectorSettings projector_settings);
         LEOScanProjectorSettings leoProjectionRefFile(LEO_GeodeticReferenceFile geofile);
+        GEOProjector geoProjectionRefFile(GEO_GeodeticReferenceFile geofile);
     };
 };
