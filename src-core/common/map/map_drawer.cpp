@@ -174,8 +174,8 @@ namespace map
                         map_image.draw_circle(cc.first, cc.second, 10 * ratio, color);
 
                         std::string name = mapStruct["properties"]["nameascii"];
-
-                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
+                        cimg_library::CImgList<unsigned char> font = cimg_library::CImgList<unsigned char>::font(50 * ratio, true);
+                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, font);
                     }
                 }
             }
