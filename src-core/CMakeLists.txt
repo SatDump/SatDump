@@ -14,6 +14,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/jpeg/*.c
                                      common/dlfcn/dlfcn.c
                                      common/map/maidenhead.c
+                                     common/correct/*.c
 )
 
 find_package(PkgConfig)
@@ -36,7 +37,7 @@ target_link_libraries(satdump_core PUBLIC Threads::Threads)
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
 if(MSVC)
-    target_link_libraries(satdump_core PUBLIC correct.dll)
+    #target_link_libraries(satdump_core PUBLIC correct.dll)
     target_link_libraries(satdump_core PUBLIC jpeg)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
@@ -61,7 +62,7 @@ if(MSVC)
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
 elseif(ANDROID)
     # LibCorrect
-    target_link_libraries(satdump_core PUBLIC correct)
+    #target_link_libraries(satdump_core PUBLIC correct)
 
     # LibJpeg
     target_link_libraries(satdump_core PUBLIC jpeg)
@@ -79,8 +80,8 @@ elseif(ANDROID)
     #target_link_libraries(satdump_core PUBLIC nng)
 else()
     # LibCorrect
-    find_library(CORRECT_LIBRARY correct REQUIRED)
-    target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
+    #find_library(CORRECT_LIBRARY correct REQUIRED)
+    #target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
 
     # LibJpeg
     find_library(JPEG_LIBRARY jpeg REQUIRED)
