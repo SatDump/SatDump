@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "common/ctpl/ctpl_stl.h"
+#include "libs/ctpl/ctpl_stl.h"
 #include "image/svissr_reader.h"
 
 namespace fengyun_svissr

@@ -3,7 +3,7 @@
 #include <cstdint>
 extern "C"
 {
-#include "common/correct/reed-solomon.h"
+#include "libs/correct/reed-solomon.h"
 }
 
 // RS Decoding based on SatHelper's implementation

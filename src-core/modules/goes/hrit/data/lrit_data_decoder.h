@@ -11,7 +11,7 @@
 #include <memory>
 extern "C"
 {
-#include <common/aec/szlib.h>
+#include <libs/aec/szlib.h>
 }
 
 namespace goes

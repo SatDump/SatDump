@@ -6,15 +6,15 @@ include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
 file(GLOB_RECURSE SatDump_core_CPPS  *.cpp 
-                                     common/aec/*.c
-                                     common/predict/*.c
-                                     common/bzlib/*.c
-                                     common/miniz/*.c
-                                     common/libtom/*.c
-                                     common/jpeg/*.c
+                                     libs/aec/*.c
+                                     libs/predict/*.c
+                                     libs/bzlib/*.c
+                                     libs/miniz/*.c
+                                     libs/libtom/*.c
+                                     libs/jpeg/*.c
                                      common/dlfcn/dlfcn.c
                                      common/map/maidenhead.c
-                                     common/correct/*.c
+                                     libs/correct/*.c
 )
 
 find_package(PkgConfig)

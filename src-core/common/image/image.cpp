@@ -2,7 +2,7 @@
 #include <stdexcept>
 extern "C"
 {
-#include "common/jpeg/jpeglib.h"
+#include "libs/jpeg/jpeglib.h"
 }
 
 namespace image

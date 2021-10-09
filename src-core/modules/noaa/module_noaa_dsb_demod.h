@@ -15,7 +15,7 @@
 #include "common/dsp/rational_resampler.h"
 #include "dsb_deframer.h"
 #include "common/widgets/constellation.h"
-#include "common/snr_estimator.h"
+#include "common/dsp/snr_estimator.h"
 #include "common/widgets/snr_plot.h"
 
 namespace noaa

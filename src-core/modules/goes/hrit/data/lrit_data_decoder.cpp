@@ -9,10 +9,10 @@
 #include "products.h"
 #include <filesystem>
 #include <algorithm>
-#include "common/miniz/miniz.h"
-#include "common/miniz/miniz_zip.h"
+#include "libs/miniz/miniz.h"
+#include "libs/miniz/miniz_zip.h"
 #include "common/utils.h"
-#include "common/others/strptime.h"
+#include "libs/others/strptime.h"
 #include "imgui/imgui_image.h"
 
 namespace goes

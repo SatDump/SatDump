@@ -3,7 +3,7 @@
 #include "dll_export.h"
 #include <memory>
 #include <map>
-#include "common/eventbus/event_bus.hpp"
+#include "libs/eventbus/event_bus.hpp"
 
 #define PLUGIN_LOADER(constructor)                       \
     extern "C"                                           \

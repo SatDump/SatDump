@@ -1,6 +1,6 @@
 #include "module_smap_s_decoder.h"
 #include "logger.h"
-#include "common/sathelper/derandomizer.h"
+#include "libs/sathelper/derandomizer.h"
 #include "imgui/imgui.h"
 #include "common/codings/differential/nrzm.h"
 #include "common/codings/reedsolomon/reedsolomon.h"

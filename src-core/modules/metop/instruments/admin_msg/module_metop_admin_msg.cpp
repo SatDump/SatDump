@@ -5,8 +5,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/bzlib/bzlib.h"
-#include "common/rapidxml.hpp"
+#include "libs/bzlib/bzlib.h"
+#include "libs/rapidxml.hpp"
 
 #define MAX_MSG_SIZE 1000000
 

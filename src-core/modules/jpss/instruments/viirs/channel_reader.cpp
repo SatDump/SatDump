@@ -4,7 +4,7 @@ extern "C"
 {
 #include <stdlib.h>
 #include <stdint.h>
-#include "common/aec/libaec.h"
+#include "libs/aec/libaec.h"
 #include <string.h>
 }
 

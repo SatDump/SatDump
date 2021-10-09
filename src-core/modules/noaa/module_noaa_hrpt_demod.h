@@ -12,7 +12,7 @@
 #include "common/dsp/bpsk_carrier_pll.h"
 #include "noaa_deframer.h"
 #include "common/widgets/constellation.h"
-#include "common/snr_estimator.h"
+#include "common/dsp/snr_estimator.h"
 #include "common/widgets/snr_plot.h"
 
 namespace noaa

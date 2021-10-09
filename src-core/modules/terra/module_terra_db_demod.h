@@ -9,7 +9,7 @@
 #include "common/dsp/costas_loop.h"
 #include "common/dsp/clock_recovery_mm.h"
 #include "common/dsp/file_source.h"
-#include "common/snr_estimator.h"
+#include "common/dsp/snr_estimator.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
 

@@ -1,7 +1,7 @@
 #include "module_spacex_decoder.h"
 #include "logger.h"
-#include "common/sathelper/derandomizer.h"
-#include "common/sathelper/packetfixer.h"
+#include "libs/sathelper/derandomizer.h"
+#include "libs/sathelper/packetfixer.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "imgui/imgui.h"
 

@@ -2,8 +2,8 @@
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/correlator.h"
-#include "common/sathelper/packetfixer.h"
-#include "common/sathelper/derandomizer.h"
+#include "libs/sathelper/packetfixer.h"
+#include "libs/sathelper/derandomizer.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 
