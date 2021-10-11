@@ -8,10 +8,10 @@
 #include "common/image/earth_curvature.h"
 #include "modules/meteor/meteor.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/image.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
 
 #define BUFFER_SIZE 8192
@@ -51,7 +51,7 @@ namespace meteor
             logger->info("Demultiplexing and deframing...");
 
             time_t currentDay = time(0);
-            time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 0; // Requires the day to be known from another source
+            time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 1; // Requires the day to be known from another source
 
             std::vector<double> timestamps;
 
@@ -226,20 +226,16 @@ namespace meteor
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
                 // Setup Projecition, tuned for 2-2
-                projection::LEOScanProjectorSettings proj_settings = {
-                    4,                  // Pixel offset
-                    2070,               // Correction swath
-                    1.1,                // Instrument res
-                    830,                // Orbit height
-                    METEOR_MSUMR_SWATH, // Instrument swath
-                    2.46,               // Scale
-                    -2,                 // Az offset
-                    0,                  // Tilt
-                    1,                  // Time offset
-                    image1.width(),     // Image width
-                    true,               // Invert scan
-                    tle::TLE(),         // TLEs
-                    timestamps          // Timestamps
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    110.2,          // Scan angle
+                    -0.35,          // Roll offset
+                    0,              // Pitch offset
+                    -2.9,           // Yaw offset
+                    0.2,            // Time offset
+                    image1.width(), // Image width
+                    true,           // Invert scan
+                    tle::TLE(),     // TLEs
+                    timestamps      // Timestamps
                 };
 
                 // Identify satellite, and apply per-sat settings...
@@ -247,9 +243,11 @@ namespace meteor
                 if (msumr_serial_number == 0) // METEOR-M 2, weirdly enough it has ID 0
                 {
                     norad = 40069;
-                    logger->info("Identified METEOR-M 2! Projection support is WIP!");
-                    proj_settings.proj_offset = -40;
-                    proj_settings.proj_scale = 2.330;
+                    logger->info("Identified METEOR-M 2!");
+                    proj_settings.scan_angle = 111.0;
+                    proj_settings.roll_offset = 3.1;
+                    proj_settings.yaw_offset = -3;
+                    proj_settings.time_offset = 9;
                 }
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {
@@ -269,19 +267,19 @@ namespace meteor
                 // Load TLEs now
                 proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
 
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR.georef");
                 }
 
                 logger->info("Projected RGB 321...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
                 WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-321-PROJ.png");
 
                 logger->info("Projected Channel 4...");
-                projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
                 WRITE_IMAGE(projected_image, directory + "/MSU-MR-4-PROJ.png");
             }
         }

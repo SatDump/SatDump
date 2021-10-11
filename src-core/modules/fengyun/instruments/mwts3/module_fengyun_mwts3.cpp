@@ -6,8 +6,8 @@
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "mwts3_reader.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -144,33 +144,29 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    48,                                // Pixel offset
-                    1600,                              // Correction swath
-                    17.4 / 20,                         // Instrument res
-                    827.0,                             // Orbit height
-                    2200,                              // Instrument swath
-                    2.10,                              // Scale
-                    0,                                 // Az offset
-                    0,                                 // Tilt
-                    0,                                 // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    104,                               // Scan angle
+                    -1,                                // Roll offset
+                    0,                                 // Pitch offset
+                    -5,                                // Yaw offset
+                    -1,                                // Time offset
                     mwts_reader.getChannel(0).width(), // Image width
                     true,                              // Invert scan
                     tle::getTLEfromNORAD(norad),       // TLEs
                     mwts_reader.timestamps             // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/MWTS-3.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MWTS-3.georef");
                 }
 
                 for (int i = 0; i < 18; i++)
                 {
                     cimg_library::CImg<unsigned short> image = mwts_reader.getChannel(i);
                     logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
                     WRITE_IMAGE(projected_image, directory + "/MWTS3-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

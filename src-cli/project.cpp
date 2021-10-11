@@ -1,12 +1,12 @@
 #include "project.h"
 #include "logger.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 #include "common/map/map_drawer.h"
 #include "resources.h"
 
-#include "common/projection/stereo.h"
-#include "common/projection/geos.h"
+#include "common/geodetic/projection/stereo.h"
+#include "common/geodetic/projection/geos.h"
 #include "common/map/maidenhead.h"
 
 int project(int argc, char *argv[])
@@ -34,8 +34,8 @@ int project(int argc, char *argv[])
         return 1;
     }
 
-    projection::StereoProjection proj_stereo;
-    projection::GEOSProjection proj_geos(30000000, -0);
+    geodetic::projection::StereoProjection proj_stereo;
+    geodetic::projection::GEOSProjection proj_geos(30000000, -0);
 
     std::function<std::pair<int, int>(float, float, int, int)> projectionFunc = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
     {
@@ -101,29 +101,29 @@ int project(int argc, char *argv[])
     {
         logger->info("Projecting " + image.first + "...");
         cimg_library::CImg<unsigned short> src_image(image.first.c_str());
-        std::shared_ptr<projection::proj_file::GeodeticReferenceFile> geofile = projection::proj_file::readReferenceFile(image.second);
+        std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> geofile = geodetic::projection::proj_file::readReferenceFile(image.second);
 
         if (geofile->file_type == 0)
         {
             logger->info("Reprojecting Equiectangular...");
-            projection::projectEQUIToproj(src_image, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::projectEQUIToproj(src_image, projected_image, src_image.spectrum(), projectionFunc);
         }
-        else if (geofile->file_type == projection::proj_file::LEO_TYPE)
+        else if (geofile->file_type == geodetic::projection::proj_file::LEO_TYPE)
         {
-            projection::proj_file::LEO_GeodeticReferenceFile leofile = *((projection::proj_file::LEO_GeodeticReferenceFile *)geofile.get());
-            projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
-            projection::LEOScanProjector projector(settings);
+            geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)geofile.get());
+            geodetic::projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
+            geodetic::projection::LEOScanProjector projector(settings);
             logger->info("Reprojecting LEO...");
-            projection::reprojectLEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::reprojectLEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
         }
-        else if (geofile->file_type == projection::proj_file::GEO_TYPE)
+        else if (geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
         {
             src_image.normalize(0, 65535);
-            projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((projection::proj_file::GEO_GeodeticReferenceFile *)geofile.get());
+            geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)geofile.get());
             src_image.resize(gsofile.image_width, gsofile.image_height); // Safety
             logger->info("Reprojecting GEO...");
-            projection::GEOProjector projector = projection::proj_file::geoProjectionRefFile(gsofile);
-            projection::reprojectGEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::GEOProjector projector = geodetic::projection::proj_file::geoProjectionRefFile(gsofile);
+            geodetic::projection::reprojectGEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
         }
     }
 

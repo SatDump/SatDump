@@ -11,10 +11,10 @@
 #include "modules/metop/metop.h"
 #include "nlohmann/json_utils.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/image/brightness_contrast.h"
 #include "common/image/xfr.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -297,30 +297,26 @@ namespace metop
                 //image4.equalize(1000);
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    5,                           // Pixel offset
-                    2050,                        // Correction swath
-                    1,                           // Instrument res
-                    800,                         // Orbit height
-                    METOP_AVHRR_SWATH,           // Instrument swath
-                    2.515,                       // Scale
-                    0.4,                         // Az offset
-                    0,                           // Tilt
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    110.8,                       // Scan angle
+                    -0.1,                        // Roll offset
+                    0,                           // Pitch offset
+                    0.2,                         // Yaw offset
                     -0.3,                        // Time offset
                     image4.width(),              // Image width
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
                 }
 
                 logger->info("Projected channel 4...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
 
                 cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
@@ -331,7 +327,7 @@ namespace metop
                 }
 
                 logger->info("Projected channel 321...");
-                projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
             }
         }

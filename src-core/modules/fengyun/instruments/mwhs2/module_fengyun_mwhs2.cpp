@@ -6,9 +6,9 @@
 #include "mwhs2_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
 #include "modules/fengyun/fengyun3.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -133,33 +133,29 @@ namespace fengyun
             if (mwhs_reader.lines > 0)
             {
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    4,                                 // Pixel offset
-                    1550,                              // Correction swath
-                    16.0 / 4,                          // Instrument res
-                    827.0,                             // Orbit height
-                    2800,                              // Instrument swath
-                    2.65,                              // Scale
-                    0,                                 // Az offset
-                    0,                                 // Tilt
-                    3,                                 // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    106,                               // Scan angle
+                    -0,                                // Roll offset
+                    0,                                 // Pitch offset
+                    -5,                                // Yaw offset
+                    2,                                 // Time offset
                     mwhs_reader.getChannel(0).width(), // Image width
                     true,                              // Invert scan
                     tle::getTLEfromNORAD(norad),       // TLEs
                     mwhs_reader.timestamps             // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/MWHS-2.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MWHS-2.georef");
                 }
 
                 for (int i = 0; i < 15; i++)
                 {
                     cimg_library::CImg<unsigned short> image = mwhs_reader.getChannel(i);
                     logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MWHS2-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

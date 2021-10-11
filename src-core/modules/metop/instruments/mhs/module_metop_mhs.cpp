@@ -7,8 +7,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -123,33 +123,29 @@ namespace metop
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    2,                               // Pixel offset
-                    2070,                            // Correction swath
-                    16.0 / 4,                        // Instrument res
-                    827.0,                           // Orbit height
-                    2180,                            // Instrument swath
-                    2.18,                            // Scale
-                    0,                               // Az offset
-                    0,                               // Tilt
-                    1,                               // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    100,                             // Scan angle
+                    -0.7,                            // Roll offset
+                    0,                               // Pitch offset
+                    0.5,                             // Yaw offset
+                    3.5,                             // Time offset
                     mhsreader.getChannel(0).width(), // Image width
                     true,                            // Invert scan
                     tle::getTLEfromNORAD(norad),     // TLEs
                     mhsreader.timestamps             // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/MHS.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MHS.georef");
                 }
 
                 for (int i = 0; i < 5; i++)
                 {
                     cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i);
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

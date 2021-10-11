@@ -6,9 +6,9 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "modules/noaa/noaa.h"
-#include "common/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
 
 #define BUFFER_SIZE 8192
@@ -160,22 +160,23 @@ namespace noaa
                 int norad = 0; //28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
                 image4.equalize(1000);
 
-                // Setup Projecition, based off N18
-                projection::LEOScanProjectorSettings proj_settings = {
-                    2,                // Pixel offset
-                    2050,             // Correction swath
-                    1,                // Instrument res
-                    800,              // Orbit height
-                    NOAA_AVHRR_SWATH, // Instrument swath
-                    2.399,            // Scale
-                    -2.9,             // Az offset
-                    0,                // Tilt
-                    0.3,              // Time offset
-                    image4.width(),   // Image width
-                    true,             // Invert scan
-                    tle::TLE(),       // TLEs
-                    timestamps        // Timestamps
+                // Setup Projecition, based off N19
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    110.6,          // Scan angle
+                    -0.01,          // Roll offset
+                    0,              // Pitch offset
+                    -3.65,          // Yaw offset
+                    1,              // Time offset
+                    image4.width(), // Image width
+                    true,           // Invert scan
+                    tle::TLE(),     // TLEs
+                    timestamps      // Timestamps
                 };
+
+                {
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                }
 
                 // Identify satellite, and apply per-sat settings...
                 int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
@@ -186,15 +187,18 @@ namespace noaa
                 }
                 else if (scid == 13) // N18
                 {
-                    norad = 25338;
+                    norad = 28654;
                     logger->info("Identified NOAA-18!");
+                    proj_settings.scan_angle = 110.4;
+                    proj_settings.roll_offset = -0.1;
+                    proj_settings.yaw_offset = -3.2;
                 }
                 else if (scid == 15) // N19
                 {
                     norad = 33591;
                     logger->info("Identified NOAA-19!");
-                    proj_settings.az_offset = -1.5;
-                    proj_settings.proj_scale = 2.339;
+                    //proj_settings.az_offset = -1.5;
+                    //proj_settings.proj_scale = 2.339;
                 }
                 else
                 {
@@ -204,26 +208,27 @@ namespace noaa
                 // Load TLEs now
                 proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
 
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
                 }
 
                 logger->info("Projected channel 4...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
 
-                cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
+                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
                 {
-                    image321.draw_image(0, 0, 0, 0, image2);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
+                    image221.draw_image(0, 0, 0, 0, image2);
+                    image221.draw_image(0, 0, 0, 1, image2);
+                    image221.draw_image(0, 0, 0, 2, image1);
                 }
+                image221.equalize(1000);
 
                 logger->info("Projected channel 221...");
-                projected_image = projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image221, projector, 2048 * 4, 1024 * 4, 3);
                 WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-221-PROJ.png");
             }
         }

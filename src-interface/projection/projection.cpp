@@ -20,14 +20,14 @@ std::string getDirPath();
 
 #include "common/map/map_drawer.h"
 #include "resources.h"
-#include "common/projection/stereo.h"
-#include "common/projection/geos.h"
+#include "common/geodetic/projection/stereo.h"
+#include "common/geodetic/projection/geos.h"
 #include "common/map/maidenhead.h"
-#include "common/projection/proj_file.h"
-#include "common/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
 #include <filesystem>
 #include "global.h"
-#include "common/projection/geo_projection.h"
+#include "common/geodetic/projection/geo_projection.h"
 
 namespace projection
 {
@@ -55,19 +55,24 @@ namespace projection
         std::string filename;
         std::string timestamp;
         cimg_library::CImg<unsigned short> image;
-        std::shared_ptr<projection::proj_file::GeodeticReferenceFile> georef;
+        std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> georef;
         bool show;
+        float opacity;
+
+        float progress = 0;
     };
     std::vector<FileToProject> filesToProject;
 
     // Utils
-    projection::StereoProjection proj_stereo;
-    projection::GEOSProjection proj_geos;
+    geodetic::projection::StereoProjection proj_stereo;
+    geodetic::projection::GEOSProjection proj_geos;
     std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
 
     bool isFirstUiRun = false;
     bool rendering = false;
     bool isRenderDone = false;
+
+    float render_progress = 0;
 
     void initProjection()
     {
@@ -146,22 +151,22 @@ namespace projection
             if (toProj.georef->file_type == 0)
             {
                 logger->info("Reprojecting Equiectangular...");
-                projection::projectEQUIToproj(toProj.image, projected_image, toProj.image.spectrum(), projectionFunc);
+                geodetic::projection::projectEQUIToproj(toProj.image, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
-            else if (toProj.georef->file_type == projection::proj_file::LEO_TYPE)
+            else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
             {
-                projection::proj_file::LEO_GeodeticReferenceFile leofile = *((projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
-                projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
-                projection::LEOScanProjector projector(settings);
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
+                geodetic::projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
+                geodetic::projection::LEOScanProjector projector(settings);
                 logger->info("Reprojecting LEO...");
-                projection::reprojectLEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc);
+                geodetic::projection::reprojectLEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
-            else if (toProj.georef->file_type == projection::proj_file::GEO_TYPE)
+            else if (toProj.georef->file_type == geodetic::projection::proj_file::GEO_TYPE)
             {
-                projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
+                geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
                 logger->info("Reprojecting GEO...");
-                projection::GEOProjector projector = projection::proj_file::geoProjectionRefFile(gsofile);
-                projection::reprojectGEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc);
+                geodetic::projection::GEOProjector projector = geodetic::projection::proj_file::geoProjectionRefFile(gsofile);
+                geodetic::projection::reprojectGEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
         }
 
@@ -193,7 +198,9 @@ namespace projection
             updateImageTexture(textureID, textureBuffer, output_width, output_height);
 
             if (isRenderDone)
+            {
                 isRenderDone = false;
+            }
         }
 
         ImGui::SetNextWindowPos({0, 0});
@@ -266,6 +273,22 @@ namespace projection
             {
                 destroyProjection();
             }
+
+            // Calculate progress, if rendering
+            if (rendering)
+            {
+                render_progress = 0;
+                for (const FileToProject &toProj : filesToProject)
+                    render_progress += toProj.progress;
+                render_progress /= filesToProject.size();
+            }
+            else
+            {
+                render_progress = 0;
+            }
+
+            ImGui::SameLine();
+            ImGui::ProgressBar(render_progress);
         }
         ImGui::End();
 
@@ -293,9 +316,7 @@ namespace projection
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("View"))
-                    {
                         toProj.show = true;
-                    }
                 }
 
                 ImGui::EndTable();
@@ -355,21 +376,21 @@ namespace projection
                 cimg_library::CImg<unsigned short> new_image(newfile_image);
                 new_image.normalize(0, 65535);
 
-                std::shared_ptr<projection::proj_file::GeodeticReferenceFile> new_geofile;
+                std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> new_geofile;
                 if (use_equirectangular)
                 {
-                    new_geofile = std::make_shared<projection::proj_file::GeodeticReferenceFile>();
+                    new_geofile = std::make_shared<geodetic::projection::proj_file::GeodeticReferenceFile>();
                     new_geofile->file_type = 0;
                     new_geofile->utc_timestamp_seconds = 0;
                 }
                 else
                 {
-                    new_geofile = projection::proj_file::readReferenceFile(std::string(newfile_georef));
+                    new_geofile = geodetic::projection::proj_file::readReferenceFile(std::string(newfile_georef));
                 }
 
-                if (new_geofile->file_type == projection::proj_file::GEO_TYPE)
+                if (new_geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
                 {
-                    projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((projection::proj_file::GEO_GeodeticReferenceFile *)new_geofile.get());
+                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)new_geofile.get());
                     new_image.resize(gsofile.image_width, gsofile.image_height); // Safety
                 }
 
@@ -386,7 +407,8 @@ namespace projection
                                           timestamp + " UTC",
                                           new_image,
                                           new_geofile,
-                                          false});
+                                          false,
+                                          1.0});
 
                 std::fill(newfile_image, &newfile_image[100], 0);
                 std::fill(newfile_georef, &newfile_georef[100], 0);
@@ -408,199 +430,198 @@ namespace projection
             {
                 ImGui::Begin(std::string("View georef for " + std::string(toProj.filename)).c_str(), &toProj.show);
                 {
-                    if (ImGui::BeginTable("FileContentsLEO", 2, ImGuiTableFlags_Borders))
+                    if (ImGui::BeginTabBar(std::string("##tabbar" + toProj.timestamp).c_str()))
                     {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("File Type");
-                        ImGui::TableSetColumnIndex(1);
-                        if (toProj.georef->file_type == 0)
-                            ImGui::Text("0, Empty");
-                        else if (toProj.georef->file_type == 1)
-                            ImGui::Text("1, GEO");
-                        else if (toProj.georef->file_type == 1)
-                            ImGui::Text("2, LEO");
-                        else
-                            ImGui::Text("Invalid");
-
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Timestamp");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("%s", toProj.timestamp.c_str());
-
-                        if (toProj.georef->file_type == projection::proj_file::GEO_TYPE)
+                        if (ImGui::BeginTabItem("Contens"))
                         {
-                            projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
+                            if (ImGui::BeginTable("FileContentsLEO", 2, ImGuiTableFlags_Borders))
+                            {
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text("File Type");
+                                ImGui::TableSetColumnIndex(1);
+                                if (toProj.georef->file_type == 0)
+                                    ImGui::Text("0, Empty");
+                                else if (toProj.georef->file_type == 1)
+                                    ImGui::Text("1, GEO");
+                                else if (toProj.georef->file_type == 2)
+                                    ImGui::Text("2, LEO");
+                                else
+                                    ImGui::Text("Invalid");
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("NORAD");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", gsofile.norad);
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text("Timestamp");
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::Text("%s", toProj.timestamp.c_str());
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Satellite Longitude");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.position_longitude);
+                                if (toProj.georef->file_type == geodetic::projection::proj_file::GEO_TYPE)
+                                {
+                                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Satellite Altitude");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.position_height);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("NORAD");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", gsofile.norad);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Projection Type");
-                            ImGui::TableSetColumnIndex(1);
-                            if (gsofile.projection_type == 0)
-                                ImGui::Text("0, Full Disk");
-                            else
-                                ImGui::Text("Invalid");
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Satellite Longitude");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.position_longitude);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Image Width");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", gsofile.image_width);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Satellite Altitude");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.position_height);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Image Height");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", gsofile.image_height);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Projection Type");
+                                    ImGui::TableSetColumnIndex(1);
+                                    if (gsofile.projection_type == 0)
+                                        ImGui::Text("0, Full Disk");
+                                    else
+                                        ImGui::Text("Invalid");
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Horizontal Scale");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.horizontal_scale);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Image Width");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", gsofile.image_width);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Vertical Scale");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.vertical_scale);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Image Height");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", gsofile.image_height);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Horizontal Offset");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.horizontal_offset);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Horizontal Scale");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.horizontal_scale);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Vertical Offset");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", gsofile.vertical_offset);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Vertical Scale");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.vertical_scale);
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Sweep X");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", gsofile.proj_sweep_x);
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Horizontal Offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.horizontal_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Vertical Offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", gsofile.vertical_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Sweep X");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", gsofile.proj_sweep_x);
+                                }
+                                else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
+                                {
+                                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("NORAD");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", leofile.norad);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("TLE 1");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%s", leofile.tle_line1_data.c_str());
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("TLE 2");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%s", leofile.tle_line2_data.c_str());
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Projection Type");
+                                    ImGui::TableSetColumnIndex(1);
+                                    if (leofile.projection_type == 0)
+                                        ImGui::Text("0, Single Scanline");
+                                    else
+                                        ImGui::Text("Invalid");
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Scan Angle");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", leofile.scan_angle);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Roll Offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", leofile.roll_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Pitch Offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", leofile.pitch_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Yaw Offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", leofile.yaw_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Time offset");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%f", leofile.time_offset);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Image width");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", leofile.image_width);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Invert scan");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", leofile.invert_scan);
+
+                                    ImGui::TableNextRow();
+                                    ImGui::TableSetColumnIndex(0);
+                                    ImGui::Text("Timestamp count");
+                                    ImGui::TableSetColumnIndex(1);
+                                    ImGui::Text("%d", leofile.timestamp_count);
+                                }
+
+                                ImGui::EndTable();
+                            }
+
+                            ImGui::EndTabItem();
                         }
-                        else if (toProj.georef->file_type == projection::proj_file::LEO_TYPE)
+                        if (ImGui::BeginTabItem("Settings"))
                         {
-                            projection::proj_file::LEO_GeodeticReferenceFile leofile = *((projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
+                            ImGui::InputFloat(std::string("##opacity" + toProj.timestamp).c_str(), &toProj.opacity);
+                            ImGui::SameLine();
+                            ImGui::Text("Opacity");
 
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("NORAD");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", leofile.norad);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("TLE 1");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%s", leofile.tle_line1_data.c_str());
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("TLE 2");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%s", leofile.tle_line2_data.c_str());
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Projection Type");
-                            ImGui::TableSetColumnIndex(1);
-                            if (leofile.projection_type == 0)
-                                ImGui::Text("0, Single Scanline");
-                            else
-                                ImGui::Text("Invalid");
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Correction Swath");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", leofile.correction_swath);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Correction Res");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.correction_res);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Correction Height");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.correction_height);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Instrument Swath");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.instrument_swath);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Projection Scale");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.proj_scale);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Azimuth Offset");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.az_offset);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Tilt offset");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.tilt_offset);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Time offset");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%f", leofile.time_offset);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Image width");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", leofile.image_width);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Invert scan");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", leofile.invert_scan);
-
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("Timestamp count");
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", leofile.timestamp_count);
+                            ImGui::EndTabItem();
                         }
-
-                        ImGui::EndTable();
+                        ImGui::EndTabBar();
                     }
                 }
                 ImGui::End();

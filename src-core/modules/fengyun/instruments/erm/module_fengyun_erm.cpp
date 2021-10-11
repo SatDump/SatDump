@@ -6,8 +6,8 @@
 #include "erm_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -100,31 +100,27 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    6,                               // Pixel offset
-                    1500,                            // Correction swath
-                    16.0 / 4,                        // Instrument res
-                    827.0,                           // Orbit height
-                    2300,                            // Instrument swath
-                    2.4,                             // Scale
-                    1,                               // Az offset
-                    0,                               // Tilt
-                    1.5,                             // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    102,                             // Scan angle
+                    -0.0,                            // Roll offset
+                    0,                               // Pitch offset
+                    -1,                              // Yaw offset
+                    2,                               // Time offset
                     erm_reader.getChannel().width(), // Image width
                     true,                            // Invert scan
                     tle::getTLEfromNORAD(norad),     // TLEs
                     erm_reader.timestamps            // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
                 }
 
                 cimg_library::CImg<unsigned short> image = erm_reader.getChannel();
                 logger->info("Projected Channel 1...");
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                 WRITE_IMAGE(projected_image, directory + "/ERM-1-PROJ.png");
             }
         }

@@ -8,8 +8,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -150,52 +150,45 @@ namespace metop
                 // There is no "real" guarantee the A1 / A2 output will always be identical
                 // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
                 // in the resulting image...
-                projection::LEOScanProjectorSettings proj_settings_a1 = {
-                    0,                              // Pixel offset
-                    1900,                           // Correction swath
-                    48.0 / 40,                      // Instrument res
-                    827.0,                          // Orbit height
-                    2250,                           // Instrument swath
-                    2.2,                            // Scale
-                    0,                              // Az offset
-                    0,                              // Tilt
-                    4.0,                            // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings_a1 = {
+                    98,                             // Scan angle
+                    0,                              // Roll offset
+                    0,                              // Pitch offset
+                    0,                              // Yaw offset
+                    10,                             // Time offset
                     a1reader.getChannel(0).width(), // Image width
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a1reader.timestamps             // Timestamps
                 };
-                projection::LEOScanProjectorSettings proj_settings_a2 = {
-                    0,                              // Pixel offset
-                    1900,                           // Correction swath
-                    48.0 / 40,                      // Instrument res
-                    827.0,                          // Orbit height
-                    2250,                           // Instrument swath
-                    2.2,                            // Scale
-                    0,                              // Az offset
-                    0,                              // Tilt
-                    4.0,                            // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings_a2 = {
+                    98,                             // Scan angle
+                    0,                              // Roll offset
+                    0,                              // Pitch offset
+                    0,                              // Yaw offset
+                    10,                             // Time offset
                     a2reader.getChannel(0).width(), // Image width
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a2reader.timestamps             // Timestamps
                 };
-                projection::LEOScanProjector projector_a1(proj_settings_a1);
-                projection::LEOScanProjector projector_a2(proj_settings_a2);
+                geodetic::projection::LEOScanProjector projector_a1(proj_settings_a1);
+                geodetic::projection::LEOScanProjector projector_a2(proj_settings_a2);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
-                    projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile_a2 = projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a2);
-                    projection::proj_file::writeReferenceFile(geofile_a2, directory + "/AMSU-A2.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a2 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a2);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile_a2, directory + "/AMSU-A2.georef");
                 }
 
                 for (int i = 0; i < 13; i++)
                 {
                     cimg_library::CImg<unsigned short> image = a1reader.getChannel(i);
                     image.equalize(1000);
+                    image.normalize(0, 65535);
                     logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
                     WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
                 }
 
@@ -203,8 +196,9 @@ namespace metop
                 {
                     cimg_library::CImg<unsigned short> image = a2reader.getChannel(i);
                     image.equalize(1000);
+                    image.normalize(0, 65535);
                     logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
                     WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

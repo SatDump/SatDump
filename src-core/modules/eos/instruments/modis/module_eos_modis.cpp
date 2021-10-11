@@ -12,7 +12,7 @@
 #include "common/image/earth_curvature.h"
 #include "modules/eos/eos.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
 
 #define BUFFER_SIZE 8192
 
@@ -365,24 +365,21 @@ namespace eos
                     //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
 
                     // Setup Projecition
-                    projection::LEOScanProjector projector({
-                        0,                           // Pixel offset
-                        1950,                        // Correction swath
-                        EOS_MODIS_RES250,            // Instrument res
-                        800,                         // Orbit height
-                        2220,                        // Instrument swath
-                        2.45,                        // Scale
-                        -2.2,                        // Az offset
-                        0,                           // Tilt
-                        -2.2,                        // Time offset
+                    geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                        109.7,                       // Scan angle
+                        -0.1,                        // Roll offset
+                        0,                           // Pitch offset
+                        -2.5,                        // Yaw offset
+                        -2.0,                        // Time offset
                         pre_wb.width(),              // Image width
                         true,                        // Invert scan
                         tle::getTLEfromNORAD(norad), // TLEs
                         reader.timestamps_250        // Timestamps
-                    });
+                    };
+                    geodetic::projection::LEOScanProjector projector(proj_settings);
 
                     logger->info("Projected Channel 143 EQURAW...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(pre_wb, projector, 2048 * 4, 1024 * 4, 3);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(pre_wb, projector, 2048 * 4, 1024 * 4, 3);
                     WRITE_IMAGE(projected_image, directory + "/MODIS-143-EQURAW-PROJ.png");
                 }
             }
@@ -399,29 +396,27 @@ namespace eos
                                                                                                                  EOS_ORBIT_HEIGHT,
                                                                                                                  EOS_MODIS_SWATH,
                                                                                                                  EOS_MODIS_RES1000);
-                WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
+                //WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
 
                 // Reproject to an equirectangular proj
                 {
                     // Setup Projecition
-                    projection::LEOScanProjector projector({
-                        0,                           // Pixel offset
-                        1800,                        // Correction swath
-                        EOS_MODIS_RES250,            // Instrument res
-                        710,                         // Orbit height
-                        2230,                        // Instrument swath
-                        2.435,                       // Scale
-                        -2.2,                        // Az offset
-                        0,                           // Tilt
-                        -2.2,                        // Time offset
+                    geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                        109.7,                       // Scan angle
+                        -0.1,                        // Roll offset
+                        0,                           // Pitch offset
+                        2.5,                         // Yaw offset
+                        -2.0,                        // Time offset
                         image23.width(),             // Image width
                         true,                        // Invert scan
                         tle::getTLEfromNORAD(norad), // TLEs
                         reader.timestamps_1000       // Timestamps
-                    });
+                    };
+                    geodetic::projection::LEOScanProjector projector(proj_settings);
 
                     logger->info("Projected Channel 29...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image23, projector, 2048 * 4, 1024 * 4, 1);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image23, projector, 2048 * 4, 1024 * 4, 1);
+                    //projected_image.crop(20778, 2853, 20778 + 5145, 2853 + 3573);
                     WRITE_IMAGE(projected_image, directory + "/MODIS-29-EQU-PROJ.png");
                 }
             }

@@ -7,8 +7,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -390,26 +390,22 @@ namespace jpss
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    3,                           // Pixel offset
-                    1700,                        // Correction swath
-                    16.0 / 4,                    // Instrument res
-                    827.0,                       // Orbit height
-                    2200,                        // Instrument swath
-                    2.14,                        // Scale
-                    -3,                          // Az offset
-                    0,                           // Tilt
-                    -1.0,                        // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    102,                         // Scan angle
+                    -0.5,                        // Roll offset
+                    0,                           // Pitch offset
+                    -3,                          // Yaw offset
+                    2,                           // Time offset
                     image1.width(),              // Image width
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/ATMS.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ATMS.georef");
                 }
 
                 for (int i = 0; i < 22; i++)
@@ -417,7 +413,7 @@ namespace jpss
                     cimg_library::CImg<unsigned short> image = reader.getImage(i);
                     image.equalize(1000);
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/ATMS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
 
@@ -429,7 +425,7 @@ namespace jpss
                 }
                 image3417.equalize(1000);
 
-                cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
                 WRITE_IMAGE(projected_image, directory + "/ATMS-RGB-3.4.17-PROJ.png");
             }
         }

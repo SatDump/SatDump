@@ -9,8 +9,8 @@
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun/fengyun3.h"
 #include "nlohmann/json_utils.h"
-#include "common/projection/satellite_reprojector.h"
-#include "common/projection/proj_file.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -384,26 +384,22 @@ namespace fengyun
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                projection::LEOScanProjectorSettings proj_settings = {
-                    3,                           // Pixel offset
-                    2100,                        // Correction swath
-                    1.1,                         // Instrument res
-                    830,                         // Orbit height
-                    2800,                        // Instrument swath
-                    2.406,                       // Scale
-                    -2.7,                        // Az offset
-                    0,                           // Tilt
-                    -0.1,                        // Time offset
+                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    110.4,                       // Scan angle
+                    -0.0,                        // Roll offset
+                    0,                           // Pitch offset
+                    -2.6,                        // Yaw offset
+                    0,                           // Time offset
                     image1.width(),              // Image width
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
                 };
-                projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
-                    projection::proj_file::LEO_GeodeticReferenceFile geofile = projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
                 }
 
                 cimg_library::CImg<unsigned char> projected_image;
@@ -421,7 +417,7 @@ namespace fengyun
                         image197equ.normalize(0, std::numeric_limits<unsigned short>::max());
                     }
                     logger->info("Projected Channel 197...");
-                    projected_image = projection::projectLEOToEquirectangularMapped(image197equ, projector, 2048 * 4, 1024 * 4, 3);
+                    projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image197equ, projector, 2048 * 4, 1024 * 4, 3);
                     WRITE_IMAGE(projected_image, directory + "/VIRR-RGB-197-PROJ.png");
                 }
 
@@ -429,7 +425,7 @@ namespace fengyun
                     logger->info("Projected Channel 4...");
                     cimg_library::CImg<unsigned short> tempImage4 = image4;
                     tempImage4.equalize(1000);
-                    projected_image = projection::projectLEOToEquirectangularMapped(tempImage4, projector, 2048 * 4, 1024 * 4, 1);
+                    projected_image = geodetic::projection::projectLEOToEquirectangularMapped(tempImage4, projector, 2048 * 4, 1024 * 4, 1);
                     WRITE_IMAGE(projected_image, directory + "/VIRR-4-PROJ.png");
                 }
 
@@ -443,7 +439,7 @@ namespace fengyun
                         image621.normalize(0, std::numeric_limits<unsigned short>::max());
                     }
                     logger->info("Projected channel 621...");
-                    cimg_library::CImg<unsigned char> projected_image = projection::projectLEOToEquirectangularMapped(image621, projector, 2048 * 4, 1024 * 4, 3);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image621, projector, 2048 * 4, 1024 * 4, 3);
                     WRITE_IMAGE(projected_image, directory + "/VIRR-RGB-621-PROJ.png");
                 }
             }
