@@ -1,6 +1,9 @@
 #include "leo_projection.h"
 
 #include <cmath>
+#ifndef M_PI
+#define M_PI (3.14159265359)
+#endif
 #include "libs/predict/predict.h"
 #include "logger.h"
 #include "common/geodetic/euler_raytrace.h"
@@ -35,8 +38,6 @@ namespace geodetic
                                                               geodetic_coords_t(satellite_orbit.latitude, satellite_orbit.longitude, satellite_orbit.altitude, true))
                                                 .reverse_azimuth;
                 az_angle_vincentis -= M_PI;
-                if (az_angle_vincentis >= M_2_PI)
-                    az_angle_vincentis -= M_2_PI;
 
                 satellite_directions.push_back(az_angle_vincentis * RAD_TO_DEG);
                 satellite_is_asc.push_back(satellite_pos2.latitude < satellite_orbit.latitude);
