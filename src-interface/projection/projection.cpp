@@ -263,8 +263,25 @@ namespace projection
 
             if (ImGui::Button("Save"))
             {
-                logger->info("Saving to projection.png");
-                projected_image.save_png("projection.png");
+                logger->debug("Opening file dialog");
+                std::string output_file = "";
+#ifdef __ANDROID__
+                //input_file = getFilePath();
+#else
+                auto result = pfd::save_file("Save projection to", "projection.png", {"*.png"}, pfd::opt::none);
+                while (result.ready(1000))
+                {
+                }
+
+                if (result.result().length() > 0)
+                    output_file = result.result();
+#endif
+
+                if (output_file != "")
+                {
+                    logger->info("Saving to " + output_file);
+                    projected_image.save_png(output_file.c_str());
+                }
             }
 
             ImGui::SameLine();
