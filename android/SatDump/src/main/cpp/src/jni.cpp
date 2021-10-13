@@ -27,6 +27,18 @@ std::string getDirPath()
     return std::string(str2);
 }
 
+std::string getFilesavePath()
+{
+    JNIEnv *env = static_cast<JNIEnv *>(SDL_AndroidGetJNIEnv());
+    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
+    jclass cls = env->GetObjectClass(activity);
+    //jclass localcls = reinterpret_cast<jclass>(env->NewGlobalRef(cls));
+    jmethodID getFilePath = env->GetMethodID(cls, "getFilePath2", "()Ljava/lang/String;");
+    jstring str = (jstring)env->CallObjectMethod(activity, getFilePath);
+    const char *str2 = env->GetStringUTFChars(str, 0);
+    return std::string(str2);
+}
+
 extern bool rtlsdr_device_android_ready;
 extern int rtlsdr_device_android_fd;
 extern std::string rtlsdr_device_android_path;

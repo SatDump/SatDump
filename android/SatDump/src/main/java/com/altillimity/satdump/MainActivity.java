@@ -146,9 +146,7 @@ public class MainActivity extends SDLActivity {
     }
 
     boolean waiting = false;
-
     String outputFile = "";
-
     public String getFilePath() {
         outputFile = "";
 
@@ -158,21 +156,18 @@ public class MainActivity extends SDLActivity {
 
         try {
             startActivityForResult(Intent.createChooser(intent, "Select a File to process"), 0);
+            waiting = true;
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "Please install a file manager.", Toast.LENGTH_SHORT).show();
         }
 
-        waiting = true;
-
-        while (waiting) ;
+        try {while (waiting) Thread.sleep(100); } catch (InterruptedException ex) {}
 
         return outputFile;
     }
 
     boolean waiting1 = false;
-
     String outputFile1 = "";
-
     public String getFilePath1() {
         outputFile1 = "";
 
@@ -183,15 +178,36 @@ public class MainActivity extends SDLActivity {
 
         try {
             startActivityForResult(Intent.createChooser(intent, "Select an output directory"), 1);
+            waiting1 = true;
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "Please install a file manager.", Toast.LENGTH_SHORT).show();
         }
 
-        waiting1 = true;
-
-        while (waiting1) ;
+        try {while (waiting1) Thread.sleep(100); } catch (InterruptedException ex) {}
 
         return outputFile1;
+    }
+
+    boolean waiting2 = false;
+    String outputFile2 = "";
+    public String getFilePath2() {
+        outputFile1 = "";
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/png2");
+        intent.putExtra(Intent.EXTRA_TITLE, "projection.png");
+
+        try {
+            startActivityForResult(intent, 2);
+            waiting2 = true;
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a file manager.", Toast.LENGTH_SHORT).show();
+        }
+
+        try {while (waiting2) Thread.sleep(100); } catch (InterruptedException ex) {}
+
+        return outputFile2;
     }
 
     @Override
@@ -207,6 +223,12 @@ public class MainActivity extends SDLActivity {
                 if (resultCode == RESULT_OK) {
                     outputFile1 = RealPathUtil.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(data.getData(), DocumentsContract.getTreeDocumentId(data.getData())));
                     waiting1 = false;
+                }
+                break;
+            case 2:
+                if (resultCode == RESULT_OK) {
+                    outputFile2 = RealPathUtil.getRealPath(this, data.getData());
+                    waiting2 = false;
                 }
                 break;
         }

@@ -198,7 +198,7 @@ namespace geodetic
                                        geofile.horizontal_scale,
                                        geofile.vertical_scale,
                                        geofile.horizontal_offset,
-                                       geofile.horizontal_offset,
+                                       geofile.vertical_offset,
                                        geofile.proj_sweep_x);
                 return projector;
             }

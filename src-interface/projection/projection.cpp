@@ -16,6 +16,7 @@
 #ifdef __ANDROID__
 std::string getFilePath();
 std::string getDirPath();
+std::string getFilesavePath();
 #endif
 
 #include "common/map/map_drawer.h"
@@ -266,7 +267,7 @@ namespace projection
                 logger->debug("Opening file dialog");
                 std::string output_file = "";
 #ifdef __ANDROID__
-                //input_file = getFilePath();
+                output_file = getFilesavePath();
 #else
                 auto result = pfd::save_file("Save projection to", "projection.png", {"*.png"}, pfd::opt::none);
                 while (result.ready(1000))
@@ -277,9 +278,10 @@ namespace projection
                     output_file = result.result();
 #endif
 
+                logger->info("Saving to " + output_file);
+
                 if (output_file != "")
                 {
-                    logger->info("Saving to " + output_file);
                     projected_image.save_png(output_file.c_str());
                 }
             }
