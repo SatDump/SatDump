@@ -1,6 +1,6 @@
 #include "earth_curvature.h"
 #include <cmath>
-#include "logger.h"
+
 namespace image
 {
     namespace earth_curvature

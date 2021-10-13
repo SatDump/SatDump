@@ -1,5 +1,5 @@
 #include "channel_reader.h"
-
+#include "common/ccsds/ccsds_time.h"
 extern "C"
 {
 #include <stdlib.h>
@@ -20,7 +20,8 @@ namespace jpss
             channelSettings = ch;
             foundData = false;
             currentSegment = 0;
-            imageBuffer = std::shared_ptr<unsigned short>(new unsigned short[20000 * channelSettings.totalWidth], [](unsigned short *p) { delete[] p; });
+            imageBuffer = std::shared_ptr<unsigned short>(new unsigned short[20000 * channelSettings.totalWidth], [](unsigned short *p)
+                                                          { delete[] p; });
             lines = 0;
         }
 
@@ -135,6 +136,8 @@ namespace jpss
 
         cimg_library::CImg<unsigned short> VIIRSReader::getImage()
         {
+            timestamps.clear();
+
             for (int i = segments.size() - 1; i >= 0; i--)
             {
                 Segment &seg = segments[i];
@@ -172,6 +175,13 @@ namespace jpss
                     // Next line!
                     lines++;
                 }
+
+                //double scanTime = 2.3;
+                //double oneLine = scanTime / double(channelSettings.zoneHeight);
+                //double currentTime = ccsds::parseCCSDSTimeFull(seg.header, -4383);
+                //int half = channelSettings.zoneHeight;
+                //for (int i = channelSettings.zoneHeight - 1; i >= 0; i--)
+                //    timestamps.push_back(currentTime + i * oneLine);
             }
 
             // Scale bit depth
