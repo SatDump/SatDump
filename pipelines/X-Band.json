@@ -208,6 +208,9 @@
                 },
                 "jpss_atms": {
                     "npp_mode": "1"
+                },
+                "jpss_omps": {
+                    "npp_mode": "1"
                 }
             }
         }

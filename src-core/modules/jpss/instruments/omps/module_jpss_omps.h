@@ -4,9 +4,9 @@
 
 namespace jpss
 {
-    namespace cris
+    namespace omps
     {
-        class JPSSCrISDecoderModule : public ProcessingModule
+        class JPSSOMPSDecoderModule : public ProcessingModule
         {
         protected:
             bool npp_mode;
@@ -17,7 +17,7 @@ namespace jpss
             std::atomic<size_t> progress;
 
         public:
-            JPSSCrISDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            JPSSOMPSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
             void process();
             void drawUI(bool window);
 
