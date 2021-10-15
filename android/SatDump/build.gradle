@@ -2,10 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "30.0.2"
+    ndkVersion "23.0.7599858"
+
     defaultConfig {
         applicationId "com.altillimity.satdump"
-        minSdkVersion 18
+        minSdkVersion 28
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"

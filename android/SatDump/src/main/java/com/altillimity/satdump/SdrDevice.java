@@ -75,11 +75,11 @@ public class SdrDevice {
 
                                     connection = manager.openDevice(usbDevice);
 
-                                    if(usbDevice.getVendorId() == 3034)
+                                    if(usbDevice.getVendorId() == 3034 && usbDevice.getProductId() == 10296)
                                         doOpenRTL(connection.getFileDescriptor(), usbDevice.getDeviceName());
-                                    else if(usbDevice.getVendorId() == 7504)
+                                    else if(usbDevice.getVendorId() == 7504 && usbDevice.getProductId() == 24737)
                                         doOpenAirspy(connection.getFileDescriptor(), usbDevice.getDeviceName());
-                                    else if(usbDevice.getVendorId() == 1003)
+                                    else if(usbDevice.getVendorId() == 1003 && usbDevice.getProductId() == 32780)
                                         doOpenAirspyHF(connection.getFileDescriptor(), usbDevice.getDeviceName());
 								}
 							} else {

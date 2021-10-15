@@ -109,7 +109,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 
 #ifndef DISABLE_SDR_HACKRF
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> hackrf_results = SDRHackRF::getDevices();
-    results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
+        results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
 #endif
 
 #ifndef DISABLE_SDR_LIMESDR

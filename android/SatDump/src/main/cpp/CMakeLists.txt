@@ -8,10 +8,12 @@ set(CMAKE_CXX14_EXTENSION_COMPILE_OPTION "-std=c++17")
 
 # Build in release mod so it isn't unusably slow
 # We have to disable fortify... Or some stuff doesn't build
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -D_FORTIFY_SOURCE=0")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O3 -D_FORTIFY_SOURCE=0")
-set(CMAKE_C_FLAGS_RELEASE   "-O3 -D_FORTIFY_SOURCE=0")
-set(CMAKE_C_FLAGS_DEBUG     "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_CXX_FLAGS_RELEASE         "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_CXX_FLAGS_DEBUG           "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_RELEASE           "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3 -D_FORTIFY_SOURCE=0")
+set(CMAKE_C_FLAGS_DEBUG             "-O3 -D_FORTIFY_SOURCE=0")
 
 #set(CFLAGS "${CFLAGS} -D__ANDROID_API__=29")
 #set(CMAKE_CXX_FLAGS "-fPIE ${CMAKE_CXX_FLAGS}")
@@ -63,9 +65,9 @@ set_target_properties(cpufeatures PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_
 include_directories(deps/volk/jni/)
 
 # LIBCORRECT
-add_library(correct STATIC IMPORTED)
-set_target_properties(correct PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/correct/${ANDROID_ABI}/libcorrect.a)
-include_directories(deps/correct/jni/)
+#add_library(correct STATIC IMPORTED)
+#set_target_properties(correct PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/correct/${ANDROID_ABI}/libcorrect.a)
+#include_directories(deps/correct/jni/)
 
 # LIBJPEG
 add_library(jpeg STATIC IMPORTED)
