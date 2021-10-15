@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "module.h"
 #include "logger.h"
+#include "tle.h"
 
 #ifndef __ANDROID__
 #include "portable-file-dialogs.h"
@@ -103,6 +104,11 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
     }
     ImGui::SameLine();
     ImGui::Text("Default recorder output directory : %s/", default_recorder_output_folder.c_str());
+
+#ifndef __ANDROID__
+    //if (ImGui::Button("Update TLEs"))
+    //    tle::updateTLEs();
+#endif
 
     ImGui::BeginGroup();
     if (ImGui::Button("Save"))
