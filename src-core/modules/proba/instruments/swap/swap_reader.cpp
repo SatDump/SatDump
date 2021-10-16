@@ -28,7 +28,7 @@ namespace proba
             if (packet.payload.size() < 65530)
                 return;
 
-            time_t timestamp = ccsds::parseCCSDSTime(packet, 18473) + 4 * 3600;
+            time_t timestamp = ccsds::parseCCSDSTime(packet, 18630) + 4 * 3600;
 
             // Start new image
             if (currentOuts.find(timestamp) == currentOuts.end())

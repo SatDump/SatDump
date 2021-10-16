@@ -167,19 +167,31 @@ namespace metop
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
                 //image4.equalize(1000);
 
-                           // Setup Projecition
+                // Setup Projecition
                 geodetic::projection::LEOScanProjectorSettings proj_settings = {
-                    35,                                // Scan angle
-                    35,                                // Roll offset
-                    0,                                 // Pitch offset
-                    0,                                 // Yaw offset
-                    -1,                                // Time offset
-                    image2.width(), // Image width
-                    true,                              // Invert scan
-                    tle::getTLEfromNORAD(norad),       // TLEs
-                    ascatreader.timestamps[1]          // Timestamps
+                    35,                          // Scan angle
+                    35,                          // Roll offset
+                    0,                           // Pitch offset
+                    0,                           // Yaw offset
+                    -1,                          // Time offset
+                    image2.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    ascatreader.timestamps[1]    // Timestamps
                 };
                 geodetic::projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::LEOScanProjectorSettings proj_settings2 = {
+                    35,                          // Scan angle
+                    -35,                         // Roll offset
+                    0,                           // Pitch offset
+                    0,                           // Yaw offset
+                    -1,                          // Time offset
+                    image5.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    ascatreader.timestamps[4]    // Timestamps
+                };
+                geodetic::projection::LEOScanProjector projector2(proj_settings2);
 
                 {
                     geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
@@ -187,7 +199,8 @@ namespace metop
                 }
 
                 logger->info("Projected channel 2...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(corr2, projector, 2048 * 4, 1024 * 4, 1);
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image2, projector, 2048 * 4, 1024 * 4, 1);
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image5, projector2, 2048 * 4, 1024 * 4, 1, projected_image);
                 WRITE_IMAGE(projected_image, directory + "/ASCAT-2-PROJ.png");
             }*/
         }
