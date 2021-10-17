@@ -181,12 +181,10 @@ namespace metop
 
                 logger->info("Projected imaging channel...");
                 cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
-                logger->info("Write");
                 WRITE_IMAGE(projected_image, directory + "/IASI-EQU-PROJ.png");
 
                 logger->info("Projected imaging channel inverted...");
                 projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ_inv, projector, 2048 * 4, 1024 * 4, 1);
-                logger->info("Write");
                 WRITE_IMAGE(projected_image, directory + "/IASI-EQU-INV-PROJ.png");
 
                 /*

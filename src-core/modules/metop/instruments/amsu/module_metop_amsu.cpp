@@ -104,17 +104,19 @@ namespace metop
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(a2reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(a2reader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
             }
 
             for (int i = 0; i < 13; i++)
             {
                 logger->info("Channel " + std::to_string(i + 3) + "...");
                 WRITE_IMAGE(a1reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
+                WRITE_IMAGE(a1reader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/AMSU-A1-" + std::to_string(i + 3) + "-EQU.png");
             }
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1);
+            cimg_library::CImg<unsigned short> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1, 0);
             {
                 int height = a1reader.getChannel(0).height();
 
@@ -138,6 +140,30 @@ namespace metop
                 imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
+            imageAll = cimg_library::CImg<unsigned short>(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1, 0);
+            {
+                int height = a1reader.getChannel(0).height();
+
+                // Row 1
+                imageAll.draw_image(30 * 0, 0, 0, 0, a2reader.getChannel(0).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 1, 0, 0, 0, a2reader.getChannel(1).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 2, 0, 0, 0, a1reader.getChannel(0).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 3, 0, 0, 0, a1reader.getChannel(1).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 4, 0, 0, 0, a1reader.getChannel(2).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 5, 0, 0, 0, a1reader.getChannel(3).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 6, 0, 0, 0, a1reader.getChannel(4).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 7, 0, 0, 0, a1reader.getChannel(5).equalize(1000).normalize(0, 65535));
+
+                // Row 2
+                imageAll.draw_image(30 * 0, height, 0, 0, a1reader.getChannel(6).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 1, height, 0, 0, a1reader.getChannel(7).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 2, height, 0, 0, a1reader.getChannel(8).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 3, height, 0, 0, a1reader.getChannel(9).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 4, height, 0, 0, a1reader.getChannel(10).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 5, height, 0, 0, a1reader.getChannel(11).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12).equalize(1000).normalize(0, 65535));
+            }
+            WRITE_IMAGE(imageAll, directory + "/AMSU-ALL-EQU.png");
 
             // Reproject to an equirectangular proj
             if (a1reader.lines > 0 && a2reader.lines > 0)
@@ -184,7 +210,7 @@ namespace metop
 
                 for (int i = 0; i < 13; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = a1reader.getChannel(i);
+                    cimg_library::CImg<unsigned short> image = a1reader.getChannel(i).equalize(1000).normalize(0, 65535);
                     image.equalize(1000);
                     image.normalize(0, 65535);
                     logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
@@ -194,7 +220,7 @@ namespace metop
 
                 for (int i = 0; i < 2; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = a2reader.getChannel(i);
+                    cimg_library::CImg<unsigned short> image = a2reader.getChannel(i).equalize(1000).normalize(0, 65535);
                     image.equalize(1000);
                     image.normalize(0, 65535);
                     logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");

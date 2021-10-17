@@ -108,7 +108,7 @@ namespace metop
         cimg_library::CImg<unsigned short> AMSUA1Reader::getChannel(int channel)
         {
             cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 30, lines);
-            img.equalize(1000);
+            //img.equalize(1000);
             return img;
         }
     } // namespace amsu
