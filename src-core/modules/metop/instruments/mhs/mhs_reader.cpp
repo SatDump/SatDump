@@ -36,7 +36,7 @@ namespace metop
             {
                 for (int i = 0; i < 90; i++)
                 {
-                    channels[4 - channel][lines * 90 + 89 - i] = lineBuffer[i * 6 + channel + 3];
+                    channels[channel][lines * 90 + 89 - i] = lineBuffer[i * 6 + channel + 3];
                 }
             }
 
@@ -49,8 +49,6 @@ namespace metop
         cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
         {
             cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 90, lines);
-            img.equalize(1000);
-            img.normalize(0, 65535);
             return img;
         }
     } // namespace mhs

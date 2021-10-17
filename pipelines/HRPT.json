@@ -34,7 +34,7 @@
             },
             "products": {
                 "metop_satid": {},
-                "metop_avhrr": {},
+              
                 "metop_mhs": {},
                 "metop_amsu": {},
                 "metop_iasi": {

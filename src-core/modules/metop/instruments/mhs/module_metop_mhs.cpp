@@ -96,11 +96,12 @@ namespace metop
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(mhsreader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
+                WRITE_IMAGE(mhsreader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/MHS-" + std::to_string(i + 1) + "-EQU.png");
             }
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(90 * 3, mhsreader.getChannel(0).height() * 2, 1, 1);
+            cimg_library::CImg<unsigned short> imageAll(90 * 3, mhsreader.getChannel(0).height() * 2, 1, 1, 0);
             {
                 int height = mhsreader.getChannel(0).height();
 
@@ -114,6 +115,21 @@ namespace metop
                 imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4));
             }
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
+
+            imageAll = cimg_library::CImg<unsigned short>(90 * 3, mhsreader.getChannel(0).height() * 2, 1, 1, 0);
+            {
+                int height = mhsreader.getChannel(0).height();
+
+                // Row 1
+                imageAll.draw_image(90 * 0, 0, 0, 0, mhsreader.getChannel(0).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(90 * 1, 0, 0, 0, mhsreader.getChannel(1).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(90 * 2, 0, 0, 0, mhsreader.getChannel(2).equalize(1000).normalize(0, 65535));
+
+                // Row 2
+                imageAll.draw_image(90 * 0, height, 0, 0, mhsreader.getChannel(3).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4).equalize(1000).normalize(0, 65535));
+            }
+            WRITE_IMAGE(imageAll, directory + "/MHS-ALL-EQU.png");
 
             // Reproject to an equirectangular proj
             if (mhsreader.lines > 0)
@@ -143,7 +159,7 @@ namespace metop
 
                 for (int i = 0; i < 5; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i);
+                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i).equalize(1000).normalize(0, 65535);
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
                     cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
