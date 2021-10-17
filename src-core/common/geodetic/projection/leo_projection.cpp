@@ -127,7 +127,7 @@ namespace geodetic
                 LEOScanProjectorSettings_IFOV *settings = (LEOScanProjectorSettings_IFOV *)this->settings.get();
 
                 // Check we're in bounds
-                if (img_y > settings->utc_timestamps.size() * settings->ifov_y_size || img_x >= settings->image_width)
+                if (img_y > int(settings->utc_timestamps.size() * settings->ifov_y_size) || img_x >= settings->image_width)
                     return 1;
 
                 double final_x = settings->invert_scan ? (settings->image_width - 1) - img_x : img_x;
