@@ -15,7 +15,6 @@ namespace geodetic
                                 float opacity,
                                 float *progress)
         {
-            // Reproject
             for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
             {
                 // Now compute each pixel's lat / lon and plot it
@@ -59,10 +58,6 @@ namespace geodetic
                     if (progress != nullptr)
                         *progress = float(currentScan) / float(image.height());
                 }
-
-                //logger->info(std::to_string(currentScan));
-
-                //logger->critical(std::to_string(currentScan));
             }
         }
 

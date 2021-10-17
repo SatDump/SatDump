@@ -123,7 +123,7 @@ namespace metop
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     100,                             // Scan angle
                     -0.7,                            // Roll offset
                     0,                               // Pitch offset
@@ -133,7 +133,7 @@ namespace metop
                     true,                            // Invert scan
                     tle::getTLEfromNORAD(norad),     // TLEs
                     mhsreader.timestamps             // Timestamps
-                };
+                );
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {

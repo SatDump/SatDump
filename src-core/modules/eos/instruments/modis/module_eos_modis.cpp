@@ -365,7 +365,7 @@ namespace eos
                     //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
 
                     // Setup Projecition
-                    geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                         109.7,                       // Scan angle
                         -0.1,                        // Roll offset
                         0,                           // Pitch offset
@@ -375,7 +375,7 @@ namespace eos
                         true,                        // Invert scan
                         tle::getTLEfromNORAD(norad), // TLEs
                         reader.timestamps_250        // Timestamps
-                    };
+                    );
                     geodetic::projection::LEOScanProjector projector(proj_settings);
 
                     logger->info("Projected Channel 143 EQURAW...");
@@ -401,17 +401,17 @@ namespace eos
                 // Reproject to an equirectangular proj
                 {
                     // Setup Projecition
-                    geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                    std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                         109.7,                       // Scan angle
                         -0.1,                        // Roll offset
                         0,                           // Pitch offset
-                        2.5,                         // Yaw offset
+                        -2.5,                        // Yaw offset
                         -2.0,                        // Time offset
                         image23.width(),             // Image width
                         true,                        // Invert scan
                         tle::getTLEfromNORAD(norad), // TLEs
                         reader.timestamps_1000       // Timestamps
-                    };
+                    );
                     geodetic::projection::LEOScanProjector projector(proj_settings);
 
                     logger->info("Projected Channel 29...");

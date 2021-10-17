@@ -150,7 +150,7 @@ namespace metop
                 // There is no "real" guarantee the A1 / A2 output will always be identical
                 // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
                 // in the resulting image...
-                geodetic::projection::LEOScanProjectorSettings proj_settings_a1 = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     98,                             // Scan angle
                     0,                              // Roll offset
                     0,                              // Pitch offset
@@ -160,8 +160,8 @@ namespace metop
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a1reader.timestamps             // Timestamps
-                };
-                geodetic::projection::LEOScanProjectorSettings proj_settings_a2 = {
+                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     98,                             // Scan angle
                     0,                              // Roll offset
                     0,                              // Pitch offset
@@ -171,7 +171,7 @@ namespace metop
                     true,                           // Invert scan
                     tle::getTLEfromNORAD(norad),    // TLEs
                     a2reader.timestamps             // Timestamps
-                };
+                );
                 geodetic::projection::LEOScanProjector projector_a1(proj_settings_a1);
                 geodetic::projection::LEOScanProjector projector_a2(proj_settings_a2);
 

@@ -8,7 +8,10 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/image/image.h"
-#include "common/image/fft.h"
+#include "common/image/bowtie.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "nlohmann/json_utils.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -113,32 +116,87 @@ namespace metop
                 }
             }
 
+            const float alpha = 1.0 / 1.8;
+            const float beta = 0.58343;
+            const long scanHeight = 64;
+
             logger->info("Channel IR imaging...");
             cimg_library::CImg<unsigned short> iasi_imaging = iasireader_img.getIRChannel();
+            iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
+            image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+
             cimg_library::CImg<unsigned short> iasi_imaging_equ = iasi_imaging;
+            cimg_library::CImg<unsigned short> iasi_imaging_equ_inv = iasi_imaging;
             WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
             iasi_imaging_equ.equalize(1000);
             iasi_imaging_equ.normalize(0, 65535);
             WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG-EQU.png");
+            image::linear_invert(iasi_imaging_equ_inv);
+            iasi_imaging_equ_inv.equalize(1000);
+            iasi_imaging_equ_inv.normalize(0, 65535);
+            WRITE_IMAGE(iasi_imaging_equ_inv, directory + "/IASI-IMG-EQU-INV.png");
 
+            /*cimg_library::CImg<unsigned char> thermalTest(iasi_imaging.width(), iasi_imaging.height(), 1, 3, 0);
+            cimg_library::CImg<unsigned char> LUT;
+            LUT.load_png("/home/alan/Downloads/crappyLut.png");
+            for (int i = 0; i < iasi_imaging.width() * iasi_imaging.height(); i++)
+            {
+                thermalTest[iasi_imaging.width() * iasi_imaging.height() * 0 + i] = LUT[LUT.width() * 0 + 65535 - iasi_imaging_equ[i]];
+                thermalTest[iasi_imaging.width() * iasi_imaging.height() * 1 + i] = LUT[LUT.width() * 1 + 65535 - iasi_imaging_equ[i]];
+                thermalTest[iasi_imaging.width() * iasi_imaging.height() * 2 + i] = LUT[LUT.width() * 2 + 65535 - iasi_imaging_equ[i]];
+            }
+            WRITE_IMAGE(thermalTest, directory + "/IASI-IMG-LUT.png");
+            */
+
+            // Reproject to an equirectangular proj
             if (iasi_imaging.height() > 0)
             {
-                /*image::simple_despeckle(iasi_imaging, 10);
-                image::fft_forward(iasi_imaging);
-                image::extract_percentile(iasi_imaging, 4.0, 94.0, 1);
-                image::fft_inverse(iasi_imaging);
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                //image4.equalize(1000);
 
-                cimg_library::CImg<unsigned short> iasi_imaging_equ_denoised = iasi_imaging;
-                iasi_imaging_equ_denoised.equalize(1000);
-                iasi_imaging_equ_denoised.normalize(0, 65535);
+                // Setup Projecition
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
+                    100.0,                         // Scan angle
+                    3.4,                           // IFOV X scan angle
+                    3.6,                           // IFOV Y scan angle
+                    -1.7,                          // Roll offset
+                    0,                             // Pitch offset
+                    0.2,                           // Yaw offset
+                    0,                             // Time offset
+                    30,                            // Number of IFOVs
+                    64,                            // IFOV Width
+                    64,                            // IFOV Height
+                    iasi_imaging.width(),          // Image width
+                    true,                          // Invert scan
+                    tle::getTLEfromNORAD(norad),   // TLEs
+                    iasireader_img.timestamps_ifov // Timestamps
+                );
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
-                WRITE_IMAGE(iasi_imaging_equ_denoised, directory + "/IASI-IMG-DENOISED-EQU.png");
+                {
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/IASI.georef");
+                }
 
-                image::linear_invert(iasi_imaging);
-                iasi_imaging.equalize(1000);
-                iasi_imaging.normalize(0, 65535);
+                logger->info("Projected imaging channel...");
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
+                logger->info("Write");
+                WRITE_IMAGE(projected_image, directory + "/IASI-EQU-PROJ.png");
 
-                WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG-DENOISED-EQU-INV.png");
+                logger->info("Projected imaging channel inverted...");
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ_inv, projector, 2048 * 4, 1024 * 4, 1);
+                logger->info("Write");
+                WRITE_IMAGE(projected_image, directory + "/IASI-EQU-INV-PROJ.png");
+
+                /*
+                logger->info("Projected channel IMG LUT...");
+                cimg_library::CImg<unsigned short> lut_16 = thermalTest;
+                lut_16 <<= 8;
+                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(lut_16, projector, 2048 * 4 * 5, 1024 * 4 * 5, 3);
+                logger->info("Write");
+                projected_image.crop(18788, 952, 18788 + 9521, 952 + 6352);
+                WRITE_IMAGE(projected_image, directory + "/IASI-LUT-PROJ.png");
                 */
             }
 

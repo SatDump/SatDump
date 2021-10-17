@@ -133,7 +133,7 @@ namespace fengyun
             if (mwhs_reader.lines > 0)
             {
                 // Setup Projecition
-                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     106,                               // Scan angle
                     -0,                                // Roll offset
                     0,                                 // Pitch offset
@@ -143,7 +143,7 @@ namespace fengyun
                     true,                              // Invert scan
                     tle::getTLEfromNORAD(norad),       // TLEs
                     mwhs_reader.timestamps             // Timestamps
-                };
+                );
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {

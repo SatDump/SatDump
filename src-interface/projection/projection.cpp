@@ -157,7 +157,7 @@ namespace projection
             else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
             {
                 geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
-                geodetic::projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings> settings = leoProjectionRefFile(leofile);
                 geodetic::projection::LEOScanProjector projector(settings);
                 logger->info("Reprojecting LEO...");
                 geodetic::projection::reprojectLEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
@@ -325,7 +325,7 @@ namespace projection
                     ImGui::TableSetColumnIndex(1);
                     ImGui::Text("%s", toProj.timestamp.c_str());
                     ImGui::TableSetColumnIndex(2);
-                    if (ImGui::Button("Delete"))
+                    if (ImGui::Button(std::string("Delete##"+toProj.timestamp).c_str()))
                     {
                         logger->warn("Deleting " + toProj.filename);
                         filesToProject.erase(std::find_if(filesToProject.begin(), filesToProject.end(), [&toProj](FileToProject &file)
@@ -334,7 +334,7 @@ namespace projection
                         break;
                     }
                     ImGui::SameLine();
-                    if (ImGui::Button("View"))
+                    if (ImGui::Button(std::string("View##"+toProj.timestamp).c_str()))
                         toProj.show = true;
                 }
 
@@ -582,49 +582,49 @@ namespace projection
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Scan Angle");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scan_angle);
+                                    ImGui::Text("%f", leofile.scanline.scan_angle);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Roll Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.roll_offset);
+                                    ImGui::Text("%f", leofile.scanline.roll_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Pitch Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.pitch_offset);
+                                    ImGui::Text("%f", leofile.scanline.pitch_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Yaw Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.yaw_offset);
+                                    ImGui::Text("%f", leofile.scanline.yaw_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Time offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.time_offset);
+                                    ImGui::Text("%f", leofile.scanline.time_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Image width");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%d", leofile.image_width);
+                                    ImGui::Text("%d", leofile.scanline.image_width);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Invert scan");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%d", leofile.invert_scan);
+                                    ImGui::Text("%d", leofile.scanline.invert_scan);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Timestamp count");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%d", leofile.timestamp_count);
+                                    ImGui::Text("%d", leofile.scanline.timestamp_count);
                                 }
 
                                 ImGui::EndTable();

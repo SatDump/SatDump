@@ -55,19 +55,44 @@ namespace geodetic
                     output_stream.write((char *)leofile.tle_line1_data.data(), leofile.tle_line1_length);
                     output_stream.write((char *)&leofile.tle_line2_length, 2);
                     output_stream.write((char *)leofile.tle_line2_data.data(), leofile.tle_line2_length);
+                    output_stream.write((char *)&leofile.projection_type, 1);
 
-                    output_stream.write((char *)&leofile.scan_angle, 8);
-                    output_stream.write((char *)&leofile.roll_offset, 8);
-                    output_stream.write((char *)&leofile.pitch_offset, 8);
-                    output_stream.write((char *)&leofile.yaw_offset, 8);
-                    output_stream.write((char *)&leofile.time_offset, 8);
-                    output_stream.write((char *)&leofile.image_width, 4);
-                    output_stream.write((char *)&leofile.invert_scan, 1);
+                    if (leofile.projection_type == TIMESTAMP_PER_SCANLINE)
+                    {
+                        output_stream.write((char *)&leofile.scanline.scan_angle, 8);
+                        output_stream.write((char *)&leofile.scanline.roll_offset, 8);
+                        output_stream.write((char *)&leofile.scanline.pitch_offset, 8);
+                        output_stream.write((char *)&leofile.scanline.yaw_offset, 8);
+                        output_stream.write((char *)&leofile.scanline.time_offset, 8);
+                        output_stream.write((char *)&leofile.scanline.image_width, 4);
+                        output_stream.write((char *)&leofile.scanline.invert_scan, 1);
 
-                    leofile.timestamp_count = leofile.utc_timestamps.size();
-                    output_stream.write((char *)&leofile.timestamp_count, 8);
-                    for (int i = 0; i < (int)leofile.timestamp_count; i++)
-                        output_stream.write((char *)&leofile.utc_timestamps[i], 8);
+                        leofile.scanline.timestamp_count = leofile.scanline.utc_timestamps.size();
+                        output_stream.write((char *)&leofile.scanline.timestamp_count, 8);
+                        for (int i = 0; i < (int)leofile.scanline.timestamp_count; i++)
+                            output_stream.write((char *)&leofile.scanline.utc_timestamps[i], 8);
+                    }
+                    else if (leofile.projection_type == TIMESTAMP_PER_IFOV)
+                    {
+                        output_stream.write((char *)&leofile.ifov.scan_angle, 8);
+                        output_stream.write((char *)&leofile.ifov.ifov_x_scan_angle, 8);
+                        output_stream.write((char *)&leofile.ifov.ifov_y_scan_angle, 8);
+                        output_stream.write((char *)&leofile.ifov.roll_offset, 8);
+                        output_stream.write((char *)&leofile.ifov.pitch_offset, 8);
+                        output_stream.write((char *)&leofile.ifov.yaw_offset, 8);
+                        output_stream.write((char *)&leofile.ifov.time_offset, 8);
+                        output_stream.write((char *)&leofile.ifov.ifov_count, 4);
+                        output_stream.write((char *)&leofile.ifov.ifov_x_size, 4);
+                        output_stream.write((char *)&leofile.ifov.ifov_y_size, 4);
+                        output_stream.write((char *)&leofile.ifov.image_width, 4);
+                        output_stream.write((char *)&leofile.ifov.invert_scan, 1);
+
+                        leofile.ifov.timestamp_count = leofile.ifov.utc_timestamps.size();
+                        output_stream.write((char *)&leofile.ifov.timestamp_count, 8);
+                        for (int i = 0; i < (int)leofile.ifov.timestamp_count; i++)
+                            for (int y = 0; y < (int)leofile.ifov.ifov_count; y++)
+                                output_stream.write((char *)&leofile.ifov.utc_timestamps[i][y], 8);
+                    }
                 }
 
                 output_stream.close();
@@ -125,19 +150,53 @@ namespace geodetic
                         delete[] str;
                     }
 
-                    input_stream.read((char *)&leofile.scan_angle, 8);
-                    input_stream.read((char *)&leofile.roll_offset, 8);
-                    input_stream.read((char *)&leofile.pitch_offset, 8);
-                    input_stream.read((char *)&leofile.yaw_offset, 8);
-                    input_stream.read((char *)&leofile.time_offset, 8);
-                    input_stream.read((char *)&leofile.image_width, 4);
-                    input_stream.read((char *)&leofile.invert_scan, 1);
-                    input_stream.read((char *)&leofile.timestamp_count, 8);
-                    for (int i = 0; i < (int)leofile.timestamp_count; i++)
+                    input_stream.read((char *)&leofile.projection_type, 1);
+
+                    if (leofile.projection_type == TIMESTAMP_PER_SCANLINE)
                     {
-                        double timestamp;
-                        input_stream.read((char *)&timestamp, 8);
-                        leofile.utc_timestamps.push_back(timestamp);
+                        input_stream.read((char *)&leofile.scanline.scan_angle, 8);
+                        input_stream.read((char *)&leofile.scanline.roll_offset, 8);
+                        input_stream.read((char *)&leofile.scanline.pitch_offset, 8);
+                        input_stream.read((char *)&leofile.scanline.yaw_offset, 8);
+                        input_stream.read((char *)&leofile.scanline.time_offset, 8);
+                        input_stream.read((char *)&leofile.scanline.image_width, 4);
+                        input_stream.read((char *)&leofile.scanline.invert_scan, 1);
+
+                        input_stream.read((char *)&leofile.scanline.timestamp_count, 8);
+                        for (int i = 0; i < (int)leofile.scanline.timestamp_count; i++)
+                        {
+                            double timestamp;
+                            input_stream.read((char *)&timestamp, 8);
+                            leofile.scanline.utc_timestamps.push_back(timestamp);
+                        }
+                    }
+                    else if (leofile.projection_type == TIMESTAMP_PER_IFOV)
+                    {
+                        input_stream.read((char *)&leofile.ifov.scan_angle, 8);
+                        input_stream.read((char *)&leofile.ifov.ifov_x_scan_angle, 8);
+                        input_stream.read((char *)&leofile.ifov.ifov_y_scan_angle, 8);
+                        input_stream.read((char *)&leofile.ifov.roll_offset, 8);
+                        input_stream.read((char *)&leofile.ifov.pitch_offset, 8);
+                        input_stream.read((char *)&leofile.ifov.yaw_offset, 8);
+                        input_stream.read((char *)&leofile.ifov.time_offset, 8);
+                        input_stream.read((char *)&leofile.ifov.ifov_count, 4);
+                        input_stream.read((char *)&leofile.ifov.ifov_x_size, 4);
+                        input_stream.read((char *)&leofile.ifov.ifov_y_size, 4);
+                        input_stream.read((char *)&leofile.ifov.image_width, 4);
+                        input_stream.read((char *)&leofile.ifov.invert_scan, 1);
+
+                        input_stream.read((char *)&leofile.ifov.timestamp_count, 8);
+                        for (int i = 0; i < (int)leofile.ifov.timestamp_count; i++)
+                        {
+                            std::vector<double> scanLine;
+                            for (int y = 0; y < (int)leofile.ifov.ifov_count; y++)
+                            {
+                                double timestamp;
+                                input_stream.read((char *)&timestamp, 8);
+                                scanLine.push_back(timestamp);
+                            }
+                            leofile.ifov.utc_timestamps.push_back(scanLine);
+                        }
                     }
 
                     input_stream.close();
@@ -150,43 +209,104 @@ namespace geodetic
                 }
             }
 
-            LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, LEOScanProjectorSettings projector_settings)
+            LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, std::shared_ptr<LEOScanProjectorSettings> projector_settings)
             {
                 projection::proj_file::LEO_GeodeticReferenceFile geofile;
 
-                double rough_timestamp = average_common(projector_settings.utc_timestamps.begin(), projector_settings.utc_timestamps.end());
+                if (projector_settings->type == TIMESTAMP_PER_SCANLINE)
+                {
+                    LEOScanProjectorSettings_SCANLINE *settings = (LEOScanProjectorSettings_SCANLINE *)projector_settings.get();
+                    double rough_timestamp = average_common(settings->utc_timestamps.begin(), settings->utc_timestamps.end());
 
-                geofile.utc_timestamp_seconds = floor(rough_timestamp);
-                geofile.norad = norad;
-                geofile.tle_line1_data = projector_settings.sat_tle.line1;
-                geofile.tle_line2_data = projector_settings.sat_tle.line2;
+                    geofile.utc_timestamp_seconds = floor(rough_timestamp);
+                    geofile.norad = norad;
+                    geofile.tle_line1_data = settings->sat_tle.line1;
+                    geofile.tle_line2_data = settings->sat_tle.line2;
+                    geofile.projection_type = TIMESTAMP_PER_SCANLINE;
 
-                geofile.scan_angle = projector_settings.scan_angle;
-                geofile.roll_offset = projector_settings.roll_offset;
-                geofile.pitch_offset = projector_settings.pitch_offset;
-                geofile.yaw_offset = projector_settings.yaw_offset;
-                geofile.time_offset = projector_settings.time_offset;
-                geofile.image_width = projector_settings.image_width;
-                geofile.invert_scan = projector_settings.invert_scan;
-                geofile.utc_timestamps = projector_settings.utc_timestamps;
+                    geofile.scanline.scan_angle = settings->scan_angle;
+                    geofile.scanline.roll_offset = settings->roll_offset;
+                    geofile.scanline.pitch_offset = settings->pitch_offset;
+                    geofile.scanline.yaw_offset = settings->yaw_offset;
+                    geofile.scanline.time_offset = settings->time_offset;
+                    geofile.scanline.image_width = settings->image_width;
+                    geofile.scanline.invert_scan = settings->invert_scan;
+                    geofile.scanline.utc_timestamps = settings->utc_timestamps;
+                }
+                else if (projector_settings->type == TIMESTAMP_PER_IFOV)
+                {
+                    LEOScanProjectorSettings_IFOV *settings = (LEOScanProjectorSettings_IFOV *)projector_settings.get();
+                    std::vector<double> all_timestamps;
+                    for (std::vector<double> &scan_timestamps : settings->utc_timestamps)
+                        all_timestamps.insert(all_timestamps.end(), scan_timestamps.begin(), scan_timestamps.end());
+                    double rough_timestamp = average_common(all_timestamps.begin(), all_timestamps.end());
+                    all_timestamps.clear();
+
+                    geofile.utc_timestamp_seconds = floor(rough_timestamp);
+                    geofile.norad = norad;
+                    geofile.tle_line1_data = settings->sat_tle.line1;
+                    geofile.tle_line2_data = settings->sat_tle.line2;
+                    geofile.projection_type = TIMESTAMP_PER_IFOV;
+
+                    geofile.ifov.scan_angle = settings->scan_angle;
+                    geofile.ifov.ifov_x_scan_angle = settings->ifov_x_scan_angle;
+                    geofile.ifov.ifov_y_scan_angle = settings->ifov_y_scan_angle;
+                    geofile.ifov.roll_offset = settings->roll_offset;
+                    geofile.ifov.pitch_offset = settings->pitch_offset;
+                    geofile.ifov.yaw_offset = settings->yaw_offset;
+                    geofile.ifov.time_offset = settings->time_offset;
+                    geofile.ifov.ifov_count = settings->ifov_count;
+                    geofile.ifov.ifov_x_size = settings->ifov_x_size;
+                    geofile.ifov.ifov_y_size = settings->ifov_y_size;
+                    geofile.ifov.image_width = settings->image_width;
+                    geofile.ifov.invert_scan = settings->invert_scan;
+                    geofile.ifov.utc_timestamps = settings->utc_timestamps;
+                }
 
                 return geofile;
             }
 
-            LEOScanProjectorSettings leoProjectionRefFile(LEO_GeodeticReferenceFile geofile)
+            std::shared_ptr<LEOScanProjectorSettings> leoProjectionRefFile(LEO_GeodeticReferenceFile geofile)
             {
-                LEOScanProjectorSettings projector_settings = {
-                    (double)geofile.scan_angle,
-                    (double)geofile.roll_offset,
-                    (double)geofile.pitch_offset,
-                    (double)geofile.yaw_offset,
-                    (double)geofile.time_offset,
-                    (int)geofile.image_width,
-                    (bool)geofile.invert_scan,
-                    {(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
-                    geofile.utc_timestamps};
+                std::shared_ptr<LEOScanProjectorSettings> settings;
 
-                return projector_settings;
+                if (geofile.projection_type == TIMESTAMP_PER_SCANLINE)
+                {
+                    LEOScanProjectorSettings_SCANLINE projector_settings(
+                        (double)geofile.scanline.scan_angle,
+                        (double)geofile.scanline.roll_offset,
+                        (double)geofile.scanline.pitch_offset,
+                        (double)geofile.scanline.yaw_offset,
+                        (double)geofile.scanline.time_offset,
+                        (int)geofile.scanline.image_width,
+                        (bool)geofile.scanline.invert_scan,
+                        {(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
+                        geofile.scanline.utc_timestamps);
+
+                    settings = std::make_shared<LEOScanProjectorSettings_SCANLINE>(projector_settings);
+                }
+                else if (geofile.projection_type == TIMESTAMP_PER_IFOV)
+                {
+                    LEOScanProjectorSettings_IFOV projector_settings(
+                        (double)geofile.ifov.scan_angle,
+                        (double)geofile.ifov.ifov_x_scan_angle,
+                        (double)geofile.ifov.ifov_y_scan_angle,
+                        (double)geofile.ifov.roll_offset,
+                        (double)geofile.ifov.pitch_offset,
+                        (double)geofile.ifov.yaw_offset,
+                        (double)geofile.ifov.time_offset,
+                        (int)geofile.ifov.ifov_count,
+                        (int)geofile.ifov.ifov_x_size,
+                        (int)geofile.ifov.ifov_y_size,
+                        (int)geofile.ifov.image_width,
+                        (bool)geofile.ifov.invert_scan,
+                        {(int)geofile.norad, "UNKNOWN", geofile.tle_line1_data, geofile.tle_line2_data},
+                        geofile.ifov.utc_timestamps);
+
+                    settings = std::make_shared<LEOScanProjectorSettings_IFOV>(projector_settings);
+                }
+
+                return settings;
             }
 
             GEOProjector geoProjectionRefFile(GEO_GeodeticReferenceFile geofile)

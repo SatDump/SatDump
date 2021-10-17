@@ -78,26 +78,44 @@ namespace geodetic
                 uint16_t tle_line2_length;  // Size of TLE Line 1
                 std::string tle_line2_data; // TLE Line 1 data
 
-                enum LEOProjectionType
-                {
-                    SINGLE_SCANLINE,
-                };
-
                 uint8_t projection_type; // Projection type
 
-                double scan_angle;
-                double roll_offset;
-                double pitch_offset;
-                double yaw_offset;
-                double time_offset;
-                uint32_t image_width;
-                bool invert_scan;
-                uint64_t timestamp_count;
-                std::vector<double> utc_timestamps; // Timestamps. Must match each scanline of the image you will be working with
+                struct SCANLINE
+                {
+                    double scan_angle;
+                    double roll_offset;
+                    double pitch_offset;
+                    double yaw_offset;
+                    double time_offset;
+                    uint32_t image_width;
+                    bool invert_scan;
+                    uint64_t timestamp_count;
+                    std::vector<double> utc_timestamps; // Timestamps. Must match each scanline of the image you will be working with
+                };
+                SCANLINE scanline; // Scanline mode
+
+                struct IFOV
+                {
+                    double scan_angle;
+                    double ifov_x_scan_angle;
+                    double ifov_y_scan_angle;
+                    double roll_offset;
+                    double pitch_offset;
+                    double yaw_offset;
+                    double time_offset;
+                    uint32_t ifov_count;
+                    uint32_t ifov_x_size;
+                    uint32_t ifov_y_size;
+                    uint32_t image_width;
+                    bool invert_scan;
+                    uint64_t timestamp_count;                        // Scanline count. So total / IFOV_COUNT
+                    std::vector<std::vector<double>> utc_timestamps; // Timestamps, must match each IFOV
+                };
+                IFOV ifov; // IFOV mode
 
                 LEO_GeodeticReferenceFile()
                 {
-                    projection_type = SINGLE_SCANLINE;
+                    projection_type = TIMESTAMP_PER_SCANLINE;
                     file_type = LEO_TYPE;
                 }
             };
@@ -105,8 +123,8 @@ namespace geodetic
             // Functions
             void writeReferenceFile(GeodeticReferenceFile &geofile, std::string output_file);
             std::shared_ptr<GeodeticReferenceFile> readReferenceFile(std::string input_file);
-            LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, LEOScanProjectorSettings projector_settings);
-            LEOScanProjectorSettings leoProjectionRefFile(LEO_GeodeticReferenceFile geofile);
+            LEO_GeodeticReferenceFile leoRefFileFromProjector(int norad, std::shared_ptr<LEOScanProjectorSettings> projector_settings);
+            std::shared_ptr<LEOScanProjectorSettings> leoProjectionRefFile(LEO_GeodeticReferenceFile geofile);
             GEOProjector geoProjectionRefFile(GEO_GeodeticReferenceFile geofile);
         };
     };

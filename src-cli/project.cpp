@@ -111,7 +111,7 @@ int project(int argc, char *argv[])
         else if (geofile->file_type == geodetic::projection::proj_file::LEO_TYPE)
         {
             geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)geofile.get());
-            geodetic::projection::LEOScanProjectorSettings settings = leoProjectionRefFile(leofile);
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings> settings = leoProjectionRefFile(leofile);
             geodetic::projection::LEOScanProjector projector(settings);
             logger->info("Reprojecting LEO...");
             geodetic::projection::reprojectLEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);

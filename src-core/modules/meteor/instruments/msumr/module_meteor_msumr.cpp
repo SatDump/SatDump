@@ -226,7 +226,7 @@ namespace meteor
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
                 // Setup Projecition, tuned for 2-2
-                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     110.2,          // Scan angle
                     -0.35,          // Roll offset
                     0,              // Pitch offset
@@ -236,7 +236,7 @@ namespace meteor
                     true,           // Invert scan
                     tle::TLE(),     // TLEs
                     timestamps      // Timestamps
-                };
+                );
 
                 // Identify satellite, and apply per-sat settings...
                 int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
@@ -244,10 +244,10 @@ namespace meteor
                 {
                     norad = 40069;
                     logger->info("Identified METEOR-M 2!");
-                    proj_settings.scan_angle = 111.0;
-                    proj_settings.roll_offset = 3.1;
-                    proj_settings.yaw_offset = -3;
-                    proj_settings.time_offset = 9;
+                    proj_settings->scan_angle = 111.0;
+                    proj_settings->roll_offset = 3.1;
+                    proj_settings->yaw_offset = -3;
+                    proj_settings->time_offset = 9;
                 }
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {
@@ -265,7 +265,7 @@ namespace meteor
                 }
 
                 // Load TLEs now
-                proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
 
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 

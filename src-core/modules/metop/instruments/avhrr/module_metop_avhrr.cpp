@@ -297,7 +297,7 @@ namespace metop
                 //image4.equalize(1000);
 
                 // Setup Projecition
-                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     110.8,                       // Scan angle
                     -0.1,                        // Roll offset
                     0,                           // Pitch offset
@@ -307,7 +307,7 @@ namespace metop
                     true,                        // Invert scan
                     tle::getTLEfromNORAD(norad), // TLEs
                     reader.timestamps            // Timestamps
-                };
+                );
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {

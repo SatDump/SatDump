@@ -161,7 +161,7 @@ namespace noaa
                 image4.equalize(1000);
 
                 // Setup Projecition, based off N19
-                geodetic::projection::LEOScanProjectorSettings proj_settings = {
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
                     110.6,          // Scan angle
                     -0.01,          // Roll offset
                     0,              // Pitch offset
@@ -171,7 +171,7 @@ namespace noaa
                     true,           // Invert scan
                     tle::TLE(),     // TLEs
                     timestamps      // Timestamps
-                };
+                );
 
                 {
                     geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
@@ -189,9 +189,9 @@ namespace noaa
                 {
                     norad = 28654;
                     logger->info("Identified NOAA-18!");
-                    proj_settings.scan_angle = 110.4;
-                    proj_settings.roll_offset = -0.1;
-                    proj_settings.yaw_offset = -3.2;
+                    proj_settings->scan_angle = 110.4;
+                    proj_settings->roll_offset = -0.1;
+                    proj_settings->yaw_offset = -3.2;
                 }
                 else if (scid == 15) // N19
                 {
@@ -206,7 +206,7 @@ namespace noaa
                 }
 
                 // Load TLEs now
-                proj_settings.sat_tle = tle::getTLEfromNORAD(norad);
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
 
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
