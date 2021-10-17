@@ -15,7 +15,7 @@ namespace metop
         {
         private:
             ResizeableBuffer<unsigned short> channels[5];
-            uint16_t avhrrBuffer[12944];
+            uint16_t avhrr_buffer[10355];
 
         public:
             AVHRRReader();

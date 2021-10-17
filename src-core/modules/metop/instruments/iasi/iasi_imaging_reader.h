@@ -15,6 +15,7 @@ namespace metop
         {
         private:
             ResizeableBuffer<unsigned short> ir_channel;
+            uint16_t iasi_buffer[64 * 64];
 
         public:
             IASIIMGReader();

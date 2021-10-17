@@ -1,5 +1,5 @@
 #include "iasi_imaging_reader.h"
-#include "utils.h"
+#include "common/repack.h"
 #include "common/ccsds/ccsds_time.h"
 
 namespace metop
@@ -28,16 +28,14 @@ namespace metop
 
             if (counter <= 36)
             {
-                std::vector<uint16_t> values = repackBits(&packet.payload.data()[50], 12, 0, 6196 - 50);
+                // Repack to 12-bits
+                repackBytesTo12bits(&packet.payload.data()[50], 6144, iasi_buffer);
 
                 for (int i = 0; i < 64; i++)
                 {
                     for (int y = 0; y < 64; y++)
                     {
-                        //if (y >= 48)
-                        //    ir_channel[(lines * 64 + i) * (36 * 64) + ((counter - 1) * 64) + (y)] = (values[y * 64 + i] + 10) << 3;
-                        //else
-                        ir_channel[(lines * 64 + i) * (36 * 64) + ((counter - 1) * 64) + (y)] = values[y * 64 + i] << 3;
+                        ir_channel[(lines * 64 + i) * (36 * 64) + ((counter - 1) * 64) + (y)] = iasi_buffer[y * 64 + i] << 4;
                     }
                 }
 
@@ -61,17 +59,6 @@ namespace metop
             {
                 ir_channel.resize((lines + 1000) * 64 * 36);
             }
-        }
-
-        int percentile(unsigned short *array, int size, float percentile)
-        {
-            float number_percent = (size + 1) * percentile / 100.0f;
-            if (number_percent == 1)
-                return array[0];
-            else if (number_percent == size)
-                return array[size - 1];
-            else
-                return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
         }
 
         cimg_library::CImg<unsigned short> IASIIMGReader::getIRChannel()

@@ -14,7 +14,7 @@ namespace metop
         {
         private:
             unsigned short *channels[5];
-            uint16_t lineBuffer[12944];
+            uint16_t mhs_buffer[540];
 
         public:
             MHSReader();

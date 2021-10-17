@@ -1,5 +1,6 @@
 #include "mhs_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include "common/repack.h"
 
 namespace metop
 {
@@ -23,20 +24,15 @@ namespace metop
             if (packet.payload.size() < 1302)
                 return;
 
-            int pos = 65 - 6;
-
-            for (int i = 0; i < 90 * 6; i++)
-            {
-                lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
-                pos += 2;
-            }
+            // Repack samples to 16-bits
+            repackBytesTo16bits(&packet.payload[59], 1080, mhs_buffer);
 
             // Plot into an image
             for (int channel = 0; channel < 5; channel++)
             {
                 for (int i = 0; i < 90; i++)
                 {
-                    channels[channel][lines * 90 + 89 - i] = lineBuffer[i * 6 + channel + 3];
+                    channels[channel][lines * 90 + 89 - i] = mhs_buffer[i * 6 + channel + 3];
                 }
             }
 
