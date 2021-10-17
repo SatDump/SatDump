@@ -76,7 +76,7 @@ From there, just run either satdump-ui.exe or satdump.exe (CLI) and everything w
 If you really want to build it yourself on Windows, you will need some version of the [MSVC compiler](https://visualstudio.microsoft.com/downloads/) (with C++ 17), [CMake](https://cmake.org/download/) and [Git](https://gitforwindows.org/).  
 Some knowledge of using VCPKG and building with CMake is assumed.
 
-As dependencies that are not included in [VCPKG](https://github.com/Microsoft/vcpkg), you will need to build [VOLK](https://github.com/gnuradio/volk) and [libcorrect](https://github.com/quiet/libcorrect). Otherwise, you will also need libpng, libjpeg, libfftw3 and fmt for the core, and additionally glew and glfw3 for the UI version.
+As dependencies that are not included in [VCPKG](https://github.com/Microsoft/vcpkg), you will need to build [VOLK](https://github.com/gnuradio/volk). Otherwise, you will also need libpng, libjpeg, libfftw3 and fmt for the core, and additionally glew and glfw3 for the UI version.
 
 VCPK is expected to be in the root of SatDump's git directory in the build system. 
 
@@ -100,7 +100,7 @@ Note : Mingw builds are NOT supported, VOLK will not work.
 ### Linux (or MacOS)
 
 On Linux (or MacOS), building from source is recommended and no build are currently provided.
-In the same way as Windows, [libcorrect](https://github.com/quiet/libcorrect) is most likely not in your package manager and will have to be built from source.
+[libcorrect](https://github.com/quiet/libcorrect) is now included in SatDump, hence it is not required to build it from source anymore.
 
 Here are some generic Debian build instructions.
 
@@ -124,17 +124,6 @@ rm -rf nng
 
 # macOS: Install dependencies
 brew install cmake volk jpeg libpng glew glfw nng
-
-# Build and install libcorrect
-git clone https://github.com/quiet/libcorrect.git
-cd libcorrect
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
-make -j4
-sudo make install
-cd ../..
-rm -rf libcorrect
 
 # macOS ONLY: build and install libfftw3
 # if you install fftw via brew, cmake won't be able to find it
