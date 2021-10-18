@@ -25,4 +25,8 @@ namespace image
 
     // Contrast and brightness correction
     void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount = 3);
+
+    // Generate a LUT
+    cimg_library::CImg<unsigned short> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned short> input, bool vertical);
+    cimg_library::CImg<unsigned char> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned char> input, bool vertical);
 }

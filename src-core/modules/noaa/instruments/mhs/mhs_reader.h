@@ -30,7 +30,7 @@ namespace noaa
             std::array<std::vector<std::array<uint16_t, MHS_WIDTH>>, 5> channels;
             std::array<std::vector<std::array<double, MHS_WIDTH>>, 5> calibrated_channels;
             unsigned int last = 0;
-            std::array<uint8_t, 50> MIU_data[80]; 
+            std::array<uint8_t, 50> MIU_data[80];
             std::ofstream test_out;
             uint32_t major_cycle_count;
             uint32_t last_major_cycle = 0;

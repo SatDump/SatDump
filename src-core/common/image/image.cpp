@@ -210,17 +210,21 @@ namespace image
         }
     }
 
-    cimg_library::CImg<unsigned short> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned short> input, bool vertical){
-        if (vertical) input.rotate(-90);
-        input.resize(x1-x0, 1, 1, 3, 3);
+    cimg_library::CImg<unsigned short> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned short> input, bool vertical)
+    {
+        if (vertical)
+            input.rotate(-90);
+        input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned short> out(width, 1, 1, 3);
         out.draw_image(x0, 0, input);
         return out;
     }
 
-    cimg_library::CImg<unsigned char> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned char> input, bool vertical){
-        if (vertical) input.rotate(-90);
-        input.resize(x1-x0, 1, 1, 3, 3);
+    cimg_library::CImg<unsigned char> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned char> input, bool vertical)
+    {
+        if (vertical)
+            input.rotate(-90);
+        input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned char> out(width, 1, 1, 3);
         out.fill(0);
         out.draw_image(x0, 0, input);
