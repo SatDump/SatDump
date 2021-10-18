@@ -34,7 +34,7 @@ namespace noaa
                 last_major_cycle = major_cycle_count;
                 //get the SCI packets because the line is over
                 std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(2);
-                timestamps.push_back(get_timestamp(2, 0));
+                timestamps.push_back(get_timestamp(2, DAY_OFFSET));
                 std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
                 std::array<std::array<uint16_t, 8>, 5> calibbuff;
                 std::array<std::array<uint16_t, 2>, 5> tmp;
@@ -73,7 +73,7 @@ namespace noaa
                 line++;
 
                 SCI_packet = get_SCI_packet(0);
-                timestamps.push_back(get_timestamp(0, 0));
+                timestamps.push_back(get_timestamp(0, DAY_OFFSET));
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)
@@ -108,7 +108,7 @@ namespace noaa
                 line++;
 
                 SCI_packet = get_SCI_packet(1);
-                timestamps.push_back(get_timestamp(1, 0));
+                timestamps.push_back(get_timestamp(1, DAY_OFFSET));
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)

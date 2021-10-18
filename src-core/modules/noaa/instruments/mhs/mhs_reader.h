@@ -18,6 +18,8 @@
 #define PRT_OFFSET 1225
 #define HKTH_offset 8
 
+#define DAY_OFFSET 0
+
 #define c1 1.191042e-05
 #define c2 1.4387752
 #define e_num 2.7182818
