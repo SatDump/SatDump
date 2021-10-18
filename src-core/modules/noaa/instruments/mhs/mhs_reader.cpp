@@ -7,7 +7,6 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 */
 
 #include "mhs_reader.h"
-#include <array>
 
 namespace noaa
 {

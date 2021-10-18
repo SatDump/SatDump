@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <fstream>
 #include <cmath>
+#include <array>
+#include <vector>
 #include "mhs_calibration_values.h"
 
 #define cimg_use_png
