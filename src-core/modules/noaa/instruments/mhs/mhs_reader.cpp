@@ -1,3 +1,11 @@
+/*
+
+NOAA MHS decoder by ZbychuButItWasTaken
+
+This decoder takes in raw AIP data and processes it to MHS. It perfprms calibration (based on NOAA KLM User's Guide) and rain detection (though not very well as N19's MHS is broken)
+
+*/
+
 #include "mhs_reader.h"
 
 #include <iostream>
@@ -8,142 +16,383 @@ namespace noaa
     {
         MHSReader::MHSReader()
         {
-            for (int i = 0; i < 5; i++)
-                channels[i] = new unsigned short[90 * 400];
+            test_out.open("MHS_test.bin");
         }
         MHSReader::~MHSReader()
         {
-            for (int i = 0; i < 5; i++)
-                delete[] channels[i];
+            test_out.close();
         }
         void MHSReader::work(uint8_t *buffer)
         {
+            uint8_t cycle = buffer[7];
+            if (cycle % 20 == 0)
+                major_cycle_count = buffer[98] << 24 | buffer[99] << 16 | buffer[100] << 8 | buffer[101];
 
-            //get the MIU minor cycle count
-            uint8_t MHSnum = buffer[7];
+            if (major_cycle_count < last_major_cycle)
+                last_major_cycle = major_cycle_count; //little failsafe for corrupted data
 
-            //std::cout<<std::to_string(MHSnum)<<std::endl;
-
-            //
-            //second packet start (PKT 0)
-            //
-
-            //read the MHS Data from AIP frames (one of 3 in each AIP frame)
-            if (MHSnum == 27)
+            if (major_cycle_count > last_major_cycle)
             {
-                std::fill_n(MHSWord, 643, 0);
-                for (int j = 0; j < 18; j += 2)
+                last_major_cycle = major_cycle_count;
+                //get the SCI packets because the line is over
+                std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(2);
+                std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
+                std::array<std::array<uint16_t, 8>, 5> calibbuff;
+                std::array<std::array<uint16_t, 2>, 5> tmp;
+
+                for (int i = 0; i < MHS_WIDTH; i++)
                 {
-                    MHSWord[j / 2] = buffer[81 + j] << 8 | buffer[80 + j];
+                    for (int c = 1; c < 6; c++)
+                    {
+                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
+                    }
                 }
+                //get calibration data for this line
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int c = 1; c < 6; c++)
+                    {
+                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
+                    }
+                }
+                for (int c = 0; c < 5; c++)
+                    for (int j = 0; j < 2; j++)
+                        tmp[c][j] = 0;
+                for (int c = 0; c < 5; c++)
+                {
+                    channels[c].push_back(linebuff[c]);
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int k = 0; k < 4; k++)
+                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
+                    }
+                }
+                calibration.push_back(tmp);
+                PRT_readings.push_back(get_PRTs(SCI_packet));
+                PRT_calib.push_back(get_PRT_calib(SCI_packet));
+                HKTH.push_back(get_HKTH(SCI_packet));
+                line++;
+
+                SCI_packet = get_SCI_packet(0);
+                for (int i = 0; i < MHS_WIDTH; i++)
+                {
+                    for (int c = 1; c < 6; c++)
+                    {
+                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
+                    }
+                }
+                //get calibration data for this line
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int c = 1; c < 6; c++)
+                    {
+                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
+                    }
+                }
+                for (int c = 0; c < 5; c++)
+                    for (int j = 0; j < 2; j++)
+                        tmp[c][j] = 0;
+                for (int c = 0; c < 5; c++)
+                {
+                    channels[c].push_back(linebuff[c]);
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int k = 0; k < 4; k++)
+                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
+                    }
+                }
+                calibration.push_back(tmp);
+                PRT_readings.push_back(get_PRTs(SCI_packet));
+                PRT_calib.push_back(get_PRT_calib(SCI_packet));
+                HKTH.push_back(get_HKTH(SCI_packet));
+                line++;
+
+                SCI_packet = get_SCI_packet(1);
+                for (int i = 0; i < MHS_WIDTH; i++)
+                {
+                    for (int c = 1; c < 6; c++)
+                    {
+                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
+                    }
+                }
+                //get calibration data for this line
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int c = 1; c < 6; c++)
+                    {
+                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
+                    }
+                }
+                for (int c = 0; c < 5; c++)
+                    for (int j = 0; j < 2; j++)
+                        tmp[c][j] = 0;
+                for (int c = 0; c < 5; c++)
+                {
+                    channels[c].push_back(linebuff[c]);
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int k = 0; k < 4; k++)
+                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
+                    }
+                }
+                calibration.push_back(tmp);
+
+                PRT_readings.push_back(get_PRTs(SCI_packet));
+                PRT_calib.push_back(get_PRT_calib(SCI_packet));
+                HKTH.push_back(get_HKTH(SCI_packet));
+                line++;
+
+                for (int i = 0; i < 50; i++)
+                    MIU_data[i].fill(0);
             }
-            else if (MHSnum > 27 && MHSnum < 53)
+
+            for (int i = 0; i < 50; i++)
             {
-                for (int j = 0; j < 50; j += 2)
-                {
-                    MHSWord[j / 2 + 1 + 25 * (MHSnum - 28)] = buffer[49 + j] << 8 | buffer[48 + j];
-                }
+                if (cycle <= 80)
+                    MIU_data[cycle][i] = buffer[i + 48]; //reading MIU data from AIP
             }
-            else if (MHSnum == 53)
-            {
-                for (int j = 0; j < 18; j += 2)
-                {
-                    MHSWord[633 + j / 2] = buffer[49 + j] << 8 | buffer[48 + j];
-                }
-
-                for (int j = 0; j < 540; j += 6)
-                {
-                    for (int k = 0; k < 5; k++)
-                        channels[k][line * 90 + 90 - j / 6 - 1] = MHSWord[j + k + 17];
-                }
-                line = line + 1;
-            }
-
-            //
-            //second packet end (PKT 0)
-            //
-
-            //
-            //third packet start (PKT 1)
-            //
-
-            //read the MHS Data from AIP frames (one of 3 in each AIP frame)
-            if (MHSnum == 54)
-            {
-                std::fill_n(MHSWord, 643, 0);
-                for (int j = 0; j < 36; j += 2)
-                {
-                    MHSWord[j / 2] = buffer[63 + j] << 8 | buffer[62 + j];
-                }
-            }
-            else if (MHSnum > 54 && MHSnum < 80)
-            {
-                for (int j = 0; j < 50; j += 2)
-                {
-                    MHSWord[j / 2 + 1 + 25 * (MHSnum - 55)] = buffer[49 + j] << 8 | buffer[48 + j];
-                }
-            }
-            if (MHSnum == 79)
-            {
-
-                for (int j = 0; j < 540; j += 6)
-                {
-                    //idk why I needed to add +49 there, but doesn't work without it
-                    for (int k = 0; k < 5; k++)
-                        channels[k][line * 90 + 90 - j / 6 - 1] = MHSWord[j + k + 8];
-                }
-
-                line = line + 1;
-            }
-
-            //
-            //third packet end (PKT 1)
-            //
-
-            //
-            //first packet start (PKT 2)
-            //
-
-            //read the MHS Data from AIP frames (one of 3 in each AIP frame)
-            if (MHSnum == 0)
-            {
-                std::fill_n(MHSWord, 643, 0);
-                MHSWord[0] = buffer[96] << 8 | buffer[97];
-            }
-            else if (MHSnum > 0 && MHSnum < 26)
-            {
-                for (int j = 0; j < 50; j += 2)
-                {
-                    MHSWord[j / 2 + 1 + 25 * (MHSnum - 1)] = buffer[49 + j] << 8 | buffer[48 + j];
-                }
-            }
-            else if (MHSnum == 26)
-            {
-                for (int j = 0; j < 34; j += 2)
-                {
-                    MHSWord[625 + j / 2] = buffer[49 + j] << 8 | buffer[48 + j];
-                }
-
-                for (int j = 0; j < 90; j += 1)
-                {
-                    for (int k = 0; k < 5; k++)
-                        channels[k][line * 90 + 90 - j - 1] = MHSWord[j * 6 + k + 25];
-                }
-
-                line = line + 1;
-            }
-
-            //
-            //first packet end (PKT 2)
-            //
-
-            //AIP frame counter
-            //line++;
         }
 
+        void MHSReader::calibrate()
+        {
+            double RCALn = calibration::RCAL[0] + calibration::RCAL[1] + calibration::RCAL[2];
+            for (int l = 0; l < line; l++)
+            {
+                double a, b;
+                double R[5], Tk[5], WTk = 0, Wk = 0, Tw, Tavg = 0;
+                std::array<double, 24> Tth;
+
+                double CCALn = PRT_calib[l][0] + PRT_calib[l][1] + PRT_calib[l][2];
+                double C2CALn = pow((double)PRT_calib[l][0], 2.0) + pow((double)PRT_calib[l][1], 2.0) + pow((double)PRT_calib[l][2], 2.0);
+                double RCCALn = (double)PRT_calib[l][0] * calibration::RCAL[0] + (double)PRT_calib[l][1] * calibration::RCAL[1] + (double)PRT_calib[l][2] * calibration::RCAL[2];
+                a = (RCALn * C2CALn - CCALn * RCCALn) / (3 * C2CALn - pow(CCALn, 2.0));
+                b = (3 * RCCALn - RCALn * CCALn) / (3 * C2CALn - pow(CCALn, 2.0));
+
+                for (int i = 0; i < 5; i++)
+                {
+                    R[i] = a + b * PRT_readings[l][i];
+                    Tk[i] = 0;
+                    for (int j = 0; j <= 3; j++)
+                    {
+                        Tk[i] += calibration::f[i][j] * pow(R[i], (double)j);
+                    }
+                    WTk += (calibration::W[i] * Tk[i]);
+                    Wk += calibration::W[i];
+                }
+                Tw = WTk / Wk;
+                for (int i = 0; i < 24; i++)
+                {
+                    Tth[i] = 0.0;
+                    for (int j = 0; j <= 4; j++)
+                    {
+                        Tth[i] += (calibration::g[j] * pow((double)HKTH[l][i], (double)j));
+                    }
+                }
+                for (int i = 1; i < 20; i++)
+                {
+                    Tavg += Tth[i];
+                }
+                Tavg /= 19; //average temperature of the instrument
+
+                for (int i = 0; i < 5; i++)
+                {
+                    double Rw = temp_to_rad(Tw, calibration::wavenumber[i]);
+                    double Rc = temp_to_rad(2.73, calibration::wavenumber[i]);
+
+                    double CCw = calibration[l][i][1]; //blackbody count
+                    double CCc = calibration[l][i][0]; //space count
+
+                    double G = (CCw - CCc) / (Rw - Rc);
+
+                    double a0 = Rw - (CCw / G) + get_u(Tavg, i) * ((CCw * CCc) / pow(G, 2.0));
+                    double a1 = 1.0 / G - get_u(Tavg, i) * ((CCc + CCw) / pow(G, 2.0));
+                    double a2 = get_u(Tavg, i) * (1.0 / pow(G, 2.0));
+
+                    std::array<double, MHS_WIDTH> calibrated_line;
+
+                    for (int x = 0; x < MHS_WIDTH; x++)
+                    {
+                        calibrated_line[x] = rad_to_temp((a0 + a1 * channels[i][l][x] + a2 * pow((double)channels[i][l][x], 2.0)), calibration::wavenumber[i]);
+                    }
+                    calibrated_channels[i].push_back(calibrated_line);
+                }
+            }
+        }
+        double MHSReader::get_avg_count(int l, int ch, int blackbody)
+        {
+            //blackbody 0 for space, blackbody 1 for blackbody
+            int i = -3, j = 3;
+            if (l < 3)
+                i = 0;
+            else if (l > line - 4)
+                j = 0;
+
+            double Wsum = 0.0;
+            double WCsum = 0.0;
+
+            for (; i <= j; i++)
+            {
+                Wsum += (double)(-1.0 * abs(i) + 4.0);
+                WCsum += (double)(-1.0 * abs(i) + 4.0) * calibration[l + i][ch][blackbody];
+            }
+            //return WCsum / Wsum;
+            return calibration[l][ch][blackbody];
+        }
         cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 90, line + 1);
+            cimg_library::CImg<unsigned short> output(MHS_WIDTH, line, 1, 1);
+            for (int l = 0; l < line; l++)
+            {
+                for (int x = 0; x < MHS_WIDTH; x++)
+                {
+                    output[l * MHS_WIDTH + x] = channels[channel][l][x];
+                }
+            }
+            return output;
+        }
+        cimg_library::CImg<double> MHSReader::get_calibrated_channel(int channel)
+        {
+            cimg_library::CImg<double> output(MHS_WIDTH, line, 1, 1);
+            for (int l = 0; l < line; l++)
+            {
+                for (int x = 0; x < MHS_WIDTH; x++)
+                {
+                    output[l * MHS_WIDTH + x] = calibrated_channels[channel][l][x];
+                }
+            }
+            return output;
+        }
+        std::array<uint8_t, SCI_PACKET_SIZE> MHSReader::get_SCI_packet(int PKT)
+        {
+            std::array<uint8_t, SCI_PACKET_SIZE> out;
+            if (PKT == 0)
+            {
+                int c = 0;
+                for (int i = 80; i <= 97; i++)
+                {
+                    out[c] = MIU_data[27][i - MIU_BYTE_OFFSET];
+                    c++;
+                }
+                for (int word = 28; word <= 52; word++)
+                {
+                    for (int i = 48; i <= 97; i++)
+                    {
+                        out[c] = MIU_data[word][i - MIU_BYTE_OFFSET];
+                        c++;
+                    }
+                }
+                for (int i = 48; i <= 65; i++)
+                {
+                    out[c] = MIU_data[53][i - MIU_BYTE_OFFSET];
+                    c++;
+                }
+            }
+            else if (PKT == 1)
+            {
+                int c = 0;
+                for (int i = 62; i <= 97; i++)
+                {
+                    out[c] = MIU_data[54][i - MIU_BYTE_OFFSET];
+                    c++;
+                }
+                for (int word = 55; word <= 79; word++)
+                {
+                    for (int i = 48; i <= 97; i++)
+                    {
+                        out[c] = MIU_data[word][i - MIU_BYTE_OFFSET];
+                        c++;
+                    }
+                }
+            }
+            else if (PKT == 2)
+            {
+                int c = 0;
+                for (int i = 96; i <= 97; i++)
+                {
+                    out[c] = MIU_data[0][i - MIU_BYTE_OFFSET];
+                    c++;
+                }
+                for (int word = 1; word <= 25; word++)
+                {
+                    for (int i = 48; i <= 97; i++)
+                    {
+                        out[c] = MIU_data[word][i - MIU_BYTE_OFFSET];
+                        c++;
+                    }
+                }
+                for (int i = 48; i <= 81; i++)
+                {
+                    out[c] = MIU_data[26][i - MIU_BYTE_OFFSET];
+                    c++;
+                }
+            }
+            //test_out.write((char *)&out[0], SCI_PACKET_SIZE);
+            return out;
+        }
+        std::array<uint16_t, 5> MHSReader::get_PRTs(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
+        {
+            std::array<uint16_t, 5> out;
+            for (int i = 0; i < 5; i++)
+            {
+                out[i] = packet[PRT_OFFSET + i * 2] << 8 | packet[PRT_OFFSET + i * 2 + 1];
+            }
+            return out;
+        }
+        std::array<uint16_t, 3> MHSReader::get_PRT_calib(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
+        {
+            std::array<uint16_t, 3> out;
+            for (int i = 0; i < 3; i++)
+            {
+                out[i] = (packet[PRT_OFFSET + i * 2 + 10] << 8) | packet[PRT_OFFSET + i * 2 + 11];
+            }
+            return out;
+        }
+        std::array<uint8_t, 24> MHSReader::get_HKTH(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
+        {
+            std::array<uint8_t, 24> out;
+            for (int i = 0; i < 24; i++)
+            {
+                out[i] = packet[i + HKTH_offset];
+            }
+            return out;
+        }
+        double MHSReader::temp_to_rad(double t, double v)
+        {
+            return (c1 * pow(v, 3.0)) / (pow(e_num, c2 * v / t) - 1);
+        }
+        double MHSReader::rad_to_temp(double L, double v)
+        {
+            return (c2 * v) / (log(c1 * pow(v, 3) / L + 1));
+        }
+        double MHSReader::get_u(double temp, int ch)
+        {
+            if (temp == calibration::u_temps[0])
+                return calibration::u[0][ch];
+
+            if (temp == calibration::u_temps[1])
+                return calibration::u[1][ch];
+
+            if (temp == calibration::u_temps[2])
+                return calibration::u[2][ch];
+
+            if (temp < calibration::u_temps[0])
+                return interpolate(calibration::u_temps[0], calibration::u[0][ch], calibration::u_temps[1], calibration::u[1][ch], temp, 0);
+
+            if (temp > calibration::u_temps[0] && temp < calibration::u_temps[1])
+                return interpolate(calibration::u_temps[0], calibration::u[0][ch], calibration::u_temps[1], calibration::u[1][ch], temp, 0);
+
+            if (temp > calibration::u_temps[1] && temp < calibration::u_temps[2])
+                return interpolate(calibration::u_temps[1], calibration::u[1][ch], calibration::u_temps[2], calibration::u[2][ch], temp, 0);
+
+            else
+                return interpolate(calibration::u_temps[1], calibration::u[1][ch], calibration::u_temps[2], calibration::u[2][ch], temp, 1);
+        }
+        double MHSReader::interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode)
+        {                  //where a1y > a2y and a1x < a1y
+            if (mode == 0) //between a1 and a2 or bx < a1x
+                return ((a2x - bx) * (a1y - a2y)) / (a2x - a1x) + a2y;
+            else // > a2x
+                return -1 * (((bx - a2x) * (a1y - a2y)) / (a2x - a1x) - a2y);
         }
     }
 }
