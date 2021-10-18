@@ -52,11 +52,13 @@ namespace noaa
             double get_avg_count(int line, int ch, int blackbody);
             double get_u(double temp, int ch);
             double interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode);
+            double get_timestamp(int pkt, int offset, int ms_scale = 1000);
 
         public:
             MHSReader();
             ~MHSReader();
             int line = 0;
+            std::vector<double> timestamps;
             void work(uint8_t *buffer);
             cimg_library::CImg<unsigned short> getChannel(int channel);
             cimg_library::CImg<double> get_calibrated_channel(int channel);

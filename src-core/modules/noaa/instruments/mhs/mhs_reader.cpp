@@ -34,6 +34,7 @@ namespace noaa
                 last_major_cycle = major_cycle_count;
                 //get the SCI packets because the line is over
                 std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(2);
+                timestamps.push_back(get_timestamp(2, 0));
                 std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
                 std::array<std::array<uint16_t, 8>, 5> calibbuff;
                 std::array<std::array<uint16_t, 2>, 5> tmp;
@@ -72,6 +73,7 @@ namespace noaa
                 line++;
 
                 SCI_packet = get_SCI_packet(0);
+                timestamps.push_back(get_timestamp(0, 0));
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)
@@ -106,6 +108,7 @@ namespace noaa
                 line++;
 
                 SCI_packet = get_SCI_packet(1);
+                timestamps.push_back(get_timestamp(1, 0));
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)
@@ -391,6 +394,27 @@ namespace noaa
                 return ((a2x - bx) * (a1y - a2y)) / (a2x - a1x) + a2y;
             else // > a2x
                 return -1 * (((bx - a2x) * (a1y - a2y)) / (a2x - a1x) - a2y);
+        }
+        double MHSReader::get_timestamp(int pkt, int offset, int ms_scale)
+        {
+            if (pkt == 2)
+            {
+                uint16_t days = MIU_data[0][42] << 8 | MIU_data[0][43];
+                uint32_t milliseconds_of_day = MIU_data[0][44] << 24 | MIU_data[0][45] << 16 | MIU_data[0][46] << 8 | MIU_data[0][47];
+                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+            }
+            else if (pkt == 0)
+            {
+                uint16_t days = MIU_data[27][26] << 8 | MIU_data[27][27];
+                uint32_t milliseconds_of_day = MIU_data[27][28] << 24 | MIU_data[27][29] << 16 | MIU_data[27][30] << 8 | MIU_data[27][31];
+                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+            }
+            else
+            {
+                uint16_t days = MIU_data[54][8] << 8 | MIU_data[54][9];
+                uint32_t milliseconds_of_day = MIU_data[54][10] << 24 | MIU_data[54][11] << 16 | MIU_data[54][12] << 8 | MIU_data[54][13];
+                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+            }
         }
     }
 }
