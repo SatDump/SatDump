@@ -87,6 +87,51 @@ int repackBytesTo12bits(uint8_t *bytes, int byte_length, uint16_t *words)
     return wpos;
 }
 
+int repackBytesTo13bits(uint8_t *bytes, int byte_length, uint16_t *words)
+{
+    int bpos = 0;
+    int wpos = 0;
+
+    // Compute how many we can repack using the "fast" way
+    int repack_fast = byte_length - (byte_length % 13);
+    int repack_slow = byte_length % 13;
+
+    // Repack what can be repacked fast
+    for (int i = 0; i < repack_fast; i += 13)
+    {
+        words[wpos++] = bytes[bpos + 0] << 5 | bytes[bpos + 1] >> 3;
+        words[wpos++] = (bytes[bpos + 1] & 0b111) << 10 | bytes[bpos + 2] << 2 | bytes[bpos + 3] >> 6;
+        words[wpos++] = (bytes[bpos + 3] & 0b111111) << 7 | bytes[bpos + 4] >> 1;
+        words[wpos++] = (bytes[bpos + 4] & 0b1) << 12 | bytes[bpos + 5] << 4 | bytes[bpos + 6] >> 4;
+        words[wpos++] = (bytes[bpos + 6] & 0b1111) << 9 | bytes[bpos + 7] << 1 | bytes[bpos + 8] >> 7;
+        words[wpos++] = (bytes[bpos + 8] & 0b1111111) << 6 | bytes[bpos + 9] >> 2;
+        words[wpos++] = (bytes[bpos + 9] & 0b11) << 11 | bytes[bpos + 10] << 3 | bytes[bpos + 11] >> 5;
+        words[wpos++] = (bytes[bpos + 11] & 0b11111) << 8 | bytes[bpos + 12];
+        bpos += 13;
+    }
+
+    // Repack remaining using a slower method
+    uint16_t shifter;
+    int inshifter = 0;
+    for (int i = 0; i < repack_slow; i++)
+    {
+        for (int b = 7; b >= 0; b--)
+        {
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 8192;
+            inshifter++;
+            if (inshifter == 13)
+            {
+                words[wpos++] = shifter;
+                inshifter = 0;
+            }
+        }
+
+        bpos++;
+    }
+
+    return wpos;
+}
+
 int repackBytesTo16bits(uint8_t *bytes, int byte_length, uint16_t *words)
 {
     int bpos = 0;
