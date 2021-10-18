@@ -78,28 +78,10 @@ namespace noaa
                         imageBuffer[i][enct][line] = abs(buffer);
                     }
 
-                    channels[i][enct + 56 * line] = imageBuffer[i][enct][line];
+                    channels[i][56 - enct + 56 * line] = imageBuffer[i][enct][line];
                 }
             }
         }
-
-        /*
-        void HIRSReader::process()
-        {
-            std::vector<unsigned short> channelBuffer;
-            for (int channel = 0; channel < 20; channel++)
-            {
-                for (int ln = 0; ln < line; ln++)
-                {
-                    for (int x = 0; x < 56; x++)
-                    {
-                        channelBuffer.push_back(imageBuffer[channel][x][ln]);
-                    }
-                }
-                channels[channel][0] = channelBuffer[0];
-            }
-        }
-        */
 
         cimg_library::CImg<unsigned short> HIRSReader::getChannel(int channel)
         {
