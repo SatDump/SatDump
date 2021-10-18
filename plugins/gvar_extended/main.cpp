@@ -9,16 +9,18 @@
 #include "libs/predict/predict.h"
 #include "modules/goes/gvar/module_gvar_image_decoder.h"
 #include "tle.h"
-#include "common/geodetic/projection/geos.h"
+#include "common/geodetic/projection/geo_projection.h"
 #include "common/map/map_drawer.h"
 
 #define FIXED_FLOAT(x) std::fixed << std::setprecision(3) << (x)
+
+geodetic::projection::GEOSProjection proj_geos;
 
 class GVARExtended : public satdump::Plugin
 {
 private:
     static std::string misc_preview_text;
-    static std::vector<std::array<int, 3>> points;
+    static std::vector<std::array<float, 3>> points;
     static std::vector<std::string> names;
 
     static void satdumpStartedHandler(const satdump::SatDumpStartedEvent &)
@@ -35,9 +37,9 @@ private:
                 points.clear();
                 for (int i = 0; i < (int)global_cfg["gvar_extended"]["temperature_points"].size(); i++)
                 {
-                    points.push_back({global_cfg["gvar_extended"]["temperature_points"][i]["x"].get<int>(),
-                                      global_cfg["gvar_extended"]["temperature_points"][i]["y"].get<int>(),
-                                      global_cfg["gvar_extended"]["temperature_points"][i]["radius"].get<int>()});
+                    points.push_back({global_cfg["gvar_extended"]["temperature_points"][i]["lat"].get<float>(),
+                                      global_cfg["gvar_extended"]["temperature_points"][i]["lon"].get<float>(),
+                                      global_cfg["gvar_extended"]["temperature_points"][i]["radius"].get<float>()});
                     names.push_back(global_cfg["gvar_extended"]["temperature_points"][i]["name"].get<std::string>());
                 }
             }
@@ -153,41 +155,47 @@ private:
                 logger->info("Temperatures... temperatures.txt");
                 std::array<cimg_library::CImg<unsigned short>, 4> channels = {cropIR(evt.images.image1), cropIR(evt.images.image2), cropIR(evt.images.image3), cropIR(evt.images.image4)};
 
+                geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
+
                 for (int j = 0; j < (int)points.size(); j++)
                 {
+                    int x, y;
+                    proj.forward(points[j][1], points[j][0], x, y);
+                    x /= 4;
+                    y /= 4;
 
-                    output << "Temperature measurements for point [" + std::to_string(points[j][0]) + ", " + std::to_string(points[j][1]) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]) << '\n'
+                    output << "Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]) << '\n'
                            << '\n';
 
-                    logger->info("Temperature measurements for point [" + std::to_string(points[j][0]) + ", " + std::to_string(points[j][1]) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]));
+                    logger->info("Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]));
                     for (int i = 0; i < 4; i++)
                     {
-                        output << "    Channel " + std::to_string(i + 2) + ":     " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6])
+                        output << "    Channel " + std::to_string(i + 2) + ":     " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6])
                                << " K    (";
-                        if (LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15 < 10)
+                        if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 < 10)
                         {
-                            if (LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15 <= -10)
+                            if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 <= -10)
                             {
-                                output << FIXED_FLOAT(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15);
+                                output << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
                             }
-                            else if (LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15 > 0)
+                            else if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 > 0)
                             {
-                                output << "  " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15);
+                                output << "  " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
                             }
                             else
                             {
-                                output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15);
+                                output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
                             }
                         }
                         else
                         {
-                            output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15);
+                            output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
                         }
                         output << " °C)";
                         output << '\n';
                         logger->info("channel " + std::to_string(i + 2) + ":     " +
-                                     std::to_string(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6]) +
-                                     " K    (" + std::to_string(LUTs[i][getAVG(channels[i], points[j][0], points[j][1], points[j][2]) >> 6] - 273.15) + " °C)");
+                                     std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6]) +
+                                     " K    (" + std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15) + " °C)");
                     }
                     output << '\n'
                            << '\n';
@@ -204,19 +212,19 @@ private:
             logger->info("Image is not a FD, temperature measurement will not be performed.");
         }
 
+        logger->info("Generating mapped crops..");
         //mapped crops of europe. IR and VIS
         cimg_library::CImg<unsigned short> mapProj = cropIR(evt.images.image3);
-        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj, false);
+        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
         mapProj.crop(500, 50, 500 + 1560, 50 + 890);
         logger->info("Europe IR crop.. europe_IR.png");
-        mapProj.save_png(std::string(evt.directory + "/europe_IR.png").c_str());
-        mapProj.clear();
+        cimg_library::CImg<unsigned char>(mapProj>>8, false).save_png(std::string(evt.directory + "/europe_IR.png").c_str());
 
         mapProj = cropVIS(evt.images.image5);
-        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj, true);
+        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
         mapProj.crop(1348, 240, 1348 + 5928, 240 + 4120);
         logger->info("Europe VIS crop.. europe_VIS.png");
-        mapProj.save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
+        cimg_library::CImg<unsigned char>(((mapProj/65535.0f).pow(0.7) *= 65535)>>8).save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
         mapProj.clear();
     }
 
@@ -331,69 +339,36 @@ private:
         return goes_position;
     }
 
-    class GVARProjector
-    {
-    private:
-        geodetic::projection::GEOSProjection pj;
-        int height, width;
-
-        double x, y;
-        int image_x, image_y;
-
-        const float hscale = 1.1765;
-        const float vscale = 1.1765;
-
-    public:
-        GVARProjector(int number, time_t time, int img_width, int img_height)
-        {
-            height = img_height;
-            width = img_width;
-
-            predict_position goes_position = getSatellitePosition(number, time);
-            pj.init(goes_position.altitude * 1000, goes_position.longitude * 57.29578, true);
-        }
-
-        void latLonToPixelPos(double lon, double lat, int &img_x, int &img_y, bool vis_mode = false)
-        {
-            pj.forward(lon, lat, x, y);
-
-            if (fabs(x) > 1e10f || fabs(y) > 1e10f)
-            {
-                // Error / out of the image
-                img_x = -1;
-                img_y = -1;
-                return;
-            }
-
-            image_x = x * hscale * (width / 2.0);
-            image_y = y * vscale * (height / 2.0);
-
-            image_x += width / 2.0;
-            image_y += height / 2.0;
-            image_y -= vis_mode ? 53 : 11;
-
-            img_x = image_x;
-            img_y = (height - 1) - image_y;
-        }
-    };
-
     // Expect cropped IR
-    static void drawMapOverlay(int number, time_t time, cimg_library::CImg<unsigned short> &image, bool vis_mode = false)
+    static void drawMapOverlay(int number, time_t time, cimg_library::CImg<unsigned short> &image)
     {
-        GVARProjector gvar_proj(number, time, image.width(), image.height());
+        geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 
         unsigned short color[3] = {65535, 65535, 65535};
 
-        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                       image,
-                                       color,
-                                       [&gvar_proj, &vis_mode](float lat, float lon, int, int) -> std::pair<int, int>
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, image, color, [&proj, &image](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
                                        {
                                            int image_x, image_y;
-                                           gvar_proj.latLonToPixelPos(lon, lat, image_x, image_y, vis_mode);
-                                           return {image_x, image_y};
+                                           proj.forward(lon, lat, image_x, image_y);
+                                           if (image.width() == 18990)
+                                           {
+                                               return {image_x, image_y};
+                                           }
+                                           else
+                                           {
+                                               if (image_x == -1 && image_y == -1)
+                                               {
+                                                   return {-1, -1};
+                                               }
+                                               else
+                                               {
+                                                   return {image_x / 4, image_y / 4};
+                                               }
+                                           }
                                        });
+
     }
+
 
 public:
     std::string getID()
@@ -410,7 +385,7 @@ public:
 };
 
 std::string GVARExtended::misc_preview_text = "SatDump | GVAR";
-std::vector<std::array<int, 3>> GVARExtended::points = {{}};
+std::vector<std::array<float, 3>> GVARExtended::points = {{}};
 std::vector<std::string> GVARExtended::names = {};
 
 PLUGIN_LOADER(GVARExtended)
