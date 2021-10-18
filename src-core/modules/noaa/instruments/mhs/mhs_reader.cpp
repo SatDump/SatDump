@@ -246,7 +246,7 @@ namespace noaa
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
                 {
-                    output[l * MHS_WIDTH + x] = channels[channel][l][x];
+                    output[l * MHS_WIDTH + (MHS_WIDTH - x)] = channels[channel][l][x];
                 }
             }
             return output;
@@ -258,7 +258,7 @@ namespace noaa
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
                 {
-                    output[l * MHS_WIDTH + x] = calibrated_channels[channel][l][x];
+                    output[l * MHS_WIDTH + (MHS_WIDTH - x)] = calibrated_channels[channel][l][x];
                 }
             }
             return output;
