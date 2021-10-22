@@ -6,6 +6,9 @@
 #include "complex.h"
 
 #define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
 
 namespace dsp
 {

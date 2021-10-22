@@ -8,6 +8,14 @@
 #define sincosf __sincosf
 #endif
 
+#ifdef _WIN32
+void sincosf(float x, float *sinx, float *cosx)
+{
+    *sinx = sinf(x);
+    *cosx = cosf(x);
+}
+#endif
+
 namespace dsp
 {
     BPSKCarrierPLLBlock::BPSKCarrierPLLBlock(std::shared_ptr<dsp::stream<complex_t>> input, float alpha, float beta, float max_offset) : Block(input), alpha(alpha), beta(beta), max_offset(max_offset)
