@@ -51,6 +51,12 @@ namespace geodetic
                     double maxSize = projected_image.width() / 100.0;
                     if (abs(map_cc1.first - map_cc2.first) < maxSize && abs(map_cc1.second - map_cc2.second) < maxSize)
                     {
+                        /*
+                        Using a circle and radius from the next sample is most likely not the best way, computing the instrument's
+                        actual FOV at each pixel and so would be a better approach... But well, this one has the benefit of being
+                        fast.
+                        I guess time will tell how reliable that approximation is.
+                        */
                         double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
                         projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color, 0.4 * opacity);
                     }

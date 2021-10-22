@@ -169,7 +169,7 @@ namespace aqua
 
                 // Setup Projecition
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
-                    98.8,                              // Scan angle
+                    99,                              // Scan angle
                     1.1,                               // IFOV X scan angle
                     1.4,                               // IFOV Y scan angle
                     -0.5,                              // Roll offset
@@ -203,12 +203,12 @@ namespace aqua
 
                 // Setup Projecition
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
-                    98.8,                                // Scan angle
+                    99.0,                                // Scan angle
                     1.1,                                 // IFOV X scan angle
                     1.4,                                 // IFOV Y scan angle
                     -0.5,                                // Roll offset
                     0.0,                                 // Pitch offset
-                    -2.5,                                // Yaw offset
+                    -2.7,                                // Yaw offset
                     -1.1,                                // Time offset
                     90,                                  // Number of IFOVs
                     8,                                   // IFOV Width
