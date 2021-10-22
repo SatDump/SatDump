@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
     SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 #endif
 
-    std::shared_ptr<dsp::stream<std::complex<float>>> pipelineStream = std::make_shared<dsp::stream<std::complex<float>>>();
+    std::shared_ptr<dsp::stream<complex_t>> pipelineStream = std::make_shared<dsp::stream<complex_t>>();
     live_pipeline->start(pipelineStream, processThreadPool);
 
     // HTTP
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     nng_url_free(url);
 
     // Loop to pass samples from the SDR into set buffers for the pipeline
-    volk::vector<std::complex<float>> sample_buffer_vec;
+    volk::vector<complex_t> sample_buffer_vec;
     int cnt = 0;
     int buf_size = 8192;
     while (!should_stop)
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
                 continue;
         }
 
-        std::memcpy(pipelineStream->writeBuf, sample_buffer_vec.data(), buf_size * sizeof(std::complex<float>));
+        std::memcpy(pipelineStream->writeBuf, sample_buffer_vec.data(), buf_size * sizeof(complex_t));
         pipelineStream->swap(buf_size);
         sample_buffer_vec.erase(sample_buffer_vec.begin(), sample_buffer_vec.begin() + buf_size);
     }

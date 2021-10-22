@@ -7,10 +7,10 @@
 
 void SDRRtlSdr::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
-    std::shared_ptr<dsp::stream<std::complex<float>>> stream = *((std::shared_ptr<dsp::stream<std::complex<float>>> *)ctx);
+    std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
     // Convert to CF-32
     for (int i = 0; i < (int)len / 2; i++)
-        stream->writeBuf[i] = std::complex<float>((buf[i * 2 + 0] - 127) / 128.0f, (buf[i * 2 + 1] - 127) / 128.0f);
+        stream->writeBuf[i] = complex_t((buf[i * 2 + 0] - 127) / 128.0f, (buf[i * 2 + 1] - 127) / 128.0f);
     stream->swap(len / 2);
 };
 

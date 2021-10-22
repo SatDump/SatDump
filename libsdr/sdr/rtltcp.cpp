@@ -11,7 +11,7 @@ void SDRRtlTcp::runThread()
     {
         client.receiveSamples(samples8, 8192 * 2);
         for (int i = 0; i < 8192; i++)
-            output_stream->writeBuf[i] = std::complex<float>((samples8[i * 2 + 0] - 127) / 128.0f, (samples8[i * 2 + 1] - 127) / 128.0f);
+            output_stream->writeBuf[i] = complex_t((samples8[i * 2 + 0] - 127) / 128.0f, (samples8[i * 2 + 1] - 127) / 128.0f);
         output_stream->swap(8192);
     }
 }

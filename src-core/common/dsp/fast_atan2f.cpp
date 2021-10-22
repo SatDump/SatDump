@@ -58,19 +58,19 @@ namespace dsp
         7.794811e-01, 7.814612e-01, 7.834335e-01, 7.853982e-01, 7.853982e-01};
 
     /*****************************************************************************
- Function: Arc tangent
- Syntax: angle = fast_atan2(y, x);
- float y y component of input vector
- float x x component of input vector
- float angle angle of vector (x, y) in radians
- Description: This function calculates the angle of the vector (x,y)
- based on a table lookup and linear interpolation. The table uses a
- 256 point table covering -45 to +45 degrees and uses symmetry to
- determine the final angle value in the range of -180 to 180
- degrees. Note that this function uses the small angle approximation
- for values close to zero. This routine calculates the arc tangent
- with an average error of +/- 3.56e-5 degrees (6.21e-7 radians).
-*****************************************************************************/
+     Function: Arc tangent
+    Syntax: angle = fast_atan2(y, x);
+    float y y component of input vector
+    float x x component of input vector
+    float angle angle of vector (x, y) in radians
+    Description: This function calculates the angle of the vector (x,y)
+    based on a table lookup and linear interpolation. The table uses a
+    256 point table covering -45 to +45 degrees and uses symmetry to
+    determine the final angle value in the range of -180 to 180
+    degrees. Note that this function uses the small angle approximation
+    for values close to zero. This routine calculates the arc tangent
+    with an average error of +/- 3.56e-5 degrees (6.21e-7 radians).
+    *****************************************************************************/
 
     float fast_atan2f(float y, float x)
     {

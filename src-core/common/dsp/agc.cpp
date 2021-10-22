@@ -2,7 +2,12 @@
 
 namespace dsp
 {
-    AGCBlock::AGCBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float agc_rate, float reference, float gain, float max_gain) : Block(input), d_agc(agc_rate, reference, gain, max_gain)
+    AGCBlock::AGCBlock(std::shared_ptr<dsp::stream<complex_t>> input, float agc_rate, float reference, float gain, float max_gain)
+        : Block(input),
+          rate(agc_rate),
+          reference(reference),
+          gain(gain),
+          max_gain(max_gain)
     {
     }
 
@@ -14,7 +19,20 @@ namespace dsp
             input_stream->flush();
             return;
         }
-        d_agc.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
+
+        for (int i = 0; i < nsamples; i++)
+        {
+            complex_t output = input_stream->readBuf[i] * gain;
+
+            gain += rate * (reference - sqrt(output.real * output.real +
+                                             output.imag * output.imag));
+
+            if (max_gain > 0.0 && gain > max_gain)
+                gain = max_gain;
+
+            output_stream->writeBuf[i] = output;
+        }
+
         input_stream->flush();
         output_stream->swap(nsamples);
     }

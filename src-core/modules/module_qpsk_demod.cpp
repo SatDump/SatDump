@@ -1,5 +1,5 @@
 #include "module_qpsk_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -60,7 +60,7 @@ void QPSKDemodModule::init()
         dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
 
     // Cleanup things a bit
-    std::shared_ptr<dsp::stream<std::complex<float>>> input_data = d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
+    std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dcb->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
     // Init resampler if required
     if (resample)
@@ -70,7 +70,7 @@ void QPSKDemodModule::init()
     agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, d_agc_rate, 1.0f, 1.0f, 65536);
 
     // RRC
-    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+    rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
     // Costas
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
@@ -143,8 +143,8 @@ void QPSKDemodModule::process()
 
         for (int i = 0; i < dat_size; i++)
         {
-            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real() * 100);
-            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag() * 100);
+            sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real * 100);
+            sym_buffer[i * 2 + 1] = clamp(rec->output_stream->readBuf[i].imag * 100);
         }
 
         rec->output_stream->flush();

@@ -3,7 +3,7 @@
 SDRDevice::SDRDevice(std::map<std::string, std::string> parameters, uint64_t /*id*/)
     : d_parameters(parameters)
 {
-    output_stream = std::make_shared<dsp::stream<std::complex<float>>>();
+    output_stream = std::make_shared<dsp::stream<complex_t>>();
 }
 
 void SDRDevice::start()
@@ -109,7 +109,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
 
 #ifndef DISABLE_SDR_HACKRF
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> hackrf_results = SDRHackRF::getDevices();
-        results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
+    results.insert(results.end(), hackrf_results.begin(), hackrf_results.end());
 #endif
 
 #ifndef DISABLE_SDR_LIMESDR

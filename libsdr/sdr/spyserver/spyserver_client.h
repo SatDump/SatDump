@@ -2,14 +2,14 @@
 #include "networking.h"
 #include "spyserver_protocol.h"
 #include "common/dsp/buffer.h"
-#include <complex>
+#include "common/dsp/complex.h"
 
 namespace spyserver
 {
     class SpyServerClientClass
     {
     public:
-        SpyServerClientClass(net::Conn conn, dsp::stream<std::complex<float>> *out);
+        SpyServerClientClass(net::Conn conn, dsp::stream<complex_t> *out);
         ~SpyServerClientClass();
 
         bool waitForDevInfo(int timeoutMS);
@@ -45,10 +45,10 @@ namespace spyserver
 
         SpyServerMessageHeader receivedHeader;
 
-        dsp::stream<std::complex<float>> *output;
+        dsp::stream<complex_t> *output;
     };
 
     typedef std::unique_ptr<SpyServerClientClass> SpyServerClient;
 
-    SpyServerClient connect(std::string host, uint16_t port, dsp::stream<std::complex<float>> *out);
+    SpyServerClient connect(std::string host, uint16_t port, dsp::stream<complex_t> *out);
 }

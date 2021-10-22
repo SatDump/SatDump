@@ -16,9 +16,9 @@ namespace dsp
     Random::~Random() {}
 
     /*
- * Seed is initialized with time if the given seed is 0. Otherwise the seed is taken
- * directly. Sets the seed for the Random number generator.
- */
+    * Seed is initialized with time if the given seed is 0. Otherwise the seed is taken
+    * directly. Sets the seed for the Random number generator.
+    */
     void Random::reseed(unsigned int seed)
     {
         d_seed = seed;
@@ -42,22 +42,22 @@ namespace dsp
     }
 
     /*!
- * Uniform Random integers in the range set by 'set_integer_limits' [min, max).
- */
+    * Uniform Random integers in the range set by 'set_integer_limits' [min, max).
+    */
     int Random::ran_int() { return d_integer_dis(d_rng); }
 
     /*
- * Returns uniformly distributed numbers in [0,1) taken from boost.Random using a Mersenne
- * twister
- */
+    * Returns uniformly distributed numbers in [0,1) taken from boost.Random using a Mersenne
+    * twister
+    */
     float Random::ran1() { return d_uniform(d_rng); }
 
     /*
- * Returns a normally distributed deviate with zero mean and variance 1.
- * Used is the Marsaglia polar method.
- * Every second call a number is stored because the transformation works only in pairs.
- * Otherwise half calculation is thrown away.
- */
+    * Returns a normally distributed deviate with zero mean and variance 1.
+    * Used is the Marsaglia polar method.
+    * Every second call a number is stored because the transformation works only in pairs.
+    * Otherwise half calculation is thrown away.
+    */
     float Random::gasdev()
     {
         if (d_gauss_stored)
@@ -90,9 +90,9 @@ namespace dsp
         return logf(2 * z);
     }
     /*
- * Copied from The KC7WW / OH2BNS Channel Simulator
- * FIXME Need to check how good this is at some point
- */
+    * Copied from The KC7WW / OH2BNS Channel Simulator
+    * FIXME Need to check how good this is at some point
+    */
     // 5 => scratchy, 8 => Geiger
     float Random::impulse(float factor = 5)
     {
@@ -103,7 +103,7 @@ namespace dsp
             return z;
     }
 
-    std::complex<float> Random::rayleigh_complex() { return std::complex<float>(gasdev(), gasdev()); }
+    complex_t Random::rayleigh_complex() { return complex_t(gasdev(), gasdev()); }
 
     float Random::rayleigh() { return sqrtf(-2.0 * logf(ran1())); }
 } // namespace libdsp

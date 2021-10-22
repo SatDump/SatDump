@@ -8,6 +8,7 @@
 #include <atomic>
 #include "imgui/imgui_flags.h"
 #include "dll_export.h"
+#include "common/dsp/complex.h"
 #include "common/dsp/buffer.h"
 #include "nlohmann/json.hpp"
 #include "plugin.h"
@@ -58,8 +59,8 @@ public:
 public:
     std::shared_ptr<dsp::RingBuffer<uint8_t>> input_fifo;
     std::shared_ptr<dsp::RingBuffer<uint8_t>> output_fifo;
-    std::shared_ptr<dsp::stream<std::complex<float>>> input_stream;
-    std::shared_ptr<dsp::stream<std::complex<float>>> output_stream;
+    std::shared_ptr<dsp::stream<complex_t>> input_stream;
+    std::shared_ptr<dsp::stream<complex_t>> output_stream;
     std::atomic<bool> input_active;
 
 public:

@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "common/dsp/lib/random.h"
+#include "common/dsp/random.h"
 
 namespace goes
 {

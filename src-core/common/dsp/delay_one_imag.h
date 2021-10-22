@@ -1,17 +1,21 @@
 #pragma once
 
 #include "block.h"
-#include "lib/delay_one_imag.h"
 
+/*
+Delay the I branch by one sample.
+This is meant mainly for OQPSK
+demodulation.
+*/
 namespace dsp
 {
-    class DelayOneImagBlock : public Block<std::complex<float>, std::complex<float>>
+    class DelayOneImagBlock : public Block<complex_t, complex_t>
     {
     private:
-        DelayOneImag d_delay;
+        float lastSamp;
         void work();
 
     public:
-        DelayOneImagBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input);
+        DelayOneImagBlock(std::shared_ptr<dsp::stream<complex_t>> input);
     };
 }

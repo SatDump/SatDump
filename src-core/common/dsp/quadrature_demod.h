@@ -1,17 +1,21 @@
 #pragma once
 
 #include "block.h"
-#include "lib/quadrature_demod.h"
 
+/*
+Quadrature demodulator
+*/
 namespace dsp
 {
-    class QuadratureDemodBlock : public Block<std::complex<float>, float>
+    class QuadratureDemodBlock : public Block<complex_t, float>
     {
     private:
-        dsp::QuadratureDemod d_quad;
+        float gain;
+        complex_t *buffer;
         void work();
 
     public:
-        QuadratureDemodBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float gain);
+        QuadratureDemodBlock(std::shared_ptr<dsp::stream<complex_t>> input, float gain);
+        ~QuadratureDemodBlock();
     };
 }

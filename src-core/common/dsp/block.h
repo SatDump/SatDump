@@ -3,6 +3,9 @@
 #include "common/dsp/buffer.h"
 #include <thread>
 #include <memory>
+#include "complex.h"
+
+#define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
 
 namespace dsp
 {

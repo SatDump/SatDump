@@ -1,9 +1,17 @@
 #include "quadrature_demod.h"
+#include <volk/volk.h>
+#include "fast_atan2f.h"
 
 namespace dsp
 {
-    QuadratureDemodBlock::QuadratureDemodBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float gain) : Block(input), d_quad(gain)
+    QuadratureDemodBlock::QuadratureDemodBlock(std::shared_ptr<dsp::stream<complex_t>> input, float gain) : Block(input), gain(gain)
     {
+        buffer = (complex_t *)volk_malloc(STREAM_BUFFER_SIZE * sizeof(complex_t), volk_get_alignment());
+    }
+
+    QuadratureDemodBlock::~QuadratureDemodBlock()
+    {
+        volk_free(buffer);
     }
 
     void QuadratureDemodBlock::work()
@@ -14,7 +22,12 @@ namespace dsp
             input_stream->flush();
             return;
         }
-        d_quad.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
+
+        volk_32fc_x2_multiply_conjugate_32fc((lv_32fc_t *)&buffer[0], (lv_32fc_t *)&input_stream->readBuf[1], (lv_32fc_t *)&input_stream->readBuf[0], nsamples);
+
+        for (int i = 0; i < nsamples; i++)
+            output_stream->writeBuf[i] = gain * fast_atan2f(buffer[i].imag, buffer[i].real);
+
         input_stream->flush();
         output_stream->swap(nsamples);
     }

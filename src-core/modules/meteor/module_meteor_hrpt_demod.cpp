@@ -1,5 +1,5 @@
 #include "module_meteor_hrpt_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -35,7 +35,7 @@ namespace meteor
         agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, symbolrate * 2.2f, 0.5f, 31));
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, d_samplerate, symbolrate * 2.2f, 0.5f, 31));
 
         // PLL
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(rrc->output_stream, 0.030f, powf(0.030f, 2) / 4.0f, 0.5f);
@@ -99,7 +99,7 @@ namespace meteor
                 continue;
 
             // Estimate SNR, only on part of the samples to limit CPU usage
-            snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
+            snr_estimator.update((complex_t *)rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
 
             if (snr > peak_snr)

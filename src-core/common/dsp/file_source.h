@@ -61,7 +61,7 @@ namespace dsp
 
     BasebandType BasebandTypeFromString(std::string type);
 
-    class FileSourceBlock : public Block<uint8_t, std::complex<float>>
+    class FileSourceBlock : public Block<uint8_t, complex_t>
     {
     private:
         dsp::stream<uint8_t> dummystream;

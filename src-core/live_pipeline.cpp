@@ -31,7 +31,7 @@ LivePipeline::~LivePipeline()
 {
 }
 
-void LivePipeline::start(std::shared_ptr<dsp::stream<std::complex<float>>> stream, ctpl::thread_pool &threadPool)
+void LivePipeline::start(std::shared_ptr<dsp::stream<complex_t>> stream, ctpl::thread_pool &threadPool)
 {
     // Init first module in the chain, always a demod...
     modules[0]->input_stream = stream;

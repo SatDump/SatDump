@@ -28,7 +28,7 @@ namespace live
     float fft_buffer[FFT_BUFFER_SIZE];
     extern std::shared_ptr<SDRDevice> radio;
     float scale_max = 100.0f, scale_offset = 0;
-    std::shared_ptr<dsp::stream<std::complex<float>>> moduleStream;
+    std::shared_ptr<dsp::stream<complex_t>> moduleStream;
     extern std::shared_ptr<LivePipeline> live_pipeline;
 
     bool process_fft = false;
@@ -48,10 +48,10 @@ namespace live
 
         float fftb[FFT_BUFFER_SIZE];
 
-        // std::complex<float> *sample_buffer = new std::complex<float>[8192 * 100];
-        volk::vector<std::complex<float>> sample_buffer_vec;
-        std::complex<float> sample_buffer[FFT_BUFFER_SIZE];
-        std::complex<float> buffer_fft_out[FFT_BUFFER_SIZE];
+        // complex_t *sample_buffer = new complex_t[8192 * 100];
+        volk::vector<complex_t> sample_buffer_vec;
+        complex_t sample_buffer[FFT_BUFFER_SIZE];
+        complex_t buffer_fft_out[FFT_BUFFER_SIZE];
 
         fftwf_plan p = fftwf_plan_dft_1d(FFT_BUFFER_SIZE, (fftwf_complex *)sample_buffer, (fftwf_complex *)buffer_fft_out, FFTW_FORWARD, FFTW_ESTIMATE);
 
@@ -78,8 +78,8 @@ namespace live
                     continue;
             }
 
-            std::memcpy(sample_buffer, sample_buffer_vec.data(), FFT_BUFFER_SIZE * sizeof(std::complex<float>));
-            std::memcpy(moduleStream->writeBuf, sample_buffer, FFT_BUFFER_SIZE * sizeof(std::complex<float>));
+            std::memcpy(sample_buffer, sample_buffer_vec.data(), FFT_BUFFER_SIZE * sizeof(complex_t));
+            std::memcpy(moduleStream->writeBuf, sample_buffer, FFT_BUFFER_SIZE * sizeof(complex_t));
             moduleStream->swap(FFT_BUFFER_SIZE);
             sample_buffer_vec.erase(sample_buffer_vec.begin(), sample_buffer_vec.begin() + FFT_BUFFER_SIZE);
 
@@ -133,7 +133,7 @@ namespace live
 
         // Start FFT
         process_fft = true;
-        moduleStream = std::make_shared<dsp::stream<std::complex<float>>>();
+        moduleStream = std::make_shared<dsp::stream<complex_t>>();
         processThreadPool.push(processFFT);
 
         // Start pipeline

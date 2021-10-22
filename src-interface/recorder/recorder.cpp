@@ -44,7 +44,7 @@ namespace recorder
     std::mutex dspMutex, fftMutex;
     void doDSP(int);
     void doFFT(int);
-    dsp::RingBuffer<std::complex<float>> circBuffer;
+    dsp::RingBuffer<complex_t> circBuffer;
 
     void initRecorder()
     {
@@ -258,8 +258,8 @@ namespace recorder
                 for (int i = 0; i < cnt; i++)
                 {
                     // Clamp samples
-                    radio->output_stream->readBuf[i] = std::complex<float>(clampF(radio->output_stream->readBuf[i].real()),
-                                                                           clampF(radio->output_stream->readBuf[i].imag()));
+                    radio->output_stream->readBuf[i] = complex_t(clampF(radio->output_stream->readBuf[i].real),
+                                                                 clampF(radio->output_stream->readBuf[i].imag));
                 }
 
                 // This is faster than a case
@@ -329,8 +329,8 @@ namespace recorder
         //logger->info(runs_to_wait);
 
         float *fftb = (float *)volk_malloc(FFT_SIZE * sizeof(float), volk_get_alignment());
-        std::complex<float> *sample_buffer = (std::complex<float> *)volk_malloc(FFT_SIZE * sizeof(std::complex<float>), volk_get_alignment());
-        std::complex<float> *buffer_fft_out = (std::complex<float> *)volk_malloc(FFT_SIZE * sizeof(std::complex<float>), volk_get_alignment());
+        complex_t *sample_buffer = (complex_t *)volk_malloc(FFT_SIZE * sizeof(complex_t), volk_get_alignment());
+        complex_t *buffer_fft_out = (complex_t *)volk_malloc(FFT_SIZE * sizeof(complex_t), volk_get_alignment());
 
         fftwf_plan p = fftwf_plan_dft_1d(FFT_SIZE, (fftwf_complex *)sample_buffer, (fftwf_complex *)buffer_fft_out, FFTW_FORWARD, FFTW_ESTIMATE);
 

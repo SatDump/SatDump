@@ -16,7 +16,7 @@ public:
                  std::string output_dir);
     ~LivePipeline();
 
-    void start(std::shared_ptr<dsp::stream<std::complex<float>>> stream, ctpl::thread_pool &threadPool);
+    void start(std::shared_ptr<dsp::stream<complex_t>> stream, ctpl::thread_pool &threadPool);
     void stop();
 
     std::vector<std::string> getOutputFiles();

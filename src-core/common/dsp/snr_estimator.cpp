@@ -13,14 +13,14 @@ M2M4SNREstimator::M2M4SNREstimator(float alpha)
     d_beta = 1.0 - alpha;
 }
 
-void M2M4SNREstimator::update(std::complex<float> *input, int size)
+void M2M4SNREstimator::update(complex_t *input, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        float y1 = abs(input[i]) * abs(input[i]);
+        float y1 = abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]);
         d_y1 = d_alpha * y1 + d_beta * d_y1;
 
-        float y2 = abs(input[i]) * abs(input[i]) * abs(input[i]) * abs(input[i]);
+        float y2 = abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]);
         d_y2 = d_alpha * y2 + d_beta * d_y2;
     }
 }

@@ -1,8 +1,12 @@
 #include "bpsk_carrier_pll.h"
+#include "fast_atan2f.h"
+#include <cmath>
+
+#define M_TWOPI (2 * M_PI)
 
 namespace dsp
 {
-    BPSKCarrierPLLBlock::BPSKCarrierPLLBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float alpha, float beta, float max_offset) : Block(input), d_pll(alpha, beta, max_offset)
+    BPSKCarrierPLLBlock::BPSKCarrierPLLBlock(std::shared_ptr<dsp::stream<complex_t>> input, float alpha, float beta, float max_offset) : Block(input), alpha(alpha), beta(beta), max_offset(max_offset)
     {
     }
 
@@ -14,7 +18,32 @@ namespace dsp
             input_stream->flush();
             return;
         }
-        d_pll.work(input_stream->readBuf, nsamples, output_stream->writeBuf);
+
+        for (int i = 0; i < nsamples; i++)
+        {
+            // Generate and mix out carrier
+            float re, im;
+            sincosf(phase, &im, &re);
+            output_stream->writeBuf[i] = (input_stream->readBuf[i] * complex_t(re, -im)).imag;
+
+            // Compute error and wrap
+            float error = fast_atan2f(input_stream->readBuf[i].imag, input_stream->readBuf[i].real) - phase;
+            while (error < -M_PI)
+                error += M_TWOPI;
+            while (error > M_PI)
+                error -= M_TWOPI;
+
+            // Clip frequency
+            freq = BRANCHLESS_CLIP(freq + error * beta, max_offset);
+
+            // Wrap phase
+            phase = phase + error * alpha + freq;
+            while (phase < -M_PI)
+                phase += M_TWOPI;
+            while (phase > M_PI)
+                phase -= M_TWOPI;
+        }
+
         input_stream->flush();
         output_stream->swap(nsamples);
     }

@@ -4,7 +4,7 @@
 #include <complex>
 #include "common/codings/viterbi/viterbi27.h"
 #include <fstream>
-#include "common/dsp/lib/random.h"
+#include "common/dsp/random.h"
 
 namespace proba
 {

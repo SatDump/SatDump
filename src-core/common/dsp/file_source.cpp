@@ -44,7 +44,7 @@ namespace dsp
             switch (d_type)
             {
             case COMPLEX_FLOAT_32:
-                d_input_file.read((char *)output_stream->writeBuf, d_buffer_size * sizeof(std::complex<float>));
+                d_input_file.read((char *)output_stream->writeBuf, d_buffer_size * sizeof(complex_t));
                 break;
 
             case INTEGER_16:
@@ -80,7 +80,7 @@ namespace dsp
                 {
                     float imag = (buffer_u8[i * 2] - 127) * 0.004f;
                     float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
-                    output_stream->writeBuf[i] = std::complex<float>(real, imag);
+                    output_stream->writeBuf[i] = complex_t(real, imag);
                 }
                 break;
 
@@ -92,7 +92,7 @@ namespace dsp
             {
                 for (int i = 0; i < output_size; i++)
                 {
-                    output_stream->writeBuf[i] = std::complex<float>(output_stream->writeBuf[i].imag(), output_stream->writeBuf[i].real());
+                    output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
                 }
             }
 

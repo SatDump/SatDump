@@ -1,5 +1,5 @@
 #include "module_fsk_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -25,7 +25,7 @@ void FSKDemodModule::init()
     if (input_data_type == DATA_FILE)
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
     agc = std::make_shared<dsp::AGCBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 0.0038e-3f, 1.0f, 0.5f / 32768.0f, 65536);
-    lpf = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width, dsp::fft::window::WIN_KAISER));
+    lpf = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width, dsp::fft::window::WIN_KAISER));
     qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf->output_stream, 1.0f);
     rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(qua->output_stream, (float)d_samplerate / (float)d_symbolrate, powf(0.01f, 2) / 4.0f, 0.5f, 0.01, 100e-6f);
 }

@@ -1,17 +1,25 @@
 #pragma once
 
 #include "block.h"
-#include "lib/pll_carrier_tracking.h"
 
+/*
+PLL syncing against a center carrier, and bringing it to DC
+*/
 namespace dsp
 {
-    class PLLCarrierTrackingBlock : public Block<std::complex<float>, std::complex<float>>
+    class PLLCarrierTrackingBlock : public Block<complex_t, complex_t>
     {
     private:
-        dsp::PLLCarrierTracking d_pll;
+        float d_max_freq, d_min_freq;
+        float d_damping, d_loop_bw;
+        float d_alpha, d_beta;
+        float d_locksig, d_lock_threshold;
+        bool d_squelch_enable;
+        float d_phase, d_freq;
+
         void work();
 
     public:
-        PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float loop_bw, float max, float min);
+        PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, float max, float min);
     };
 }

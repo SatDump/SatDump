@@ -1,5 +1,5 @@
 #include "module_tlm_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -46,7 +46,7 @@ namespace elektro_arktika
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
 
         // Cleanup things a bit
-        std::shared_ptr<dsp::stream<std::complex<float>>> input_data = input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream;
+        std::shared_ptr<dsp::stream<complex_t>> input_data = input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream;
 
         // Init resampler if required
         if (resample)
@@ -65,7 +65,7 @@ namespace elektro_arktika
         shi = std::make_shared<dsp::FreqShiftBlock>(dcb->output_stream, samplerate, -symbolrate);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(shi->output_stream, 1, dsp::firgen::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
+        rrc = std::make_shared<dsp::CCFIRBlock>(shi->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
 
         // Costas
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.03f, 2);
@@ -141,7 +141,7 @@ namespace elektro_arktika
 
             rec->output_stream->flush();
 
-            volk_32fc_deinterleave_real_32f(real_buffer, rec->output_stream->readBuf, dat_size);
+            volk_32fc_deinterleave_real_32f(real_buffer, (lv_32fc_t *)rec->output_stream->readBuf, dat_size);
             volk_32f_binary_slicer_8i((int8_t *)bits_buffer, real_buffer, dat_size);
 
             int bytes = repacker.work(bits_buffer, dat_size, repacked_buffer);

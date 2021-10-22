@@ -1,5 +1,5 @@
 #include "module_noaa_dsb_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "common/codings/manchester.h"
 #include "imgui/imgui.h"
@@ -49,7 +49,7 @@ namespace noaa
         pll = std::make_shared<dsp::BPSKCarrierPLLBlock>(agc->output_stream, 0.01f, powf(0.01, 2) / 4.0f, 3.0f * M_PI * 100e3 / (float)samplerate);
 
         // RRC
-        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, 1, dsp::firgen::root_raised_cosine(1, (float)samplerate / 2.0f, symbolrate, 0.5, 1023));
+        rrc = std::make_shared<dsp::FFFIRBlock>(pll->output_stream, dsp::firdes::root_raised_cosine(1, (float)samplerate / 2.0f, symbolrate, 0.5, 1023));
 
         // Recovery
         rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, sps / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01, 100e-6);
@@ -107,7 +107,7 @@ namespace noaa
                 continue;
 
             // Estimate SNR, only on part of the samples to limit CPU usage
-            snr_estimator.update((std::complex<float> *)rec->output_stream->readBuf, dat_size / 100);
+            snr_estimator.update((complex_t *)rec->output_stream->readBuf, dat_size / 100);
             snr = snr_estimator.snr();
 
             if (snr > peak_snr)

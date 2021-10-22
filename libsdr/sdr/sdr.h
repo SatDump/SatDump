@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/dsp/complex.h"
 #include "common/dsp/buffer.h"
 #include <vector>
 #include <map>
@@ -30,7 +31,7 @@ protected:
     float d_frequency;
 
 public:
-    std::shared_ptr<dsp::stream<std::complex<float>>> output_stream;
+    std::shared_ptr<dsp::stream<complex_t>> output_stream;
     SDRDevice(std::map<std::string, std::string> parameters, uint64_t id = 0);
     virtual std::map<std::string, std::string> getParameters() = 0;
     virtual std::string getID() = 0;

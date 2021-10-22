@@ -1,5 +1,5 @@
 #include "module_terra_db_demod.h"
-#include "common/dsp/lib/fir_gen.h"
+#include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -17,7 +17,7 @@ namespace terra
         // Init DSP blocks
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
         agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 1e-3, 1.0f, 1.0f, 65536);
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, 1, dsp::firgen::root_raised_cosine(1, d_samplerate, 13.125e6 * 2, 0.5f, 31));
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, d_samplerate, 13.125e6 * 2, 0.5f, 31));
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2);
         rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, ((float)d_samplerate / (float)13.125e6) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
 
@@ -85,7 +85,7 @@ namespace terra
 
             for (int i = 0; i < dat_size; i++)
             {
-                sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real() * 50);
+                sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 50);
             }
 
             rec->output_stream->flush();

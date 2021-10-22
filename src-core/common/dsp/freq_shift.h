@@ -2,16 +2,19 @@
 
 #include "block.h"
 
+/*
+Frequency shifer
+*/
 namespace dsp
 {
-    class FreqShiftBlock : public Block<std::complex<float>, std::complex<float>>
+    class FreqShiftBlock : public Block<complex_t, complex_t>
     {
     private:
         void work();
-        std::complex<float> phase_delta;
-        std::complex<float> phase;
+        complex_t phase_delta;
+        complex_t phase;
 
     public:
-        FreqShiftBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float samplerate, float shift);
+        FreqShiftBlock(std::shared_ptr<dsp::stream<complex_t>> input, float samplerate, float shift);
     };
 }

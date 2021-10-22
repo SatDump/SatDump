@@ -1,8 +1,8 @@
 #pragma once
 
 #include "imgui/imgui.h"
-#include <complex>
-#include "common/dsp/lib/random.h"
+#include "common/dsp/complex.h"
+#include "common/dsp/random.h"
 
 namespace widgets
 {
@@ -11,7 +11,7 @@ namespace widgets
     class ConstellationViewer
     {
     private:
-        std::complex<float> sample_buffer_complex_float[CONST_SIZE];
+        complex_t sample_buffer_complex_float[CONST_SIZE];
         const float d_hscale, d_vscale;
         const int d_constellation_size;
         dsp::Random rng;
@@ -19,7 +19,7 @@ namespace widgets
     public:
         ConstellationViewer(float hscale = 1, float vscale = 1, int constellation_size = 200);
         ~ConstellationViewer();
-        void pushComplex(std::complex<float> *buffer, int size);
+        void pushComplex(complex_t *buffer, int size);
         void pushFloatAndGaussian(float *buffer, int size);
         void draw();
     };

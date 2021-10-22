@@ -27,7 +27,7 @@ void SDRFile::runThread()
         switch (baseband_type_e)
         {
         case dsp::COMPLEX_FLOAT_32:
-            input_file.read((char *)output_stream->writeBuf, buf_size * sizeof(std::complex<float>));
+            input_file.read((char *)output_stream->writeBuf, buf_size * sizeof(complex_t));
             break;
 
         case dsp::INTEGER_16:
@@ -46,7 +46,7 @@ void SDRFile::runThread()
             {
                 float imag = (buffer_u8[i * 2] - 127) * 0.004f;
                 float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
-                output_stream->writeBuf[i] = std::complex<float>(real, imag);
+                output_stream->writeBuf[i] = complex_t(real, imag);
             }
             break;
 
@@ -123,12 +123,12 @@ void SDRFile::drawUI()
     if (ImGui::SliderFloat("Progress", &file_progress, 0, 100))
     {
         file_mutex.lock();
-        int samplesize = sizeof(std::complex<float>);
+        int samplesize = sizeof(complex_t);
 
         switch (baseband_type_e)
         {
         case dsp::COMPLEX_FLOAT_32:
-            samplesize = sizeof(std::complex<float>);
+            samplesize = sizeof(complex_t);
             break;
 
         case dsp::INTEGER_16:

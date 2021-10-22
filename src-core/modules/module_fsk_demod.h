@@ -4,7 +4,7 @@
 #include <complex>
 #include <thread>
 #include <fstream>
-#include "common/dsp/lib/random.h"
+#include "common/dsp/random.h"
 #include "common/dsp/agc.h"
 #include "common/dsp/fir.h"
 #include "common/dsp/quadrature_demod.h"

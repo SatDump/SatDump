@@ -1,27 +1,44 @@
 #pragma once
 
 #include "block.h"
-#include "lib/fir_filter.h"
+#include <vector>
 
+/*
+Basic FIR filters implementations.
+This originally used GNU Radio's implementation,
+but was now simplified down to what's actually necessary...
+Decimation support was removed, as it is not currently
+required anywhere.
+*/
 namespace dsp
 {
-    class CCFIRBlock : public Block<std::complex<float>, std::complex<float>>
+    class CCFIRBlock : public Block<complex_t, complex_t>
     {
     private:
-        dsp::FIRFilterCCF d_fir;
+        complex_t *history;
+        float **taps;
+        int ntaps;
+        int align;
+        int aligned_tap_count;
         void work();
 
     public:
-        CCFIRBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, int decimation, std::vector<float> taps);
+        CCFIRBlock(std::shared_ptr<dsp::stream<complex_t>> input, std::vector<float> taps);
+        ~CCFIRBlock();
     };
 
     class FFFIRBlock : public Block<float, float>
     {
     private:
-        dsp::FIRFilterFFF d_fir;
+        float *history;
+        float **taps;
+        int ntaps;
+        int align;
+        int aligned_tap_count;
         void work();
 
     public:
-        FFFIRBlock(std::shared_ptr<dsp::stream<float>> input, int decimation, std::vector<float> taps);
+        FFFIRBlock(std::shared_ptr<dsp::stream<float>> input, std::vector<float> taps);
+        ~FFFIRBlock();
     };
 }

@@ -1,17 +1,19 @@
 #pragma once
 
 #include "block.h"
-#include "lib/agc.h"
 
 namespace dsp
 {
-    class AGCBlock : public Block<std::complex<float>, std::complex<float>>
+    class AGCBlock : public Block<complex_t, complex_t>
     {
     private:
-        dsp::AgcCC d_agc;
+        float rate;      // adjustment rate
+        float reference; // reference value
+        float gain;      // current gain
+        float max_gain;  // max allowable gain
         void work();
 
     public:
-        AGCBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float agc_rate, float reference, float gain, float max_gain);
+        AGCBlock(std::shared_ptr<dsp::stream<complex_t>> input, float agc_rate, float reference, float gain, float max_gain);
     };
 }

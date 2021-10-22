@@ -1,6 +1,6 @@
 #pragma once
 
-#include <complex>
+#include "complex.h"
 
 /* From GNU Radio, adapted */
 
@@ -37,7 +37,7 @@ public:
     M2M4SNREstimator(float alpha = 0.001);
     ~M2M4SNREstimator() {}
 
-    void update(std::complex<float> *input, int size);
+    void update(complex_t *input, int size);
     float snr();
     float signal();
     float noise();

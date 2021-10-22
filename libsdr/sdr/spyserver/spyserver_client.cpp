@@ -6,7 +6,7 @@ using namespace std::chrono_literals;
 
 namespace spyserver
 {
-    SpyServerClientClass::SpyServerClientClass(net::Conn conn, dsp::stream<std::complex<float>> *out)
+    SpyServerClientClass::SpyServerClientClass(net::Conn conn, dsp::stream<complex_t> *out)
     {
         readBuf = new uint8_t[SPYSERVER_MAX_MESSAGE_BODY_SIZE];
         writeBuf = new uint8_t[SPYSERVER_MAX_MESSAGE_BODY_SIZE];
@@ -165,7 +165,7 @@ namespace spyserver
             float scale = 1.0f / (gain * 128.0f);
             for (int i = 0; i < sampCount; i++)
             {
-                _this->output->writeBuf[i] = std::complex<float>(((float)_this->readBuf[(2 * i)] - 128.0f) * scale,
+                _this->output->writeBuf[i] = complex_t(((float)_this->readBuf[(2 * i)] - 128.0f) * scale,
                                                                  ((float)_this->readBuf[(2 * i) + 1] - 128.0f) * scale);
             }
             _this->output->swap(sampCount);
@@ -184,7 +184,7 @@ namespace spyserver
         }
         else if (mtype == SPYSERVER_MSG_TYPE_FLOAT_IQ)
         {
-            int sampCount = _this->receivedHeader.BodySize / sizeof(std::complex<float>);
+            int sampCount = _this->receivedHeader.BodySize / sizeof(complex_t);
             float gain = pow(10, (double)mflags / 20.0);
             volk_32f_s32f_multiply_32f((float *)_this->output->writeBuf, (float *)_this->readBuf, gain, sampCount * 2);
             _this->output->swap(sampCount);
@@ -193,7 +193,7 @@ namespace spyserver
         _this->client->readAsync(sizeof(SpyServerMessageHeader), (uint8_t *)&_this->receivedHeader, dataHandler, _this);
     }
 
-    SpyServerClient connect(std::string host, uint16_t port, dsp::stream<std::complex<float>> *out)
+    SpyServerClient connect(std::string host, uint16_t port, dsp::stream<complex_t> *out)
     {
         net::Conn conn = net::connect(host, port);
         if (!conn)

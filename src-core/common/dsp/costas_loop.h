@@ -1,17 +1,29 @@
 #pragma once
 
 #include "block.h"
-#include "lib/costas_loop.h"
 
+/*
+Costas loop implementation 
+with order 2, 4 and 8 support
+*/
 namespace dsp
 {
-    class CostasLoopBlock : public Block<std::complex<float>, std::complex<float>>
+    class CostasLoopBlock : public Block<complex_t, complex_t>
     {
     private:
-        dsp::CostasLoop d_costas;
+        float error;
+        float noise;
+        int order;
+
+        float phase, freq;
+        float loop_bw;
+        float alpha, beta;
+
+        complex_t previous_vco;
+        complex_t tmp_val;
         void work();
 
     public:
-        CostasLoopBlock(std::shared_ptr<dsp::stream<std::complex<float>>> input, float loop_bw, unsigned int order);
+        CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order);
     };
 }
