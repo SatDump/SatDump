@@ -1,5 +1,6 @@
 #include "airs_reader.h"
 #include "utils.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace aqua
 {
@@ -16,6 +17,8 @@ namespace aqua
                 hd_channels[i] = new unsigned short[10000 * 90 * 9];
             }
             lines = 0;
+            timestamps_ifov.push_back(std::vector<double>(90));
+            std::fill(timestamps_ifov[lines].begin(), timestamps_ifov[lines].end(), -1);
         }
 
         AIRSReader::~AIRSReader()
@@ -88,9 +91,17 @@ namespace aqua
                 }
             }
 
+            // Timestamp
+            double timestamp = ccsds::parseCCSDSTimeFullRawUnsegmented(&packet.payload[1], -4383, 15.3e-6);
+            timestamps_ifov[lines][pix_pos] = timestamp;
+
             // Frame counter
             if (counter == 22 || counter == 278 || counter == 534)
+            {
                 lines++;
+                timestamps_ifov.push_back(std::vector<double>(90));
+                std::fill(timestamps_ifov[lines].begin(), timestamps_ifov[lines].end(), -1);
+            }
         }
 
         cimg_library::CImg<unsigned short> AIRSReader::getChannel(int channel)

@@ -6,6 +6,9 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
+#include "modules/eos/eos.h"
 
 #define BUFFER_SIZE 8192
 
@@ -101,6 +104,16 @@ namespace aqua
                 WRITE_IMAGE(airs_reader.getHDChannel(i), directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
             }
 
+            // There nearly 3000 channels... So we write that in a specific folder not to fill up the main one
+            if (!std::filesystem::exists(directory + "/Channels"))
+                std::filesystem::create_directory(directory + "/Channels");
+
+            for (int i = 0; i < 2666; i++)
+            {
+                logger->info("Channel " + std::to_string(i + 1) + "...");
+                WRITE_IMAGE(airs_reader.getChannel(i), directory + "/Channels/AIRS-" + std::to_string(i + 1) + ".png");
+            }
+
             // Output a few nice composites as well
             logger->info("Global Composite...");
             int all_width_count = 100;
@@ -148,6 +161,74 @@ namespace aqua
                 image321.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(0));
             }
             WRITE_IMAGE(image321, directory + "/AIRS-HD-RGB-321.png");
+
+            // Normal res projecition
+            if (airs_reader.lines > 0)
+            {
+                int norad = EOS_AQUA_NORAD;
+
+                // Setup Projecition
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
+                    98.8,                              // Scan angle
+                    1.1,                               // IFOV X scan angle
+                    1.4,                               // IFOV Y scan angle
+                    -0.5,                              // Roll offset
+                    0.0,                               // Pitch offset
+                    -2.5,                              // Yaw offset
+                    -1.1,                              // Time offset
+                    90,                                // Number of IFOVs
+                    1,                                 // IFOV Width
+                    1,                                 // IFOV Height
+                    airs_reader.getChannel(0).width(), // Image width
+                    true,                              // Invert scan
+                    tle::getTLEfromNORAD(norad),       // TLEs
+                    airs_reader.timestamps_ifov        // Timestamps
+                );
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AIRS.georef");
+                }
+
+                logger->info("Projected 62 channel...");
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(airs_reader.getChannel(62), projector, 2048 * 4, 1024 * 4, 1);
+                WRITE_IMAGE(projected_image, directory + "/AIRS-62-PROJ.png");
+            }
+
+            // HD Projection
+            if (airs_reader.lines > 0)
+            {
+                int norad = EOS_AQUA_NORAD;
+
+                // Setup Projecition
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
+                    98.8,                                // Scan angle
+                    1.1,                                 // IFOV X scan angle
+                    1.4,                                 // IFOV Y scan angle
+                    -0.5,                                // Roll offset
+                    0.0,                                 // Pitch offset
+                    -2.5,                                // Yaw offset
+                    -1.1,                                // Time offset
+                    90,                                  // Number of IFOVs
+                    8,                                   // IFOV Width
+                    9,                                   // IFOV Height
+                    airs_reader.getHDChannel(0).width(), // Image width
+                    true,                                // Invert scan
+                    tle::getTLEfromNORAD(norad),         // TLEs
+                    airs_reader.timestamps_ifov          // Timestamps
+                );
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AIRS-HD.georef");
+                }
+
+                logger->info("Projected HD RGB 321 channel...");
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/AIRS-HD-RGB-321-PROJ.png");
+            }
         }
 
         void AquaAIRSDecoderModule::drawUI(bool window)

@@ -55,6 +55,8 @@ namespace geodetic
                         projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color, 0.4 * opacity);
                     }
 
+                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+
                     if (progress != nullptr)
                         *progress = float(currentScan) / float(image.height());
                 }

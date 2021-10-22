@@ -1,4 +1,5 @@
 #include "amsu_a2_reader.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace aqua
 {
@@ -40,6 +41,9 @@ namespace aqua
                     channels[channel][lines * 30 + 30 - i] = lineBuffer[i * 4 + channel];
                 }
             }
+
+            double timestamp = ccsds::parseCCSDSTimeFullRawUnsegmented(&packet.payload[1], -4383, 15.3e-6);
+            timestamps.push_back(timestamp);
 
             // Frame counter
             lines++;

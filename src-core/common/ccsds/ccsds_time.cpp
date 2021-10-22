@@ -27,4 +27,13 @@ namespace ccsds
 
         return double(offset + days) * 86400.0 + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / double(us_of_ms_scale);
     }
+
+    double parseCCSDSTimeFullRawUnsegmented(uint8_t *data, int offset, double ms_scale)
+    {
+        uint8_t seconds_to_convert = data[1] & 0b1111111;
+        uint32_t seconds_since_epoch = data[2] << 24 | data[3] << 16 | data[4] << 8 | data[5];
+        uint16_t subsecond_time = data[6] << 8 | data[7];
+
+        return offset * 86400.0 + double(seconds_since_epoch - seconds_to_convert) + double(subsecond_time) * double(ms_scale);
+    }
 }

@@ -13,6 +13,7 @@
 #include "modules/eos/eos.h"
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -199,6 +200,53 @@ namespace eos
             const long scanHeight_500 = 20;
             const long scanHeight_1000 = 10;
 
+            // Setup GEO projectors
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_1000 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                109.9,                       // Scan angle
+                -0.0,                        // Roll offset
+                0,                           // Pitch offset
+                -3.0,                        // Yaw offset
+                -3.5,                        // Time offset
+                1354,                        // Image width
+                true,                        // Invert scan
+                tle::getTLEfromNORAD(norad), // TLEs
+                reader.timestamps_1000       // Timestamps
+            );
+            geodetic::projection::LEOScanProjector projector_1000(proj_settings_1000);
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_500 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                109.9,                       // Scan angle
+                -0.0,                        // Roll offset
+                0,                           // Pitch offset
+                -3.0,                        // Yaw offset
+                -3.5,                        // Time offset
+                1354 * 2,                    // Image width
+                true,                        // Invert scan
+                tle::getTLEfromNORAD(norad), // TLEs
+                reader.timestamps_500        // Timestamps
+            );
+            geodetic::projection::LEOScanProjector projector_500(proj_settings_500);
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_250 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                109.9,                       // Scan angle
+                -0.0,                        // Roll offset
+                0,                           // Pitch offset
+                -3.0,                        // Yaw offset
+                -3.5,                        // Time offset
+                1354 * 4,                    // Image width
+                true,                        // Invert scan
+                tle::getTLEfromNORAD(norad), // TLEs
+                reader.timestamps_250        // Timestamps
+            );
+            geodetic::projection::LEOScanProjector projector_250(proj_settings_250);
+
+            {
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_1000 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_1000);
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_500 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_500);
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_250 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_250);
+                geodetic::projection::proj_file::writeReferenceFile(geofile_1000, directory + "/MODIS-1000.georef");
+                geodetic::projection::proj_file::writeReferenceFile(geofile_500, directory + "/MODIS-500.georef");
+                geodetic::projection::proj_file::writeReferenceFile(geofile_250, directory + "/MODIS-250.georef");
+            }
+
             for (int i = 0; i < 2; i++)
             {
                 cimg_library::CImg<unsigned short> image = reader.getImage250m(i);
@@ -364,22 +412,8 @@ namespace eos
                 {
                     //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
 
-                    // Setup Projecition
-                    std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                        109.7,                       // Scan angle
-                        -0.1,                        // Roll offset
-                        0,                           // Pitch offset
-                        -2.5,                        // Yaw offset
-                        -2.0,                        // Time offset
-                        pre_wb.width(),              // Image width
-                        true,                        // Invert scan
-                        tle::getTLEfromNORAD(norad), // TLEs
-                        reader.timestamps_250        // Timestamps
-                    );
-                    geodetic::projection::LEOScanProjector projector(proj_settings);
-
                     logger->info("Projected Channel 143 EQURAW...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(pre_wb, projector, 2048 * 4, 1024 * 4, 3);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(pre_wb, projector_250, 2048 * 4, 1024 * 4, 3);
                     WRITE_IMAGE(projected_image, directory + "/MODIS-143-EQURAW-PROJ.png");
                 }
             }
@@ -396,27 +430,13 @@ namespace eos
                                                                                                                  EOS_ORBIT_HEIGHT,
                                                                                                                  EOS_MODIS_SWATH,
                                                                                                                  EOS_MODIS_RES1000);
-                //WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
 
                 // Reproject to an equirectangular proj
                 {
-                    // Setup Projecition
-                    std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                        109.7,                       // Scan angle
-                        -0.1,                        // Roll offset
-                        0,                           // Pitch offset
-                        -2.5,                        // Yaw offset
-                        -2.0,                        // Time offset
-                        image23.width(),             // Image width
-                        true,                        // Invert scan
-                        tle::getTLEfromNORAD(norad), // TLEs
-                        reader.timestamps_1000       // Timestamps
-                    );
-                    geodetic::projection::LEOScanProjector projector(proj_settings);
-
                     logger->info("Projected Channel 29...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image23, projector, 2048 * 4, 1024 * 4, 1);
-                    //projected_image.crop(20778, 2853, 20778 + 5145, 2853 + 3573);
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image23, projector_1000, 2048 * 4, 1024 * 4, 1);
+                    //projected_image.crop(18800, 2668, 18800 + 5516, 2668 + 3700);
                     WRITE_IMAGE(projected_image, directory + "/MODIS-29-EQU-PROJ.png");
                 }
             }

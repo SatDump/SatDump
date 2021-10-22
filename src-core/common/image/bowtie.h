@@ -10,5 +10,8 @@ namespace image
     {
         template <typename T>
         cimg_library::CImg<T> correctGenericBowTie(cimg_library::CImg<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta);
+
+        //template <typename T>
+        //cimg_library::CImg<T> correctSingleBowTie(cimg_library::CImg<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta);
     }
 }

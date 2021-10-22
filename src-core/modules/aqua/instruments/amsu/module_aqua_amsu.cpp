@@ -7,6 +7,9 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
+#include "modules/eos/eos.h"
 
 #define BUFFER_SIZE 8192
 
@@ -156,6 +159,84 @@ namespace aqua
                 imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
+
+            // Reproject to an equirectangular proj
+            if (a1reader.lines > 0 || a2reader.lines > 0)
+            {
+                // Get satellite info
+                int norad = EOS_AQUA_NORAD;
+
+                // Setup Projecition. Twice with the same parameters except we need different timestamps
+                // There is no "real" guarantee the A1 / A2 output will always be identical
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 =
+                    a1reader.lines > 0 ? std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                                             98,                             // Scan angle
+                                             -5,                             // Roll offset
+                                             0,                              // Pitch offset
+                                             0,                              // Yaw offset
+                                             10,                             // Time offset
+                                             a1reader.getChannel(0).width(), // Image width
+                                             true,                           // Invert scan
+                                             tle::getTLEfromNORAD(norad),    // TLEs
+                                             a1reader.timestamps             // Timestamps
+                                             )
+                                       : nullptr;
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 =
+                    a2reader.lines > 0 ? std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                                             98,                             // Scan angle
+                                             -5,                             // Roll offset
+                                             0,                              // Pitch offset
+                                             0,                              // Yaw offset
+                                             10,                             // Time offset
+                                             a2reader.getChannel(0).width(), // Image width
+                                             true,                           // Invert scan
+                                             tle::getTLEfromNORAD(norad),    // TLEs
+                                             a2reader.timestamps             // Timestamps
+                                             )
+                                       : nullptr;
+
+                if (a1reader.lines > 0)
+                {
+                    geodetic::projection::LEOScanProjector projector_a1(proj_settings_a1);
+
+                    {
+                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
+                        geodetic::projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
+                    }
+
+                    for (int i = 0; i < 13; i++)
+                    {
+                        cimg_library::CImg<unsigned short> image = a1reader.getChannel(i).equalize(1000).normalize(0, 65535);
+                        image.equalize(1000);
+                        image.normalize(0, 65535);
+                        logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
+                        WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
+                    }
+                }
+
+                if (a2reader.lines > 0)
+                {
+                    geodetic::projection::LEOScanProjector projector_a2(proj_settings_a2);
+
+                    {
+                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
+                        geodetic::projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
+                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a2 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a2);
+                        geodetic::projection::proj_file::writeReferenceFile(geofile_a2, directory + "/AMSU-A2.georef");
+                    }
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        cimg_library::CImg<unsigned short> image = a2reader.getChannel(i).equalize(1000).normalize(0, 65535);
+                        image.equalize(1000);
+                        image.normalize(0, 65535);
+                        logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
+                        WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
+                    }
+                }
+            }
         }
 
         void AquaAMSUDecoderModule::drawUI(bool window)
