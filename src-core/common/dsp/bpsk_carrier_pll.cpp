@@ -4,6 +4,10 @@
 
 #define M_TWOPI (2 * M_PI)
 
+#ifdef __APPLE__
+#define sincosf __sincosf
+#endif
+
 namespace dsp
 {
     BPSKCarrierPLLBlock::BPSKCarrierPLLBlock(std::shared_ptr<dsp::stream<complex_t>> input, float alpha, float beta, float max_offset) : Block(input), alpha(alpha), beta(beta), max_offset(max_offset)
