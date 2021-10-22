@@ -46,13 +46,13 @@ namespace dsp
             return;
         }
 
-        memcpy(&buffer[in_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
-        in_buffer += nsamples;
+        // Copy NTAPS samples in the buffer from input, as that's required for the last samples
+        memcpy(&buffer[in_buffer], input_stream->readBuf, NTAPS * sizeof(complex_t));
 
-        int out_c = 0;                             // Output index
-        int in_c = 0;                              // Input index
-        int input_number = in_buffer - NTAPS - 16; // Number of samples to use
-        float phase_error = 0;                     // Phase Error
+        int out_c = 0;                                          // Output index
+        int in_c = 0;                                           // Input index
+        int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
+        float phase_error = 0;                                  // Phase Error
 
         for (; in_c < input_number;)
         {
@@ -68,7 +68,11 @@ namespace dsp
                 imu = 0;
             if (imu > NSTEPS)
                 imu = NSTEPS;
-            volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[in_c], TAPS[imu], NTAPS);
+
+            if (in_c < in_buffer)
+                volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[in_c], TAPS[imu], NTAPS);
+            else
+                volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&input_stream->readBuf[in_c - in_buffer], TAPS[imu], NTAPS);
 
             // Slice it
             c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
@@ -92,8 +96,12 @@ namespace dsp
                 in_c = 0;
         }
 
-        memmove(&buffer[0], &buffer[in_c], (in_buffer - in_c) * sizeof(complex_t));
-        in_buffer -= in_c;
+        // We need some history for the next run, so copy it over into our buffer
+        // If everything's normal this will be around NTAPS - 16 +-1, but the buffer
+        // is way larger just by safety
+        int to_keep = nsamples - (in_c - in_buffer);
+        memcpy(&buffer[0], &input_stream->readBuf[in_c - in_buffer], to_keep * sizeof(complex_t));
+        in_buffer = to_keep;
 
         input_stream->flush();
         output_stream->swap(out_c);
