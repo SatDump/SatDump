@@ -139,7 +139,10 @@
                 "aqua_db_decoder": {}
             },
             "products": {
-                
+                "eos_modis": {
+                    "terra_mode": "0",
+                    "correct_bowtie": "1"
+                },
                 "aqua_airs": {},
                 "aqua_ceres": {},
                 "aqua_amsu": {}
