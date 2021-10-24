@@ -64,6 +64,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_fsk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
+#include "modules/metop/module_metop_dump_decoder.h"
 #include "modules/metop/module_new_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
 #include "modules/metop/instruments/mhs/module_metop_mhs.h"
@@ -185,6 +186,7 @@ void registerModules()
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
+    REGISTER_MODULE(metop::MetOpDumpDecoderModule);
     REGISTER_MODULE(metop::NewMetOpAHRPTDecoderModule);
     REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
     REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
