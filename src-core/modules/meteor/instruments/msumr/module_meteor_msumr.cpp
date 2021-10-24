@@ -51,7 +51,7 @@ namespace meteor
             logger->info("Demultiplexing and deframing...");
 
             time_t currentDay = time(0);
-            time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 1; // Requires the day to be known from another source
+            time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
 
             std::vector<double> timestamps;
 

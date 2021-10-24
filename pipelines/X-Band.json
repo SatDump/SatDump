@@ -406,5 +406,28 @@
                 "aura_omi": {}
             }
         }
+    },
+    "cfosat1_dump": {
+        "name": "CFOSAT-1 X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [
+            7800
+        ],
+        "samplerate": 40e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "30000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0189",
+                    "buffer_size": "8192"
+                }
+            }
+        }
     }
 }
