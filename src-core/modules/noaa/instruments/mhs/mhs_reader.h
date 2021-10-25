@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <fstream>
 #include <cmath>
 #include <array>
 #include <vector>
@@ -35,8 +34,7 @@ namespace noaa
             std::array<std::vector<std::array<double, MHS_WIDTH>>, 5> calibrated_channels;
             unsigned int last = 0;
             std::array<uint8_t, 50> MIU_data[80];
-            std::ofstream test_out;
-            uint32_t major_cycle_count;
+            uint32_t major_cycle_count = 0;
             uint32_t last_major_cycle = 0;
 
             //things needed for calibration
@@ -55,10 +53,10 @@ namespace noaa
             double get_u(double temp, int ch);
             double interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode);
             double get_timestamp(int pkt, int offset, int ms_scale = 1000);
+            std::array<std::array<uint16_t, 2>, 5> tmp;
 
         public:
             MHSReader();
-            ~MHSReader();
             int line = 0;
             std::vector<double> timestamps;
             void work(uint8_t *buffer);

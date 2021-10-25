@@ -36,6 +36,7 @@ namespace noaa
             while (!data_in.eof())
             {
                 uint8_t buffer[104];
+                std::memset(buffer, 0, 104);
 
                 data_in.read((char *)&buffer[0], 104);
 
@@ -85,8 +86,16 @@ namespace noaa
                 if (ch3[i] - ch5[i] > -3)
                 {
                     int index = (((ch3[i] - ch5[i]) + 3) * 200) / 64;
-                    const unsigned char color[] = {*clut.data(index, 0, 0, 0), *clut.data(index, 0, 0, 1), *clut.data(index, 0, 0, 2)};
-                    rain.draw_point(i % rain.width(), i / rain.width(), 0, color, 1.0f);
+                    if (index < 1024)
+                    {
+                        const unsigned char color[3] = {*clut.data(index, 0, 0, 0), *clut.data(index, 0, 0, 1), *clut.data(index, 0, 0, 2)};
+                        rain.draw_point(i % rain.width(), i / rain.width(), 0, color, 1.0f);
+                    }
+                    else
+                    {
+                        const unsigned char color[3] = {0, 0, 0};
+                        rain.draw_point(i % rain.width(), i / rain.width(), 0, color, 1.0f);
+                    }
                 }
             }
 
