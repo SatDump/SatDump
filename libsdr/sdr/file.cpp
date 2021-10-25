@@ -187,9 +187,9 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
     if (ImGui::Button("Select Input"))
                 {
                     logger->debug("Opening file dialog");
-    #ifdef __ANDROID__
+#ifdef __ANDROID__
                     file_path = getFilePath();
-    #else
+#else
                     auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
                     while (result.ready(1000))
                     {
@@ -197,7 +197,7 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
 
                     if (result.result().size() > 0)
                         strcpy(file_path, result.result()[0].c_str());
-    #endif
+#endif
 
                 }
 
