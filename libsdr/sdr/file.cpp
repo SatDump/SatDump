@@ -2,6 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "portable-file-dialogs.h"
 
 void SDRFile::runThread()
 {
@@ -182,6 +183,23 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
     ImGui::Text("File path");
     ImGui::SameLine();
     ImGui::InputText("##filesourcepath", file_path, 100);
+    ImGui::SameLine();
+    if (ImGui::Button("Select Input"))
+                {
+                    logger->debug("Opening file dialog");
+    #ifdef __ANDROID__
+                    file_path = getFilePath();
+    #else
+                    auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
+                    while (result.ready(1000))
+                    {
+                    }
+
+                    if (result.result().size() > 0)
+                        strcpy(file_path, result.result()[0].c_str());
+    #endif
+
+                }
 
     ImGui::Text("Baseband Type");
     ImGui::SameLine();

@@ -13,6 +13,7 @@ file(GLOB_RECURSE LIBSDR_CPPS  sdr/*.cpp)
 
 add_library(sdr STATIC ${LIBSDR_CPPS})
 target_include_directories(sdr PUBLIC . ../src-core)
+target_include_directories(sdr PUBLIC . ../src-interface)
 set_target_properties(sdr PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 
 target_link_libraries(sdr PUBLIC satdump_core)
