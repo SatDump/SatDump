@@ -216,6 +216,7 @@ namespace image
             input.rotate(-90);
         input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned short> out(width, 1, 1, 3);
+        std::memset(out, 0, width*3);
         out.draw_image(x0, 0, input);
         return out;
     }
@@ -226,7 +227,7 @@ namespace image
             input.rotate(-90);
         input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned char> out(width, 1, 1, 3);
-        out.fill(0);
+        std::memset(out, 0, width*3);
         out.draw_image(x0, 0, input);
         return out;
     }
