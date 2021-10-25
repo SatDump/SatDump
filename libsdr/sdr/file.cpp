@@ -4,6 +4,10 @@
 #include "logger.h"
 #include "portable-file-dialogs.h"
 
+#ifdef __ANDROID__
+std::string getFilePath();
+#endif
+
 void SDRFile::runThread()
 {
     int buf_size = 8192;
@@ -188,7 +192,7 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
                 {
                     logger->debug("Opening file dialog");
 #ifdef __ANDROID__
-                    file_path = getFilePath();
+                    strcpy(file_path, getFilePath().c_str());
 #else
                     auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
                     while (result.ready(1000))
