@@ -58,6 +58,7 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 #include "hackrf.h"
 #include "limesdr.h"
 #include "airspyhf.h"
+#include "sdrplay.h"
 #include "spyserver.h"
 #include "rtltcp.h"
 #include "file.h"
@@ -69,6 +70,9 @@ void initSDRs()
 #endif
 #ifndef DISABLE_SDR_HACKRF
     SDRHackRF::init();
+#endif
+#ifndef DISABLE_SDR_SDRPLAY
+    SDRPlay::init();
 #endif
 }
 
@@ -125,6 +129,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
         results.insert(results.end(), airspyhf_results.begin(), airspyhf_results.end());
 #endif
 
+#ifndef DISABLE_SDR_SDRPLAY
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> sdrplay_results = SDRPlay::getDevices();
+    results.insert(results.end(), sdrplay_results.begin(), sdrplay_results.end());
+#endif
+
 #ifndef DISABLE_SDR_SPYSERVER
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> spyserver_results = SDRSpyServer::getDevices();
     results.insert(results.end(), spyserver_results.begin(), spyserver_results.end());
@@ -173,6 +182,8 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
         return "limesdr";
     if (type == AIRSPYHF)
         return "airspyhf";
+    if (type == SDRPLAY)
+        return "sdrplay";
     if (type == SPYSERVER)
         return "spyserver";
     if (type == RTLTCP)
@@ -195,6 +206,8 @@ sdr_device_type getDeviceIDbyIDString(std::string idString)
         return LIMESDR;
     else if (idString == "airspyhf")
         return AIRSPYHF;
+    else if (idString == "sdrplay")
+        return SDRPLAY;
     else if (idString == "spyserver")
         return SPYSERVER;
     else if (idString == "rtltcp")
@@ -241,6 +254,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #else
         return std::make_shared<SDRAirspyHF>(parameters, id);
 #endif
+#endif
+#ifndef DISABLE_SDR_SDRPLAY
+    if (type == SDRPLAY)
+        return std::make_shared<SDRPlay>(parameters, id);
 #endif
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)
