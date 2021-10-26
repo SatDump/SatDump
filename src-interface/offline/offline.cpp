@@ -9,6 +9,7 @@
 #include "processing.h"
 #include "settings.h"
 #include "global.h"
+#include "common/wav.h"
 
 #ifdef __ANDROID__
 std::string getFilePath();
@@ -150,6 +151,67 @@ namespace offline
 #endif
 
                 logger->debug("Dir " + input_file);
+
+                // Try to parse wav header
+                if (input_level == "baseband")
+                {
+                    wav::WavHeader header = wav::parseHeaderFromFileWav(input_file);
+
+                    if (wav::isValidWav(header))
+                    {
+                        logger->debug("This file is WAV, parsing header...");
+                        memset(samplerate, 0, sizeof(samplerate));
+                        memcpy(samplerate, std::to_string(header.samplerate).c_str(), std::to_string(header.samplerate).size());
+                        switch (header.sub_chunk_size)
+                        {
+                        case 8:
+                            baseband_type_option = 3;
+                            break;
+                        case 16:
+                            baseband_type_option = 1;
+                            break;
+                        case 18:
+                            baseband_type_option = 0;
+                            break;
+                        }
+                    }
+                    else if (wav::isValidRF64(header))
+                    {
+                        wav::RF64Header header = wav::parseHeaderFromFileRF64(input_file);
+                        logger->debug("This file is RF64, parsing header...");
+                        memset(samplerate, 0, sizeof(samplerate));
+                        memcpy(samplerate, std::to_string(header.samplerate).c_str(), std::to_string(header.samplerate).size());
+                        switch (header.sub_chunk_size)
+                        {
+                        case 8:
+                            baseband_type_option = 3;
+                            break;
+                        case 16:
+                            baseband_type_option = 1;
+                            break;
+                        case 18:
+                            baseband_type_option = 0;
+                            break;
+                        }
+                    }
+
+                    // Ensure we select the format properly
+                    switch (baseband_type_option)
+                    {
+                    case 0:
+                        baseband_format = "f32";
+                        break;
+                    case 1:
+                        baseband_format = "i16";
+                        break;
+                    case 2:
+                        baseband_format = "i8";
+                        break;
+                    case 3:
+                        baseband_format = "w8";
+                        break;
+                    }
+                }
             }
 
             ImGui::SameLine();

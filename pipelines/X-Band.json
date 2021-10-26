@@ -345,18 +345,14 @@
                 "qpsk_demod": {
                     "symbolrate": "35000000",
                     "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
+                    "rrc_alpha": "0.5",
                     "rrc_taps": "31",
-                    "costas_bw": "0.0189",
+                    "costas_bw": "0.03",
                     "buffer_size": "8192"
                 }
             },
             "cadu": {
-                "new_metop_ahrpt_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1"
-                }
+                "metop_dump_decoder": {}
             },
             "products": {
                 "metop_satid": {},
@@ -404,6 +400,29 @@
             },
             "products": {
                 "aura_omi": {}
+            }
+        }
+    },
+    "cfosat1_dump": {
+        "name": "CFOSAT-1 X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [
+            7800
+        ],
+        "samplerate": 40e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": "30000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.35",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.0189",
+                    "buffer_size": "8192"
+                }
             }
         }
     }

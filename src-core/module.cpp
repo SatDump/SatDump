@@ -64,6 +64,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_fsk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
+#include "modules/metop/module_metop_dump_decoder.h"
 #include "modules/metop/module_new_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
 #include "modules/metop/instruments/mhs/module_metop_mhs.h"
@@ -75,24 +76,24 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/metop/module_metop_satid.h"
 #include "modules/metop/instruments/sem/module_metop_sem.h"
 
-#include "modules/fengyun/module_new_fengyun_ahrpt_decoder.h"
-#include "modules/fengyun/module_fengyun_ahrpt_decoder.h"
-#include "modules/fengyun/module_new_fengyun_mpt_decoder.h"
-#include "modules/fengyun/module_fengyun_mpt_decoder.h"
-#include "modules/fengyun/instruments/virr/module_fengyun_virr.h"
-#include "modules/fengyun/instruments/mersi1/module_fengyun_mersi1.h"
-#include "modules/fengyun/instruments/mersi2/module_fengyun_mersi2.h"
-#include "modules/fengyun/instruments/erm/module_fengyun_erm.h"
-#include "modules/fengyun/instruments/mwhs/module_fengyun_mwhs.h"
-#include "modules/fengyun/instruments/waai/module_fengyun_waai.h"
-#include "modules/fengyun/instruments/mwri/module_fengyun_mwri.h"
-#include "modules/fengyun/instruments/mwts/module_fengyun_mwts.h"
-#include "modules/fengyun/instruments/mwhs2/module_fengyun_mwhs2.h"
-#include "modules/fengyun/module_fengyun_satid.h"
-#include "modules/fengyun/instruments/mersill/module_fengyun_mersill.h"
-#include "modules/fengyun/instruments/windrad/module_fengyun_windrad.h"
-#include "modules/fengyun/instruments/mwts2/module_fengyun_mwts2.h"
-#include "modules/fengyun/instruments/mwts3/module_fengyun_mwts3.h"
+#include "modules/fengyun3/module_new_fengyun_ahrpt_decoder.h"
+#include "modules/fengyun3/module_fengyun_ahrpt_decoder.h"
+#include "modules/fengyun3/module_new_fengyun_mpt_decoder.h"
+#include "modules/fengyun3/module_fengyun_mpt_decoder.h"
+#include "modules/fengyun3/instruments/virr/module_fengyun_virr.h"
+#include "modules/fengyun3/instruments/mersi1/module_fengyun_mersi1.h"
+#include "modules/fengyun3/instruments/mersi2/module_fengyun_mersi2.h"
+#include "modules/fengyun3/instruments/erm/module_fengyun_erm.h"
+#include "modules/fengyun3/instruments/mwhs/module_fengyun_mwhs.h"
+#include "modules/fengyun3/instruments/waai/module_fengyun_waai.h"
+#include "modules/fengyun3/instruments/mwri/module_fengyun_mwri.h"
+#include "modules/fengyun3/instruments/mwts/module_fengyun_mwts.h"
+#include "modules/fengyun3/instruments/mwhs2/module_fengyun_mwhs2.h"
+#include "modules/fengyun3/module_fengyun_satid.h"
+#include "modules/fengyun3/instruments/mersill/module_fengyun_mersill.h"
+#include "modules/fengyun3/instruments/windrad/module_fengyun_windrad.h"
+#include "modules/fengyun3/instruments/mwts2/module_fengyun_mwts2.h"
+#include "modules/fengyun3/instruments/mwts3/module_fengyun_mwts3.h"
 
 #include "modules/aqua/module_aqua_db_decoder.h"
 #include "modules/aqua/instruments/airs/module_aqua_airs.h"
@@ -185,6 +186,7 @@ void registerModules()
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
+    REGISTER_MODULE(metop::MetOpDumpDecoderModule);
     REGISTER_MODULE(metop::NewMetOpAHRPTDecoderModule);
     REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
     REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
@@ -197,24 +199,24 @@ void registerModules()
     REGISTER_MODULE(metop::sem::MetOpSEMDecoderModule);
 
     // FengYun-3
-    REGISTER_MODULE(fengyun::NewFengyunAHRPTDecoderModule);
-    REGISTER_MODULE(fengyun::FengyunAHRPTDecoderModule);
-    REGISTER_MODULE(fengyun::NewFengyunMPTDecoderModule);
-    REGISTER_MODULE(fengyun::FengyunMPTDecoderModule);
-    REGISTER_MODULE(fengyun::virr::FengyunVIRRDecoderModule);
-    REGISTER_MODULE(fengyun::mersi1::FengyunMERSI1DecoderModule);
-    REGISTER_MODULE(fengyun::mersi2::FengyunMERSI2DecoderModule);
-    REGISTER_MODULE(fengyun::erm::FengyunERMDecoderModule);
-    REGISTER_MODULE(fengyun::mwhs::FengyunMWHSDecoderModule);
-    REGISTER_MODULE(fengyun::waai::FengyunWAAIDecoderModule);
-    REGISTER_MODULE(fengyun::mwri::FengyunMWRIDecoderModule);
-    REGISTER_MODULE(fengyun::mwts::FengyunMWTSDecoderModule);
-    REGISTER_MODULE(fengyun::mwhs2::FengyunMWHS2DecoderModule);
-    REGISTER_MODULE(fengyun::satid::FengYunSatIDModule);
-    REGISTER_MODULE(fengyun::mersill::FengyunMERSILLDecoderModule);
-    REGISTER_MODULE(fengyun::windrad::FengyunWindRADDecoderModule);
-    REGISTER_MODULE(fengyun::mwts2::FengyunMWTS2DecoderModule);
-    REGISTER_MODULE(fengyun::mwts3::FengyunMWTS3DecoderModule);
+    REGISTER_MODULE(fengyun3::NewFengyunAHRPTDecoderModule);
+    REGISTER_MODULE(fengyun3::FengyunAHRPTDecoderModule);
+    REGISTER_MODULE(fengyun3::NewFengyunMPTDecoderModule);
+    REGISTER_MODULE(fengyun3::FengyunMPTDecoderModule);
+    REGISTER_MODULE(fengyun3::virr::FengyunVIRRDecoderModule);
+    REGISTER_MODULE(fengyun3::mersi1::FengyunMERSI1DecoderModule);
+    REGISTER_MODULE(fengyun3::mersi2::FengyunMERSI2DecoderModule);
+    REGISTER_MODULE(fengyun3::erm::FengyunERMDecoderModule);
+    REGISTER_MODULE(fengyun3::mwhs::FengyunMWHSDecoderModule);
+    REGISTER_MODULE(fengyun3::waai::FengyunWAAIDecoderModule);
+    REGISTER_MODULE(fengyun3::mwri::FengyunMWRIDecoderModule);
+    REGISTER_MODULE(fengyun3::mwts::FengyunMWTSDecoderModule);
+    REGISTER_MODULE(fengyun3::mwhs2::FengyunMWHS2DecoderModule);
+    REGISTER_MODULE(fengyun3::satid::FengYunSatIDModule);
+    REGISTER_MODULE(fengyun3::mersill::FengyunMERSILLDecoderModule);
+    REGISTER_MODULE(fengyun3::windrad::FengyunWindRADDecoderModule);
+    REGISTER_MODULE(fengyun3::mwts2::FengyunMWTS2DecoderModule);
+    REGISTER_MODULE(fengyun3::mwts3::FengyunMWTS3DecoderModule);
 
     // Aqua
     REGISTER_MODULE(aqua::AquaDBDecoderModule);

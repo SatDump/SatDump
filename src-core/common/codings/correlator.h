@@ -4,7 +4,7 @@
 
 enum modulation_t
 {
-    BPSK, // TODO
+    BPSK,
     QPSK
 };
 

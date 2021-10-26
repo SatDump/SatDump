@@ -14,11 +14,7 @@ namespace noaa
     {
         MHSReader::MHSReader()
         {
-            test_out.open("MHS_test.bin");
-        }
-        MHSReader::~MHSReader()
-        {
-            test_out.close();
+            std::memset(MIU_data, 0, 80 * 50);
         }
         void MHSReader::work(uint8_t *buffer)
         {
@@ -37,7 +33,9 @@ namespace noaa
                 timestamps.push_back(get_timestamp(2, DAY_OFFSET));
                 std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
                 std::array<std::array<uint16_t, 8>, 5> calibbuff;
-                std::array<std::array<uint16_t, 2>, 5> tmp;
+
+                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
+                std::memset(&calibbuff, 0, 8 * 5 * 2);
 
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
@@ -74,6 +72,8 @@ namespace noaa
 
                 SCI_packet = get_SCI_packet(0);
                 timestamps.push_back(get_timestamp(0, DAY_OFFSET));
+                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
+                std::memset(&calibbuff, 0, 8 * 5 * 2);
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)
@@ -109,6 +109,8 @@ namespace noaa
 
                 SCI_packet = get_SCI_packet(1);
                 timestamps.push_back(get_timestamp(1, DAY_OFFSET));
+                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
+                std::memset(&calibbuff, 0, 8 * 5 * 2);
                 for (int i = 0; i < MHS_WIDTH; i++)
                 {
                     for (int c = 1; c < 6; c++)
@@ -143,13 +145,12 @@ namespace noaa
                 HKTH.push_back(get_HKTH(SCI_packet));
                 line++;
 
-                for (int i = 0; i < 50; i++)
-                    MIU_data[i].fill(0);
+                std::memset(MIU_data, 0, 80 * 50);
             }
 
             for (int i = 0; i < 50; i++)
             {
-                if (cycle <= 80)
+                if (cycle < 80)
                     MIU_data[cycle][i] = buffer[i + 48]; //reading MIU data from AIP
             }
         }
@@ -210,6 +211,7 @@ namespace noaa
                     double a2 = get_u(Tavg, i) * (1.0 / pow(G, 2.0));
 
                     std::array<double, MHS_WIDTH> calibrated_line;
+                    std::memset(&calibrated_line, 0, MHS_WIDTH * 8);
 
                     for (int x = 0; x < MHS_WIDTH; x++)
                     {
@@ -242,11 +244,12 @@ namespace noaa
         cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
         {
             cimg_library::CImg<unsigned short> output(MHS_WIDTH, line, 1, 1);
+            std::memset(output, 0, MHS_WIDTH * line * 2);
             for (int l = 0; l < line; l++)
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
                 {
-                    output[l * MHS_WIDTH + (MHS_WIDTH - x)] = channels[channel][l][x];
+                    output[l * MHS_WIDTH + (MHS_WIDTH - x - 1)] = channels[channel][l][x];
                 }
             }
             return output;
@@ -254,11 +257,12 @@ namespace noaa
         cimg_library::CImg<double> MHSReader::get_calibrated_channel(int channel)
         {
             cimg_library::CImg<double> output(MHS_WIDTH, line, 1, 1);
+            std::memset(output, 0, MHS_WIDTH * line * 8);
             for (int l = 0; l < line; l++)
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
                 {
-                    output[l * MHS_WIDTH + (MHS_WIDTH - x)] = calibrated_channels[channel][l][x];
+                    output[l * MHS_WIDTH + (MHS_WIDTH - x - 1)] = calibrated_channels[channel][l][x];
                 }
             }
             return output;
@@ -266,6 +270,7 @@ namespace noaa
         std::array<uint8_t, SCI_PACKET_SIZE> MHSReader::get_SCI_packet(int PKT)
         {
             std::array<uint8_t, SCI_PACKET_SIZE> out;
+            std::memset(&out[0], 0, SCI_PACKET_SIZE);
             if (PKT == 0)
             {
                 int c = 0;
