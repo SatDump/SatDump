@@ -120,23 +120,25 @@ namespace metop
             const float beta = 0.58343;
             const long scanHeight = 64;
 
-            logger->info("Channel IR imaging...");
-            cimg_library::CImg<unsigned short> iasi_imaging = iasireader_img.getIRChannel();
-            iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-            image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+            if (iasireader.lines > 0)
+            {
+                logger->info("Channel IR imaging...");
+                cimg_library::CImg<unsigned short> iasi_imaging = iasireader_img.getIRChannel();
+                iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
+                image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
-            cimg_library::CImg<unsigned short> iasi_imaging_equ = iasi_imaging;
-            cimg_library::CImg<unsigned short> iasi_imaging_equ_inv = iasi_imaging;
-            WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
-            iasi_imaging_equ.equalize(1000);
-            iasi_imaging_equ.normalize(0, 65535);
-            WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG-EQU.png");
-            image::linear_invert(iasi_imaging_equ_inv);
-            iasi_imaging_equ_inv.equalize(1000);
-            iasi_imaging_equ_inv.normalize(0, 65535);
-            WRITE_IMAGE(iasi_imaging_equ_inv, directory + "/IASI-IMG-EQU-INV.png");
+                cimg_library::CImg<unsigned short> iasi_imaging_equ = iasi_imaging;
+                cimg_library::CImg<unsigned short> iasi_imaging_equ_inv = iasi_imaging;
+                WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
+                iasi_imaging_equ.equalize(1000);
+                iasi_imaging_equ.normalize(0, 65535);
+                WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG-EQU.png");
+                image::linear_invert(iasi_imaging_equ_inv);
+                iasi_imaging_equ_inv.equalize(1000);
+                iasi_imaging_equ_inv.normalize(0, 65535);
+                WRITE_IMAGE(iasi_imaging_equ_inv, directory + "/IASI-IMG-EQU-INV.png");
 
-            /*cimg_library::CImg<unsigned char> thermalTest(iasi_imaging.width(), iasi_imaging.height(), 1, 3, 0);
+                /*cimg_library::CImg<unsigned char> thermalTest(iasi_imaging.width(), iasi_imaging.height(), 1, 3, 0);
             cimg_library::CImg<unsigned char> LUT;
             LUT.load_png("/home/alan/Downloads/crappyLut.png");
             for (int i = 0; i < iasi_imaging.width() * iasi_imaging.height(); i++)
@@ -148,44 +150,44 @@ namespace metop
             WRITE_IMAGE(thermalTest, directory + "/IASI-IMG-LUT.png");
             */
 
-            // Reproject to an equirectangular proj
-            if (iasi_imaging.height() > 0)
-            {
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                //image4.equalize(1000);
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
-                    100.0,                         // Scan angle
-                    3.4,                           // IFOV X scan angle
-                    3.6,                           // IFOV Y scan angle
-                    -1.7,                          // Roll offset
-                    0,                             // Pitch offset
-                    0.2,                           // Yaw offset
-                    0,                             // Time offset
-                    30,                            // Number of IFOVs
-                    64,                            // IFOV Width
-                    64,                            // IFOV Height
-                    iasi_imaging.width(),          // Image width
-                    true,                          // Invert scan
-                    tle::getTLEfromNORAD(norad),   // TLEs
-                    iasireader_img.timestamps_ifov // Timestamps
-                );
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
+                // Reproject to an equirectangular proj
+                if (iasi_imaging.height() > 0)
                 {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/IASI.georef");
-                }
+                    nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                    int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                    //image4.equalize(1000);
 
-                logger->info("Projected imaging channel...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/IASI-EQU-PROJ.png");
+                    // Setup Projecition
+                    std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
+                        100.0,                         // Scan angle
+                        3.4,                           // IFOV X scan angle
+                        3.6,                           // IFOV Y scan angle
+                        -1.7,                          // Roll offset
+                        0,                             // Pitch offset
+                        0.2,                           // Yaw offset
+                        0,                             // Time offset
+                        30,                            // Number of IFOVs
+                        64,                            // IFOV Width
+                        64,                            // IFOV Height
+                        iasi_imaging.width(),          // Image width
+                        true,                          // Invert scan
+                        tle::getTLEfromNORAD(norad),   // TLEs
+                        iasireader_img.timestamps_ifov // Timestamps
+                    );
+                    geodetic::projection::LEOScanProjector projector(proj_settings);
 
-                logger->info("Projected imaging channel inverted...");
-                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ_inv, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/IASI-EQU-INV-PROJ.png");
+                    {
+                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                        geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/IASI.georef");
+                    }
+
+                    logger->info("Projected imaging channel...");
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
+                    WRITE_IMAGE(projected_image, directory + "/IASI-EQU-PROJ.png");
+
+                    logger->info("Projected imaging channel inverted...");
+                    projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ_inv, projector, 2048 * 4, 1024 * 4, 1);
+                    WRITE_IMAGE(projected_image, directory + "/IASI-EQU-INV-PROJ.png");
 
                 /*
                 logger->info("Projected channel IMG LUT...");
@@ -196,28 +198,29 @@ namespace metop
                 projected_image.crop(18788, 952, 18788 + 9521, 952 + 6352);
                 WRITE_IMAGE(projected_image, directory + "/IASI-LUT-PROJ.png");
                 */
-            }
+                }
 
-            // Output a few nice composites as well
-            logger->info("Global Composite...");
-            int all_width_count = 150;
-            int all_height_count = 60;
-            cimg_library::CImg<unsigned short> imageAll(60 * all_width_count, iasireader.getChannel(0).height() * all_height_count, 1, 1);
-            {
-                int height = iasireader.getChannel(0).height();
-
-                for (int row = 0; row < all_height_count; row++)
+                // Output a few nice composites as well
+                logger->info("Global Composite...");
+                int all_width_count = 150;
+                int all_height_count = 60;
+                cimg_library::CImg<unsigned short> imageAll(60 * all_width_count, iasireader.getChannel(0).height() * all_height_count, 1, 1);
                 {
-                    for (int column = 0; column < all_width_count; column++)
-                    {
-                        if (row * all_width_count + column >= 8461)
-                            break;
+                    int height = iasireader.getChannel(0).height();
 
-                        imageAll.draw_image(60 * column, height * row, 0, 0, iasireader.getChannel(row * all_width_count + column));
+                    for (int row = 0; row < all_height_count; row++)
+                    {
+                        for (int column = 0; column < all_width_count; column++)
+                        {
+                            if (row * all_width_count + column >= 8461)
+                                break;
+
+                            imageAll.draw_image(60 * column, height * row, 0, 0, iasireader.getChannel(row * all_width_count + column));
+                        }
                     }
                 }
+                WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
             }
-            WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
         }
 
         void MetOpIASIDecoderModule::drawUI(bool window)
