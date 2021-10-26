@@ -165,7 +165,7 @@ namespace noaa
                     110.6,          // Scan angle
                     -0.01,          // Roll offset
                     0,              // Pitch offset
-                    -3.65,          // Yaw offset
+                    -3.45,          // Yaw offset
                     1,              // Time offset
                     image4.width(), // Image width
                     true,           // Invert scan
@@ -189,9 +189,8 @@ namespace noaa
                 {
                     norad = 28654;
                     logger->info("Identified NOAA-18!");
-                    proj_settings->scan_angle = 110.4;
                     proj_settings->roll_offset = -0.1;
-                    proj_settings->yaw_offset = -3.2;
+                    proj_settings->yaw_offset = -3.0;
                 }
                 else if (scid == 15) // N19
                 {
