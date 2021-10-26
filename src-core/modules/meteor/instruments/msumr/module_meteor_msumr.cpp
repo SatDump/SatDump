@@ -51,7 +51,7 @@ namespace meteor
             logger->info("Demultiplexing and deframing...");
 
             time_t currentDay = time(0);
-            time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
+            time_t dayValue = currentDay - (currentDay % 86400) - 86400 * 1; // Requires the day to be known from another source
 
             std::vector<double> timestamps;
 
@@ -227,10 +227,10 @@ namespace meteor
 
                 // Setup Projecition, tuned for 2-2
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.2,          // Scan angle
+                    110.6,          // Scan angle
                     -0.35,          // Roll offset
                     0,              // Pitch offset
-                    -2.9,           // Yaw offset
+                    -2.8,           // Yaw offset
                     0.2,            // Time offset
                     image1.width(), // Image width
                     true,           // Invert scan
@@ -244,10 +244,10 @@ namespace meteor
                 {
                     norad = 40069;
                     logger->info("Identified METEOR-M 2!");
-                    proj_settings->scan_angle = 111.0;
-                    proj_settings->roll_offset = 3.1;
-                    proj_settings->yaw_offset = -3;
-                    proj_settings->time_offset = 9;
+                    proj_settings->scan_angle = 110.6;
+                    proj_settings->roll_offset = 2.5;
+                    proj_settings->yaw_offset = -2.8;
+                    proj_settings->time_offset = 0.2;
                 }
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {

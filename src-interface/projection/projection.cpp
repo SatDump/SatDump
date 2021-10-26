@@ -325,7 +325,7 @@ namespace projection
                     ImGui::TableSetColumnIndex(1);
                     ImGui::Text("%s", toProj.timestamp.c_str());
                     ImGui::TableSetColumnIndex(2);
-                    if (ImGui::Button(std::string("Delete##"+toProj.timestamp).c_str()))
+                    if (ImGui::Button(std::string("Delete##" + toProj.timestamp).c_str()))
                     {
                         logger->warn("Deleting " + toProj.filename);
                         filesToProject.erase(std::find_if(filesToProject.begin(), filesToProject.end(), [&toProj](FileToProject &file)
@@ -334,7 +334,7 @@ namespace projection
                         break;
                     }
                     ImGui::SameLine();
-                    if (ImGui::Button(std::string("View##"+toProj.timestamp).c_str()))
+                    if (ImGui::Button(std::string("View##" + toProj.timestamp).c_str()))
                         toProj.show = true;
                 }
 
@@ -476,7 +476,7 @@ namespace projection
 
                                 if (toProj.georef->file_type == geodetic::projection::proj_file::GEO_TYPE)
                                 {
-                                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
+                                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile &gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
@@ -549,7 +549,7 @@ namespace projection
                                 }
                                 else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
                                 {
-                                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
+                                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile &leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
@@ -582,31 +582,31 @@ namespace projection
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Scan Angle");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.scan_angle);
+                                    ImGui::InputDouble("##scan_angle", &leofile.scanline.scan_angle);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Roll Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.roll_offset);
+                                    ImGui::InputDouble("##roll_offset", &leofile.scanline.roll_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Pitch Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.pitch_offset);
+                                    ImGui::InputDouble("##pitch_offset", &leofile.scanline.pitch_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Yaw Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.yaw_offset);
+                                    ImGui::InputDouble("##yaw_offset", &leofile.scanline.yaw_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Time offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.time_offset);
+                                    ImGui::InputDouble("##time_offset", &leofile.scanline.time_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
