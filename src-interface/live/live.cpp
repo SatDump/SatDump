@@ -6,9 +6,7 @@
 #include "pipeline.h"
 #include <cstring>
 #include "logger.h"
-#ifndef __ANDROID__
-#include "portable-file-dialogs.h"
-#endif
+#include "imgui/file_selection.h"
 #include "processing.h"
 #include <filesystem>
 #include "sdr/sdr.h"
@@ -98,17 +96,11 @@ namespace live
                 if (ImGui::Button("Select Output"))
                 {
                     logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-                    output_file = getDirPath();
-#else
-                    auto result = pfd::select_folder("Open output directory", ".");
-                    while (result.ready(1000))
-                    {
-                    }
 
-                    if (result.result().size() > 0)
-                        output_file = result.result();
-#endif
+                    std::string dir = selectDirectoryDialog("Select output directory", ".");
+
+                    if (dir.size() > 0)
+                        output_file = dir;
 
                     logger->debug("Dir " + output_file);
                 }

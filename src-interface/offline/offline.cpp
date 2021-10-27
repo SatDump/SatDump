@@ -3,9 +3,7 @@
 #include "pipeline.h"
 #include <cstring>
 #include "logger.h"
-#ifndef __ANDROID__
-#include "portable-file-dialogs.h"
-#endif
+#include "imgui/file_selection.h"
 #include "processing.h"
 #include "settings.h"
 #include "global.h"
@@ -138,17 +136,11 @@ namespace offline
             if (ImGui::Button("Select Input"))
             {
                 logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-                input_file = getFilePath();
-#else
-                auto result = pfd::open_file("Open input file", ".", {".*"}, pfd::opt::none);
-                while (result.ready(1000))
-                {
-                }
 
-                if (result.result().size() > 0)
-                    input_file = result.result()[0];
-#endif
+                std::string file = selectInputFileDialog("Select Input File", ".", {".*"});
+
+                if (file.size() > 0)
+                    input_file = file;
 
                 logger->debug("Dir " + input_file);
 
@@ -227,17 +219,11 @@ namespace offline
             if (ImGui::Button("Select Output"))
             {
                 logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-                output_file = getDirPath();
-#else
-                auto result = pfd::select_folder("Open output directory", ".");
-                while (result.ready(1000))
-                {
-                }
 
-                if (result.result().size() > 0)
-                    output_file = result.result();
-#endif
+                std::string dir = selectDirectoryDialog("Select output directory", ".");
+
+                if (dir.size() > 0)
+                    output_file = dir;
 
                 logger->debug("Dir " + output_file);
             }
