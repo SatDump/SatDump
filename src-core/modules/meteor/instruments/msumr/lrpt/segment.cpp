@@ -3,6 +3,7 @@
 #include <cstring>
 #include "tables.h"
 #include "idct.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace meteor
 {
@@ -20,7 +21,8 @@ namespace meteor
             Segment::Segment(uint8_t *data, int length)
             {
                 //buffer = new bool[length * 8];
-                buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p) { delete[] p; });
+                buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
+                                               { delete[] p; });
 
                 if (length - 14 <= 0)
                 {
@@ -28,10 +30,10 @@ namespace meteor
                 }
                 else
                 {
-
                     day_time = data[0] << 8 | data[1];
                     ms_time = data[2] << 24 | data[3] << 16 | data[4] << 8 | data[5];
                     us_time = data[6] << 8 | data[7];
+                    timestamp = ccsds::parseCCSDSTimeFullRaw(data, 0); // Parse ignoring the day
 
                     MCUN = data[8];
                     QT = data[9];
