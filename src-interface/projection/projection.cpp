@@ -596,7 +596,7 @@ namespace projection
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Timestamp count");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%d", leofile.scanline.timestamp_count);
+                                    ImGui::Text("%llu", leofile.scanline.timestamp_count);
                                 }
 
                                 ImGui::EndTable();

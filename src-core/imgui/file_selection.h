@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <vector>
 #include "dll_export.h"
 
 SATDUMP_DLL extern std::function<std::string(std::string, std::string, std::vector<std::string>)> selectInputFileDialog;
