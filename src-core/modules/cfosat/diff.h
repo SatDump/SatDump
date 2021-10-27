@@ -1,9 +1,9 @@
 #include <cstdint>
 
-namespace fengyun3
+namespace cfosat
 {
     // Differential decoder
-    class FengyunDiff
+    class CFOSATDiff
     {
     private:
         unsigned char Xin_1, Yin_1, Xin, Yin, Xout, Yout;

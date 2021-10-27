@@ -447,6 +447,9 @@
                     "costas_bw": "0.0189",
                     "buffer_size": "8192"
                 }
+            },
+            "cadu": {
+                "cfosat_dump_decoder": {}
             }
         }
     }
