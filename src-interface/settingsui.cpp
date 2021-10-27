@@ -4,15 +4,7 @@
 #include "module.h"
 #include "logger.h"
 #include "tle.h"
-
-#ifndef __ANDROID__
-#include "portable-file-dialogs.h"
-#endif
-
-#ifdef __ANDROID__
-std::string getFilePath();
-std::string getDirPath();
-#endif
+#include "imgui/file_selection.h"
 
 bool use_light_theme;
 float manual_dpi_scaling;
@@ -68,17 +60,11 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
     if (ImGui::Button("Select Live Directory"))
     {
         logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-        default_live_output_folder = getDirPath();
-#else
-        auto result = pfd::select_folder("Open output directory", ".");
-        while (result.ready(1000))
-        {
-        }
 
-        if (result.result().size() > 0)
-            default_live_output_folder = result.result();
-#endif
+        std::string dir = selectDirectoryDialog("Select output directory", ".");
+
+        if (dir.size() > 0)
+            default_live_output_folder = dir;
 
         logger->debug("Dir " + default_live_output_folder);
     }
@@ -88,17 +74,11 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
     if (ImGui::Button("Select Recorder Directory"))
     {
         logger->debug("Opening file dialog");
-#ifdef __ANDROID__
-        default_recorder_output_folder = getDirPath();
-#else
-        auto result = pfd::select_folder("Open output directory", ".");
-        while (result.ready(1000))
-        {
-        }
 
-        if (result.result().size() > 0)
-            default_recorder_output_folder = result.result();
-#endif
+        std::string dir = selectDirectoryDialog("Select output directory", ".");
+
+        if (dir.size() > 0)
+            default_recorder_output_folder = dir;
 
         logger->debug("Dir " + default_recorder_output_folder);
     }

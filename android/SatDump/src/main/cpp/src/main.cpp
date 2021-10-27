@@ -122,10 +122,12 @@ static SDL_GLContext createCtx(SDL_Window *w)
 }
 
 void bindImageTextureFunctions();
+void bindFileDialogsFunctions();
 
 int main(int argc, char **argv)
 {
     bindImageTextureFunctions();
+    bindFileDialogsFunctions();
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();

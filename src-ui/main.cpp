@@ -23,10 +23,12 @@ static void glfw_error_callback(int error, const char *description)
 }
 
 void bindImageTextureFunctions();
+void bindFileDialogsFunctions();
 
 int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
+    bindFileDialogsFunctions();
     //std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
