@@ -10,9 +10,7 @@
 #define cimg_display 0
 #include "CImg.h"
 
-#ifndef __ANDROID__
-#include "portable-file-dialogs.h"
-#endif
+#include "imgui/file_selection.h"
 #ifdef __ANDROID__
 std::string getFilePath();
 std::string getDirPath();
@@ -265,22 +263,11 @@ namespace projection
             if (ImGui::Button("Save"))
             {
                 logger->debug("Opening file dialog");
-                std::string output_file = "";
-#ifdef __ANDROID__
-                output_file = getFilesavePath();
-#else
-                auto result = pfd::save_file("Save projection to", "projection.png", {"*.png"}, pfd::opt::none);
-                while (result.ready(1000))
-                {
-                }
-
-                if (result.result().length() > 0)
-                    output_file = result.result();
-#endif
+                std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
 
                 logger->info("Saving to " + output_file);
 
-                if (output_file != "")
+                if (output_file.size() > 0)
                 {
                     projected_image.save_png(output_file.c_str());
                 }
@@ -325,7 +312,7 @@ namespace projection
                     ImGui::TableSetColumnIndex(1);
                     ImGui::Text("%s", toProj.timestamp.c_str());
                     ImGui::TableSetColumnIndex(2);
-                    if (ImGui::Button(std::string("Delete##"+toProj.timestamp).c_str()))
+                    if (ImGui::Button(std::string("Delete##" + toProj.timestamp).c_str()))
                     {
                         logger->warn("Deleting " + toProj.filename);
                         filesToProject.erase(std::find_if(filesToProject.begin(), filesToProject.end(), [&toProj](FileToProject &file)
@@ -334,7 +321,7 @@ namespace projection
                         break;
                     }
                     ImGui::SameLine();
-                    if (ImGui::Button(std::string("View##"+toProj.timestamp).c_str()))
+                    if (ImGui::Button(std::string("View##" + toProj.timestamp).c_str()))
                         toProj.show = true;
                 }
 
@@ -344,23 +331,16 @@ namespace projection
             ImGui::InputText("New Image ", newfile_image, 1000);
             if (ImGui::Button("Select Image"))
             {
-
                 logger->debug("Opening file dialog");
-                std::string input_file;
-#ifdef __ANDROID__
-                input_file = getFilePath();
-#else
-                auto result = pfd::open_file("Open input image", ".", {".*"}, pfd::opt::none);
-                while (result.ready(1000))
-                {
-                }
 
-                if (result.result().size() > 0)
-                    input_file = result.result()[0];
-#endif
-                logger->debug("Dir " + input_file);
-                std::fill(newfile_image, &newfile_image[1000], 0);
-                std::memcpy(newfile_image, input_file.c_str(), input_file.length());
+                std::string input_file = selectInputFileDialog("Open input image", ".", {".*"});
+
+                if (input_file.size() > 0)
+                {
+                    logger->debug("Dir " + input_file);
+                    std::fill(newfile_image, &newfile_image[1000], 0);
+                    std::memcpy(newfile_image, input_file.c_str(), input_file.length());
+                }
             }
 
             if (!use_equirectangular)
@@ -368,23 +348,15 @@ namespace projection
                 ImGui::InputText("New Georef", newfile_georef, 1000);
                 if (ImGui::Button("Select Georef"))
                 {
-
                     logger->debug("Opening file dialog");
-                    std::string input_file;
-#ifdef __ANDROID__
-                    input_file = getFilePath();
-#else
-                    auto result = pfd::open_file("Open input georef", ".", {".georef"}, pfd::opt::none);
-                    while (result.ready(1000))
-                    {
-                    }
+                    std::string input_file = selectInputFileDialog("Open input georef", ".", {".georef"});
 
-                    if (result.result().size() > 0)
-                        input_file = result.result()[0];
-#endif
-                    logger->debug("Dir " + input_file);
-                    std::fill(newfile_georef, &newfile_georef[1000], 0);
-                    std::memcpy(newfile_georef, input_file.c_str(), input_file.length());
+                    if (input_file.size() > 0)
+                    {
+                        logger->debug("Dir " + input_file);
+                        std::fill(newfile_georef, &newfile_georef[1000], 0);
+                        std::memcpy(newfile_georef, input_file.c_str(), input_file.length());
+                    }
                 }
             }
 
@@ -476,7 +448,7 @@ namespace projection
 
                                 if (toProj.georef->file_type == geodetic::projection::proj_file::GEO_TYPE)
                                 {
-                                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
+                                    geodetic::projection::proj_file::GEO_GeodeticReferenceFile &gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
@@ -549,7 +521,7 @@ namespace projection
                                 }
                                 else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
                                 {
-                                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
+                                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile &leofile = *((geodetic::projection::proj_file::LEO_GeodeticReferenceFile *)toProj.georef.get());
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
@@ -582,31 +554,31 @@ namespace projection
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Scan Angle");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.scan_angle);
+                                    ImGui::InputDouble("##scan_angle", &leofile.scanline.scan_angle);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Roll Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.roll_offset);
+                                    ImGui::InputDouble("##roll_offset", &leofile.scanline.roll_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Pitch Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.pitch_offset);
+                                    ImGui::InputDouble("##pitch_offset", &leofile.scanline.pitch_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Yaw Offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.yaw_offset);
+                                    ImGui::InputDouble("##yaw_offset", &leofile.scanline.yaw_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Time offset");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%f", leofile.scanline.time_offset);
+                                    ImGui::InputDouble("##time_offset", &leofile.scanline.time_offset);
 
                                     ImGui::TableNextRow();
                                     ImGui::TableSetColumnIndex(0);
@@ -624,7 +596,7 @@ namespace projection
                                     ImGui::TableSetColumnIndex(0);
                                     ImGui::Text("Timestamp count");
                                     ImGui::TableSetColumnIndex(1);
-                                    ImGui::Text("%d", leofile.scanline.timestamp_count);
+                                    ImGui::Text("%llu", leofile.scanline.timestamp_count);
                                 }
 
                                 ImGui::EndTable();

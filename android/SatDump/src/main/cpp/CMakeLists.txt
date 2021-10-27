@@ -64,11 +64,6 @@ add_library(cpufeatures STATIC IMPORTED)
 set_target_properties(cpufeatures PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/volk/${ANDROID_ABI}/libcpu_features.a)
 include_directories(deps/volk/jni/)
 
-# LIBCORRECT
-#add_library(correct STATIC IMPORTED)
-#set_target_properties(correct PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/correct/${ANDROID_ABI}/libcorrect.a)
-#include_directories(deps/correct/jni/)
-
 # LIBJPEG
 add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)

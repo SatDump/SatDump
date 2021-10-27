@@ -2,6 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "imgui/file_selection.h"
 
 void SDRFile::runThread()
 {
@@ -182,6 +183,16 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
     ImGui::Text("File path");
     ImGui::SameLine();
     ImGui::InputText("##filesourcepath", file_path, 100);
+    ImGui::SameLine();
+    if (ImGui::Button("Select Input"))
+    {
+        logger->debug("Opening file dialog");
+
+        std::string file = selectInputFileDialog("Select Input Baseband", ".", {".*"});
+
+        if (file.size() > 0)
+            strcpy(file_path, file.c_str());
+    }
 
     ImGui::Text("Baseband Type");
     ImGui::SameLine();
