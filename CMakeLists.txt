@@ -39,8 +39,8 @@ else()
 endif()
 
 if(MSVC OR BUILD_MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8") # Speed up this to object-level
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8") # Speed up this to object-level
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244") # Speed up this to object-level
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244") # Speed up this to object-level
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
