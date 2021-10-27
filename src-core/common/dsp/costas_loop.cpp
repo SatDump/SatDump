@@ -22,7 +22,7 @@ namespace dsp
         for (int i = 0; i < nsamples; i++)
         {
             // Mix input & VCO
-            tmp_val = input_stream->readBuf[i] * previous_vco;
+            tmp_val = input_stream->readBuf[i] * complex_t(cosf(-phase), sinf(-phase));
             output_stream->writeBuf[i] = tmp_val;
 
             // Calculate error
@@ -44,20 +44,23 @@ namespace dsp
             }
 
             // Clip error
-            error = BRANCHLESS_CLIP(error, 1.0); //0.5 * (std::abs(error + 1.0) - std::abs(error - 1.0));
+            error = branchless_clip(error, 1.0);
 
-            // Clip freq
+            // Compute new freq and phase.
             freq += beta * error;
-            freq = BRANCHLESS_CLIP(freq, 1.0); //0.5 * (std::abs(freq + 1.0) - std::abs(freq - 1.0));
+            phase += freq + alpha * error;
 
             // Wrap phase
-            phase += freq + (alpha * error);
             while (phase > (2 * M_PI))
                 phase -= 2 * M_PI;
             while (phase < (-2 * M_PI))
                 phase += 2 * M_PI;
 
-            previous_vco = complex_t(cosf(-phase), sinf(-phase));
+            // Clamp freq
+            if (freq > 1.0)
+                freq = 1.0;
+            if (freq < -1.0)
+                freq = -1.0;
         }
 
         input_stream->flush();
