@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace meteor
 {
@@ -18,6 +19,7 @@ namespace meteor
                 uint16_t day_time;
                 uint32_t ms_time;
                 uint16_t us_time;
+                double timestamp;
 
                 uint8_t MCUN;
                 uint8_t QT;

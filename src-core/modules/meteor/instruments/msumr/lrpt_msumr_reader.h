@@ -24,6 +24,8 @@ namespace meteor
                 uint32_t rollover[6], lastSeq[6], offset[6], firstSeg[6], lastSeg[6], segCount[6];
                 int lines[6];
 
+                time_t dayValue;
+
             public:
                 MSUMRReader();
                 ~MSUMRReader();
@@ -31,6 +33,8 @@ namespace meteor
                 cimg_library::CImg<unsigned short> getChannel(int channel, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2, int channel3);
+
+                std::vector<double> timestamps;
             };
         } // namespace lrpt
     }     // namespace msumr

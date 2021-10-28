@@ -19,6 +19,10 @@ namespace meteor
                     rollover[i] = 0;
                     offset[i] = 0;
                 }
+
+                // Fetch current day
+                time_t currentDay = time(0);
+                dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
             }
 
             MSUMRReader::~MSUMRReader()
@@ -92,6 +96,8 @@ namespace meteor
 
             cimg_library::CImg<unsigned short> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
             {
+                timestamps.clear();
+
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
 
@@ -114,19 +120,37 @@ namespace meteor
                 uint32_t index = 0;
                 for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
                 {
+                    bool hasDoneTimestamps = false;
                     for (uint32_t i = 0; i < 8; i++)
                     {
                         for (uint32_t j = 0; j < 14; j++)
                         {
                             if (segments[channel][x + j].isValid())
+                            {
                                 for (int f = 0; f < 14 * 8; f++)
                                     channels[channel][index + f] = segments[channel][x + j].lines[i][f];
+
+                                if (!hasDoneTimestamps)
+                                {
+                                    for (int i = -4; i < 4; i++)
+                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp + i * 0.153 - 3 * 3600);
+                                    hasDoneTimestamps = true;
+                                }
+                            }
                             else
+                            {
                                 for (int f = 0; f < 14 * 8; f++)
                                     channels[channel][index + f] = 0;
+                            }
 
                             index += 14 * 8;
                         }
+                    }
+
+                    if (!hasDoneTimestamps)
+                    {
+                        for (int i = -4; i < 4; i++)
+                            timestamps.push_back(-1);
                     }
                 }
 
