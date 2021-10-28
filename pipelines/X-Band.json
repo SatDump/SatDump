@@ -113,8 +113,20 @@
     },
     "aqua_db": {
         "name": "Aqua DB",
-        "live": false,
-        "frequencies": [],
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            8160.0
+        ],
         "samplerate": 15e6,
         "baseband_type": "w8",
         "work": {
@@ -373,8 +385,20 @@
     },
     "aura_db": {
         "name": "Aura DB",
-        "live": false,
-        "frequencies": [],
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            8160.0
+        ],
         "samplerate": 15e6,
         "baseband_type": "w8",
         "work": {
@@ -423,6 +447,9 @@
                     "costas_bw": "0.0189",
                     "buffer_size": "8192"
                 }
+            },
+            "cadu": {
+                "cfosat_dump_decoder": {}
             }
         }
     }

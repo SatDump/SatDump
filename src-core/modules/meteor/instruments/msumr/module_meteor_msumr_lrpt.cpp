@@ -11,6 +11,8 @@
 #include "common/image/earth_curvature.h"
 #include "common/image/image.h"
 #include "modules/meteor/meteor.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -71,12 +73,34 @@ namespace meteor
 
             data_in.close();
 
-            //logger->info("MSU-MR Lines          : " + std::to_string(reader.lines));
+            logger->info("MSU-MR Channel 1 Lines  : " + std::to_string(msureader.getChannel(0).height()));
+            logger->info("MSU-MR Channel 2 Lines  : " + std::to_string(msureader.getChannel(1).height()));
+            logger->info("MSU-MR Channel 3 Lines  : " + std::to_string(msureader.getChannel(2).height()));
+            logger->info("MSU-MR Channel 4 Lines  : " + std::to_string(msureader.getChannel(3).height()));
+            logger->info("MSU-MR Channel 5 Lines  : " + std::to_string(msureader.getChannel(4).height()));
+            logger->info("MSU-MR Channel 6 Lines  : " + std::to_string(msureader.getChannel(5).height()));
 
             logger->info("Writing images.... (Can take a while)");
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            // TODO : Add detection system!!!!!!!!
+            // Currently not *that* mandatory as only M2 is active on VHF
+            int norad = 40069;
+
+            // Setup Projecition, tuned for M2
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                110.6,                       // Scan angle
+                2.3,                         // Roll offset
+                0,                           // Pitch offset
+                -2.8,                        // Yaw offset
+                1.4,                         // Time offset
+                1568,                        // Image width
+                true,                        // Invert scan
+                tle::getTLEfromNORAD(norad), // TLEs
+                std::vector<double>()        // Timestamps
+            );
 
             for (int channel = 0; channel < 6; channel++)
             {
@@ -84,6 +108,10 @@ namespace meteor
                 if (msureader.getChannel(channel).size() > 0)
                 {
                     WRITE_IMAGE(msureader.getChannel(channel), directory + "/MSU-MR-" + std::to_string(channel + 1) + ".png");
+                    proj_settings->utc_timestamps = msureader.timestamps;
+                    geodetic::projection::LEOScanProjector projector(proj_settings);
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR-" + std::to_string(channel + 1) + ".georef");
                 }
                 else
                 {
@@ -118,6 +146,14 @@ namespace meteor
                 corrected221.equalize(1000);
                 corrected221.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-EQU-CORRECTED.png");
+
+                proj_settings->utc_timestamps = msureader.timestamps;
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR-RGB-221.georef");
+                logger->info("Projected Channel RGB 221...");
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image221 << 8, projector, 2048 * 4, 1024 * 4, 3);
+                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-221-PROJ.png");
             }
 
             if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
@@ -149,6 +185,11 @@ namespace meteor
                 corrected321.equalize(1000);
                 corrected321.normalize(0, std::numeric_limits<unsigned char>::max());
                 WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
+
+                proj_settings->utc_timestamps = msureader.timestamps;
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR-RGB-321.georef");
             }
 
             if (msureader.getChannel(4).size() > 0)
@@ -164,6 +205,12 @@ namespace meteor
                                                                                                                 METEOR_MSUMR_SWATH,
                                                                                                                 METEOR_MSUMR_RES);
                 WRITE_IMAGE(corrected5, directory + "/MSU-MR-5-EQU-CORRECTED.png");
+
+                proj_settings->utc_timestamps = msureader.timestamps;
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+                logger->info("Projected Channel 5...");
+                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image5 << 8, projector, 2048 * 4, 1024 * 4, 1);
+                WRITE_IMAGE(projected_image, directory + "/MSU-MR-5-PROJ.png");
             }
         }
 

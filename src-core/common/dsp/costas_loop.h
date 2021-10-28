@@ -11,15 +11,13 @@ namespace dsp
     class CostasLoopBlock : public Block<complex_t, complex_t>
     {
     private:
-        float error;
-        float noise;
+        float error = 0;
         int order;
 
-        float phase, freq;
+        float phase = 0, freq = 0;
         float loop_bw;
         float alpha, beta;
 
-        complex_t previous_vco;
         complex_t tmp_val;
         void work();
 

@@ -23,6 +23,16 @@ namespace aqua
         buffer = new uint8_t[BUFFER_SIZE];
     }
 
+    std::vector<ModuleDataType> AquaDBDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> AquaDBDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     AquaDBDecoderModule::~AquaDBDecoderModule()
     {
         delete[] buffer;
@@ -30,8 +40,12 @@ namespace aqua
 
     void AquaDBDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -59,10 +73,13 @@ namespace aqua
         // 2 NRZ-M Decoders
         diff::NRZMDiff diff1, diff2;
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read buffer
-            data_in.read((char *)buffer, BUFFER_SIZE);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
             // Demodulate QPSK... This is the crappy way but it works
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
@@ -163,7 +180,8 @@ namespace aqua
                 }
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -174,7 +192,8 @@ namespace aqua
         }
 
         data_out.close();
-        data_in.close();
+        if (output_data_type == DATA_FILE)
+            data_in.close();
     }
 
     void AquaDBDecoderModule::drawUI(bool window)
@@ -241,7 +260,8 @@ namespace aqua
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

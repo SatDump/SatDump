@@ -174,6 +174,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
+#include "modules/cfosat/module_cfosat_dump_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -318,6 +320,9 @@ void registerModules()
 
     // GK-2A
     REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
+
+    // CFOSAT
+    REGISTER_MODULE(cfosat::CFOSATDumpDecoderModule);
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");

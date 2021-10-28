@@ -10,8 +10,8 @@ namespace dsp
         float alpha;      // 1st order loop constant
         float beta;       // 2nd order loop constant
         float max_offset; // Maximum frequency offset, radians/sample
-        float phase;      // Instantaneous carrier phase
-        float freq;       // Instantaneous carrier frequency, radians/sample
+        float phase = 0;  // Instantaneous carrier phase
+        float freq = 0;   // Instantaneous carrier frequency, radians/sample
 
         void work();
 

@@ -3,16 +3,13 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "deframer.h"
+#include "common/ccsds/ccsds_1_0_1024/deframer.h"
 
-namespace aqua
+namespace cfosat
 {
-    class AquaDBDecoderModule : public ProcessingModule
+    class CFOSATDumpDecoderModule : public ProcessingModule
     {
     protected:
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
-
         // Clamp symbols
         int8_t clamp(int8_t &x)
         {
@@ -30,7 +27,7 @@ namespace aqua
         uint8_t *buffer;
 
         int errors[4];
-        CADUDeframer deframer;
+        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         std::ifstream data_in;
         std::ofstream data_out;
@@ -38,12 +35,10 @@ namespace aqua
         std::atomic<size_t> progress;
 
     public:
-        AquaDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
-        ~AquaDBDecoderModule();
+        CFOSATDumpDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        ~CFOSATDumpDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();

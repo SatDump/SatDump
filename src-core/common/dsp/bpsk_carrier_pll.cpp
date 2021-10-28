@@ -46,7 +46,7 @@ namespace dsp
                 error -= M_TWOPI;
 
             // Clip frequency
-            freq = BRANCHLESS_CLIP(freq + error * beta, max_offset);
+            freq = branchless_clip(freq + error * beta, max_offset);
 
             // Wrap phase
             phase = phase + error * alpha + freq;

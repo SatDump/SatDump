@@ -56,7 +56,7 @@ namespace fengyun3
 
             logger->info("Demultiplexing and deframing...");
 
-            uint8_t frame_write_buffer[12357];
+            uint8_t frame_write_buffer[9376];
 
             while (!data_in.eof())
             {
@@ -80,9 +80,9 @@ namespace fengyun3
                         mersiCorrelator->feedFrames(marker, frameVec);
 
                         // Write it out
-                        std::fill(&frame_write_buffer[0], &frame_write_buffer[12357], 0);
+                        std::fill(&frame_write_buffer[0], &frame_write_buffer[9376], 0);
                         std::memcpy(&frame_write_buffer[0], frameVec.data(), frameVec.size());
-                        data_out.write((char *)&frame_write_buffer[0], 12357);
+                        data_out.write((char *)&frame_write_buffer[0], 9376);
                     }
                 }
 

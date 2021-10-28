@@ -56,4 +56,7 @@ namespace dsp
                 d_thread.join();
         }
     };
+
+    // This is here as many blocks require it
+    float branchless_clip(float x, float clip);
 }
