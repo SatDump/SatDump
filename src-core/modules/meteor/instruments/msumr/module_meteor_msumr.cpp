@@ -245,9 +245,13 @@ namespace meteor
                     norad = 40069;
                     logger->info("Identified METEOR-M 2!");
                     proj_settings->scan_angle = 110.6;
-                    proj_settings->roll_offset = 2.5;
+                    proj_settings->roll_offset = 2.3;
                     proj_settings->yaw_offset = -2.8;
                     proj_settings->time_offset = 0.2;
+
+                    // Also in moscow time...
+                    for (double &timestamp : timestamps)
+                        timestamp -= 3 * 3600;
                 }
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {
