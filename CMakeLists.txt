@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_compile_definitions(SATDUMP_VERSION="0.0.37")
+add_compile_definitions(SATDUMP_VERSION="0.0.38")
 
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
