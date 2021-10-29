@@ -431,9 +431,7 @@
         "name": "CFOSAT-1 X-Band Dump",
         "live": false,
         "live_cfg": [],
-        "frequencies": [
-            7800
-        ],
+        "frequencies": [],
         "samplerate": 40e6,
         "baseband_type": "w8",
         "work": {
@@ -450,6 +448,33 @@
             },
             "cadu": {
                 "cfosat_dump_decoder": {}
+            }
+        }
+    },
+    "aeolus_dump": {
+        "name": "Aeolus Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "samplerate": 10e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": "5000000",
+                    "agc_rate": "0.1",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.006",
+                    "clock_gain_omega": "0.8",
+                    "clock_mu": "0.9",
+                    "clock_gain_mu": "0.037",
+                    "clock_omega_relative_limit": "0.0001",
+                    "dc_block": "1",
+                    "constellation_scale": "100",
+                    "buffer_size": "8192"
+                }
             }
         }
     }

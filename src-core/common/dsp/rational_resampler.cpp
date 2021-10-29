@@ -25,11 +25,15 @@ namespace dsp
         d_decimation /= gcd;
 
         // Generate taps
-        std::vector rtaps = firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
+        std::vector<float> rtaps = firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
 
         // Filter number & tap number
         nfilt = d_interpolation;
         ntaps = rtaps.size() / nfilt;
+
+        // If Ntaps is slightly over 1, add 1 tap
+        if (fmod(double(rtaps.size()) / double(nfilt), 1.0) > 0.0)
+            ntaps++;
 
         // Init tap buffers
         taps = (float **)volk_malloc(nfilt * sizeof(float *), align);
