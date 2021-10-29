@@ -27,6 +27,7 @@ std::string getFilesavePath();
 #include <filesystem>
 #include "global.h"
 #include "common/geodetic/projection/geo_projection.h"
+#include "modules/goes/gvar/image/crop.h"
 
 namespace projection
 {
@@ -263,17 +264,17 @@ namespace projection
             if (ImGui::Button("Save"))
             {
 #ifdef __APPLE__
-            projected_image.save_png("projection.png");
+                projected_image.save_png("projection.png");
 #else
-            logger->debug("Opening file dialog");
-            std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
+                logger->debug("Opening file dialog");
+                std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
 
-            logger->info("Saving to " + output_file);
+                logger->info("Saving to " + output_file);
 
-            if (output_file.size() > 0)
-            {
-                projected_image.save_png(output_file.c_str());
-            }
+                if (output_file.size() > 0)
+                {
+                    projected_image.save_png(output_file.c_str());
+                }
 #endif
             }
 
@@ -386,6 +387,17 @@ namespace projection
                 if (new_geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
                 {
                     geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)new_geofile.get());
+
+                    // If this is GOES-N Data, we need to crop it first!
+                    if (gsofile.norad == 29155 || gsofile.norad == 35491 || gsofile.norad == 36441)
+                    {
+                        logger->info("Cropping GOES-N data...");
+
+                        // One of those should work
+                        new_image = goes::gvar::cropIR(new_image);  // IR Case
+                        new_image = goes::gvar::cropVIS(new_image); // VIS Case
+                    }
+
                     new_image.resize(gsofile.image_width, gsofile.image_height); // Safety
                 }
 
