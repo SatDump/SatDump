@@ -262,15 +262,19 @@ namespace projection
 
             if (ImGui::Button("Save"))
             {
-                logger->debug("Opening file dialog");
-                std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
+#ifdef __APPLE__
+            projected_image.save_png("projection.png");
+#else
+            logger->debug("Opening file dialog");
+            std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
 
-                logger->info("Saving to " + output_file);
+            logger->info("Saving to " + output_file);
 
-                if (output_file.size() > 0)
-                {
-                    projected_image.save_png(output_file.c_str());
-                }
+            if (output_file.size() > 0)
+            {
+                projected_image.save_png(output_file.c_str());
+            }
+#endif
             }
 
             ImGui::SameLine();
