@@ -65,7 +65,11 @@ void BPSKDemodModule::init()
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
 
     // Clock recovery
-    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3, 0.005f);
+    float omega_gain = d_parameters.count("clock_gain_omega") > 0 ? std::stoi(d_parameters["clock_gain_omega"]) : (pow(8.7e-3, 2) / 4.0);
+    float mu = d_parameters.count("clock_mu") > 0 ? std::stoi(d_parameters["clock_mu"]) : 0.5f;
+    float mu_gain = d_parameters.count("clock_gain_mu") > 0 ? std::stoi(d_parameters["clock_gain_mu"]) : 8.7e-3;
+    float omegaLimit = d_parameters.count("clock_omega_relative_limit") > 0 ? std::stof(d_parameters["clock_omega_relative_limit"]) : 0.005f;
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, omega_gain, mu, mu_gain, omegaLimit);
 }
 
 std::vector<ModuleDataType> BPSKDemodModule::getInputTypes()
@@ -211,7 +215,7 @@ std::string BPSKDemodModule::getID()
 
 std::vector<std::string> BPSKDemodModule::getParameters()
 {
-    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "baseband_format"};
+    return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "baseband_format"};
 }
 
 std::shared_ptr<ProcessingModule> BPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
