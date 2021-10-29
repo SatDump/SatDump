@@ -477,5 +477,30 @@
                 }
             }
         }
+    },
+    "smos_dump": {
+        "name": "SMOS X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "samplerate": 20e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "8psk_demod": {
+                    "symbolrate": "9000000",
+                    "agc_rate": "0.00001",
+                    "rrc_alpha": "0.5",
+                    "rrc_taps": "31",
+                    "costas_bw": "0.001",
+                    "clock_omega_relative_limit": "0.001",
+                    "buffer_size": "8192"
+                }
+            },
+            "cadu": {
+                "cfosat_dump_decoder": {}
+            }
+        }
     }
 }

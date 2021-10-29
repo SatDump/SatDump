@@ -62,6 +62,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_oqpsk_demod.h"
 #include "modules/module_bpsk_demod.h"
 #include "modules/module_fsk_demod.h"
+#include "modules/module_8psk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/module_metop_dump_decoder.h"
@@ -185,6 +186,7 @@ void registerModules()
     REGISTER_MODULE(OQPSKDemodModule);
     REGISTER_MODULE(BPSKDemodModule);
     REGISTER_MODULE(FSKDemodModule);
+    REGISTER_MODULE(PSK8DemodModule);
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
