@@ -25,6 +25,8 @@ namespace jason3
             AMR2Reader();
             ~AMR2Reader();
 
+            std::vector<double> timestamps;
+
             void work(ccsds::CCSDSPacket &packet);
             cimg_library::CImg<unsigned char> getImage(int channel);
             cimg_library::CImg<unsigned short> getImageNormal(int channel);
