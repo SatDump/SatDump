@@ -47,9 +47,6 @@ namespace cfosat
         uint8_t diff_out[BUFFER_SIZE / 2];
         uint8_t repacked_buffer[BUFFER_SIZE / 8];
 
-        // Final buffer after decoding
-        uint8_t cadu_buffer[1024];
-
         // Custom diff
         CFOSATDiff diff;
 
