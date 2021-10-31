@@ -31,7 +31,7 @@ namespace geodetic
                     std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
 
                     unsigned char color[3] = {0, 0, 0};
-                    if (channels == 3)
+                    if (channels >= 3)
                     {
                         color[0] = image[image.width() * image.height() * 0 + currentScan * image.width() + int(px)] >> 8;
                         color[1] = image[image.width() * image.height() * 1 + currentScan * image.width() + int(px)] >> 8;
@@ -87,7 +87,7 @@ namespace geodetic
                     std::pair<float, float> map_cc1 = projectionFunction(lat, lon, projected_image.height(), projected_image.width());
 
                     unsigned char color[3];
-                    if (channels == 3)
+                    if (channels >= 3)
                     {
                         color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)] >> 8;
                         color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)] >> 8;
@@ -131,7 +131,7 @@ namespace geodetic
                     std::pair<float, float> map_cc1 = toMapCoords(lat, lon, projected_image.height(), projected_image.width());
 
                     unsigned char color[3];
-                    if (channels == 3)
+                    if (channels >= 3)
                     {
                         color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)] >> 8;
                         color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)] >> 8;
