@@ -18,6 +18,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef BUILD_ZIQ
+#include "common/ziq.h"
+#endif
 
 #define FFT_SIZE (8192 * 1)
 #define WATERFALL_RESOLUTION 1000
@@ -30,11 +33,9 @@ namespace recorder
     widgets::FFTPlot fftPlotWidget(fft_buffer, FFT_SIZE, 0, 1000, 15);
     bool recording = false;
     long long int recordedSize = 0;
-    //long long int compressedSamples = 0;
     float scale = 40, offset = 0;
     std::ofstream data_out;
     std::mutex data_mutex;
-    //bool enable_compression = false;
 
     uint32_t waterfallID;
     uint32_t *waterfall;
@@ -45,6 +46,13 @@ namespace recorder
     void doDSP(int);
     void doFFT(int);
     dsp::RingBuffer<complex_t> circBuffer;
+
+#ifdef BUILD_ZIQ
+    // ZIQ
+    std::shared_ptr<ziq::ziq_writer> ziqWriter;
+    bool enable_ziq = false;
+    long long int compressedSamples = 0;
+#endif
 
     void initRecorder()
     {
@@ -137,6 +145,10 @@ namespace recorder
                     {
                         recording = false;
                         data_mutex.lock();
+#ifdef BUILD_ZIQ
+                        if (enable_ziq)
+                            ziqWriter.reset();
+#endif
                         data_out.close();
                         data_mutex.unlock();
                     }
@@ -173,12 +185,28 @@ namespace recorder
                     {
                         recording = false;
                         data_mutex.lock();
+#ifdef BUILD_ZIQ
+                        if (enable_ziq)
+                            ziqWriter.reset();
+#endif
                         data_out.close();
                         data_mutex.unlock();
                     }
                     ImGui::SameLine();
+
                     std::string datasize = (recordedSize > 1e9 ? to_string_with_precision<float>(recordedSize / 1e9, 2) + " GB" : to_string_with_precision<float>(recordedSize / 1e6, 2) + " MB");
-                    ImGui::Text("Status : RECORDING, Size : %s", datasize.c_str());
+
+#ifdef BUILD_ZIQ
+                    if (enable_ziq)
+                    {
+                        std::string compressedsize = (compressedSamples > 1e9 ? to_string_with_precision<float>(compressedSamples / 1e9, 2) + " GB" : to_string_with_precision<float>(compressedSamples / 1e6, 2) + " MB");
+                        ImGui::Text("Status : RECORDING, Size : %s, Compressed : %s", datasize.c_str(), compressedsize.c_str());
+                    }
+                    else
+#endif
+                    {
+                        ImGui::Text("Status : RECORDING, Size : %s", datasize.c_str());
+                    }
                 }
                 else
                 {
@@ -191,28 +219,69 @@ namespace recorder
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                             (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
+#ifdef BUILD_ZIQ
+                        ziq::ziq_cfg cfg;
+                        enable_ziq = false;
+#endif
+
                         std::string formatstr = "";
                         if (sample_format == 0)
                             formatstr = "i8";
                         else if (sample_format == 1)
                             formatstr = "i16";
-                        else
+                        else if (sample_format == 2)
                             formatstr = "f32";
+#ifdef BUILD_ZIQ
+                        else if (sample_format == 3)
+                        {
+                            formatstr = "ziq";
+                            cfg.is_compressed = true;
+                            cfg.bits_per_sample = 8;
+                            cfg.samplerate = radio->getSamplerate();
+                            cfg.annotation = "";
+                            enable_ziq = true;
+                        }
+                        else if (sample_format == 4)
+                        {
+                            formatstr = "ziq";
+                            cfg.is_compressed = true;
+                            cfg.bits_per_sample = 16;
+                            cfg.samplerate = radio->getSamplerate();
+                            cfg.annotation = "";
+                            enable_ziq = true;
+                        }
+                        else if (sample_format == 5)
+                        {
+                            formatstr = "ziq";
+                            cfg.is_compressed = true;
+                            cfg.bits_per_sample = 32;
+                            cfg.samplerate = radio->getSamplerate();
+                            cfg.annotation = "";
+                            enable_ziq = true;
+                        }
+#endif
+                        else
+                            logger->critical("Something went horribly wrong with sample format!");
 
                         std::string filename = default_recorder_output_folder + "/" + timestamp + "_" + std::to_string((long)radio->getSamplerate()) + "SPS_" +
                                                std::to_string((long)radio->getFrequency()) + "Hz." + formatstr;
-                        //(enable_compression ? ".zst" : "");
 
                         logger->info("Recording to " + filename);
 
                         data_mutex.lock();
                         data_out = std::ofstream(filename, std::ios::binary);
+#ifdef BUILD_ZIQ
+                        if (enable_ziq)
+                            ziqWriter = std::make_shared<ziq::ziq_writer>(cfg, data_out);
+#endif
                         data_mutex.unlock();
 
                         recordedSize = 0;
 
-                        //if (enable_compression)
-                        //    compressedSamples = 0;
+#ifdef BUILD_ZIQ
+                        if (enable_ziq)
+                            compressedSamples = 0;
+#endif
 
                         recording = true;
                     }
@@ -275,23 +344,18 @@ namespace recorder
                     data_out.write((char *)converted_buffer_i16, cnt * 2 * sizeof(uint16_t));
                     recordedSize += cnt * 2 * sizeof(uint16_t);
                 }
-                else
+                else if (sample_format == 2)
                 {
                     data_out.write((char *)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
                     recordedSize += cnt * 2 * sizeof(float);
                 }
-
-                // Write them
-                //if (!enable_compression)
-                //{
-                //data_out.write((char *)converted_buffer, cnt * 2);
-                //}
-                //else
-                //{
-                //    int ccnt = compressor.work((uint8_t *)converted_buffer, cnt * 2, compressed_buffer);
-                //    data_out.write((char *)compressed_buffer, ccnt);
-                //    compressedSamples += ccnt;
-                //}
+#ifdef BUILD_ZIQ
+                else if (enable_ziq)
+                {
+                    compressedSamples += ziqWriter->write(radio->output_stream->readBuf, cnt);
+                    recordedSize += cnt * 2 * sizeof(uint8_t);
+                }
+#endif
             }
 
             // Write to FFT FIFO

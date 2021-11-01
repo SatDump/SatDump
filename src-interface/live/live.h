@@ -1,5 +1,6 @@
 #pragma once
 //#define BUILD_LIVE
+//#define BUILD_ZIQ
 
 #include <string>
 #include <map>

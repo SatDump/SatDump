@@ -55,6 +55,10 @@ if(NOT ENABLE_SDR_RTLTCP)
 target_compile_definitions(sdr PUBLIC DISABLE_SDR_RTLTCP="1")
 endif()
 
+if(BUILD_ZIQ)
+    target_compile_definitions(sdr PUBLIC BUILD_ZIQ="1")
+endif()
+
 if(MSVC)
         if(ENABLE_SDR_AIRSPY)
                 target_link_libraries(sdr PUBLIC airspy.dll)
