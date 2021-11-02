@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
         if (!found)
         {
-            logger->error("Could not requested find SDR Device!");
+            logger->error("Could not find requested SDR Device!");
             exit(1);
         }
     }

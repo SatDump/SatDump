@@ -62,6 +62,7 @@ endif()
 
 if(BUILD_LIVE)
     add_subdirectory(src-ingestor)
+    add_subdirectory(src-tools/src-recorder)
 endif()
 
 if(BUILD_TESTING)

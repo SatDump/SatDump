@@ -168,10 +168,8 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
     return std::map<std::string, std::string>();
 }
 
-std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
+std::string deviceTypeStringByType(sdr_device_type type)
 {
-    sdr_device_type type = std::get<1>(devList[num]);
-
     if (type == AIRSPY)
         return "airspy";
     if (type == RTLSDR)
@@ -192,6 +190,12 @@ std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device
         return "file";
 
     return "none";
+}
+
+std::string getDeviceIDStringByID(std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> devList, int num)
+{
+    sdr_device_type type = std::get<1>(devList[num]);
+    return deviceTypeStringByType(type);
 }
 
 sdr_device_type getDeviceIDbyIDString(std::string idString)
