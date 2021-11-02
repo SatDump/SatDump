@@ -20,7 +20,7 @@ std::string getFilesavePath();
 #include "common/map/map_drawer.h"
 #include "resources.h"
 #include "common/geodetic/projection/stereo.h"
-#include "common/geodetic/projection/geos.h"
+#include "common/geodetic/projection/tpers.h"
 #include "common/map/maidenhead.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
@@ -40,9 +40,16 @@ namespace projection
 
     // Settings
     int projection_type = 1;
+
     char stereo_locator[100];
     float stereo_scale = 1;
-    float geos_lon = 0;
+
+    float satel_alt = 30000;
+    float satel_lon = 0;
+    float satel_lat = 0;
+    float satel_angle = 0;
+    float satel_az = 0;
+
     bool draw_borders = true;
     bool draw_cities = true;
     float cities_size_ratio = 0.3;
@@ -54,7 +61,7 @@ namespace projection
     {
         std::string filename;
         std::string timestamp;
-        cimg_library::CImg<unsigned short> image;
+        cimg_library::CImg<unsigned char> image;
         std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> georef;
         bool show;
         float opacity;
@@ -65,7 +72,7 @@ namespace projection
 
     // Utils
     geodetic::projection::StereoProjection proj_stereo;
-    geodetic::projection::GEOSProjection proj_geos;
+    geodetic::projection::TPERSProjection proj_satel;
     std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
 
     bool isFirstUiRun = false;
@@ -131,14 +138,14 @@ namespace projection
                 return {x + (map_width / 2), map_height - (y + (map_height / 2))};
             };
         }
-        else if (projection_type == 2) // GEOS
+        else if (projection_type == 2) // Satellite
         {
-            logger->info("Projecting to Geostationnary point of view at " + std::to_string(geos_lon) + " longitude.");
-            proj_geos.init(30000000, geos_lon);
+            logger->info("Projecting to satellite point of view at " + std::to_string(satel_lon) + " longitude and " + std::to_string(satel_lat) + " latitude.");
+            proj_satel.init(satel_alt * 1000, satel_lon, satel_lat, satel_angle, satel_az);
             projectionFunc = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
             {
                 double x, y;
-                proj_geos.forward(lon, lat, x, y);
+                proj_satel.forward(lon, lat, x, y);
                 x *= map_width / 2;
                 y *= map_height / 2;
                 return {x + (map_width / 2), map_height - (y + (map_height / 2))};
@@ -223,7 +230,7 @@ namespace projection
             ImGui::SameLine();
             ImGui::RadioButton("Stereographic", &projection_type, 1);
             ImGui::SameLine();
-            ImGui::RadioButton("Geostationnary", &projection_type, 2);
+            ImGui::RadioButton("Satellite View", &projection_type, 2);
 
             if (projection_type == 0) // Equi
             {
@@ -233,9 +240,13 @@ namespace projection
                 ImGui::InputText("Center Locator", stereo_locator, 100);
                 ImGui::InputFloat("Projection Scale", &stereo_scale, 0.1, 1);
             }
-            else if (projection_type == 2) // GEOS
+            else if (projection_type == 2) // Satellite
             {
-                ImGui::InputFloat("Center Longitude", &geos_lon, 0.1, 10);
+                ImGui::InputFloat("Satellite Altitude", &satel_alt, 0.1, 10);
+                ImGui::InputFloat("Satellite Longitude", &satel_lon, 0.1, 10);
+                ImGui::InputFloat("Satellite Latitude", &satel_lat, 0.1, 10);
+                ImGui::InputFloat("Satellite Tilt", &satel_angle, 0.1, 10);
+                ImGui::InputFloat("Satellite Azimuth", &satel_az, 0.1, 10);
             }
 
             ImGui::Checkbox("Draw Borders", &draw_borders);
@@ -369,8 +380,10 @@ namespace projection
 
             if (ImGui::Button("Add file") && std::filesystem::exists(newfile_image) && (std::filesystem::exists(newfile_georef) || use_equirectangular))
             {
-                cimg_library::CImg<unsigned short> new_image(newfile_image);
-                new_image.normalize(0, 65535);
+                cimg_library::CImg<unsigned short> new_image_full16(newfile_image);
+                new_image_full16.normalize(0, 65535);
+                cimg_library::CImg<unsigned char> new_image = new_image_full16 >> 8;
+                new_image_full16.clear(); // Free up memory now
 
                 std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> new_geofile;
                 if (use_equirectangular)

@@ -7,7 +7,7 @@ namespace geodetic
 {
     namespace projection
     {
-        void reprojectLEOtoProj(cimg_library::CImg<unsigned short> image,
+        void reprojectLEOtoProj(cimg_library::CImg<unsigned char> image,
                                 projection::LEOScanProjector &projector,
                                 cimg_library::CImg<unsigned char> &projected_image,
                                 int channels,
@@ -33,15 +33,15 @@ namespace geodetic
                     unsigned char color[3] = {0, 0, 0};
                     if (channels >= 3)
                     {
-                        color[0] = image[image.width() * image.height() * 0 + currentScan * image.width() + int(px)] >> 8;
-                        color[1] = image[image.width() * image.height() * 1 + currentScan * image.width() + int(px)] >> 8;
-                        color[2] = image[image.width() * image.height() * 2 + currentScan * image.width() + int(px)] >> 8;
+                        color[0] = image[image.width() * image.height() * 0 + currentScan * image.width() + int(px)];
+                        color[1] = image[image.width() * image.height() * 1 + currentScan * image.width() + int(px)];
+                        color[2] = image[image.width() * image.height() * 2 + currentScan * image.width() + int(px)];
                     }
                     else
                     {
-                        color[0] = image[currentScan * image.width() + int(px)] >> 8;
-                        color[1] = image[currentScan * image.width() + int(px)] >> 8;
-                        color[2] = image[currentScan * image.width() + int(px)] >> 8;
+                        color[0] = image[currentScan * image.width() + int(px)];
+                        color[1] = image[currentScan * image.width() + int(px)];
+                        color[2] = image[currentScan * image.width() + int(px)];
                     }
 
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
@@ -69,7 +69,7 @@ namespace geodetic
             }
         }
 
-        void reprojectGEOtoProj(cimg_library::CImg<unsigned short> image,
+        void reprojectGEOtoProj(cimg_library::CImg<unsigned char> image,
                                 projection::GEOProjector &projector,
                                 cimg_library::CImg<unsigned char> &projected_image,
                                 int channels,
@@ -89,21 +89,18 @@ namespace geodetic
                     unsigned char color[3];
                     if (channels >= 3)
                     {
-                        color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)] >> 8;
-                        color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)] >> 8;
-                        color[2] = image[image.width() * image.height() * 2 + y * image.width() + int(x)] >> 8;
+                        color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)];
+                        color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)];
+                        color[2] = image[image.width() * image.height() * 2 + y * image.width() + int(x)];
                     }
                     else
                     {
-                        color[0] = image[y * image.width() + int(x)] >> 8;
-                        color[1] = image[y * image.width() + int(x)] >> 8;
-                        color[2] = image[y * image.width() + int(x)] >> 8;
+                        color[0] = image[y * image.width() + int(x)];
+                        color[1] = image[y * image.width() + int(x)];
+                        color[2] = image[y * image.width() + int(x)];
                     }
 
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
-                        continue;
-
-                    if (color[0] >= 253 && color[1] >= 253 && color[2] >= 253) // Skip Full white, as it's usually filler on GEO (eg, xRIT)
                         continue;
 
                     //logger->info(std::to_string(color[0]) + " " + std::to_string(color[1]) + " " + std::to_string(color[2]));
@@ -116,7 +113,7 @@ namespace geodetic
             }
         }
 
-        void projectEQUIToproj(cimg_library::CImg<unsigned short> image, cimg_library::CImg<unsigned char> &projected_image, int channels, std::function<std::pair<int, int>(float, float, int, int)> toMapCoords, float opacity, float *progress)
+        void projectEQUIToproj(cimg_library::CImg<unsigned char> image, cimg_library::CImg<unsigned char> &projected_image, int channels, std::function<std::pair<int, int>(float, float, int, int)> toMapCoords, float opacity, float *progress)
         {
             for (double lat = -90; lat < 90; lat += 0.01)
             {
@@ -133,15 +130,15 @@ namespace geodetic
                     unsigned char color[3];
                     if (channels >= 3)
                     {
-                        color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)] >> 8;
-                        color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)] >> 8;
-                        color[2] = image[image.width() * image.height() * 2 + y * image.width() + int(x)] >> 8;
+                        color[0] = image[image.width() * image.height() * 0 + y * image.width() + int(x)];
+                        color[1] = image[image.width() * image.height() * 1 + y * image.width() + int(x)];
+                        color[2] = image[image.width() * image.height() * 2 + y * image.width() + int(x)];
                     }
                     else
                     {
-                        color[0] = image[y * image.width() + int(x)] >> 8;
-                        color[1] = image[y * image.width() + int(x)] >> 8;
-                        color[2] = image[y * image.width() + int(x)] >> 8;
+                        color[0] = image[y * image.width() + int(x)];
+                        color[1] = image[y * image.width() + int(x)];
+                        color[2] = image[y * image.width() + int(x)];
                     }
 
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
@@ -155,7 +152,7 @@ namespace geodetic
             }
         }
 
-        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,
+        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char> image,
                                                                             projection::LEOScanProjector &projector,
                                                                             int output_width,
                                                                             int output_height,

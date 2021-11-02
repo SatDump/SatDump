@@ -18,7 +18,7 @@ namespace geodetic
     {
         // Reproject LEO imagery
         void reprojectLEOtoProj(
-            cimg_library::CImg<unsigned short> image,                                      // Input image to project
+            cimg_library::CImg<unsigned char> image,                                      // Input image to project
             projection::LEOScanProjector &projector,                                       // LEO Projector
             cimg_library::CImg<unsigned char> &projected_image,                            // Optional input image
             int channels,                                                                  // Channels
@@ -29,7 +29,7 @@ namespace geodetic
 
         // Reproject GEO imagery
         void reprojectGEOtoProj(
-            cimg_library::CImg<unsigned short> image,                                      // Input image to project
+            cimg_library::CImg<unsigned char> image,                                      // Input image to project
             projection::GEOProjector &projector,                                           // GEO Projector
             cimg_library::CImg<unsigned char> &projected_image,                            // Optional input image
             int channels,                                                                  // Channels
@@ -38,7 +38,7 @@ namespace geodetic
             float *progress = nullptr                                                      // Optional progress value
         );
 
-        void projectEQUIToproj(cimg_library::CImg<unsigned short> image,
+        void projectEQUIToproj(cimg_library::CImg<unsigned char> image,
                                cimg_library::CImg<unsigned char> &projected_image,
                                int channels,
                                std::function<std::pair<int, int>(float, float, int, int)> toMapCoords,
@@ -47,7 +47,7 @@ namespace geodetic
 
         // Reproject LEO imagery to an equirectangular projection
         cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(
-            cimg_library::CImg<unsigned short> image,                                                             // Input image to project
+            cimg_library::CImg<unsigned char> image,                                                             // Input image to project
             projection::LEOScanProjector &projector,                                                              // LEO Projector
             int output_width,                                                                                     // Output map width
             int output_height,                                                                                    // Output map height
