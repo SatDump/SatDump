@@ -31,7 +31,7 @@ namespace terra
         dsp::Random rng;
 
     public:
-        TerraDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        TerraDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~TerraDBDecoderModule();
         void process();
         void drawUI(bool window);
@@ -40,6 +40,6 @@ namespace terra
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace meteor

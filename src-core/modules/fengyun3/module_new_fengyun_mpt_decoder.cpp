@@ -14,12 +14,12 @@ size_t getFilesize(std::string filepath);
 
 namespace fengyun3
 {
-    NewFengyunMPTDecoderModule::NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                                  d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
-                                                                                                                                                                  d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
-                                                                                                                                                                  d_soft_symbols(std::stoi(parameters["soft_symbols"])),
-                                                                                                                                                                  viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
-                                                                                                                                                                  viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
+    NewFengyunMPTDecoderModule::NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                              d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
+                                                                                                                                              d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
+                                                                                                                                              d_soft_symbols(parameters["soft_symbols"].get<bool>()),
+                                                                                                                                              viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2),
+                                                                                                                                              viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
@@ -302,7 +302,7 @@ namespace fengyun3
         return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols", "invert_second_viterbi"};
     }
 
-    std::shared_ptr<ProcessingModule> NewFengyunMPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NewFengyunMPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NewFengyunMPTDecoderModule>(input_file, output_file_hint, parameters);
     }

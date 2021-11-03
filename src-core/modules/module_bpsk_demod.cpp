@@ -6,16 +6,16 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                        d_agc_rate(std::stof(parameters["agc_rate"])),
-                                                                                                                                        d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                        d_symbolrate(std::stoi(parameters["symbolrate"])),
-                                                                                                                                        d_rrc_alpha(std::stof(parameters["rrc_alpha"])),
-                                                                                                                                        d_rrc_taps(std::stoi(parameters["rrc_taps"])),
-                                                                                                                                        d_loop_bw(std::stof(parameters["costas_bw"])),
-                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                        d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
-                                                                                                                                        constellation(0.5f, 0.5f, demod_constellation_size)
+BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                    d_agc_rate(parameters["agc_rate"].get<float>()),
+                                                                                                                    d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                    d_symbolrate(parameters["symbolrate"].get<long>()),
+                                                                                                                    d_rrc_alpha(parameters["rrc_alpha"].get<float>()),
+                                                                                                                    d_rrc_taps(parameters["rrc_taps"].get<int>()),
+                                                                                                                    d_loop_bw(parameters["costas_bw"].get<float>()),
+                                                                                                                    d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                    d_dc_block(parameters.count("dc_block") > 0 ? parameters["dc_block"].get<bool>() : 0),
+                                                                                                                    constellation(0.5f, 0.5f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 2];
@@ -65,10 +65,10 @@ void BPSKDemodModule::init()
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
 
     // Clock recovery
-    float omega_gain = d_parameters.count("clock_gain_omega") > 0 ? std::stoi(d_parameters["clock_gain_omega"]) : (pow(8.7e-3, 2) / 4.0);
-    float mu = d_parameters.count("clock_mu") > 0 ? std::stoi(d_parameters["clock_mu"]) : 0.5f;
-    float mu_gain = d_parameters.count("clock_gain_mu") > 0 ? std::stoi(d_parameters["clock_gain_mu"]) : 8.7e-3;
-    float omegaLimit = d_parameters.count("clock_omega_relative_limit") > 0 ? std::stof(d_parameters["clock_omega_relative_limit"]) : 0.005f;
+    float omega_gain = d_parameters.count("clock_gain_omega") > 0 ? d_parameters["clock_gain_omega"].get<float>() : (pow(8.7e-3, 2) / 4.0);
+    float mu = d_parameters.count("clock_mu") > 0 ? d_parameters["clock_mu"].get<float>() : 0.5f;
+    float mu_gain = d_parameters.count("clock_gain_mu") > 0 ? d_parameters["clock_gain_mu"].get<float>() : 8.7e-3;
+    float omegaLimit = d_parameters.count("clock_omega_relative_limit") > 0 ? d_parameters["clock_omega_relative_limit"].get<float>() : 0.005f;
     rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, omega_gain, mu, mu_gain, omegaLimit);
 }
 
@@ -218,7 +218,7 @@ std::vector<std::string> BPSKDemodModule::getParameters()
     return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "dc_block", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "baseband_format"};
 }
 
-std::shared_ptr<ProcessingModule> BPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+std::shared_ptr<ProcessingModule> BPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
 {
     return std::make_shared<BPSKDemodModule>(input_file, output_file_hint, parameters);
 }

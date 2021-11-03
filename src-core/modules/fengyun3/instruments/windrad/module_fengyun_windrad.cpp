@@ -16,7 +16,7 @@ namespace fengyun3
 {
     namespace windrad
     {
-        FengyunWindRADDecoderModule::FengyunWindRADDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        FengyunWindRADDecoderModule::FengyunWindRADDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -124,7 +124,7 @@ namespace fengyun3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> FengyunWindRADDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> FengyunWindRADDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FengyunWindRADDecoderModule>(input_file, output_file_hint, parameters);
         }

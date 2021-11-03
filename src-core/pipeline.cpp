@@ -2,7 +2,6 @@
 #include "pipeline.h"
 #include "logger.h"
 #include "module.h"
-#include "nlohmann/json.hpp"
 #include <fstream>
 #include <filesystem>
 
@@ -11,7 +10,7 @@ SATDUMP_DLL std::vector<std::string> pipeline_categories;
 
 void Pipeline::run(std::string input_file,
                    std::string output_directory,
-                   std::map<std::string, std::string> parameters,
+                   nlohmann::json parameters,
                    std::string input_level,
                    bool ui,
                    std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList,
@@ -46,16 +45,16 @@ void Pipeline::run(std::string input_file,
 
         for (PipelineModule modStep : step.modules)
         {
-            std::map<std::string, std::string> final_parameters = modStep.parameters;
-            for (const std::pair<std::string, std::string> param : parameters)
-                if (final_parameters.count(param.first) > 0)
+            nlohmann::json final_parameters = modStep.parameters;
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : parameters.items())
+                if (final_parameters.count(param.key()) > 0)
                     ; // Do Nothing //final_parameters[param.first] = param.second;
                 else
-                    final_parameters.emplace(param.first, param.second);
+                    final_parameters.emplace(param.key(), param.value());
 
             logger->debug("Parameters :");
-            for (const std::pair<std::string, std::string> param : final_parameters)
-                logger->debug("   - " + param.first + " : " + param.second);
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
+                logger->debug("   - " + param.key() + " : " + param.value().dump());
 
             std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](modStep.input_override == "" ? (stepC == 0 ? input_file : lastFiles[0]) : output_directory + "/" + modStep.input_override, output_directory + "/" + name, final_parameters);
 
@@ -124,7 +123,7 @@ void loadPipeline(std::string filepath, std::string category)
             {
                 PipelineModule newModule;
                 newModule.module_name = pipelineModule.key();
-                newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
+                newModule.parameters = pipelineModule.value();
 
                 if (newModule.parameters.count("input_override") > 0)
                     newModule.input_override = newModule.parameters["input_override"];

@@ -71,7 +71,7 @@ namespace elektro_arktika
         widgets::SNRPlotViewer snr_plot;
 
     public:
-        TLMDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        TLMDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~TLMDemodModule();
         void init();
         void stop();
@@ -84,6 +84,6 @@ namespace elektro_arktika
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 }

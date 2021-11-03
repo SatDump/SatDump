@@ -10,12 +10,12 @@ size_t getFilesize(std::string filepath);
 
 namespace metop
 {
-    MetOpAHRPTDecoderModule::MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
-                                                                                                                                                            d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
-                                                                                                                                                            d_soft_symbols(std::stoi(parameters["soft_symbols"])),
-                                                                                                                                                            sw(0),
-                                                                                                                                                            viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
+    MetOpAHRPTDecoderModule::MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
+                                                                                                                                        d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
+                                                                                                                                        d_soft_symbols(parameters["soft_symbols"].get<bool>()),
+                                                                                                                                        sw(0),
+                                                                                                                                        viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         sym_buffer = new std::complex<float>[BUFFER_SIZE];
@@ -203,7 +203,7 @@ namespace metop
         return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols"};
     }
 
-    std::shared_ptr<ProcessingModule> MetOpAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> MetOpAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<MetOpAHRPTDecoderModule>(input_file, output_file_hint, parameters);
     }

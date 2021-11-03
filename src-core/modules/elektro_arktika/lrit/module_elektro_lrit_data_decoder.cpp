@@ -16,7 +16,7 @@ namespace elektro
 {
     namespace lrit
     {
-        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
             elektro_221_composer_full_disk = std::make_shared<ELEKTRO221Composer>();
             elektro_321_composer_full_disk = std::make_shared<ELEKTRO321Composer>();
@@ -280,7 +280,7 @@ namespace elektro
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> ELEKTROLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> ELEKTROLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<ELEKTROLRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }

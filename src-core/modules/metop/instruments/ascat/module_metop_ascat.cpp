@@ -20,7 +20,7 @@ namespace metop
 {
     namespace ascat
     {
-        MetOpASCATDecoderModule::MetOpASCATDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MetOpASCATDecoderModule::MetOpASCATDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -224,7 +224,7 @@ namespace metop
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpASCATDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MetOpASCATDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpASCATDecoderModule>(input_file, output_file_hint, parameters);
         }

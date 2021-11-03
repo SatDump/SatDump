@@ -23,7 +23,7 @@ namespace meteor
 {
     namespace msumr
     {
-        METEORMSUMRDecoderModule::METEORMSUMRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        METEORMSUMRDecoderModule::METEORMSUMRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -307,7 +307,7 @@ namespace meteor
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> METEORMSUMRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> METEORMSUMRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<METEORMSUMRDecoderModule>(input_file, output_file_hint, parameters);
         }

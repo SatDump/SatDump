@@ -17,9 +17,9 @@ size_t getFilesize(std::string filepath);
 
 namespace meteor
 {
-    METEORLRPTDecoderModule::METEORLRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            diff_decode(std::stoi(parameters["diff_decode"])),
-                                                                                                                                                            viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
+    METEORLRPTDecoderModule::METEORLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        diff_decode(parameters["diff_decode"].get<bool>()),
+                                                                                                                                        viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
@@ -236,7 +236,7 @@ namespace meteor
         return {"diff_decode"};
     }
 
-    std::shared_ptr<ProcessingModule> METEORLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> METEORLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<METEORLRPTDecoderModule>(input_file, output_file_hint, parameters);
     }

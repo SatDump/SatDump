@@ -14,7 +14,7 @@ namespace proba
 {
     namespace chris
     {
-        ProbaCHRISDecoderModule::ProbaCHRISDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        ProbaCHRISDecoderModule::ProbaCHRISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -108,7 +108,7 @@ namespace proba
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> ProbaCHRISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> ProbaCHRISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<ProbaCHRISDecoderModule>(input_file, output_file_hint, parameters);
         }

@@ -24,9 +24,9 @@ namespace eos
 {
     namespace modis
     {
-        EOSMODISDecoderModule::EOSMODISDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            terra(std::stoi(parameters["terra_mode"])),
-                                                                                                                                                            bowtie(std::stoi(parameters["correct_bowtie"]))
+        EOSMODISDecoderModule::EOSMODISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        terra(parameters["terra_mode"].get<bool>()),
+                                                                                                                                        bowtie(parameters["correct_bowtie"].get<bool>())
         {
         }
 
@@ -461,7 +461,7 @@ namespace eos
             return {"terra_mode", "correct_bowtie"};
         }
 
-        std::shared_ptr<ProcessingModule> EOSMODISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> EOSMODISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<EOSMODISDecoderModule>(input_file, output_file_hint, parameters);
         }

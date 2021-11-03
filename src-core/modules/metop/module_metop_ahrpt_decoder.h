@@ -38,7 +38,7 @@ namespace metop
         float ber_history[200];
 
     public:
-        MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~MetOpAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
@@ -47,6 +47,6 @@ namespace metop
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace metop

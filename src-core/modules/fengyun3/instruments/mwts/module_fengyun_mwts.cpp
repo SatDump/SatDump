@@ -16,7 +16,7 @@ namespace fengyun3
 {
     namespace mwts
     {
-        FengyunMWTSDecoderModule::FengyunMWTSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        FengyunMWTSDecoderModule::FengyunMWTSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -162,7 +162,7 @@ namespace fengyun3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> FengyunMWTSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> FengyunMWTSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FengyunMWTSDecoderModule>(input_file, output_file_hint, parameters);
         }

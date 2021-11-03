@@ -16,8 +16,8 @@ namespace metop
 {
     namespace gome
     {
-        MetOpGOMEDecoderModule::MetOpGOMEDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                              write_all(std::stoi(parameters["write_all"]))
+        MetOpGOMEDecoderModule::MetOpGOMEDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                          write_all(parameters["write_all"].get<bool>())
         {
         }
 
@@ -142,7 +142,7 @@ namespace metop
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpGOMEDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MetOpGOMEDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpGOMEDecoderModule>(input_file, output_file_hint, parameters);
         }

@@ -51,7 +51,7 @@ namespace fengyun3
         float ber_history2[200];
 
     public:
-        NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        NewFengyunMPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~NewFengyunMPTDecoderModule();
         void process();
         void drawUI(bool window);
@@ -60,6 +60,6 @@ namespace fengyun3
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace fengyun

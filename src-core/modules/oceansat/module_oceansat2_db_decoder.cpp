@@ -47,7 +47,7 @@ namespace oceansat
         }
     };
 
-    Oceansat2DBDecoderModule::Oceansat2DBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    Oceansat2DBDecoderModule::Oceansat2DBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
         frame_count = 0;
@@ -235,7 +235,7 @@ namespace oceansat
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> Oceansat2DBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> Oceansat2DBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<Oceansat2DBDecoderModule>(input_file, output_file_hint, parameters);
     }

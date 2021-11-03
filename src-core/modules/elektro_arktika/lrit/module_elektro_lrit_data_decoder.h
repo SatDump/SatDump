@@ -19,7 +19,7 @@ namespace elektro
              std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;
 
         public:
-            ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~ELEKTROLRITDataDecoderModule();
             void process();
             void drawUI(bool window);
@@ -30,7 +30,7 @@ namespace elektro
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
             static std::vector<std::string> getParameters();
-            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
     } // namespace avhrr
 } // namespace metop

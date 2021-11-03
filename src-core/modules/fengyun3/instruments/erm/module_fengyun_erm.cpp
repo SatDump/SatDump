@@ -16,7 +16,7 @@ namespace fengyun3
 {
     namespace erm
     {
-        FengyunERMDecoderModule::FengyunERMDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        FengyunERMDecoderModule::FengyunERMDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -144,7 +144,7 @@ namespace fengyun3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> FengyunERMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> FengyunERMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FengyunERMDecoderModule>(input_file, output_file_hint, parameters);
         }

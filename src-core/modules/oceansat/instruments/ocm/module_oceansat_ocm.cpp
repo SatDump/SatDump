@@ -14,7 +14,7 @@ namespace oceansat
 {
     namespace ocm
     {
-        OceansatOCMDecoderModule::OceansatOCMDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        OceansatOCMDecoderModule::OceansatOCMDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -208,7 +208,7 @@ namespace oceansat
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> OceansatOCMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> OceansatOCMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<OceansatOCMDecoderModule>(input_file, output_file_hint, parameters);
         }

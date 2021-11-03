@@ -15,7 +15,7 @@ namespace noaa
 {
     namespace mhs
     {
-        NOAAMHSDecoderModule::NOAAMHSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        NOAAMHSDecoderModule::NOAAMHSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -121,7 +121,7 @@ namespace noaa
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> NOAAMHSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> NOAAMHSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<NOAAMHSDecoderModule>(input_file, output_file_hint, parameters);
         }

@@ -18,7 +18,7 @@ size_t getFilesize(std::string filepath);
 
 namespace aqua
 {
-    AquaDBDecoderModule::AquaDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    AquaDBDecoderModule::AquaDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[BUFFER_SIZE];
     }
@@ -276,7 +276,7 @@ namespace aqua
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> AquaDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> AquaDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<AquaDBDecoderModule>(input_file, output_file_hint, parameters);
     }

@@ -27,7 +27,7 @@ namespace goes
             std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
 
         public:
-            GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~GOESLRITDataDecoderModule();
             void process();
             void drawUI(bool window);
@@ -38,7 +38,7 @@ namespace goes
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
             static std::vector<std::string> getParameters();
-            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
     } // namespace avhrr
 } // namespace metop

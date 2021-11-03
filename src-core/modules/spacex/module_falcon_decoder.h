@@ -11,7 +11,7 @@ namespace spacex
     class FalconDecoderModule : public ProcessingModule
     {
     public:
-        FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        FalconDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~FalconDecoderModule();
         void process();
         void drawUI(bool window);
@@ -26,7 +26,7 @@ namespace spacex
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
 
     private:
 #ifdef USE_VIDEO_ENCODER

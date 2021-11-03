@@ -23,7 +23,7 @@ size_t getFilesize(std::string filepath);
 
 namespace spacex
 {
-    FalconDecoderModule::FalconDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    FalconDecoderModule::FalconDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
     }
 
@@ -221,7 +221,7 @@ namespace spacex
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> FalconDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> FalconDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<FalconDecoderModule>(input_file, output_file_hint, parameters);
     }

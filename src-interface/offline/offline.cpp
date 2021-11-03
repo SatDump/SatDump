@@ -335,12 +335,12 @@ namespace offline
                 else
                 {
 
-                    parameters.emplace("samplerate", std::string(samplerate));
+                    parameters["samplerate"] = std::stol(samplerate);
 
-                    parameters.emplace("baseband_format", baseband_format);
+                    parameters["baseband_format"] = baseband_format;
 
-                    parameters.emplace("dc_block", dc_block ? "1" : "0");
-                    parameters.emplace("iq_swap", iq_swap ? "1" : "0");
+                    parameters["dc_block"] = (bool)dc_block;
+                    parameters["iq_swap"] = (bool)iq_swap;
 
                     processThreadPool.push([&](int)
                                            { processing::process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });

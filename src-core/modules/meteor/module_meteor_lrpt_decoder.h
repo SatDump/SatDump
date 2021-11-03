@@ -30,7 +30,7 @@ namespace meteor
         float cor_history[200];
 
     public:
-        METEORLRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        METEORLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~METEORLRPTDecoderModule();
         void process();
         void drawUI(bool window);
@@ -41,6 +41,6 @@ namespace meteor
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace meteor

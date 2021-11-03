@@ -16,10 +16,10 @@ namespace gk2a
 {
     namespace lrit
     {
-        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                                    write_images(std::stoi(parameters["write_images"])),
-                                                                                                                                                                    write_additional(std::stoi(parameters["write_additional"])),
-                                                                                                                                                                    write_unknown(std::stoi(parameters["write_unknown"]))
+        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                write_images(parameters["write_images"].get<bool>()),
+                                                                                                                                                write_additional(parameters["write_additional"].get<bool>()),
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
         {
         }
 
@@ -216,7 +216,7 @@ namespace gk2a
             return {"write_images", "write_additional", "write_unknown"};
         }
 
-        std::shared_ptr<ProcessingModule> GK2ALRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> GK2ALRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GK2ALRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }
