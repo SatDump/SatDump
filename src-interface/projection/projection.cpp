@@ -11,12 +11,6 @@
 #include "CImg.h"
 
 #include "imgui/file_selection.h"
-#ifdef __ANDROID__
-std::string getFilePath();
-std::string getDirPath();
-std::string getFilesavePath();
-#endif
-
 #include "common/map/map_drawer.h"
 #include "resources.h"
 #include "common/geodetic/projection/stereo.h"
@@ -28,6 +22,7 @@ std::string getFilesavePath();
 #include "global.h"
 #include "common/geodetic/projection/geo_projection.h"
 #include "modules/goes/gvar/image/crop.h"
+#include "settings.h"
 
 namespace projection
 {
@@ -52,6 +47,7 @@ namespace projection
 
     bool draw_borders = true;
     bool draw_cities = true;
+    bool draw_custom_labels = true;
     float cities_size_ratio = 0.3;
 
     char newfile_image[1000];
@@ -70,6 +66,13 @@ namespace projection
     };
     std::vector<FileToProject> filesToProject;
 
+    // Custom
+    char new_custom_label_str[1000];
+    float new_custom_label_lat = 0;
+    float new_custom_label_lon = 0;
+    bool show_custom_labels_window = false;
+    std::vector<map::CustomLabel> customLabels;
+
     // Utils
     geodetic::projection::StereoProjection proj_stereo;
     geodetic::projection::TPERSProjection proj_satel;
@@ -77,7 +80,7 @@ namespace projection
 
     bool isFirstUiRun = false;
     bool rendering = false;
-    bool isRenderDone = false;
+    int isRenderDone = false;
 
     float render_progress = 0;
 
@@ -97,8 +100,16 @@ namespace projection
         std::fill(newfile_image, &newfile_image[1000], 0);
         std::fill(newfile_georef, &newfile_georef[1000], 0);
 
+        std::fill(new_custom_label_str, &new_custom_label_str[1000], 0);
+
         isFirstUiRun = true;
         rendering = false;
+
+        // Load custom labels
+        customLabels.clear();
+        std::vector<std::tuple<std::string, double, double>> labelTuple = settings["custom_map_labels"].get<std::vector<std::tuple<std::string, double, double>>>();
+        for (std::tuple<std::string, double, double> &label : labelTuple)
+            customLabels.push_back({std::get<0>(label), std::get<1>(label), std::get<2>(label)});
     }
 
     void destroyProjection()
@@ -191,6 +202,13 @@ namespace projection
             map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, projected_image, color, projectionFunc, cities_size_ratio);
         }
 
+        // Should we draw custom labels?
+        if (draw_custom_labels)
+        {
+            unsigned char color[3] = {0, 0, 255};
+            map::drawProjectedLabels(customLabels, projected_image, color, projectionFunc, cities_size_ratio);
+        }
+
         // Finally, update image
         //uchar_to_rgba(projected_image.data(), textureBuffer, output_width * output_height, 3);
         //updateImageTexture(textureID, textureBuffer, output_width, output_height);
@@ -204,9 +222,9 @@ namespace projection
             uchar_to_rgba(projected_image.data(), textureBuffer, output_width * output_height, 3);
             updateImageTexture(textureID, textureBuffer, output_width, output_height);
 
-            if (isRenderDone)
+            if (isRenderDone > 0)
             {
-                isRenderDone = false;
+                isRenderDone--;
             }
         }
 
@@ -251,7 +269,10 @@ namespace projection
 
             ImGui::Checkbox("Draw Borders", &draw_borders);
             ImGui::Checkbox("Draw Cities", &draw_cities);
+            ImGui::Checkbox("Draw Labels", &draw_custom_labels);
             ImGui::InputFloat("Cities Scale", &cities_size_ratio);
+            if (ImGui::Button("Edit Custom Labels"))
+                show_custom_labels_window = true;
 
             if (!rendering)
             {
@@ -262,9 +283,10 @@ namespace projection
                                                {
                                                    doRender();
                                                    rendering = false;
+                                                   isRenderDone = 10;
                                                });
                     rendering = true;
-                    isRenderDone = true;
+                    isRenderDone = false;
                 }
             }
             else
@@ -314,6 +336,64 @@ namespace projection
         }
         ImGui::End();
 
+        if (show_custom_labels_window)
+        {
+            ImGui::Begin(std::string("Edit Custom Labels").c_str(), &show_custom_labels_window);
+            {
+                if (ImGui::BeginTable("CustomlabelTable", 4, ImGuiTableFlags_Borders))
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Label");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("Lat");
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("Lon");
+                    ImGui::TableSetColumnIndex(3);
+                    for (map::CustomLabel &label : customLabels)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%s", label.label.c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%f", label.lat);
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%f", label.lon);
+                        ImGui::TableSetColumnIndex(3);
+                        if (ImGui::Button(std::string("Delete##" + label.label).c_str()))
+                        {
+                            logger->warn("Deleting " + label.label);
+                            customLabels.erase(std::find_if(customLabels.begin(), customLabels.end(), [&label](map::CustomLabel &l)
+                                                            { return l.label == label.label; }));
+                            break;
+                        }
+                    }
+                    ImGui::EndTable();
+
+                    ImGui::InputText("Label Name", new_custom_label_str, 1000);
+                    ImGui::InputFloat("Label Latitude", &new_custom_label_lat, 0.1, 10);
+                    ImGui::InputFloat("Label Longitude", &new_custom_label_lon, 0.1, 10);
+                    if (ImGui::Button("Add##addcustomlabel"))
+                    {
+                        customLabels.push_back({std::string(new_custom_label_str), new_custom_label_lat, new_custom_label_lon});
+                        std::fill(new_custom_label_str, &new_custom_label_str[1000], 0);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Save"))
+                    {
+                        std::vector<std::tuple<std::string, double, double>> labelTuple;
+                        for (map::CustomLabel &label : customLabels)
+                        {
+                            labelTuple.push_back({label.label, label.lat, label.lon});
+                        }
+                        settings["custom_map_labels"] = labelTuple;
+                        saveSettings();
+                    }
+                }
+            }
+            ImGui::End();
+        }
+
         if (isFirstUiRun)
             ImGui::SetNextWindowSize({300 * ui_scale, 400 * ui_scale});
         ImGui::Begin("File Manager");
@@ -340,7 +420,6 @@ namespace projection
                     if (ImGui::Button(std::string("View##" + toProj.timestamp).c_str()))
                         toProj.show = true;
                 }
-
                 ImGui::EndTable();
             }
 
