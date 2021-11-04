@@ -39,40 +39,7 @@
             "products": {
                 "metop_satid": {},
                 "metop_avhrr": {
-                    "composites": {
-                        "RGB-221": {
-                            "expression": "ch2, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-221-EQU": {
-                            "expression": "ch2, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "RGB-321": {
-                            "expression": "ch3, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-321-EQU": {
-                            "expression": "ch3, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true
-                        },
-                        "RGB-(23)21": {
-                            "expression": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15",
-                            "corrected": true
-                        },
-                        "4-EQU": {
-                            "expression": "ch4",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        }
-                    }
+                    "composites": "composites/metop_avhrr.json.inc"
                 },
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -124,40 +91,7 @@
             "products": {
                 "metop_satid": {},
                 "metop_avhrr": {
-                    "composites": {
-                        "RGB-221": {
-                            "expression": "ch2, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-221-EQU": {
-                            "expression": "ch2, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "RGB-321": {
-                            "expression": "ch3, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-321-EQU": {
-                            "expression": "ch3, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true
-                        },
-                        "RGB-(23)21": {
-                            "expression": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15",
-                            "corrected": true
-                        },
-                        "4-EQU": {
-                            "expression": "ch4",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        }
-                    }
+                    "composites": "composites/metop_avhrr.json.inc"
                 },
                 "metop_mhs": {},
                 "metop_amsu": {},
@@ -379,7 +313,28 @@
                 }
             },
             "products": {
-                "noaa_avhrr": {},
+                "noaa_avhrr": {
+                    "composites": {
+                        "RGB-221": {
+                            "expression": "ch2, ch2, ch1",
+                            "corrected": true
+                        },
+                        "RGB-221-EQU": {
+                            "expression": "ch2, ch2, ch1",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true,
+                            "projected": true
+                        },
+                        "4-EQU": {
+                            "expression": "ch4",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true,
+                            "projected": true
+                        }
+                    }
+                },
                 "noaa_extractor": {},
                 "noaa_hirs": {
                     "input_override": "noaa_hrpt.tip"
@@ -422,7 +377,48 @@
                 "meteor_hrpt_decoder": {}
             },
             "products": {
-                "meteor_msumr": {},
+                "meteor_msumr": {
+                    "composites": {
+                        "RGB-221": {
+                            "expression": "ch2, ch2, ch1",
+                            "corrected": true
+                        },
+                        "RGB-221-EQU": {
+                            "expression": "ch2, ch2, ch1",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true
+                        },
+                        "RGB-321": {
+                            "expression": "ch3, ch2, ch1",
+                            "corrected": true
+                        },
+                        "RGB-321-EQU": {
+                            "expression": "ch3, ch2, ch1",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true,
+                            "projected": true
+                        },
+                        "RGB-321-CONT": {
+                            "expression": "ch3 * 1.8 - 0.25, ch2 * 1.8 - 0.25, ch1 * 1.8 - 0.25",
+                            "corrected": true
+                        },
+                        "4-EQU": {
+                            "expression": "1 - ch4",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true,
+                            "projected": true
+                        },
+                        "5-EQU": {
+                            "expression": "1 - ch5",
+                            "equalize": true,
+                            "normalize": true,
+                            "corrected": true
+                        }
+                    }
+                },
                 "meteor_mtvza": {}
             }
         }

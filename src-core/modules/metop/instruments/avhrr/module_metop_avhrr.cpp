@@ -236,9 +236,6 @@ namespace metop
                     //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
                     std::string expression = compositeDef["expression"].get<std::string>();
-                    bool equalize = compositeDef.count("equalize") > 0 ? compositeDef["equalize"].get<bool>() : false;
-                    bool normalize = compositeDef.count("normalize") > 0 ? compositeDef["normalize"].get<bool>() : false;
-                    bool white_balance = compositeDef.count("while_balance") > 0 ? compositeDef["while_balance"].get<bool>() : false;
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
                     bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
@@ -248,16 +245,8 @@ namespace metop
                     cimg_library::CImg<unsigned short>
                         compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
                                                                                             {1, 2, 3, 4, 5},
-                                                                                            expression);
-
-                    if (equalize)
-                        compositeImage.equalize(1000);
-
-                    if (normalize)
-                        compositeImage.normalize(0, 65535);
-
-                    if (white_balance)
-                        image::white_balance(compositeImage);
+                                                                                            expression,
+                                                                                            compositeDef);
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 

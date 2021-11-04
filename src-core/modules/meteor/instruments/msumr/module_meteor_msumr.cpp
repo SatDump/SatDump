@@ -13,6 +13,8 @@
 #include "common/image/image.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -139,79 +141,8 @@ namespace meteor
             logger->info("Channel 6...");
             WRITE_IMAGE(image5, directory + "/MSU-MR-6.png");
 
-            logger->info("221 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image221(1572, reader.lines, 1, 3);
-                {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  METEOR_ORBIT_HEIGHT,
-                                                                                                                  METEOR_MSUMR_SWATH,
-                                                                                                                  METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-EQU-CORRECTED.png");
-            }
-
-            logger->info("321 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
-                {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
-                }
-                cimg_library::CImg<unsigned short> image321_contrast = image321;
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321.png");
-                image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
-                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
-                                                                                                                  METEOR_ORBIT_HEIGHT,
-                                                                                                                  METEOR_MSUMR_SWATH,
-                                                                                                                  METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
-
-                image::brightness_contrast(image321_contrast, 0.179 * 2, 0.253 * 2, 3);
-                WRITE_IMAGE(image321_contrast, directory + "/MSU-MR-RGB-321-CONT.png");
-                cimg_library::CImg<unsigned short> corrected321_contrast = image::earth_curvature::correct_earth_curvature(image321_contrast,
-                                                                                                                           METEOR_ORBIT_HEIGHT,
-                                                                                                                           METEOR_MSUMR_SWATH,
-                                                                                                                           METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected321_contrast, directory + "/MSU-MR-RGB-321-CONT-CORRECTED.png");
-            }
-
-            logger->info("Equalized Ch 4...");
-            {
-                image::linear_invert(image4);
-                image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image4, directory + "/MSU-MR-4-EQU.png");
-                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
-                                                                                                                METEOR_ORBIT_HEIGHT,
-                                                                                                                METEOR_MSUMR_SWATH,
-                                                                                                                METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected4, directory + "/MSU-MR-4-EQU-CORRECTED.png");
-            }
-
-            logger->info("Equalized Ch 5...");
-            {
-                image5.equalize(1000);
-                image5.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image5, directory + "/MSU-MR-5-EQU.png");
-                cimg_library::CImg<unsigned short> corrected5 = image::earth_curvature::correct_earth_curvature(image5,
-                                                                                                                METEOR_ORBIT_HEIGHT,
-                                                                                                                METEOR_MSUMR_SWATH,
-                                                                                                                METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected5, directory + "/MSU-MR-5-EQU-CORRECTED.png");
-            }
-
             // Reproject to an equirectangular proj
+            if (reader.lines > 0)
             {
                 int norad = 0;
                 //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
@@ -278,13 +209,46 @@ namespace meteor
                     geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR.georef");
                 }
 
-                logger->info("Projected RGB 321...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-321-PROJ.png");
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
+                {
+                    nlohmann::json compositeDef = compokey.value();
 
-                logger->info("Projected Channel 4...");
-                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/MSU-MR-4-PROJ.png");
+                    // Not required here
+                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
+
+                    std::string name = "MSU-MR-" + compokey.key();
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                            {1, 2, 3, 4, 5},
+                                                                                            expression,
+                                                                                            compositeDef);
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (projected)
+                    {
+                        logger->info(name + "-PROJ...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                         METEOR_ORBIT_HEIGHT,
+                                                                                         METEOR_MSUMR_SWATH,
+                                                                                         METEOR_MSUMR_RES);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
+                }
             }
         }
 

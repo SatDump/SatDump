@@ -94,10 +94,62 @@ void loadPipeline(std::string filepath, std::string category)
 {
     logger->info("Loading pipelines from file " + filepath);
 
-    std::ifstream iFstream(filepath);
-    nlohmann::ordered_json jsonObj;
-    iFstream >> jsonObj;
-    iFstream.close();
+    // Read file into a string
+    std::ifstream fileStream(filepath);
+    std::string pipelineString((std::istreambuf_iterator<char>(fileStream)),
+                               (std::istreambuf_iterator<char>()));
+    fileStream.close();
+
+    // Replace "includes"
+    {
+        std::map<std::string, std::string> toReplace;
+        for (int i = 0; i < int(pipelineString.size() - sizeof(".json.inc")); i++)
+        {
+            std::string currentPos = pipelineString.substr(i, 9);
+
+            if (currentPos == ".json.inc")
+            {
+                int bracketPos = i;
+                for (int y = i; y >= 0; y--)
+                {
+                    if (pipelineString[y] == '"')
+                    {
+                        bracketPos = y;
+                        break;
+                    }
+                }
+
+                std::string finalStr = pipelineString.substr(bracketPos, (i - bracketPos) + 10);
+                std::string filenameToLoad = finalStr.substr(1, finalStr.size() - 2);
+                std::string pathToLoad = std::filesystem::path(filepath).parent_path().relative_path().string() + "/" + filenameToLoad;
+
+                if (std::filesystem::exists(pathToLoad))
+                {
+                    std::ifstream fileStream(pathToLoad);
+                    std::string includeString((std::istreambuf_iterator<char>(fileStream)),
+                                              (std::istreambuf_iterator<char>()));
+                    fileStream.close();
+
+                    toReplace.emplace(finalStr, includeString);
+                }
+                else
+                {
+                    logger->error("Could not include " + pathToLoad + "!");
+                }
+            }
+        }
+
+        for (std::pair<std::string, std::string> replace : toReplace)
+        {
+            while (pipelineString.find(replace.first) != std::string::npos)
+                pipelineString.replace(pipelineString.find(replace.first), replace.first.size(), replace.second);
+        }
+
+        //logger->info(pipelineString);
+    }
+
+    // Parse it
+    nlohmann::ordered_json jsonObj = nlohmann::ordered_json::parse(pipelineString);
 
     for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
     {
@@ -155,8 +207,14 @@ void loadPipelines(std::string filepath)
         {
             if (pipelinesIterator->path().filename().string().find(".json") != std::string::npos)
             {
-                logger->trace("Found pipeline file " + pipelinesIterator->path().string());
-                pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                if (pipelinesIterator->path().string().find(".json.inc") != std::string::npos)
+                {
+                }
+                else
+                {
+                    logger->trace("Found pipeline file " + pipelinesIterator->path().string());
+                    pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                }
             }
         }
 
