@@ -216,7 +216,50 @@
                     "npp_mode": true
                 },
                 "jpss_viirs": {
-                    "npp_mode": true
+                    "npp_mode": true,
+                    "composites": {
+                        "RGB-I221": {
+                            "channels": [
+                                101,
+                                102
+                            ],
+                            "expression": "ch102 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4.4 - 0.2"
+                        },
+                        "RGB-I321": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "ch103 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2"
+                        },
+                        "RGB-(23)21": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "(ch103 * 0.4 + ch102 * 0.6) * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2",
+                            "corrected": true
+                        },
+                        "RGB-M543": {
+                            "channels": [
+                                5,
+                                4,
+                                3
+                            ],
+                            "expression": "ch5, ch4, ch3",
+                            "equalize": true
+                        },
+                        "I4-EQU": {
+                            "channels": [
+                                104
+                            ],
+                            "expression": "ch104",
+                            "equalize": true,
+                            "normalize": true
+                        }
+                    }
                 },
                 "jpss_atms": {
                     "npp_mode": true
