@@ -147,7 +147,9 @@
             },
             "products": {
                 "fengyun_satid": {},
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs": {}
             }
@@ -189,7 +191,9 @@
             },
             "products": {
                 "fengyun_satid": {},
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs": {},
                 "fengyun_mwts": {}
@@ -238,7 +242,9 @@
                 "fengyun_satid": {
                     "scid_hint": 51
                 },
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs2": {}
             }
@@ -282,7 +288,9 @@
                 "fengyun_satid": {
                     "scid_hint": 51
                 },
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs2": {}
             }

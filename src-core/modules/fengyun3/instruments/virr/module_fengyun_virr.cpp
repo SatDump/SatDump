@@ -11,6 +11,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -212,100 +214,70 @@ namespace fengyun3
             logger->info("Channel 10...");
             WRITE_IMAGE(image10, directory + "/VIRR-10.png");
 
-            logger->info("221 Composite...");
+            // Reproject to an equirectangular proj
+            if (reader.lines > 0)
             {
-                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
-                {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image221, directory + "/VIRR-RGB-221.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image221, directory + "/VIRR-RGB-221-EQU.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_VIRR_SWATH,
-                                                                                                                  FY3_VIRR_RES);
-                WRITE_IMAGE(corrected221, directory + "/VIRR-RGB-221-EQU-CORRECTED.png");
-            }
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
-            logger->info("621 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image621(2048, reader.lines, 1, 3);
-                {
-                    image621.draw_image(2, 1, 0, 0, image6);
-                    image621.draw_image(0, 0, 0, 1, image2);
-                    image621.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image621, directory + "/VIRR-RGB-621.png");
-                image621.equalize(1000);
-                image621.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image621, directory + "/VIRR-RGB-621-EQU.png");
-                cimg_library::CImg<unsigned short> corrected621 = image::earth_curvature::correct_earth_curvature(image621,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_VIRR_SWATH,
-                                                                                                                  FY3_VIRR_RES);
-                WRITE_IMAGE(corrected621, directory + "/VIRR-RGB-621-EQU-CORRECTED.png");
-            }
+                // Setup Projecition
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                    110.4,                       // Scan angle
+                    -0.0,                        // Roll offset
+                    0,                           // Pitch offset
+                    -2.6,                        // Yaw offset
+                    0,                           // Time offset
+                    image1.width(),              // Image width
+                    true,                        // Invert scan
+                    tle::getTLEfromNORAD(norad), // TLEs
+                    reader.timestamps            // Timestamps
+                );
+                geodetic::projection::LEOScanProjector projector(proj_settings);
 
-            logger->info("197 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image197(2048, reader.lines, 1, 3);
                 {
-                    image197.draw_image(1, 0, 0, 0, image1);
-                    image197.draw_image(0, 0, 0, 1, image9);
-                    image197.draw_image(-2, 0, 0, 2, image7);
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
                 }
-                WRITE_IMAGE(image197, directory + "/VIRR-RGB-197.png");
-                cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
-                    tempImage9.equalize(1000);
-                    tempImage1.equalize(1000);
-                    tempImage7.equalize(1000);
-                    image197equ.draw_image(1, 0, 0, 0, tempImage1);
-                    image197equ.draw_image(0, 0, 0, 1, tempImage9);
-                    image197equ.draw_image(-2, 0, 0, 2, tempImage7);
-                    image197equ.equalize(1000);
-                    image197equ.normalize(0, std::numeric_limits<unsigned short>::max());
-                }
-                WRITE_IMAGE(image197equ, directory + "/VIRR-RGB-197-EQU.png");
-                cimg_library::CImg<unsigned short> corrected197 = image::earth_curvature::correct_earth_curvature(image197equ,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_VIRR_SWATH,
-                                                                                                                  FY3_VIRR_RES);
-                WRITE_IMAGE(corrected197, directory + "/VIRR-RGB-197-EQU-CORRECTED.png");
-            }
 
-            logger->info("917 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image917(2048, reader.lines, 1, 3);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
-                    image917.draw_image(0, 0, 0, 0, image9);
-                    image917.draw_image(1, 0, 0, 1, image1);
-                    image917.draw_image(-1, 0, 0, 2, image7);
+                    nlohmann::json compositeDef = compokey.value();
+
+                    // Not required here
+                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
+
+                    std::string name = "VIRR-" + compokey.key();
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5, image6, image7, image8, image9, image10},
+                                                                                            {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+                                                                                            expression,
+                                                                                            compositeDef);
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (projected)
+                    {
+                        logger->info(name + "-PROJ...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                         FY3_ORBIT_HEIGHT,
+                                                                                         FY3_VIRR_SWATH,
+                                                                                         FY3_VIRR_RES);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
                 }
-                WRITE_IMAGE(image917, directory + "/VIRR-RGB-917.png");
-                cimg_library::CImg<unsigned short> image917equ(2048, reader.lines, 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
-                    tempImage9.equalize(1000);
-                    tempImage1.equalize(1000);
-                    tempImage7.equalize(1000);
-                    image917equ.draw_image(0, 0, 0, 0, tempImage9);
-                    image917equ.draw_image(1, 0, 0, 1, tempImage1);
-                    image917equ.draw_image(-1, 0, 0, 2, tempImage7);
-                    image917equ.equalize(1000);
-                    image917equ.normalize(0, std::numeric_limits<unsigned short>::max());
-                }
-                WRITE_IMAGE(image917equ, directory + "/VIRR-RGB-917-EQU.png");
-                cimg_library::CImg<unsigned short> corrected917equ = image::earth_curvature::correct_earth_curvature(image917equ,
-                                                                                                                     FY3_ORBIT_HEIGHT,
-                                                                                                                     FY3_VIRR_SWATH,
-                                                                                                                     FY3_VIRR_RES);
-                WRITE_IMAGE(corrected917equ, directory + "/VIRR-RGB-917-EQU-CORRECTED.png");
             }
 
             logger->info("197 True Color XFR Composite... (by ZbychuButItWasTaken)");
@@ -364,84 +336,6 @@ namespace fengyun3
                                                                                                                             FY3_VIRR_SWATH,
                                                                                                                             FY3_VIRR_RES);
                 WRITE_IMAGE(corrected97nightxfrequ, directory + "/VIRR-RGB-197-NIGHT-EQU-CORRECTED.png");
-            }
-
-            logger->info("Equalized Ch 4...");
-            {
-                image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image4, directory + "/VIRR-4-EQU.png");
-                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
-                                                                                                                FY3_ORBIT_HEIGHT,
-                                                                                                                FY3_VIRR_SWATH,
-                                                                                                                FY3_VIRR_RES);
-                WRITE_IMAGE(corrected4, directory + "/VIRR-4-EQU-CORRECTED.png");
-            }
-
-            // Reproject to an equirectangular proj
-            if (image1.height() > 0)
-            {
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.4,                       // Scan angle
-                    -0.0,                        // Roll offset
-                    0,                           // Pitch offset
-                    -2.6,                        // Yaw offset
-                    0,                           // Time offset
-                    image1.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(norad), // TLEs
-                    reader.timestamps            // Timestamps
-                );
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
-                }
-
-                cimg_library::CImg<unsigned char> projected_image;
-                {
-                    cimg_library::CImg<unsigned short> image197equ(2048, reader.lines, 1, 3);
-                    {
-                        cimg_library::CImg<unsigned short> tempImage9 = image9, tempImage1 = image1, tempImage7 = image7;
-                        tempImage9.equalize(1000);
-                        tempImage1.equalize(1000);
-                        tempImage7.equalize(1000);
-                        image197equ.draw_image(0, 0, 0, 0, tempImage1);
-                        image197equ.draw_image(0, 0, 0, 1, tempImage9);
-                        image197equ.draw_image(0, 0, 0, 2, tempImage7);
-                        image197equ.equalize(1000);
-                        image197equ.normalize(0, std::numeric_limits<unsigned short>::max());
-                    }
-                    logger->info("Projected Channel 197...");
-                    projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image197equ, projector, 2048 * 4, 1024 * 4, 3);
-                    WRITE_IMAGE(projected_image, directory + "/VIRR-RGB-197-PROJ.png");
-                }
-
-                {
-                    logger->info("Projected Channel 4...");
-                    cimg_library::CImg<unsigned short> tempImage4 = image4;
-                    tempImage4.equalize(1000);
-                    projected_image = geodetic::projection::projectLEOToEquirectangularMapped(tempImage4, projector, 2048 * 4, 1024 * 4, 1);
-                    WRITE_IMAGE(projected_image, directory + "/VIRR-4-PROJ.png");
-                }
-
-                {
-                    cimg_library::CImg<unsigned short> image621(2048, reader.lines, 1, 3);
-                    {
-                        image621.draw_image(0, 0, 0, 0, image6);
-                        image621.draw_image(0, 0, 0, 1, image2);
-                        image621.draw_image(0, 0, 0, 2, image1);
-                        image621.equalize(1000);
-                        image621.normalize(0, std::numeric_limits<unsigned short>::max());
-                    }
-                    logger->info("Projected channel 621...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image621, projector, 2048 * 4, 1024 * 4, 3);
-                    WRITE_IMAGE(projected_image, directory + "/VIRR-RGB-621-PROJ.png");
-                }
             }
         }
 

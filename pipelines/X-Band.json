@@ -379,7 +379,9 @@
                 "fengyun_mersi1": {
                     "correct_bowtie": true
                 },
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs": {}
             }

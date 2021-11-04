@@ -16,6 +16,7 @@ namespace image
 
         // Get other parameters such as equalization, etc
         bool equalize = parameters.count("equalize") > 0 ? parameters["equalize"].get<bool>() : false;
+        bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
         bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
         bool white_balance = parameters.count("while_balance") > 0 ? parameters["while_balance"].get<bool>() : false;
 
@@ -26,6 +27,10 @@ namespace image
         {
             channelValues[i] = 0;
             rgbParser.DefineVar("ch" + std::to_string(channelNumbers[i]), &channelValues[i]);
+
+            // Also equalize if requested
+            if (pre_equalize)
+                inputChannels[i].equalize(1000);
         }
 
         // Set expression
@@ -97,7 +102,7 @@ namespace image
             rgb_output.equalize(1000);
 
         if (normalize)
-            rgb_output.normalize(0, 65535);
+            rgb_output.normalize(0, std::numeric_limits<T>::max());
 
         if (white_balance)
             image::white_balance(rgb_output);
