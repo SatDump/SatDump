@@ -176,5 +176,30 @@ namespace geodetic
 
             return projected_image;
         }
+
+        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,
+                                                                            projection::LEOScanProjector &projector,
+                                                                            int output_width,
+                                                                            int output_height,
+                                                                            int channels,
+                                                                            cimg_library::CImg<unsigned char> projected_image,
+                                                                            std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
+
+        )
+        {
+            // Output mapped data
+            if (projected_image.width() == 1 && projected_image.height() == 1)
+                projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
+
+            reprojectLEOtoProj(image >> 8, projector, projected_image, channels, toMapCoords);
+
+            unsigned char color[3] = {0, 255, 0};
+            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                           projected_image,
+                                           color,
+                                           toMapCoords);
+
+            return projected_image;
+        }
     };
 };

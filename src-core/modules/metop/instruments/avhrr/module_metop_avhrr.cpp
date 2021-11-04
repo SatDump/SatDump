@@ -15,6 +15,8 @@
 #include "common/image/brightness_contrast.h"
 #include "common/image/xfr.h"
 #include "common/geodetic/projection/proj_file.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -201,97 +203,7 @@ namespace metop
             logger->info("Channel 5...");
             WRITE_IMAGE(image5, directory + "/AVHRR-5.png");
 
-            logger->info("221 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
-                {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  METOP_ORBIT_HEIGHT,
-                                                                                                                  METOP_AVHRR_SWATH,
-                                                                                                                  METOP_AVHRR_RES);
-                WRITE_IMAGE(corrected221, directory + "/AVHRR-RGB-221-EQU-CORRECTED.png");
-            }
-
-            logger->info("321 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
-                {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321.png");
-                image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image321, directory + "/AVHRR-RGB-321-EQU.png");
-                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
-                                                                                                                  METOP_ORBIT_HEIGHT,
-                                                                                                                  METOP_AVHRR_SWATH,
-                                                                                                                  METOP_AVHRR_RES);
-                WRITE_IMAGE(corrected321, directory + "/AVHRR-RGB-321-EQU-CORRECTED.png");
-            }
-
-            logger->info("(23)21 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image221_321(2048, reader.lines, 1, 3);
-                {
-                    image221_321.draw_image(0, 0, 0, 0, image3, 0.4);
-                    image221_321.draw_image(0, 0, 0, 0, image2, 0.6);
-                    image221_321.draw_image(0, 0, 0, 1, image2);
-                    image221_321.draw_image(0, 0, 0, 2, image1);
-                }
-                image::xfr::XFR curveCorrection(0, 1023, 100, 0, 1023, 100, 0, 1023, 90);
-                image::xfr::applyXFR(curveCorrection, image221_321);
-                image::brightness_contrast(image221_321, 0.304 * 2, 0.292 * 2, 3);
-                WRITE_IMAGE(image221_321, directory + "/AVHRR-RGB-(23)21.png");
-                cimg_library::CImg<unsigned short> corrected221_321 = image::earth_curvature::correct_earth_curvature(image221_321,
-                                                                                                                      METOP_ORBIT_HEIGHT,
-                                                                                                                      METOP_AVHRR_SWATH,
-                                                                                                                      METOP_AVHRR_RES);
-                WRITE_IMAGE(corrected221_321, directory + "/AVHRR-RGB-(23)21-CORRECTED.png");
-            }
-
-            logger->info("345 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image345(2048, reader.lines, 1, 3);
-                {
-                    image345.draw_image(0, 0, 0, 0, image3);
-                    image345.draw_image(0, 0, 0, 1, image4);
-                    image345.draw_image(0, 0, 0, 2, image5);
-                }
-                image::xfr::XFR curveCorrection(0, 1023, 30, 0, 1023, 100, 0, 1023, 100);
-                image::xfr::applyXFR(curveCorrection, image345);
-                image::brightness_contrast(image345, -0.208 * 2, 0.326 * 2, 3);
-                WRITE_IMAGE(image345, directory + "/AVHRR-RGB-345.png");
-                cimg_library::CImg<unsigned short> corrected345 = image::earth_curvature::correct_earth_curvature(image345,
-                                                                                                                  METOP_ORBIT_HEIGHT,
-                                                                                                                  METOP_AVHRR_SWATH,
-                                                                                                                  METOP_AVHRR_RES);
-                WRITE_IMAGE(corrected345, directory + "/AVHRR-RGB-345-CORRECTED.png");
-            }
-
-            logger->info("Equalized Ch 4...");
-            {
-                image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image4, directory + "/AVHRR-4-EQU.png");
-                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
-                                                                                                                METOP_ORBIT_HEIGHT,
-                                                                                                                METOP_AVHRR_SWATH,
-                                                                                                                METOP_AVHRR_RES);
-                WRITE_IMAGE(corrected4, directory + "/AVHRR-4-EQU-CORRECTED.png");
-            }
-
-            // Reproject to an equirectangular proj
-            if (image1.height() > 0)
+            if (reader.lines > 0)
             {
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
                 //image4.equalize(1000);
@@ -315,20 +227,57 @@ namespace metop
                     geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
                 }
 
-                logger->info("Projected channel 4...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
-
-                cimg_library::CImg<unsigned short> image321(2048, reader.lines, 1, 3);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
-                }
+                    nlohmann::json compositeDef = compokey.value();
 
-                logger->info("Projected channel 321...");
-                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-321-PROJ.png");
+                    // Not required here
+                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool equalize = compositeDef.count("equalize") > 0 ? compositeDef["equalize"].get<bool>() : false;
+                    bool normalize = compositeDef.count("normalize") > 0 ? compositeDef["normalize"].get<bool>() : false;
+                    bool white_balance = compositeDef.count("while_balance") > 0 ? compositeDef["while_balance"].get<bool>() : false;
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
+
+                    std::string name = "AVHRR-" + compokey.key();
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                            {1, 2, 3, 4, 5},
+                                                                                            expression);
+
+                    if (equalize)
+                        compositeImage.equalize(1000);
+
+                    if (normalize)
+                        compositeImage.normalize(0, 65535);
+
+                    if (white_balance)
+                        image::white_balance(compositeImage);
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (projected)
+                    {
+                        logger->info(name + "-PROJ...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                         METOP_ORBIT_HEIGHT,
+                                                                                         METOP_AVHRR_SWATH,
+                                                                                         METOP_AVHRR_RES);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
+                }
             }
         }
 
