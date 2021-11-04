@@ -10,7 +10,7 @@ namespace meteor
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    channels[i] = new unsigned short[20000 * 1568];
+                    channels[i] = new unsigned char[20000 * 1568];
                     lines[i] = 0;
                     segments[i] = new Segment[200000];
                     firstSeg[i] = 4294967295;
@@ -94,7 +94,7 @@ namespace meteor
                 segCount[currentChannel]++;
             }
 
-            cimg_library::CImg<unsigned short> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
+            cimg_library::CImg<unsigned char> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
             {
                 timestamps.clear();
 

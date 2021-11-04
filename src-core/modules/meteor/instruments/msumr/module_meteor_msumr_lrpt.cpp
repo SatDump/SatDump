@@ -13,6 +13,8 @@
 #include "modules/meteor/meteor.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -119,98 +121,107 @@ namespace meteor
                 }
             }
 
-            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0)
+            // Generate composites
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
             {
-                std::array<int32_t, 3> correlated = msureader.correlateChannels(0, 1);
+                nlohmann::json compositeDef = compokey.value();
 
-                cimg_library::CImg<unsigned short> image1 = msureader.getChannel(0, correlated[0], correlated[1], correlated[2]);
-                cimg_library::CImg<unsigned short> image2 = msureader.getChannel(1, correlated[0], correlated[1], correlated[2]);
+                std::string expression = compositeDef["expression"].get<std::string>();
+                bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
-                logger->info("221 Composite...");
-                cimg_library::CImg<unsigned short> image221(image1.width(), image2.height(), 1, 3);
+                std::string name = "MSU-MR-" + compokey.key();
+
+                // Get required channels
+                std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                if (requiredChannels.size() > 3)
                 {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
+                    logger->info("Maximum number of channels must be 1, 2 or 3!");
+                    continue;
                 }
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  METEOR_ORBIT_HEIGHT,
-                                                                                                                  METEOR_MSUMR_SWATH,
-                                                                                                                  METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-CORRECTED.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
-                WRITE_IMAGE(image221, directory + "/MSU-MR-RGB-221-EQU.png");
-                corrected221.equalize(1000);
-                corrected221.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(corrected221, directory + "/MSU-MR-RGB-221-EQU-CORRECTED.png");
 
+                // Check they are all present
+                bool foundAll = true;
+                for (int channel : requiredChannels)
+                {
+                    if (msureader.lines[channel - 1] > 0)
+                    {
+                        logger->debug("Channel " + std::to_string(channel) + " is present!");
+                    }
+                    else
+                    {
+                        foundAll = false;
+                        break;
+                    }
+                }
+
+                if (!foundAll)
+                {
+                    logger->error("Some channels are missing, skipping composite.");
+                    continue;
+                }
+
+                // Correlate channels
+                std::vector<cimg_library::CImg<unsigned char>> channels;
+                std::vector<int> channel_numbers;
+                if (requiredChannels.size() == 1)
+                {
+                    channels.push_back(msureader.getChannel(requiredChannels[0] - 1));
+                    channel_numbers.push_back(requiredChannels[0]);
+                }
+                else if (requiredChannels.size() == 2)
+                {
+                    std::array<int32_t, 3> correlated = msureader.correlateChannels(requiredChannels[0] - 1, requiredChannels[1] - 1);
+
+                    channels.push_back(msureader.getChannel(requiredChannels[0] - 1, correlated[0], correlated[1], correlated[2]));
+                    channel_numbers.push_back(requiredChannels[0]);
+                    channels.push_back(msureader.getChannel(requiredChannels[1] - 1, correlated[0], correlated[1], correlated[2]));
+                    channel_numbers.push_back(requiredChannels[1]);
+                }
+                else if (requiredChannels.size() == 3)
+                {
+                    std::array<int32_t, 3> correlated = msureader.correlateChannels(requiredChannels[0] - 1, requiredChannels[1] - 1, requiredChannels[2] - 1);
+
+                    channels.push_back(msureader.getChannel(requiredChannels[0] - 1, correlated[0], correlated[1], correlated[2]));
+                    channel_numbers.push_back(requiredChannels[0]);
+                    channels.push_back(msureader.getChannel(requiredChannels[1] - 1, correlated[0], correlated[1], correlated[2]));
+                    channel_numbers.push_back(requiredChannels[1]);
+                    channels.push_back(msureader.getChannel(requiredChannels[2] - 1, correlated[0], correlated[1], correlated[2]));
+                    channel_numbers.push_back(requiredChannels[2]);
+                }
+
+                // Generate GEOREF
                 proj_settings->utc_timestamps = msureader.timestamps;
                 geodetic::projection::LEOScanProjector projector(proj_settings);
                 geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR-RGB-221.georef");
-                logger->info("Projected Channel RGB 221...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image221 << 8, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/MSU-MR-RGB-221-PROJ.png");
-            }
+                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/" + name + ".georef");
 
-            if (msureader.getChannel(0).size() > 0 && msureader.getChannel(1).size() > 0 && msureader.getChannel(2).size() > 0)
-            {
-                std::array<int32_t, 3> correlated = msureader.correlateChannels(0, 1, 2);
+                logger->info(name + "...");
+                cimg_library::CImg<unsigned char>
+                    compositeImage = image::generate_composite_from_equ<unsigned char>(channels,
+                                                                                       channel_numbers,
+                                                                                       expression,
+                                                                                       compositeDef);
 
-                cimg_library::CImg<unsigned short> image1 = msureader.getChannel(0, correlated[0], correlated[1], correlated[2]);
-                cimg_library::CImg<unsigned short> image2 = msureader.getChannel(1, correlated[0], correlated[1], correlated[2]);
-                cimg_library::CImg<unsigned short> image3 = msureader.getChannel(2, correlated[0], correlated[1], correlated[2]);
+                WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
-                // Check if channel 3 is empty and proceed if it has data
-                logger->info("321 Composite...");
-                cimg_library::CImg<unsigned short> image321(image1.width(), image2.height(), 1, 3);
+                if (projected)
                 {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
+                    logger->info(name + "-PROJ...");
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                    WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                 }
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321.png");
-                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
-                                                                                                                  METEOR_ORBIT_HEIGHT,
-                                                                                                                  METEOR_MSUMR_SWATH,
-                                                                                                                  METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-CORRECTED.png");
-                image321.equalize(1000);
-                image321.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
-                WRITE_IMAGE(image321, directory + "/MSU-MR-RGB-321-EQU.png");
-                corrected321.equalize(1000);
-                corrected321.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(corrected321, directory + "/MSU-MR-RGB-321-EQU-CORRECTED.png");
 
-                proj_settings->utc_timestamps = msureader.timestamps;
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MSU-MR-RGB-321.georef");
-            }
-
-            if (msureader.getChannel(4).size() > 0)
-            {
-                cimg_library::CImg<unsigned short> image5 = msureader.getChannel(4);
-                logger->info("Equalized Ch 5...");
-                image::linear_invert(image5);
-                image5.equalize(1000);
-                image5.normalize(0, std::numeric_limits<unsigned char>::max());
-                WRITE_IMAGE(image5, directory + "/MSU-MR-5-EQU.png");
-                cimg_library::CImg<unsigned short> corrected5 = image::earth_curvature::correct_earth_curvature(image5,
-                                                                                                                METEOR_ORBIT_HEIGHT,
-                                                                                                                METEOR_MSUMR_SWATH,
-                                                                                                                METEOR_MSUMR_RES);
-                WRITE_IMAGE(corrected5, directory + "/MSU-MR-5-EQU-CORRECTED.png");
-
-                proj_settings->utc_timestamps = msureader.timestamps;
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-                logger->info("Projected Channel 5...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image5 << 8, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/MSU-MR-5-PROJ.png");
+                if (corrected)
+                {
+                    logger->info(name + "-CORRECTED...");
+                    compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                     METEOR_ORBIT_HEIGHT,
+                                                                                     METEOR_MSUMR_SWATH,
+                                                                                     METEOR_MSUMR_RES);
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                }
             }
         }
 

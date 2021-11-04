@@ -378,46 +378,7 @@
             },
             "products": {
                 "meteor_msumr": {
-                    "composites": {
-                        "RGB-221": {
-                            "expression": "ch2, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-221-EQU": {
-                            "expression": "ch2, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true
-                        },
-                        "RGB-321": {
-                            "expression": "ch3, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-321-EQU": {
-                            "expression": "ch3, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "RGB-321-CONT": {
-                            "expression": "ch3 * 1.8 - 0.25, ch2 * 1.8 - 0.25, ch1 * 1.8 - 0.25",
-                            "corrected": true
-                        },
-                        "4-EQU": {
-                            "expression": "1 - ch4",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "5-EQU": {
-                            "expression": "1 - ch5",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true
-                        }
-                    }
+                    "composites": "composites/meteor_msumr.json.inc"
                 },
                 "meteor_mtvza": {}
             }
