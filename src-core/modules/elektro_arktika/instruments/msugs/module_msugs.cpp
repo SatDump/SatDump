@@ -18,7 +18,7 @@ namespace elektro_arktika
 {
     namespace msugs
     {
-        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -219,7 +219,7 @@ namespace elektro_arktika
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MSUGSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MSUGSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MSUGSDecoderModule>(input_file, output_file_hint, parameters);
         }

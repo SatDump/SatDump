@@ -9,10 +9,10 @@ size_t getFilesize(std::string filepath);
 
 namespace noaa
 {
-    NOAAHRPTDemodModule::NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                    d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                                    d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                    constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
+    NOAAHRPTDemodModule::NOAAHRPTDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                                d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                                constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
@@ -44,7 +44,7 @@ namespace noaa
         rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(rrc->output_stream, sps / 2.0f, powf(0.01, 2) / 4.0f, 0.5f, 0.01f, 100e-6f);
 
         // Deframer
-        def = std::make_shared<NOAADeframer>(std::stoi(d_parameters["deframer_thresold"]));
+        def = std::make_shared<NOAADeframer>(d_parameters["deframer_thresold"].get<int>());
     }
 
     std::vector<ModuleDataType> NOAAHRPTDemodModule::getInputTypes()
@@ -190,7 +190,7 @@ namespace noaa
         return {"samplerate", "buffer_size", "baseband_format", "deframer_thresold"};
     }
 
-    std::shared_ptr<ProcessingModule> NOAAHRPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NOAAHRPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NOAAHRPTDemodModule>(input_file, output_file_hint, parameters);
     }

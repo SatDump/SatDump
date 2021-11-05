@@ -20,7 +20,7 @@ namespace gk2a
             bool write_unknown;
 
         public:
-            GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~GK2ALRITDataDecoderModule();
             void process();
             void drawUI(bool window);
@@ -31,7 +31,7 @@ namespace gk2a
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
             static std::vector<std::string> getParameters();
-            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
     } // namespace avhrr
 } // namespace metop

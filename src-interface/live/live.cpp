@@ -17,11 +17,6 @@
 #include "settingsui.h"
 #include "main_ui.h"
 
-#ifdef __ANDROID__
-std::string getFilePath();
-std::string getDirPath();
-#endif
-
 namespace live
 {
     // Variables
@@ -35,7 +30,7 @@ namespace live
     std::string output_file = "";
     bool dc_block = false;
     bool iq_swap = false;
-    std::map<std::string, std::string> parameters;
+    nlohmann::json parameters;
 
     void initLiveProcessingMenu()
     {
@@ -223,9 +218,9 @@ namespace live
                     if (it != pipelines.end())
                     {
                         parameters.clear();
-                        parameters.emplace("samplerate", std::string(samplerate));
-                        parameters.emplace("baseband_format", "f32");
-                        parameters.emplace("dc_block", dc_block ? "1" : "0");
+                        parameters["samplerate"] = std::stol(samplerate);
+                        parameters["baseband_format"] = "f32";
+                        parameters["dc_block"] = (bool)dc_block;
 
                         live_pipeline = std::make_shared<LivePipeline>(*it, parameters, output_file);
 

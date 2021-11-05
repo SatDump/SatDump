@@ -16,9 +16,9 @@ size_t getFilesize(std::string filepath);
 
 namespace proba
 {
-    ProbaSDecoderModule::ProbaSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                    derandomize(std::stoi(parameters["derandomize"])),
-                                                                                                                                                    viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
+    ProbaSDecoderModule::ProbaSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                derandomize(parameters["derandomize"].get<bool>()),
+                                                                                                                                viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
@@ -226,7 +226,7 @@ namespace proba
         return {"derandomize"};
     }
 
-    std::shared_ptr<ProcessingModule> ProbaSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> ProbaSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<ProbaSDecoderModule>(input_file, output_file_hint, parameters);
     }

@@ -5,9 +5,9 @@
 SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
 SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
 
-ProcessingModule::ProcessingModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : d_input_file(input_file),
-                                                                                                                                          d_output_file_hint(output_file_hint),
-                                                                                                                                          d_parameters(parameters)
+ProcessingModule::ProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : d_input_file(input_file),
+                                                                                                                      d_output_file_hint(output_file_hint),
+                                                                                                                      d_parameters(parameters)
 {
     input_active = false;
     streamingInput = false;
@@ -54,7 +54,7 @@ void ProcessingModule::drawUI(bool /*window*/)
 }
 
 // Registry
-SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> modules_registry;
+SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
 
 #define REGISTER_MODULE(module) modules_registry.emplace(module::getID(), module::getInstance)
 
@@ -62,6 +62,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_oqpsk_demod.h"
 #include "modules/module_bpsk_demod.h"
 #include "modules/module_fsk_demod.h"
+#include "modules/module_8psk_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/module_metop_dump_decoder.h"
@@ -185,6 +186,7 @@ void registerModules()
     REGISTER_MODULE(OQPSKDemodModule);
     REGISTER_MODULE(BPSKDemodModule);
     REGISTER_MODULE(FSKDemodModule);
+    REGISTER_MODULE(PSK8DemodModule);
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
@@ -326,6 +328,6 @@ void registerModules()
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
-    for (std::pair<const std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, std::map<std::string, std::string>)>> &it : modules_registry)
+    for (std::pair<const std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &it : modules_registry)
         logger->debug(" - " + it.first);
 }

@@ -14,7 +14,7 @@ namespace proba
 {
     namespace hrc
     {
-        ProbaHRCDecoderModule::ProbaHRCDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        ProbaHRCDecoderModule::ProbaHRCDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -108,7 +108,7 @@ namespace proba
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> ProbaHRCDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> ProbaHRCDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<ProbaHRCDecoderModule>(input_file, output_file_hint, parameters);
         }

@@ -16,6 +16,13 @@ void SDRFile::runThread()
     // Uint8 buffer
     uint8_t *buffer_u8 = new uint8_t[buf_size * 100];
 
+#ifdef BUILD_ZIQ
+    if (baseband_type_e == dsp::ZIQ)
+    {
+        ziqReader = std::make_shared<ziq::ziq_reader>(input_file);
+    }
+#endif
+
     while (should_run)
     {
         file_mutex.lock();
@@ -50,6 +57,12 @@ void SDRFile::runThread()
                 output_stream->writeBuf[i] = complex_t(real, imag);
             }
             break;
+
+#ifdef BUILD_ZIQ
+        case dsp::ZIQ:
+            ziqReader->read(output_stream->writeBuf, buf_size);
+            break;
+#endif
 
         default:
             break;
@@ -196,7 +209,14 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
 
     ImGui::Text("Baseband Type");
     ImGui::SameLine();
-    if (ImGui::Combo("#basebandtypefilesrc", &baseband_type_option, "f32\0i16\0i8\0w8\0"))
+    if (ImGui::Combo("#basebandtypefilesrc", &baseband_type_option, "f32\0"
+                                                                    "i16\0"
+                                                                    "i8\0"
+                                                                    "w8\0"
+#ifdef BUILD_ZIQ
+                                                                    "ZIQ\0"
+#endif
+                     ))
     {
         switch (baseband_type_option)
         {
@@ -212,6 +232,11 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
         case 3:
             baseband_format = "w8";
             break;
+#ifdef BUILD_ZIQ
+        case 4:
+            baseband_format = "ziq";
+            break;
+#endif
         }
     }
 

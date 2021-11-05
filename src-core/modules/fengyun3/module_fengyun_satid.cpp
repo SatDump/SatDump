@@ -17,8 +17,8 @@ namespace fengyun3
 {
     namespace satid
     {
-        FengYunSatIDModule::FengYunSatIDModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                      scid_hint(parameters.count("scid_hint") > 0 ? std::stoi(parameters["scid_hint"]) : -1)
+        FengYunSatIDModule::FengYunSatIDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                  scid_hint(parameters.count("scid_hint") > 0 ? parameters["scid_hint"].get<int>() : -1)
         {
         }
 
@@ -136,7 +136,7 @@ namespace fengyun3
             return {"scid_hint"};
         }
 
-        std::shared_ptr<ProcessingModule> FengYunSatIDModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> FengYunSatIDModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FengYunSatIDModule>(input_file, output_file_hint, parameters);
         }

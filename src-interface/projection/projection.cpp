@@ -11,22 +11,18 @@
 #include "CImg.h"
 
 #include "imgui/file_selection.h"
-#ifdef __ANDROID__
-std::string getFilePath();
-std::string getDirPath();
-std::string getFilesavePath();
-#endif
-
 #include "common/map/map_drawer.h"
 #include "resources.h"
 #include "common/geodetic/projection/stereo.h"
-#include "common/geodetic/projection/geos.h"
+#include "common/geodetic/projection/tpers.h"
 #include "common/map/maidenhead.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include <filesystem>
 #include "global.h"
 #include "common/geodetic/projection/geo_projection.h"
+#include "modules/goes/gvar/image/crop.h"
+#include "settings.h"
 
 namespace projection
 {
@@ -39,11 +35,19 @@ namespace projection
 
     // Settings
     int projection_type = 1;
+
     char stereo_locator[100];
     float stereo_scale = 1;
-    float geos_lon = 0;
+
+    float satel_alt = 30000;
+    float satel_lon = 0;
+    float satel_lat = 0;
+    float satel_angle = 0;
+    float satel_az = 0;
+
     bool draw_borders = true;
     bool draw_cities = true;
+    bool draw_custom_labels = true;
     float cities_size_ratio = 0.3;
 
     char newfile_image[1000];
@@ -53,7 +57,7 @@ namespace projection
     {
         std::string filename;
         std::string timestamp;
-        cimg_library::CImg<unsigned short> image;
+        cimg_library::CImg<unsigned char> image;
         std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> georef;
         bool show;
         float opacity;
@@ -62,14 +66,21 @@ namespace projection
     };
     std::vector<FileToProject> filesToProject;
 
+    // Custom
+    char new_custom_label_str[1000];
+    float new_custom_label_lat = 0;
+    float new_custom_label_lon = 0;
+    bool show_custom_labels_window = false;
+    std::vector<map::CustomLabel> customLabels;
+
     // Utils
     geodetic::projection::StereoProjection proj_stereo;
-    geodetic::projection::GEOSProjection proj_geos;
+    geodetic::projection::TPERSProjection proj_satel;
     std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
 
     bool isFirstUiRun = false;
     bool rendering = false;
-    bool isRenderDone = false;
+    int isRenderDone = false;
 
     float render_progress = 0;
 
@@ -89,8 +100,16 @@ namespace projection
         std::fill(newfile_image, &newfile_image[1000], 0);
         std::fill(newfile_georef, &newfile_georef[1000], 0);
 
+        std::fill(new_custom_label_str, &new_custom_label_str[1000], 0);
+
         isFirstUiRun = true;
         rendering = false;
+
+        // Load custom labels
+        customLabels.clear();
+        std::vector<std::tuple<std::string, double, double>> labelTuple = settings["custom_map_labels"].get<std::vector<std::tuple<std::string, double, double>>>();
+        for (std::tuple<std::string, double, double> &label : labelTuple)
+            customLabels.push_back({std::get<0>(label), std::get<1>(label), std::get<2>(label)});
     }
 
     void destroyProjection()
@@ -130,14 +149,14 @@ namespace projection
                 return {x + (map_width / 2), map_height - (y + (map_height / 2))};
             };
         }
-        else if (projection_type == 2) // GEOS
+        else if (projection_type == 2) // Satellite
         {
-            logger->info("Projecting to Geostationnary point of view at " + std::to_string(geos_lon) + " longitude.");
-            proj_geos.init(30000000, geos_lon);
+            logger->info("Projecting to satellite point of view at " + std::to_string(satel_lon) + " longitude and " + std::to_string(satel_lat) + " latitude.");
+            proj_satel.init(satel_alt * 1000, satel_lon, satel_lat, satel_angle, satel_az);
             projectionFunc = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
             {
                 double x, y;
-                proj_geos.forward(lon, lat, x, y);
+                proj_satel.forward(lon, lat, x, y);
                 x *= map_width / 2;
                 y *= map_height / 2;
                 return {x + (map_width / 2), map_height - (y + (map_height / 2))};
@@ -183,6 +202,13 @@ namespace projection
             map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, projected_image, color, projectionFunc, cities_size_ratio);
         }
 
+        // Should we draw custom labels?
+        if (draw_custom_labels)
+        {
+            unsigned char color[3] = {0, 0, 255};
+            map::drawProjectedLabels(customLabels, projected_image, color, projectionFunc, cities_size_ratio);
+        }
+
         // Finally, update image
         //uchar_to_rgba(projected_image.data(), textureBuffer, output_width * output_height, 3);
         //updateImageTexture(textureID, textureBuffer, output_width, output_height);
@@ -196,9 +222,9 @@ namespace projection
             uchar_to_rgba(projected_image.data(), textureBuffer, output_width * output_height, 3);
             updateImageTexture(textureID, textureBuffer, output_width, output_height);
 
-            if (isRenderDone)
+            if (isRenderDone > 0)
             {
-                isRenderDone = false;
+                isRenderDone--;
             }
         }
 
@@ -222,7 +248,7 @@ namespace projection
             ImGui::SameLine();
             ImGui::RadioButton("Stereographic", &projection_type, 1);
             ImGui::SameLine();
-            ImGui::RadioButton("Geostationnary", &projection_type, 2);
+            ImGui::RadioButton("Satellite View", &projection_type, 2);
 
             if (projection_type == 0) // Equi
             {
@@ -232,14 +258,21 @@ namespace projection
                 ImGui::InputText("Center Locator", stereo_locator, 100);
                 ImGui::InputFloat("Projection Scale", &stereo_scale, 0.1, 1);
             }
-            else if (projection_type == 2) // GEOS
+            else if (projection_type == 2) // Satellite
             {
-                ImGui::InputFloat("Center Longitude", &geos_lon, 0.1, 10);
+                ImGui::InputFloat("Satellite Altitude", &satel_alt, 0.1, 10);
+                ImGui::InputFloat("Satellite Longitude", &satel_lon, 0.1, 10);
+                ImGui::InputFloat("Satellite Latitude", &satel_lat, 0.1, 10);
+                ImGui::InputFloat("Satellite Tilt", &satel_angle, 0.1, 10);
+                ImGui::InputFloat("Satellite Azimuth", &satel_az, 0.1, 10);
             }
 
             ImGui::Checkbox("Draw Borders", &draw_borders);
             ImGui::Checkbox("Draw Cities", &draw_cities);
+            ImGui::Checkbox("Draw Labels", &draw_custom_labels);
             ImGui::InputFloat("Cities Scale", &cities_size_ratio);
+            if (ImGui::Button("Edit Custom Labels"))
+                show_custom_labels_window = true;
 
             if (!rendering)
             {
@@ -250,9 +283,10 @@ namespace projection
                                                {
                                                    doRender();
                                                    rendering = false;
+                                                   isRenderDone = 10;
                                                });
                     rendering = true;
-                    isRenderDone = true;
+                    isRenderDone = false;
                 }
             }
             else
@@ -263,17 +297,17 @@ namespace projection
             if (ImGui::Button("Save"))
             {
 #ifdef __APPLE__
-            projected_image.save_png("projection.png");
+                projected_image.save_png("projection.png");
 #else
-            logger->debug("Opening file dialog");
-            std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
+                logger->debug("Opening file dialog");
+                std::string output_file = selectOutputFileDialog("Save projection to", "projection.png", {"*.png"});
 
-            logger->info("Saving to " + output_file);
+                logger->info("Saving to " + output_file);
 
-            if (output_file.size() > 0)
-            {
-                projected_image.save_png(output_file.c_str());
-            }
+                if (output_file.size() > 0)
+                {
+                    projected_image.save_png(output_file.c_str());
+                }
 #endif
             }
 
@@ -302,6 +336,64 @@ namespace projection
         }
         ImGui::End();
 
+        if (show_custom_labels_window)
+        {
+            ImGui::Begin(std::string("Edit Custom Labels").c_str(), &show_custom_labels_window);
+            {
+                if (ImGui::BeginTable("CustomlabelTable", 4, ImGuiTableFlags_Borders))
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Label");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("Lat");
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("Lon");
+                    ImGui::TableSetColumnIndex(3);
+                    for (map::CustomLabel &label : customLabels)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%s", label.label.c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%f", label.lat);
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%f", label.lon);
+                        ImGui::TableSetColumnIndex(3);
+                        if (ImGui::Button(std::string("Delete##" + label.label).c_str()))
+                        {
+                            logger->warn("Deleting " + label.label);
+                            customLabels.erase(std::find_if(customLabels.begin(), customLabels.end(), [&label](map::CustomLabel &l)
+                                                            { return l.label == label.label; }));
+                            break;
+                        }
+                    }
+                    ImGui::EndTable();
+
+                    ImGui::InputText("Label Name", new_custom_label_str, 1000);
+                    ImGui::InputFloat("Label Latitude", &new_custom_label_lat, 0.1, 10);
+                    ImGui::InputFloat("Label Longitude", &new_custom_label_lon, 0.1, 10);
+                    if (ImGui::Button("Add##addcustomlabel"))
+                    {
+                        customLabels.push_back({std::string(new_custom_label_str), new_custom_label_lat, new_custom_label_lon});
+                        std::fill(new_custom_label_str, &new_custom_label_str[1000], 0);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Save"))
+                    {
+                        std::vector<std::tuple<std::string, double, double>> labelTuple;
+                        for (map::CustomLabel &label : customLabels)
+                        {
+                            labelTuple.push_back({label.label, label.lat, label.lon});
+                        }
+                        settings["custom_map_labels"] = labelTuple;
+                        saveSettings();
+                    }
+                }
+            }
+            ImGui::End();
+        }
+
         if (isFirstUiRun)
             ImGui::SetNextWindowSize({300 * ui_scale, 400 * ui_scale});
         ImGui::Begin("File Manager");
@@ -328,7 +420,6 @@ namespace projection
                     if (ImGui::Button(std::string("View##" + toProj.timestamp).c_str()))
                         toProj.show = true;
                 }
-
                 ImGui::EndTable();
             }
 
@@ -368,8 +459,10 @@ namespace projection
 
             if (ImGui::Button("Add file") && std::filesystem::exists(newfile_image) && (std::filesystem::exists(newfile_georef) || use_equirectangular))
             {
-                cimg_library::CImg<unsigned short> new_image(newfile_image);
-                new_image.normalize(0, 65535);
+                cimg_library::CImg<unsigned short> new_image_full16(newfile_image);
+                new_image_full16.normalize(0, 65535);
+                cimg_library::CImg<unsigned char> new_image = new_image_full16 >> 8;
+                new_image_full16.clear(); // Free up memory now
 
                 std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> new_geofile;
                 if (use_equirectangular)
@@ -386,6 +479,17 @@ namespace projection
                 if (new_geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
                 {
                     geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)new_geofile.get());
+
+                    // If this is GOES-N Data, we need to crop it first!
+                    if (gsofile.norad == 29155 || gsofile.norad == 35491 || gsofile.norad == 36441)
+                    {
+                        logger->info("Cropping GOES-N data...");
+
+                        // One of those should work
+                        new_image = goes::gvar::cropIR(new_image);  // IR Case
+                        new_image = goes::gvar::cropVIS(new_image); // VIS Case
+                    }
+
                     new_image.resize(gsofile.image_width, gsofile.image_height); // Safety
                 }
 

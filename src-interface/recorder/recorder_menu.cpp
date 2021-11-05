@@ -66,7 +66,13 @@ namespace recorder
         ImGui::SameLine();
         if (ImGui::Combo("##recorderformat", &sample_format, "i8\0"
                                                              "i16\0"
-                                                             "f32\0"))
+                                                             "f32\0"
+#ifdef BUILD_ZIQ
+                                                             "ZIQ Compressed 8-bits\0"
+                                                             "ZIQ Compressed 16-bits\0"
+                                                             "ZIQ Compressed 32-bits (float)\0"
+#endif
+                         ))
         {
         }
 

@@ -41,7 +41,7 @@ namespace jason3
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = ccsds::parseCCSDSTime(packet, 16617, 1);
+            time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
             predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
@@ -84,13 +84,19 @@ namespace jason3
             map_image[2].draw_circle(imageLon, imageLat, 2, color2);
 
             // Also write them as a raw images
-            for (int i = 0; i < 16; i++)
+            for (int i = 0, y = 0; i < 12; i++)
             {
-                imageBuffer[0][lines * 16 + i] = packet.payload[38 + i * 6] << 8 | packet.payload[37 + i * 6];
-                imageBuffer[1][lines * 16 + i] = packet.payload[38 + i * 6 + 2] << 8 | packet.payload[37 + i * 6 + 2];
-                imageBuffer[2][lines * 16 + i] = packet.payload[38 + i * 6 + 4] << 8 | packet.payload[37 + i * 6 + 4];
+                if (y == 3 || y == 7 || y == 11 || y == 15) // Skip calibration stuff in the middle
+                    y++;
+
+                imageBuffer[0][lines * 12 + i] = packet.payload[38 + y * 6] << 8 | packet.payload[37 + y * 6];
+                imageBuffer[1][lines * 12 + i] = packet.payload[38 + y * 6 + 2] << 8 | packet.payload[37 + y * 6 + 2];
+                imageBuffer[2][lines * 12 + i] = packet.payload[38 + y * 6 + 4] << 8 | packet.payload[37 + y * 6 + 4];
+
+                y++;
             }
 
+            timestamps.push_back(currentTime);
             lines++;
         }
 
@@ -101,7 +107,7 @@ namespace jason3
 
         cimg_library::CImg<unsigned short> AMR2Reader::getImageNormal(int channel)
         {
-            return cimg_library::CImg<unsigned short>(imageBuffer[channel], 16, lines);
+            return cimg_library::CImg<unsigned short>(imageBuffer[channel], 12, lines);
         }
     } // namespace modis
 } // namespace eos

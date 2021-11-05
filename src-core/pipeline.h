@@ -5,11 +5,12 @@
 #include <mutex>
 #include <vector>
 #include "dll_export.h"
+#include "nlohmann/json.hpp"
 
 struct PipelineModule
 {
     std::string module_name;
-    std::map<std::string, std::string> parameters;
+    nlohmann::json parameters;
     std::string input_override;
 };
 
@@ -33,7 +34,7 @@ struct Pipeline
     std::vector<PipelineStep> steps;
     void run(std::string input_file,
              std::string output_directory,
-             std::map<std::string, std::string> parameters,
+             nlohmann::json parameters,
              std::string input_level,
              bool ui = false,
              std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr,

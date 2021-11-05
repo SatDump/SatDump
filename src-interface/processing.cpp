@@ -14,7 +14,7 @@ namespace processing
                  std::string input_file,
                  std::string output_level,
                  std::string output_file,
-                 std::map<std::string, std::string> parameters)
+                 nlohmann::json parameters)
     {
         satdumpUiStatus = OFFLINE_PROCESSING;
 

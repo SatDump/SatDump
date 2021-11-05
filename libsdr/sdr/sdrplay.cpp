@@ -300,7 +300,7 @@ void SDRPlay::drawUI()
         }
     }
     // RSPDx-specific settings
-    else if (dev.hwVer == SDRPLAY_RSP2_ID)
+    else if (dev.hwVer == SDRPLAY_RSPdx_ID)
     {
         if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
                                                     "Atenna B\0"

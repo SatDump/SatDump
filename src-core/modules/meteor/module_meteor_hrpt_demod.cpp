@@ -9,10 +9,10 @@ size_t getFilesize(std::string filepath);
 
 namespace meteor
 {
-    METEORHRPTDemodModule::METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                        d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                                        d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                        constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
+    METEORHRPTDemodModule::METEORHRPTDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                    d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                                    d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                                    constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         // Buffers
         bits_buffer = new uint8_t[d_buffer_size * 10];
@@ -181,7 +181,7 @@ namespace meteor
         return {"samplerate", "buffer_size", "baseband_format"};
     }
 
-    std::shared_ptr<ProcessingModule> METEORHRPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> METEORHRPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<METEORHRPTDemodModule>(input_file, output_file_hint, parameters);
     }

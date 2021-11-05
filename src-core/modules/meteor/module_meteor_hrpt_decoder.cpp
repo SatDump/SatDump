@@ -10,7 +10,7 @@ size_t getFilesize(std::string filepath);
 
 namespace meteor
 {
-    METEORHRPTDecoderModule::METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    METEORHRPTDecoderModule::METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         def = std::make_shared<CADUDeframer>();
 
@@ -132,7 +132,7 @@ namespace meteor
         return {"samplerate", "buffer_size", "baseband_format"};
     }
 
-    std::shared_ptr<ProcessingModule> METEORHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> METEORHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<METEORHRPTDecoderModule>(input_file, output_file_hint, parameters);
     }

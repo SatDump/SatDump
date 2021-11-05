@@ -10,6 +10,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -20,7 +22,7 @@ namespace noaa
 {
     namespace avhrr
     {
-        NOAAAVHRRDecoderModule::NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        NOAAAVHRRDecoderModule::NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -122,39 +124,8 @@ namespace noaa
             logger->info("Channel 5...");
             WRITE_IMAGE(image5, directory + "/AVHRR-5.png");
 
-            logger->info("221 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
-                {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
-                }
-                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221.png");
-                image221.equalize(1000);
-                image221.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image221, directory + "/AVHRR-RGB-221-EQU.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  NOAA_ORBIT_HEIGHT,
-                                                                                                                  NOAA_AVHRR_SWATH,
-                                                                                                                  NOAA_AVHRR_RES);
-                WRITE_IMAGE(corrected221, directory + "/AVHRR-RGB-221-EQU-CORRECTED.png");
-            }
-
-            logger->info("Equalized Ch 4...");
-            {
-                image4.equalize(1000);
-                image4.normalize(0, std::numeric_limits<unsigned short>::max());
-                WRITE_IMAGE(image4, directory + "/AVHRR-4-EQU.png");
-                cimg_library::CImg<unsigned short> corrected4 = image::earth_curvature::correct_earth_curvature(image4,
-                                                                                                                NOAA_ORBIT_HEIGHT,
-                                                                                                                NOAA_AVHRR_SWATH,
-                                                                                                                NOAA_AVHRR_RES);
-                WRITE_IMAGE(corrected4, directory + "/AVHRR-4-EQU-CORRECTED.png");
-            }
-
             // Reproject to an equirectangular proj
-            if (image1.height() > 0)
+            if (reader.lines > 0)
             {
                 //nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
                 int norad = 0; //28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
@@ -214,21 +185,46 @@ namespace noaa
                     geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
                 }
 
-                logger->info("Projected channel 4...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image4, projector, 2048 * 4, 1024 * 4, 1);
-                WRITE_IMAGE(projected_image, directory + "/AVHRR-4-PROJ.png");
-
-                cimg_library::CImg<unsigned short> image221(2048, reader.lines, 1, 3);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
-                    image221.draw_image(0, 0, 0, 0, image2);
-                    image221.draw_image(0, 0, 0, 1, image2);
-                    image221.draw_image(0, 0, 0, 2, image1);
-                }
-                image221.equalize(1000);
+                    nlohmann::json compositeDef = compokey.value();
 
-                logger->info("Projected channel 221...");
-                projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image221, projector, 2048 * 4, 1024 * 4, 3);
-                WRITE_IMAGE(projected_image, directory + "/AVHRR-RGB-221-PROJ.png");
+                    // Not required here
+                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
+
+                    std::string name = "AVHRR-" + compokey.key();
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                            {1, 2, 3, 4, 5},
+                                                                                            expression,
+                                                                                            compositeDef);
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (projected)
+                    {
+                        logger->info(name + "-PROJ...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                         NOAA_ORBIT_HEIGHT,
+                                                                                         NOAA_AVHRR_SWATH,
+                                                                                         NOAA_AVHRR_RES);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
+                }
             }
         }
 
@@ -251,7 +247,7 @@ namespace noaa
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> NOAAAVHRRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> NOAAAVHRRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<NOAAAVHRRDecoderModule>(input_file, output_file_hint, parameters);
         }

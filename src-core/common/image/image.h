@@ -8,7 +8,8 @@
 namespace image
 {
     // Implementation of GIMP's White Balance algorithm
-    void white_balance(cimg_library::CImg<unsigned short> &image, float percentileValue = 0.05f, int channelCount = 3);
+    template <typename T>
+    void white_balance(cimg_library::CImg<T> &image, float percentileValue = 0.05f, int channelCount = 3);
 
     // Decompress JPEG Data from memory
     cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors = false);

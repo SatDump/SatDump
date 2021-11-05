@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
 
     // Prepare other parameters
     std::map<std::string, std::string> parameters;
-    parameters.emplace("samplerate", std::to_string(samplerate));
-    parameters.emplace("baseband_format", "f32");
+    parameters["samplerate"] = samplerate;
+    parameters["baseband_format"] = "f32";
 
     // Init the device
     std::string devID = sdr_type == NONE ? getDeviceIDStringByID(devices, 0) : ingestor_cfg["sdr_type"].get<std::string>();
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
         if (!found)
         {
-            logger->error("Could not requested find SDR Device!");
+            logger->error("Could not find requested SDR Device!");
             exit(1);
         }
     }

@@ -17,7 +17,7 @@ size_t getFilesize(std::string filepath);
 
 namespace elektro_arktika
 {
-    RDASDecoderModule::RDASDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    RDASDecoderModule::RDASDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
@@ -160,7 +160,7 @@ namespace elektro_arktika
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> RDASDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> RDASDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<RDASDecoderModule>(input_file, output_file_hint, parameters);
     }

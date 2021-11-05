@@ -3,60 +3,21 @@
 #include "block.h"
 #include <fstream>
 #include <atomic>
-//#define ENABLE_DECOMPRESSION
-#ifdef ENABLE_DECOMPRESSION
-#include <volk/volk_alloc.hh>
-#include <zstd.h>
+#ifdef BUILD_ZIQ
+#include "common/ziq.h"
 #endif
 
 namespace dsp
 {
-#ifdef ENABLE_DECOMPRESSION
-    class StreamingDecompressor
-    {
-    private:
-        ZSTD_DCtx *zstd_ctx;
-        ZSTD_inBuffer zstd_input;
-        ZSTD_outBuffer zstd_output;
-
-    public:
-        StreamingDecompressor()
-        {
-            zstd_ctx = ZSTD_createDCtx();
-        }
-
-        ~StreamingDecompressor()
-        {
-            ZSTD_freeDCtx(zstd_ctx);
-        }
-
-        int work(uint8_t *input, int size, uint8_t *output)
-        {
-            zstd_input = {input, (unsigned long)size, 0};
-            zstd_output = {output, (unsigned long)size * 100, 0};
-
-            while (zstd_input.pos < zstd_input.size)
-            {
-
-                size_t t = ZSTD_decompressStream(zstd_ctx, &zstd_output, &zstd_input);
-                if (ZSTD_isError(t))
-                {
-                    ZSTD_DCtx_reset(zstd_ctx, ZSTD_reset_session_only);
-                    return 0;
-                }
-            }
-
-            return zstd_output.pos;
-        }
-    };
-#endif
-
     enum BasebandType
     {
         COMPLEX_FLOAT_32,
         INTEGER_16,
         INTEGER_8,
-        WAV_8
+        WAV_8,
+#ifdef BUILD_ZIQ
+        ZIQ,
+#endif
     };
 
     BasebandType BasebandTypeFromString(std::string type);
@@ -82,10 +43,8 @@ namespace dsp
         // Uint8 buffer
         uint8_t *buffer_u8;
 
-#ifdef ENABLE_DECOMPRESSION
-        uint8_t *compressedBuffer;
-        StreamingDecompressor decompressor;
-        volk::vector<uint8_t> decompressionVector;
+#ifdef BUILD_ZIQ
+        std::shared_ptr<ziq::ziq_reader> ziqReader;
 #endif
 
     public:

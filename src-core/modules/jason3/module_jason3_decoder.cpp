@@ -17,7 +17,7 @@ size_t getFilesize(std::string filepath);
 
 namespace jason3
 {
-    Jason3DecoderModule::Jason3DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+    Jason3DecoderModule::Jason3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                     viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
@@ -228,7 +228,7 @@ namespace jason3
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> Jason3DecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> Jason3DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<Jason3DecoderModule>(input_file, output_file_hint, parameters);
     }

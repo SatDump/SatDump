@@ -14,6 +14,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -24,9 +26,9 @@ namespace eos
 {
     namespace modis
     {
-        EOSMODISDecoderModule::EOSMODISDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            terra(std::stoi(parameters["terra_mode"])),
-                                                                                                                                                            bowtie(std::stoi(parameters["correct_bowtie"]))
+        EOSMODISDecoderModule::EOSMODISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        terra(parameters["terra_mode"].get<bool>()),
+                                                                                                                                        bowtie(parameters["correct_bowtie"].get<bool>())
         {
         }
 
@@ -308,136 +310,95 @@ namespace eos
                 }
             }
 
-            // Output a few nice composites as well
-            logger->info("221 Composite...");
+            if (reader.lines > 0)
             {
-                cimg_library::CImg<unsigned short> image221(1354 * 4, reader.lines * 4, 1, 3);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
-                    cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
-                    image221.draw_image(0, 0, 0, 0, tempImage2);
-                    image221.draw_image(0, 0, 0, 1, tempImage2);
-                    image221.draw_image(0, 0, 0, 2, tempImage1);
+                    nlohmann::json compositeDef = compokey.value();
 
-                    image::white_balance(image221);
+                    // Not required here
+                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
-                    if (bowtie)
-                        image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
-                }
-                WRITE_IMAGE(image221, directory + "/MODIS-RGB-221.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  EOS_ORBIT_HEIGHT,
-                                                                                                                  EOS_MODIS_SWATH,
-                                                                                                                  EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected221, directory + "/MODIS-RGB-221-CORRECTED.png");
-                image221.equalize(1000);
-                WRITE_IMAGE(image221, directory + "/MODIS-RGB-221-EQU.png");
-                cimg_library::CImg<unsigned short> corrected221equ = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                     EOS_ORBIT_HEIGHT,
-                                                                                                                     EOS_MODIS_SWATH,
-                                                                                                                     EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected221equ, directory + "/MODIS-RGB-221-EQU-CORRECTED.png");
-            }
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
-            logger->info("121 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image121(1354 * 4, reader.lines * 4, 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage2 = reader.getImage250m(1), tempImage1 = reader.getImage250m(0);
-                    tempImage2.equalize(1000);
-                    tempImage1.equalize(1000);
-                    image121.draw_image(0, 0, 0, 0, tempImage1);
-                    image121.draw_image(0, 0, 0, 1, tempImage2);
-                    image121.draw_image(0, 0, 0, 2, tempImage1);
+                    std::string name = "MODIS-" + compokey.key();
 
-                    if (bowtie)
-                        image121 = image::bowtie::correctGenericBowTie(image121, 3, scanHeight_250, alpha, beta);
-                }
-                WRITE_IMAGE(image121, directory + "/MODIS-RGB-121.png");
-                cimg_library::CImg<unsigned short> corrected121 = image::earth_curvature::correct_earth_curvature(image121,
-                                                                                                                  EOS_ORBIT_HEIGHT,
-                                                                                                                  EOS_MODIS_SWATH,
-                                                                                                                  EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected121, directory + "/MODIS-RGB-121-EQU-CORRECTED.png");
-            }
+                    // Get required channels
+                    std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
-            logger->info("143 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image143(1354 * 4, reader.lines * 4, 1, 3), pre_wb(1354 * 4, reader.lines * 4, 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage4 = reader.getImage500m(1), tempImage3 = reader.getImage500m(0), tempImage1 = reader.getImage250m(0);
-                    tempImage3.resize(tempImage3.width() * 2, tempImage3.height() * 2);
-                    tempImage4.resize(tempImage4.width() * 2, tempImage4.height() * 2);
-
-                    image143.draw_image(0, 0, 0, 0, tempImage1);
-                    image143.draw_image(0, 0, 0, 1, tempImage4);
-                    image143.draw_image(0, 0, 0, 2, tempImage3);
-
-                    tempImage1.equalize(1000);
-                    tempImage4.equalize(1000);
-                    tempImage3.equalize(1000);
-                    pre_wb.draw_image(0, 0, 0, 0, tempImage1);
-                    pre_wb.draw_image(0, 0, 0, 1, tempImage4);
-                    pre_wb.draw_image(0, 0, 0, 2, tempImage3);
-
-                    image::white_balance(image143);
-
-                    if (bowtie)
+                    // Prepare channels
+                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<int> channel_numbers;
+                    bool has250m = false, has500m = false;
+                    for (int i = 0; i < (int)requiredChannels.size(); i++)
                     {
-                        image143 = image::bowtie::correctGenericBowTie(image143, 3, scanHeight_250, alpha, beta);
-                        pre_wb = image::bowtie::correctGenericBowTie(pre_wb, 3, scanHeight_250, alpha, beta);
+                        int channel_number = requiredChannels[i];
+
+                        if (channel_number > 0 && channel_number <= 2)
+                        {
+                            channels.push_back(reader.getImage250m(channel_number - 1));
+                            channel_numbers.push_back(channel_number);
+                            if (bowtie)
+                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_250, alpha, beta);
+                            has250m = true;
+                        }
+                        else if (channel_number > 2 && channel_number <= 7)
+                        {
+                            channels.push_back(reader.getImage500m(channel_number - 3));
+                            channel_numbers.push_back(channel_number);
+                            if (bowtie)
+                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_500, alpha, beta);
+                            has500m = true;
+                        }
+                        else if ((channel_number > 7 && channel_number <= 36) || channel_number == -13 || channel_number == -14)
+                        {
+                            if (channel_number <= 12)
+                                channels.push_back(reader.getImage1000m(channel_number - 8));
+                            else if (channel_number == 13)
+                                channels.push_back(reader.getImage1000m(5));
+                            else if (channel_number == -13)
+                                channels.push_back(reader.getImage1000m(6));
+                            else if (channel_number == 14)
+                                channels.push_back(reader.getImage1000m(7));
+                            else if (channel_number == -14)
+                                channels.push_back(reader.getImage1000m(8));
+                            else
+                                channels.push_back(reader.getImage1000m(channel_number - 6));
+
+                            channel_numbers.push_back(channel_number);
+                            if (bowtie)
+                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_500, alpha, beta);
+                        }
                     }
-                }
 
-                WRITE_IMAGE(image143, directory + "/MODIS-RGB-143.png");
-                cimg_library::CImg<unsigned short> corrected143 = image::earth_curvature::correct_earth_curvature(image143,
-                                                                                                                  EOS_ORBIT_HEIGHT,
-                                                                                                                  EOS_MODIS_SWATH,
-                                                                                                                  EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected143, directory + "/MODIS-RGB-143-CORRECTED.png");
-                image143.equalize(1000);
-                WRITE_IMAGE(image143, directory + "/MODIS-RGB-143-EQU.png");
-                cimg_library::CImg<unsigned short> corrected143equ = image::earth_curvature::correct_earth_curvature(image143,
-                                                                                                                     EOS_ORBIT_HEIGHT,
-                                                                                                                     EOS_MODIS_SWATH,
-                                                                                                                     EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected143equ, directory + "/MODIS-RGB-143-EQU-CORRECTED.png");
-                WRITE_IMAGE(pre_wb, directory + "/MODIS-RGB-143-EQURAW.png");
-                cimg_library::CImg<unsigned short> corrected143equraw = image::earth_curvature::correct_earth_curvature(pre_wb,
-                                                                                                                        EOS_ORBIT_HEIGHT,
-                                                                                                                        EOS_MODIS_SWATH,
-                                                                                                                        EOS_MODIS_RES250);
-                WRITE_IMAGE(corrected143equraw, directory + "/MODIS-RGB-143-EQURAW-CORRECTED.png");
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                            channel_numbers,
+                                                                                            expression,
+                                                                                            compositeDef);
 
-                // Reproject to an equirectangular proj
-                {
-                    //pre_wb.resize(pre_wb.width() / 4, pre_wb.height() / 4);
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
-                    logger->info("Projected Channel 143 EQURAW...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(pre_wb, projector_250, 2048 * 4, 1024 * 4, 3);
-                    WRITE_IMAGE(projected_image, directory + "/MODIS-143-EQURAW-PROJ.png");
-                }
-            }
+                    if (projected)
+                    {
+                        logger->info(name + "-PROJ...");
+                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), (has250m ? projector_250 : (has500m ? projector_500 : projector_1000)), 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
 
-            logger->info("Equalized Ch 29...");
-            {
-                cimg_library::CImg<unsigned short> image23 = reader.getImage1000m(23);
-                image::linear_invert(image23);
-                image23.equalize(1000);
-                if (bowtie)
-                    image23 = image::bowtie::correctGenericBowTie(image23, 1, scanHeight_1000, alpha, beta);
-                WRITE_IMAGE(image23, directory + "/MODIS-29-EQU.png");
-                cimg_library::CImg<unsigned short> corrected23 = image::earth_curvature::correct_earth_curvature(image23,
-                                                                                                                 EOS_ORBIT_HEIGHT,
-                                                                                                                 EOS_MODIS_SWATH,
-                                                                                                                 EOS_MODIS_RES1000);
-                WRITE_IMAGE(corrected23, directory + "/MODIS-29-EQU-CORRECTED.png");
-
-                // Reproject to an equirectangular proj
-                {
-                    logger->info("Projected Channel 29...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image23, projector_1000, 2048 * 4, 1024 * 4, 1);
-                    //projected_image.crop(18800, 2668, 18800 + 5516, 2668 + 3700);
-                    WRITE_IMAGE(projected_image, directory + "/MODIS-29-EQU-PROJ.png");
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                         EOS_ORBIT_HEIGHT,
+                                                                                         EOS_MODIS_SWATH,
+                                                                                         has250m ? EOS_MODIS_RES250 : (has500m ? EOS_MODIS_RES500 : EOS_MODIS_RES1000));
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
                 }
             }
         }
@@ -461,7 +422,7 @@ namespace eos
             return {"terra_mode", "correct_bowtie"};
         }
 
-        std::shared_ptr<ProcessingModule> EOSMODISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> EOSMODISDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<EOSMODISDecoderModule>(input_file, output_file_hint, parameters);
         }

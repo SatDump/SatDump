@@ -8,11 +8,11 @@ size_t getFilesize(std::string filepath);
 
 namespace terra
 {
-    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                  d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                                  d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                  d_dc_block(parameters.count("dc_block") > 0 ? std::stoi(parameters["dc_block"]) : 0),
-                                                                                                                                                  constellation(0.5f, 0.5f, demod_constellation_size)
+    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                              d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                              d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                              d_dc_block(parameters.count("dc_block") > 0 ? parameters["dc_block"].get<bool>() : 0),
+                                                                                                                              constellation(0.5f, 0.5f, demod_constellation_size)
     {
         // Init DSP blocks
         file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
@@ -146,7 +146,7 @@ namespace terra
         return {"samplerate", "buffer_size", "dc_block", "baseband_format"};
     }
 
-    std::shared_ptr<ProcessingModule> TerraDBDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> TerraDBDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<TerraDBDemodModule>(input_file, output_file_hint, parameters);
     }

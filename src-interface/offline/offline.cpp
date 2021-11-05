@@ -8,10 +8,8 @@
 #include "settings.h"
 #include "global.h"
 #include "common/wav.h"
-
-#ifdef __ANDROID__
-std::string getFilePath();
-std::string getDirPath();
+#ifdef BUILD_ZIQ
+#include "common/ziq.h"
 #endif
 
 namespace offline
@@ -186,6 +184,16 @@ namespace offline
                             break;
                         }
                     }
+#ifdef BUILD_ZIQ
+                    else if (ziq::isValidZIQ(input_file))
+                    {
+                        ziq::ziq_cfg header = ziq::getCfgFromFile(input_file);
+                        logger->debug("This file is ZIQ, parsing header...");
+                        memset(samplerate, 0, sizeof(samplerate));
+                        memcpy(samplerate, std::to_string(header.samplerate).c_str(), std::to_string(header.samplerate).size());
+                        baseband_type_option = 4;
+                    }
+#endif
 
                     // Ensure we select the format properly
                     switch (baseband_type_option)
@@ -202,6 +210,11 @@ namespace offline
                     case 3:
                         baseband_format = "w8";
                         break;
+#ifdef BUILD_ZIQ
+                    case 4:
+                        baseband_format = "ziq";
+                        break;
+#endif
                     }
                 }
             }
@@ -249,7 +262,14 @@ namespace offline
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Baseband Type");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Combo("", &baseband_type_option, "f32\0i16\0i8\0w8\0"))
+                if (ImGui::Combo("", &baseband_type_option, "f32\0"
+                                                            "i16\0"
+                                                            "i8\0"
+                                                            "w8\0"
+#ifdef BUILD_ZIQ
+                                                            "ZIQ\0"
+#endif
+                                 ))
                 {
                     switch (baseband_type_option)
                     {
@@ -265,6 +285,11 @@ namespace offline
                     case 3:
                         baseband_format = "w8";
                         break;
+#ifdef BUILD_ZIQ
+                    case 4:
+                        baseband_format = "ziq";
+                        break;
+#endif
                     }
                 }
 
@@ -310,12 +335,12 @@ namespace offline
                 else
                 {
 
-                    parameters.emplace("samplerate", std::string(samplerate));
+                    parameters["samplerate"] = std::stol(samplerate);
 
-                    parameters.emplace("baseband_format", baseband_format);
+                    parameters["baseband_format"] = baseband_format;
 
-                    parameters.emplace("dc_block", dc_block ? "1" : "0");
-                    parameters.emplace("iq_swap", iq_swap ? "1" : "0");
+                    parameters["dc_block"] = (bool)dc_block;
+                    parameters["iq_swap"] = (bool)iq_swap;
 
                     processThreadPool.push([&](int)
                                            { processing::process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });

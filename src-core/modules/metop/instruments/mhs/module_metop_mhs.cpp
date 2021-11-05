@@ -19,7 +19,7 @@ namespace metop
 {
     namespace mhs
     {
-        MetOpMHSDecoderModule::MetOpMHSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MetOpMHSDecoderModule::MetOpMHSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -186,7 +186,7 @@ namespace metop
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpMHSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MetOpMHSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpMHSDecoderModule>(input_file, output_file_hint, parameters);
         }

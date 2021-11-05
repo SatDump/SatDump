@@ -17,7 +17,7 @@ namespace metop
 {
     namespace admin_msg
     {
-        MetOpAdminMsgDecoderModule::MetOpAdminMsgDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MetOpAdminMsgDecoderModule::MetOpAdminMsgDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -161,7 +161,7 @@ namespace metop
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpAdminMsgDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MetOpAdminMsgDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpAdminMsgDecoderModule>(input_file, output_file_hint, parameters);
         }

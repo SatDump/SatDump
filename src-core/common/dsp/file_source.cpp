@@ -18,8 +18,11 @@ namespace dsp
         buffer_i8 = new int8_t[d_buffer_size * 100];
         buffer_u8 = new uint8_t[d_buffer_size * 100];
 
-#ifdef ENABLE_DECOMPRESSION
-        compressedBuffer = new uint8_t[d_buffer_size * 8];
+#ifdef BUILD_ZIQ
+        if (type == ZIQ)
+        {
+            ziqReader = std::make_shared<ziq::ziq_reader>(d_input_file);
+        }
 #endif
 
         d_got_input = false;
@@ -49,40 +52,29 @@ namespace dsp
 
             case INTEGER_16:
                 d_input_file.read((char *)buffer_i16, d_buffer_size * sizeof(int16_t) * 2);
-                volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)buffer_i16, 1.0f / 0.00004f, d_buffer_size * 2);
+                volk_16i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int16_t *)buffer_i16, 65535, d_buffer_size * 2);
                 break;
 
             case INTEGER_8:
-#ifdef ENABLE_DECOMPRESSION
-            {
-                while ((int)decompressionVector.size() < d_buffer_size * 2 && !d_input_file.eof())
-                {
-                    d_input_file.read((char *)compressedBuffer, d_buffer_size * 8);
-                    int decn = decompressor.work(compressedBuffer, d_buffer_size * 8, (uint8_t *)buffer_i8);
-                    decompressionVector.insert(decompressionVector.end(), buffer_i8, &buffer_i8[decn]);
-                }
-
-                int contains = (decompressionVector.size() - (decompressionVector.size() % 2));
-                int to_use = contains > d_buffer_size ? d_buffer_size * 2 : contains;
-                volk_8i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int8_t *)decompressionVector.data(), 1.0f / 0.004f, to_use);
-                decompressionVector.erase(decompressionVector.begin(), decompressionVector.begin() + to_use);
-                output_size = to_use / 2;
-            }
-#else
                 d_input_file.read((char *)buffer_i8, d_buffer_size * sizeof(int8_t) * 2);
-                volk_8i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int8_t *)buffer_i8, 1.0f / 0.004f, d_buffer_size * 2);
-#endif
-            break;
+                volk_8i_s32f_convert_32f_u((float *)output_stream->writeBuf, (const int8_t *)buffer_i8, 127, d_buffer_size * 2);
+                break;
 
             case WAV_8:
                 d_input_file.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
                 for (int i = 0; i < d_buffer_size; i++)
                 {
-                    float imag = (buffer_u8[i * 2] - 127) * 0.004f;
-                    float real = (buffer_u8[i * 2 + 1] - 127) * 0.004f;
+                    float imag = (buffer_u8[i * 2] - 127) * (1.0 / 127.0);
+                    float real = (buffer_u8[i * 2 + 1] - 127) * (1.0 / 127.0);
                     output_stream->writeBuf[i] = complex_t(real, imag);
                 }
                 break;
+
+#ifdef BUILD_ZIQ
+            case ZIQ:
+                ziqReader->read(output_stream->writeBuf, d_buffer_size);
+                break;
+#endif
 
             default:
                 break;
@@ -137,6 +129,10 @@ namespace dsp
             return COMPLEX_FLOAT_32;
         else if (type == "w8")
             return WAV_8;
+#ifdef BUILD_ZIQ
+        else if (type == "ziq")
+            return ZIQ;
+#endif
         else
             return COMPLEX_FLOAT_32;
     }

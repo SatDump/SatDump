@@ -4,6 +4,9 @@
 #include <thread>
 #include <fstream>
 #include "common/dsp/file_source.h"
+#ifdef BUILD_ZIQ
+#include "common/ziq.h"
+#endif
 
 class SDRFile : public SDRDevice
 {
@@ -24,6 +27,10 @@ private:
         file.close();
         return fileSize;
     }
+
+#ifdef BUILD_ZIQ
+    std::shared_ptr<ziq::ziq_reader> ziqReader;
+#endif
 
 public:
     SDRFile(std::map<std::string, std::string> parameters, uint64_t id = 0);

@@ -15,4 +15,14 @@ namespace map
     void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
     template <typename T>
     void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+
+    struct CustomLabel
+    {
+        std::string label;
+        double lat;
+        double lon;
+    };
+
+    template <typename T>
+    void drawProjectedLabels(std::vector<CustomLabel> labels, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
 }

@@ -13,9 +13,9 @@ size_t getFilesize(std::string filepath);
 
 namespace xrit
 {
-    GOESRecvPublisherModule::GOESRecvPublisherModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            address(parameters["address"]),
-                                                                                                                                                            port(std::stoi(parameters["port"]))
+    GOESRecvPublisherModule::GOESRecvPublisherModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        address(parameters["address"].get<std::string>()),
+                                                                                                                                        port(parameters["port"].get<int>())
     {
         buffer = new uint8_t[FRAME_SIZE];
     }
@@ -121,7 +121,7 @@ namespace xrit
         return {"address", "port"};
     }
 
-    std::shared_ptr<ProcessingModule> GOESRecvPublisherModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> GOESRecvPublisherModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<GOESRecvPublisherModule>(input_file, output_file_hint, parameters);
     }
