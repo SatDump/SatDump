@@ -29,6 +29,8 @@
 #ifndef MU_PARSER_FIXES_H
 #define MU_PARSER_FIXES_H
 
+#define MUPARSER_STATIC
+
 /** \file
 	\brief This file contains compatibility fixes for some platforms.
 */
