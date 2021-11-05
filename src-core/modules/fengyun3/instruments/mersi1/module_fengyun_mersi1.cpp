@@ -187,7 +187,7 @@ namespace fengyun3
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
                     //bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
-                    std::string name = "MERSI2-" + compokey.key();
+                    std::string name = "MERSI1-" + compokey.key();
 
                     // Prepare what we'll need
                     std::vector<cimg_library::CImg<unsigned short>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
