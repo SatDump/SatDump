@@ -1,4 +1,5 @@
 #include "mersi_banding.h"
+#include <vector>
 
 namespace fengyun3
 {
