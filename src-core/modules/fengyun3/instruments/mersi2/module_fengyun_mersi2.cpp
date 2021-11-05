@@ -11,6 +11,7 @@
 #include "modules/fengyun3/fengyun3.h"
 #include "common/image/image.h"
 #include "common/image/composite.h"
+#include "modules/fengyun3/instruments/mersi_banding.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -200,6 +201,7 @@ namespace fengyun3
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool do_banding_correct = compositeDef.count("banding_correct") > 0 ? compositeDef["banding_correct"].get<bool>() : false;
                     //bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
                     std::string name = "MERSI2-" + compokey.key();
@@ -232,6 +234,14 @@ namespace fengyun3
                                                                                             channel_numbers,
                                                                                             expression,
                                                                                             compositeDef);
+
+                    if (do_banding_correct)
+                    {
+                        if (compositeImage.width() == 2048)
+                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_1000);
+                        if (compositeImage.width() == 8192)
+                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_250);
+                    }
 
                     if (bowtie)
                     {

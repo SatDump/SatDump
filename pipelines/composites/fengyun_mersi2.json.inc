@@ -35,6 +35,7 @@
             "3": 8
         },
         "expression": "(ch3 - 0.05) * 5, (ch2 - 0.05) * 6, (ch1 - 0.05) * 5",
+        "banding_correct": true,
         "equalize": true,
         "corrected": true
     },
