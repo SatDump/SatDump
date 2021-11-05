@@ -27,7 +27,8 @@
             "products": {
                 "fengyun_satid": {},
                 "fengyun_mersi1": {
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi1.json.inc"
                 }
             }
         }
@@ -63,7 +64,8 @@
                     "scid_hint": 52
                 },
                 "fengyun_mersi2": {
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi2.json.inc"
                 },
                 "fengyun_mwts2": {},
                 "fengyun_waai": {},
@@ -379,7 +381,8 @@
             "products": {
                 "fengyun_satid": {},
                 "fengyun_mersi1": {
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi1.json.inc"
                 },
                 "fengyun_virr": {
                     "composites": "composites/fengyun_virr.json.inc"

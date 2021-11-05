@@ -9,6 +9,8 @@
 #include "common/image/image.h"
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun3/fengyun3.h"
+#include "common/image/image.h"
+#include "common/image/composite.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -174,151 +176,72 @@ namespace fengyun3
             logger->info("Channel 20...");
             WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image20, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image20), directory + "/MERSI1-20.png");
 
-            // Output a few nice composites as well
-            logger->info("221 Composite...");
+            if (mersiCorrelator->complete > 0)
             {
-                cimg_library::CImg<unsigned short> image221(8192, mersiCorrelator->image1.height(), 1, 3);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
-                    cimg_library::CImg<unsigned short> tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                    tempImage2.equalize(1000);
-                    tempImage1.equalize(1000);
-                    image221.draw_image(0, 0, 0, 0, tempImage2);
-                    image221.draw_image(0, 0, 0, 1, tempImage2);
-                    image221.draw_image(7, 0, 0, 2, tempImage1);
+                    nlohmann::json compositeDef = compokey.value();
+
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    //bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
+
+                    std::string name = "MERSI2-" + compokey.key();
+
+                    // Prepare what we'll need
+                    std::vector<cimg_library::CImg<unsigned short>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
+                                                                                    mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
+                                                                                    mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
+                                                                                    mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
+                                                                                    mersiCorrelator->image17, mersiCorrelator->image18, mersiCorrelator->image19, mersiCorrelator->image20};
+                    std::vector<int> all_channel_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+
+                    // Get required channels
+                    std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    // Prepare them
+                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<int> channel_numbers;
+                    for (int required_ch : requiredChannels)
+                    {
+                        channels.push_back(all_channels[required_ch - 1]);
+                        channel_numbers.push_back(all_channel_numbers[required_ch - 1]);
+                    }
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                            channel_numbers,
+                                                                                            expression,
+                                                                                            compositeDef);
 
                     if (bowtie)
-                        image221 = image::bowtie::correctGenericBowTie(image221, 3, scanHeight_250, alpha, beta);
+                    {
+                        if (compositeImage.width() == 2048)
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_1000, alpha, beta);
+                        if (compositeImage.width() == 8192)
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_250, alpha, beta);
+                    }
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        if (compositeImage.width() == 2048)
+                            compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                             FY3_ORBIT_HEIGHT,
+                                                                                             FY3_MERSI_SWATH,
+                                                                                             FY3_MERSI_RES1000);
+                        else if (compositeImage.width() == 8192)
+                            compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                             FY3_ORBIT_HEIGHT,
+                                                                                             FY3_MERSI_SWATH,
+                                                                                             FY3_MERSI_RES250);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
                 }
-                WRITE_IMAGE(image221, directory + "/MERSI1-RGB-221.png");
-                cimg_library::CImg<unsigned short> corrected221 = image::earth_curvature::correct_earth_curvature(image221,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSI_SWATH,
-                                                                                                                  FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected221, directory + "/MERSI1-RGB-221-CORRECTED.png");
-            }
-
-            logger->info("341 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image341(8192, mersiCorrelator->image1.height(), 1, 3);
-                image341.draw_image(24, 0, 0, 0, mersiCorrelator->image3);
-                image341.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
-                image341.draw_image(24, 0, 0, 2, mersiCorrelator->image1);
-
-                if (bowtie)
-                    image341 = image::bowtie::correctGenericBowTie(image341, 3, scanHeight_250, alpha, beta);
-
-                WRITE_IMAGE(image341, directory + "/MERSI1-RGB-341.png");
-                cimg_library::CImg<unsigned short> corrected341 = image::earth_curvature::correct_earth_curvature(image341,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSI_SWATH,
-                                                                                                                  FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected341, directory + "/MERSI1-RGB-341-CORRECTED.png");
-            }
-
-            logger->info("441 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image441(8192, mersiCorrelator->image1.height(), 1, 3);
-                image441.draw_image(0, 0, 0, 0, mersiCorrelator->image4);
-                image441.draw_image(0, 0, 0, 1, mersiCorrelator->image4);
-                image441.draw_image(21, 0, 0, 2, mersiCorrelator->image1);
-
-                if (bowtie)
-                    image441 = image::bowtie::correctGenericBowTie(image441, 3, scanHeight_250, alpha, beta);
-
-                WRITE_IMAGE(image441, directory + "/MERSI1-RGB-441.png");
-                cimg_library::CImg<unsigned short> corrected441 = image::earth_curvature::correct_earth_curvature(image441,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSI_SWATH,
-                                                                                                                  FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected441, directory + "/MERSI1-RGB-441-CORRECTED.png");
-            }
-
-            logger->info("321 RAW Composite...");
-            {
-                cimg_library::CImg<unsigned short> image321(8192, mersiCorrelator->image1.height(), 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                    image321.draw_image(8, 0, 0, 0, tempImage3);
-                    image321.draw_image(0, 0, 0, 1, tempImage2);
-                    image321.draw_image(8, 0, 0, 2, tempImage1);
-
-                    if (bowtie)
-                        image321 = image::bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
-                }
-                WRITE_IMAGE(image321, directory + "/MERSI1-RGB-321-RAW.png");
-                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSI_SWATH,
-                                                                                                                  FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected321, directory + "/MERSI1-RGB-321-RAW-CORRECTED.png");
-            }
-
-            logger->info("321 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image321(8192, mersiCorrelator->image1.height(), 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                    tempImage3.equalize(1000);
-                    tempImage2.equalize(1000);
-                    tempImage1.equalize(1000);
-                    image321.draw_image(8, 0, 0, 0, tempImage3);
-                    image321.draw_image(0, 0, 0, 1, tempImage2);
-                    image321.draw_image(8, 0, 0, 2, tempImage1);
-
-                    if (bowtie)
-                        image321 = image::bowtie::correctGenericBowTie(image321, 3, scanHeight_250, alpha, beta);
-                }
-                WRITE_IMAGE(image321, directory + "/MERSI1-RGB-321.png");
-                cimg_library::CImg<unsigned short> corrected321 = image::earth_curvature::correct_earth_curvature(image321,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSI_SWATH,
-                                                                                                                  FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected321, directory + "/MERSI1-RGB-321-CORRECTED.png");
-            }
-
-            logger->info("3(24)1 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image3241(8192, mersiCorrelator->image1.height(), 1, 3);
-                {
-                    cimg_library::CImg<unsigned short> tempImage4 = mersiCorrelator->image4, tempImage3 = mersiCorrelator->image3, tempImage2 = mersiCorrelator->image2, tempImage1 = mersiCorrelator->image1;
-                    tempImage4.equalize(1000);
-                    tempImage3.equalize(1000);
-                    tempImage2.equalize(1000);
-                    tempImage1.equalize(1000);
-                    // Correct for offset... Kinda bad
-                    image3241.draw_image(25, 0, 0, 0, tempImage3);
-                    image3241.draw_image(17, 0, 0, 1, tempImage2, 0.93f + 0.5f);
-                    image3241.draw_image(0, 0, 0, 1, tempImage4, 0.57f);
-                    image3241.draw_image(22, 0, 0, 2, tempImage1);
-
-                    if (bowtie)
-                        image3241 = image::bowtie::correctGenericBowTie(image3241, 3, scanHeight_250, alpha, beta);
-                }
-                WRITE_IMAGE(image3241, directory + "/MERSI1-RGB-3(24)1.png");
-                cimg_library::CImg<unsigned short> corrected3241 = image::earth_curvature::correct_earth_curvature(image3241,
-                                                                                                                   FY3_ORBIT_HEIGHT,
-                                                                                                                   FY3_MERSI_SWATH,
-                                                                                                                   FY3_MERSI_RES250);
-                WRITE_IMAGE(corrected3241, directory + "/MERSI1-RGB-3(24)1-CORRECTED.png");
-            }
-
-            logger->info("13.15.14 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image131514(2048, mersiCorrelator->image15.height(), 1, 3);
-                image131514.draw_image(14, 0, 0, 0, mersiCorrelator->image15);
-                image131514.draw_image(0, 0, 0, 1, mersiCorrelator->image14);
-                image131514.draw_image(14, 0, 0, 2, mersiCorrelator->image13);
-                image131514.equalize(1000);
-
-                if (bowtie)
-                    image131514 = image::bowtie::correctGenericBowTie(image131514, 3, scanHeight_1000, alpha, beta);
-
-                WRITE_IMAGE(image131514, directory + "/MERSI1-RGB-13.15.14.png");
-                cimg_library::CImg<unsigned short> corrected131514 = image::earth_curvature::correct_earth_curvature(image131514,
-                                                                                                                     FY3_ORBIT_HEIGHT,
-                                                                                                                     FY3_MERSI_SWATH,
-                                                                                                                     FY3_MERSI_RES1000);
-                WRITE_IMAGE(corrected131514, directory + "/MERSI1-RGB-13.15.14-CORRECTED.png");
             }
         }
 
