@@ -19,6 +19,14 @@ namespace image
         bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
         bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
         bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
+        bool hasOffsets = parameters.count("offsets") > 0;
+        std::map<int, int> offsets;
+        if (hasOffsets)
+        {
+            std::map<std::string, int> offsetsStr = parameters["offsets"].get<std::map<std::string, int>>();
+            for (std::pair<std::string, int> currentOff : offsetsStr)
+                offsets.emplace(std::stoi(currentOff.first), -currentOff.second);
+        }
 
         // Compute channel variable names
         std::vector<std::string> channelNames;
@@ -72,7 +80,33 @@ namespace image
         {
             // Set variables and scale to 1.0
             for (int i = 0; i < (int)inputChannels.size(); i++)
-                channelValues[i] = double(inputChannels[i][px]) / double(std::numeric_limits<T>::max());
+            {
+                int fpx = px;
+
+                // If we have to offset some channels
+                if (hasOffsets)
+                {
+                    if (offsets.count(channelNumbers[i]) > 0)
+                    {
+                        int currentPx = fpx % img_width + offsets[channelNumbers[i]];
+
+                        if (currentPx < 0)
+                        {
+                            channelValues[i] = 0;
+                            continue;
+                        }
+                        else if (currentPx >= img_width)
+                        {
+                            channelValues[i] = 0;
+                            continue;
+                        }
+
+                        fpx += offsets[channelNumbers[i]];
+                    }
+                }
+
+                channelValues[i] = double(inputChannels[i][fpx]) / double(std::numeric_limits<T>::max());
+            }
 
             // Do the math
             rgbOut = rgbParser.Eval(outValsCnt);
