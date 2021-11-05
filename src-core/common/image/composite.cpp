@@ -18,7 +18,7 @@ namespace image
         bool equalize = parameters.count("equalize") > 0 ? parameters["equalize"].get<bool>() : false;
         bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
         bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
-        bool white_balance = parameters.count("while_balance") > 0 ? parameters["while_balance"].get<bool>() : false;
+        bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
 
         // Compute channel variable names
         std::vector<std::string> channelNames;
@@ -36,6 +36,22 @@ namespace image
         // Set expression
         rgbParser.SetExpr(equation);
         rgbParser.Eval(outValsCnt); // Eval once for channel output count
+
+        // Get maximum image size, and resize them all to that. Also acts as basic safety
+        int maxWidth = 0, maxHeight = 0;
+        for (int i = 0; i < (int)inputChannels.size(); i++)
+        {
+            if (inputChannels[i].width() > maxWidth)
+                maxWidth = inputChannels[i].width();
+
+            if (inputChannels[i].height() > maxHeight)
+                maxHeight = inputChannels[i].height();
+        }
+
+        for (int i = 0; i < (int)inputChannels.size(); i++)
+        {
+            inputChannels[i].resize(maxWidth, maxHeight);
+        }
 
         // Get output width
         int img_width = inputChannels[0].width();
@@ -98,14 +114,14 @@ namespace image
 
         delete[] channelValues;
 
+        if (white_balance)
+            image::white_balance(rgb_output);
+
         if (equalize)
             rgb_output.equalize(1000);
 
         if (normalize)
             rgb_output.normalize(0, std::numeric_limits<T>::max());
-
-        if (white_balance)
-            image::white_balance(rgb_output);
 
         return rgb_output;
     }

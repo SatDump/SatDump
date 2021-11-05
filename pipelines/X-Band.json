@@ -153,7 +153,8 @@
             "products": {
                 "eos_modis": {
                     "terra_mode": false,
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/eos_modis.json.inc"
                 },
                 "aqua_airs": {},
                 "aqua_ceres": {},
@@ -181,7 +182,8 @@
             "products": {
                 "eos_modis": {
                     "terra_mode": true,
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/eos_modis.json.inc"
                 }
             }
         }

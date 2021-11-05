@@ -337,22 +337,6 @@ namespace jpss
                     channels[i].mirror('x');
                 }
 
-                // Get maximum image size, and resize them all to that
-                int maxWidth = 0, maxHeight = 0;
-                for (int i = 0; i < (int)requiredChannels.size(); i++)
-                {
-                    if (channels[i].width() > maxWidth)
-                        maxWidth = channels[i].width();
-
-                    if (channels[i].height() > maxHeight)
-                        maxHeight = channels[i].height();
-                }
-
-                for (int i = 0; i < (int)requiredChannels.size(); i++)
-                {
-                    channels[i].resize(maxWidth, maxHeight);
-                }
-
                 logger->info(name + "...");
                 cimg_library::CImg<unsigned short>
                     compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
