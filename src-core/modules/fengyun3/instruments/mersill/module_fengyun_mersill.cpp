@@ -56,7 +56,7 @@ namespace fengyun3
 
             logger->info("Demultiplexing and deframing...");
 
-            uint8_t frame_write_buffer[9376];
+            uint8_t frame_write_buffer[12390];
 
             while (!data_in.eof())
             {
