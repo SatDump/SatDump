@@ -54,7 +54,7 @@ namespace dsp
         int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
         float phase_error = 0;                                  // Phase Error
 
-        for (; in_c < input_number;)
+        for (; in_c < input_number && out_c < STREAM_BUFFER_SIZE;)
         {
             // Propagate delay
             p_2T = p_1T;
