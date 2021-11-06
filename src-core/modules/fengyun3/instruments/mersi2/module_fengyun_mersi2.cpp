@@ -115,7 +115,7 @@ namespace fengyun3
 
             // Do it for our correlated ones
             mersiCorrelator->makeImages();
-
+/*
             // Write synced channels
             logger->info("Channel 1...");
             WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image1, 1, scanHeight_250, alpha, beta) : mersiCorrelator->image1), directory + "/MERSI2-1.png");
@@ -191,7 +191,7 @@ namespace fengyun3
 
             logger->info("Channel 25...");
             WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image25, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image25), directory + "/MERSI2-25.png");
-
+*/
             if (mersiCorrelator->complete > 0)
             {
                 // Generate composites
