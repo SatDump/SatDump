@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     }
 
     // Prepare other parameters
-    std::map<std::string, std::string> parameters;
+    nlohmann::json parameters;
     parameters["samplerate"] = samplerate;
     parameters["baseband_format"] = "f32";
 
