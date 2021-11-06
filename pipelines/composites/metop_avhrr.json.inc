@@ -24,6 +24,10 @@
         "expression": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15",
         "corrected": true
     },
+    "RGB-(4)221": {
+        "expression": "ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch1 * 2.2 - 0.15",
+        "corrected": true
+    },
     "4-EQU": {
         "expression": "ch4",
         "equalize": true,
