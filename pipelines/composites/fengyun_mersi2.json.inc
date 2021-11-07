@@ -114,6 +114,7 @@
         "expression": "1 - ch5",
         "equalize": true,
         "normalize": true,
-        "corrected": true
+        "corrected": true,
+        "banding_correct": true
     }
 }
