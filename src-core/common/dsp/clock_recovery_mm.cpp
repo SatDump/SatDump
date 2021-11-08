@@ -1,5 +1,4 @@
 #include "clock_recovery_mm.h"
-#include "logger.h"
 #include "interpolator_taps.h"
 
 namespace dsp
@@ -53,8 +52,9 @@ namespace dsp
         int in_c = 0;                                           // Input index
         int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
         float phase_error = 0;                                  // Phase Error
+        int output_cnt_max = 2 * omega * nsamples;              // Max output CNT
 
-        for (; in_c < input_number && out_c < nsamples * 2;)
+        for (; in_c < input_number && out_c < output_cnt_max;)
         {
             // Propagate delay
             p_2T = p_1T;
@@ -152,8 +152,9 @@ namespace dsp
         int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
         float phase_error = 0;                                  // Phase Error
         float sample = 0;                                       // Output sample
+        int output_cnt_max = 2 * omega * nsamples;              // Max output CNT
 
-        for (; in_c < input_number;)
+        for (; in_c < input_number && out_c < output_cnt_max;)
         {
             // Compute output
             int imu = (int)rint(mu * NSTEPS);

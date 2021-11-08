@@ -45,7 +45,7 @@ namespace dsp
 
         // Setup taps
         for (int i = 0; i < (int)rtaps.size(); i++)
-            taps[i % nfilt][i / nfilt] = rtaps[i];
+            taps[i % nfilt][(ntaps - 1) - (i / nfilt)] = rtaps[i];
     }
 
     CCRationalResamplerBlock::~CCRationalResamplerBlock()
@@ -65,8 +65,8 @@ namespace dsp
             return;
         }
 
-        memcpy(&buffer[in_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
-        in_buffer += nsamples;
+        memcpy(&buffer[ntaps], input_stream->readBuf, nsamples * sizeof(complex_t));
+        in_buffer = ntaps + nsamples;
         input_stream->flush();
 
         int outc = 0;
@@ -82,7 +82,6 @@ namespace dsp
         }
 
         memmove(&buffer[0], &buffer[in_buffer - ntaps], ntaps * sizeof(complex_t));
-        in_buffer = ntaps;
 
         output_stream->swap(outc);
     }
