@@ -34,13 +34,13 @@
         "normalize": true,
         "corrected": true,
         "projected": true
-    }
+    },
     "RGB-124": {
         "expression": "ch1, ch2, ch4",
         "corrected": true
     },
     "RGB-124-EQU": {
-        "expression": "ch1, ch2, ch4,
+        "expression": "ch1, ch2, ch4",
         "equalize": true,
         "normalize": true,
         "corrected": true,
