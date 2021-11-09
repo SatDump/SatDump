@@ -43,7 +43,7 @@ satdump pipeline input_format path/to/input/file.something products output_folde
 satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate 6000000 -baseband_format i16
 
 # Example for MetOp AHRPT data
-satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baeband_format i16
+satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
 ```
 
 Live processing is now supported (but WIP) on all platforms. You will have to enable it manually when building from source with -DBUILD_LIVE=ON.   
