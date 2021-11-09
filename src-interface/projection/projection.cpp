@@ -107,9 +107,12 @@ namespace projection
 
         // Load custom labels
         customLabels.clear();
-        std::vector<std::tuple<std::string, double, double>> labelTuple = settings["custom_map_labels"].get<std::vector<std::tuple<std::string, double, double>>>();
-        for (std::tuple<std::string, double, double> &label : labelTuple)
-            customLabels.push_back({std::get<0>(label), std::get<1>(label), std::get<2>(label)});
+        if (settings.count("custom_map_labels") > 0)
+        {
+            std::vector<std::tuple<std::string, double, double>> labelTuple = settings["custom_map_labels"].get<std::vector<std::tuple<std::string, double, double>>>();
+            for (std::tuple<std::string, double, double> &label : labelTuple)
+                customLabels.push_back({std::get<0>(label), std::get<1>(label), std::get<2>(label)});
+        }
     }
 
     void destroyProjection()
