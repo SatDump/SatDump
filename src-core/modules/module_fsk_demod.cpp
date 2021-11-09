@@ -7,13 +7,13 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                      d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                      d_symbolrate(std::stoi(parameters["symbolrate"])),
-                                                                                                                                      d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                      d_lpf_cutoff(std::stoi(parameters["lpf_cutoff"])),
-                                                                                                                                      d_lpf_transition_width(std::stoi(parameters["lpf_transition_width"])),
-                                                                                                                                      constellation(45.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
+FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                  d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                  d_symbolrate(parameters["symbolrate"].get<long>()),
+                                                                                                                  d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                  d_lpf_cutoff(parameters["lpf_cutoff"].get<int>()),
+                                                                                                                  d_lpf_transition_width(parameters["lpf_transition_width"].get<int>()),
+                                                                                                                  constellation(45.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
 {
     // Buffers
     sym_buffer = new int8_t[d_buffer_size * 10];
@@ -139,7 +139,7 @@ std::vector<std::string> FSKDemodModule::getParameters()
     return {"samplerate", "buffer_size", "baseband_format", "symbolrate", "lpf_cutoff", "lpf_transition_width"};
 }
 
-std::shared_ptr<ProcessingModule> FSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+std::shared_ptr<ProcessingModule> FSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
 {
     return std::make_shared<FSKDemodModule>(input_file, output_file_hint, parameters);
 }

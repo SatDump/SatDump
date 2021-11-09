@@ -18,8 +18,8 @@ namespace jpss
 {
     namespace omps
     {
-        JPSSOMPSDecoderModule::JPSSOMPSDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                            npp_mode(std::stoi(parameters["npp_mode"]))
+        JPSSOMPSDecoderModule::JPSSOMPSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        npp_mode(parameters["npp_mode"].get<bool>())
         {
             if (npp_mode)
             {
@@ -179,7 +179,7 @@ namespace jpss
             return {"npp_mode"};
         }
 
-        std::shared_ptr<ProcessingModule> JPSSOMPSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> JPSSOMPSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<JPSSOMPSDecoderModule>(input_file, output_file_hint, parameters);
         }

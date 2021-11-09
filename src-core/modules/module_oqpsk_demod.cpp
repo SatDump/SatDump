@@ -6,22 +6,22 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                          d_agc_rate(std::stof(parameters["agc_rate"])),
-                                                                                                                                          d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                          d_symbolrate(std::stoi(parameters["symbolrate"])),
-                                                                                                                                          d_rrc_alpha(std::stof(parameters["rrc_alpha"])),
-                                                                                                                                          d_rrc_taps(std::stoi(parameters["rrc_taps"])),
-                                                                                                                                          d_loop_bw(std::stof(parameters["costas_bw"])),
-                                                                                                                                          d_dc_block(std::stoi(parameters["dc_block"])),
-                                                                                                                                          d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                          d_const_scale(std::stof(parameters["constellation_scale"])),
-                                                                                                                                          d_iq_swap(parameters.count("iq_swap") > 0 ? std::stoi(parameters["iq_swap"]) : 0),
-                                                                                                                                          d_clock_gain_omega(std::stof(parameters["clock_gain_omega"])),
-                                                                                                                                          d_clock_mu(std::stof(parameters["clock_mu"])),
-                                                                                                                                          d_clock_gain_mu(std::stof(parameters["clock_gain_mu"])),
-                                                                                                                                          d_clock_omega_relative_limit(std::stof(parameters["clock_omega_relative_limit"])),
-                                                                                                                                          constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
+OQPSKDemodModule::OQPSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                      d_agc_rate(parameters["agc_rate"].get<float>()),
+                                                                                                                      d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                      d_symbolrate(parameters["symbolrate"].get<long>()),
+                                                                                                                      d_rrc_alpha(parameters["rrc_alpha"].get<float>()),
+                                                                                                                      d_rrc_taps(parameters["rrc_taps"].get<int>()),
+                                                                                                                      d_loop_bw(parameters["costas_bw"].get<float>()),
+                                                                                                                      d_dc_block(parameters.count("dc_block") > 0 ? parameters["dc_block"].get<bool>() : 0),
+                                                                                                                      d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                      d_const_scale(parameters["constellation_scale"].get<float>()),
+                                                                                                                      d_iq_swap(parameters.count("iq_swap") > 0 ? parameters["iq_swap"].get<bool>() : 0),
+                                                                                                                      d_clock_gain_omega(parameters["clock_gain_omega"].get<float>()),
+                                                                                                                      d_clock_mu(parameters["clock_mu"].get<float>()),
+                                                                                                                      d_clock_gain_mu(parameters["clock_gain_mu"].get<float>()),
+                                                                                                                      d_clock_omega_relative_limit(parameters["clock_omega_relative_limit"].get<float>()),
+                                                                                                                      constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
 
 {
     // Buffers
@@ -225,7 +225,7 @@ std::vector<std::string> OQPSKDemodModule::getParameters()
     return {"samplerate", "symbolrate", "agc_rate", "rrc_alpha", "rrc_taps", "costas_bw", "iq_invert", "buffer_size", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit", "constellation_scale", "baseband_format"};
 }
 
-std::shared_ptr<ProcessingModule> OQPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+std::shared_ptr<ProcessingModule> OQPSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
 {
     return std::make_shared<OQPSKDemodModule>(input_file, output_file_hint, parameters);
 }

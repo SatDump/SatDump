@@ -10,10 +10,10 @@ size_t getFilesize(std::string filepath);
 
 namespace noaa
 {
-    NOAADSBDemodModule::NOAADSBDemodModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                  d_samplerate(std::stoi(parameters["samplerate"])),
-                                                                                                                                                  d_buffer_size(std::stoi(parameters["buffer_size"])),
-                                                                                                                                                  constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
+    NOAADSBDemodModule::NOAADSBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                              d_samplerate(parameters["samplerate"].get<long>()),
+                                                                                                                              d_buffer_size(parameters["buffer_size"].get<long>()),
+                                                                                                                              constellation(90.0f / 100.0f, 15.0f / 100.0f, demod_constellation_size)
     {
         snr = 0;
         peak_snr = 0;
@@ -219,7 +219,7 @@ namespace noaa
         return {"samplerate", "buffer_size", "baseband_format"};
     }
 
-    std::shared_ptr<ProcessingModule> NOAADSBDemodModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NOAADSBDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NOAADSBDemodModule>(input_file, output_file_hint, parameters);
     }

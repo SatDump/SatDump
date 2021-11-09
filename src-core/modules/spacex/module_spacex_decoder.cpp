@@ -19,8 +19,8 @@ size_t getFilesize(std::string filepath);
 
 namespace spacex
 {
-    SpaceXDecoderModule::SpaceXDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                    qpsk(std::stoi(parameters["qpsk"]))
+    SpaceXDecoderModule::SpaceXDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                qpsk(parameters["qpsk"].get<bool>())
     {
         buffer = new int8_t[BUFFER_SIZE];
     }
@@ -137,7 +137,6 @@ namespace spacex
         data_in.close();
     }
 
-
     void SpaceXDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("SpaceX TLM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
@@ -217,7 +216,7 @@ namespace spacex
         return {"qpsk"};
     }
 
-    std::shared_ptr<ProcessingModule> SpaceXDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> SpaceXDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SpaceXDecoderModule>(input_file, output_file_hint, parameters);
     }

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <map>
+#include "nlohmann/json.hpp"
 
 namespace live
 {
@@ -14,6 +15,6 @@ namespace live
     extern std::string downlink_pipeline;
     extern std::string output_level;
     extern std::string output_file;
-    extern std::map<std::string, std::string> parameters;
+    extern nlohmann::json parameters;
 #endif
 };

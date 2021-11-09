@@ -252,4 +252,26 @@ namespace map
 
     template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
     template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+
+    template <typename T>
+    void drawProjectedLabels(std::vector<CustomLabel> labels, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    {
+        for (CustomLabel &currentLabel : labels)
+        {
+            std::pair<float, float> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
+                                                        image.height(), image.width());
+
+            if (cc.first == -1 || cc.first == -1)
+                continue;
+
+            image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
+            image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
+            image.draw_circle(cc.first, cc.second, 10 * ratio, color);
+
+            image.draw_text(cc.first, cc.second + 30 * ratio, currentLabel.label.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
+        }
+    }
+
+    template void drawProjectedLabels(std::vector<CustomLabel>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedLabels(std::vector<CustomLabel>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 }

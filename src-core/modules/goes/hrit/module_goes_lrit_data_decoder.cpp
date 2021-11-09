@@ -16,12 +16,12 @@ namespace goes
 {
     namespace hrit
     {
-        GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                                    write_images(std::stoi(parameters["write_images"])),
-                                                                                                                                                                    write_emwin(std::stoi(parameters["write_emwin"])),
-                                                                                                                                                                    write_messages(std::stoi(parameters["write_messages"])),
-                                                                                                                                                                    write_dcs(std::stoi(parameters["write_dcs"])),
-                                                                                                                                                                    write_unknown(std::stoi(parameters["write_unknown"]))
+        GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                write_images(parameters["write_images"].get<bool>()),
+                                                                                                                                                write_emwin(parameters["write_emwin"].get<bool>()),
+                                                                                                                                                write_messages(parameters["write_messages"].get<bool>()),
+                                                                                                                                                write_dcs(parameters["write_dcs"].get<bool>()),
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
         {
             goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
@@ -338,7 +338,7 @@ namespace goes
             return {"write_images", "write_emwin", "write_messages", "write_dcs", "write_unknown"};
         }
 
-        std::shared_ptr<ProcessingModule> GOESLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> GOESLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GOESLRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }

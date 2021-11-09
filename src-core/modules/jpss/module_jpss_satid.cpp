@@ -17,8 +17,8 @@ namespace jpss
 {
     namespace satid
     {
-        JPSSSatIDModule::JPSSSatIDModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                scid_hint(parameters.count("scid_hint") > 0 ? std::stoi(parameters["scid_hint"]) : -1)
+        JPSSSatIDModule::JPSSSatIDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                            scid_hint(parameters.count("scid_hint") > 0 ? parameters["scid_hint"].get<int>() : -1)
         {
         }
 
@@ -121,7 +121,7 @@ namespace jpss
             return {"scid_hint"};
         }
 
-        std::shared_ptr<ProcessingModule> JPSSSatIDModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> JPSSSatIDModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<JPSSSatIDModule>(input_file, output_file_hint, parameters);
         }

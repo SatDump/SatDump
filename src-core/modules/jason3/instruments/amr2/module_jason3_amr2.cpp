@@ -16,7 +16,7 @@ namespace jason3
 {
     namespace amr2
     {
-        Jason3AMR2DecoderModule::Jason3AMR2DecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        Jason3AMR2DecoderModule::Jason3AMR2DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -133,7 +133,7 @@ namespace jason3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> Jason3AMR2DecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> Jason3AMR2DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<Jason3AMR2DecoderModule>(input_file, output_file_hint, parameters);
         }

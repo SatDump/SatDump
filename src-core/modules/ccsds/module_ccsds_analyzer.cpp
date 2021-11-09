@@ -21,7 +21,7 @@ namespace ccsds
 {
     namespace analyzer
     {
-        CCSDSAnalyzerModule::CCSDSAnalyzerModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        CCSDSAnalyzerModule::CCSDSAnalyzerModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -139,7 +139,7 @@ namespace ccsds
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> CCSDSAnalyzerModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> CCSDSAnalyzerModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<CCSDSAnalyzerModule>(input_file, output_file_hint, parameters);
         }

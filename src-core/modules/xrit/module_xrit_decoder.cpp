@@ -18,13 +18,13 @@ size_t getFilesize(std::string filepath);
 
 namespace xrit
 {
-    XRITDecoderModule::XRITDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                is_bpsk(std::stoi(parameters["is_bpsk"])),
-                                                                                                                                                diff_decode(std::stoi(parameters["diff_decode"])),
-                                                                                                                                                viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS),
-                                                                                                                                                d_viterbi_outsync_after(parameters.count("viterbi_outsync_after") > 0 ? std::stoi(parameters["viterbi_outsync_after"]) : 0),
-                                                                                                                                                d_viterbi_ber_threasold(parameters.count("viterbi_ber_thresold") > 0 ? std::stof(parameters["viterbi_ber_thresold"]) : 0),
-                                                                                                                                                stream_viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
+    XRITDecoderModule::XRITDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                            is_bpsk(parameters["is_bpsk"].get<bool>()),
+                                                                                                                            diff_decode(parameters["diff_decode"].get<bool>()),
+                                                                                                                            viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS),
+                                                                                                                            d_viterbi_outsync_after(parameters.count("viterbi_outsync_after") > 0 ? parameters["viterbi_outsync_after"].get<int>() : 0),
+                                                                                                                            d_viterbi_ber_threasold(parameters.count("viterbi_ber_thresold") > 0 ? parameters["viterbi_ber_thresold"].get<float>() : 0),
+                                                                                                                            stream_viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
@@ -369,7 +369,7 @@ namespace xrit
         return {"is_bpsk", "diff_decode", "viterbi_outsync_after", "viterbi_ber_thresold"};
     }
 
-    std::shared_ptr<ProcessingModule> XRITDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> XRITDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<XRITDecoderModule>(input_file, output_file_hint, parameters);
     }

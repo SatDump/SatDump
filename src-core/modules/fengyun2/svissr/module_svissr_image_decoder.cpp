@@ -109,7 +109,7 @@ namespace fengyun_svissr
         writingImage = false;
     }
 
-    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                               sat_name(parameters["satname"])
     {
         frame = new uint8_t[FRAME_SIZE];
@@ -353,7 +353,7 @@ namespace fengyun_svissr
         return {"satname"};
     }
 
-    std::shared_ptr<ProcessingModule> SVISSRImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> SVISSRImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SVISSRImageDecoderModule>(input_file, output_file_hint, parameters);
     }

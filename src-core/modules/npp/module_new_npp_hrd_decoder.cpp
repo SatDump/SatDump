@@ -11,10 +11,10 @@ size_t getFilesize(std::string filepath);
 
 namespace npp
 {
-    NewNPPHRDDecoderModule::NewNPPHRDDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                          d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
-                                                                                                                                                          d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
-                                                                                                                                                          viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
+    NewNPPHRDDecoderModule::NewNPPHRDDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                      d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
+                                                                                                                                      d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
+                                                                                                                                      viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
@@ -192,7 +192,7 @@ namespace npp
         return {"viterbi_outsync_after", "viterbi_ber_thresold"};
     }
 
-    std::shared_ptr<ProcessingModule> NewNPPHRDDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NewNPPHRDDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NewNPPHRDDecoderModule>(input_file, output_file_hint, parameters);
     }

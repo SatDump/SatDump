@@ -15,7 +15,7 @@ size_t getFilesize(std::string filepath);
 
 namespace terra
 {
-    TerraDBDecoderModule::TerraDBDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+    TerraDBDecoderModule::TerraDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                       viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
@@ -202,7 +202,7 @@ namespace terra
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> TerraDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> TerraDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<TerraDBDecoderModule>(input_file, output_file_hint, parameters);
     }

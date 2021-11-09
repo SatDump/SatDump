@@ -28,7 +28,7 @@ namespace saral
         float cor_history[200];
 
     public:
-        SaralDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        SaralDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~SaralDecoderModule();
         void process();
         void drawUI(bool window);
@@ -39,6 +39,6 @@ namespace saral
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
         static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters);
+        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace proba

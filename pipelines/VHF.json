@@ -9,7 +9,7 @@
             "baseband": {},
             "frames": {
                 "noaa_dsb_demod": {
-                    "buffer_size": "8192"
+                    "buffer_size": 8192
                 }
             },
             "products": {
@@ -40,21 +40,23 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "72000",
-                    "agc_rate": "0.1",
-                    "rrc_alpha": "0.6",
-                    "rrc_taps": "361",
-                    "costas_bw": "0.004",
-                    "buffer_size": "8192"
+                    "symbolrate": 72000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 361,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "meteor_lrpt_decoder": {
-                    "diff_decode": "0"
+                    "diff_decode": false
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "composites": "composites/meteor_msumr.json.inc"
+                }
             }
         }
     },
@@ -81,27 +83,29 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": "72000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.6",
-                    "rrc_taps": "361",
-                    "costas_bw": "0.004",
-                    "clock_gain_omega": "2.5e-7",
-                    "clock_mu": "0.5",
-                    "clock_gain_mu": "0.001",
-                    "clock_omega_relative_limit": "0.005",
-                    "dc_block": "0",
-                    "constellation_scale": "50",
-                    "buffer_size": "8192"
+                    "symbolrate": 72000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 361,
+                    "costas_bw": 0.004,
+                    "clock_gain_omega": 2.5e-7,
+                    "clock_mu": 0.5,
+                    "clock_gain_mu": 0.001,
+                    "clock_omega_relative_limit": 0.005,
+                    "dc_block": false,
+                    "constellation_scale": 50,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "meteor_lrpt_decoder": {
-                    "diff_decode": "1"
+                    "diff_decode": true
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "composites": "composites/meteor_msumr.json.inc"
+                }
             }
         }
     }

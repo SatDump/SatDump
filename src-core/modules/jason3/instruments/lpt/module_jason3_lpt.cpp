@@ -14,7 +14,7 @@ namespace jason3
 {
     namespace lpt
     {
-        Jason3LPTDecoderModule::Jason3LPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        Jason3LPTDecoderModule::Jason3LPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -156,7 +156,7 @@ namespace jason3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> Jason3LPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> Jason3LPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<Jason3LPTDecoderModule>(input_file, output_file_hint, parameters);
         }

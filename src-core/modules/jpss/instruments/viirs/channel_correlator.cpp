@@ -65,5 +65,53 @@ namespace jpss
 
             return {segments1_out, segments2_out, segments3_out};
         }
+
+        std::vector<VIIRSReader> correlateChannels(std::vector<VIIRSReader> channels)
+        {
+            std::vector<VIIRSReader> channels_out;
+
+            // Fill in correlated output
+            for (VIIRSReader &seg : channels)
+                channels_out.push_back(VIIRSReader(seg.channelSettings));
+
+            // Check all segments, push only those commons to all channels
+            std::vector<Segment> segmentsChannels;
+            for (Segment &seg1 : channels[0].segments)
+            {
+                segmentsChannels.clear();
+                segmentsChannels.push_back(seg1);
+
+                bool allChannelsHaveSegment = true;
+                for (int ch = 1; ch < channels.size(); ch++)
+                {
+                    bool hasSegment = false;
+                    for (Segment &seg2 : channels[ch].segments)
+                    {
+                        if (seg1.header.time_start_of_scan == seg2.header.time_start_of_scan)
+                        {
+                            hasSegment = true;
+                            segmentsChannels.push_back(seg2);
+                            break;
+                        }
+                    }
+
+                    if (!hasSegment)
+                    {
+                        allChannelsHaveSegment = false;
+                        break;
+                    }
+                }
+
+                if (allChannelsHaveSegment)
+                {
+                    for (int ch = 0; ch < channels.size(); ch++)
+                    {
+                        channels_out[ch].segments.push_back(segmentsChannels[ch]);
+                    }
+                }
+            }
+
+            return channels_out;
+        }
     } // namespace viirs
 } // namespace jpss

@@ -22,8 +22,8 @@ namespace metop
 {
     namespace iasi
     {
-        MetOpIASIDecoderModule::MetOpIASIDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                              write_all(std::stoi(parameters["write_all"]))
+        MetOpIASIDecoderModule::MetOpIASIDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                          write_all(parameters["write_all"].get<bool>())
         {
         }
 
@@ -189,7 +189,7 @@ namespace metop
                     projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ_inv, projector, 2048 * 4, 1024 * 4, 1);
                     WRITE_IMAGE(projected_image, directory + "/IASI-EQU-INV-PROJ.png");
 
-                /*
+                    /*
                 logger->info("Projected channel IMG LUT...");
                 cimg_library::CImg<unsigned short> lut_16 = thermalTest;
                 lut_16 <<= 8;
@@ -242,7 +242,7 @@ namespace metop
             return {"write_all"};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpIASIDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> MetOpIASIDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpIASIDecoderModule>(input_file, output_file_hint, parameters);
         }

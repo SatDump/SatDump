@@ -25,13 +25,13 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "2110000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.7",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.002",
-                    "clock_omega_relative_limit": "0.001",
-                    "buffer_size": "8192"
+                    "symbolrate": 2110000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.7,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.002,
+                    "clock_omega_relative_limit": 0.001,
+                    "buffer_size": 8192
                 }
             },
             "gvar": {
@@ -68,12 +68,12 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "660000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 660000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "svissr": {
@@ -112,27 +112,27 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "927000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 927000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "1"
+                    "is_bpsk": true,
+                    "diff_decode": true
                 }
             },
             "products": {
                 "goes_lrit_data_decoder": {
-                    "write_images": "1",
-                    "write_emwin": "1",
-                    "write_messages": "1",
-                    "write_dcs": "1",
-                    "write_unknown": "0"
+                    "write_images": true,
+                    "write_emwin": true,
+                    "write_messages": true,
+                    "write_dcs": true,
+                    "write_unknown": false
                 }
             }
         }
@@ -163,24 +163,24 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "927000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 927000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "1"
+                    "is_bpsk": true,
+                    "diff_decode": true
                 }
             },
             "tcp": {
                 "xrit_goesrecv_publisher": {
                     "address": "0.0.0.0",
-                    "port": "5004"
+                    "port": 5004
                 }
             }
         }
@@ -211,25 +211,25 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "128000",
-                    "agc_rate": "0.0001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 128000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "0"
+                    "is_bpsk": true,
+                    "diff_decode": false
                 }
             },
             "products": {
                 "gk2a_lrit_data_decoder": {
-                    "write_images": "1",
-                    "write_additional": "1",
-                    "write_unknown": "1"
+                    "write_images": true,
+                    "write_additional": true,
+                    "write_unknown": true
                 }
             }
         }
@@ -260,24 +260,24 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "128000",
-                    "agc_rate": "0.0001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 128000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "0"
+                    "is_bpsk": true,
+                    "diff_decode": false
                 }
             },
             "tcp": {
                 "xrit_goesrecv_publisher": {
                     "address": "0.0.0.0",
-                    "port": "5004"
+                    "port": 5004
                 }
             }
         }
@@ -304,20 +304,20 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "3000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 3000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "0",
-                    "diff_decode": "0",
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170"
+                    "is_bpsk": false,
+                    "diff_decode": false,
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170
                 }
             }
         }
@@ -348,18 +348,18 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "294000",
-                    "agc_rate": "0.0001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.02",
-                    "buffer_size": "8192"
+                    "symbolrate": 294000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "1",
-                    "diff_decode": "0"
+                    "is_bpsk": true,
+                    "diff_decode": false
                 }
             },
             "products": {
@@ -393,26 +393,26 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": "1150000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.6",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.004",
-                    "clock_gain_omega": "2.5e-7",
-                    "clock_mu": "0.5",
-                    "clock_gain_mu": "0.001",
-                    "clock_omega_relative_limit": "0.005",
-                    "dc_block": "0",
-                    "constellation_scale": "100",
-                    "buffer_size": "8192"
+                    "symbolrate": 1150000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "clock_gain_omega": 2.5e-7,
+                    "clock_mu": 0.5,
+                    "clock_gain_mu": 0.001,
+                    "clock_omega_relative_limit": 0.005,
+                    "dc_block": false,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "xrit_decoder": {
-                    "is_bpsk": "0",
-                    "diff_decode": "0",
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170"
+                    "is_bpsk": false,
+                    "diff_decode": false,
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170
                 }
             },
             "products": {
@@ -438,7 +438,7 @@
             "baseband": {},
             "soft": {
                 "elektro_arktika_tlm_demod": {
-                    "buffer_size": "8192"
+                    "buffer_size": 8192
                 }
             }
         }
@@ -461,7 +461,7 @@
             "baseband": {},
             "soft": {
                 "elektro_arktika_tlm_demod": {
-                    "buffer_size": "8192"
+                    "buffer_size": 8192
                 }
             }
         }

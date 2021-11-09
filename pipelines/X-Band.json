@@ -9,25 +9,26 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "18700000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.0063",
-                    "buffer_size": "8192"
+                    "symbolrate": 18700000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0063,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "new_fengyun_mpt_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1"
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170,
+                    "soft_symbols": true
                 }
             },
             "products": {
                 "fengyun_satid": {},
                 "fengyun_mersi1": {
-                    "correct_bowtie": "1"
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi1.json.inc"
                 }
             }
         }
@@ -42,28 +43,29 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "30000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.0063",
-                    "buffer_size": "8192"
+                    "symbolrate": 30000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0063,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1",
-                    "invert_second_viterbi": "1"
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170,
+                    "soft_symbols": true,
+                    "invert_second_viterbi": true
                 }
             },
             "products": {
                 "fengyun_satid": {
-                    "scid_hint": "52"
+                    "scid_hint": 52
                 },
                 "fengyun_mersi2": {
-                    "correct_bowtie": "1"
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi2.json.inc"
                 },
                 "fengyun_mwts2": {},
                 "fengyun_waai": {},
@@ -82,28 +84,29 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "38400000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.0189",
-                    "buffer_size": "8192"
+                    "symbolrate": 38400000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0189,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1",
-                    "invert_second_viterbi": "1"
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170,
+                    "soft_symbols": true,
+                    "invert_second_viterbi": true
                 }
             },
             "products": {
                 "fengyun_satid": {
-                    "scid_hint": "56"
+                    "scid_hint": 56
                 },
                 "fengyun_mersill": {
-                    "correct_bowtie": "1"
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersill.json.inc"
                 },
                 "fengyun_windrad": {},
                 "fengyun_mwts3": {},
@@ -133,18 +136,18 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": "7500000",
-                    "agc_rate": "0.1",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.006",
-                    "clock_gain_omega": "0.8",
-                    "clock_mu": "0.9",
-                    "clock_gain_mu": "0.037",
-                    "clock_omega_relative_limit": "0.0001",
-                    "dc_block": "1",
-                    "constellation_scale": "100",
-                    "buffer_size": "8192"
+                    "symbolrate": 7500000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.0001,
+                    "dc_block": true,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -152,8 +155,9 @@
             },
             "products": {
                 "eos_modis": {
-                    "terra_mode": "0",
-                    "correct_bowtie": "1"
+                    "terra_mode": false,
+                    "correct_bowtie": true,
+                    "composites": "composites/eos_modis.json.inc"
                 },
                 "aqua_airs": {},
                 "aqua_ceres": {},
@@ -171,8 +175,8 @@
             "baseband": {},
             "soft": {
                 "terra_db_demod": {
-                    "dc_block": "0",
-                    "buffer_size": "8192"
+                    "dc_block": false,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -180,8 +184,9 @@
             },
             "products": {
                 "eos_modis": {
-                    "terra_mode": "1",
-                    "correct_bowtie": "1"
+                    "terra_mode": true,
+                    "correct_bowtie": true,
+                    "composites": "composites/eos_modis.json.inc"
                 }
             }
         }
@@ -196,33 +201,76 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "15000000",
-                    "agc_rate": "0.0001f",
-                    "rrc_alpha": "0.7",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.001",
-                    "buffer_size": "8192"
+                    "symbolrate": 15000000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.7,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "new_npp_hrd_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1"
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170,
+                    "soft_symbols": true
                 }
             },
             "products": {
                 "jpss_satid": {
-                    "npp_mode": "1"
+                    "npp_mode": true
                 },
                 "jpss_viirs": {
-                    "npp_mode": "1"
+                    "npp_mode": true,
+                    "composites": {
+                        "RGB-I221": {
+                            "channels": [
+                                101,
+                                102
+                            ],
+                            "expression": "ch102 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4.4 - 0.2"
+                        },
+                        "RGB-I321": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "ch103 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2"
+                        },
+                        "RGB-(23)21": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "(ch103 * 0.4 + ch102 * 0.6) * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2",
+                            "corrected": true
+                        },
+                        "RGB-M543": {
+                            "channels": [
+                                5,
+                                4,
+                                3
+                            ],
+                            "expression": "ch5, ch4, ch3",
+                            "equalize": true
+                        },
+                        "I4-EQU": {
+                            "channels": [
+                                104
+                            ],
+                            "expression": "ch104",
+                            "equalize": true,
+                            "normalize": true
+                        }
+                    }
                 },
                 "jpss_atms": {
-                    "npp_mode": "1"
+                    "npp_mode": true
                 },
                 "jpss_omps": {
-                    "npp_mode": "1"
+                    "npp_mode": true
                 }
             }
         }
@@ -237,12 +285,12 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "30720000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.03",
-                    "buffer_size": "8192"
+                    "symbolrate": 30720000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.03,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -263,12 +311,12 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "30720000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.03",
-                    "buffer_size": "8192"
+                    "symbolrate": 30720000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.03,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -289,12 +337,12 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "21226000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.8",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.01",
-                    "buffer_size": "8192"
+                    "symbolrate": 21226000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.8,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.01,
+                    "buffer_size": 8192
                 }
             },
             "frames": {
@@ -315,28 +363,31 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "62000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.0189",
-                    "buffer_size": "8192"
+                    "symbolrate": 62000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0189,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": "5",
-                    "viterbi_ber_thresold": "0.170",
-                    "soft_symbols": "1",
-                    "invert_second_viterbi": "1"
+                    "viterbi_outsync_after": 5,
+                    "viterbi_ber_thresold": 0.170,
+                    "soft_symbols": true,
+                    "invert_second_viterbi": true
                 }
             },
             "products": {
                 "fengyun_satid": {},
                 "fengyun_mersi1": {
-                    "correct_bowtie": "1"
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersi1.json.inc"
                 },
-                "fengyun_virr": {},
+                "fengyun_virr": {
+                    "composites": "composites/fengyun_virr.json.inc"
+                },
                 "fengyun_erm": {},
                 "fengyun_mwhs": {}
             }
@@ -355,12 +406,12 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "35000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.03",
-                    "buffer_size": "8192"
+                    "symbolrate": 35000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.03,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -368,14 +419,16 @@
             },
             "products": {
                 "metop_satid": {},
-                "metop_avhrr": {},
+                "metop_avhrr": {
+                    "composites": "composites/metop_avhrr.json.inc"
+                },
                 "metop_mhs": {},
                 "metop_amsu": {},
                 "metop_iasi": {
-                    "write_all": "0"
+                    "write_all": false
                 },
                 "metop_gome": {
-                    "write_all": "0"
+                    "write_all": false
                 },
                 "metop_ascat": {},
                 "metop_sem": {},
@@ -405,18 +458,18 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": "7500000",
-                    "agc_rate": "0.1",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.006",
-                    "clock_gain_omega": "0.8",
-                    "clock_mu": "0.9",
-                    "clock_gain_mu": "0.037",
-                    "clock_omega_relative_limit": "0.0001",
-                    "dc_block": "1",
-                    "constellation_scale": "100",
-                    "buffer_size": "8192"
+                    "symbolrate": 7500000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.0001,
+                    "dc_block": true,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -438,12 +491,12 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "30000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.35",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.0189",
-                    "buffer_size": "8192"
+                    "symbolrate": 30000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0189,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -462,18 +515,18 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": "5000000",
-                    "agc_rate": "0.1",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.006",
-                    "clock_gain_omega": "0.8",
-                    "clock_mu": "0.9",
-                    "clock_gain_mu": "0.037",
-                    "clock_omega_relative_limit": "0.0001",
-                    "dc_block": "1",
-                    "constellation_scale": "100",
-                    "buffer_size": "8192"
+                    "symbolrate": 5000000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.0001,
+                    "dc_block": true,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
                 }
             }
         }
@@ -489,13 +542,13 @@
             "baseband": {},
             "soft": {
                 "8psk_demod": {
-                    "symbolrate": "9000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.001",
-                    "clock_omega_relative_limit": "0.001",
-                    "buffer_size": "8192"
+                    "symbolrate": 9000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001,
+                    "clock_omega_relative_limit": 0.001,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {

@@ -16,7 +16,7 @@ namespace aqua
 {
     namespace ceres
     {
-        AquaCERESDecoderModule::AquaCERESDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        AquaCERESDecoderModule::AquaCERESDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -197,7 +197,7 @@ namespace aqua
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> AquaCERESDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> AquaCERESDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<AquaCERESDecoderModule>(input_file, output_file_hint, parameters);
         }

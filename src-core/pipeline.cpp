@@ -2,7 +2,6 @@
 #include "pipeline.h"
 #include "logger.h"
 #include "module.h"
-#include "nlohmann/json.hpp"
 #include <fstream>
 #include <filesystem>
 
@@ -11,7 +10,7 @@ SATDUMP_DLL std::vector<std::string> pipeline_categories;
 
 void Pipeline::run(std::string input_file,
                    std::string output_directory,
-                   std::map<std::string, std::string> parameters,
+                   nlohmann::json parameters,
                    std::string input_level,
                    bool ui,
                    std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList,
@@ -46,16 +45,16 @@ void Pipeline::run(std::string input_file,
 
         for (PipelineModule modStep : step.modules)
         {
-            std::map<std::string, std::string> final_parameters = modStep.parameters;
-            for (const std::pair<std::string, std::string> param : parameters)
-                if (final_parameters.count(param.first) > 0)
+            nlohmann::json final_parameters = modStep.parameters;
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : parameters.items())
+                if (final_parameters.count(param.key()) > 0)
                     ; // Do Nothing //final_parameters[param.first] = param.second;
                 else
-                    final_parameters.emplace(param.first, param.second);
+                    final_parameters.emplace(param.key(), param.value());
 
             logger->debug("Parameters :");
-            for (const std::pair<std::string, std::string> param : final_parameters)
-                logger->debug("   - " + param.first + " : " + param.second);
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
+                logger->debug("   - " + param.key() + " : " + param.value().dump());
 
             std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](modStep.input_override == "" ? (stepC == 0 ? input_file : lastFiles[0]) : output_directory + "/" + modStep.input_override, output_directory + "/" + name, final_parameters);
 
@@ -95,10 +94,62 @@ void loadPipeline(std::string filepath, std::string category)
 {
     logger->info("Loading pipelines from file " + filepath);
 
-    std::ifstream iFstream(filepath);
-    nlohmann::ordered_json jsonObj;
-    iFstream >> jsonObj;
-    iFstream.close();
+    // Read file into a string
+    std::ifstream fileStream(filepath);
+    std::string pipelineString((std::istreambuf_iterator<char>(fileStream)),
+                               (std::istreambuf_iterator<char>()));
+    fileStream.close();
+
+    // Replace "includes"
+    {
+        std::map<std::string, std::string> toReplace;
+        for (int i = 0; i < int(pipelineString.size() - sizeof(".json.inc")); i++)
+        {
+            std::string currentPos = pipelineString.substr(i, 9);
+
+            if (currentPos == ".json.inc")
+            {
+                int bracketPos = i;
+                for (int y = i; y >= 0; y--)
+                {
+                    if (pipelineString[y] == '"')
+                    {
+                        bracketPos = y;
+                        break;
+                    }
+                }
+
+                std::string finalStr = pipelineString.substr(bracketPos, (i - bracketPos) + 10);
+                std::string filenameToLoad = finalStr.substr(1, finalStr.size() - 2);
+                std::string pathToLoad = std::filesystem::path(filepath).parent_path().relative_path().string() + "/" + filenameToLoad;
+
+                if (std::filesystem::exists(pathToLoad))
+                {
+                    std::ifstream fileStream(pathToLoad);
+                    std::string includeString((std::istreambuf_iterator<char>(fileStream)),
+                                              (std::istreambuf_iterator<char>()));
+                    fileStream.close();
+
+                    toReplace.emplace(finalStr, includeString);
+                }
+                else
+                {
+                    logger->error("Could not include " + pathToLoad + "!");
+                }
+            }
+        }
+
+        for (std::pair<std::string, std::string> replace : toReplace)
+        {
+            while (pipelineString.find(replace.first) != std::string::npos)
+                pipelineString.replace(pipelineString.find(replace.first), replace.first.size(), replace.second);
+        }
+
+        //logger->info(pipelineString);
+    }
+
+    // Parse it
+    nlohmann::ordered_json jsonObj = nlohmann::ordered_json::parse(pipelineString);
 
     for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
     {
@@ -124,7 +175,7 @@ void loadPipeline(std::string filepath, std::string category)
             {
                 PipelineModule newModule;
                 newModule.module_name = pipelineModule.key();
-                newModule.parameters = pipelineModule.value().get<std::map<std::string, std::string>>();
+                newModule.parameters = pipelineModule.value();
 
                 if (newModule.parameters.count("input_override") > 0)
                     newModule.input_override = newModule.parameters["input_override"];
@@ -156,8 +207,14 @@ void loadPipelines(std::string filepath)
         {
             if (pipelinesIterator->path().filename().string().find(".json") != std::string::npos)
             {
-                logger->trace("Found pipeline file " + pipelinesIterator->path().string());
-                pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                if (pipelinesIterator->path().string().find(".json.inc") != std::string::npos)
+                {
+                }
+                else
+                {
+                    logger->trace("Found pipeline file " + pipelinesIterator->path().string());
+                    pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                }
             }
         }
 

@@ -7,7 +7,8 @@ extern "C"
 
 namespace image
 {
-    int percentile(unsigned short *array, int size, float percentile)
+    template <typename T>
+    int percentile(T *array, int size, float percentile)
     {
         float number_percent = (size + 1) * percentile / 100.0f;
         if (number_percent == 1)
@@ -18,17 +19,19 @@ namespace image
             return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
     }
 
-    void white_balance(cimg_library::CImg<unsigned short> &image, float percentileValue, int channelCount)
+    template <typename T>
+    void white_balance(cimg_library::CImg<T> &image, float percentileValue, int channelCount)
     {
         int height = image.height();
         int width = image.width();
+        float maxVal = std::numeric_limits<T>::max();
 
-        unsigned short *sorted_array = new unsigned short[height * width];
+        T *sorted_array = new T[height * width];
 
         for (int band_number = 0; band_number < channelCount; band_number++)
         {
             // Load the whole image band into our array
-            std::memcpy(sorted_array, &image.data()[band_number * width * height], width * height * sizeof(unsigned short));
+            std::memcpy(sorted_array, &image.data()[band_number * width * height], width * height * sizeof(T));
 
             // Sort it
             std::sort(&sorted_array[0], &sorted_array[width * height]);
@@ -39,11 +42,11 @@ namespace image
 
             for (int i = 0; i < width * height; i++)
             {
-                long balanced = (image[band_number * width * height + i] - percentile1) * 65535.0f / (percentile2 - percentile1);
+                long balanced = (image[band_number * width * height + i] - percentile1) * maxVal / (percentile2 - percentile1);
                 if (balanced < 0)
                     balanced = 0;
-                else if (balanced > 65535)
-                    balanced = 65535;
+                else if (balanced > maxVal)
+                    balanced = maxVal;
                 image[band_number * width * height + i] = balanced;
             }
         }
@@ -216,7 +219,7 @@ namespace image
             input.rotate(-90);
         input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned short> out(width, 1, 1, 3);
-        std::memset(out, 0, width*3);
+        std::memset(out, 0, width * 3);
         out.draw_image(x0, 0, input);
         return out;
     }
@@ -227,11 +230,14 @@ namespace image
             input.rotate(-90);
         input.resize(x1 - x0, 1, 1, 3, 3);
         cimg_library::CImg<unsigned char> out(width, 1, 1, 3);
-        std::memset(out, 0, width*3);
+        std::memset(out, 0, width * 3);
         out.draw_image(x0, 0, input);
         return out;
     }
 
     template void linear_invert<unsigned char>(cimg_library::CImg<unsigned char> &);
     template void linear_invert<unsigned short>(cimg_library::CImg<unsigned short> &);
+
+    template void white_balance(cimg_library::CImg<unsigned char> &, float, int);
+    template void white_balance(cimg_library::CImg<unsigned short> &, float, int);
 }

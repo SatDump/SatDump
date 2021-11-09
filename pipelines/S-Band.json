@@ -21,17 +21,17 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "2000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.004",
-                    "buffer_size": "8192"
+                    "symbolrate": 2000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "proba_s_decoder": {
-                    "derandomize": "0"
+                    "derandomize": false
                 }
             },
             "products": {
@@ -62,17 +62,17 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "2000000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.004",
-                    "buffer_size": "8192"
+                    "symbolrate": 2000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "proba_s_decoder": {
-                    "derandomize": "0"
+                    "derandomize": false
                 }
             },
             "products": {
@@ -102,17 +102,17 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "1919000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.004",
-                    "buffer_size": "8192"
+                    "symbolrate": 1919000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
                 "proba_s_decoder": {
-                    "derandomize": "1"
+                    "derandomize": true
                 }
             }
         }
@@ -127,12 +127,12 @@
             "baseband": {},
             "soft": {
                 "bpsk_demod": {
-                    "symbolrate": "590000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.5",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.04",
-                    "buffer_size": "8192"
+                    "symbolrate": 590000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.04,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {
@@ -160,12 +160,12 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": "838000",
-                    "agc_rate": "0.00001",
-                    "rrc_alpha": "0.7",
-                    "rrc_taps": "31",
-                    "costas_bw": "0.005",
-                    "buffer_size": "8192"
+                    "symbolrate": 838000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.7,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "buffer_size": 8192
                 }
             },
             "cadu": {

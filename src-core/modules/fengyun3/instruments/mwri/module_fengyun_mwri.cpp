@@ -15,7 +15,7 @@ namespace fengyun3
 {
     namespace mwri
     {
-        FengyunMWRIDecoderModule::FengyunMWRIDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        FengyunMWRIDecoderModule::FengyunMWRIDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -136,7 +136,7 @@ namespace fengyun3
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> FengyunMWRIDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+        std::shared_ptr<ProcessingModule> FengyunMWRIDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FengyunMWRIDecoderModule>(input_file, output_file_hint, parameters);
         }

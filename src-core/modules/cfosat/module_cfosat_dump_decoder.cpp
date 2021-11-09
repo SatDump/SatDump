@@ -18,7 +18,7 @@ size_t getFilesize(std::string filepath);
 
 namespace cfosat
 {
-    CFOSATDumpDecoderModule::CFOSATDumpDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    CFOSATDumpDecoderModule::CFOSATDumpDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[BUFFER_SIZE];
     }
@@ -188,7 +188,7 @@ namespace cfosat
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> CFOSATDumpDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> CFOSATDumpDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<CFOSATDumpDecoderModule>(input_file, output_file_hint, parameters);
     }

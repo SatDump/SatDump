@@ -14,12 +14,12 @@ size_t getFilesize(std::string filepath);
 
 namespace fengyun3
 {
-    NewFengyunAHRPTDecoderModule::NewFengyunAHRPTDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                                      d_viterbi_outsync_after(std::stoi(parameters["viterbi_outsync_after"])),
-                                                                                                                                                                      d_viterbi_ber_threasold(std::stof(parameters["viterbi_ber_thresold"])),
-                                                                                                                                                                      d_soft_symbols(std::stoi(parameters["soft_symbols"])),
-                                                                                                                                                                      d_invert_second_viterbi(std::stoi(parameters["invert_second_viterbi"])),
-                                                                                                                                                                      viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
+    NewFengyunAHRPTDecoderModule::NewFengyunAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                  d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
+                                                                                                                                                  d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
+                                                                                                                                                  d_soft_symbols(parameters["soft_symbols"].get<bool>()),
+                                                                                                                                                  d_invert_second_viterbi(parameters["invert_second_viterbi"].get<bool>()),
+                                                                                                                                                  viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE / 2)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
@@ -323,7 +323,7 @@ namespace fengyun3
         return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols", "invert_second_viterbi"};
     }
 
-    std::shared_ptr<ProcessingModule> NewFengyunAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> NewFengyunAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NewFengyunAHRPTDecoderModule>(input_file, output_file_hint, parameters);
     }

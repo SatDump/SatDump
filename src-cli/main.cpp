@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     std::string output_level = argv[4];
     std::string output_file = argv[5];
 
-    std::map<std::string, std::string> parameters;
+    nlohmann::json parameters;
 
     if (argc > 6)
     {
@@ -50,23 +50,23 @@ int main(int argc, char *argv[])
             {
                 if (strcmp(argv[i], "-samplerate") == 0) // This is your parameter name
                 {
-                    parameters.emplace("samplerate", argv[i + 1]); // The next value in the array is your value
-                    i++;                                           // Move to the next flag
+                    parameters["samplerate"] = std::stol(argv[i + 1]); // The next value in the array is your value
+                    i++;                                               // Move to the next flag
                 }
                 else if (strcmp(argv[i], "-baseband_format") == 0) // This is your parameter name
                 {
-                    parameters.emplace("baseband_format", argv[i + 1]); // The next value in the array is your value
-                    i++;                                                // Move to the next flag
+                    parameters["baseband_format"] = argv[i + 1]; // The next value in the array is your value
+                    i++;                                         // Move to the next flag
                 }
                 else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
                 {
-                    parameters.emplace("dc_block", argv[i + 1]); // The next value in the array is your value
-                    i++;                                         // Move to the next flag
+                    parameters["dc_block"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
+                    i++;                                                   // Move to the next flag
                 }
                 else if (strcmp(argv[i], "-iq_swap") == 0) // This is your parameter name
                 {
-                    parameters.emplace("iq_swap", argv[i + 1]); // The next value in the array is your value
-                    i++;                                        // Move to the next flag
+                    parameters["iq_swap"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
+                    i++;                                                  // Move to the next flag
                 }
             }
         }

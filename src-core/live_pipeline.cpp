@@ -2,24 +2,24 @@
 #include "logger.h"
 
 LivePipeline::LivePipeline(Pipeline pipeline,
-                           std::map<std::string, std::string> parameters,
+                           nlohmann::json parameters,
                            std::string output_dir)
 {
     logger->info("Starting live pipeline " + pipeline.readable_name);
 
     for (std::pair<int, int> currentModule : pipeline.live_cfg)
     {
-        std::map<std::string, std::string> final_parameters = pipeline.steps[currentModule.first].modules[currentModule.second].parameters;
-        for (const std::pair<std::string, std::string> param : parameters)
-            if (final_parameters.count(param.first) > 0)
-                final_parameters[param.first] = param.second;
+        nlohmann::json final_parameters = pipeline.steps[currentModule.first].modules[currentModule.second].parameters;
+        for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : parameters.items())
+            if (final_parameters.count(param.key()) > 0)
+                final_parameters[param.key()] = param.value();
             else
-                final_parameters.emplace(param.first, param.second);
+                final_parameters.emplace(param.key(), param.value());
 
         logger->info("Module " + pipeline.steps[currentModule.first].modules[currentModule.second].module_name);
         logger->debug("Parameters :");
-        for (const std::pair<std::string, std::string> param : final_parameters)
-            logger->debug("   - " + param.first + " : " + param.second);
+        for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
+            logger->debug("   - " + param.key() + " : " + param.value().dump());
 
         modules.push_back(modules_registry[pipeline.steps[currentModule.first]
                                                .modules[currentModule.second]

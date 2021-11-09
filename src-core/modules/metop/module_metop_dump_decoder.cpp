@@ -15,7 +15,7 @@ size_t getFilesize(std::string filepath);
 
 namespace metop
 {
-    MetOpDumpDecoderModule::MetOpDumpDecoderModule(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    MetOpDumpDecoderModule::MetOpDumpDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
@@ -208,7 +208,7 @@ namespace metop
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> MetOpDumpDecoderModule::getInstance(std::string input_file, std::string output_file_hint, std::map<std::string, std::string> parameters)
+    std::shared_ptr<ProcessingModule> MetOpDumpDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<MetOpDumpDecoderModule>(input_file, output_file_hint, parameters);
     }
