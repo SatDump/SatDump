@@ -11,7 +11,7 @@ First of all, as with any program using volk, running volk_profile once is highl
 
 SatDump comes in 2 variants, doing essentially the same thing :
 - A GUI version, meant to be user-friendly
-![The UI](https://github.com/altillimity/satdump/raw/master/gui_example.png)
+![The UI](https://github.com/altillimity/satdump/raw/master/gui_example2.png)
 - A CLI version for command-line / headless processing
 ![The CLI](https://github.com/altillimity/satdump/raw/master/cli_example.png)
 
@@ -25,6 +25,7 @@ Supported baseband formats are :
 - i8 - Signed 8-bits integer
 - f32 - Raw complex 32-bits float
 - w8 - 8-bits wav, for compatibility with files from SDR#, HDSDR and others   
+- ZIQ - Signed 16 or 8-bits integer or 32-bit float (autodetected) compressed with zst (optional)
 Of course, selecting the wrong format will result in nothing, or very little working...
 
 As for other formats often used throughought the program :
@@ -42,7 +43,7 @@ satdump pipeline input_format path/to/input/file.something products output_folde
 satdump falcon9_tlm baseband falcon9-felix.wav products falcon9_data -samplerate 6000000 -baseband_format i16
 
 # Example for MetOp AHRPT data
-satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baseband_format i16
+satdump metop_ahrpt baseband metopb.wav products metopb_ahrpt -samplerate 6000000 -baeband_format i16
 ```
 
 Live processing is now supported (but WIP) on all platforms. You will have to enable it manually when building from source with -DBUILD_LIVE=ON.   
@@ -52,17 +53,33 @@ Supported devices currently include :
 - RTL-SDR Devices
 - RTL-TCP
 - SpyServer
+- SDRPlay
 
-### Notes on Falcon-9 Camera processing
+### Satdump Baseband Recorder
 
-The resulting .mxf file should be readable by software such as VLC, but as it may contain errors, VLC turned out not to be the best at handling this.
-I personally got my bests results with GStreamer, using the following command :   
+Satdump now also has baseband recorder built in.
+Ofcourse supports all SDRs listed above and can record in all supported baseband formats aswell as compressed ZIQ format.
 
-`gst-launch-1.0 filesrc location="camera.mxf" ! decodebin ! videoconvert ! avimux name=mux ! filesink location=camera.avi`
+- ziq8 - ZST compressed 8-bits integer.
+- ziq16 - ZST compressed 16-bits integer.
+- ziq32 - ZST compressed 32-bits float.
 
-And then converting to mp4 with   
+This functionality is most helpful for high bandwidth or long duration recording aswell as recording to a slow storage device that otherwise would not manage to write so much raw baseband data.
+With a very simple FFT spectrum analyzer and waterfall it has very low requirements on CPU. 
+Its meant mainly for high bandwidth (40MSPS and more) but ofcourse works no problem even on lowest samplerates.
 
-`ffmpeg -i camera.avi camera.mp4`
+CLI version of the recorder `satdump_recorder` needs a .json config file for SDR settings.
+Example SDR settings .json config.
+```
+{
+    "sdr_type": "airspy",
+    "sdr_settings": {
+        "gain": "21",
+        "bias": "0"
+    }
+}
+
+```
 
 # Building / Installing
 
@@ -109,7 +126,8 @@ Here are some generic Debian build instructions.
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk1-dev libjpeg-dev libpng-dev # Core dependencies
 sudo apt install libnng-dev                                                                             # If this packages is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                              # All libraries required for live processing (optional)
-sudo apt install libglew-dev libglfw3-dev                                                               # Only if you want to build the GUI Version (optional)
+sudo apt install libglew-dev libglfw3-dev   # Only if you want to build the GUI Version (optional)
+sudo apt install libzstd-dev                  # Only if you want to build with ZIQ Recording compression (optional)
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
@@ -145,6 +163,7 @@ mkdir build && cd build
 # If you want to build Live-processing (required for the ingestor), add -DBUILD_LIVE=ON to the command
 # If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
 # If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
+# If you want to build with ZIQ compression, you can add -DBUILD_ZIQ=1
 cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
 make -j4
