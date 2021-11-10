@@ -3759,7 +3759,7 @@ namespace std
                             cc2 = is.get();
                             if (is)
                             {
-                                tmp += static_cast<charT>(c2);
+                                tmp += static_cast<charT>(cc2);
                             }
                         }
                         else if (cc2 == '"')
@@ -3768,7 +3768,7 @@ namespace std
                         }
                         else
                         {
-                            tmp += static_cast<charT>(c2);
+                            tmp += static_cast<charT>(cc2);
                         }
                     }
                 }
