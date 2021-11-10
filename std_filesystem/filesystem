@@ -3751,18 +3751,18 @@ namespace std
                 is >> std::noskipws;
                 while (is)
                 {
-                    auto c2 = is.get();
+                    auto cc2 = is.get();
                     if (is)
                     {
-                        if (c2 == '\\')
+                        if (cc2 == '\\')
                         {
-                            c2 = is.get();
+                            cc2 = is.get();
                             if (is)
                             {
                                 tmp += static_cast<charT>(c2);
                             }
                         }
-                        else if (c2 == '"')
+                        else if (cc2 == '"')
                         {
                             break;
                         }
