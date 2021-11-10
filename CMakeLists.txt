@@ -48,6 +48,14 @@ endif()
 
 project (SatDump)
 
+include(CheckCXXSourceCompiles)
+
+# Check system has <filesystem>
+check_cxx_source_compiles("#include <filesystem>\n int main() { return 0; }" STD_HAS_FILESYSTEM)
+if(NOT STD_HAS_FILESYSTEM)
+include_directories(std_filesystem)
+endif()
+
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
