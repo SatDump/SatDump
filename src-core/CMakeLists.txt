@@ -98,6 +98,7 @@ else()
     target_include_directories(satdump_core PUBLIC ${volk_INCLUDE_DIRS})
     target_link_libraries(satdump_core PUBLIC volk)
     set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} volk) # We need to test stuff in volk later
+    set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${volk_INCLUDE_DIRS}) # We need to test stuff in volk later
 
     # LibPNG
     if(WIN32 AND NOT MINGW)
@@ -152,14 +153,14 @@ else()
 
     # Dynamic linking
     target_link_libraries(satdump_core PUBLIC dl)
-endif()
 
-include(CheckCXXSourceCompiles)
+    include(CheckCXXSourceCompiles)
 
-# Check system has volk_32fc_x2_add_32fc
-check_cxx_source_compiles("#include <volk/volk.h>\n int main() { volk_32fc_x2_add_32fc(nullptr,nullptr,nullptr,0); return 0; }" VOLK_HAS_volk_32fc_x2_add_32fc)
-if(NOT VOLK_HAS_volk_32fc_x2_add_32fc)
-target_compile_definitions(satdump_core PUBLIC VOLK_NO_volk_32fc_x2_add_32fc="1")
+    # Check system has volk_32fc_x2_add_32fc
+    check_cxx_source_compiles("#include <volk/volk.h>\n int main() { volk_32fc_x2_add_32fc(nullptr,nullptr,nullptr,0); return 0; }" VOLK_HAS_volk_32fc_x2_add_32fc)
+    if(NOT VOLK_HAS_volk_32fc_x2_add_32fc)
+    target_compile_definitions(satdump_core PUBLIC VOLK_NO_volk_32fc_x2_add_32fc="1")
+    endif()
 endif()
 
 install(TARGETS satdump_core DESTINATION lib)
