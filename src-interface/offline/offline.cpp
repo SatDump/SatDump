@@ -27,7 +27,7 @@ namespace offline
 
     char error_message[100];
 
-    std::map<std::string, std::string> parameters;
+    nlohmann::json parameters;
 
     char samplerate[100];
     int baseband_type_option = 2;

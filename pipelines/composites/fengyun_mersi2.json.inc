@@ -47,7 +47,8 @@
         "offsets": {
             "1": 21
         },
-        "expression": "ch4, ch4, ch1",
+        "expression": "(ch4 - 0.025) * 3.2, (ch4 - 0.025) * 3.2, ((ch1 * 0.6) - 0.025) * 3.2",
+        "banding_correct": true,
         "corrected": true
     },
     "RGB-341": {
@@ -113,6 +114,7 @@
         "expression": "1 - ch5",
         "equalize": true,
         "normalize": true,
-        "corrected": true
+        "corrected": true,
+        "banding_correct": true
     }
 }

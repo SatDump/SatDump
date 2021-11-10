@@ -105,7 +105,8 @@
                     "scid_hint": 56
                 },
                 "fengyun_mersill": {
-                    "correct_bowtie": true
+                    "correct_bowtie": true,
+                    "composites": "composites/fengyun_mersill.json.inc"
                 },
                 "fengyun_windrad": {},
                 "fengyun_mwts3": {},

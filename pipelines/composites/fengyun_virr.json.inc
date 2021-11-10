@@ -38,5 +38,9 @@
         "normalize": true,
         "corrected": true,
         "projected": true
+    },
+    "RGB-(4)221": {
+        "expression": "ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch2 * 7.2 - 0.07, ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch2 * 7.2 - 0.07, ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch1 * 7.2 - 0.07",
+        "corrected": true
     }
 }

@@ -10,6 +10,8 @@
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun3/fengyun3.h"
 #include "common/image/xfr.h"
+#include "common/image/composite.h"
+#include "modules/fengyun3/instruments/mersi_banding.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -56,7 +58,7 @@ namespace fengyun3
 
             logger->info("Demultiplexing and deframing...");
 
-            uint8_t frame_write_buffer[9376];
+            uint8_t frame_write_buffer[12390];
 
             while (!data_in.eof())
             {
@@ -169,46 +171,84 @@ namespace fengyun3
             logger->info("Channel 18...");
             WRITE_IMAGE((bowtie ? image::bowtie::correctGenericBowTie(mersiCorrelator->image18, 1, scanHeight_1000, alpha, beta) : mersiCorrelator->image18), directory + "/MERSILL-18.png");
 
-            logger->info("388 Composite...");
+            if (mersiCorrelator->complete > 0)
             {
-                cimg_library::CImg<unsigned short> image388(1536, mersiCorrelator->image17.height(), 1, 3);
-                image388.draw_image(0, 0, 0, 0, mersiCorrelator->image3);
-                image388.draw_image(6, 0, 0, 1, mersiCorrelator->image8);
-                image388.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
-                image388.normalize(0, std::numeric_limits<unsigned char>::max());
-                image388.equalize(1000);
+                // Generate composites
+                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
+                {
+                    nlohmann::json compositeDef = compokey.value();
 
-                if (bowtie)
-                    image388 = image::bowtie::correctGenericBowTie(image388, 3, scanHeight_1000, alpha, beta);
+                    std::string expression = compositeDef["expression"].get<std::string>();
+                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool do_banding_correct = compositeDef.count("banding_correct") > 0 ? compositeDef["banding_correct"].get<bool>() : false;
+                    //bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
-                WRITE_IMAGE(image388, directory + "/MERSILL-RGB-388.png");
-                cimg_library::CImg<unsigned short> corrected388 = image::earth_curvature::correct_earth_curvature(image388,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSILL_SWATH,
-                                                                                                                  FY3_MERSI_RES1000);
-                WRITE_IMAGE(corrected388, directory + "/MERSILL-RGB-388-CORRECTED.png");
+                    std::string name = "MERSILL-" + compokey.key();
+
+                    // Prepare what we'll need
+                    std::vector<cimg_library::CImg<unsigned short>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
+                                                                                    mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
+                                                                                    mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
+                                                                                    mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
+                                                                                    mersiCorrelator->image17, mersiCorrelator->image18};
+                    std::vector<int> all_channel_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+
+                    // Get required channels
+                    std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+
+                    // Prepare them
+                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<int> channel_numbers;
+                    for (int required_ch : requiredChannels)
+                    {
+                        channels.push_back(all_channels[required_ch - 1]);
+                        channel_numbers.push_back(all_channel_numbers[required_ch - 1]);
+                    }
+
+                    logger->info(name + "...");
+                    cimg_library::CImg<unsigned short>
+                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                            channel_numbers,
+                                                                                            expression,
+                                                                                            compositeDef);
+
+                    if (do_banding_correct)
+                    {
+                        if (compositeImage.width() == 1536)
+                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_1000);
+                        if (compositeImage.width() == 6144)
+                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_250);
+                    }
+
+                    if (bowtie)
+                    {
+                        if (compositeImage.width() == 1536)
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_1000, alpha, beta);
+                        if (compositeImage.width() == 6144)
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_250, alpha, beta);
+                    }
+
+                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
+
+                    if (corrected)
+                    {
+                        logger->info(name + "-CORRECTED...");
+                        if (compositeImage.width() == 1536)
+                            compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                             FY3_ORBIT_HEIGHT,
+                                                                                             FY3_MERSILL_SWATH,
+                                                                                             FY3_MERSI_RES1000);
+                        else if (compositeImage.width() == 6144)
+                            compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
+                                                                                             FY3_ORBIT_HEIGHT,
+                                                                                             FY3_MERSILL_SWATH,
+                                                                                             FY3_MERSI_RES250);
+                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
+                    }
+                }
             }
 
-            logger->info("838 Composite...");
-            {
-                cimg_library::CImg<unsigned short> image8838(1536, mersiCorrelator->image17.height(), 1, 3);
-                image8838.draw_image(6, 0, 0, 0, mersiCorrelator->image8);
-                image8838.draw_image(0, 0, 0, 1, mersiCorrelator->image3);
-                image8838.draw_image(6, 0, 0, 2, mersiCorrelator->image8);
-                image8838.normalize(0, std::numeric_limits<unsigned char>::max());
-                image8838.equalize(1000);
-
-                if (bowtie)
-                    image8838 = image::bowtie::correctGenericBowTie(image8838, 3, scanHeight_1000, alpha, beta);
-
-                WRITE_IMAGE(image8838, directory + "/MERSILL-RGB-838.png");
-                cimg_library::CImg<unsigned short> corrected838 = image::earth_curvature::correct_earth_curvature(image8838,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSILL_SWATH,
-                                                                                                                  FY3_MERSI_RES1000);
-                WRITE_IMAGE(corrected838, directory + "/MERSILL-RGB-838-CORRECTED.png");
-            }
-
+            // Need to add curve correction to compo generator
             logger->info("338 Composite... Thanks Arved! :-)");
             {
                 cimg_library::CImg<unsigned short> image338(1536, mersiCorrelator->image17.height(), 1, 3);

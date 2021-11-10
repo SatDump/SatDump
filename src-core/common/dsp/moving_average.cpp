@@ -1,6 +1,25 @@
 #include "moving_average.h"
 #include <numeric>
 
+// Older systems running livolk1 lack this kernel... So provide our own if that's the case
+#ifdef VOLK_NO_volk_32fc_x2_add_32fc
+void volk_32fc_x2_add_32fc(lv_32fc_t *cVector,
+                           const lv_32fc_t *aVector,
+                           const lv_32fc_t *bVector,
+                           unsigned int num_points)
+{
+    lv_32fc_t *cPtr = cVector;
+    const lv_32fc_t *aPtr = aVector;
+    const lv_32fc_t *bPtr = bVector;
+    unsigned int number = 0;
+
+    for (number = 0; number < num_points; number++)
+    {
+        *cPtr++ = (*aPtr++) + (*bPtr++);
+    }
+}
+#endif
+
 namespace dsp
 {
     CCMovingAverageBlock::CCMovingAverageBlock(std::shared_ptr<dsp::stream<complex_t>> input, int length, complex_t scale, int max_iter, unsigned int vlen)

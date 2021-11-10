@@ -139,7 +139,7 @@ namespace meteor
             WRITE_IMAGE(image5, directory + "/MSU-MR-5.png");
 
             logger->info("Channel 6...");
-            WRITE_IMAGE(image5, directory + "/MSU-MR-6.png");
+            WRITE_IMAGE(image6, directory + "/MSU-MR-6.png");
 
             // Reproject to an equirectangular proj
             if (reader.lines > 0)
