@@ -81,6 +81,12 @@ if(BUILD_PLUGINS)
     add_subdirectory(plugins)
 endif()
 
+# If GDAL is available, build the georef2geotiff tool
+find_library(GDAL_LIBRARY gdal)
+if(GDAL_LIBRARY)
+    add_subdirectory(src-tools/src-georef2geotiff)
+endif()
+
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
 install(FILES ${CMAKE_SOURCE_DIR}/Roboto-Medium.ttf DESTINATION share/satdump)
