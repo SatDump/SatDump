@@ -7,7 +7,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -38,6 +38,9 @@ namespace map
                             std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                          map_image.height(), map_image.width());
 
+                            if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                                continue;
+
                             if (start.first == -1 || end.first == -1)
                                 continue;
 
@@ -49,6 +52,9 @@ namespace map
                                                                            map_image.height(), map_image.width());
                             std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
                                                                          map_image.height(), map_image.width());
+
+                            if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                                continue;
 
                             if (start.first == -1 || end.first == -1)
                                 continue;
@@ -72,6 +78,9 @@ namespace map
                                 std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                              map_image.height(), map_image.width());
 
+                                if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                                    continue;
+
                                 if (start.first == -1 || end.first == -1)
                                     continue;
 
@@ -85,6 +94,9 @@ namespace map
                                 std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
                                                                              map_image.height(),
                                                                              map_image.width());
+                                if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                                    continue;
+
                                 if (start.first == -1 || end.first == -1)
                                     continue;
 
@@ -104,6 +116,9 @@ namespace map
                         std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                      map_image.height(), map_image.width());
 
+                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                            continue;
+
                         if (start.first == -1 || end.first == -1)
                             continue;
 
@@ -115,6 +130,9 @@ namespace map
                                                                        map_image.height(), map_image.width());
                         std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
                                                                      map_image.height(), map_image.width());
+
+                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                            continue;
 
                         if (start.first == -1 || end.first == -1)
                             continue;
@@ -137,8 +155,8 @@ namespace map
         }
     }
 
-    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
     void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
@@ -186,14 +204,14 @@ namespace map
     template void drawProjectedCapitalsGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
             std::ifstream inputFile(currentShapeFile, std::ios::binary);
             shapefile::Shapefile shape_file(inputFile);
 
-            std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
+            std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, maxLength, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
             {
                 for (std::vector<shapefile::point_t> coordinates : parts)
                 {
@@ -203,6 +221,9 @@ namespace map
                                                                        map_image.height(), map_image.width());
                         std::pair<float, float> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
                                                                      map_image.height(), map_image.width());
+
+                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                            return;
 
                         if (start.first == -1 || end.first == -1)
                             return;
@@ -215,6 +236,9 @@ namespace map
                                                                        map_image.height(), map_image.width());
                         std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].y, coordinates[coordinates.size() - 1].x,
                                                                      map_image.height(), map_image.width());
+
+                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
+                            return;
 
                         if (start.first == -1 || end.first == -1)
                             return;
@@ -250,8 +274,8 @@ namespace map
         }
     }
 
-    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
     void drawProjectedLabels(std::vector<CustomLabel> labels, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)

@@ -5,6 +5,7 @@
 #include <memory>
 #include "common/geodetic/geodetic_coordinates.h"
 #include "libs/predict/predict.h"
+#include "tps_transform.h"
 
 /*
 Code to reference a decoded image (or similar data) from a LEO satellite to Lat / Lon coordinates.
@@ -13,11 +14,12 @@ for each of them. That projection references any point visible from the satellit
 known Lat / Lon.
 Doing this for every scan, with some curvature correction to match the image to the projection allows
 referencing any given point.
-A look-up-table is generated in the constructor to speed up later processing.
 
-You may also notice there is no forward function (eg, Lat / Lon to x/y on the image). That's because
-the easiest way to do it would be getting the closest point in a generated LUT, but doing this
-efficiently gets complicated quickly...
+The forward function is implemented using a Thin Plate Transform (from GDAL), which is calculated using
+a few reference points.
+By default this TPS projection is NOT setup, and only will upon calling setup_forward(). This is because 
+resolving the TPS equations is rather slow, and in most cases is not required... Hence this is left to the user
+to call whenever a forward transform is required.
 
 PS : I am not sure in any way that this is a good implementation, there may be very obvious mistakes in there...
 
@@ -143,13 +145,20 @@ namespace geodetic
             void generateOrbit_SCANLINE();
             void generateOrbit_IFOV();
 
+            // Forward transform
+            TPSTransform tps;
+            bool forward_ready = false;
+            int img_height;
+            int img_width;
+
         public:
             std::vector<predict_position> poss;
             LEOScanProjector(std::shared_ptr<LEOScanProjectorSettings> settings);
             std::shared_ptr<LEOScanProjectorSettings> getSettings();
 
-            int inverse(int img_x, int img_y, geodetic_coords_t &coords); // Transform image coordinates to lat / lon. Return 1 if there was an error
-            //void inverse(int img_x, int img_y, double &lat, double &lon);                       // Transform image coordinates to lat / lon. Calls up a LUT to be faster
+            int inverse(int img_x, int img_y, geodetic_coords_t &coords);                                                        // Transform image coordinates to lat / lon. Return 1 if there was an error
+            int forward(geodetic_coords_t coords, int &img_x, int &img_y);                                                       // Transform lat / lon coordinates to image coordinates
+            int setup_forward(float timestamp_max = 99.0f, float timestamp_mix = 1.0f, int gcp_lines = 10, int gcp_px_cnt = 10); // Setup forward projection. This can be slow for larger images!
         };
     };
 };
