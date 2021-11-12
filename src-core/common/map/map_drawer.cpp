@@ -223,10 +223,10 @@ namespace map
                                                                      map_image.height(), map_image.width());
 
                         if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
-                            return;
+                            continue;
 
                         if (start.first == -1 || end.first == -1)
-                            return;
+                            continue;
 
                         map_image.draw_line(start.first, start.second, end.first, end.second, color);
                     }
@@ -238,10 +238,10 @@ namespace map
                                                                      map_image.height(), map_image.width());
 
                         if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
-                            return;
+                            continue;
 
                         if (start.first == -1 || end.first == -1)
-                            return;
+                            continue;
 
                         map_image.draw_line(start.first, start.second, end.first, end.second, color);
                     }
