@@ -10,11 +10,11 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
     template <typename T>
     void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
 
     struct CustomLabel
     {

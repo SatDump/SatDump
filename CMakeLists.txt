@@ -48,6 +48,14 @@ endif()
 
 project (SatDump)
 
+include(CheckCXXSourceCompiles)
+
+# Check system has <filesystem>
+check_cxx_source_compiles("#include <filesystem>\n int main() { return 0; }" STD_HAS_FILESYSTEM)
+if(NOT STD_HAS_FILESYSTEM)
+include_directories(std_filesystem)
+endif()
+
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
@@ -71,6 +79,12 @@ endif()
 
 if(BUILD_PLUGINS)
     add_subdirectory(plugins)
+endif()
+
+# If GDAL is available, build the georef2geotiff tool
+find_library(GDAL_LIBRARY gdal)
+if(GDAL_LIBRARY)
+    add_subdirectory(src-tools/src-georef2geotiff)
 endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)

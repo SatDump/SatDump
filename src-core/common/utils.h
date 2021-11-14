@@ -65,4 +65,16 @@ T swap_endian(T u)
     return dest.u;
 }
 
+template <typename T>
+int percentile(T *array, int size, float percentile)
+{
+    float number_percent = (size + 1) * percentile / 100.0f;
+    if (number_percent == 1)
+        return array[0];
+    else if (number_percent == size)
+        return array[size - 1];
+    else
+        return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
+}
+
 std::vector<std::string> splitString(std::string input, char del);
