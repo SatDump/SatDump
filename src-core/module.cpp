@@ -155,11 +155,12 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/goes/gvar/module_gvar_decoder.h"
 #include "modules/goes/gvar/module_gvar_image_decoder.h"
+#include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
+#include "modules/goes/grb/module_goes_grb_cadu_extractor.h"
+#include "modules/goes/grb/module_goes_grb_data_decoder.h"
 
 #include "modules/xrit/module_xrit_decoder.h"
 #include "modules/xrit/module_goesrecv_publisher.h"
-
-#include "modules/goes/hrit/module_goes_lrit_data_decoder.h"
 
 #include "modules/fengyun2/svissr/module_svissr_decoder.h"
 #include "modules/fengyun2/svissr/module_svissr_image_decoder.h"
@@ -297,12 +298,12 @@ void registerModules()
     REGISTER_MODULE(xrit::XRITDecoderModule);
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
-    // GOES - GVAR
+    // GOES - GVAR / HRIT / GRB
     REGISTER_MODULE(goes::gvar::GVARDecoderModule);
     REGISTER_MODULE(goes::gvar::GVARImageDecoderModule);
-
-    // GOES - HRIT
     REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
+    REGISTER_MODULE(goes::grb::GOESGRBCADUextractor);
+    REGISTER_MODULE(goes::grb::GOESGRBDataDecoderModule);
 
     // FengYun2 - S-VISSR / LRIT
     REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
