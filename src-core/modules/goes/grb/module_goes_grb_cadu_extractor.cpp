@@ -72,7 +72,7 @@ namespace goes
                 for (int i = 0; i < BBFRAME_SIZE; i++)
                 {
                     int correlation = 0;
-                    for (int y = 0; y < sizeof(BBFRAME_HEADER); y++)
+                    for (int y = 0; y < (int)sizeof(BBFRAME_HEADER); y++)
                         correlation += (bb_buffer[i + y] == BBFRAME_HEADER[y]);
 
                     if (correlation > best_cor)
@@ -114,7 +114,7 @@ namespace goes
                     for (int i = 0; i < CADU_SIZE; i++)
                     {
                         int correlation = 0;
-                        for (int y = 0; y < sizeof(CADU_HEADER); y++)
+                        for (int y = 0; y < (int)sizeof(CADU_HEADER); y++)
                             correlation += (cadu_buffer[i + y] == CADU_HEADER[y]);
 
                         if (correlation > best_cor)

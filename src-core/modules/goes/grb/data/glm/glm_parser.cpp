@@ -14,7 +14,7 @@ namespace goes
                 uint64_t number_of_flashes = *((uint64_t *)&data[0]);
                 glm_data["number_of_flashes"] = number_of_flashes;
 
-                for (int i = 8; (i - 8) < number_of_flashes * 24 && i < size; i += 24)
+                for (int i = 8; (i - 8) < (int)number_of_flashes * 24 && i < size; i += 24)
                 {
                     uint16_t flash_id = *((uint16_t *)&data[i + 0]);
                     uint16_t flash_time_offset_of_first_event = *((uint16_t *)&data[i + 2]);
@@ -44,7 +44,7 @@ namespace goes
                 uint64_t number_of_groups = *((uint64_t *)&data[0]);
                 glm_data["number_of_groups"] = number_of_groups;
 
-                for (int i = 8; (i - 8) < number_of_groups * 24 && i < size; i += 24)
+                for (int i = 8; (i - 8) < (int)number_of_groups * 24 && i < size; i += 24)
                 {
                     uint32_t group_id = *((uint32_t *)&data[i + 0]);
                     uint16_t group_time_offset = *((uint16_t *)&data[i + 4]);
@@ -72,7 +72,7 @@ namespace goes
                 uint64_t number_of_events = *((uint64_t *)&data[0]);
                 glm_data["number_of_events"] = number_of_events;
 
-                for (int i = 8; (i - 8) < number_of_events * 16 && i < size; i += 16)
+                for (int i = 8; (i - 8) < (int)number_of_events * 16 && i < size; i += 16)
                 {
                     uint32_t event_id = *((uint32_t *)&data[i + 0]);
                     uint16_t event_time_offset = *((uint16_t *)&data[i + 4]);

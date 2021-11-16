@@ -14,7 +14,7 @@ namespace goes
         void GRBFilePayloadAssembler::work(ccsds::CCSDSPacket &pkt)
         {
             // If lengths do not match, discard
-            if (pkt.header.packet_length + 1 != pkt.payload.size())
+            if (pkt.header.packet_length + 1 != (int)pkt.payload.size())
                 return;
 
             if (pkt.header.sequence_flag == 1 || pkt.header.sequence_flag == 3)

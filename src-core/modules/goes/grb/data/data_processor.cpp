@@ -13,12 +13,12 @@ namespace goes
         GRBDataProcessor::GRBDataProcessor(std::string directory)
             : directory(directory)
         {
-            // Setup ABI Image assembles
-            for (const std::pair<int, products::ABI::GRBProductABI> &abi_prod : products::ABI::ABI_IMAGE_PRODUCTS)
+            // Setup ABI Image assemblers
+            for (std::pair<const int, products::ABI::GRBProductABI> &abi_prod : products::ABI::ABI_IMAGE_PRODUCTS)
                 abi_image_assemblers.emplace(abi_prod.first, std::make_shared<GRBABIImageAssembler>(directory + "/ABI", abi_prod.second));
 
-            // Setup SUVI Image assembles
-            for (const std::pair<int, products::SUVI::GRBProductSUVI> &suvi_prod : products::SUVI::SUVI_IMAGE_PRODUCTS)
+            // Setup SUVI Image assemblers
+            for (std::pair<const int, products::SUVI::GRBProductSUVI> &suvi_prod : products::SUVI::SUVI_IMAGE_PRODUCTS)
                 suvi_image_assemblers.emplace(suvi_prod.first, std::make_shared<GRBSUVIImageAssembler>(directory + "/SUVI", suvi_prod.second));
         }
 

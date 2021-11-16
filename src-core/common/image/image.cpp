@@ -182,7 +182,7 @@ namespace image
 
         // Parse into CImg
         img = cimg_library::CImg<unsigned short>(image->x1, image->y1, 1, 1, 0);
-        for (int i = 0; i < image->x1 * image->y1; i++)
+        for (int i = 0; i < int(image->x1 * image->y1); i++)
             img[i] = image->comps[0].data[i];
 
         // Free everything up

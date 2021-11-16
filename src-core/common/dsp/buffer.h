@@ -158,7 +158,7 @@ namespace dsp
             readc = 0;
             readable = 0;
             writable = size;
-            memset(_buffer, 0, size * sizeof(T));
+            memset((void*)_buffer, 0, size * sizeof(T));
         }
 
         int read(T *data, int len)
