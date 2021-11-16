@@ -13,10 +13,10 @@ namespace dsp
     class stream
     {
     public:
-        stream()
+        stream(int stream_size = STREAM_BUFFER_SIZE)
         {
-            writeBuf = (T *)volk_malloc(STREAM_BUFFER_SIZE * sizeof(T), volk_get_alignment());
-            readBuf = (T *)volk_malloc(STREAM_BUFFER_SIZE * sizeof(T), volk_get_alignment());
+            writeBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
+            readBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
         }
 
         ~stream()
