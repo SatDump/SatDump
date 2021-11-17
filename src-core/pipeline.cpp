@@ -56,6 +56,13 @@ void Pipeline::run(std::string input_file,
             for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
                 logger->debug("   - " + param.key() + " : " + param.value().dump());
 
+            // Check module exists!
+            if (modules_registry.count(modStep.module_name) <= 0)
+            {
+                logger->critical("Module " + modStep.module_name + " is not registered. Cancelling pipeline.");
+                return;
+            }
+
             std::shared_ptr<ProcessingModule> module = modules_registry[modStep.module_name](modStep.input_override == "" ? (stepC == 0 ? input_file : lastFiles[0]) : output_directory + "/" + modStep.input_override, output_directory + "/" + name, final_parameters);
 
             module->setInputType(DATA_FILE);
