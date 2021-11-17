@@ -195,6 +195,8 @@ namespace geodetic
 
         int LEOScanProjector::setup_forward(float timestamp_max, float timestamp_mix, int gcp_lines, int gcp_px_cnt)
         {
+            solvingMutex.lock();
+
             if (forward_ready)
                 return 0;
 
@@ -259,6 +261,7 @@ namespace geodetic
             }
             else
             {
+                solvingMutex.unlock();
                 return 1;
             }
 
@@ -268,10 +271,13 @@ namespace geodetic
             if (tps.init(gcps))
             {
                 logger->error("Error setting up forward transform!");
+                solvingMutex.unlock();
                 return 1;
             }
 
             forward_ready = true;
+
+            solvingMutex.unlock();
 
             return 0;
         }

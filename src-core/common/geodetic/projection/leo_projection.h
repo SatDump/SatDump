@@ -6,6 +6,7 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "libs/predict/predict.h"
 #include "tps_transform.h"
+#include <mutex>
 
 /*
 Code to reference a decoded image (or similar data) from a LEO satellite to Lat / Lon coordinates.
@@ -150,6 +151,8 @@ namespace geodetic
             bool forward_ready = false;
             int img_height;
             int img_width;
+
+            std::mutex solvingMutex; // To make it thread-safe
 
         public:
             std::vector<predict_position> poss;

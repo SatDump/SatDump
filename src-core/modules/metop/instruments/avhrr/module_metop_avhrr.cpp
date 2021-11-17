@@ -19,6 +19,7 @@
 #include "common/image/composite.h"
 #include "common/map/map_drawer.h"
 #include "resources.h"
+#include "libs/ctpl/ctpl_stl.h"
 
 #define BUFFER_SIZE 8192
 

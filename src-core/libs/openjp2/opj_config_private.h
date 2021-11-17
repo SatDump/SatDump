@@ -1,5 +1,5 @@
 /* create opj_config_private.h for CMake */
-#define OPJ_HAVE_INTTYPES_H 	1
+#define OPJ_HAVE_INTTYPES_H 1
 
 #define OPJ_PACKAGE_VERSION "2.5.0"
 
@@ -18,7 +18,9 @@
 #define OPJ_HAVE_FSEEKO ON
 
 /* find whether or not have <malloc.h> */
+#ifndef __APPLE__
 #define OPJ_HAVE_MALLOC_H
+#endif
 /* check if function `aligned_alloc` exists */
 /* #undef OPJ_HAVE_ALIGNED_ALLOC */
 /* check if function `_aligned_malloc` exists */
@@ -45,5 +47,5 @@ On other platforms we use the result of the TRY_RUN. */
 #if !defined(__APPLE__)
 /* #undef OPJ_BIG_ENDIAN */
 #elif defined(__BIG_ENDIAN__)
-# define OPJ_BIG_ENDIAN
+#define OPJ_BIG_ENDIAN
 #endif
