@@ -1142,7 +1142,7 @@ static OPJ_SIZE_T opj_write_to_buffer (void* p_buffer, OPJ_SIZE_T p_nb_bytes,
     if (0 == len)
         len = 1;
 
-    OPJ_SIZE_T dist = (unsigned char *)pcur - pbuf, n = len - dist;
+    OPJ_SIZE_T dist = (unsigned char *)pcur - (unsigned char *)pbuf, n = len - dist;
     assert (dist <= len);
 
     while (n < p_nb_bytes) {
