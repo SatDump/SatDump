@@ -1142,7 +1142,7 @@ static OPJ_SIZE_T opj_write_to_buffer (void* p_buffer, OPJ_SIZE_T p_nb_bytes,
     if (0 == len)
         len = 1;
 
-    OPJ_SIZE_T dist = pcur - pbuf, n = len - dist;
+    OPJ_SIZE_T dist = (unsigned char *)pcur - pbuf, n = len - dist;
     assert (dist <= len);
 
     while (n < p_nb_bytes) {
@@ -1162,7 +1162,7 @@ static OPJ_SIZE_T opj_write_to_buffer (void* p_buffer, OPJ_SIZE_T p_nb_bytes,
         }
 
         p_source_buffer->buf = pbuf;
-        p_source_buffer->cur = pbuf + dist;
+        p_source_buffer->cur = (unsigned char *)pbuf + dist;
         p_source_buffer->len = len;
     }
 
@@ -1230,3 +1230,31 @@ opj_stream_t* OPJ_CALLCONV opj_stream_create_buffer_stream (opj_buffer_info_t* p
 }
 
 /* ---------------------------------------------------------------------- */
+
+// Windows lacks posix_memalign 
+#ifdef _WIN32
+static int check_align(size_t align)
+{
+    for (size_t i = sizeof(void *); i != 0; i *= 2)
+    if (align == i)
+        return 0;
+    return EINVAL;
+}
+
+int posix_memalign(void **ptr, size_t align, size_t size)
+{
+    if (check_align(align))
+        return EINVAL;
+
+    int saved_errno = errno;
+    void *p = _aligned_malloc(size, align);
+    if (p == NULL)
+    {
+        errno = saved_errno;
+        return ENOMEM;
+    }
+
+    *ptr = p;
+    return 0;
+}
+#endif
