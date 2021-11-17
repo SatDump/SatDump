@@ -141,7 +141,7 @@ cd ../..
 rm -rf nng
 
 # macOS: Install dependencies
-brew install cmake volk jpeg libpng glew glfw nng
+brew install cmake volk jpeg libpng glew glfw nng pkg-config
 
 # macOS ONLY: build and install libfftw3
 # if you install fftw via brew, cmake won't be able to find it

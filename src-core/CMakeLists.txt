@@ -15,6 +15,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      libs/dlfcn/dlfcn.c
                                      common/map/maidenhead.c
                                      libs/correct/*.c
+                                     libs/openjp2/*.c
 )
 
 find_package(PkgConfig)
@@ -156,10 +157,12 @@ else()
 
     include(CheckCXXSourceCompiles)
 
+    if(NOT APPLE) 
     # Check system has volk_32fc_x2_add_32fc
     check_cxx_source_compiles("#include <volk/volk.h>\n int main() { volk_32fc_x2_add_32fc(nullptr,nullptr,nullptr,0); return 0; }" VOLK_HAS_volk_32fc_x2_add_32fc)
     if(NOT VOLK_HAS_volk_32fc_x2_add_32fc)
     target_compile_definitions(satdump_core PUBLIC VOLK_NO_volk_32fc_x2_add_32fc="1")
+    endif()
     endif()
 endif()
 

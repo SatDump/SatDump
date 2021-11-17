@@ -14,6 +14,9 @@ namespace image
     // Decompress JPEG Data from memory
     cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors = false);
 
+    // Decompress J2K Data from memory with OpenJP2
+    cimg_library::CImg<unsigned short> decompress_j2k_openjp2(uint8_t *data, int length);
+
     // Simple despeckle
     void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold);
 

@@ -17,6 +17,8 @@
 #include "common/geodetic/projection/proj_file.h"
 #include "common/image/image.h"
 #include "common/image/composite.h"
+#include "common/map/map_drawer.h"
+#include "resources.h"
 
 #define BUFFER_SIZE 8192
 
@@ -237,6 +239,7 @@ namespace metop
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool mapped = compositeDef.count("mapped") > 0 ? compositeDef["mapped"].get<bool>() : false;
                     bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
                     std::string name = "AVHRR-" + compokey.key();
@@ -255,6 +258,44 @@ namespace metop
                         logger->info(name + "-PROJ...");
                         cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (mapped)
+                    {
+                        projector.setup_forward();
+                        logger->info(name + "-MAP...");
+                        cimg_library::CImg<unsigned char> mapped_image = compositeImage >> 8;
+                        if (compositeImage.spectrum() == 1) // If WB, make RGB
+                        {
+                            cimg_library::CImg<unsigned char> rgb_image(mapped_image.width(), mapped_image.height(), 1, 3, 0);
+                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 0], &mapped_image[0], rgb_image.width() * rgb_image.height());
+                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 1], &mapped_image[0], rgb_image.width() * rgb_image.height());
+                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 2], &mapped_image[0], rgb_image.width() * rgb_image.height());
+                            mapped_image = rgb_image;
+                        }
+
+                        std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
+                        projectionFunc = [&projector](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+                        {
+                            int x;
+                            int y;
+                            projector.forward({lat, lon, 0}, x, y);
+
+                            if (x < 0 || x > map_width)
+                                return {-1, -1};
+                            if (y < 0 || y > map_height)
+                                return {-1, -1};
+
+                            return {x, y};
+                        };
+
+                        unsigned char color[3] = {0, 255, 0};
+                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, mapped_image, color, projectionFunc, 60);
+
+                        unsigned char color2[3] = {255, 0, 0};
+                        map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, mapped_image, color2, projectionFunc, 0.4);
+
+                        WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 
                     if (corrected)

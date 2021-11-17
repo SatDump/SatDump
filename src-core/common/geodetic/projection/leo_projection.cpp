@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "common/geodetic/euler_raytrace.h"
 #include "common/geodetic/vincentys_calculations.h"
+#include "common/utils.h"
 
 namespace geodetic
 {
@@ -16,6 +17,8 @@ namespace geodetic
         void LEOScanProjector::generateOrbit_SCANLINE()
         {
             LEOScanProjectorSettings_SCANLINE *settings = (LEOScanProjectorSettings_SCANLINE *)this->settings.get();
+            img_height = settings->utc_timestamps.size();
+            img_width = settings->image_width;
 
             // Setup SGP4 model
             predict_orbital_elements_t *satellite_object = predict_parse_tle(settings->sat_tle.line1.c_str(),
@@ -23,7 +26,7 @@ namespace geodetic
             predict_position satellite_orbit;
             predict_position satellite_pos2;
 
-            for (int currentScan = 0; currentScan < (int)settings->utc_timestamps.size(); currentScan++)
+            for (int currentScan = 0; currentScan < img_height; currentScan++)
             {
                 double currentTimestamp = settings->utc_timestamps[currentScan] + settings->time_offset;
 
@@ -49,6 +52,8 @@ namespace geodetic
         void LEOScanProjector::generateOrbit_IFOV()
         {
             LEOScanProjectorSettings_IFOV *settings = (LEOScanProjectorSettings_IFOV *)this->settings.get();
+            img_height = settings->utc_timestamps.size() * settings->ifov_y_size;
+            img_width = settings->image_width;
 
             // Setup SGP4 model
             predict_orbital_elements_t *satellite_object = predict_parse_tle(settings->sat_tle.line1.c_str(),
@@ -105,6 +110,9 @@ namespace geodetic
                 // Check we're in bounds
                 if (img_y > (int)satellite_positions.size() || img_x >= settings->image_width)
                     return 1;
+
+                if (settings->utc_timestamps[img_y] == -1)
+                    return 1; // If we hit this => no timestamp
 
                 double final_x = settings->invert_scan ? (settings->image_width - 1) - img_x : img_x;
 
@@ -163,6 +171,109 @@ namespace geodetic
             {
                 return 1;
             }
+        }
+
+        int LEOScanProjector::forward(geodetic_coords_t coords, int &img_x, int &img_y)
+        {
+            if (!forward_ready)
+                return 1;
+
+            double x;
+            double y;
+            tps.forward(coords.lon, coords.lat, x, y);
+
+            if (x < 0 || x > img_width)
+                return 1;
+            if (y < 0 || y > img_height)
+                return 1;
+
+            img_x = x;
+            img_y = y;
+
+            return 0;
+        }
+
+        int LEOScanProjector::setup_forward(float timestamp_max, float timestamp_mix, int gcp_lines, int gcp_px_cnt)
+        {
+            if (forward_ready)
+                return 0;
+
+            logger->info("Setting up forward projection...");
+
+            std::vector<geodetic::projection::GCP> gcps;
+
+            if (settings->type == TIMESTAMP_PER_SCANLINE)
+            {
+                // We'll create another projector so... Copy settings over
+                geodetic::projection::LEOScanProjectorSettings_SCANLINE lsettings = *(LEOScanProjectorSettings_SCANLINE *)this->settings.get();
+
+                // Filter timestamps, allows to cleanup the projection a lot.
+                {
+                    std::vector<double> sorted_timestamps = lsettings.utc_timestamps;
+                    std::sort(sorted_timestamps.begin(), sorted_timestamps.end());
+
+                    double max = percentile<double>(&sorted_timestamps[0], sorted_timestamps.size(), timestamp_max);
+                    double min = percentile<double>(&sorted_timestamps[0], sorted_timestamps.size(), timestamp_mix);
+
+                    for (double &ctTimestamp : lsettings.utc_timestamps)
+                    {
+                        if (ctTimestamp > max || ctTimestamp < min)
+                        {
+                            ctTimestamp = -1; // Disable those that are out of the filtered range
+                        }
+                    }
+                }
+
+                // Generate Ground Control Points
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE>
+                    psettings(new geodetic::projection::LEOScanProjectorSettings_SCANLINE(lsettings),
+                              [](geodetic::projection::LEOScanProjectorSettings_SCANLINE *) {}); // Do not delete
+                geodetic::projection::LEOScanProjector projector(psettings);
+
+                geodetic::geodetic_coords_t latlon;
+                for (double y = 1; y < img_height - 1;)
+                {
+                    geodetic::geodetic_coords_t latlonOld, latlonCurrent, latLonNext;
+                    projector.inverse(lsettings.image_width / 2, y - 1, latlonOld);
+                    projector.inverse(lsettings.image_width / 2, y, latlonCurrent);
+                    projector.inverse(lsettings.image_width / 2, y + 1, latLonNext);
+
+                    // Ensure the current line is between the preceding and next one.
+                    // This filters a LOT of bad data out
+                    if ((latlonOld.lat < latlonCurrent.lat && latlonCurrent.lat < latLonNext.lat) ||
+                        (latlonOld.lat > latlonCurrent.lat && latlonCurrent.lat > latLonNext.lat))
+                    {
+                        for (double x = 0; x < lsettings.image_width + 1; x += int(lsettings.image_width / double(gcp_px_cnt)))
+                        {
+                            if (!projector.inverse(x, y, latlon))
+                                gcps.push_back(geodetic::projection::GCP{x, y, latlon.lon, latlon.lat});
+                        }
+
+                        y += gcp_lines;
+                    }
+                    else
+                    {
+                        y++;
+                    }
+                }
+            }
+            else
+            {
+                return 1;
+            }
+
+            logger->info(std::to_string(gcps.size()) + " GCPs");
+
+            // Init TPS transform
+            if (tps.init(gcps))
+            {
+                logger->error("Error setting up forward transform!");
+                return 1;
+            }
+
+            forward_ready = true;
+
+            return 0;
         }
     };
 };
