@@ -71,7 +71,7 @@ namespace dsp
     for values close to zero. This routine calculates the arc tangent
     with an average error of +/- 3.56e-5 degrees (6.21e-7 radians).
     *****************************************************************************/
-
+    /* From GNU Radio */
     float fast_atan2f(float y, float x)
     {
         float x_abs, y_abs, z;
@@ -152,5 +152,31 @@ namespace dsp
 #else
         return (angle);
 #endif
+    }
+
+    // Both of those are from https://stackoverflow.com/questions/11261170/c-and-maths-fast-approximation-of-a-trigonometric-function
+    // This gave a bit better results than the Babylonian method.
+    float fast_cos(float x)
+    {
+        float x8, x4, x2;
+        x2 = x * x;
+        x4 = x2 * x2;
+        x8 = x4 * x4;
+
+        return (-2.7236370439787708e-7 * x2 + 2.4799852696610628e-5) * x8 +
+               (-1.3888885054799695e-3 * x2 + 4.1666666636943683e-2) * x4 +
+               (-4.9999999999963024e-1 * x2 + 1.0000000000000000e+0);
+    }
+
+    float fast_sin(float x)
+    {
+        float x4, x2;
+        x2 = x * x;
+        x4 = x2 * x2;
+
+        return ((2.7181216275479732e-6 * x2 - 1.9839312269456257e-4) * x4 +
+                (8.3333293048425631e-3 * x2 - 1.6666666640797048e-1)) *
+                   x2 * x +
+               x;
     }
 } // namespace libdsp

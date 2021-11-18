@@ -35,6 +35,18 @@ namespace widgets
             sample_buffer_complex_float[i] = complex_t(buffer[i], rng.gasdev());
     }
 
+    void ConstellationViewer::pushSofttAndGaussian(int8_t *buffer, float scale, int size)
+    {
+        int to_copy = std::min<int>(CONST_SIZE, size);
+        int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
+
+        if (to_move > 0)
+            std::memmove(&sample_buffer_complex_float[size], sample_buffer_complex_float, to_move * sizeof(complex_t));
+
+        for (int i = 0; i < to_copy; i++)
+            sample_buffer_complex_float[i] = complex_t(buffer[i] / scale, rng.gasdev());
+    }
+
     void ConstellationViewer::draw()
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();

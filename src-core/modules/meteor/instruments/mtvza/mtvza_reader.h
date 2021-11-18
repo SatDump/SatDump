@@ -12,7 +12,7 @@ namespace meteor
         class MTVZAReader
         {
         private:
-            unsigned short *channels[150];
+            unsigned short *channels[60];
 
         public:
             MTVZAReader();

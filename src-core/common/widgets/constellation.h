@@ -21,6 +21,7 @@ namespace widgets
         ~ConstellationViewer();
         void pushComplex(complex_t *buffer, int size);
         void pushFloatAndGaussian(float *buffer, int size);
+        void pushSofttAndGaussian(int8_t *buffer, float scale, int size);
         void draw();
     };
 }

@@ -1,5 +1,5 @@
 #include "pll_carrier_tracking.h"
-#include "fast_atan2f.h"
+#include "fast_trig.h"
 
 namespace dsp
 {
@@ -7,6 +7,7 @@ namespace dsp
         : Block(input),
           d_max_freq(max),
           d_min_freq(min),
+          d_damping(0),
           d_loop_bw(loop_bw),
           d_locksig(0),
           d_lock_threshold(0),

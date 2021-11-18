@@ -4,15 +4,15 @@
 #include <complex>
 #include <thread>
 #include <fstream>
-#include "deframer.h"
+#include "noaa_deframer.h"
 #include "common/widgets/constellation.h"
 
-namespace meteor
+namespace noaa
 {
-    class METEORHRPTDecoderModule : public ProcessingModule
+    class NOAAHRPTDecoderModule : public ProcessingModule
     {
     protected:
-        std::shared_ptr<CADUDeframer> def;
+        std::shared_ptr<NOAADeframer> def;
 
         int8_t *soft_buffer;
 
@@ -22,12 +22,14 @@ namespace meteor
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
+        int frame_count = 0;
+
         // UI Stuff
         widgets::ConstellationViewer constellation;
 
     public:
-        METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~METEORHRPTDecoderModule();
+        NOAAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~NOAAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();
@@ -39,4 +41,4 @@ namespace meteor
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace meteor
+} // namespace noaa

@@ -63,6 +63,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/module_bpsk_demod.h"
 #include "modules/module_fsk_demod.h"
 #include "modules/module_8psk_demod.h"
+#include "modules/module_pm_demod.h"
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/module_metop_dump_decoder.h"
@@ -105,7 +106,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 
-#include "modules/noaa/module_noaa_hrpt_demod.h"
+#include "modules/noaa/module_noaa_hrpt_decoder.h"
 #include "modules/noaa/module_noaa_dsb_demod.h"
 #include "modules/noaa/instruments/avhrr/module_noaa_avhrr.h"
 #include "modules/noaa/module_noaa_extractor.h"
@@ -113,7 +114,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/noaa/instruments/mhs/module_noaa_mhs.h"
 #include "modules/noaa/instruments/amsu/module_noaa_amsu.h"
 
-#include "modules/meteor/module_meteor_hrpt_demod.h"
 #include "modules/meteor/module_meteor_hrpt_decoder.h"
 #include "modules/meteor/module_meteor_lrpt_decoder.h"
 #include "modules/meteor/instruments/msumr/module_meteor_msumr.h"
@@ -188,6 +188,7 @@ void registerModules()
     REGISTER_MODULE(BPSKDemodModule);
     REGISTER_MODULE(FSKDemodModule);
     REGISTER_MODULE(PSK8DemodModule);
+    REGISTER_MODULE(PMDemodModule);
 
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
@@ -236,7 +237,7 @@ void registerModules()
     REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
 
     // NOAA
-    REGISTER_MODULE(noaa::NOAAHRPTDemodModule);
+    REGISTER_MODULE(noaa::NOAAHRPTDecoderModule);
     REGISTER_MODULE(noaa::NOAADSBDemodModule);
     REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
     REGISTER_MODULE(noaa::NOAAExtractorModule);
@@ -245,7 +246,6 @@ void registerModules()
     REGISTER_MODULE(noaa::amsu::NOAAAMSUDecoderModule);
 
     // METEOR
-    REGISTER_MODULE(meteor::METEORHRPTDemodModule);
     REGISTER_MODULE(meteor::METEORHRPTDecoderModule);
     REGISTER_MODULE(meteor::METEORLRPTDecoderModule);
     REGISTER_MODULE(meteor::msumr::METEORMSUMRDecoderModule);

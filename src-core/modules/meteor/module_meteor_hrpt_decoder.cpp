@@ -10,12 +10,12 @@ size_t getFilesize(std::string filepath);
 
 namespace meteor
 {
-    METEORHRPTDecoderModule::METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    METEORHRPTDecoderModule::METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        constellation(1.0, 0.15, demod_constellation_size)
     {
         def = std::make_shared<CADUDeframer>();
 
-        read_buffer = new uint8_t[BUFFER_SIZE];
-        manchester_buffer = new uint8_t[BUFFER_SIZE];
+        soft_buffer = new int8_t[BUFFER_SIZE];
     }
 
     std::vector<ModuleDataType> METEORHRPTDecoderModule::getInputTypes()
@@ -30,8 +30,7 @@ namespace meteor
 
     METEORHRPTDecoderModule::~METEORHRPTDecoderModule()
     {
-        delete[] manchester_buffer;
-        delete[] read_buffer;
+        delete[] soft_buffer;
     }
 
     void METEORHRPTDecoderModule::process()
@@ -56,13 +55,11 @@ namespace meteor
         {
             // Read a buffer
             if (input_data_type == DATA_FILE)
-                data_in.read((char *)read_buffer, BUFFER_SIZE);
+                data_in.read((char *)soft_buffer, BUFFER_SIZE);
             else
-                input_fifo->read((uint8_t *)read_buffer, BUFFER_SIZE);
+                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
 
-            manchesterDecoder(read_buffer, BUFFER_SIZE, manchester_buffer);
-
-            std::vector<std::array<uint8_t, CADU_SIZE>> frames = def->work(manchester_buffer, BUFFER_SIZE / 2);
+            std::vector<std::array<uint8_t, CADU_SIZE>> frames = def->work(soft_buffer, BUFFER_SIZE);
 
             // Count frames
             frame_count += frames.size();
@@ -97,6 +94,14 @@ namespace meteor
     void METEORHRPTDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("METEOR HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+        // Constellation
+        ImGui::BeginGroup();
+        constellation.pushSofttAndGaussian(soft_buffer, 127, BUFFER_SIZE);
+        constellation.draw();
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
 
         ImGui::BeginGroup();
         {

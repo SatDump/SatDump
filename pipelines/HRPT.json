@@ -303,6 +303,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [
@@ -314,9 +318,21 @@
         "baseband_type": "i16",
         "work": {
             "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 665400,
+                    "agc_rate": 0.002e-3,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
+                    "buffer_size": 8192
+                }
+            },
             "frames": {
-                "noaa_hrpt_demod": {
-                    "buffer_size": 8192,
+                "noaa_hrpt_decoder": {
                     "deframer_thresold": 10
                 }
             },
@@ -391,8 +407,16 @@
         "baseband_type": "i16",
         "work": {
             "baseband": {},
-            "dem": {
-                "meteor_hrpt_demod": {
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 665400,
+                    "agc_rate": 0.002e-3,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
                     "buffer_size": 8192
                 }
             },
