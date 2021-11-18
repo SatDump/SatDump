@@ -24,7 +24,8 @@ namespace credits
         ImGui::BulletText("libhackrf");
         ImGui::BulletText("libpredict");
         ImGui::BulletText("miniz");
-        ImGui::BulletText("tinyfiledialogs");
+        ImGui::BulletText("portablefiledialogs");
+        ImGui::BulletText("openjp2");
         ImGui::BulletText("ImGui");
         ImGui::EndGroup();
 
@@ -37,6 +38,16 @@ namespace credits
         ImGui::BulletText("Arved MØKDS");
         ImGui::BulletText("Ryzerth");
         ImGui::BulletText("LazzSnazz");
+        ImGui::BulletText("Raov");
+        ImGui::BulletText("Peter Kooistra");
+        ImGui::BulletText("Felix OK9UWU");
+        ImGui::BulletText("Fred Jansen");
+        ImGui::BulletText("MeteoOleg");
+        ImGui::BulletText("Oleg Kutkov");
+        ImGui::BulletText("LazzSnazz");
+        ImGui::BulletText("Mark Pentier");
+        ImGui::BulletText("Sam (@sam210723)");
+        ImGui::BulletText("Jpjonte");
         ImGui::EndGroup();
 
         ImGui::SameLine();
