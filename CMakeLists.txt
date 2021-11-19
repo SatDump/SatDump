@@ -11,7 +11,7 @@ add_compile_definitions(SATDUMP_VERSION="0.0.38")
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
-option(BUILD_LIVE           "Build the live processing feature (WIP)"                   OFF)
+option(BUILD_LIVE           "Build the live processing feature (WIP)"                   ON)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
