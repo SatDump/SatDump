@@ -93,17 +93,8 @@ namespace meteor
             int norad = 40069;
 
             // Setup Projecition, tuned for M2
-            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                110.6,                       // Scan angle
-                2.3,                         // Roll offset
-                0,                           // Pitch offset
-                -2.8,                        // Yaw offset
-                1.4,                         // Time offset
-                1568,                        // Image width
-                true,                        // Invert scan
-                tle::getTLEfromNORAD(norad), // TLEs
-                std::vector<double>()        // Timestamps
-            );
+            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2_msumr_lrpt.json");
+            proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
 
             for (int channel = 0; channel < 6; channel++)
             {

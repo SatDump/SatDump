@@ -133,22 +133,7 @@ namespace noaa
                 image4.equalize(1000);
 
                 // Setup Projecition, based off N19
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.6,          // Scan angle
-                    -0.01,          // Roll offset
-                    0,              // Pitch offset
-                    -3.45,          // Yaw offset
-                    1,              // Time offset
-                    image4.width(), // Image width
-                    true,           // Invert scan
-                    tle::TLE(),     // TLEs
-                    timestamps      // Timestamps
-                );
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
-                }
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings;
 
                 // Identify satellite, and apply per-sat settings...
                 int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
@@ -156,20 +141,19 @@ namespace noaa
                 {
                     norad = 25338;
                     logger->info("Identified NOAA-15!");
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json");
                 }
                 else if (scid == 13) // N18
                 {
                     norad = 28654;
                     logger->info("Identified NOAA-18!");
-                    proj_settings->roll_offset = -0.1;
-                    proj_settings->yaw_offset = -3.0;
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_18_avhrr.json");
                 }
                 else if (scid == 15) // N19
                 {
                     norad = 33591;
                     logger->info("Identified NOAA-19!");
-                    //proj_settings.az_offset = -1.5;
-                    //proj_settings.proj_scale = 2.339;
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_19_avhrr.json");
                 }
                 else
                 {
@@ -178,6 +162,7 @@ namespace noaa
 
                 // Load TLEs now
                 proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
+                proj_settings->utc_timestamps = timestamps; // Timestamps
 
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 

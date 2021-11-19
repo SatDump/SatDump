@@ -158,17 +158,7 @@ namespace meteor
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
                 // Setup Projecition, tuned for 2-2
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.6,          // Scan angle
-                    -0.35,          // Roll offset
-                    0,              // Pitch offset
-                    -2.8,           // Yaw offset
-                    0.2,            // Time offset
-                    image1.width(), // Image width
-                    true,           // Invert scan
-                    tle::TLE(),     // TLEs
-                    timestamps      // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings;
 
                 // Identify satellite, and apply per-sat settings...
                 int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
@@ -176,10 +166,7 @@ namespace meteor
                 {
                     norad = 40069;
                     logger->info("Identified METEOR-M 2!");
-                    proj_settings->scan_angle = 110.6;
-                    proj_settings->roll_offset = 2.3;
-                    proj_settings->yaw_offset = -2.8;
-                    proj_settings->time_offset = 0.2;
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2_msumr.json");
 
                     // Also in moscow time...
                     for (double &timestamp : timestamps)
@@ -188,12 +175,14 @@ namespace meteor
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {
                     norad = 0;
-                    logger->info("Identified METEOR-M 2-1! But that is not supposed to happen...");
+                    logger->error("Identified METEOR-M 2-1! But that is not supposed to happen...");
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2-2_msumr.json"); // Whatever, just in case
                 }
                 else if (msumr_serial_number == 2) // METEOR-M 2-2
                 {
                     norad = 44387;
                     logger->info("Identified METEOR-M 2-2!");
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2-2_msumr.json");
                 }
                 else
                 {
@@ -202,6 +191,7 @@ namespace meteor
 
                 // Load TLEs now
                 proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
+                proj_settings->utc_timestamps = timestamps;
 
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
