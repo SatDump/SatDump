@@ -13,6 +13,7 @@
 #include "common/geodetic/projection/proj_file.h"
 #include "common/image/image.h"
 #include "common/image/composite.h"
+#include "common/map/leo_drawer.h"
 
 #define BUFFER_SIZE 8192
 
@@ -248,6 +249,7 @@ namespace fengyun3
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool mapped = compositeDef.count("mapped") > 0 ? compositeDef["mapped"].get<bool>() : false;
                     bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
                     std::string name = "VIRR-" + compokey.key();
@@ -266,6 +268,14 @@ namespace fengyun3
                         logger->info(name + "-PROJ...");
                         cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (mapped)
+                    {
+                        projector.setup_forward();
+                        logger->info(name + "-MAP...");
+                        cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage >> 8, projector);
+                        WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 
                     if (corrected)
