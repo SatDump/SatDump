@@ -1,0 +1,32 @@
+{
+    "url_template": "http://www.celestrak.com/satcat/tle.php?CATNR=%NORAD%",
+    "tles_to_fetch": {
+        "MetOp-A": 29499,
+        "MetOp-B": 38771,
+        "MetOp-C": 43689,
+
+        "NOAA-15": 25338,
+        "NOAA-18": 28654,
+        "NOAA-19": 33591,
+
+        "FengYun-3A": 32958,
+        "FengYun-3B": 37214,
+        "FengYun-3C": 39260,
+        "FengYun-3D": 43010,
+        "FengYun-3E": 49008,
+
+        "METEOR-M1": 35865,
+        "METEOR-M2": 40069,
+        "METEOR-M2-2": 44387,
+
+        "Terra": 25994,
+        "Aqua": 27424,
+        "Aura": 28376,
+
+        "Suomi-NPP": 37849,
+        "JPSS-1": 43013,
+        
+        "Jason-3": 41240,
+        "CFOSAT-1": 43662
+    }
+}

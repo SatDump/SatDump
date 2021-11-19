@@ -86,8 +86,8 @@ void renderSettings(int /*wwidth*/, int /*wheight*/)
     ImGui::Text("Default recorder output directory : %s/", default_recorder_output_folder.c_str());
 
 #ifndef __ANDROID__
-    //if (ImGui::Button("Update TLEs"))
-    //    tle::updateTLEs();
+    if (ImGui::Button("Update TLEs"))
+        tle::updateTLEsMT();
 #endif
 
     ImGui::BeginGroup();

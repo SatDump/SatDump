@@ -14,4 +14,6 @@ namespace tle
 
     void loadTLEs();
     TLE getTLEfromNORAD(int norad);
+    void updateTLEs();
+    void updateTLEsMT();
 }

@@ -4,11 +4,13 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
+#include "nlohmann/json_utils.h"
+#include <thread>
 
-//#ifndef __ANDROID__
-//#include <nng/nng.h>
-//#include <nng/supplemental/http/http.h>
-//#endif
+#ifndef __ANDROID__
+#include <nng/nng.h>
+#include <nng/supplemental/http/http.h>
+#endif
 
 namespace tle
 {
@@ -92,7 +94,6 @@ namespace tle
         }
     }
 
-    /*
 // Need to figure out why libnng won't run on Android...
 #ifndef __ANDROID__
     int http_get(std::string url_str, std::string &result)
@@ -190,54 +191,33 @@ namespace tle
     }
 #endif
 
-
-    // Very temporary system
-    std::vector<int> satellite_norads = {
-        29499, // MetOp-A
-        38771, // MetOp-B
-        43689, // MetOp-C
-
-        25338, // NOAA-15
-        28654, // NOAA-18
-        33591, // NOAA-19
-
-        32958, // FengYun-3A
-        37214, // FengYun-3B
-        39260, // FengYun-3C
-        43010, // FengYun-3D
-        49008, // FengYun-3E
-
-        35865, // METEOR-M 1
-        40069, // METEOR-M 2
-        44387, // METEOR-M 2-2
-
-        25994, // Terra
-        27424, // Aqua
-        28376, // Aura
-
-        37849, // Suomi NPP
-        43013, // JPSS-1
-
-        41240, // Jason-3
-    };
-
-    std::string tle_fetch_url = "http://www.celestrak.com/satcat/tle.php?CATNR=";
+    bool tle_updating = false;
 
     void updateTLEs()
     {
+        tle_updating = true;
+
 #ifndef __ANDROID__
+        nlohmann::json tleSettings = loadJsonFile(resources::getResourcePath("tles.json"));
+        std::string tle_fetch_url_template = tleSettings["url_template"].get<std::string>();
+        std::map<std::string, int> tles_to_fetch = tleSettings["tles_to_fetch"].get<std::map<std::string, int>>();
+
         std::string tle_path = resources::getResourcePath("tle");
 
         logger->info("Updating TLEs...");
-        for (int norad : satellite_norads)
+        for (std::pair<const std::string, int> &to_fetch : tles_to_fetch)
         {
-            std::string url_str = tle_fetch_url + std::to_string(norad);
+            std::string url_str = tle_fetch_url_template;
+
+            while (url_str.find("%NORAD%") != std::string::npos)
+                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(to_fetch.second));
+
             logger->debug("Fetching from " + url_str);
 
             std::string output;
             if (!http_get(url_str, output))
             {
-                std::string filename = tle_path + "/" + std::to_string(norad) + ".tle";
+                std::string filename = tle_path + "/" + to_fetch.first + ".tle";
                 logger->trace(filename);
                 std::ofstream(filename).write((char *)output.c_str(), output.length());
             }
@@ -246,9 +226,24 @@ namespace tle
                 logger->error("Could not fetch TLE!");
             }
         }
-#else
-        logger->critical("TLE Updates not yet supported on Android due to libnng!");
+
+        loadTLEs(); // Update them once we're done
 #endif
+
+        logger->info("Done updating TLEs!");
+        tle_updating = false;
     }
-    */
+
+    std::thread tleUpdateThread;
+
+    void updateTLEsMT()
+    {
+        if (tle_updating) // Never run this again if the thread is still going
+            return;
+
+        if (tleUpdateThread.joinable())
+            tleUpdateThread.join();
+
+        tleUpdateThread = std::thread(updateTLEs);
+    }
 }
