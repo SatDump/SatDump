@@ -217,9 +217,9 @@ namespace meteor
 
                 if (mapped)
                 {
-                    projector.setup_forward();
+                    projector.setup_forward(99, 1, 16);
                     logger->info(name + "-MAP...");
-                    cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage >> 8, projector);
+                    cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage, projector);
                     WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                 }
 
