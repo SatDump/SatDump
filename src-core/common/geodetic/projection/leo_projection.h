@@ -84,6 +84,8 @@ namespace geodetic
             }
         };
 
+        std::shared_ptr<LEOScanProjectorSettings_SCANLINE> makeScalineSettingsFromJSON(std::string filename);
+
         struct LEOScanProjectorSettings_IFOV : public LEOScanProjectorSettings
         {
             double scan_angle;                               // Total scan angle
