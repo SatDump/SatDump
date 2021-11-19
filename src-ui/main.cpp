@@ -15,6 +15,7 @@
 #include "live/live.h"
 #include "satdump_vars.h"
 #include "tle.h"
+#include "recorder/recorder.h"
 
 extern bool recorder_running;
 
@@ -240,6 +241,14 @@ int main(int argc, char *argv[])
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
     if (satdumpUiStatus == OFFLINE_PROCESSING)
         quick_exit(0);
+
+#ifdef BUILD_LIVE
+    if (satdumpUiStatus == BASEBAND_RECORDER)
+    {
+        recorder::exitRecorder();
+        quick_exit(0); // Same story as offline processing, except we finish recording first
+    }
+#endif
 
     processThreadPool.stop();
 

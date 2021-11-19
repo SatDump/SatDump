@@ -117,9 +117,6 @@ namespace recorder
 
     void exitRecorder()
     {
-        volk_free(waterfall);
-        delete[] waterfallPallet;
-
         settings["recorder_scale"] = scale;
         settings["recorder_offset"] = offset;
         settings["recorder_sdr"][radio->getID()] = radio->getParameters();
@@ -136,6 +133,9 @@ namespace recorder
         sampleInputStream->stopReader();
         radio->stop();
         radio.reset();
+
+        volk_free(waterfall);
+        delete[] waterfallPallet;
 
         satdumpUiStatus = MAIN_MENU;
     }
