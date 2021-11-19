@@ -233,6 +233,14 @@ int main(int argc, char *argv[])
     glfwDestroyWindow(window);
     glfwTerminate();
 
+    tle::stopTLECleanMT(); // Let the TLE update thread shutdown cleanly
+
+    logger->info("UI Exit");
+
+    // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
+    if (satdumpUiStatus == OFFLINE_PROCESSING)
+        quick_exit(0);
+
     processThreadPool.stop();
 
     for (int i = 0; i < processThreadPool.size(); i++)
@@ -240,8 +248,6 @@ int main(int argc, char *argv[])
         if (processThreadPool.get_thread(i).joinable())
             processThreadPool.get_thread(i).join();
     }
-
-    tle::stopTLECleanMT(); // Let the TLE update thread shutdown cleanly
 
     logger->info("Exiting!");
 }
