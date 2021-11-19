@@ -38,13 +38,12 @@ namespace credits
         ImGui::BulletText("Arved MØKDS");
         ImGui::BulletText("Ryzerth");
         ImGui::BulletText("LazzSnazz");
-        ImGui::BulletText("Raov");
+        ImGui::BulletText("Raov UB8QBD");
         ImGui::BulletText("Peter Kooistra");
         ImGui::BulletText("Felix OK9UWU");
         ImGui::BulletText("Fred Jansen");
         ImGui::BulletText("MeteoOleg");
         ImGui::BulletText("Oleg Kutkov");
-        ImGui::BulletText("LazzSnazz");
         ImGui::BulletText("Mark Pentier");
         ImGui::BulletText("Sam (@sam210723)");
         ImGui::BulletText("Jpjonte");
