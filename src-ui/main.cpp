@@ -14,6 +14,7 @@
 #include "main_ui.h"
 #include "live/live.h"
 #include "satdump_vars.h"
+#include "tle.h"
 
 extern bool recorder_running;
 
@@ -119,6 +120,10 @@ int main(int argc, char *argv[])
 #endif
 
     parseSettingsOrDefaults();
+
+    // If we are asked to update TLEs on boot, do so
+    if (update_tles_on_startup)
+        tle::updateTLEsMT();
 
     // Init UI
     initMainUI();
@@ -235,6 +240,8 @@ int main(int argc, char *argv[])
         if (processThreadPool.get_thread(i).joinable())
             processThreadPool.get_thread(i).join();
     }
+
+    tle::stopTLECleanMT(); // Let the TLE update thread shutdown cleanly
 
     logger->info("Exiting!");
 }

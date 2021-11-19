@@ -246,4 +246,10 @@ namespace tle
 
         tleUpdateThread = std::thread(updateTLEs);
     }
+
+    void stopTLECleanMT()
+    {
+        if (tleUpdateThread.joinable())
+            tleUpdateThread.join();
+    }
 }
