@@ -76,7 +76,7 @@ namespace fengyun3
                     for (int of = 0; of < 2; of++)
                     {
                         std::memcpy(d_ber_test_buffer, &input1[of * 2], TEST_BITS_LENGTH);
-                        phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
+                        rotate_soft((int8_t *)d_ber_test_buffer, TEST_BITS_LENGTH, (phase_t)ph, false);
                         d_bers[0][of][ph] = getBER(d_ber_test_buffer);
                     }
                 }
@@ -90,7 +90,7 @@ namespace fengyun3
                     for (int of = 0; of < 2; of++)
                     {
                         std::memcpy(d_ber_test_buffer, &input2[of * 2], TEST_BITS_LENGTH);
-                        phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, false);
+                        rotate_soft((int8_t *)d_ber_test_buffer, TEST_BITS_LENGTH, (phase_t)ph, false);
                         d_bers[1][of][ph] = getBER(d_ber_test_buffer);
                     }
                 }
@@ -107,7 +107,7 @@ namespace fengyun3
                     {
                         d_ber[0] = d_bers[0][o][p];
                         d_iq_inv[0] = 0;
-                        d_phase_shift[0] = (sathelper::PhaseShift)p;
+                        d_phase_shift[0] = (phase_t)p;
                         syncedstate[0] = true;
                         d_skip[0] = o * 2;
                         d_skip_perm[0] = o * 2;
@@ -117,7 +117,7 @@ namespace fengyun3
                     {
                         d_ber[1] = d_bers[1][o][p];
                         d_iq_inv[1] = 0;
-                        d_phase_shift[1] = (sathelper::PhaseShift)p;
+                        d_phase_shift[1] = (phase_t)p;
                         syncedstate[1] = true;
                         d_skip[1] = o * 2;
                         d_skip_perm[1] = o * 2;
@@ -140,7 +140,7 @@ namespace fengyun3
             // Decode 1
             {
                 std::memcpy(fixed_soft_packet1, &input1[d_skip[0]], size - d_skip[0]);
-                phaseShifter.fixPacket(fixed_soft_packet1, size - d_skip[0], d_phase_shift[0], d_iq_inv[0]);
+                rotate_soft((int8_t *)fixed_soft_packet1, size - d_skip[0], d_phase_shift[0], d_iq_inv[0]);
 
                 char_array_to_uchar((int8_t *)fixed_soft_packet1, converted_buffer1, size - d_skip[0]);
 
@@ -154,7 +154,7 @@ namespace fengyun3
             // Decode 2
             {
                 std::memcpy(fixed_soft_packet2, &input2[d_skip[1]], size - d_skip[1]);
-                phaseShifter.fixPacket(fixed_soft_packet2, size - d_skip[1], d_phase_shift[1], d_iq_inv[1]);
+                rotate_soft((int8_t *)fixed_soft_packet2, size - d_skip[1], d_phase_shift[1], d_iq_inv[1]);
 
                 char_array_to_uchar((int8_t *)fixed_soft_packet2, converted_buffer2, size - d_skip[1]);
 
@@ -170,11 +170,11 @@ namespace fengyun3
 
             // Check BERs
             std::memcpy(fixed_soft_packet1, &input1[d_skip_perm[0]], TEST_BITS_LENGTH);
-            phaseShifter.fixPacket(fixed_soft_packet1, TEST_BITS_LENGTH, d_phase_shift[0], d_iq_inv[0]);
+            rotate_soft((int8_t *)fixed_soft_packet1, TEST_BITS_LENGTH, d_phase_shift[0], d_iq_inv[0]);
             d_ber[0] = getBER(fixed_soft_packet1);
 
             std::memcpy(fixed_soft_packet2, &input2[d_skip_perm[1]], TEST_BITS_LENGTH);
-            phaseShifter.fixPacket(fixed_soft_packet2, TEST_BITS_LENGTH, d_phase_shift[1], d_iq_inv[1]);
+            rotate_soft((int8_t *)fixed_soft_packet2, TEST_BITS_LENGTH, d_phase_shift[1], d_iq_inv[1]);
             d_ber[1] = getBER(fixed_soft_packet2);
 
             // Check we're still in sync!

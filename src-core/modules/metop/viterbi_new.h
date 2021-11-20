@@ -2,7 +2,7 @@
 
 #define TEST_BITS_LENGTH 1024
 
-#include "libs/sathelper/packetfixer.h"
+#include "common/codings/rotation.h"
 #include "common/codings/viterbi/cc_decoder.h"
 #include "common/codings/viterbi/cc_encoder.h"
 #include "common/codings/viterbi/depuncture.h"
@@ -70,10 +70,9 @@ namespace metop
         uint8_t d_ber_encoded_buffer[TEST_BITS_LENGTH * 2]; // 1.5
 
         // Current phase status
-        sathelper::PhaseShift d_phase_shift;
+        phase_t d_phase_shift;
         bool d_iq_inv;
         int d_skip, d_skip_perm;
-        sathelper::PacketFixer phaseShifter;
 
         // Work buffers
         uint8_t *fixed_soft_packet;

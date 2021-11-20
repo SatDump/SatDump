@@ -1,7 +1,7 @@
 #include "module_spacex_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/derandomizer.h"
-#include "libs/sathelper/packetfixer.h"
+#include "common/codings/randomization.h"
+#include "common/codings/rotation.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "imgui/imgui.h"
 
@@ -43,7 +43,6 @@ namespace spacex
         time_t lastTime = 0;
 
         reedsolomon::ReedSolomon rs(reedsolomon::RS239);
-        sathelper::Derandomizer derand;
 
         // Final buffer after decoding
         uint8_t finalBuffer[BUFFER_SIZE];
@@ -54,9 +53,8 @@ namespace spacex
         int byteShifted = 0;
 
         // PacketFixer
-        sathelper::PacketFixer fixer;
         int unsynced_run = 0;
-        int ph = sathelper::DEG_0;
+        int ph = PHASE_0;
         bool swap = false;
 
         while (!data_in.eof())
@@ -65,7 +63,7 @@ namespace spacex
             data_in.read((char *)buffer, BUFFER_SIZE);
 
             if (qpsk)
-                fixer.fixPacket((uint8_t *)buffer, BUFFER_SIZE, (sathelper::PhaseShift)ph, swap);
+                rotate_soft((int8_t *)buffer, BUFFER_SIZE, (phase_t)ph, swap);
 
             // Group symbols into bytes now, I channel
             inByteShifter = 0;
@@ -116,7 +114,7 @@ namespace spacex
                     // RS Correction
                     rs.decode_interlaved(&cadu[4], true, 5, errors);
 
-                    derand.work(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
+                    derand_ccsds(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
 
                     if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
                         data_out.write((char *)&cadu, ccsds::ccsds_1_0_proba::CADU_SIZE);

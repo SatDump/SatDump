@@ -74,7 +74,7 @@ namespace metop
                 for (int of = 0; of < 2; of++)
                 {
                     std::memcpy(d_ber_test_buffer, &input[of * 2], TEST_BITS_LENGTH);
-                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, true);
+                    rotate_soft((int8_t *)d_ber_test_buffer, TEST_BITS_LENGTH, (phase_t)ph, true);
                     d_bers[of][ph] = getBER(d_ber_test_buffer);
                 }
             }
@@ -87,7 +87,7 @@ namespace metop
                     {
                         d_ber = d_bers[o][p];
                         d_iq_inv = 0;
-                        d_phase_shift = (sathelper::PhaseShift)(p + 1);
+                        d_phase_shift = (phase_t)(p + 1);
                         d_state = ST_SYNCED;
                         d_skip = o * 2;
                         d_skip_perm = o * 2;
@@ -101,7 +101,7 @@ namespace metop
         {
             // Decode
             std::memcpy(fixed_soft_packet, &input[d_skip], size - d_skip);
-            phaseShifter.fixPacket(fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
+            rotate_soft((int8_t *)fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
 
             char_array_to_uchar((int8_t *)fixed_soft_packet, converted_buffer, size - d_skip);
 
@@ -117,7 +117,7 @@ namespace metop
 
             // Check BER
             std::memcpy(fixed_soft_packet, &input[d_skip_perm], TEST_BITS_LENGTH);
-            phaseShifter.fixPacket(fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
+            rotate_soft((int8_t *)fixed_soft_packet, size - d_skip, d_phase_shift, d_iq_inv);
             d_ber = getBER(fixed_soft_packet);
 
             // Check we're still in sync!

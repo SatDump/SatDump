@@ -1,8 +1,8 @@
 #include "module_proba_s_decoder.h"
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "imgui/imgui.h"
 #include <cmath>
 #include "common/codings/correlator.h"
@@ -58,8 +58,6 @@ namespace proba
         Correlator correlator(BPSK, 0xa9f7e368e558c2c1);
 
         // Viterbi, rs, etc
-        sathelper::PacketFixer packetFixer;
-        sathelper::Derandomizer derand;
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
@@ -92,7 +90,7 @@ namespace proba
 
             // Correct phase ambiguity
             // It is using inverted vectors in the Viterbi.... Hence that weird crap
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, phase ? sathelper::PhaseShift::DEG_90 : sathelper::PhaseShift::DEG_270, true);
+            rotate_soft((int8_t *)buffer, ENCODED_FRAME_SIZE, phase ? PHASE_90 : PHASE_270, true);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
@@ -100,7 +98,7 @@ namespace proba
             if (derandomize)
             {
                 // Derandomize that frame
-                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+                derand_ccsds(&frameBuffer[4], FRAME_SIZE - 4);
             }
 
             // RS Correction

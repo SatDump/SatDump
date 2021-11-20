@@ -1,8 +1,7 @@
 #include "module_meteor_lrpt_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/correlator.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/viterbi/viterbi27.h"
@@ -21,7 +20,7 @@ namespace meteor
                                                                                                                                         diff_decode(parameters["diff_decode"].get<bool>()),
                                                                                                                                         viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
-        buffer = new uint8_t[ENCODED_FRAME_SIZE];
+        buffer = new int8_t[ENCODED_FRAME_SIZE];
     }
 
     std::vector<ModuleDataType> METEORLRPTDecoderModule::getInputTypes()
@@ -59,8 +58,6 @@ namespace meteor
         Correlator correlator(QPSK, diff_decode ? 0xfc4ef4fd0cc2df89 : 0xfca2b63db00d9794);
 
         // Viterbi, rs, etc
-        sathelper::PacketFixer packetFixer;
-        sathelper::Derandomizer derand;
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
@@ -95,7 +92,7 @@ namespace meteor
             }
 
             // Correct phase ambiguity
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+            rotate_soft(buffer, ENCODED_FRAME_SIZE, phase, swap);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
@@ -104,7 +101,7 @@ namespace meteor
                 diff.decode(frameBuffer, FRAME_SIZE);
 
             // Derandomize that frame
-            derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+            derand_ccsds(&frameBuffer[4], FRAME_SIZE - 4);
 
             // There is a VERY rare edge case where CADUs end up inverted... Better cover it to be safe
             if (frameBuffer[9] == 0xFF)

@@ -1,8 +1,7 @@
 #include "module_saral_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/correlator.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/viterbi/viterbi27.h"
@@ -58,8 +57,6 @@ namespace saral
         Correlator correlator(QPSK, 0xfc4ef4fd0cc2df89);
 
         // Viterbi, rs, etc
-        sathelper::PacketFixer packetFixer;
-        sathelper::Derandomizer derand;
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
@@ -94,7 +91,7 @@ namespace saral
             }
 
             // Correct phase ambiguity
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+            rotate_soft((int8_t *)buffer, ENCODED_FRAME_SIZE, phase, swap);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
@@ -103,7 +100,7 @@ namespace saral
             diff.decode(frameBuffer, FRAME_SIZE);
 
             // Derandomize that frame
-            derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+            derand_ccsds(&frameBuffer[4], FRAME_SIZE - 4);
 
             // RS Correction
             rs.decode_interlaved(&frameBuffer[4], true, 4, errors);

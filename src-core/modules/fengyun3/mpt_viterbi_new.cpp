@@ -57,7 +57,7 @@ namespace fengyun3
                 for (int ph = 0; ph < 2; ph++)
                 {
                     std::memcpy(d_ber_test_buffer, input, TEST_BITS_LENGTH);
-                    phaseShifter.fixPacket(d_ber_test_buffer, TEST_BITS_LENGTH, (sathelper::PhaseShift)ph, sh);
+                    rotate_soft((int8_t *)d_ber_test_buffer, TEST_BITS_LENGTH, (phase_t)ph, sh);
                     d_bers[sh][ph] = getBER(d_ber_test_buffer);
                 }
             }
@@ -70,7 +70,7 @@ namespace fengyun3
                     {
                         d_ber = d_bers[s][p];
                         d_iq_inv = s;
-                        d_phase_shift = (sathelper::PhaseShift)p;
+                        d_phase_shift = (phase_t)p;
                         d_state = ST_SYNCED;
                     }
                     //logger->info(std::to_string(s) + "," + std::to_string(p) + " - " + std::to_string(d_bers[s][p]));
@@ -82,7 +82,7 @@ namespace fengyun3
         {
             // Decode
             std::memcpy(fixed_soft_packet, input, size);
-            phaseShifter.fixPacket(fixed_soft_packet, size, d_phase_shift, d_iq_inv);
+            rotate_soft((int8_t *)fixed_soft_packet, size, d_phase_shift, d_iq_inv);
 
             char_array_to_uchar((char *)fixed_soft_packet, viterbi_in, size);
 

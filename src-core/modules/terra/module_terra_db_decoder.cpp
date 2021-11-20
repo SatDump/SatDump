@@ -2,8 +2,8 @@
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/correlator.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 
@@ -16,7 +16,7 @@ size_t getFilesize(std::string filepath);
 namespace terra
 {
     TerraDBDecoderModule::TerraDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                      viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
+                                                                                                                                  viterbi(ENCODED_FRAME_SIZE / 2, viterbi::CCSDS_R2_K7_POLYS)
     {
         buffer = new uint8_t[ENCODED_FRAME_SIZE];
     }
@@ -42,8 +42,6 @@ namespace terra
         Correlator correlator(BPSK, 0xa91ba1a859978adc);
 
         // Viterbi, rs, etc
-        sathelper::PacketFixer packetFixer;
-        sathelper::Derandomizer derand;
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
         diff::NRZMDiff diff;
 
@@ -70,7 +68,7 @@ namespace terra
 
             // Correct phase ambiguity
             // It is using inverted vectors in the Viterbi.... Hence that weird crap
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, phase ? sathelper::PhaseShift::DEG_90 : sathelper::PhaseShift::DEG_270, true);
+            rotate_soft((int8_t *)buffer, ENCODED_FRAME_SIZE, phase ? PHASE_90 : PHASE_270, true);
 
             // Viterbi
             viterbi.work((int8_t *)buffer, frameBuffer);
@@ -82,7 +80,7 @@ namespace terra
             rs.decode_interlaved(&frameBuffer[4], true, 4, errors);
 
             // Derandomize that frame
-            derand.work(&frameBuffer[10], 886);
+            derand_ccsds(&frameBuffer[10], 886);
 
             // Write it out
             if (cor > 48)
@@ -107,7 +105,6 @@ namespace terra
         data_out.close();
         data_in.close();
     }
-
 
     void TerraDBDecoderModule::drawUI(bool window)
     {

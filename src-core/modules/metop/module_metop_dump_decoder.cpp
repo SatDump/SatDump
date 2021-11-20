@@ -1,8 +1,7 @@
 #include "module_metop_dump_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/correlator.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "imgui/imgui.h"
 #include "common/codings/correlator32.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
@@ -55,8 +54,6 @@ namespace metop
         Correlator32 correlator(QPSK, 0x1acffc1d);
 
         // Viterbi, rs, etc
-        sathelper::PacketFixer packetFixer;
-        sathelper::Derandomizer derand;
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
@@ -88,7 +85,7 @@ namespace metop
             }
 
             // Correct phase ambiguity
-            packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)phase, swap);
+            rotate_soft((int8_t *)buffer, ENCODED_FRAME_SIZE, phase, swap);
 
             // Repack bits
             memset(frameBuffer, 0, FRAME_SIZE);
@@ -100,7 +97,7 @@ namespace metop
             }
 
             // Derandomize that frame
-            derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+            derand_ccsds(&frameBuffer[4], FRAME_SIZE - 4);
 
             // RS Correction
             rs.decode_interlaved(&frameBuffer[4], true, 4, errors);

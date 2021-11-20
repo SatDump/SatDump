@@ -1,13 +1,6 @@
-/*
- * DeRandomizer.cpp
- *
- *  Created on: 07/11/2016
- *      Author: Lucas Teske
- */
+#include "randomization.h"
 
-#include "derandomizer.h"
-
-uint8_t sathelper::Derandomizer::pn[255] = {
+uint8_t ccsds_pn[255] = {
     0xff, 0x48, 0x0e, 0xc0, 0x9a, 0x0d, 0x70, 0xbc,
     0x8e, 0x2c, 0x93, 0xad, 0xa7, 0xb7, 0x46, 0xce,
     0x5a, 0x97, 0x7d, 0xcc, 0x32, 0xa2, 0xbf, 0x3e,
@@ -41,10 +34,10 @@ uint8_t sathelper::Derandomizer::pn[255] = {
     0x4b, 0xbe, 0xe6, 0x19, 0x51, 0x5f, 0x9f, 0x05,
     0x08, 0x78, 0xc4, 0x4a, 0x66, 0xf5, 0x58};
 
-void sathelper::Derandomizer::work(uint8_t *data, int length)
+void derand_ccsds(uint8_t *data, int length)
 {
     for (int i = 0; i < length; i++)
     {
-        data[i] ^= pn[i % 255];
+        data[i] ^= ccsds_pn[i % 255];
     }
 }

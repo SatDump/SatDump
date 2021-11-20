@@ -1,7 +1,7 @@
 #include "module_new_fengyun_mpt_decoder.h"
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
-#include "libs/sathelper/packetfixer.h"
+#include "common/codings/rotation.h"
 #include "diff.h"
 #include "modules/metop/instruments/iasi/utils.h"
 #include "libs/ctpl/ctpl_stl.h"
@@ -65,7 +65,6 @@ namespace fengyun3
 
         // Util values
         int shift = 0;
-        sathelper::PacketFixer shifter;
         bool iq_invert = false;
         int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
@@ -73,7 +72,7 @@ namespace fengyun3
         {
             data_in.read((char *)soft_buffer, BUFFER_SIZE);
 
-            shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE, sathelper::DEG_0, iq_invert);
+            rotate_soft(soft_buffer, BUFFER_SIZE, PHASE_0, iq_invert);
 
             // Deinterleave I & Q for the 2 Viterbis
             for (int i = 0; i < BUFFER_SIZE / 2; i++)

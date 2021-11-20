@@ -1,6 +1,6 @@
 #include "module_smap_s_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/randomization.h"
 #include "imgui/imgui.h"
 #include "common/codings/differential/nrzm.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
@@ -42,7 +42,6 @@ namespace smap
         time_t lastTime = 0;
 
         reedsolomon::ReedSolomon rs(reedsolomon::RS239);
-        sathelper::Derandomizer derand;
         diff::NRZMDiff diff;
 
         // Final buffer after decoding
@@ -87,7 +86,7 @@ namespace smap
                     // RS Correction
                     rs.decode_interlaved(&cadu[4], true, 5, errors);
 
-                    derand.work(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
+                    derand_ccsds(&cadu[4], ccsds::ccsds_1_0_proba::CADU_SIZE - 4);
 
                     data_out.write((char *)&cadu, ccsds::ccsds_1_0_proba::CADU_SIZE);
                 }
