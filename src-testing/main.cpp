@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-#include "common/codings/viterbi/cc_decoder_impl.h"
+#include "common/codings/viterbi/cc_decoder.h"
 
 // Returns the asked bit!
 template <typename T>

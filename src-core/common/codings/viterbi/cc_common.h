@@ -37,7 +37,6 @@ typedef union
 struct v
 {
     volk::vector<unsigned char> metrics;
-    metric_t old_metrics, new_metrics, metrics1,
-        metrics2; /* Pointers to path metrics, swapped on every bit */
+    metric_t old_metrics, new_metrics, metrics1, metrics2; /* Pointers to path metrics, swapped on every bit */
     volk::vector<unsigned char> decisions;
 };

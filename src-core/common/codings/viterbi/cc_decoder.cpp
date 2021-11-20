@@ -8,7 +8,7 @@
  *
  */
 
-#include "cc_decoder_impl.h"
+#include "cc_decoder.h"
 #include <volk/volk.h>
 #include <cstring>
 #include <cmath>
@@ -22,29 +22,8 @@ namespace fec
 {
     namespace code
     {
-        generic_decoder::sptr cc_decoder::make(int frame_size,
-                                               int k,
-                                               int rate,
-                                               std::vector<int> polys,
-                                               int start_state,
-                                               int end_state,
-                                               cc_mode_t mode,
-                                               bool padded)
-        {
-            return generic_decoder::sptr(new cc_decoder_impl(
-                frame_size, k, rate, polys, start_state, end_state, mode, padded));
-        }
-
-        cc_decoder_impl::cc_decoder_impl(int frame_size,
-                                         int k,
-                                         int rate,
-                                         std::vector<int> polys,
-                                         int start_state,
-                                         int end_state,
-                                         cc_mode_t mode,
-                                         bool padded)
-            : generic_decoder("cc_decoder"),
-              d_k(k),
+        cc_decoder_impl::cc_decoder_impl(int frame_size, int k, int rate, std::vector<int> polys, int start_state, int end_state, cc_mode_t mode, bool padded)
+            : d_k(k),
               d_rate(rate),
               d_polys(polys),
               d_mode(mode),
@@ -467,8 +446,7 @@ namespace fec
                 {
                     out[d_veclen - 1 - i] = ((*d_end_state) >> i) & 1;
                 }
-                d_start_state_chaining =
-                    chainback_viterbi(&out[0], d_frame_size - (d_k - 1), *d_end_state, d_k - 1);
+                d_start_state_chaining = chainback_viterbi(&out[0], d_frame_size - (d_k - 1), *d_end_state, d_k - 1);
                 init_viterbi(&d_vp, *d_start_state);
                 break;
 
@@ -476,8 +454,7 @@ namespace fec
             case (CC_TERMINATED):
                 update_viterbi_blk((unsigned char *)(&in[0]), d_veclen);
                 d_end_state_chaining = find_endstate();
-                d_start_state_chaining = chainback_viterbi(
-                    &out[0], d_frame_size, *d_end_state, d_veclen - d_frame_size);
+                d_start_state_chaining = chainback_viterbi(&out[0], d_frame_size, *d_end_state, d_veclen - d_frame_size);
 
                 init_viterbi(&d_vp, *d_start_state);
                 break;
@@ -487,5 +464,29 @@ namespace fec
             }
         }
 
+        int cc_decoder_impl::continuous_work(uint8_t *in, int size, uint8_t *out)
+        {
+            d_buffer.insert(d_buffer.end(), &in[0], &in[size]);
+
+            if ((int)d_buffer.size() < get_input_size())
+                return 0;
+
+            int outsize = 0;
+            uint8_t *input_ptr = d_buffer.data();
+            uint8_t *output_ptr = out;
+
+            while ((int)d_buffer.size() >= get_input_size())
+            {
+                generic_work(input_ptr, output_ptr);
+
+                input_ptr += get_input_size();
+                output_ptr += get_output_size();
+                outsize += get_output_size();
+
+                d_buffer.erase(d_buffer.begin(), d_buffer.begin() + get_input_size());
+            }
+
+            return outsize;
+        }
     } /* namespace code */
 } /* namespace fec */

@@ -8,16 +8,13 @@
  *
  */
 
-#include "depuncture_bb_impl.h"
+#include "depuncture.h"
 #include <volk/volk.h>
 #include <string>
 
 namespace fec
 {
-    depuncture_bb_impl::depuncture_bb_impl(int puncsize,
-                                           int puncpat,
-                                           int delay,
-                                           uint8_t symbol)
+    depuncture_bb_impl::depuncture_bb_impl(int puncsize, int puncpat, int delay, uint8_t symbol)
         : d_puncsize(puncsize),
           d_delay(delay),
           d_sym(symbol)
@@ -30,9 +27,7 @@ namespace fec
         // Rotate the pattern for the delay value; then mask it if there
         // are any excess 1's in the pattern.
         for (int i = 0; i < d_delay; ++i)
-        {
             puncpat = ((puncpat & 1) << (d_puncsize - 1)) + (puncpat >> 1);
-        }
         d_puncpat = puncpat & mask;
 
         // Calculate the number of holes in the pattern. The mask is all
@@ -44,11 +39,6 @@ namespace fec
         volk_32u_popcnt(&count_mask, static_cast<uint32_t>(mask));
         volk_32u_popcnt(&count_pat, static_cast<uint32_t>(d_puncpat));
         d_puncholes = count_mask - count_pat;
-
-        // set_fixed_rate(true);
-        // set_relative_rate((uint64_t)d_puncsize, (uint64_t)(d_puncsize - d_puncholes));
-        // set_output_multiple(d_puncsize);
-        // set_msg_handler(<portname>, [this](pmt::pmt_t msg) { this->catch_msg(msg); });
     }
 
     depuncture_bb_impl::~depuncture_bb_impl() {}
@@ -65,13 +55,10 @@ namespace fec
 
     void depuncture_bb_impl::forecast(int noutput_items, int &ninput_items_required)
     {
-        ninput_items_required =
-            std::lround(((d_puncsize - d_puncholes) / (double)(d_puncsize)) * noutput_items);
+        ninput_items_required = std::lround(((d_puncsize - d_puncholes) / (double)(d_puncsize)) * noutput_items);
     }
 
-    int depuncture_bb_impl::general_work(int ninput_items,
-                                         uint8_t *input_items,
-                                         uint8_t *output_items)
+    int depuncture_bb_impl::general_work(int ninput_items, uint8_t *input_items, uint8_t *output_items)
     {
         d_buffer.insert(d_buffer.end(), &input_items[0], &input_items[ninput_items]);
 
@@ -82,8 +69,7 @@ namespace fec
         {
             for (int j = 0; j < d_puncsize; ++j)
             {
-                output_items[i * d_puncsize + j] =
-                    ((d_puncpat >> (d_puncsize - 1 - j)) & 1) ? d_buffer[k++] : d_sym;
+                output_items[i * d_puncsize + j] = ((d_puncpat >> (d_puncsize - 1 - j)) & 1) ? d_buffer[k++] : d_sym;
                 if (((d_puncpat >> (d_puncsize - 1 - j)) & 1))
                     consumed++;
             }
@@ -91,7 +77,6 @@ namespace fec
 
         d_buffer.erase(d_buffer.begin(), d_buffer.begin() + consumed);
 
-        //   consume_each(std::lround((1.0 / relative_rate()) * noutput_items));
         return noutput_items;
     }
 } /* namespace fec */

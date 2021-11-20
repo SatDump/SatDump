@@ -11,7 +11,7 @@
 #pragma once
 
 #include "cc_common.h"
-#include "generic_decoder.h"
+#include <volk/volk_alloc.hh>
 #include <map>
 #include <string>
 
@@ -19,7 +19,6 @@ namespace fec
 {
     namespace code
     {
-
         typedef void (*conv_kernel)(unsigned char *Y,
                                     unsigned char *X,
                                     unsigned char *syms,
@@ -28,104 +27,84 @@ namespace fec
                                     unsigned int excess,
                                     unsigned char *Branchtab);
 
-        /*!
- * \brief Convolutional Code Decoding class.
- * \ingroup error_coding_blk
- *
- * \details
- * This class performs convolutional decoding via the Viterbi
- * algorithm. While it is set up to take variable values for K,
- * rate, and the polynomials, currently, the block is only
- * capable of handling the following settings:
- *
- * \li K = 7
- * \li rate = 1/2 (given as 2 to the constructor)
- * \li polynomials = [109, 79]
- *
- * This is the well-known convolutional part of the Voyager code
- * implemented in the CCSDS encoder.
- *
- * The intent of having this FECAPI code classes fully
- * parameterizable is to eventually allow it to take on generic
- * settings, much like the cc_encoder class where the CCSDS
- * settings would be a highly-optimized version of this.
- *
- * The decoder is set up with a number of bits per frame in the
- * constructor. When not being used in a tagged stream mode,
- * this encoder will only process frames of the length provided
- * here. If used in a tagged stream block, this setting becomes
- * the maximum allowable frame size that the block may process.
- *
- * The \p mode is a cc_mode_t that specifies how the convolutional
- * encoder will behave and under what conditions.
- *
- * \li 'CC_STREAMING': mode expects an uninterrupted flow of
- * samples into the encoder, and the output stream is
- * continually encoded. This mode is the only mode for this
- * decoder that has a history requirement because it requires
- * rate*(K-1) bits more to finish the decoding properly. This
- * mode does not work with any deployments that do not allow
- * history.
- *
- * \li 'CC_TERMINATED': is a mode designed for packet-based
- * systems. This mode adds rate*(k-1) bits to the output as a
- * way to help flush the decoder.
- *
- * \li 'CC_TAILBITING': is another packet-based method. Instead of
- * adding bits onto the end of the packet, this mode will
- * continue the code between the payloads of packets by
- * pre-initializing the state of the new packet based on the
- * state of the last packet for (k-1) bits.
- *
- * \li 'CC_TRUNCATED': a truncated code always resets the registers
- * to the \p start_state between frames.
- *
- * A common convolutional encoder uses K=7, Rate=1/2,
- * Polynomials=[109, 79]. This is the Voyager code from NASA:
- * \li   109: b(1101101) --> 1 + x   + x^3 + x^4 + x^6
- * \li   79:  b(1001111) --> 1 + x^3 + x^4 + x^5 + x^6
- */
-        class cc_decoder : virtual public generic_decoder
+        class cc_decoder_impl
         {
         public:
-            /*!
-     * Build a convolutional code decoding FEC API object.
-     *
-     * \param frame_size Number of bits per frame. If using in the
-     *        tagged stream style, this is the maximum allowable
-     *        number of bits per frame.
-     * \param k Constraint length (K) of the encoder.
-     * \param rate Inverse of the coder's rate
-     *             (rate=2 means 2 output bits per 1 input).
-     * \param polys Vector of polynomials as integers.
-     * \param start_state Initialization state of the shift register.
-     * \param end_state Ending state of the shift register.
-     * \param mode cc_mode_t mode of the encoding.
-     * \param padded true if the encoded frame is padded
-     *               to the nearest byte.
-     */
-            static generic_decoder::sptr make(int frame_size,
-                                              int k,
-                                              int rate,
-                                              std::vector<int> polys,
-                                              int start_state = 0,
-                                              int end_state = -1,
-                                              cc_mode_t mode = CC_STREAMING,
-                                              bool padded = false);
+            // plug into the generic fec api
+            int get_output_size();
+            int get_input_size();
+            int get_history();
+            float get_shift();
+            int get_input_item_size();
+            const char *get_input_conversion();
+            // const char* get_output_conversion();
 
-            /*!
-     * Sets the uncoded frame size to \p frame_size. If \p
-     * frame_size is greater than the value given to the
-     * constructor, the frame size will be capped by that initial
-     * value and this function will return false. Otherwise, it
-     * returns true.
-     */
-            bool set_frame_size(unsigned int frame_size) override = 0;
+        private:
+            // everything else...
+            void create_viterbi();
+            int init_viterbi(struct v *vp, int starting_state);
+            int init_viterbi_unbiased(struct v *vp);
+            int update_viterbi_blk(unsigned char *syms, int nbits);
+            int chainback_viterbi(unsigned char *data,
+                                  unsigned int nbits,
+                                  unsigned int endstate,
+                                  unsigned int tailsize);
+            int find_endstate();
 
-            /*!
-     * Returns the coding rate of this encoder.
-     */
-            double rate() override = 0;
+            volk::vector<unsigned char> d_branchtab;
+            unsigned char Partab[256];
+
+            int d_ADDSHIFT;
+            int d_SUBSHIFT;
+            conv_kernel d_kernel;
+            unsigned int d_max_frame_size;
+            unsigned int d_frame_size;
+            unsigned int d_k;
+            unsigned int d_rate;
+            std::vector<int> d_polys;
+            cc_mode_t d_mode;
+            int d_padding;
+
+            struct v d_vp;
+            volk::vector<unsigned char> d_managed_in;
+            int d_numstates;
+            int d_decision_t_size;
+            int *d_start_state;
+            int d_start_state_chaining;
+            int d_start_state_nonchaining;
+            int *d_end_state;
+            int d_end_state_chaining;
+            int d_end_state_nonchaining;
+            unsigned int d_veclen;
+
+            int parity(int x);
+            int parityb(unsigned char x);
+            void partab_init(void);
+
+            // Buffering
+            volk::vector<uint8_t> d_buffer;
+
+        public:
+            cc_decoder_impl(int frame_size,
+                            int k,
+                            int rate,
+                            std::vector<int> polys,
+                            int start_state = 0,
+                            int end_state = -1,
+                            cc_mode_t mode = CC_STREAMING,
+                            bool padded = false);
+            ~cc_decoder_impl();
+
+            // Disable copy because of the raw pointers.
+            cc_decoder_impl(const cc_decoder_impl &) = delete;
+            cc_decoder_impl &operator=(const cc_decoder_impl &) = delete;
+
+            void generic_work(void *inbuffer, void *outbuffer);
+            int continuous_work(uint8_t *in, int size, uint8_t *out);
+            void clear() { d_buffer.clear(); }
+
+            bool set_frame_size(unsigned int frame_size);
+            double rate();
         };
 
     } /* namespace code */
