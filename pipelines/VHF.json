@@ -7,10 +7,21 @@
         "baseband_type": "i16",
         "work": {
             "baseband": {},
-            "frames": {
-                "noaa_dsb_demod": {
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 8320,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
                     "buffer_size": 8192
                 }
+            },
+            "frames": {
+                "noaa_dsb_decoder": {}
             },
             "products": {
                 "noaa_hirs": {}

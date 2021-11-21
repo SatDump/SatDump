@@ -107,7 +107,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 
 #include "modules/noaa/module_noaa_hrpt_decoder.h"
-#include "modules/noaa/module_noaa_dsb_demod.h"
+#include "modules/noaa/module_noaa_dsb_decoder.h"
 #include "modules/noaa/instruments/avhrr/module_noaa_avhrr.h"
 #include "modules/noaa/module_noaa_extractor.h"
 #include "modules/noaa/instruments/hirs/module_noaa_hirs.h"
@@ -238,7 +238,7 @@ void registerModules()
 
     // NOAA
     REGISTER_MODULE(noaa::NOAAHRPTDecoderModule);
-    REGISTER_MODULE(noaa::NOAADSBDemodModule);
+    REGISTER_MODULE(noaa::NOAADSBDecoderModule);
     REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
     REGISTER_MODULE(noaa::NOAAExtractorModule);
     REGISTER_MODULE(noaa::hirs::NOAAHIRSDecoderModule);
