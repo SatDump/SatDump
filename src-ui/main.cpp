@@ -240,14 +240,23 @@ int main(int argc, char *argv[])
 
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
     if (satdumpUiStatus == OFFLINE_PROCESSING)
+#ifdef __APPLE__
+        exit(0)
+#else
         quick_exit(0);
+#endif
 
 #ifdef BUILD_LIVE
-    if (satdumpUiStatus == BASEBAND_RECORDER)
-    {
-        recorder::exitRecorder();
-        quick_exit(0); // Same story as offline processing, except we finish recording first
-    }
+            if (satdumpUiStatus == BASEBAND_RECORDER)
+        {
+            recorder::exitRecorder();
+// Same story as offline processing, except we finish recording first
+#ifdef __APPLE__
+            exit(0)
+#else
+            quick_exit(0);
+#endif
+        }
 #endif
 
     processThreadPool.stop();
