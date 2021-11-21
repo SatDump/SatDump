@@ -136,29 +136,48 @@ namespace noaa
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings;
 
                 // Identify satellite, and apply per-sat settings...
+                nlohmann::json jData;
                 int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
                 if (scid == 7) // N15
                 {
                     norad = 25338;
                     logger->info("Identified NOAA-15!");
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else if (scid == 13) // N18
                 {
                     norad = 28654;
                     logger->info("Identified NOAA-18!");
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_18_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else if (scid == 15) // N19
                 {
                     norad = 33591;
                     logger->info("Identified NOAA-19!");
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_19_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else
                 {
                     logger->error("Unknwon NOAA Satellite! Only the KLM series 15, 18 and 19 are supported as others were decomissioned!");
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-UNKNOWN";
+                    jData["norad"] = norad;
                 }
+
+                // For later decoders
+                saveJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json", jData);
 
                 // Load TLEs now
                 proj_settings->sat_tle = tle::getTLEfromNORAD(norad);

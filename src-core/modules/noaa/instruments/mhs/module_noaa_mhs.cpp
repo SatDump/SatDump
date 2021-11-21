@@ -5,6 +5,9 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/image/image.h"
+#include "nlohmann/json_utils.h"
+#include "common/geodetic/projection/satellite_reprojector.h"
+#include "common/geodetic/projection/proj_file.h"
 
 #define BUFFER_SIZE 8192
 
@@ -60,6 +63,20 @@ namespace noaa
 
             mhsreader.calibrate();
 
+            for (double &time : mhsreader.timestamps)
+            {
+                time_t tttime = time;
+                std::tm *timeReadable = gmtime(&tttime);
+                std::string timestampr = std::to_string(timeReadable->tm_year + 1900) + "/" +
+                                         (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
+                                         (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + " " +
+                                         (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
+                                         (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
+                                         (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+                logger->info(std::to_string(time) + " " + timestampr);
+            }
+
             cimg_library::CImg<unsigned short> compo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
             cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
 
@@ -75,6 +92,33 @@ namespace noaa
 
             WRITE_IMAGE(compo, directory + "/MHS-ALL.png");
             WRITE_IMAGE(equcompo, directory + "/MHS-ALL-EQU.png");
+
+            // Reproject to an equirectangular proj
+            if (mhsreader.line > 0)
+            {
+                // Get satellite info
+                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+
+                // Setup Projecition
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_mhs.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings->utc_timestamps = mhsreader.timestamps; // Timestamps
+                geodetic::projection::LEOScanProjector projector(proj_settings);
+
+                {
+                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
+                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MHS.georef");
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i).equalize(1000).normalize(0, 65535);
+                    logger->info("Projected channel " + std::to_string(i + 1) + "...");
+                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
+                }
+            }
 
             cimg_library::CImg<unsigned char> rain(mhsreader.getChannel(3).width(), mhsreader.getChannel(3).height(), 1, 3, 0);
             cimg_library::CImg<double> ch5 = mhsreader.get_calibrated_channel(4);

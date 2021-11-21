@@ -16,6 +16,7 @@ namespace noaa
         {
             std::memset(MIU_data, 0, 80 * 50);
         }
+
         void MHSReader::work(uint8_t *buffer)
         {
             uint8_t cycle = buffer[7];
@@ -221,6 +222,7 @@ namespace noaa
                 }
             }
         }
+
         double MHSReader::get_avg_count(int l, int ch, int blackbody)
         {
             //blackbody 0 for space, blackbody 1 for blackbody
@@ -241,6 +243,7 @@ namespace noaa
             //return WCsum / Wsum;
             return calibration[l][ch][blackbody];
         }
+
         cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
         {
             cimg_library::CImg<unsigned short> output(MHS_WIDTH, line, 1, 1);
@@ -254,6 +257,7 @@ namespace noaa
             }
             return output;
         }
+
         cimg_library::CImg<double> MHSReader::get_calibrated_channel(int channel)
         {
             cimg_library::CImg<double> output(MHS_WIDTH, line, 1, 1);
@@ -267,6 +271,7 @@ namespace noaa
             }
             return output;
         }
+
         std::array<uint8_t, SCI_PACKET_SIZE> MHSReader::get_SCI_packet(int PKT)
         {
             std::array<uint8_t, SCI_PACKET_SIZE> out;
@@ -335,6 +340,7 @@ namespace noaa
             //test_out.write((char *)&out[0], SCI_PACKET_SIZE);
             return out;
         }
+
         std::array<uint16_t, 5> MHSReader::get_PRTs(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
         {
             std::array<uint16_t, 5> out;
@@ -344,6 +350,7 @@ namespace noaa
             }
             return out;
         }
+
         std::array<uint16_t, 3> MHSReader::get_PRT_calib(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
         {
             std::array<uint16_t, 3> out;
@@ -353,6 +360,7 @@ namespace noaa
             }
             return out;
         }
+
         std::array<uint8_t, 24> MHSReader::get_HKTH(std::array<uint8_t, SCI_PACKET_SIZE> &packet)
         {
             std::array<uint8_t, 24> out;
@@ -362,14 +370,17 @@ namespace noaa
             }
             return out;
         }
+
         double MHSReader::temp_to_rad(double t, double v)
         {
             return (c1 * pow(v, 3.0)) / (pow(e_num, c2 * v / t) - 1);
         }
+
         double MHSReader::rad_to_temp(double L, double v)
         {
             return (c2 * v) / (log(c1 * pow(v, 3) / L + 1));
         }
+
         double MHSReader::get_u(double temp, int ch)
         {
             if (temp == calibration::u_temps[0])
@@ -393,6 +404,7 @@ namespace noaa
             else
                 return interpolate(calibration::u_temps[1], calibration::u[1][ch], calibration::u_temps[2], calibration::u[2][ch], temp, 1);
         }
+
         double MHSReader::interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode)
         {                  //where a1y > a2y and a1x < a1y
             if (mode == 0) //between a1 and a2 or bx < a1x
@@ -400,25 +412,26 @@ namespace noaa
             else // > a2x
                 return -1 * (((bx - a2x) * (a1y - a2y)) / (a2x - a1x) - a2y);
         }
+
         double MHSReader::get_timestamp(int pkt, int offset, int ms_scale)
         {
             if (pkt == 2)
             {
-                uint16_t days = MIU_data[0][42] << 8 | MIU_data[0][43];
-                uint32_t milliseconds_of_day = MIU_data[0][44] << 24 | MIU_data[0][45] << 16 | MIU_data[0][46] << 8 | MIU_data[0][47];
-                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+                uint32_t seconds_since_epoch = MIU_data[0][42] << 24 | MIU_data[0][43] << 16 | MIU_data[0][44] << 8 | MIU_data[0][45];
+                uint16_t subsecond_time = MIU_data[0][46] << 8 | MIU_data[0][47];
+                return offset * 86400.0 + double(seconds_since_epoch) + double(subsecond_time) * 15.3e-6 - SEC_OFFSET;
             }
             else if (pkt == 0)
             {
-                uint16_t days = MIU_data[27][26] << 8 | MIU_data[27][27];
-                uint32_t milliseconds_of_day = MIU_data[27][28] << 24 | MIU_data[27][29] << 16 | MIU_data[27][30] << 8 | MIU_data[27][31];
-                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+                uint32_t seconds_since_epoch = MIU_data[27][26] << 24 | MIU_data[27][27] << 16 | MIU_data[27][28] << 8 | MIU_data[27][29];
+                uint16_t subsecond_time = MIU_data[27][30] << 8 | MIU_data[27][31];
+                return offset * 86400.0 + double(seconds_since_epoch) + double(subsecond_time) * 15.3e-6 - SEC_OFFSET;
             }
             else
             {
-                uint16_t days = MIU_data[54][8] << 8 | MIU_data[54][9];
-                uint32_t milliseconds_of_day = MIU_data[54][10] << 24 | MIU_data[54][11] << 16 | MIU_data[54][12] << 8 | MIU_data[54][13];
-                return (offset + days) * 86400 + milliseconds_of_day / ms_scale;
+                uint32_t seconds_since_epoch = MIU_data[54][8] << 24 | MIU_data[54][9] << 16 | MIU_data[54][10] << 8 | MIU_data[54][11];
+                uint16_t subsecond_time = MIU_data[54][12] << 8 | MIU_data[54][13];
+                return offset * 86400.0 + double(seconds_since_epoch) + double(subsecond_time) * 15.3e-6 - SEC_OFFSET;
             }
         }
     }
