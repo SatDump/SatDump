@@ -23,6 +23,7 @@
 #include "common/geodetic/projection/geo_projection.h"
 #include "modules/goes/gvar/image/crop.h"
 #include "settings.h"
+#include "findgeoref.h"
 
 namespace projection
 {
@@ -438,6 +439,13 @@ namespace projection
                     logger->debug("Dir " + input_file);
                     std::fill(newfile_image, &newfile_image[1000], 0);
                     std::memcpy(newfile_image, input_file.c_str(), input_file.length());
+
+                    std::optional<std::string> georef = findGeoRefForImage(input_file);
+                    if (georef.has_value())
+                    {
+                        std::fill(newfile_georef, &newfile_georef[1000], 0);
+                        std::memcpy(newfile_georef, georef.value().c_str(), georef.value().length());
+                    }
                 }
             }
 
