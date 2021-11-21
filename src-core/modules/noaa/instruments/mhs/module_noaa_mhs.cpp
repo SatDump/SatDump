@@ -63,20 +63,6 @@ namespace noaa
 
             mhsreader.calibrate();
 
-            for (double &time : mhsreader.timestamps)
-            {
-                time_t tttime = time;
-                std::tm *timeReadable = gmtime(&tttime);
-                std::string timestampr = std::to_string(timeReadable->tm_year + 1900) + "/" +
-                                         (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
-                                         (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + " " +
-                                         (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
-                                         (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
-                                         (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-
-                logger->info(std::to_string(time) + " " + timestampr);
-            }
-
             cimg_library::CImg<unsigned short> compo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
             cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
 
