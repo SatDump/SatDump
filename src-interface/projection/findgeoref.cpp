@@ -5,7 +5,7 @@
 std::optional<std::string> findGeoRefForImage(std::string image_path)
 {
     std::string directory = std::filesystem::path(image_path).parent_path().string();
-    std::string filename = std::filesystem::path(image_path).filename();
+    std::string filename = std::filesystem::path(image_path).filename().string();
 
     std::vector<std::filesystem::path> georefs;
 
