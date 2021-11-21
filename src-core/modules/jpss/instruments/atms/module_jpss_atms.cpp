@@ -390,17 +390,9 @@ namespace jpss
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    102,                         // Scan angle
-                    -0.5,                        // Roll offset
-                    0,                           // Pitch offset
-                    -3,                          // Yaw offset
-                    2,                           // Time offset
-                    image1.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(norad), // TLEs
-                    reader.timestamps            // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("jpss_atms.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings->utc_timestamps = reader.timestamps;    // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {

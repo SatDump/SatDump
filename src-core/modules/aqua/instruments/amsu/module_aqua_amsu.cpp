@@ -168,32 +168,12 @@ namespace aqua
 
                 // Setup Projecition. Twice with the same parameters except we need different timestamps
                 // There is no "real" guarantee the A1 / A2 output will always be identical
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 =
-                    a1reader.lines > 0 ? std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                                             98,                             // Scan angle
-                                             -5,                             // Roll offset
-                                             0,                              // Pitch offset
-                                             0,                              // Yaw offset
-                                             10,                             // Time offset
-                                             a1reader.getChannel(0).width(), // Image width
-                                             true,                           // Invert scan
-                                             tle::getTLEfromNORAD(norad),    // TLEs
-                                             a1reader.timestamps             // Timestamps
-                                             )
-                                       : nullptr;
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 =
-                    a2reader.lines > 0 ? std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                                             98,                             // Scan angle
-                                             -5,                             // Roll offset
-                                             0,                              // Pitch offset
-                                             0,                              // Yaw offset
-                                             10,                             // Time offset
-                                             a2reader.getChannel(0).width(), // Image width
-                                             true,                           // Invert scan
-                                             tle::getTLEfromNORAD(norad),    // TLEs
-                                             a2reader.timestamps             // Timestamps
-                                             )
-                                       : nullptr;
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 = geodetic::projection::makeScalineSettingsFromJSON("aqua_amsu.json");
+                proj_settings_a1->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings_a1->utc_timestamps = a1reader.timestamps;  // Timestamps
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 = geodetic::projection::makeScalineSettingsFromJSON("aqua_amsu.json");
+                proj_settings_a2->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings_a2->utc_timestamps = a2reader.timestamps;  // Timestamps
 
                 if (a1reader.lines > 0)
                 {

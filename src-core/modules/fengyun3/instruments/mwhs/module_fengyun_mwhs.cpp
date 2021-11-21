@@ -120,17 +120,9 @@ namespace fengyun3
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    108,                               // Scan angle
-                    -3.5,                              // Roll offset
-                    0,                                 // Pitch offset
-                    0,                                 // Yaw offset
-                    -1,                                // Time offset
-                    mwhs_reader.getChannel(0).width(), // Image width
-                    true,                              // Invert scan
-                    tle::getTLEfromNORAD(norad),       // TLEs
-                    mwhs_reader.timestamps             // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_ab_mwhs1.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);   // TLEs
+                proj_settings->utc_timestamps = mwhs_reader.timestamps; // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {

@@ -1,0 +1,9 @@
+{
+    "scan_angle": 104,
+    "roll_offset": -1,
+    "pitch_offset": 0,
+    "yaw_offset": -5,
+    "time_offset": -1,
+    "image_width": 98,
+    "invert_scan": true
+}
