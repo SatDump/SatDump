@@ -169,8 +169,8 @@ namespace meteor
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2_msumr.json");
 
                     // Also in moscow time...
-                    for (double &timestamp : timestamps)
-                        timestamp -= 3 * 3600;
+                    //for (double &timestamp : timestamps)
+                    //    timestamp -= 3 * 3600;
                 }
                 else if (msumr_serial_number == 1) // METEOR-M 2-1... Launch failed of course...
                 {
