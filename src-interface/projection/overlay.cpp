@@ -287,7 +287,7 @@ namespace projection_overlay
             if (ImGui::Button("Save"))
             {
 #ifdef __APPLE__
-                projected_image.save_png("overlayed.png");
+                overlayed_image.save_png("overlayed.png");
 #else
                 logger->debug("Opening file dialog");
                 std::string output_file = selectOutputFileDialog("Save projection to", "overlayed.png", {"*.png"});
