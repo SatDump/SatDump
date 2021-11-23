@@ -24,6 +24,9 @@
 #define IMCOLOR_SYNCING ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0)
 #define IMCOLOR_SYNCED ImColor::HSV(113.0 / 360.0, 1, 1, 1.0)
 
+#define REGISTER_MODULE(module) modules_registry.emplace(module::getID(), module::getInstance)
+#define REGISTER_MODULE_EXTERNAL(registry, module) registry.emplace(module::getID(), module::getInstance)
+
 enum ModuleDataType
 {
     DATA_STREAM,     // Generic data, for which a circular buffer will be used
@@ -74,6 +77,12 @@ public:
 };
 
 SATDUMP_DLL extern std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
+
+// Event where modules are registered, so plugins can load theirs
+struct RegisterModulesEvent
+{
+    std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry;
+};
 
 void registerModules();
 

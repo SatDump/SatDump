@@ -1,6 +1,7 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "module.h"
 #include "logger.h"
+#include "plugin.h"
 
 SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
 SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
@@ -55,8 +56,6 @@ void ProcessingModule::drawUI(bool /*window*/)
 
 // Registry
 SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
-
-#define REGISTER_MODULE(module) modules_registry.emplace(module::getID(), module::getInstance)
 
 #include "modules/module_qpsk_demod.h"
 #include "modules/module_oqpsk_demod.h"
@@ -326,6 +325,9 @@ void registerModules()
 
     // CFOSAT
     REGISTER_MODULE(cfosat::CFOSATDumpDecoderModule);
+
+    // Plugin modules
+    satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});
 
     // Log them out
     logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
