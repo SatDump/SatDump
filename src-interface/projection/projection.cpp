@@ -470,9 +470,10 @@ namespace projection
 
             if (ImGui::Button("Add file") && std::filesystem::exists(newfile_image) && (std::filesystem::exists(newfile_georef) || use_equirectangular))
             {
-                cimg_library::CImg<unsigned short> new_image_full16(newfile_image);
-                new_image_full16.normalize(0, 65535);
-                cimg_library::CImg<unsigned char> new_image = new_image_full16 >> 8;
+                unsigned int bit_depth;
+                cimg_library::CImg<unsigned short> new_image_full16;
+                new_image_full16.load_png(newfile_image, &bit_depth);
+                cimg_library::CImg<unsigned char> new_image = new_image_full16 >> (bit_depth == 16 ? 8 : 0);
                 new_image_full16.clear(); // Free up memory now
 
                 std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> new_geofile;

@@ -12,6 +12,7 @@
 #include "live/live_run.h"
 #include "projection/projection.h"
 #include "projection/projection_menu.h"
+#include "projection/overlay.h"
 
 satdump_ui_status satdumpUiStatus = MAIN_MENU;
 
@@ -52,6 +53,10 @@ void renderMainUI(int wwidth, int wheight)
     else if (satdumpUiStatus == PROJECTION)
     {
         projection::renderProjection(wwidth, wheight);
+    }
+    else if (satdumpUiStatus == OVERLAY)
+    {
+        projection_overlay::renderOverlay(wwidth, wheight);
     }
     else if (satdumpUiStatus == MAIN_MENU)
     {
