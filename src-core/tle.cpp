@@ -90,7 +90,7 @@ namespace tle
         else
         {
             logger->error("TLE from NORAD " + std::to_string(norad) + " not found!");
-            return {norad, "", "", ""};
+            return {0, "", "", ""};
         }
     }
 

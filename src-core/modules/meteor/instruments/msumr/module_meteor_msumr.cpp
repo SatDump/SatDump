@@ -158,7 +158,7 @@ namespace meteor
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
 
                 // Setup Projecition, tuned for 2-2
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings;
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("meteor_m2_msumr.json"); // Init it with something
 
                 // Identify satellite, and apply per-sat settings...
                 int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());

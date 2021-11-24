@@ -200,7 +200,7 @@ namespace projection_overlay
         if (draw_borders)
         {
             unsigned char color[3] = {0, 255, 0};
-            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, overlayed_image, color, projectionFunc);
+            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, overlayed_image, color, projectionFunc, 200);
         }
 
         // Should we draw cities?

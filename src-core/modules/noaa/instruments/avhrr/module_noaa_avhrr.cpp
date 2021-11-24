@@ -133,7 +133,7 @@ namespace noaa
                 image4.equalize(1000);
 
                 // Setup Projecition, based off N19
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings;
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json"); // Init it with something
 
                 // Identify satellite, and apply per-sat settings...
                 nlohmann::json jData;
