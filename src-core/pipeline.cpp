@@ -128,7 +128,7 @@ void loadPipeline(std::string filepath, std::string category)
 
                 std::string finalStr = pipelineString.substr(bracketPos, (i - bracketPos) + 10);
                 std::string filenameToLoad = finalStr.substr(1, finalStr.size() - 2);
-                std::string pathToLoad = std::filesystem::path(filepath).parent_path().relative_path().string() + "/" + filenameToLoad;
+                std::string pathToLoad = std::filesystem::path(filepath).parent_path().string() + "/" + filenameToLoad;
 
                 if (std::filesystem::exists(pathToLoad))
                 {
