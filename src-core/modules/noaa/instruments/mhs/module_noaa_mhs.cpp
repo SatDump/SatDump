@@ -116,6 +116,8 @@ namespace noaa
                 if (ch3[i] - ch5[i] > -3)
                 {
                     int index = (((ch3[i] - ch5[i]) + 3) * 200) / 64;
+                    if (index < 0)
+                        continue;
                     if (index < 1024)
                     {
                         const unsigned char color[3] = {*clut.data(index, 0, 0, 0), *clut.data(index, 0, 0, 1), *clut.data(index, 0, 0, 2)};
