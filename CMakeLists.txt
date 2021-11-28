@@ -16,10 +16,6 @@ option(BUILD_ZIQ            "Build support for the custom ZIQ format"           
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
-if(NOGUI)
-    set(BUILD_LIVE OFF)
-endif()
-
 if(APPLE)
     include_directories(/usr/local/include)
     include_directories(/usr/local/opt/jpeg-turbo/include)
