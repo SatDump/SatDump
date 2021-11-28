@@ -57,7 +57,7 @@ void SDRRtlTcp::start()
     client.setFrequency(d_frequency);
 
     client.setGainMode(1);
-    client.setGain(gain);
+    setGain(gain);
     should_run = true;
     workThread = std::thread(&SDRRtlTcp::runThread, this);
 }
