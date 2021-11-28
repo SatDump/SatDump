@@ -11,7 +11,7 @@ namespace dsp
     FreqShiftBlock::FreqShiftBlock(std::shared_ptr<dsp::stream<complex_t>> input, float samplerate, float shift) : Block(input)
     {
         phase = complex_t(1, 0);
-        phase_delta = complex_t(std::cos(2.0f * M_PI * (shift / samplerate)), std::sin(2.0f * M_PI * (shift / samplerate)));
+        phase_delta = complex_t(cos(2.0f * M_PI * (shift / samplerate)), sin(2.0f * M_PI * (shift / samplerate)));
     }
 
     void FreqShiftBlock::work()

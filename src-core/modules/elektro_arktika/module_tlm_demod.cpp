@@ -11,7 +11,7 @@ namespace elektro_arktika
     TLMDemodModule::TLMDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                       d_samplerate(parameters["samplerate"].get<long>()),
                                                                                                                       d_buffer_size(parameters["buffer_size"].get<long>()),
-                                                                                                                      constellation(1, 1, demod_constellation_size)
+                                                                                                                      constellation(0.5, 0.5, demod_constellation_size)
     {
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
@@ -32,6 +32,8 @@ namespace elektro_arktika
 
         if (resample)
             d_buffer_size *= round(decimation_factor);
+        if (d_buffer_size > STREAM_BUFFER_SIZE)
+            d_buffer_size = STREAM_BUFFER_SIZE;
 
         float sps = samplerate / (float)symbolrate;
 
@@ -53,7 +55,7 @@ namespace elektro_arktika
             res = std::make_shared<dsp::CCRationalResamplerBlock>(input_data, samplerate, d_samplerate);
 
         // AGC
-        agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, 0.001f, 1.0f, 1.0f, 65536);
+        agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, 0.01f, 1.0f, 1.0f, 65536);
 
         // Carrier tracking
         cpl = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, 6e-3f, 10e3, -10e3);
@@ -61,17 +63,17 @@ namespace elektro_arktika
         // DC Blocking
         dcb = std::make_shared<dsp::DCBlockerBlock>(cpl->output_stream, 32, true);
 
-        // Frequency shift
-        shi = std::make_shared<dsp::FreqShiftBlock>(dcb->output_stream, samplerate, -symbolrate);
+        // Frequency translation
+        reco = std::make_shared<QuadratureRecomposer>(dcb->output_stream, samplerate, symbolrate);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(shi->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
+        rrc = std::make_shared<dsp::CCFIRBlock>(reco->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
 
         // Costas
-        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.03f, 2);
+        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.01f, 2);
 
         // Clock recovery
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, 0.625e-3, 0.5f, 0.175, 0.005f);
+        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3f, 0.001f);
     }
 
     std::vector<ModuleDataType> TLMDemodModule::getInputTypes()
@@ -119,7 +121,7 @@ namespace elektro_arktika
         agc->start();
         cpl->start();
         dcb->start();
-        shi->start();
+        reco->start();
         rrc->start();
         pll->start();
         rec->start();
@@ -186,7 +188,7 @@ namespace elektro_arktika
         agc->stop();
         cpl->stop();
         dcb->stop();
-        shi->stop();
+        reco->stop();
         rrc->stop();
         pll->stop();
         rec->stop();
@@ -212,7 +214,6 @@ namespace elektro_arktika
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             {
                 // Show SNR information
-                ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
                 snr_plot.draw(snr, peak_snr);
             }
 

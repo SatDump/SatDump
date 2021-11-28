@@ -1,6 +1,8 @@
 #include "pll_carrier_tracking.h"
 #include "fast_trig.h"
 
+#define M_TWOPI (2 * M_PI)
+
 namespace dsp
 {
     PLLCarrierTrackingBlock::PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, float max, float min)
@@ -9,12 +11,11 @@ namespace dsp
           d_min_freq(min),
           d_damping(0),
           d_loop_bw(loop_bw),
-          d_locksig(0),
-          d_lock_threshold(0),
-          d_squelch_enable(false),
           d_phase(0),
           d_freq(0)
     {
+        d_damping = sqrtf(2.0f) / 2.0f;
+
         float denom = (1.0 + 2.0 * d_damping * d_loop_bw + d_loop_bw * d_loop_bw);
         d_alpha = (4 * d_damping * d_loop_bw) / denom;
         d_beta = (4 * d_loop_bw * d_loop_bw) / denom;
@@ -35,36 +36,31 @@ namespace dsp
         for (int i = 0; i < nsamples; i++)
         {
             // Generate VCO
-            vcoValue = complex_t(cosf(d_phase), sinf(d_phase));
+            vcoValue = complex_t(fast_cos(d_phase), -fast_sin(d_phase));
 
             // Mix with input
             output_stream->writeBuf[i] = input_stream->readBuf[i] * vcoValue;
 
             // Compute phase error and clip it
             phase_error = fast_atan2f(input_stream->readBuf[i].imag, input_stream->readBuf[i].real) - d_phase;
-            if (phase_error > M_PI)
-                phase_error -= (2.0 * M_PI);
-            else if (phase_error < -M_PI)
-                phase_error += (2.0 * M_PI);
+            while (phase_error < -M_PI)
+                phase_error += M_TWOPI;
+            while (phase_error > M_PI)
+                phase_error -= M_TWOPI;
 
             // Get new phase and freq, then wrap it
             d_freq = d_freq + d_beta * phase_error;
+            if (d_freq > d_max_freq)
+                d_freq = d_max_freq;
+            else if (d_freq < d_min_freq)
+                d_freq = d_min_freq;
+
+            // Get new phase
             d_phase = d_phase + d_freq + d_alpha * phase_error;
-            while (d_phase > (2 * M_PI))
-                d_phase -= 2 * M_PI;
-            while (d_phase < (-2 * M_PI))
-                d_phase += 2 * M_PI;
-
-            // Optional
-            if (d_squelch_enable)
-            {
-                // Check if we have a lock
-                d_locksig = d_locksig * (1.0 - d_alpha) + d_alpha * (input_stream->readBuf[i].real * vcoValue.real + input_stream->readBuf[i].imag * vcoValue.imag);
-
-                // If we don't, set output to 0
-                if (d_squelch_enable && !(fabsf(d_locksig) > d_lock_threshold))
-                    output_stream->writeBuf[i] = 0;
-            }
+            while (d_phase < -M_PI)
+                d_phase += M_TWOPI;
+            while (d_phase > M_PI)
+                d_phase -= M_TWOPI;
         }
 
         input_stream->flush();

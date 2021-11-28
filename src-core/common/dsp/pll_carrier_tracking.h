@@ -13,8 +13,6 @@ namespace dsp
         float d_max_freq, d_min_freq;
         float d_damping, d_loop_bw;
         float d_alpha, d_beta;
-        float d_locksig, d_lock_threshold;
-        bool d_squelch_enable;
         float d_phase, d_freq;
 
         void work();
