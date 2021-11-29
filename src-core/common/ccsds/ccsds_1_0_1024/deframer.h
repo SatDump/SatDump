@@ -48,7 +48,7 @@ namespace ccsds
             int numFrames;
 
         public:
-            CADUDeframer();
+            CADUDeframer(bool derand = true);
             // Get found frame count
             int getFrameCount();
             // Return state
