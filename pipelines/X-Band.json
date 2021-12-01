@@ -504,6 +504,33 @@
             }
         }
     },
+    "cryosat_dump": {
+        "name": "Cryosat X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "samplerate": 60e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": 50000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0189,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "cryosat_dump_decoder": {}
+            },
+            "products": {
+                "cryosat_siral": {}
+            }
+        }
+    },
     "aeolus_dump": {
         "name": "Aeolus Dump",
         "live": false,

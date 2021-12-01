@@ -60,3 +60,29 @@ void rotate_soft(int8_t *soft, int size, phase_t phase, bool iqswap)
     break;
   }
 }
+
+int8_t clamp(float x)
+{
+  if (x < -128.0)
+    return -127;
+  if (x > 127.0)
+    return 127;
+  return x;
+}
+
+void rotate_soft_arbitrary(int8_t *soft, int size, float phase)
+{
+  float shift_real = cos(phase);
+  float shift_imag = sin(phase);
+
+  int8_t r = 0;
+  int8_t i = 0;
+
+  for (int i = 0; i < size; i += 2)
+  {
+    r = clamp((soft[i * 2 + 0] * shift_real) - (soft[i * 2 + 1] * shift_imag));
+    i = clamp((soft[i * 2 + 1] * shift_real) + (soft[i * 2 + 0] * shift_imag));
+    soft[i * 2 + 0] = r;
+    soft[i * 2 + 1] = i;
+  }
+}
