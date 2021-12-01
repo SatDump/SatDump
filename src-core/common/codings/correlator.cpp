@@ -77,7 +77,7 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
     uint8_t shifter = 0;
     for (int i = 0; i < length; i++)
     {
-        shifter = shifter << 1 | (soft_input[i] >= 0);
+        shifter = shifter << 1 | (soft_input[i] > 0);
         bits++;
 
         if (bits == 8)
