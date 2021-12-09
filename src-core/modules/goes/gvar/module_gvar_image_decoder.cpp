@@ -271,10 +271,25 @@ namespace goes
                     input_fifo->read((uint8_t *)frame, FRAME_SIZE);
 
                 // Parse main header
-                PrimaryBlockHeader block_header = *((PrimaryBlockHeader *)&frame[8]);
+                PrimaryBlockHeader block_header1 = *((PrimaryBlockHeader *)&frame[8]);
+                PrimaryBlockHeader block_header2 = *((PrimaryBlockHeader *)&frame[8+30]);
+                PrimaryBlockHeader block_header3 = *((PrimaryBlockHeader *)&frame[8+60]);
+                int block_id=0;
+                if(block_header1.block_id==block_header2.block_id)
+                {
+                    block_id=block_header1.block_id;
+                }
+                else if(block_header2.block_id==block_header3.block_id)
+                {
+                    block_id=block_header2.block_id;
+                }
+                else if(block_header3.block_id==block_header1.block_id)
+                {
+                    block_id=block_header1.block_id;
+                }
 
                 // Is this imagery? Blocks 1 to 10 are imagery
-                if (block_header.block_id >= 1 && block_header.block_id <= 10)
+                if (block_id >= 1 && block_id <= 10)
                 {
                     // This is imagery, so we can parse the line information header
                     LineDocumentationHeader line_header(&frame[8 + 30 * 3]);
@@ -289,13 +304,13 @@ namespace goes
                         continue;
 
                     // Is this VIS Channel 1?
-                    if (block_header.block_id >= 3 && block_header.block_id <= 10)
+                    if (block_id >= 3 && block_id <= 10)
                     {
                         // Push width stats
                         vis_width_stats.push_back(line_header.pixel_count);
 
                         // Push into decoder
-                        visibleImageReader.pushFrame(frame, block_header.block_id, line_header.relative_scan_count);
+                        visibleImageReader.pushFrame(frame, block_id, line_header.relative_scan_count);
 
                         // Detect full disk end
                         if (line_header.relative_scan_count < 2)
@@ -366,7 +381,7 @@ namespace goes
                         }
                     }
                     // Is this IR?
-                    else if (block_header.block_id == 1 || block_header.block_id == 2)
+                    else if (block_id == 1 || block_id == 2)
                     {
                         // Easy way of showing an approximate progress percentage
                         approx_progess = round(((float)line_header.relative_scan_count / 1353.0f) * 1000.0f) / 10.0f;
@@ -382,9 +397,9 @@ namespace goes
                             current_words = 6530; // Default to fulldisk size
 
                         // Is this IR Channel 1-2?
-                        if (block_header.block_id == 1)
+                        if (block_id == 1)
                             infraredImageReader1.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
-                        else if (block_header.block_id == 2)
+                        else if (block_id == 2)
                             infraredImageReader2.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
                     }
                 }
