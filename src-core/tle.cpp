@@ -46,6 +46,7 @@ namespace tle
                             if (line_count % 3 == 0)
                             {
                                 name = line;
+                                name.erase(name.end() - 1); // Remove newline
                                 name.erase(std::find_if(name.rbegin(), name.rend(), [](char &c)
                                                         { return c != ' '; })
                                                .base(),
