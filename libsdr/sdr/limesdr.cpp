@@ -153,7 +153,7 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> SDRLimeSDR::getD
     lms_info_str_t devices[256];
     int cnt = LMS_GetDeviceList(devices);
 
-    for (int i = 0; i < cnt - 1; i++)
+    for (int i = 0; i < cnt; i++)
     {
         lms_device_t *device = nullptr;
         LMS_Open(&device, devices[i], NULL);
