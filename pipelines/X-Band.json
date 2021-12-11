@@ -108,6 +108,7 @@
                     "correct_bowtie": true,
                     "composites": "composites/fengyun_mersill.json.inc"
                 },
+                "fengyun_xeuvi": {},
                 "fengyun_windrad": {},
                 "fengyun_mwts3": {},
                 "fengyun_mwhs2": {}
