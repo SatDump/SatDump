@@ -138,6 +138,8 @@ void SDRLimeSDR::setFrequency(float frequency)
 {
     d_frequency = frequency;
     std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
+    limeDevice->SetFrequency(false, 0, d_frequency);
+    limeDevice->SetClockFreq(LMS_CLOCK_SXR, d_frequency, 0);
 }
 
 void SDRLimeSDR::init()
