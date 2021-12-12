@@ -47,7 +47,7 @@
                     "agc_rate": 0.00001,
                     "rrc_alpha": 0.35,
                     "rrc_taps": 31,
-                    "costas_bw": 0.0063,
+                    "costas_bw": 0.0163,
                     "buffer_size": 8192
                 }
             },
@@ -108,6 +108,7 @@
                     "correct_bowtie": true,
                     "composites": "composites/fengyun_mersill.json.inc"
                 },
+                "fengyun_xeuvi": {},
                 "fengyun_windrad": {},
                 "fengyun_mwts3": {},
                 "fengyun_mwhs2": {}

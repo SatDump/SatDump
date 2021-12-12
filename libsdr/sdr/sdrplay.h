@@ -22,8 +22,8 @@ private:
     int agc_mode = 0;
     char frequency[100];
 
-    sdrplay_api_DeviceParamsT *dev_params;
-    sdrplay_api_RxChannelParamsT *channel_params;
+    sdrplay_api_DeviceParamsT *dev_params = nullptr;
+    sdrplay_api_RxChannelParamsT *channel_params = nullptr;
     sdrplay_api_CallbackFnsT callback_funcs;
     static sdrplay_api_DeviceT devices_addresses[128];
 

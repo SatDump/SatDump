@@ -339,6 +339,11 @@ void SDRPlay::setFrequency(float frequency)
 {
     d_frequency = frequency;
     std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
+    if (channel_params)
+    {
+        channel_params->tunerParams.rfFreq.rfHz = d_frequency;
+        sdrplay_api_Update(dev.dev, dev.tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);
+    }
 }
 
 void SDRPlay::init()

@@ -8,7 +8,7 @@
 int SDRAirspyHF::_rx_callback(airspyhf_transfer_t *t)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->ctx);
-    std::memcpy(stream->writeBuf, (complex_t*)t->samples, t->sample_count * sizeof(complex_t));
+    std::memcpy(stream->writeBuf, (complex_t *)t->samples, t->sample_count * sizeof(complex_t));
     stream->swap(t->sample_count);
     return 0;
 };
@@ -123,6 +123,7 @@ void SDRAirspyHF::setFrequency(float frequency)
 {
     d_frequency = frequency;
     std::memcpy(this->frequency, std::to_string((float)d_frequency / 1e6).c_str(), std::to_string((float)d_frequency / 1e6).length());
+    airspyhf_set_freq(dev, d_frequency);
 }
 
 void SDRAirspyHF::init()
