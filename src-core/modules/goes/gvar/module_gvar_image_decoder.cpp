@@ -12,6 +12,7 @@
 #include "common/image/hue_saturation.h"
 #include "common/image/brightness_contrast.h"
 #include "common/thread_priority.h"
+#include "crc_table.h"
 
 #define FRAME_SIZE 32786
 
@@ -22,6 +23,15 @@ namespace goes
 {
     namespace gvar
     {
+
+         // CRC Implementation from LRIT-Missin-Specific-Document.pdf
+        uint16_t computeCRC(const uint8_t *data, int size)
+        {
+            uint16_t crc = 0xffff;
+            for (int i = 0; i < size; i++)
+                crc = (crc << 8) ^ crc_table[(crc >> 8) ^ (uint16_t)data[i]];
+            return crc;
+        }       
         std::string GVARImageDecoderModule::getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel)
         {
             std::string utc_filename = "G" + std::to_string(sat_number) + "_" + channel + "_" +                                                                     // Satellite name and channel
@@ -271,25 +281,29 @@ namespace goes
                     input_fifo->read((uint8_t *)frame, FRAME_SIZE);
 
                 // Parse main header
-                PrimaryBlockHeader block_header1 = *((PrimaryBlockHeader *)&frame[8]);
-                PrimaryBlockHeader block_header2 = *((PrimaryBlockHeader *)&frame[8+30]);
-                PrimaryBlockHeader block_header3 = *((PrimaryBlockHeader *)&frame[8+60]);
-                int block_id=0;
-                if(block_header1.block_id==block_header2.block_id)
-                {
-                    block_id=block_header1.block_id;
-                }
-                else if(block_header2.block_id==block_header3.block_id)
-                {
-                    block_id=block_header2.block_id;
-                }
-                else if(block_header3.block_id==block_header1.block_id)
-                {
-                    block_id=block_header1.block_id;
+                std::vector<uint16_t> block_ids;
+                PrimaryBlockHeader block_header = *((PrimaryBlockHeader *)&frame[8]);
+                block_header.header_crc=~block_header.header_crc;
+                if(computeCRC((uint8_t*)&block_header,30)!=0)
+                {//CRC failed for first header, try second header
+                    block_ids.push_back(block_header.block_id);
+                    block_header = *((PrimaryBlockHeader *)&frame[8+30]);
+                    block_header.header_crc=~block_header.header_crc;
+                    if(computeCRC((uint8_t*)&block_header,30)!=0)
+                    {//CRC failed for second header, try third header
+                        block_ids.push_back(block_header.block_id);
+                        block_header = *((PrimaryBlockHeader *)&frame[8+60]);
+                        block_header.header_crc=~block_header.header_crc;
+                        if(computeCRC((uint8_t*)&block_header,30)!=0)
+                        {//All headers failed CRC. Use best of 3.
+                            block_ids.push_back(block_header.block_id);
+                            block_header.block_id=most_common(block_ids.begin(),block_ids.end());
+                        }
+                    }
                 }
 
                 // Is this imagery? Blocks 1 to 10 are imagery
-                if (block_id >= 1 && block_id <= 10)
+                if (block_header.block_id >= 1 && block_header.block_id <= 10)
                 {
                     // This is imagery, so we can parse the line information header
                     LineDocumentationHeader line_header(&frame[8 + 30 * 3]);
@@ -304,13 +318,13 @@ namespace goes
                         continue;
 
                     // Is this VIS Channel 1?
-                    if (block_id >= 3 && block_id <= 10)
+                    if (block_header.block_id >= 3 && block_header.block_id <= 10)
                     {
                         // Push width stats
                         vis_width_stats.push_back(line_header.pixel_count);
 
                         // Push into decoder
-                        visibleImageReader.pushFrame(frame, block_id, line_header.relative_scan_count);
+                        visibleImageReader.pushFrame(frame, block_header.block_id, line_header.relative_scan_count);
 
                         // Detect full disk end
                         if (line_header.relative_scan_count < 2)
@@ -381,7 +395,7 @@ namespace goes
                         }
                     }
                     // Is this IR?
-                    else if (block_id == 1 || block_id == 2)
+                    else if (block_header.block_id == 1 || block_header.block_id == 2)
                     {
                         // Easy way of showing an approximate progress percentage
                         approx_progess = round(((float)line_header.relative_scan_count / 1353.0f) * 1000.0f) / 10.0f;
@@ -397,9 +411,9 @@ namespace goes
                             current_words = 6530; // Default to fulldisk size
 
                         // Is this IR Channel 1-2?
-                        if (block_id == 1)
+                        if (block_header.block_id == 1)
                             infraredImageReader1.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
-                        else if (block_id == 2)
+                        else if (block_header.block_id == 2)
                             infraredImageReader2.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
                     }
                 }

@@ -30,6 +30,32 @@ enum gvar_product_id
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
+struct bcd_date_t
+{
+    uint8_t YEAR100:4;
+    uint8_t YEAR1000:4;
+
+    uint8_t YEAR1:4;
+    uint8_t YEAR10:4;
+
+    uint8_t DOY10:4;
+    uint8_t DOY100:4;
+
+    uint8_t HOURS10:4;
+    uint8_t DOY1:4;
+
+    uint8_t MINUTES10:4;
+    uint8_t HOURS1:4;
+
+    uint8_t SECONDS10:4;
+    uint8_t MINUTES1:4;
+
+    uint8_t MSECONDS100:4;
+    uint8_t SECONDS1:4;
+
+    uint8_t MSECONDS1:4;
+    uint8_t MSECONDS10:4;
+};
 struct PrimaryBlockHeader
 {
     uint8_t block_id;
@@ -44,7 +70,7 @@ struct PrimaryBlockHeader
     uint8_t range_word;
     uint16_t block_count;
     uint16_t spare1;
-    uint64_t time_code_bcd;
+    bcd_date_t time_code_bcd;
     uint32_t spare2;
     uint16_t header_crc;
 }
