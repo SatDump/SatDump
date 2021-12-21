@@ -68,6 +68,12 @@ namespace reedsolomon
 
         if (err == -1)
         {
+            if (ccsds)
+            {
+                for (int i = 0; i < 255; i++)
+                    data[i] = ToDualBasis[data[i]];
+            }
+
             return -1;
         }
         else
