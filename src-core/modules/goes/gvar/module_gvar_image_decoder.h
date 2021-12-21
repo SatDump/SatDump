@@ -22,6 +22,7 @@ namespace goes
             cimg_library::CImg<unsigned short> image5;
             int sat_number;
             int vis_width;
+            tm imageTime;
         };
 
         namespace events
