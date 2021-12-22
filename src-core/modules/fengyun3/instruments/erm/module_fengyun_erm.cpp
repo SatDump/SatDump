@@ -110,9 +110,9 @@ namespace fengyun3
                     geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
                 }
 
-                cimg_library::CImg<unsigned short> image = erm_reader.getChannel();
+                image::Image<uint16_t> image = erm_reader.getChannel();
                 logger->info("Projected Channel 1...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                 WRITE_IMAGE(projected_image, directory + "/ERM-1-PROJ.png");
             }
         }

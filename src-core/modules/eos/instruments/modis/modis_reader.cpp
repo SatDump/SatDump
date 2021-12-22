@@ -245,19 +245,19 @@ namespace eos
             }
         }
 
-        cimg_library::CImg<unsigned short> MODISReader::getImage250m(int channel)
+        image::Image<uint16_t> MODISReader::getImage250m(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels250m[channel], 1354 * 4, lines * 4);
+            return image::Image<uint16_t>(channels250m[channel], 1354 * 4, lines * 4, 1);
         }
 
-        cimg_library::CImg<unsigned short> MODISReader::getImage500m(int channel)
+        image::Image<uint16_t> MODISReader::getImage500m(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels500m[channel], 1354 * 2, lines * 2);
+            return image::Image<uint16_t>(channels500m[channel], 1354 * 2, lines * 2, 1);
         }
 
-        cimg_library::CImg<unsigned short> MODISReader::getImage1000m(int channel)
+        image::Image<uint16_t> MODISReader::getImage1000m(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels1000m[channel], 1354, lines);
+            return image::Image<uint16_t>(channels1000m[channel], 1354, lines, 1);
         }
     } // namespace modis
 } // namespace eos

@@ -41,17 +41,17 @@ namespace elektro
                 ch1.resize(ch3.width(), ch3.height());
             }
 
-            compo321 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
+            compo321 = image::Image<uint8_t>(ch1.width(), ch1.height(), 3); // Init image
 
-            compo321.draw_image(0, 0, 0, 0, ch3);
-            compo321.draw_image(0, 0, 0, 1, ch2);
-            compo321.draw_image(0, 0, 0, 2, ch1);
+            compo321.draw_image(0, ch3);
+            compo321.draw_image(1, ch2);
+            compo321.draw_image(2, ch1);
 
-            compo231 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
+            compo231 = image::Image<uint8_t>(ch1.width(), ch1.height(), 3); // Init image
 
-            compo231.draw_image(0, 0, 0, 0, ch2);
-            compo231.draw_image(0, 0, 0, 1, ch3);
-            compo231.draw_image(0, 0, 0, 2, ch1);
+            compo231.draw_image(0, ch2);
+            compo231.draw_image(1, ch3);
+            compo231.draw_image(2, ch1);
 
             compoNC = compo321;
 
@@ -63,14 +63,14 @@ namespace elektro
                 // Downscale image
                 img_height = 1000;
                 img_width = 1000;
-                cimg_library::CImg<unsigned char> imageScaled = compo321;
+                image::Image<uint8_t> imageScaled = compo321;
                 imageScaled.resize(img_width, img_height);
-                uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width, 3);
+                uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width, 3);
                 hasToUpdate = true;
             }
         }
 
-        void ELEKTRO321Composer::push3(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push3(image::Image<uint8_t> img, time_t time)
         {
             ch3 = img;
             time3 = time;
@@ -79,7 +79,7 @@ namespace elektro
                 generateCompo();
         }
 
-        void ELEKTRO321Composer::push2(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push2(image::Image<uint8_t> img, time_t time)
         {
             ch2 = img;
             time2 = time;
@@ -88,7 +88,7 @@ namespace elektro
                 generateCompo();
         }
 
-        void ELEKTRO321Composer::push1(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO321Composer::push1(image::Image<uint8_t> img, time_t time)
         {
             ch1 = img;
             time1 = time;

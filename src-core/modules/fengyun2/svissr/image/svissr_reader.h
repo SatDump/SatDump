@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace fengyun_svissr
 {
@@ -22,11 +20,11 @@ namespace fengyun_svissr
         ~SVISSRReader();
         void pushFrame(uint8_t *data);
         void reset();
-        cimg_library::CImg<unsigned short> getImage();
-        cimg_library::CImg<unsigned short> getImageIR1();
-        cimg_library::CImg<unsigned short> getImageIR2();
-        cimg_library::CImg<unsigned short> getImageIR3();
-        cimg_library::CImg<unsigned short> getImageIR4();
-        cimg_library::CImg<unsigned short> getImageVIS();
+        image::Image<uint16_t> getImage();
+        image::Image<uint16_t> getImageIR1();
+        image::Image<uint16_t> getImageIR2();
+        image::Image<uint16_t> getImageIR3();
+        image::Image<uint16_t> getImageIR4();
+        image::Image<uint16_t> getImageVIS();
     };
 }

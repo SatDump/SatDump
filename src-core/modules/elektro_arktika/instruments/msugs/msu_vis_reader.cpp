@@ -48,9 +48,9 @@ namespace elektro_arktika
             frames++;
         }
 
-        cimg_library::CImg<unsigned short> MSUVISReader::getImage()
+        image::Image<uint16_t> MSUVISReader::getImage()
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 12008, frames);
+            return image::Image<uint16_t>(&imageBuffer[0], 12008, frames, 1);
         }
     } // namespace msugs
 } // namespace elektro_arktika

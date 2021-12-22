@@ -135,28 +135,28 @@ namespace aqua
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1);
+            image::Image<uint16_t> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1);
             {
                 int height = a1reader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(30 * 0, 0, 0, 0, a2reader.getChannel(0));
-                imageAll.draw_image(30 * 1, 0, 0, 0, a2reader.getChannel(1));
-                imageAll.draw_image(30 * 2, 0, 0, 0, a1reader.getChannel(0));
-                imageAll.draw_image(30 * 3, 0, 0, 0, a1reader.getChannel(1));
-                imageAll.draw_image(30 * 4, 0, 0, 0, a1reader.getChannel(2));
-                imageAll.draw_image(30 * 5, 0, 0, 0, a1reader.getChannel(3));
-                imageAll.draw_image(30 * 6, 0, 0, 0, a1reader.getChannel(4));
-                imageAll.draw_image(30 * 7, 0, 0, 0, a1reader.getChannel(5));
+                imageAll.draw_image(0, a2reader.getChannel(0), 30 * 0);
+                imageAll.draw_image(0, a2reader.getChannel(1), 30 * 1);
+                imageAll.draw_image(0, a1reader.getChannel(0), 30 * 2);
+                imageAll.draw_image(0, a1reader.getChannel(1), 30 * 3);
+                imageAll.draw_image(0, a1reader.getChannel(2), 30 * 4);
+                imageAll.draw_image(0, a1reader.getChannel(3), 30 * 5);
+                imageAll.draw_image(0, a1reader.getChannel(4), 30 * 6);
+                imageAll.draw_image(0, a1reader.getChannel(5), 30 * 7);
 
                 // Row 2
-                imageAll.draw_image(30 * 0, height, 0, 0, a1reader.getChannel(6));
-                imageAll.draw_image(30 * 1, height, 0, 0, a1reader.getChannel(7));
-                imageAll.draw_image(30 * 2, height, 0, 0, a1reader.getChannel(8));
-                imageAll.draw_image(30 * 3, height, 0, 0, a1reader.getChannel(9));
-                imageAll.draw_image(30 * 4, height, 0, 0, a1reader.getChannel(10));
-                imageAll.draw_image(30 * 5, height, 0, 0, a1reader.getChannel(11));
-                imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
+                imageAll.draw_image(0, a1reader.getChannel(6), 30 * 0, height);
+                imageAll.draw_image(0, a1reader.getChannel(7), 30 * 1, height);
+                imageAll.draw_image(0, a1reader.getChannel(8), 30 * 2, height);
+                imageAll.draw_image(0, a1reader.getChannel(9), 30 * 3, height);
+                imageAll.draw_image(0, a1reader.getChannel(10), 30 * 4, height);
+                imageAll.draw_image(0, a1reader.getChannel(11), 30 * 5, height);
+                imageAll.draw_image(0, a1reader.getChannel(12), 30 * 6, height);
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
 
@@ -186,11 +186,11 @@ namespace aqua
 
                     for (int i = 0; i < 13; i++)
                     {
-                        cimg_library::CImg<unsigned short> image = a1reader.getChannel(i).equalize(1000).normalize(0, 65535);
-                        image.equalize(1000);
-                        image.normalize(0, 65535);
+                        image::Image<uint16_t> image = a1reader.getChannel(i);
+                        image.equalize();
+                        image.normalize();
                         logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
                         WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
                     }
                 }
@@ -208,11 +208,11 @@ namespace aqua
 
                     for (int i = 0; i < 2; i++)
                     {
-                        cimg_library::CImg<unsigned short> image = a2reader.getChannel(i).equalize(1000).normalize(0, 65535);
-                        image.equalize(1000);
-                        image.normalize(0, 65535);
+                        image::Image<uint16_t> image = a2reader.getChannel(i);
+                        image.equalize();
+                        image.normalize();
                         logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
                         WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
                     }
                 }

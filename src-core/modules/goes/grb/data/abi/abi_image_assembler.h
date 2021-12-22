@@ -1,8 +1,6 @@
 #pragma once
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "abi_products.h"
 #include "../grb_headers.h"
 #include <string>
@@ -18,7 +16,7 @@ namespace goes
             const std::string abi_directory;
             const products::ABI::GRBProductABI abi_product;
             double currentTimeStamp;
-            cimg_library::CImg<unsigned short> full_image;
+            image::Image<uint16_t> full_image;
 
             void save();
             void reset();
@@ -26,7 +24,7 @@ namespace goes
         public:
             GRBABIImageAssembler(std::string abi_dir, products::ABI::GRBProductABI config);
             ~GRBABIImageAssembler();
-            void pushBlock(GRBImagePayloadHeader header, cimg_library::CImg<unsigned short> &block);
+            void pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block);
         };
     }
 }

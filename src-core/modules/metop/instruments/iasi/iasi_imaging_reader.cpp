@@ -61,10 +61,10 @@ namespace metop
             }
         }
 
-        cimg_library::CImg<unsigned short> IASIIMGReader::getIRChannel()
+        image::Image<uint16_t> IASIIMGReader::getIRChannel()
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(ir_channel.buf, 36 * 64, lines * 64);
-            img.mirror('x');
+            image::Image<uint16_t> img = image::Image<uint16_t>(ir_channel.buf, 36 * 64, lines * 64, 1);
+            img.mirror(true, false);
 
             // Calibrate to remove the noise junk
             int mask[64 * 64];
@@ -97,7 +97,7 @@ namespace metop
             }
 
             // Crop calibration out
-            img.crop(6 * 64, 36 * 64);
+            img.crop(6 * 64, 0, 36 * 64, img.height());
 
             return img;
         }

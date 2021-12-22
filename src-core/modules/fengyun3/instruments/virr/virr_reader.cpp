@@ -73,9 +73,9 @@ namespace fengyun3
             }
         }
 
-        cimg_library::CImg<unsigned short> VIRRReader::getChannel(int channel)
+        image::Image<uint16_t> VIRRReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel].buf, 2048, lines);
+            return image::Image<uint16_t>(channels[channel].buf, 2048, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

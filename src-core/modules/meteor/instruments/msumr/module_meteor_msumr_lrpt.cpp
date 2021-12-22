@@ -9,13 +9,12 @@
 #include "lrpt_msumr_reader.h"
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
-#include "common/image/image.h"
 #include "modules/meteor/meteor.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
 #include "common/map/leo_drawer.h"
+#include <ctime>
 
 #define BUFFER_SIZE 8192
 
@@ -99,7 +98,7 @@ namespace meteor
             for (int channel = 0; channel < 6; channel++)
             {
                 logger->info("Channel " + std::to_string(channel + 1) + "...");
-                if (msureader.getChannel(channel).size() > 0)
+                if (msureader.getChannel(channel).height() > 0)
                 {
                     WRITE_IMAGE(msureader.getChannel(channel), directory + "/MSU-MR-" + std::to_string(channel + 1) + ".png");
                     proj_settings->utc_timestamps = msureader.timestamps;
@@ -156,7 +155,7 @@ namespace meteor
                 }
 
                 // Correlate channels
-                std::vector<cimg_library::CImg<unsigned char>> channels;
+                std::vector<image::Image<uint8_t>> channels;
                 std::vector<int> channel_numbers;
                 if (requiredChannels.size() == 1)
                 {
@@ -191,18 +190,17 @@ namespace meteor
                 geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/" + name + ".georef");
 
                 logger->info(name + "...");
-                cimg_library::CImg<unsigned char>
-                    compositeImage = image::generate_composite_from_equ<unsigned char>(channels,
-                                                                                       channel_numbers,
-                                                                                       expression,
-                                                                                       compositeDef);
+                image::Image<uint8_t> compositeImage = image::generate_composite_from_equ<unsigned char>(channels,
+                                                                                                         channel_numbers,
+                                                                                                         expression,
+                                                                                                         compositeDef);
 
                 WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
                 if (projected)
                 {
                     logger->info(name + "-PROJ...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                     WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                 }
 
@@ -210,7 +208,7 @@ namespace meteor
                 {
                     projector.setup_forward(99, 1, 16);
                     logger->info(name + "-MAP...");
-                    cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage, projector);
+                    image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage, projector);
                     WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                 }
 

@@ -60,7 +60,7 @@ namespace goes
             }
         }
 
-        cimg_library::CImg<unsigned short> VisibleReader::getImage()
+        image::Image<uint16_t> VisibleReader::getImage()
         {
             // Fill missing lines by averaging above and below line
             for (int y = 1; y < HEIGHT - 1; y++)
@@ -77,7 +77,7 @@ namespace goes
                 }
             }
 
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], WIDTH, HEIGHT);
+            return image::Image<uint16_t>(&imageBuffer[0], WIDTH, HEIGHT, 1);
         }
     }
 }

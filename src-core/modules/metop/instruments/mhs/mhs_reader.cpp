@@ -42,9 +42,9 @@ namespace metop
             lines++;
         }
 
-        cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
+        image::Image<uint16_t> MHSReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 90, lines);
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 90, lines, 1);
             return img;
         }
     } // namespace mhs

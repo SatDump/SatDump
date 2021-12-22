@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace goes
 {
@@ -25,8 +23,8 @@ namespace goes
             ~InfraredReader2();
             void startNewFullDisk();
             void pushFrame(uint8_t *data, int counter, int word_cnt);
-            cimg_library::CImg<unsigned short> getImage1();
-            cimg_library::CImg<unsigned short> getImage2();
+            image::Image<uint16_t> getImage1();
+            image::Image<uint16_t> getImage2();
         };
     }
 }

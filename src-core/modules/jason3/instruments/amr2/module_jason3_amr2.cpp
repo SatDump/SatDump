@@ -83,7 +83,7 @@ namespace jason3
 
             // Setup Projecition
             std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                2,                               // Scan angle
+                2,                                // Scan angle
                 0,                                // Roll offset
                 0,                                // Pitch offset
                 0,                                // Yaw offset
@@ -105,11 +105,11 @@ namespace jason3
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(reader.getImage(i), directory + "/AMR2-" + std::to_string(i + 1) + "-MAP.png");
 
-                cimg_library::CImg<unsigned short> image = reader.getImageNormal(i);
-                image.equalize(1000);
+                image::Image<uint16_t> image = reader.getImageNormal(i);
+                image.equalize();
                 WRITE_IMAGE(image, directory + "/AMR2-" + std::to_string(i + 1) + ".png");
 
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                 WRITE_IMAGE(projected_image, directory + "/AMR2-" + std::to_string(i + 1) + "-PROJ.png");
             }
         }

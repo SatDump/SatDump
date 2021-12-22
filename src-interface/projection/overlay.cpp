@@ -6,9 +6,7 @@
 #include "main_ui.h"
 #include "imgui/imgui_image.h"
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 #include "imgui/file_selection.h"
 #include "common/map/map_drawer.h"
@@ -33,7 +31,7 @@ namespace projection
 
 namespace projection_overlay
 {
-    cimg_library::CImg<unsigned char> overlayed_image;
+    image::Image<uint8_t> overlayed_image;
     unsigned int textureID = 0;
     uint32_t *textureBuffer;
 
@@ -61,10 +59,7 @@ namespace projection_overlay
     void loadImage()
     {
         imageMutex.lock();
-        cimg_library::CImg<unsigned short> temp_image;
-        unsigned int bit_depth;
-        temp_image.load_png(projection::overlay_image, &bit_depth);
-        overlayed_image = temp_image >> (bit_depth == 16 ? 8 : 0); //.load_png(projection::overlay_image);
+        overlayed_image.load_png(projection::overlay_image);
 
         if (geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
         {
@@ -83,14 +78,8 @@ namespace projection_overlay
             overlayed_image.resize(gsofile.image_width, gsofile.image_height); // Safety
         }
 
-        if (overlayed_image.spectrum() == 1) // If WB, make RGB
-        {
-            cimg_library::CImg<unsigned char> rgb_image(overlayed_image.width(), overlayed_image.height(), 1, 3, 0);
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 0], &overlayed_image[0], rgb_image.width() * rgb_image.height());
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 1], &overlayed_image[0], rgb_image.width() * rgb_image.height());
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 2], &overlayed_image[0], rgb_image.width() * rgb_image.height());
-            overlayed_image = rgb_image;
-        }
+        overlayed_image.to_rgb(); // If WB, make RGB
+
         imageMutex.unlock();
     }
 
@@ -125,7 +114,7 @@ namespace projection_overlay
     {
         deleteImageTexture(textureID);
         delete[] textureBuffer;
-        overlayed_image = cimg_library::CImg<unsigned char>(1, 1, 1, 3, 0);
+        overlayed_image = image::Image<uint8_t>(1, 1, 3);
         satdumpUiStatus = MAIN_MENU;
     }
 
@@ -134,7 +123,7 @@ namespace projection_overlay
         loadImage(); // Reset
 
         if (invert_image)
-            overlayed_image.rotate(180);
+            overlayed_image.mirror(true, true);
 
         std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
 

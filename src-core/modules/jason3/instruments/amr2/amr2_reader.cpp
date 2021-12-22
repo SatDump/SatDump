@@ -74,13 +74,13 @@ namespace jason3
                 sample2 = 255;
 
             // Write on the map!
-            const unsigned char color0[] = {(unsigned char)sample0, (unsigned char)std::max(0, 255 - sample0), 0};
+            unsigned char color0[] = {(unsigned char)sample0, (unsigned char)std::max(0, 255 - sample0), 0};
             map_image[0].draw_circle(imageLon, imageLat, 2, color0);
 
-            const unsigned char color1[] = {(unsigned char)sample1, (unsigned char)std::max(0, 255 - sample1), 0};
+            unsigned char color1[] = {(unsigned char)sample1, (unsigned char)std::max(0, 255 - sample1), 0};
             map_image[1].draw_circle(imageLon, imageLat, 2, color1);
 
-            const unsigned char color2[] = {(unsigned char)sample2, (unsigned char)std::max(0, 255 - sample2), 0};
+            unsigned char color2[] = {(unsigned char)sample2, (unsigned char)std::max(0, 255 - sample2), 0};
             map_image[2].draw_circle(imageLon, imageLat, 2, color2);
 
             // Also write them as a raw images
@@ -100,14 +100,14 @@ namespace jason3
             lines++;
         }
 
-        cimg_library::CImg<unsigned char> AMR2Reader::getImage(int channel)
+        image::Image<uint8_t> AMR2Reader::getImage(int channel)
         {
             return map_image[channel];
         }
 
-        cimg_library::CImg<unsigned short> AMR2Reader::getImageNormal(int channel)
+        image::Image<uint16_t> AMR2Reader::getImageNormal(int channel)
         {
-            return cimg_library::CImg<unsigned short>(imageBuffer[channel], 12, lines);
+            return image::Image<uint16_t>(imageBuffer[channel], 12, lines, 1);
         }
     } // namespace modis
 } // namespace eos

@@ -5,10 +5,7 @@
 #include <array>
 #include <vector>
 #include "mhs_calibration_values.h"
-
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 #define SCI_PACKET_SIZE 1286
 #define MIU_BYTE_OFFSET 48
@@ -61,8 +58,8 @@ namespace noaa
             int line = 0;
             std::vector<double> timestamps;
             void work(uint8_t *buffer);
-            cimg_library::CImg<unsigned short> getChannel(int channel);
-            cimg_library::CImg<double> get_calibrated_channel(int channel);
+            image::Image<uint16_t> getChannel(int channel);
+            std::vector<double> get_calibrated_channel(int channel);
             void calibrate();
         };
     } // namespace hirs

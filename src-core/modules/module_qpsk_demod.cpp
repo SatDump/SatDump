@@ -141,8 +141,6 @@ void QPSKDemodModule::process()
         if (snr > peak_snr)
             peak_snr = snr;
 
-        complex_t shift = complex_t(cos(M_PI / 4.0), sin(M_PI / 4.0));
-
         for (int i = 0; i < dat_size; i++)
         {
             sym_buffer[i * 2] = clamp(rec->output_stream->readBuf[i].real * 100);

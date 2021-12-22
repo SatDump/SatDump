@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "logger.h"
 #include "common/image/image.h"
+#include "common/image/jpeg_utils.h"
 #include "resources.h"
 #include "common/ccsds/ccsds_time.h"
 
@@ -67,12 +68,12 @@ namespace proba
         void SWAPReader::save()
         {
             // This is temporary code until a resource system is implemented everywhere.
-            cimg_library::CImg<unsigned short> adc_mask, ffc_mask;
+            image::Image<uint8_t> adc_mask, ffc_mask;
             bool masks_found = false;
             if (resources::resourceExists("proba/swap/adc_mask.png") && resources::resourceExists("proba/swap/ffc_mask.png"))
             {
-                adc_mask.load_png(resources::getResourcePath("proba/swap/adc_mask.png").c_str());
-                ffc_mask.load_png(resources::getResourcePath("proba/swap/ffc_mask.png").c_str());
+                adc_mask.load_png(resources::getResourcePath("proba/swap/adc_mask.png"));
+                ffc_mask.load_png(resources::getResourcePath("proba/swap/ffc_mask.png"));
                 masks_found = true;
             }
             else
@@ -87,9 +88,9 @@ namespace proba
 
                 logger->info("Decompressing " + filename + "...");
 
-                cimg_library::CImg<unsigned short> img = image::decompress_jpeg(currentOutVec.data(), currentOutVec.size());
+                image::Image<uint8_t> img = image::decompress_jpeg(currentOutVec.data(), currentOutVec.size());
 
-                if (img.is_empty())
+                if (img.size() == 0)
                 {
                     logger->info("Error! Skipping...");
                     continue;
@@ -99,14 +100,14 @@ namespace proba
                 {
                     for (int i = 0; i < img.height() * img.width(); i++)
                     {
-                        // Our values are 100x smaller... So we have to scale masks down
-                        img[i] = std::max<float>(0, img[i] - adc_mask[i] / 100.0f); // ADC Bias correction
-                        img[i] = std::max<float>(0, img[i] - ffc_mask[i] / 100.0f); // Flat field correction
+                        // This was checked against official Proba-2 data
+                        img[i] = std::max<float>(0, img[i] - adc_mask[i] * 2.8); // ADC Bias correction
+                        img[i] = std::max<float>(0, img[i] - ffc_mask[i] * 2.8); // Flat field correction
                     }
                 }
 
                 // Despeckle
-                image::simple_despeckle(img, 20);
+                img.simple_despeckle(20);
 
                 logger->info("Good! Saving as png... ");
                 WRITE_IMAGE_LOCAL(img, output_folder + "/" + filename + ".png");

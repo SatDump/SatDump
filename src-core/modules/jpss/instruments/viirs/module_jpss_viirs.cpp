@@ -8,8 +8,6 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
-#include "common/image/image.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
 
 // Return filesize
@@ -196,16 +194,16 @@ namespace jpss
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> images_m[16];
+            image::Image<uint16_t> images_m[16];
             for (int i = 0; i < 16; i++)
                 images_m[i] = reader_m[i].getImage();
 
-            cimg_library::CImg<unsigned short> images_i[5];
+            image::Image<uint16_t> images_i[5];
             for (int i = 0; i < 5; i++)
                 images_i[i] = reader_i[i].getImage();
 
-            cimg_library::CImg<unsigned short> images_dnb[] = {reader_dnb[0].getImage(), reader_dnb[1].getImage(),
-                                                               reader_dnb[2].getImage()};
+            image::Image<uint16_t> images_dnb[] = {reader_dnb[0].getImage(), reader_dnb[1].getImage(),
+                                                   reader_dnb[2].getImage()};
 
             // BowTie values
             const float alpha = 1.0 / 1.9;
@@ -221,16 +219,16 @@ namespace jpss
 
             // Correct mirrored channels
             for (int i = 0; i < 16; i++)
-                images_m[i].mirror('x');
+                images_m[i].mirror(true, false);
 
             for (int i = 0; i < 5; i++)
-                images_i[i].mirror('x');
+                images_i[i].mirror(true, false);
 
             for (int i = 0; i < 3; i++)
-                images_dnb[i].mirror('x');
+                images_dnb[i].mirror(true, false);
 
             logger->info("Making DNB night version...");
-            cimg_library::CImg<unsigned short> image_dnb_night = images_dnb[0];
+            image::Image<uint16_t> image_dnb_night = images_dnb[0];
             for (int i = 0; i < image_dnb_night.height() * image_dnb_night.width(); i++)
                 image_dnb_night[i] = std::min(65535, 20 * image_dnb_night[i]);
 
@@ -256,8 +254,8 @@ namespace jpss
             {
                 logger->info("Channel DNB...");
                 WRITE_IMAGE(images_dnb[0], directory + "/VIIRS-DNB.png");
-                images_dnb[0].equalize(1000);
-                images_dnb[0].normalize(0, 65535);
+                images_dnb[0].equalize();
+                images_dnb[0].normalize();
                 WRITE_IMAGE(images_dnb[0], directory + "/VIIRS-DNB-EQU.png");
             }
 
@@ -326,7 +324,7 @@ namespace jpss
 
                 // Correlate
                 std::vector<VIIRSReader> channels_reader_correlated = correlateChannels(channels_reader);
-                std::vector<cimg_library::CImg<unsigned short>> channels;
+                std::vector<image::Image<uint16_t>> channels;
                 std::vector<int> channel_numbers;
                 for (int i = 0; i < (int)requiredChannels.size(); i++)
                 {
@@ -334,11 +332,11 @@ namespace jpss
                     channel_numbers.push_back(requiredChannels[i]);
 
                     channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, channels_reader_correlated[i].channelSettings.zoneHeight, alpha, beta);
-                    channels[i].mirror('x');
+                    channels[i].mirror(true, false);
                 }
 
                 logger->info(name + "...");
-                cimg_library::CImg<unsigned short>
+                image::Image<uint16_t>
                     compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
                                                                                         channel_numbers,
                                                                                         expression,

@@ -104,21 +104,21 @@ namespace aqua
             }
         }
 
-        cimg_library::CImg<unsigned short> AIRSReader::getChannel(int channel)
+        image::Image<uint16_t> AIRSReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 90, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
-            img.mirror('x');
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 90, lines, 1);
+            img.normalize();
+            img.equalize();
+            img.mirror(true, false);
             return img;
         }
 
-        cimg_library::CImg<unsigned short> AIRSReader::getHDChannel(int channel)
+        image::Image<uint16_t> AIRSReader::getHDChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(hd_channels[channel], 90 * 8, lines * 9);
-            img.normalize(0, 65535);
-            img.equalize(1000);
-            img.mirror('x');
+            image::Image<uint16_t> img = image::Image<uint16_t>(hd_channels[channel], 90 * 8, lines * 9, 1);
+            img.normalize();
+            img.equalize();
+            img.mirror(true, false);
             return img;
         }
     } // namespace airs

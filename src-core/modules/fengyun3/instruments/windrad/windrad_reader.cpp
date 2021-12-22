@@ -62,11 +62,11 @@ namespace fengyun3
             }
         }
 
-        cimg_library::CImg<unsigned short> WindRADReader::getChannel(int channel)
+        image::Image<uint16_t> WindRADReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> image(channels[channel].buf, width, lines);
-            image.normalize(0, 65535);
-            image.equalize(1000);
+            image::Image<uint16_t> image(channels[channel].buf, width, lines, 1);
+            image.normalize();
+            image.equalize();
             return image;
         }
     } // namespace virr

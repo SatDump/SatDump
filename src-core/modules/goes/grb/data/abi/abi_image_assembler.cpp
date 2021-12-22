@@ -61,12 +61,12 @@ namespace goes
                 image_height = double(ABI_MESO_MODE_HEIGHT) / products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].resolution;
             }
 
-            full_image = cimg_library::CImg<unsigned short>(image_width, image_height, 1, 1, 0);
+            full_image = image::Image<uint16_t>(image_width, image_height, 1);
             full_image.fill(0);
             hasImage = false;
         }
 
-        void GRBABIImageAssembler::pushBlock(GRBImagePayloadHeader header, cimg_library::CImg<unsigned short> &block)
+        void GRBABIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block)
         {
             // Check this is the same image
             if (currentTimeStamp != header.utc_time)
@@ -83,7 +83,7 @@ namespace goes
             block <<= 16 - products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].bit_depth;
 
             // Fill
-            full_image.draw_image(header.left_x_coord, header.left_y_coord + header.row_offset_image_block, 0, 0, block);
+            full_image.draw_image(0, block, header.left_x_coord, header.left_y_coord + header.row_offset_image_block);
         }
     }
 }

@@ -3,9 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace eos
 {
@@ -85,9 +83,9 @@ namespace eos
             std::vector<double> timestamps_500;
             std::vector<double> timestamps_250;
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getImage250m(int channel);
-            cimg_library::CImg<unsigned short> getImage500m(int channel);
-            cimg_library::CImg<unsigned short> getImage1000m(int channel);
+            image::Image<uint16_t> getImage250m(int channel);
+            image::Image<uint16_t> getImage500m(int channel);
+            image::Image<uint16_t> getImage1000m(int channel);
 
             uint16_t common_day;
             uint32_t common_coarse;

@@ -67,13 +67,13 @@ namespace fengyun_svissr
         if (resources::resourceExists("fy2/svissr/lut.png"))
         {
             logger->trace("Scale Ch1 to 8-bits...");
-            cimg_library::CImg<unsigned char> channel1(image5.width(), image5.height(), 1, 1);
+            image::Image<uint16_t> channel1(image5.width(), image5.height(), 1);
             for (int i = 0; i < channel1.width() * channel1.height(); i++)
                 channel1[i] = image5[i] / 255;
             image5.clear(); // We're done with Ch1. Free up memory
 
             logger->trace("Scale Ch4 to 8-bits...");
-            cimg_library::CImg<unsigned char> channel5(image4.width(), image4.height(), 1, 1);
+            image::Image<uint16_t> channel5(image4.width(), image4.height(), 1);
             for (int i = 0; i < channel5.width() * channel5.height(); i++)
                 channel5[i] = image4[i] / 255;
             image4.clear(); // We're done with Ch4. Free up memory
@@ -82,11 +82,11 @@ namespace fengyun_svissr
             channel5.resize(channel1.width(), channel1.height());
 
             logger->trace("Loading LUT...");
-            cimg_library::CImg<unsigned char> lutImage;
+            image::Image<uint16_t> lutImage;
             lutImage.load_png(resources::getResourcePath("fy2/svissr/lut.png").c_str());
             lutImage.resize(256, 256);
 
-            cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
+            image::Image<uint16_t> compoImage = image::Image<uint16_t>(channel1.width(), channel1.height(), 3);
 
             logger->trace("Applying LUT...");
             for (int i = 0; i < channel1.width() * channel1.height(); i++)
@@ -110,7 +110,7 @@ namespace fengyun_svissr
     }
 
     SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                              sat_name(parameters["satname"])
+                                                                                                                                          sat_name(parameters["satname"])
     {
         frame = new uint8_t[FRAME_SIZE];
 

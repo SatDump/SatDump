@@ -1,5 +1,7 @@
 #include "mwhs_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include <algorithm>
+#include <cstring>
 
 namespace fengyun3
 {
@@ -49,7 +51,7 @@ namespace fengyun3
             }
         }
 
-        cimg_library::CImg<unsigned short> MWHSReader::getChannel(int channel)
+        image::Image<uint16_t> MWHSReader::getChannel(int channel)
         {
             timestamps.clear();
             std::vector<std::pair<double, std::array<std::array<unsigned short, 98>, 6>>> imageVector(imageData.begin(), imageData.end());
@@ -62,7 +64,7 @@ namespace fengyun3
                           return el1.first < el2.first;
                       });
 
-            cimg_library::CImg<unsigned short> img(98, imageVector.size(), 1, 1);
+            image::Image<uint16_t> img(98, imageVector.size(), 1);
 
             if (imageVector.size() > 0)
             {
@@ -76,8 +78,8 @@ namespace fengyun3
                     timestamps.push_back(lineData.first);
                 }
 
-                img.normalize(0, 65535);
-                img.equalize(1000);
+                img.normalize();
+                img.equalize();
             }
 
             return img;

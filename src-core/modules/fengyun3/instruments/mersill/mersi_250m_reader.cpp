@@ -1,4 +1,5 @@
 #include "mersi_250m_reader.h"
+#include <cmath>
 
 namespace fengyun3
 {
@@ -48,9 +49,9 @@ namespace fengyun3
                 imageBuffer.resize((frames + 10000) * 6144);
         }
 
-        cimg_library::CImg<unsigned short> MERSI250Reader::getImage()
+        image::Image<uint16_t> MERSI250Reader::getImage()
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 6144, frames);
+            return image::Image<uint16_t>(&imageBuffer[0], 6144, frames, 1);
         }
     } // namespace mersi1
 } // namespace fengyun

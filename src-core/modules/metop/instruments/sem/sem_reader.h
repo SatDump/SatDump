@@ -3,9 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "libs/predict/predict.h"
 
 namespace metop
@@ -17,14 +15,14 @@ namespace metop
         private:
             predict_orbital_elements_t *metop_object;
             predict_position metop_orbit;
-            cimg_library::CImg<unsigned char> map_image;
+            image::Image<uint8_t> map_image;
 
         public:
             SEMReader(int norad);
             ~SEMReader();
 
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned char> getImage();
+            image::Image<uint8_t> getImage();
         };
     } // namespace modis
 } // namespace eos

@@ -32,7 +32,7 @@ namespace goes
             else
                 ch2.resize(ch13.width(), ch13.height());
 
-            falsecolor = cimg_library::CImg<unsigned char>(ch2.width(), ch2.height(), 1, 3); // Init image
+            falsecolor = image::Image<uint8_t>(ch2.width(), ch2.height(), 3); // Init image
 
             for (int i = 0; i < ch2.width() * ch2.height(); i++)
             {
@@ -50,14 +50,14 @@ namespace goes
                 // Downscale image
                 img_height = 1000;
                 img_width = 1000;
-                cimg_library::CImg<unsigned char> imageScaled = falsecolor;
+                image::Image<uint8_t> imageScaled = falsecolor;
                 imageScaled.resize(img_width, img_height);
-                uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width, 3);
+                uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width, 3);
                 hasToUpdate = true;
             }
         }
 
-        void GOESRFalseColorComposer::push2(cimg_library::CImg<unsigned char> img, time_t time)
+        void GOESRFalseColorComposer::push2(image::Image<uint8_t> img, time_t time)
         {
             ch2 = img;
             time2 = time;
@@ -66,7 +66,7 @@ namespace goes
                 generateCompo();
         }
 
-        void GOESRFalseColorComposer::push13(cimg_library::CImg<unsigned char> img, time_t time)
+        void GOESRFalseColorComposer::push13(image::Image<uint8_t> img, time_t time)
         {
             ch13 = img;
             time13 = time;

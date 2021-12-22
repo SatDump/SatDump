@@ -1,13 +1,11 @@
 #pragma once
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace fengyun3
 {
     namespace mersi
     {
-        cimg_library::CImg<unsigned short> &banding_correct(cimg_library::CImg<unsigned short> &imageo, int rowSize, float percent = 0.10);
+        void banding_correct(image::Image<uint16_t> &imageo, int rowSize, float percent = 0.10);
     };
 };

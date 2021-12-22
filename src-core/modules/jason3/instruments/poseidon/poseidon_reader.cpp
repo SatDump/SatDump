@@ -97,20 +97,20 @@ namespace jason3
                 sampleHeight = 255;
 
             // Write on the map
-            const unsigned char colorHeight[] = {(unsigned char)sampleHeight, (unsigned char)std::max(0, 255 - sampleHeight), 0};
+            unsigned char colorHeight[] = {(unsigned char)sampleHeight, (unsigned char)std::max(0, 255 - sampleHeight), 0};
             map_image_height.draw_circle(imageLon, imageLat, 2, colorHeight);
 
             // Write on the map
-            const unsigned char colorScatter[] = {(unsigned char)sampleScatter, (unsigned char)std::max(0, 255 - sampleScatter), 0};
+            unsigned char colorScatter[] = {(unsigned char)sampleScatter, (unsigned char)std::max(0, 255 - sampleScatter), 0};
             map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);
         }
 
-        cimg_library::CImg<unsigned char> PoseidonReader::getImageHeight()
+        image::Image<uint8_t> PoseidonReader::getImageHeight()
         {
             return map_image_height;
         }
 
-        cimg_library::CImg<unsigned char> PoseidonReader::getImageScatter()
+        image::Image<uint8_t> PoseidonReader::getImageScatter()
         {
             return map_image_scatter;
         }

@@ -9,6 +9,8 @@
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
 
+#include <iostream>
+
 #define BUFFER_SIZE 8192
 
 // Return filesize
@@ -63,17 +65,17 @@ namespace noaa
 
             mhsreader.calibrate();
 
-            cimg_library::CImg<unsigned short> compo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
-            cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1, 1);
+            image::Image<uint16_t> compo(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1);
+            image::Image<uint16_t> equcompo(MHS_WIDTH * 3, 2 * mhsreader.line + 1, 1);
 
             for (int i = 0; i < 5; i++)
             {
-                cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i);
+                image::Image<uint16_t> image = mhsreader.getChannel(i);
                 WRITE_IMAGE(image, directory + "/MHS-" + std::to_string(i + 1) + ".png");
-                compo.draw_image((i % 3) * MHS_WIDTH, ((int)i / 3) * (mhsreader.line + 1), image);
-                image.equalize(1000);
+                compo.draw_image(0, image, (i % 3) * MHS_WIDTH, ((int)i / 3) * (mhsreader.line + 1));
+                image.equalize();
                 WRITE_IMAGE(image, directory + "/MHS-" + std::to_string(i + 1) + "-EQU.png");
-                equcompo.draw_image((i % 3) * MHS_WIDTH, ((int)i / 3) * (mhsreader.line + 1), image);
+                equcompo.draw_image(0, image, (i % 3) * MHS_WIDTH, ((int)i / 3) * (mhsreader.line + 1));
             }
 
             WRITE_IMAGE(compo, directory + "/MHS-ALL.png");
@@ -99,17 +101,17 @@ namespace noaa
 
                 for (int i = 0; i < 5; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i).equalize(1000).normalize(0, 65535);
+                    image::Image<uint16_t> image = mhsreader.getChannel(i).equalize().normalize();
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }
 
-            cimg_library::CImg<unsigned char> rain(mhsreader.getChannel(3).width(), mhsreader.getChannel(3).height(), 1, 3, 0);
-            cimg_library::CImg<double> ch5 = mhsreader.get_calibrated_channel(4);
-            cimg_library::CImg<double> ch3 = mhsreader.get_calibrated_channel(3);
-            cimg_library::CImg<unsigned char> clut = image::generate_LUT(1024, 0, 100, cimg_library::CImg<unsigned char>::jet_LUT256(), true);
+            image::Image<uint8_t> rain(mhsreader.getChannel(3).width(), mhsreader.getChannel(3).height(), 3);
+            std::vector<double> ch5 = mhsreader.get_calibrated_channel(4);
+            std::vector<double> ch3 = mhsreader.get_calibrated_channel(3);
+            image::Image<uint8_t> clut = image::scale_lut<uint8_t>(1024, 0, 100, image::LUT_jet<uint8_t>());
 
             for (unsigned int i = 0; i < ch5.size(); i++)
             {
@@ -120,17 +122,16 @@ namespace noaa
                         continue;
                     if (index < 1024)
                     {
-                        const unsigned char color[3] = {*clut.data(index, 0, 0, 0), *clut.data(index, 0, 0, 1), *clut.data(index, 0, 0, 2)};
-                        rain.draw_point(i % rain.width(), i / rain.width(), 0, color, 1.0f);
+                        uint8_t color[3] = {clut[index], clut[1024 + index], clut[2048 + index]};
+                        rain.draw_pixel(i % rain.width(), i / rain.width(), color);
                     }
                     else
                     {
-                        const unsigned char color[3] = {0, 0, 0};
-                        rain.draw_point(i % rain.width(), i / rain.width(), 0, color, 1.0f);
+                        uint8_t color[3] = {0};
+                        rain.draw_pixel(i % rain.width(), i / rain.width(), color);
                     }
                 }
             }
-
             WRITE_IMAGE(rain, directory + "/rain.png");
         }
 

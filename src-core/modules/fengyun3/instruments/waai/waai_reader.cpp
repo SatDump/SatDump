@@ -37,9 +37,9 @@ namespace fengyun3
             lines++;
         }
 
-        cimg_library::CImg<unsigned short> WAAIReader::getChannel()
+        image::Image<uint16_t> WAAIReader::getChannel()
         {
-            return cimg_library::CImg<unsigned short>(imageBuffer, 32737, lines);
+            return image::Image<uint16_t>(imageBuffer, 32737, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

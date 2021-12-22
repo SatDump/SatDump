@@ -41,11 +41,11 @@ namespace meteor
                 lines += 1;
         }
 
-        cimg_library::CImg<unsigned short> MTVZAReader::getChannel(int channel)
+        image::Image<uint16_t> MTVZAReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 52, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 52, lines, 1);
+            img.normalize();
+            img.equalize();
             //img.resize(img.width() * 2, img.height());
             //img.mirror('x');
             return img;
