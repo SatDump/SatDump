@@ -63,9 +63,12 @@ namespace noaa
                 linesA1++;
             }
         }
-        cimg_library::CImg<unsigned short> AMSUReader::getChannel(int channel)
+
+        image::Image<uint16_t> AMSUReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 30, linesA1).mirror('x');
+            image::Image<uint16_t> img(channels[channel], 30, linesA1, 1);
+            img.mirror(true, false);
+            return img;
         }
     }
 }

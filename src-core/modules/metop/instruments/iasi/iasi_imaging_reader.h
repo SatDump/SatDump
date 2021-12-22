@@ -1,10 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "common/resizeable_buffer.h"
 
 namespace metop
@@ -23,7 +20,7 @@ namespace metop
             int lines;
             std::vector<std::vector<double>> timestamps_ifov;
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getIRChannel();
+            image::Image<uint16_t> getIRChannel();
         };
     } // namespace iasi
 } // namespace metop

@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace meteor
 {
@@ -19,7 +17,7 @@ namespace meteor
             ~MTVZAReader();
             int lines;
             void work(uint8_t *data);
-            cimg_library::CImg<unsigned short> getChannel(int channel);
+            image::Image<uint16_t> getChannel(int channel);
         };
     }
 }

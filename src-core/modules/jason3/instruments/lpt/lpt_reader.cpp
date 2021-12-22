@@ -20,7 +20,7 @@ namespace jason3
 
             jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
 
-            map_image = new cimg_library::CImg<unsigned char>[channel_count];
+            map_image = new image::Image<uint8_t>[channel_count];
             for (int i = 0; i < channel_count; i++)
             {
                 map_image[i].load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
@@ -60,12 +60,12 @@ namespace jason3
                     sample = 255;
 
                 // Write on the map!
-                const unsigned char color0[] = {(unsigned char)sample, (unsigned char)std::max(0, 255 - sample), 0};
+                unsigned char color0[] = {(unsigned char)sample, (unsigned char)std::max(0, 255 - sample), 0};
                 map_image[ch].draw_circle(imageLon, imageLat, 2, color0);
             }
         }
 
-        cimg_library::CImg<unsigned char> LPTReader::getImage(int channel)
+        image::Image<uint8_t> LPTReader::getImage(int channel)
         {
             return map_image[channel];
         }

@@ -116,12 +116,12 @@ namespace aqua
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image_shortwave1 = reader1.getImage(0);
-            cimg_library::CImg<unsigned short> image_longwave1 = reader1.getImage(1);
-            cimg_library::CImg<unsigned short> image_total1 = reader1.getImage(2);
-            cimg_library::CImg<unsigned short> image_shortwave2 = reader2.getImage(0);
-            cimg_library::CImg<unsigned short> image_longwave2 = reader2.getImage(1);
-            cimg_library::CImg<unsigned short> image_total2 = reader2.getImage(2);
+            image::Image<uint16_t> image_shortwave1 = reader1.getImage(0);
+            image::Image<uint16_t> image_longwave1 = reader1.getImage(1);
+            image::Image<uint16_t> image_total1 = reader1.getImage(2);
+            image::Image<uint16_t> image_shortwave2 = reader2.getImage(0);
+            image::Image<uint16_t> image_longwave2 = reader2.getImage(1);
+            image::Image<uint16_t> image_total2 = reader2.getImage(2);
 
             // Resize to be... Readable?
             image_shortwave1.resize(image_shortwave1.width(), image_shortwave1.height() * 7);
@@ -132,12 +132,12 @@ namespace aqua
             image_total2.resize(image_total2.width(), image_total2.height() * 7);
 
             // Equalize
-            image_shortwave1.equalize(1000);
-            image_longwave1.equalize(1000);
-            image_total1.equalize(1000);
-            image_shortwave2.equalize(1000);
-            image_longwave2.equalize(1000);
-            image_total2.equalize(1000);
+            image_shortwave1.equalize();
+            image_longwave1.equalize();
+            image_total1.equalize();
+            image_shortwave2.equalize();
+            image_longwave2.equalize();
+            image_total2.equalize();
 
             logger->info("Shortwave Channel 1...");
             WRITE_IMAGE(image_shortwave1, directory + "/CERES1-SHORTWAVE.png");
@@ -150,11 +150,11 @@ namespace aqua
 
             // Output a few nice composites as well
             logger->info("Global Composite 1...");
-            cimg_library::CImg<unsigned short> imageAll1(image_shortwave1.width() + image_longwave1.width() + image_total1.width(), image_shortwave1.height(), 1, 1);
+            image::Image<uint16_t> imageAll1(image_shortwave1.width() + image_longwave1.width() + image_total1.width(), image_shortwave1.height(), 1);
             {
-                imageAll1.draw_image(0, 0, 0, 0, image_shortwave1);
-                imageAll1.draw_image(image_shortwave1.width(), 0, 0, 0, image_longwave1);
-                imageAll1.draw_image(image_shortwave1.width() + image_longwave1.width(), 0, 0, 0, image_total1);
+                imageAll1.draw_image(0, image_shortwave1);
+                imageAll1.draw_image(0, image_longwave1, image_shortwave1.width());
+                imageAll1.draw_image(0, image_total1, image_shortwave1.width() * 2);
             }
             WRITE_IMAGE(imageAll1, directory + "/CERES1-ALL.png");
 
@@ -169,11 +169,11 @@ namespace aqua
 
             // Output a few nice composites as well
             logger->info("Global Composite 2...");
-            cimg_library::CImg<unsigned short> imageAll2(image_shortwave2.width() + image_longwave2.width() + image_total2.width(), image_shortwave2.height(), 1, 1);
+            image::Image<uint16_t> imageAll2(image_shortwave2.width() + image_longwave2.width() + image_total2.width(), image_shortwave2.height(), 1);
             {
-                imageAll2.draw_image(0, 0, 0, 0, image_shortwave2);
-                imageAll2.draw_image(image_shortwave2.width(), 0, 0, 0, image_longwave2);
-                imageAll2.draw_image(image_shortwave2.width() + image_longwave2.width(), 0, 0, 0, image_total2);
+                imageAll2.draw_image(0, image_shortwave2);
+                imageAll2.draw_image(0, image_longwave2, image_shortwave2.width());
+                imageAll2.draw_image(0, image_total2, image_shortwave2.width() * 2);
             }
             WRITE_IMAGE(imageAll2, directory + "/CERES2-ALL.png");
         }

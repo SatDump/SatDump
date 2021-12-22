@@ -16,7 +16,7 @@ namespace goes
 
             // Generate derandomization table
             int oo = 0;
-            uint8_t currentByteShifter;
+            uint8_t currentByteShifter = 0;
             int inCurrentByteShiter = 0;
 
             uint16_t shifter = 0b101001110110101;

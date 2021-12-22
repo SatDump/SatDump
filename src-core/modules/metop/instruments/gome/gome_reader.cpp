@@ -1,6 +1,6 @@
 #include "gome_reader.h"
 #include "utils.h"
-#include <iostream>
+#include <cstring>
 
 namespace metop
 {
@@ -72,7 +72,7 @@ namespace metop
                 {
                     if (band_starts[band] >= 1024)
                         continue;
-                        
+
                     if ((header[17] >> (10 - band * 2)) & 3)
                     {
                         int val = bands[0][band_channels[band]].data[band_starts[band] + channel];
@@ -95,12 +95,12 @@ namespace metop
             }
         }
 
-        cimg_library::CImg<unsigned short> GOMEReader::getChannel(int channel)
+        image::Image<uint16_t> GOMEReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 15, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
-            img.mirror('x');
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 15, lines, 1);
+            //img.normalize(0, 65535);
+            img.equalize();
+            img.mirror(true, false);
             img.resize(30, lines);
             return img;
         }

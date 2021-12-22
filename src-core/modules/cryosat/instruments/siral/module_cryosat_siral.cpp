@@ -8,9 +8,7 @@
 //#include <iostream>
 #include <fftw3.h>
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "common/resizeable_buffer.h"
 
 // Return filesize
@@ -126,7 +124,7 @@ namespace cryosat
             logger->info("Writing images.... (Can take a while)");
 
             {
-                cimg_library::CImg<unsigned char> outputImage(fftImage.buf, 243, lines);
+                image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
                 WRITE_IMAGE(outputImage, directory + "/SIRAL.png");
             }
 

@@ -100,33 +100,33 @@ namespace fengyun3
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(90 * 4, mwts_reader.getChannel(0).height() * 4, 1, 1);
+            image::Image<uint16_t> imageAll(90 * 4, mwts_reader.getChannel(0).height() * 4, 1);
             {
                 int height = mwts_reader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(90 * 0, 0, 0, 0, mwts_reader.getChannel(0));
-                imageAll.draw_image(90 * 1, 0, 0, 0, mwts_reader.getChannel(1));
-                imageAll.draw_image(90 * 2, 0, 0, 0, mwts_reader.getChannel(2));
-                imageAll.draw_image(90 * 3, 0, 0, 0, mwts_reader.getChannel(3));
+                imageAll.draw_image(0, mwts_reader.getChannel(0), 90 * 0, 0);
+                imageAll.draw_image(0, mwts_reader.getChannel(1), 90 * 1, 0);
+                imageAll.draw_image(0, mwts_reader.getChannel(2), 90 * 2, 0);
+                imageAll.draw_image(0, mwts_reader.getChannel(3), 90 * 3, 0);
 
                 // Row 2
-                imageAll.draw_image(90 * 0, height, 0, 0, mwts_reader.getChannel(4));
-                imageAll.draw_image(90 * 1, height, 0, 0, mwts_reader.getChannel(5));
-                imageAll.draw_image(90 * 2, height, 0, 0, mwts_reader.getChannel(6));
-                imageAll.draw_image(90 * 3, height, 0, 0, mwts_reader.getChannel(7));
+                imageAll.draw_image(0, mwts_reader.getChannel(4), 90 * 0, height);
+                imageAll.draw_image(0, mwts_reader.getChannel(5), 90 * 1, height);
+                imageAll.draw_image(0, mwts_reader.getChannel(6), 90 * 2, height);
+                imageAll.draw_image(0, mwts_reader.getChannel(7), 90 * 3, height);
 
                 // Row 2
-                imageAll.draw_image(90 * 0, height * 2, 0, 0, mwts_reader.getChannel(8));
-                imageAll.draw_image(90 * 1, height * 2, 0, 0, mwts_reader.getChannel(9));
-                imageAll.draw_image(90 * 2, height * 2, 0, 0, mwts_reader.getChannel(10));
-                imageAll.draw_image(90 * 3, height * 2, 0, 0, mwts_reader.getChannel(11));
+                imageAll.draw_image(0, mwts_reader.getChannel(8), 90 * 0, height * 2);
+                imageAll.draw_image(0, mwts_reader.getChannel(9), 90 * 1, height * 2);
+                imageAll.draw_image(0, mwts_reader.getChannel(10), 90 * 2, height * 2);
+                imageAll.draw_image(0, mwts_reader.getChannel(11), 90 * 3, height * 2);
 
                 // Row 2
-                imageAll.draw_image(90 * 0, height * 3, 0, 0, mwts_reader.getChannel(12));
-                imageAll.draw_image(90 * 1, height * 3, 0, 0, mwts_reader.getChannel(13));
-                imageAll.draw_image(90 * 2, height * 3, 0, 0, mwts_reader.getChannel(14));
-                imageAll.draw_image(90 * 3, height * 3, 0, 0, mwts_reader.getChannel(15));
+                imageAll.draw_image(0, mwts_reader.getChannel(12), 90 * 0, height * 3);
+                imageAll.draw_image(0, mwts_reader.getChannel(13), 90 * 1, height * 3);
+                imageAll.draw_image(0, mwts_reader.getChannel(14), 90 * 2, height * 3);
+                imageAll.draw_image(0, mwts_reader.getChannel(15), 90 * 3, height * 3);
             }
             WRITE_IMAGE(imageAll, directory + "/MWTS2-ALL.png");
 
@@ -152,9 +152,9 @@ namespace fengyun3
 
                 for (int i = 0; i < 16; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mwts_reader.getChannel(i);
+                    image::Image<uint16_t> image = mwts_reader.getChannel(i);
                     logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
                     WRITE_IMAGE(projected_image, directory + "/MWTS2-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

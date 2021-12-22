@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -31,7 +29,7 @@ namespace elektro
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, int segc);
             bool isComplete();
-            cimg_library::CImg<unsigned char> image;
+            image::Image<uint8_t> image;
             std::string image_id = "";
         };
 
@@ -45,7 +43,7 @@ namespace elektro
         class ELEKTRO221Composer
         {
         private:
-            cimg_library::CImg<unsigned char> ch2, ch1, compo221;
+            image::Image<uint8_t> ch2, ch1, compo221;
             time_t time2, time1;
 
             void generateCompo();
@@ -60,8 +58,8 @@ namespace elektro
 
             void save(std::string directory);
 
-            void push2(cimg_library::CImg<unsigned char> img, time_t time);
-            void push1(cimg_library::CImg<unsigned char> img, time_t time);
+            void push2(image::Image<uint8_t> img, time_t time);
+            void push1(image::Image<uint8_t> img, time_t time);
 
         public:
             // UI Stuff
@@ -75,7 +73,7 @@ namespace elektro
         class ELEKTRO321Composer
         {
         private:
-            cimg_library::CImg<unsigned char> ch3, ch2, ch1, compo321, compo231, compoNC;
+            image::Image<uint8_t> ch3, ch2, ch1, compo321, compo231, compoNC;
             time_t time3, time2, time1;
 
             void generateCompo();
@@ -90,9 +88,9 @@ namespace elektro
 
             void save(std::string directory);
 
-            void push3(cimg_library::CImg<unsigned char> img, time_t time);
-            void push2(cimg_library::CImg<unsigned char> img, time_t time);
-            void push1(cimg_library::CImg<unsigned char> img, time_t time);
+            void push3(image::Image<uint8_t> img, time_t time);
+            void push2(image::Image<uint8_t> img, time_t time);
+            void push1(image::Image<uint8_t> img, time_t time);
 
         public:
             // UI Stuff

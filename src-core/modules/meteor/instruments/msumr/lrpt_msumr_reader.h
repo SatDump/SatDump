@@ -3,9 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <tuple>
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 #include "lrpt/segment.h"
 #include <array>
@@ -29,7 +27,7 @@ namespace meteor
                 MSUMRReader();
                 ~MSUMRReader();
                 void work(ccsds::CCSDSPacket &packet);
-                cimg_library::CImg<unsigned char> getChannel(int channel, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
+                image::Image<uint8_t> getChannel(int channel, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2, int channel3);
 

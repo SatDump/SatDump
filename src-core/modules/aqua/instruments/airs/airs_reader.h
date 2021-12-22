@@ -1,10 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace aqua
 {
@@ -22,8 +19,8 @@ namespace aqua
             int lines;
             std::vector<std::vector<double>> timestamps_ifov;
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getChannel(int channel);
-            cimg_library::CImg<unsigned short> getHDChannel(int channel);
+            image::Image<uint16_t> getChannel(int channel);
+            image::Image<uint16_t> getHDChannel(int channel);
         };
     } // namespace airs
 } // namespace aqua

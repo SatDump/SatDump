@@ -85,12 +85,12 @@ namespace metop
                 lines += 2;
         }
 
-        cimg_library::CImg<unsigned short> IASIReader::getChannel(int channel)
+        image::Image<uint16_t> IASIReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 30 * 2, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
-            img.mirror('x');
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 30 * 2, lines, 1);
+            //img.normalize();
+            img.equalize();
+            img.mirror(true, false);
             return img;
         }
     } // namespace iasi

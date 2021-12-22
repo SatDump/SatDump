@@ -77,9 +77,9 @@ namespace elektro_arktika
             }
         }
 
-        cimg_library::CImg<unsigned short> MSUIRReader::getImage(int channel)
+        image::Image<uint16_t> MSUIRReader::getImage(int channel)
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[channel][0], 183 * (36 / 2), 3400);
+            return image::Image<uint16_t>(&imageBuffer[channel][0], 183 * (36 / 2), 3400, 1);
         }
     } // namespace msugs
 } // namespace elektro_arktika

@@ -1,10 +1,7 @@
 #pragma once
 
 #include <cstdint>
-
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace noaa
 {
@@ -23,7 +20,7 @@ namespace noaa
             ~HIRSReader();
             int line = 0;
             void work(uint8_t *buffer);
-            cimg_library::CImg<unsigned short> getChannel(int channel);
+            image::Image<uint16_t> getChannel(int channel);
         };
     } // namespace hirs
 } // namespace noaa

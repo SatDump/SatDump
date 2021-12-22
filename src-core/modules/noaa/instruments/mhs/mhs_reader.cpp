@@ -7,6 +7,7 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 */
 
 #include "mhs_reader.h"
+#include <cstring>
 
 namespace noaa
 {
@@ -244,10 +245,10 @@ namespace noaa
             return calibration[l][ch][blackbody];
         }
 
-        cimg_library::CImg<unsigned short> MHSReader::getChannel(int channel)
+        image::Image<uint16_t> MHSReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> output(MHS_WIDTH, line, 1, 1);
-            std::memset(output, 0, MHS_WIDTH * line * 2);
+            image::Image<uint16_t> output(MHS_WIDTH, line, 1);
+            std::memset(&output[0], 0, MHS_WIDTH * line * 2);
             for (int l = 0; l < line; l++)
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
@@ -258,10 +259,11 @@ namespace noaa
             return output;
         }
 
-        cimg_library::CImg<double> MHSReader::get_calibrated_channel(int channel)
+        std::vector<double> MHSReader::get_calibrated_channel(int channel)
         {
-            cimg_library::CImg<double> output(MHS_WIDTH, line, 1, 1);
-            std::memset(output, 0, MHS_WIDTH * line * 8);
+            std::vector<double> output(MHS_WIDTH * line);
+            for (int i = 0; i < (int)output.size(); i++)
+                output[i] = 0;
             for (int l = 0; l < line; l++)
             {
                 for (int x = 0; x < MHS_WIDTH; x++)
@@ -413,7 +415,7 @@ namespace noaa
                 return -1 * (((bx - a2x) * (a1y - a2y)) / (a2x - a1x) - a2y);
         }
 
-        double MHSReader::get_timestamp(int pkt, int offset, int ms_scale)
+        double MHSReader::get_timestamp(int pkt, int offset, int /*ms_scale*/)
         {
             if (pkt == 2)
             {

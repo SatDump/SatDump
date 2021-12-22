@@ -7,9 +7,9 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
-#include "common/image/earth_curvature.h"
+//#include "common/geodetic/projection/satellite_reprojector.h"
+//#include "common/geodetic/projection/proj_file.h"
+//#include "common/image/earth_curvature.h"
 
 #define BUFFER_SIZE 8192
 
@@ -98,65 +98,65 @@ namespace metop
             for (int i = 0; i < 6; i++)
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
-                cimg_library::CImg<unsigned short> img = ascatreader.getChannel(i);
+                image::Image<uint16_t> img = ascatreader.getChannel(i);
                 WRITE_IMAGE(img, directory + "/ASCAT-" + std::to_string(i + 1) + ".png");
-                img.equalize(1000);
+                img.equalize();
                 WRITE_IMAGE(img, directory + "/ASCAT-" + std::to_string(i + 1) + "-EQU.png");
             }
 
-            cimg_library::CImg<unsigned short> image1 = ascatreader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = ascatreader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = ascatreader.getChannel(2);
-            image3.mirror('x');
-            cimg_library::CImg<unsigned short> image4 = ascatreader.getChannel(3);
-            image4.mirror('x');
-            cimg_library::CImg<unsigned short> image5 = ascatreader.getChannel(4);
-            cimg_library::CImg<unsigned short> image6 = ascatreader.getChannel(5);
-            image5.mirror('x');
+            image::Image<uint16_t> image1 = ascatreader.getChannel(0);
+            image::Image<uint16_t> image2 = ascatreader.getChannel(1);
+            image::Image<uint16_t> image3 = ascatreader.getChannel(2);
+            image3.mirror(true, false);
+            image::Image<uint16_t> image4 = ascatreader.getChannel(3);
+            image4.mirror(true, false);
+            image::Image<uint16_t> image5 = ascatreader.getChannel(4);
+            image::Image<uint16_t> image6 = ascatreader.getChannel(5);
+            image5.mirror(true, false);
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(256 * 2, ascatreader.getChannel(0).height() * 3, 1, 1);
+            image::Image<uint16_t> imageAll(256 * 2, ascatreader.getChannel(0).height() * 3, 1);
             {
                 int height = ascatreader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(256 * 0, 0, 0, 0, image6);
-                imageAll.draw_image(256 * 1, 0, 0, 0, image3);
+                imageAll.draw_image(0, image6, 256 * 0, 0);
+                imageAll.draw_image(0, image3, 256 * 1, 0);
 
                 // Row 2
-                imageAll.draw_image(256 * 0, height, 0, 0, image5);
-                imageAll.draw_image(256 * 1, height, 0, 0, image2);
+                imageAll.draw_image(0, image5, 256 * 0, height);
+                imageAll.draw_image(0, image2, 256 * 1, height);
 
                 // Row 3
-                imageAll.draw_image(256 * 0, height * 2, 0, 0, image4);
-                imageAll.draw_image(256 * 1, height * 2, 0, 0, image1);
+                imageAll.draw_image(0, image4, 256 * 0, height * 2);
+                imageAll.draw_image(0, image1, 256 * 1, height * 2);
             }
             WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL.png");
 
-            image1.equalize(1000);
-            image2.equalize(1000);
-            image3.equalize(1000);
-            image4.equalize(1000);
-            image5.equalize(1000);
-            image6.equalize(1000);
+            image1.equalize();
+            image2.equalize();
+            image3.equalize();
+            image4.equalize();
+            image5.equalize();
+            image6.equalize();
 
             logger->info("Global Equalized Composite...");
-            cimg_library::CImg<unsigned short> imageAllEqu(256 * 2, ascatreader.getChannel(0).height() * 3, 1, 1);
+            image::Image<uint16_t> imageAllEqu(256 * 2, ascatreader.getChannel(0).height() * 3, 1);
             {
                 int height = ascatreader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(256 * 0, 0, 0, 0, image6);
-                imageAll.draw_image(256 * 1, 0, 0, 0, image3);
+                imageAll.draw_image(0, image6, 256 * 0, 0);
+                imageAll.draw_image(0, image3, 256 * 1, 0);
 
                 // Row 2
-                imageAll.draw_image(256 * 0, height, 0, 0, image5);
-                imageAll.draw_image(256 * 1, height, 0, 0, image2);
+                imageAll.draw_image(0, image5, 256 * 0, height);
+                imageAll.draw_image(0, image2, 256 * 1, height);
 
                 // Row 3
-                imageAll.draw_image(256 * 0, height * 2, 0, 0, image4);
-                imageAll.draw_image(256 * 1, height * 2, 0, 0, image1);
+                imageAll.draw_image(0, image4, 256 * 0, height * 2);
+                imageAll.draw_image(0, image1, 256 * 1, height * 2);
             }
             WRITE_IMAGE(imageAll, directory + "/ASCAT-EQU-ALL.png");
 

@@ -4,9 +4,7 @@
 #include <cmath>
 #include "packets.h"
 #include <vector>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <memory>
 
 namespace jpss
@@ -31,7 +29,7 @@ namespace jpss
             void feed(ccsds::CCSDSPacket &packet);
             void differentialDecode(VIIRSReader &channelSource, int deci);
             std::vector<double> timestamps;
-            cimg_library::CImg<unsigned short> getImage();
+            image::Image<uint16_t> getImage();
         };
     } // namespace viirs
 } // namespace jpss

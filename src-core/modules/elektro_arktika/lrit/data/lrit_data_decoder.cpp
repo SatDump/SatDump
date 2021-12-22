@@ -11,7 +11,7 @@
 #include "common/utils.h"
 #include "libs/others/strptime.h"
 #include "imgui/imgui_image.h"
-#include "common/image/image.h"
+#include "common/image/jpeg_utils.h"
 #include "resources.h"
 #include "libs/DecompWT/CompressWT.h"
 #include "libs/DecompWT/CompressT4.h"
@@ -212,7 +212,7 @@ namespace elektro
                 if (is_jpeg_compressed) // Is this Jpeg-Compressed? Decompress
                 {
                     logger->info("Decompressing JPEG...");
-                    cimg_library::CImg<unsigned char> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length, true);
+                    image::Image<uint8_t> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length, true);
                     lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
                     lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                 }
@@ -429,9 +429,9 @@ namespace elektro
                         // Downscale image
                         img_height = 1000;
                         img_width = 1000;
-                        cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
+                        image::Image<uint8_t> imageScaled = segmentedDecoder.image;
                         imageScaled.resize(img_width, img_height);
-                        uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width);
+                        uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width);
                         hasToUpdate = true;
                     }
 
@@ -456,7 +456,7 @@ namespace elektro
                 {
                     // Write raw image dats
                     logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                    cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
+                    image::Image<uint8_t> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                     image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                 }
             }

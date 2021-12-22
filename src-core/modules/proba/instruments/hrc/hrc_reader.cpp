@@ -76,10 +76,10 @@ namespace proba
             if (frame_count != 0)
             {
                 std::cout << "Finished HRC image! Saving as HRC-" + std::to_string(count) + ".png" << std::endl;
-                cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(tempChannelBuffer, 1072, 1072);
-                img.normalize(0, 65535);
+                image::Image<uint16_t> img = image::Image<uint16_t>(tempChannelBuffer, 1072, 1072, 1);
+                img.normalize();
                 WRITE_IMAGE_LOCAL(img, output_folder + "/HRC-" + std::to_string(count) + ".png");
-                img.equalize(1000);
+                img.equalize();
                 WRITE_IMAGE_LOCAL(img, output_folder + "/HRC-" + std::to_string(count) + "-EQU.png");
 
                 std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);

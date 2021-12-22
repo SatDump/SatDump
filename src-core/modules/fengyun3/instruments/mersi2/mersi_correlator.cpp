@@ -44,31 +44,31 @@ namespace fengyun3
             image25 = reader25.getImage();
 
             // They all need to be flipped horizontally
-            image1.mirror('y');
-            image2.mirror('y');
-            image3.mirror('y');
-            image4.mirror('y');
-            image5.mirror('y');
-            image6.mirror('y');
-            image7.mirror('y');
-            image8.mirror('y');
-            image9.mirror('y');
-            image10.mirror('y');
-            image11.mirror('y');
-            image12.mirror('y');
-            image13.mirror('y');
-            image14.mirror('y');
-            image15.mirror('y');
-            image16.mirror('y');
-            image17.mirror('y');
-            image18.mirror('y');
-            image19.mirror('y');
-            image20.mirror('y');
-            image21.mirror('y');
-            image22.mirror('y');
-            image23.mirror('y');
-            image24.mirror('y');
-            image25.mirror('y');
+            image1.mirror(false, true);
+            image2.mirror(false, true);
+            image3.mirror(false, true);
+            image4.mirror(false, true);
+            image5.mirror(false, true);
+            image6.mirror(false, true);
+            image7.mirror(false, true);
+            image8.mirror(false, true);
+            image9.mirror(false, true);
+            image10.mirror(false, true);
+            image11.mirror(false, true);
+            image12.mirror(false, true);
+            image13.mirror(false, true);
+            image14.mirror(false, true);
+            image15.mirror(false, true);
+            image16.mirror(false, true);
+            image17.mirror(false, true);
+            image18.mirror(false, true);
+            image19.mirror(false, true);
+            image20.mirror(false, true);
+            image21.mirror(false, true);
+            image22.mirror(false, true);
+            image23.mirror(false, true);
+            image24.mirror(false, true);
+            image25.mirror(false, true);
         }
 
         void MERSICorrelator::processScan()

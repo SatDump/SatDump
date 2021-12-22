@@ -29,11 +29,11 @@ namespace elektro
             else
                 ch1.resize(ch2.width(), ch2.height());
 
-            compo221 = cimg_library::CImg<unsigned char>(ch1.width(), ch1.height(), 1, 3); // Init image
+            compo221 = image::Image<uint8_t>(ch1.width(), ch1.height(), 3); // Init image
 
-            compo221.draw_image(0, 0, 0, 0, ch2);
-            compo221.draw_image(0, 0, 0, 1, ch2);
-            compo221.draw_image(0, 0, 0, 2, ch1);
+            compo221.draw_image(0, ch2);
+            compo221.draw_image(1, ch2);
+            compo221.draw_image(2, ch1);
 
             hasData = true;
 
@@ -43,14 +43,14 @@ namespace elektro
                 // Downscale image
                 img_height = 1000;
                 img_width = 1000;
-                cimg_library::CImg<unsigned char> imageScaled = compo221;
+                image::Image<uint8_t> imageScaled = compo221;
                 imageScaled.resize(img_width, img_height);
-                uchar_to_rgba(imageScaled, textureBuffer, img_height * img_width, 3);
+                uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width, 3);
                 hasToUpdate = true;
             }
         }
 
-        void ELEKTRO221Composer::push2(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO221Composer::push2(image::Image<uint8_t> img, time_t time)
         {
             ch2 = img;
             time2 = time;
@@ -59,7 +59,7 @@ namespace elektro
                 generateCompo();
         }
 
-        void ELEKTRO221Composer::push1(cimg_library::CImg<unsigned char> img, time_t time)
+        void ELEKTRO221Composer::push1(image::Image<uint8_t> img, time_t time)
         {
             ch1 = img;
             time1 = time;

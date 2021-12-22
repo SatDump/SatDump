@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace elektro_arktika
 {
@@ -20,7 +18,7 @@ namespace elektro_arktika
             MSUVISReader();
             ~MSUVISReader();
             void pushFrame(uint8_t *data);
-            cimg_library::CImg<unsigned short> getImage();
+            image::Image<uint16_t> getImage();
         };
     } // namespace msugs
 } // namespace elektro_arktika

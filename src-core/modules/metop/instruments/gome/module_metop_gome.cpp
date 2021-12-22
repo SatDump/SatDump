@@ -105,7 +105,7 @@ namespace metop
             logger->info("Global Composite...");
             int all_width_count = 130;
             int all_height_count = 48;
-            cimg_library::CImg<unsigned short> imageAll(30 * all_width_count, gome_reader.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll(30 * all_width_count, gome_reader.getChannel(0).height() * all_height_count, 1);
             {
                 int height = gome_reader.getChannel(0).height();
 
@@ -116,7 +116,7 @@ namespace metop
                         if (row * all_width_count + column >= 6144)
                             break;
 
-                        imageAll.draw_image(30 * column, height * row, 0, 0, gome_reader.getChannel(row * all_width_count + column));
+                        imageAll.draw_image(0, gome_reader.getChannel(row * all_width_count + column), 30 * column, height * row);
                     }
                 }
             }

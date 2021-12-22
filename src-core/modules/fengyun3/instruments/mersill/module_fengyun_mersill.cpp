@@ -186,18 +186,18 @@ namespace fengyun3
                     std::string name = "MERSILL-" + compokey.key();
 
                     // Prepare what we'll need
-                    std::vector<cimg_library::CImg<unsigned short>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
-                                                                                    mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
-                                                                                    mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
-                                                                                    mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
-                                                                                    mersiCorrelator->image17, mersiCorrelator->image18};
+                    std::vector<image::Image<uint16_t>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
+                                                                        mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
+                                                                        mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
+                                                                        mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
+                                                                        mersiCorrelator->image17, mersiCorrelator->image18};
                     std::vector<int> all_channel_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 
                     // Get required channels
                     std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
                     // Prepare them
-                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<image::Image<uint16_t>> channels;
                     std::vector<int> channel_numbers;
                     for (int required_ch : requiredChannels)
                     {
@@ -206,26 +206,25 @@ namespace fengyun3
                     }
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
-                                                                                            channel_numbers,
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                                               channel_numbers,
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     if (do_banding_correct)
                     {
                         if (compositeImage.width() == 1536)
-                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_1000);
+                            mersi::banding_correct(compositeImage, scanHeight_1000);
                         if (compositeImage.width() == 6144)
-                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_250);
+                            mersi::banding_correct(compositeImage, scanHeight_250);
                     }
 
                     if (bowtie)
                     {
                         if (compositeImage.width() == 1536)
-                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_1000, alpha, beta);
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.channels(), scanHeight_1000, alpha, beta);
                         if (compositeImage.width() == 6144)
-                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_250, alpha, beta);
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.channels(), scanHeight_250, alpha, beta);
                     }
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
@@ -251,28 +250,28 @@ namespace fengyun3
             // Need to add curve correction to compo generator
             logger->info("338 Composite... Thanks Arved! :-)");
             {
-                cimg_library::CImg<unsigned short> image338(1536, mersiCorrelator->image17.height(), 1, 3);
-                cimg_library::CImg<unsigned short> r = mersiCorrelator->image3,
-                                                   g = mersiCorrelator->image3,
-                                                   b = mersiCorrelator->image8;
+                image::Image<uint16_t> image338(1536, mersiCorrelator->image17.height(), 3);
+                image::Image<uint16_t> r = mersiCorrelator->image3,
+                                       g = mersiCorrelator->image3,
+                                       b = mersiCorrelator->image8;
 
                 image::xfr::XFR curveCorrection(0, 1023, 100, 0, 1023, 100, 0, 1023, 70);
                 image::xfr::applyXFR(curveCorrection, r, g, b);
 
-                image338.draw_image(0, 0, 0, 0, r);
-                image338.draw_image(0, 0, 0, 1, g);
-                image338.draw_image(6, 0, 0, 2, b);
+                image338.draw_image(0, r);
+                image338.draw_image(1, g);
+                image338.draw_image(2, b, 6);
 
-                image::brightness_contrast_old(image338, 0.360f, 0.357f);
+                image338.brightness_contrast_old(0.360f, 0.357f);
 
                 if (bowtie)
                     image338 = image::bowtie::correctGenericBowTie(image338, 3, scanHeight_1000, alpha, beta);
 
                 WRITE_IMAGE(image338, directory + "/MERSILL-RGB-338.png");
-                cimg_library::CImg<unsigned short> corrected338 = image::earth_curvature::correct_earth_curvature(image338,
-                                                                                                                  FY3_ORBIT_HEIGHT,
-                                                                                                                  FY3_MERSILL_SWATH,
-                                                                                                                  FY3_MERSI_RES1000);
+                image::Image<uint16_t> corrected338 = image::earth_curvature::correct_earth_curvature(image338,
+                                                                                                      FY3_ORBIT_HEIGHT,
+                                                                                                      FY3_MERSILL_SWATH,
+                                                                                                      FY3_MERSI_RES1000);
                 WRITE_IMAGE(corrected338, directory + "/MERSILL-RGB-338-CORRECTED.png");
             }
         }

@@ -3,9 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "libs/predict/predict.h"
 
 namespace jason3
@@ -17,15 +15,15 @@ namespace jason3
         private:
             predict_orbital_elements_t *jason3_object;
             predict_position jason3_orbit;
-            cimg_library::CImg<unsigned char> map_image_height, map_image_scatter;
+            image::Image<uint8_t> map_image_height, map_image_scatter;
 
         public:
             PoseidonReader();
             ~PoseidonReader();
 
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned char> getImageHeight();
-            cimg_library::CImg<unsigned char> getImageScatter();
+            image::Image<uint8_t> getImageHeight();
+            image::Image<uint8_t> getImageScatter();
         };
     } // namespace modis
 } // namespace eos

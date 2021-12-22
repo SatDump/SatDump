@@ -59,9 +59,9 @@ namespace jpss
             }
         }
 
-        cimg_library::CImg<unsigned short> ATMSReader::getImage(int channel)
+        image::Image<uint16_t> ATMSReader::getImage(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 96, lines);
+            return image::Image<uint16_t>(channels[channel], 96, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

@@ -96,38 +96,59 @@ namespace metop
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(mhsreader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
-                WRITE_IMAGE(mhsreader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/MHS-" + std::to_string(i + 1) + "-EQU.png");
+                image::Image<uint16_t> img = mhsreader.getChannel(i);
+                img.equalize();
+                img.normalize();
+                WRITE_IMAGE(img, directory + "/MHS-" + std::to_string(i + 1) + "-EQU.png");
             }
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(90 * 3, mhsreader.getChannel(0).height() * 2, 1, 1, 0);
+            image::Image<uint16_t> imageAll(90 * 3, mhsreader.getChannel(0).height() * 2, 1);
             {
                 int height = mhsreader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(90 * 0, 0, 0, 0, mhsreader.getChannel(0));
-                imageAll.draw_image(90 * 1, 0, 0, 0, mhsreader.getChannel(1));
-                imageAll.draw_image(90 * 2, 0, 0, 0, mhsreader.getChannel(2));
+                imageAll.draw_image(0, mhsreader.getChannel(0), 90 * 0, 0);
+                imageAll.draw_image(0, mhsreader.getChannel(1), 90 * 1, 0);
+                imageAll.draw_image(0, mhsreader.getChannel(2), 90 * 2, 0);
 
                 // Row 2
-                imageAll.draw_image(90 * 0, height, 0, 0, mhsreader.getChannel(3));
-                imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4));
+                imageAll.draw_image(0, mhsreader.getChannel(3), 90 * 0, height);
+                imageAll.draw_image(0, mhsreader.getChannel(4), 90 * 1, height);
             }
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL.png");
 
-            imageAll = cimg_library::CImg<unsigned short>(90 * 3, mhsreader.getChannel(0).height() * 2, 1, 1, 0);
+            imageAll = image::Image<uint16_t>(90 * 3, mhsreader.getChannel(0).height() * 2, 1);
             {
                 int height = mhsreader.getChannel(0).height();
 
+                image::Image<uint16_t> img1 = mhsreader.getChannel(0);
+                image::Image<uint16_t> img2 = mhsreader.getChannel(1);
+                image::Image<uint16_t> img3 = mhsreader.getChannel(2);
+                image::Image<uint16_t> img4 = mhsreader.getChannel(3);
+                image::Image<uint16_t> img5 = mhsreader.getChannel(4);
+
+                img1.equalize();
+                img2.equalize();
+                img3.equalize();
+                img4.equalize();
+                img5.equalize();
+
+                img1.normalize();
+                img2.normalize();
+                img3.normalize();
+                img4.normalize();
+                img5.normalize();
+
                 // Row 1
-                imageAll.draw_image(90 * 0, 0, 0, 0, mhsreader.getChannel(0).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(90 * 1, 0, 0, 0, mhsreader.getChannel(1).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(90 * 2, 0, 0, 0, mhsreader.getChannel(2).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(0, img1, 90 * 0, 0);
+                imageAll.draw_image(0, img2, 90 * 1, 0);
+                imageAll.draw_image(0, img3, 90 * 2, 0);
 
                 // Row 2
-                imageAll.draw_image(90 * 0, height, 0, 0, mhsreader.getChannel(3).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(90 * 1, height, 0, 0, mhsreader.getChannel(4).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(0, img4, 90 * 0, height);
+                imageAll.draw_image(0, img5, 90 * 1, height);
             }
             WRITE_IMAGE(imageAll, directory + "/MHS-ALL-EQU.png");
 
@@ -151,9 +172,11 @@ namespace metop
 
                 for (int i = 0; i < 5; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mhsreader.getChannel(i).equalize(1000).normalize(0, 65535);
+                    image::Image<uint16_t> image = mhsreader.getChannel(i);
+                    image.equalize();
+                    image.normalize();
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

@@ -80,7 +80,7 @@ namespace meteor
             logger->info("Global Composite...");
             int all_width_count = 20;
             int all_height_count = 3;
-            cimg_library::CImg<unsigned short> imageAll(52 * all_width_count, reader.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll(52 * all_width_count, reader.getChannel(0).height() * all_height_count, 1);
             {
                 int height = reader.getChannel(0).height();
 
@@ -91,7 +91,7 @@ namespace meteor
                         if (row * all_width_count + column >= 60)
                             break;
 
-                        imageAll.draw_image(52 * column, height * row, 0, 0, reader.getChannel(row * all_width_count + column));
+                        imageAll.draw_image(0, reader.getChannel(row * all_width_count + column), 52 * column, height * row);
                     }
                 }
             }

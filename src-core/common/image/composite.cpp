@@ -7,7 +7,7 @@ namespace image
 {
     // Generate a composite from channels and an equation
     template <typename T>
-    cimg_library::CImg<T> generate_composite_from_equ(std::vector<cimg_library::CImg<T>> inputChannels, std::vector<int> channelNumbers, std::string equation, nlohmann::json parameters)
+    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<int> channelNumbers, std::string equation, nlohmann::json parameters)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
@@ -38,7 +38,7 @@ namespace image
 
             // Also equalize if requested
             if (pre_equalize)
-                inputChannels[i].equalize(1000);
+                inputChannels[i].equalize();
         }
 
         // Set expression
@@ -68,7 +68,7 @@ namespace image
 
         // Output image
         bool isRgb = outValsCnt == 3;
-        cimg_library::CImg<T> rgb_output(img_width, img_height, 1, isRgb ? 3 : 1, 0);
+        Image<T> rgb_output(img_width, img_height, isRgb ? 3 : 1);
 
         // Utils
         double R = 0;
@@ -149,17 +149,17 @@ namespace image
         delete[] channelValues;
 
         if (white_balance)
-            image::white_balance(rgb_output);
+            rgb_output.white_balance();
 
         if (equalize)
-            rgb_output.equalize(1000);
+            rgb_output.equalize();
 
         if (normalize)
-            rgb_output.normalize(0, std::numeric_limits<T>::max());
+            rgb_output.normalize();
 
         return rgb_output;
     }
 
-    template cimg_library::CImg<unsigned char> generate_composite_from_equ<unsigned char>(std::vector<cimg_library::CImg<unsigned char>>, std::vector<int>, std::string, nlohmann::json);
-    template cimg_library::CImg<unsigned short> generate_composite_from_equ<unsigned short>(std::vector<cimg_library::CImg<unsigned short>>, std::vector<int>, std::string, nlohmann::json);
+    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<int>, std::string, nlohmann::json);
+    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<int>, std::string, nlohmann::json);
 }

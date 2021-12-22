@@ -7,7 +7,6 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include <iostream>
-#include "common/image/image.h"
 #include "data/payload_assembler.h"
 
 // Return filesize
