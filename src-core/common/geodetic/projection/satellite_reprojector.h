@@ -1,7 +1,5 @@
 #pragma once
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <functional>
 #include "leo_projection.h"
 #include "geo_projection.h"
@@ -18,9 +16,9 @@ namespace geodetic
     {
         // Reproject LEO imagery
         void reprojectLEOtoProj(
-            cimg_library::CImg<unsigned char> image,                                       // Input image to project
+            image::Image<uint8_t> image,                                                   // Input image to project
             projection::LEOScanProjector &projector,                                       // LEO Projector
-            cimg_library::CImg<unsigned char> &projected_image,                            // Optional input image
+            image::Image<uint8_t> &projected_image,                                        // Optional input image
             int channels,                                                                  // Channels
             std::function<std::pair<int, int>(float, float, int, int)> projectionFunction, // Optional projection function, default is equirectangular
             float opacity = 1.0f,                                                          // Optional opacity
@@ -29,30 +27,30 @@ namespace geodetic
 
         // Reproject GEO imagery
         void reprojectGEOtoProj(
-            cimg_library::CImg<unsigned char> image,                                       // Input image to project
+            image::Image<uint8_t> image,                                                   // Input image to project
             projection::GEOProjector &projector,                                           // GEO Projector
-            cimg_library::CImg<unsigned char> &projected_image,                            // Optional input image
+            image::Image<uint8_t> &projected_image,                                        // Optional input image
             int channels,                                                                  // Channels
             std::function<std::pair<int, int>(float, float, int, int)> projectionFunction, // Optional projection function, default is equirectangular
             float opacity = 1.0f,                                                          // Optional opacity
             float *progress = nullptr                                                      // Optional progress value
         );
 
-        void projectEQUIToproj(cimg_library::CImg<unsigned char> image,
-                               cimg_library::CImg<unsigned char> &projected_image,
+        void projectEQUIToproj(image::Image<uint8_t> image,
+                               image::Image<uint8_t> &projected_image,
                                int channels,
                                std::function<std::pair<int, int>(float, float, int, int)> toMapCoords,
                                float opacity = 1.0f,
                                float *progress = nullptr);
 
         // Reproject LEO imagery to an equirectangular projection
-        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(
-            cimg_library::CImg<unsigned char> image,                                                              // Input image to project
-            projection::LEOScanProjector &projector,                                                              // LEO Projector
-            int output_width,                                                                                     // Output map width
-            int output_height,                                                                                    // Output map height
-            int channels = 1,                                                                                     // Channel count
-            cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(1, 1, 1, 1, 0), // Optional input image
+        image::Image<uint8_t> projectLEOToEquirectangularMapped(
+            image::Image<uint8_t> image,                                            // Input image to project
+            projection::LEOScanProjector &projector,                                // LEO Projector
+            int output_width,                                                       // Output map width
+            int output_height,                                                      // Output map height
+            int channels = 1,                                                       // Channel count
+            image::Image<uint8_t> projected_image = image::Image<uint8_t>(1, 1, 1), // Optional input image
             std::function<std::pair<int, int>(float, float, int, int)> toMapCoords = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
             {
                 int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;
@@ -62,13 +60,13 @@ namespace geodetic
         );
 
         // Reproject LEO imagery to an equirectangular projection
-        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(
-            cimg_library::CImg<unsigned short> image,                                                             // Input image to project
-            projection::LEOScanProjector &projector,                                                              // LEO Projector
-            int output_width,                                                                                     // Output map width
-            int output_height,                                                                                    // Output map height
-            int channels = 1,                                                                                     // Channel count
-            cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(1, 1, 1, 1, 0), // Optional input image
+        image::Image<uint8_t> projectLEOToEquirectangularMapped(
+            image::Image<uint16_t> image,                                           // Input image to project
+            projection::LEOScanProjector &projector,                                // LEO Projector
+            int output_width,                                                       // Output map width
+            int output_height,                                                      // Output map height
+            int channels = 1,                                                       // Channel count
+            image::Image<uint8_t> projected_image = image::Image<uint8_t>(1, 1, 1), // Optional input image
             std::function<std::pair<int, int>(float, float, int, int)> toMapCoords = [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
             {
                 int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;

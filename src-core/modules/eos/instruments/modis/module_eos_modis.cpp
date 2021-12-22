@@ -7,14 +7,12 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
-#include "common/image/image.h"
 #include "common/utils.h"
 #include "common/image/earth_curvature.h"
 #include "modules/eos/eos.h"
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
@@ -251,7 +249,7 @@ namespace eos
 
             for (int i = 0; i < 2; i++)
             {
-                cimg_library::CImg<unsigned short> image = reader.getImage250m(i);
+                image::Image<uint16_t> image = reader.getImage250m(i);
 
                 if (bowtie)
                     image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
@@ -262,7 +260,7 @@ namespace eos
 
             for (int i = 0; i < 5; i++)
             {
-                cimg_library::CImg<unsigned short> image = reader.getImage500m(i);
+                image::Image<uint16_t> image = reader.getImage500m(i);
 
                 if (bowtie)
                     image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
@@ -273,7 +271,7 @@ namespace eos
 
             for (int i = 0; i < 31; i++)
             {
-                cimg_library::CImg<unsigned short> image = reader.getImage1000m(i);
+                image::Image<uint16_t> image = reader.getImage1000m(i);
 
                 if (bowtie)
                     image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
@@ -330,7 +328,7 @@ namespace eos
                     std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
                     // Prepare channels
-                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<image::Image<uint16_t>> channels;
                     std::vector<int> channel_numbers;
                     bool has250m = false, has500m = false;
                     for (int i = 0; i < (int)requiredChannels.size(); i++)
@@ -375,7 +373,7 @@ namespace eos
                     }
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
+                    image::Image<uint16_t>
                         compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
                                                                                             channel_numbers,
                                                                                             expression,
@@ -386,7 +384,7 @@ namespace eos
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), (has250m ? projector_250 : (has500m ? projector_500 : projector_1000)), 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, (has250m ? projector_250 : (has500m ? projector_500 : projector_1000)), 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                     }
 

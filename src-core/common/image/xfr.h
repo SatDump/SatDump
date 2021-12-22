@@ -1,9 +1,7 @@
 #pragma once
 
 #include <string>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "image.h"
 
 /*
  XFR or Color curve correction support
@@ -29,8 +27,8 @@ namespace image
         };
 
         // Apply color curve correction
-        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &r, cimg_library::CImg<unsigned short> &g, cimg_library::CImg<unsigned short> &b);
-        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &image);
+        void applyXFR(XFR &xfr, Image<uint16_t> &r, Image<uint16_t> &g, Image<uint16_t> &b);
+        void applyXFR(XFR &xfr, Image<uint16_t> &image);
 
         // Load XFR file
         XFR loadXFRFromFile(std::string path);

@@ -3,9 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include "libs/predict/predict.h"
 
 namespace jason3
@@ -17,7 +15,7 @@ namespace jason3
         private:
             predict_orbital_elements_t *jason3_object;
             predict_position jason3_orbit;
-            cimg_library::CImg<unsigned char> map_image[3];
+            image::Image<uint8_t> map_image[3];
             unsigned short *imageBuffer[3];
             int lines;
 
@@ -28,8 +26,8 @@ namespace jason3
             std::vector<double> timestamps;
 
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned char> getImage(int channel);
-            cimg_library::CImg<unsigned short> getImageNormal(int channel);
+            image::Image<uint8_t> getImage(int channel);
+            image::Image<uint16_t> getImageNormal(int channel);
         };
     } // namespace modis
 } // namespace eos

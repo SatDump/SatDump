@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "logger.h"
 #include "common/image/image.h"
+#include "common/image/jpeg_utils.h"
 #include "abi/abi_products.h"
 #include <fstream>
 #include "glm/glm_parser.h"
@@ -39,9 +40,9 @@ namespace goes
             return utc_filename;
         }
 
-        cimg_library::CImg<unsigned short> GRBDataProcessor::get_image_product(GRBFilePayload &payload)
+        image::Image<uint16_t> GRBDataProcessor::get_image_product(GRBFilePayload &payload)
         {
-            cimg_library::CImg<unsigned short> img;
+            image::Image<uint16_t> img;
 
             if (payload.sec_header.grb_payload_variant == IMAGE || payload.sec_header.grb_payload_variant == IMAGE_WITH_DQF)
             {
@@ -50,7 +51,7 @@ namespace goes
 
                 if (image_header.compression_algorithm == NO_COMPRESSION)
                 {
-                    img = cimg_library::CImg<unsigned short>(&payload.payload[34], image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block);
+                    img = image::Image<uint16_t>((uint16_t *)&payload.payload[34], image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block, 1);
                 }
                 else if (image_header.compression_algorithm == JPEG_2000)
                 {
@@ -75,7 +76,7 @@ namespace goes
             {
                 // Extract image block and image header
                 GRBImagePayloadHeader image_header(&payload.payload[0]);
-                cimg_library::CImg<unsigned short> block = get_image_product(payload);
+                image::Image<uint16_t> block = get_image_product(payload);
                 abi_image_assemblers[payload.apid]->pushBlock(image_header, block);
             }
             else
@@ -112,7 +113,7 @@ namespace goes
             {
                 // Extract image block and image header
                 GRBImagePayloadHeader image_header(&payload.payload[0]);
-                cimg_library::CImg<unsigned short> block = get_image_product(payload);
+                image::Image<uint16_t> block = get_image_product(payload);
                 suvi_image_assemblers[payload.apid]->pushBlock(image_header, block);
             }
             else

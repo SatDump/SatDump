@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace aura
 {
@@ -23,9 +21,9 @@ namespace aura
             ~OMIReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getChannel(int channel);
-            cimg_library::CImg<unsigned short> getImageRaw();
-            cimg_library::CImg<unsigned short> getImageVisible();
+            image::Image<uint16_t> getChannel(int channel);
+            image::Image<uint16_t> getImageRaw();
+            image::Image<uint16_t> getImageVisible();
         };
     } // namespace ceres
 } // namespace aqua

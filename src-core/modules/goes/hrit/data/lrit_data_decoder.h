@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -31,7 +29,7 @@ namespace goes
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, int segc);
             bool isComplete();
-            cimg_library::CImg<unsigned char> image;
+            image::Image<uint8_t> image;
             int image_id = -1;
         };
 
@@ -45,8 +43,8 @@ namespace goes
         class GOESRFalseColorComposer
         {
         private:
-            cimg_library::CImg<unsigned char> ch2_curve, fc_lut;
-            cimg_library::CImg<unsigned char> ch2, ch13, falsecolor;
+            image::Image<uint8_t> ch2_curve, fc_lut;
+            image::Image<uint8_t> ch2, ch13, falsecolor;
             time_t time2, time13;
 
             void generateCompo();
@@ -61,8 +59,8 @@ namespace goes
 
             void save(std::string directory);
 
-            void push2(cimg_library::CImg<unsigned char> img, time_t time);
-            void push13(cimg_library::CImg<unsigned char> img, time_t time);
+            void push2(image::Image<uint8_t> img, time_t time);
+            void push13(image::Image<uint8_t> img, time_t time);
 
         public:
             // UI Stuff

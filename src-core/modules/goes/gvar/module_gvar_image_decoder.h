@@ -15,11 +15,11 @@ namespace goes
         struct GVARImages
         {
             // Images used as a buffer when writing it out
-            cimg_library::CImg<unsigned short> image1;
-            cimg_library::CImg<unsigned short> image2;
-            cimg_library::CImg<unsigned short> image3;
-            cimg_library::CImg<unsigned short> image4;
-            cimg_library::CImg<unsigned short> image5;
+            image::Image<uint16_t> image1;
+            image::Image<uint16_t> image2;
+            image::Image<uint16_t> image3;
+            image::Image<uint16_t> image4;
+            image::Image<uint16_t> image5;
             int sat_number;
             int vis_width;
             tm imageTime;
@@ -37,7 +37,7 @@ namespace goes
 
             struct GVARSaveFCImageEvent
             {
-                cimg_library::CImg<unsigned char> &false_color_image;
+                image::Image<uint8_t> &false_color_image;
                 int sat_number;
                 std::tm *timeReadable;
                 time_t timeUTC;

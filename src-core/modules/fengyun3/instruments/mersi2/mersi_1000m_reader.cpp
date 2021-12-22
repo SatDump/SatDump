@@ -1,4 +1,5 @@
 #include "mersi_1000m_reader.h"
+#include <cmath>
 
 namespace fengyun3
 {
@@ -48,9 +49,9 @@ namespace fengyun3
                 imageBuffer.resize((frames + 1000) * 2048);
         }
 
-        cimg_library::CImg<unsigned short> MERSI1000Reader::getImage()
+        image::Image<uint16_t> MERSI1000Reader::getImage()
         {
-            return cimg_library::CImg<unsigned short>(&imageBuffer[0], 2048, frames);
+            return image::Image<uint16_t>(&imageBuffer[0], 2048, frames, 1);
         }
     } // namespace mersi1
 } // namespace fengyun

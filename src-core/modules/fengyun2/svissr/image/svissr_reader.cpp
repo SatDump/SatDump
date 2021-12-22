@@ -1,4 +1,5 @@
 #include "svissr_reader.h"
+#include <cmath>
 
 #define MAX_HEIGHT 2501
 #define WIDTH_IR 2291
@@ -140,7 +141,7 @@ namespace fengyun_svissr
         goodLines[counter] = true;
     }
 
-    cimg_library::CImg<unsigned short> SVISSRReader::getImageIR1()
+    image::Image<uint16_t> SVISSRReader::getImageIR1()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -157,10 +158,10 @@ namespace fengyun_svissr
             }
         }
 
-        return cimg_library::CImg<unsigned short>(&imageBufferIR1[0], WIDTH_IR, MAX_HEIGHT);
+        return image::Image<uint16_t>(&imageBufferIR1[0], WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    cimg_library::CImg<unsigned short> SVISSRReader::getImageIR2()
+    image::Image<uint16_t> SVISSRReader::getImageIR2()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -177,10 +178,10 @@ namespace fengyun_svissr
             }
         }
 
-        return cimg_library::CImg<unsigned short>(&imageBufferIR2[0], WIDTH_IR, MAX_HEIGHT);
+        return image::Image<uint16_t>(&imageBufferIR2[0], WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    cimg_library::CImg<unsigned short> SVISSRReader::getImageIR3()
+    image::Image<uint16_t> SVISSRReader::getImageIR3()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -197,10 +198,10 @@ namespace fengyun_svissr
             }
         }
 
-        return cimg_library::CImg<unsigned short>(&imageBufferIR3[0], WIDTH_IR, MAX_HEIGHT);
+        return image::Image<uint16_t>(&imageBufferIR3[0], WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    cimg_library::CImg<unsigned short> SVISSRReader::getImageIR4()
+    image::Image<uint16_t> SVISSRReader::getImageIR4()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -217,10 +218,10 @@ namespace fengyun_svissr
             }
         }
 
-        return cimg_library::CImg<unsigned short>(&imageBufferIR4[0], WIDTH_IR, MAX_HEIGHT);
+        return image::Image<uint16_t>(&imageBufferIR4[0], WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    cimg_library::CImg<unsigned short> SVISSRReader::getImageVIS()
+    image::Image<uint16_t> SVISSRReader::getImageVIS()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -240,6 +241,6 @@ namespace fengyun_svissr
             }
         }
 
-        return cimg_library::CImg<unsigned short>(&imageBufferVIS[0], WIDTH_VIS, MAX_HEIGHT * 4);
+        return image::Image<uint16_t>(&imageBufferVIS[0], WIDTH_VIS, MAX_HEIGHT * 4, 1);
     }
 }

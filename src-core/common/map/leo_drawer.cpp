@@ -4,16 +4,9 @@
 
 namespace map
 {
-    cimg_library::CImg<unsigned char> drawMapToLEO(cimg_library::CImg<unsigned char> image, geodetic::projection::LEOScanProjector &projector)
+    image::Image<uint8_t> drawMapToLEO(image::Image<uint8_t> image, geodetic::projection::LEOScanProjector &projector)
     {
-        if (image.spectrum() == 1) // If WB, make RGB
-        {
-            cimg_library::CImg<unsigned char> rgb_image(image.width(), image.height(), 1, 3, 0);
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 0], &image[0], rgb_image.width() * rgb_image.height());
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 1], &image[0], rgb_image.width() * rgb_image.height());
-            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 2], &image[0], rgb_image.width() * rgb_image.height());
-            image = rgb_image;
-        }
+        image.to_rgb(); // If WB, make RGB
 
         std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
         projectionFunc = [&projector](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>

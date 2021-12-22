@@ -1,8 +1,6 @@
 #pragma once
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <memory>
 #include "abi/abi_image_assembler.h"
 #include "suvi/suvi_image_assembler.h"
@@ -36,7 +34,7 @@ namespace goes
 
             // Utils
             std::string timestamp_to_string(double timestamp);
-            cimg_library::CImg<unsigned short> get_image_product(GRBFilePayload &payload);
+            image::Image<uint16_t> get_image_product(GRBFilePayload &payload);
 
             // ABI Product processing
             std::map<int, std::shared_ptr<GRBABIImageAssembler>> abi_image_assemblers;

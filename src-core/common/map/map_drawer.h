@@ -1,20 +1,19 @@
 #pragma once
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <functional>
 #include <vector>
 #include <string>
+#include <limits>
 
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
     template <typename T>
-    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
+    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = std::numeric_limits<int>::max());
 
     struct CustomLabel
     {
@@ -24,5 +23,5 @@ namespace map
     };
 
     template <typename T>
-    void drawProjectedLabels(std::vector<CustomLabel> labels, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
+    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
 }

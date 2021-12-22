@@ -107,51 +107,51 @@ namespace jpss
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image1 = reader.getImage(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getImage(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getImage(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getImage(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getImage(4);
-            cimg_library::CImg<unsigned short> image6 = reader.getImage(5);
-            cimg_library::CImg<unsigned short> image7 = reader.getImage(6);
-            cimg_library::CImg<unsigned short> image8 = reader.getImage(7);
-            cimg_library::CImg<unsigned short> image9 = reader.getImage(8);
-            cimg_library::CImg<unsigned short> image10 = reader.getImage(9);
-            cimg_library::CImg<unsigned short> image11 = reader.getImage(10);
-            cimg_library::CImg<unsigned short> image12 = reader.getImage(11);
-            cimg_library::CImg<unsigned short> image13 = reader.getImage(12);
-            cimg_library::CImg<unsigned short> image14 = reader.getImage(13);
-            cimg_library::CImg<unsigned short> image15 = reader.getImage(14);
-            cimg_library::CImg<unsigned short> image16 = reader.getImage(15);
-            cimg_library::CImg<unsigned short> image17 = reader.getImage(16);
-            cimg_library::CImg<unsigned short> image18 = reader.getImage(17);
-            cimg_library::CImg<unsigned short> image19 = reader.getImage(18);
-            cimg_library::CImg<unsigned short> image20 = reader.getImage(19);
-            cimg_library::CImg<unsigned short> image21 = reader.getImage(20);
-            cimg_library::CImg<unsigned short> image22 = reader.getImage(21);
+            image::Image<uint16_t> image1 = reader.getImage(0);
+            image::Image<uint16_t> image2 = reader.getImage(1);
+            image::Image<uint16_t> image3 = reader.getImage(2);
+            image::Image<uint16_t> image4 = reader.getImage(3);
+            image::Image<uint16_t> image5 = reader.getImage(4);
+            image::Image<uint16_t> image6 = reader.getImage(5);
+            image::Image<uint16_t> image7 = reader.getImage(6);
+            image::Image<uint16_t> image8 = reader.getImage(7);
+            image::Image<uint16_t> image9 = reader.getImage(8);
+            image::Image<uint16_t> image10 = reader.getImage(9);
+            image::Image<uint16_t> image11 = reader.getImage(10);
+            image::Image<uint16_t> image12 = reader.getImage(11);
+            image::Image<uint16_t> image13 = reader.getImage(12);
+            image::Image<uint16_t> image14 = reader.getImage(13);
+            image::Image<uint16_t> image15 = reader.getImage(14);
+            image::Image<uint16_t> image16 = reader.getImage(15);
+            image::Image<uint16_t> image17 = reader.getImage(16);
+            image::Image<uint16_t> image18 = reader.getImage(17);
+            image::Image<uint16_t> image19 = reader.getImage(18);
+            image::Image<uint16_t> image20 = reader.getImage(19);
+            image::Image<uint16_t> image21 = reader.getImage(20);
+            image::Image<uint16_t> image22 = reader.getImage(21);
 
-            image1.equalize(1000);
-            image2.equalize(1000);
-            image3.equalize(1000);
-            image4.equalize(1000);
-            image5.equalize(1000);
-            image6.equalize(1000);
-            image7.equalize(1000);
-            image8.equalize(1000);
-            image9.equalize(1000);
-            image10.equalize(1000);
-            image11.equalize(1000);
-            image12.equalize(1000);
-            image13.equalize(1000);
-            image14.equalize(1000);
-            image15.equalize(1000);
-            image16.equalize(1000);
-            image17.equalize(1000);
-            image18.equalize(1000);
-            image19.equalize(1000);
-            image20.equalize(1000);
-            image21.equalize(1000);
-            image22.equalize(1000);
+            image1.equalize();
+            image2.equalize();
+            image3.equalize();
+            image4.equalize();
+            image5.equalize();
+            image6.equalize();
+            image7.equalize();
+            image8.equalize();
+            image9.equalize();
+            image10.equalize();
+            image11.equalize();
+            image12.equalize();
+            image13.equalize();
+            image14.equalize();
+            image15.equalize();
+            image16.equalize();
+            image17.equalize();
+            image18.equalize();
+            image19.equalize();
+            image20.equalize();
+            image21.equalize();
+            image22.equalize();
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/ATMS-1.png");
@@ -221,164 +221,164 @@ namespace jpss
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(96 * 11, image1.height() * 2, 1, 1);
+            image::Image<uint16_t> imageAll(96 * 11, image1.height() * 2, 1);
             {
                 // Row 1
-                imageAll.draw_image(96 * 0, 0, 0, 0, image1);
-                imageAll.draw_image(96 * 1, 0, 0, 0, image2);
-                imageAll.draw_image(96 * 2, 0, 0, 0, image3);
-                imageAll.draw_image(96 * 3, 0, 0, 0, image4);
-                imageAll.draw_image(96 * 4, 0, 0, 0, image5);
-                imageAll.draw_image(96 * 5, 0, 0, 0, image6);
-                imageAll.draw_image(96 * 6, 0, 0, 0, image7);
-                imageAll.draw_image(96 * 7, 0, 0, 0, image8);
-                imageAll.draw_image(96 * 8, 0, 0, 0, image9);
-                imageAll.draw_image(96 * 9, 0, 0, 0, image10);
-                imageAll.draw_image(96 * 10, 0, 0, 0, image11);
+                imageAll.draw_image(0, image1, 96 * 0);
+                imageAll.draw_image(0, image2, 96 * 1);
+                imageAll.draw_image(0, image3, 96 * 2);
+                imageAll.draw_image(0, image4, 96 * 3);
+                imageAll.draw_image(0, image5, 96 * 4);
+                imageAll.draw_image(0, image6, 96 * 5);
+                imageAll.draw_image(0, image7, 96 * 6);
+                imageAll.draw_image(0, image8, 96 * 7);
+                imageAll.draw_image(0, image9, 96 * 8);
+                imageAll.draw_image(0, image10, 96 * 9);
+                imageAll.draw_image(0, image11, 96 * 10);
 
                 // Row 2
-                imageAll.draw_image(96 * 0, image1.height(), 0, 0, image12);
-                imageAll.draw_image(96 * 1, image1.height(), 0, 0, image13);
-                imageAll.draw_image(96 * 2, image1.height(), 0, 0, image14);
-                imageAll.draw_image(96 * 3, image1.height(), 0, 0, image15);
-                imageAll.draw_image(96 * 4, image1.height(), 0, 0, image16);
-                imageAll.draw_image(96 * 5, image1.height(), 0, 0, image17);
-                imageAll.draw_image(96 * 6, image1.height(), 0, 0, image18);
-                imageAll.draw_image(96 * 7, image1.height(), 0, 0, image19);
-                imageAll.draw_image(96 * 8, image1.height(), 0, 0, image20);
-                imageAll.draw_image(96 * 9, image1.height(), 0, 0, image21);
-                imageAll.draw_image(96 * 10, image1.height(), 0, 0, image22);
+                imageAll.draw_image(0, image12, 96 * 0, image1.height());
+                imageAll.draw_image(0, image13, 96 * 1, image1.height());
+                imageAll.draw_image(0, image14, 96 * 2, image1.height());
+                imageAll.draw_image(0, image15, 96 * 3, image1.height());
+                imageAll.draw_image(0, image16, 96 * 4, image1.height());
+                imageAll.draw_image(0, image17, 96 * 5, image1.height());
+                imageAll.draw_image(0, image18, 96 * 6, image1.height());
+                imageAll.draw_image(0, image19, 96 * 7, image1.height());
+                imageAll.draw_image(0, image20, 96 * 8, image1.height());
+                imageAll.draw_image(0, image21, 96 * 9, image1.height());
+                imageAll.draw_image(0, image22, 96 * 10, image1.height());
             }
             WRITE_IMAGE(imageAll, directory + "/ATMS-ALL.png");
 
             logger->info("346 Composite...");
-            cimg_library::CImg<unsigned short> image346(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image346(96, image1.height(), 3);
             {
-                image346.draw_image(0, 0, 0, 0, image3);
-                image346.draw_image(0, 0, 0, 1, image4);
-                image346.draw_image(0, 0, 0, 2, image6);
+                image346.draw_image(0, image3);
+                image346.draw_image(1, image4);
+                image346.draw_image(2, image6);
             }
-            image346.equalize(1000);
+            image346.equalize();
             WRITE_IMAGE(image346, directory + "/ATMS-RGB-346.png");
 
             logger->info("335 Composite...");
-            cimg_library::CImg<unsigned short> image335(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image335(96, image1.height(), 3);
             {
-                image335.draw_image(0, 0, 0, 0, image3);
-                image335.draw_image(0, 0, 0, 1, image3);
-                image335.draw_image(0, 0, 0, 2, image5);
+                image335.draw_image(0, image3);
+                image335.draw_image(1, image3);
+                image335.draw_image(2, image5);
             }
-            image335.equalize(1000);
+            image335.equalize();
             WRITE_IMAGE(image335, directory + "/ATMS-RGB-335.png");
 
             logger->info("4.3.17 Composite...");
-            cimg_library::CImg<unsigned short> image4317(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image4317(96, image1.height(), 3);
             {
-                image4317.draw_image(0, 0, 0, 0, image4);
-                image4317.draw_image(0, 0, 0, 1, image3);
-                image4317.draw_image(0, 0, 0, 2, image17);
+                image4317.draw_image(0, image4);
+                image4317.draw_image(1, image3);
+                image4317.draw_image(2, image17);
             }
-            image4317.equalize(1000);
+            image4317.equalize();
             WRITE_IMAGE(image4317, directory + "/ATMS-RGB-4.3.17.png");
 
             logger->info("445 Composite...");
-            cimg_library::CImg<unsigned short> image445(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image445(96, image1.height(), 3);
             {
-                image445.draw_image(0, 0, 0, 0, image4);
-                image445.draw_image(0, 0, 0, 1, image4);
-                image445.draw_image(0, 0, 0, 2, image5);
+                image445.draw_image(0, image4);
+                image445.draw_image(1, image4);
+                image445.draw_image(2, image5);
             }
-            image445.equalize(1000);
+            image445.equalize();
             WRITE_IMAGE(image445, directory + "/ATMS-RGB-445.png");
 
             logger->info("4.4.17 Composite...");
-            cimg_library::CImg<unsigned short> image4417(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image4417(96, image1.height(), 3);
             {
-                image4417.draw_image(0, 0, 0, 0, image4);
-                image4417.draw_image(0, 0, 0, 1, image4);
-                image4417.draw_image(0, 0, 0, 2, image17);
+                image4417.draw_image(0, image4);
+                image4417.draw_image(1, image4);
+                image4417.draw_image(2, image17);
             }
-            image4417.equalize(1000);
+            image4417.equalize();
             WRITE_IMAGE(image4417, directory + "/ATMS-RGB-4.4.17.png");
 
             logger->info("4.16.17 Composite...");
-            cimg_library::CImg<unsigned short> image41617(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image41617(96, image1.height(), 3);
             {
-                image41617.draw_image(0, 0, 0, 0, image4);
-                image41617.draw_image(0, 0, 0, 1, image16);
-                image41617.draw_image(0, 0, 0, 2, image17);
+                image41617.draw_image(0, image4);
+                image41617.draw_image(1, image16);
+                image41617.draw_image(2, image17);
             }
-            image41617.equalize(1000);
+            image41617.equalize();
             WRITE_IMAGE(image41617, directory + "/ATMS-RGB-4.16.17.png");
 
             logger->info("3.4.17 Composite...");
-            cimg_library::CImg<unsigned short> image3417(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image3417(96, image1.height(), 3);
             {
-                image3417.draw_image(0, 0, 0, 0, image3);
-                image3417.draw_image(0, 0, 0, 1, image4);
-                image3417.draw_image(0, 0, 0, 2, image17);
+                image3417.draw_image(0, image3);
+                image3417.draw_image(1, image4);
+                image3417.draw_image(2, image17);
             }
-            image3417.equalize(1000);
+            image3417.equalize();
             WRITE_IMAGE(image3417, directory + "/ATMS-RGB-3.4.17.png");
 
             logger->info("5.5.17 Composite...");
-            cimg_library::CImg<unsigned short> image5517(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image5517(96, image1.height(), 3);
             {
-                image5517.draw_image(0, 0, 0, 0, image5);
-                image5517.draw_image(0, 0, 0, 1, image5);
-                image5517.draw_image(0, 0, 0, 2, image17);
+                image5517.draw_image(0, image5);
+                image5517.draw_image(1, image5);
+                image5517.draw_image(2, image17);
             }
-            image5517.equalize(1000);
+            image5517.equalize();
             WRITE_IMAGE(image5517, directory + "/ATMS-RGB-5.5.17.png");
 
             logger->info("6.4.17 Composite...");
-            cimg_library::CImg<unsigned short> image6417(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image6417(96, image1.height(), 3);
             {
-                image6417.draw_image(0, 0, 0, 0, image6);
-                image6417.draw_image(0, 0, 0, 1, image4);
-                image6417.draw_image(0, 0, 0, 2, image17);
+                image6417.draw_image(0, image6);
+                image6417.draw_image(1, image4);
+                image6417.draw_image(2, image17);
             }
-            image6417.equalize(1000);
+            image6417.equalize();
             WRITE_IMAGE(image6417, directory + "/ATMS-RGB-6.4.17.png");
 
             logger->info("16.4.17 Composite...");
-            cimg_library::CImg<unsigned short> image16417(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image16417(96, image1.height(), 3);
             {
-                image16417.draw_image(0, 0, 0, 0, image16);
-                image16417.draw_image(0, 0, 0, 1, image4);
-                image16417.draw_image(0, 0, 0, 2, image17);
+                image16417.draw_image(0, image16);
+                image16417.draw_image(1, image4);
+                image16417.draw_image(2, image17);
             }
-            image16417.equalize(1000);
+            image16417.equalize();
             WRITE_IMAGE(image16417, directory + "/ATMS-RGB-16.4.17.png");
 
             logger->info("17.16.6 Composite...");
-            cimg_library::CImg<unsigned short> image17166(96, image1.height(), 1, 3);
+            image::Image<uint16_t> image17166(96, image1.height(), 3);
             {
-                image17166.draw_image(0, 0, 0, 0, image17);
-                image17166.draw_image(0, 0, 0, 1, image16);
-                image17166.draw_image(0, 0, 0, 2, image6);
+                image17166.draw_image(0, image17);
+                image17166.draw_image(1, image16);
+                image17166.draw_image(2, image6);
             }
-            image17166.equalize(1000);
+            image17166.equalize();
             WRITE_IMAGE(image17166, directory + "/ATMS-RGB-17.16.6.png");
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageRgbAll(96 * 6, image1.height() * 2, 1, 3);
+            image::Image<uint16_t> imageRgbAll(96 * 6, image1.height() * 2, 3);
             {
                 // Row 1
-                imageRgbAll.draw_image(96 * 0, 0, 0, 0, image346);
-                imageRgbAll.draw_image(96 * 1, 0, 0, 0, image335);
-                imageRgbAll.draw_image(96 * 2, 0, 0, 0, image4317);
-                imageRgbAll.draw_image(96 * 3, 0, 0, 0, image445);
-                imageRgbAll.draw_image(96 * 4, 0, 0, 0, image4417);
-                imageRgbAll.draw_image(96 * 5, 0, 0, 0, image41617);
+                imageRgbAll.draw_image(0, image346, 96 * 0);
+                imageRgbAll.draw_image(0, image335, 96 * 1);
+                imageRgbAll.draw_image(0, image4317, 96 * 2);
+                imageRgbAll.draw_image(0, image445, 96 * 3);
+                imageRgbAll.draw_image(0, image4417, 96 * 4);
+                imageRgbAll.draw_image(0, image41617, 96 * 5);
 
                 // Row 2
-                imageRgbAll.draw_image(96 * 0, image1.height(), 0, 0, image3417);
-                imageRgbAll.draw_image(96 * 1, image1.height(), 0, 0, image5517);
-                imageRgbAll.draw_image(96 * 2, image1.height(), 0, 0, image6417);
-                imageRgbAll.draw_image(96 * 3, image1.height(), 0, 0, image16417);
-                imageRgbAll.draw_image(96 * 4, image1.height(), 0, 0, image17166);
+                imageRgbAll.draw_image(0, image3417, 96 * 0, image1.height());
+                imageRgbAll.draw_image(0, image5517, 96 * 1, image1.height());
+                imageRgbAll.draw_image(0, image6417, 96 * 2, image1.height());
+                imageRgbAll.draw_image(0, image16417, 96 * 3, image1.height());
+                imageRgbAll.draw_image(0, image17166, 96 * 4, image1.height());
             }
             WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
 
@@ -402,22 +402,22 @@ namespace jpss
 
                 for (int i = 0; i < 22; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = reader.getImage(i);
-                    image.equalize(1000);
+                    image::Image<uint16_t> image = reader.getImage(i);
+                    image.equalize();
                     logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/ATMS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
 
-                cimg_library::CImg<unsigned short> image3417(96, image1.height(), 1, 3);
+                image::Image<uint16_t> image3417(96, image1.height(), 3);
                 {
-                    image3417.draw_image(0, 0, 0, 0, image3);
-                    image3417.draw_image(0, 0, 0, 1, image4);
-                    image3417.draw_image(0, 0, 0, 2, image17);
+                    image3417.draw_image(0, image3);
+                    image3417.draw_image(1, image4);
+                    image3417.draw_image(2, image17);
                 }
-                image3417.equalize(1000);
+                image3417.equalize();
 
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
                 WRITE_IMAGE(projected_image, directory + "/ATMS-RGB-3.4.17-PROJ.png");
             }
         }

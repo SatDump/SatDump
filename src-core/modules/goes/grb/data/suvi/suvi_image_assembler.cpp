@@ -44,12 +44,12 @@ namespace goes
             int image_width = suvi_product.width;
             int image_height = suvi_product.height;
 
-            full_image = cimg_library::CImg<unsigned short>(image_width, image_height, 1, 1, 0);
+            full_image = image::Image<uint16_t>(image_width, image_height, 1);
             full_image.fill(0);
             hasImage = false;
         }
 
-        void GRBSUVIImageAssembler::pushBlock(GRBImagePayloadHeader header, cimg_library::CImg<unsigned short> &block)
+        void GRBSUVIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block)
         {
             // Check this is the same image
             if (currentTimeStamp != header.utc_time)
@@ -66,7 +66,7 @@ namespace goes
             //block <<= 2;
 
             // Fill
-            full_image.draw_image(header.left_x_coord, header.left_y_coord + header.row_offset_image_block, 0, 0, block);
+            full_image.draw_image(0, block, header.left_x_coord, header.left_y_coord + header.row_offset_image_block);
         }
     }
 }

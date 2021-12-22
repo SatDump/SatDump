@@ -81,9 +81,9 @@ namespace metop
             lines++;
         }
 
-        cimg_library::CImg<unsigned short> AMSUA2Reader::getChannel(int channel)
+        image::Image<uint16_t> AMSUA2Reader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 30, lines);
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 30, lines, 1);
             //img.equalize(1000);
             return img;
         }

@@ -106,12 +106,12 @@ namespace goes
 
             logger->info("Cropping to transmited size...");
             logger->debug("VIS 1 size " + std::to_string(vis_width) + "x" + std::to_string(vis_height));
-            images.image5.crop(0, 0, vis_width - 1, vis_height - 1);
+            images.image5.crop(0, 0, vis_width, vis_height);
             logger->debug("IR size " + std::to_string(ir1_width) + "x" + std::to_string(ir1_height));
-            images.image1.crop(0, 0, ir1_width - 1, ir1_height - 1);
-            images.image2.crop(0, 0, ir1_width - 1, ir1_height - 1);
-            images.image3.crop(0, 0, ir1_width - 1, ir1_height - 1);
-            images.image4.crop(0, 0, ir1_width - 1, ir1_height - 1);
+            images.image1.crop(0, 0, ir1_width, ir1_height);
+            images.image2.crop(0, 0, ir1_width, ir1_height);
+            images.image3.crop(0, 0, ir1_width, ir1_height);
+            images.image4.crop(0, 0, ir1_width, ir1_height);
 
             logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, "1") + ".png");
             images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str());
@@ -140,13 +140,13 @@ namespace goes
             if (resources::resourceExists("goes/gvar/lut.png"))
             {
                 logger->trace("Scale Ch1 to 8-bits...");
-                cimg_library::CImg<unsigned char> channel1(images.image5.width(), images.image5.height(), 1, 1);
+                image::Image<uint8_t> channel1(images.image5.width(), images.image5.height(), 1);
                 for (int i = 0; i < channel1.width() * channel1.height(); i++)
                     channel1[i] = images.image5[i] / 255;
                 images.image5.clear(); // We're done with Ch1. Free up memory
 
                 logger->trace("Scale Ch4 to 8-bits...");
-                cimg_library::CImg<unsigned char> channel4(images.image3.width(), images.image3.height(), 1, 1);
+                image::Image<uint8_t> channel4(images.image3.width(), images.image3.height(), 1);
                 for (int i = 0; i < channel4.width() * channel4.height(); i++)
                     channel4[i] = images.image3[i] / 255;
                 images.image3.clear(); // We're done with Ch4. Free up memory
@@ -155,15 +155,15 @@ namespace goes
                 channel4.resize(channel1.width(), channel1.height());
 
                 logger->trace("Loading LUT...");
-                cimg_library::CImg<unsigned char> lutImage;
+                image::Image<uint8_t> lutImage;
                 lutImage.load_png(resources::getResourcePath("goes/gvar/lut.png").c_str());
                 lutImage.resize(256, 256);
 
                 logger->trace("Loading correction curve...");
-                cimg_library::CImg<unsigned char> curveImage;
+                image::Image<uint8_t> curveImage;
                 curveImage.load_png(resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
 
-                cimg_library::CImg<unsigned char> compoImage = cimg_library::CImg<unsigned char>(channel1.width(), channel1.height(), 1, 3);
+                image::Image<uint8_t> compoImage = image::Image<uint8_t>(channel1.width(), channel1.height(), 3);
 
                 logger->trace("Applying LUT...");
                 for (int i = 0; i < channel1.width() * channel1.height(); i++)

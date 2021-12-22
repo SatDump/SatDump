@@ -90,9 +90,9 @@ namespace jpss
             }
         }
 
-        cimg_library::CImg<unsigned short> OMPSLimbReader::getChannel(int channel)
+        image::Image<uint16_t> OMPSLimbReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 6, lines);
+            return image::Image<uint16_t>(channels[channel], 6, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

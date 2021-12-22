@@ -13,7 +13,7 @@
 #include "common/utils.h"
 #include "libs/others/strptime.h"
 #include "imgui/imgui_image.h"
-#include "common/image/image.h"
+#include "common/image/jpeg_utils.h"
 #include "resources.h"
 extern "C"
 {
@@ -292,7 +292,7 @@ namespace gk2a
                     if (is_jpeg_compressed) // Is this Jpeg-Compressed? Decompress
                     {
                         logger->info("Decompressing JPEG...");
-                        cimg_library::CImg<unsigned char> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
+                        image::Image<uint8_t> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
                         lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
                         lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                     }
@@ -356,9 +356,9 @@ namespace gk2a
                             // Downscale image
                             img_heights[channel] = 1000;
                             img_widths[channel] = 1000;
-                            cimg_library::CImg<unsigned char> imageScaled = segmentedDecoder.image;
+                            image::Image<uint8_t> imageScaled = segmentedDecoder.image;
                             imageScaled.resize(img_widths[channel], img_heights[channel]);
-                            uchar_to_rgba(imageScaled, textureBuffers[channel], img_heights[channel] * img_widths[channel]);
+                            uchar_to_rgba(imageScaled.data(), textureBuffers[channel], img_heights[channel] * img_widths[channel]);
                             hasToUpdates[channel] = true;
                         }
 
@@ -378,7 +378,7 @@ namespace gk2a
                         std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                         // Write raw image dats
                         logger->info("Writing image " + directory + "/IMAGES/" + clean_filename + ".png" + "...");
-                        cimg_library::CImg<unsigned char> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count);
+                        image::Image<uint8_t> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         image.save_png(std::string(directory + "/IMAGES/" + clean_filename + ".png").c_str());
                     }
                 }

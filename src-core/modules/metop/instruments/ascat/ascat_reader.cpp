@@ -1,5 +1,6 @@
 #include "ascat_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include <cmath>
 
 namespace metop
 {
@@ -78,9 +79,9 @@ namespace metop
             lines[channel]++;
         }
 
-        cimg_library::CImg<unsigned short> ASCATReader::getChannel(int channel)
+        image::Image<uint16_t> ASCATReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 256, lines[channel]);
+            return image::Image<uint16_t>(channels[channel], 256, lines[channel], 1);
         }
     } // namespace avhrr
 } // namespace metop

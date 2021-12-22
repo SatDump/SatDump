@@ -1,13 +1,15 @@
 #include "mersi_banding.h"
 #include <vector>
+#include <algorithm>
+#include <cstring>
 
 namespace fengyun3
 {
     namespace mersi
     {
-        cimg_library::CImg<unsigned short> &banding_correct(cimg_library::CImg<unsigned short> &imageo, int rowSize, float percent)
+        void banding_correct(image::Image<uint16_t> &imageo, int rowSize, float percent)
         {
-            for (int ch = 0; ch < imageo.spectrum(); ch++)
+            for (int ch = 0; ch < imageo.channels(); ch++)
             {
                 unsigned short *image = &imageo[imageo.width() * imageo.height() * ch];
 
@@ -62,8 +64,6 @@ namespace fengyun3
 
                 delete[] averages;
             }
-
-            return imageo;
         }
     };
 };

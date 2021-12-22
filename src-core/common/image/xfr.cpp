@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <cmath>
 
 namespace image
 {
@@ -69,7 +70,7 @@ namespace image
             }
         }
 
-        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &r, cimg_library::CImg<unsigned short> &g, cimg_library::CImg<unsigned short> &b)
+        void applyXFR(XFR &xfr, Image<uint16_t> &r, Image<uint16_t> &g, Image<uint16_t> &b)
         {
             // Apply XFR
             for (int i = 0; i < r.height() * r.width(); i++)
@@ -88,7 +89,7 @@ namespace image
             }
         }
 
-        void applyXFR(XFR &xfr, cimg_library::CImg<unsigned short> &image)
+        void applyXFR(XFR &xfr, Image<uint16_t> &image)
         {
             // Apply XFR
             for (int i = 0; i < image.height() * image.width(); i++)

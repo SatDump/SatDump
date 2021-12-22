@@ -95,18 +95,19 @@ int project(int argc, char *argv[])
     for (int i = 0; i < count; i += 2)
         toProject.push_back({std::string(argv[i + 4 + 0]), std::string(argv[i + 4 + 1])});
 
-    cimg_library::CImg<unsigned char> projected_image = cimg_library::CImg<unsigned char>(image_width, image_height, 1, 3, 0);
+    image::Image<uint8_t> projected_image = image::Image<uint8_t>(image_width, image_height, 3);
 
     for (const std::pair<std::string, std::string> &image : toProject)
     {
         logger->info("Projecting " + image.first + "...");
-        cimg_library::CImg<unsigned short> src_image(image.first.c_str());
+        image::Image<uint8_t> src_image;
+        src_image.load_png(image.first);
         std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> geofile = geodetic::projection::proj_file::readReferenceFile(image.second);
 
         if (geofile->file_type == 0)
         {
             logger->info("Reprojecting Equiectangular...");
-            geodetic::projection::projectEQUIToproj(src_image, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::projectEQUIToproj(src_image, projected_image, src_image.channels(), projectionFunc);
         }
         else if (geofile->file_type == geodetic::projection::proj_file::LEO_TYPE)
         {
@@ -114,16 +115,15 @@ int project(int argc, char *argv[])
             std::shared_ptr<geodetic::projection::LEOScanProjectorSettings> settings = leoProjectionRefFile(leofile);
             geodetic::projection::LEOScanProjector projector(settings);
             logger->info("Reprojecting LEO...");
-            geodetic::projection::reprojectLEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::reprojectLEOtoProj(src_image, projector, projected_image, src_image.channels(), projectionFunc);
         }
         else if (geofile->file_type == geodetic::projection::proj_file::GEO_TYPE)
         {
-            src_image.normalize(0, 65535);
             geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)geofile.get());
             src_image.resize(gsofile.image_width, gsofile.image_height); // Safety
             logger->info("Reprojecting GEO...");
             geodetic::projection::GEOProjector projector = geodetic::projection::proj_file::geoProjectionRefFile(gsofile);
-            geodetic::projection::reprojectGEOtoProj(src_image, projector, projected_image, src_image.spectrum(), projectionFunc);
+            geodetic::projection::reprojectGEOtoProj(src_image, projector, projected_image, src_image.channels(), projectionFunc);
         }
     }
 

@@ -9,13 +9,12 @@
 #include "modules/meteor/meteor.h"
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/image/brightness_contrast.h"
-#include "common/image/image.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
+#include "common/image/brightness_contrast.h"
 #include "common/map/leo_drawer.h"
+#include <ctime>
 
 #define BUFFER_SIZE 8192
 
@@ -117,12 +116,12 @@ namespace meteor
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
-            cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image6 = reader.getChannel(5);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/MSU-MR-1.png");
@@ -148,11 +147,11 @@ namespace meteor
                 int norad = 0;
                 //int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
-                cimg_library::CImg<unsigned short> image321(1572, reader.lines, 1, 3);
+                image::Image<uint16_t> image321(1572, reader.lines, 3);
                 {
-                    image321.draw_image(0, 0, 0, 0, image3);
-                    image321.draw_image(0, 0, 0, 1, image2);
-                    image321.draw_image(0, 0, 0, 2, image1);
+                    image321.draw_image(0, image3);
+                    image321.draw_image(1, image2);
+                    image321.draw_image(2, image1);
                 }
 
                 image::brightness_contrast(image321, 0.179 * 2, 0.253 * 2, 3);
@@ -216,18 +215,17 @@ namespace meteor
                     std::string name = "MSU-MR-" + compokey.key();
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
-                                                                                            {1, 2, 3, 4, 5},
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                                               {1, 2, 3, 4, 5},
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                     }
 
@@ -235,7 +233,7 @@ namespace meteor
                     {
                         projector.setup_forward(90, 10, 20);
                         logger->info(name + "-MAP...");
-                        cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage >> 8, projector);
+                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
                         WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 

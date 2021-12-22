@@ -134,7 +134,7 @@ namespace jpss
             }
         }
 
-        cimg_library::CImg<unsigned short> VIIRSReader::getImage()
+        image::Image<uint16_t> VIIRSReader::getImage()
         {
             timestamps.clear();
 
@@ -188,11 +188,10 @@ namespace jpss
             for (int i = 0; i < channelSettings.totalWidth * lines; i++)
                 imageBuffer.get()[i] *= channelSettings.scale;
 
-            cimg_library::CImg<unsigned short> image = cimg_library::CImg<unsigned short>(imageBuffer.get(), channelSettings.totalWidth, lines);
+            image::Image<uint16_t> image = image::Image<uint16_t>(imageBuffer.get(), channelSettings.totalWidth, lines, 1);
 
             if (channelSettings.invert)
-                for (int i = 0; i < image.height() * image.width(); i++)
-                    image.data()[i] = std::numeric_limits<unsigned short>::max() - image.data()[i];
+                image.linear_invert();
 
             return image;
         }

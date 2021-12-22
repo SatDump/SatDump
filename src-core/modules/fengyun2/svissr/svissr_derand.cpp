@@ -14,7 +14,7 @@ namespace fengyun_svissr
 
         // Generate derandomization table
         int oo = 0;
-        uint8_t currentByteShifter;
+        uint8_t currentByteShifter = 0;
         int inCurrentByteShiter = 0;
 
         uint16_t shifter = 0b011001110011111;

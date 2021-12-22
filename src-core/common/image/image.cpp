@@ -1,311 +1,157 @@
 #include "image.h"
-#include <stdexcept>
-extern "C"
-{
-#include "libs/jpeg/jpeglib.h"
-}
-#include "libs/openjp2/openjpeg.h"
+#include <cstring>
+#include <limits>
 
 namespace image
 {
     template <typename T>
-    int percentile(T *array, int size, float percentile)
+    void Image<T>::init(int width, int height, int channels)
     {
-        float number_percent = (size + 1) * percentile / 100.0f;
-        if (number_percent == 1)
-            return array[0];
-        else if (number_percent == size)
-            return array[size - 1];
+        // Reset image if we already had one
+        if (has_data)
+            delete[] d_data;
+
+        // Init buffer
+        data_size = width * height * channels;
+        d_data = new T[data_size];
+
+        // Set to 0
+        memset(d_data, 0, sizeof(T) * data_size);
+
+        // Init local variables
+        d_depth = sizeof(T) * 8;
+        d_width = width;
+        d_height = height;
+        d_channels = channels;
+
+        // We have data now if we didn't already
+        has_data = true;
+    }
+
+    template <typename T>
+    void Image<T>::clear()
+    {
+        // Reset image
+        if (has_data)
+            delete[] d_data;
+        has_data = false;
+    }
+
+    template <typename T>
+    Image<T>::Image()
+    {
+        // Do nothing
+    }
+
+    template <typename T>
+    Image<T>::Image(int width, int height, int channels)
+    {
+        init(width, height, channels);
+    }
+
+    template <typename T>
+    Image<T>::Image(const Image &img)
+    {
+        // Copy contents of the image over
+        init(img.d_width, img.d_height, img.d_channels);
+        memcpy(d_data, img.d_data, img.data_size * sizeof(T));
+    }
+
+    template <typename T>
+    Image<T>::Image(T *buffer, int width, int height, int channels)
+    {
+        // Copy contents of the image over
+        init(width, height, channels);
+        memcpy(d_data, buffer, data_size * sizeof(T));
+    }
+
+    template <typename T>
+    Image<T> &Image<T>::operator=(const Image<T> &img)
+    {
+        // Copy contents of the image over
+        init(img.d_width, img.d_height, img.d_channels);
+        memcpy(d_data, img.d_data, img.data_size * sizeof(T));
+        return *this;
+    }
+
+    template <typename T>
+    Image<T> &Image<T>::operator<<=(const int &shift)
+    {
+        for (size_t i = 0; i < data_size; i++)
+            d_data[i] <<= shift;
+        return *this;
+    }
+
+    template <typename T>
+    Image<T>::~Image()
+    {
+        if (has_data)
+            delete[] d_data;
+    }
+
+    template <typename T>
+    T Image<T>::clamp(int input)
+    {
+        if (input > std::numeric_limits<T>::max())
+            return std::numeric_limits<T>::max();
+        else if (input < 0)
+            return 0;
         else
-            return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
+            return input;
     }
 
     template <typename T>
-    void white_balance(cimg_library::CImg<T> &image, float percentileValue, int channelCount)
+    void Image<T>::to_rgb()
     {
-        int height = image.height();
-        int width = image.width();
-        float maxVal = std::numeric_limits<T>::max();
-
-        T *sorted_array = new T[height * width];
-
-        for (int band_number = 0; band_number < channelCount; band_number++)
+        if (d_channels == 1)
         {
-            // Load the whole image band into our array
-            std::memcpy(sorted_array, &image.data()[band_number * width * height], width * height * sizeof(T));
+            Image<T> tmp = *this;       // Backup image
+            init(d_width, d_height, 3); // Init new image as RGB
 
-            // Sort it
-            std::sort(&sorted_array[0], &sorted_array[width * height]);
-
-            // Get percentiles
-            int percentile1 = percentile(sorted_array, width * height, percentileValue);
-            int percentile2 = percentile(sorted_array, width * height, 100.0f - percentileValue);
-
-            for (int i = 0; i < width * height; i++)
-            {
-                long balanced = (image[band_number * width * height + i] - percentile1) * maxVal / (percentile2 - percentile1);
-                if (balanced < 0)
-                    balanced = 0;
-                else if (balanced > maxVal)
-                    balanced = maxVal;
-                image[band_number * width * height + i] = balanced;
-            }
+            // Fill in all 3 channels
+            draw_image(0, tmp);
+            draw_image(1, tmp);
+            draw_image(2, tmp);
         }
-
-        delete[] sorted_array;
-    }
-
-    struct jpeg_error_struct
-    {
-        struct jpeg_error_mgr pub;
-        jmp_buf setjmp_buffer;
-    };
-
-    static void libjpeg_error_func(j_common_ptr cinfo)
-    {
-        longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
-    }
-
-    static void libjpeg_error_func_ignore(j_common_ptr /*cinfo*/)
-    {
-        //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
-    }
-
-    cimg_library::CImg<unsigned char> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
-    {
-        cimg_library::CImg<unsigned char> img;
-        unsigned char *jpeg_decomp = NULL;
-
-        // Huge thanks to https://gist.github.com/PhirePhly/3080633
-        jpeg_error_struct jerr;
-        jpeg_decompress_struct cinfo;
-
-        // Init
-        cinfo.err = jpeg_std_error(&jerr.pub);
-        jerr.pub.error_exit = ignore_errors ? libjpeg_error_func_ignore : libjpeg_error_func;
-
-        if (setjmp(jerr.setjmp_buffer))
-        {
-            // Free memory
-            delete[] jpeg_decomp;
-            return img;
-        }
-
-        jpeg_create_decompress(&cinfo);
-
-        // Parse and start decompressing
-        jpeg_mem__src(&cinfo, data, length);
-        jpeg_read_header(&cinfo, FALSE);
-        jpeg_start_decompress(&cinfo);
-
-        // Init output buffer
-        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height];
-
-        // Decompress
-        while (cinfo.output_scanline < cinfo.output_height)
-        {
-            unsigned char *buffer_array[1];
-            buffer_array[0] = jpeg_decomp + (cinfo.output_scanline) * cinfo.image_width;
-            jpeg_read_scanlines(&cinfo, buffer_array, 1);
-        }
-
-        // Cleanup
-        jpeg_finish_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-
-        // Init CImg image
-        img = cimg_library::CImg<unsigned char>(cinfo.image_width, cinfo.image_height, 1, 1);
-
-        // Copy over
-        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-            img[i] = jpeg_decomp[i];
-
-        // Free memory
-        delete[] jpeg_decomp;
-
-        return img;
-    }
-
-    cimg_library::CImg<unsigned short> decompress_j2k_openjp2(uint8_t *data, int length)
-    {
-        cimg_library::CImg<unsigned short> img;
-
-        // Init decoder parameters
-        opj_dparameters_t core;
-        memset(&core, 0, sizeof(opj_dparameters_t));
-        opj_set_default_decoder_parameters(&core);
-
-        // Set input buffer info struct
-        opj_buffer_info bufinfo;
-        bufinfo.buf = data;
-        bufinfo.cur = data;
-        bufinfo.len = length;
-
-        // Setup image, stream and codec
-        opj_image_t *image = NULL;
-        opj_stream_t *l_stream = opj_stream_create_buffer_stream(&bufinfo, true);
-        opj_codec_t *l_codec = opj_create_decompress(OPJ_CODEC_J2K);
-
-        // Check we could open the stream
-        if (!l_stream)
-        {
-            opj_destroy_codec(l_codec);
-            return img;
-        }
-
-        // Setup decoder
-        if (!opj_setup_decoder(l_codec, &core))
-        {
-            opj_stream_destroy(l_stream);
-            opj_destroy_codec(l_codec);
-            return img;
-        }
-
-        // Read header
-        if (!opj_read_header(l_stream, l_codec, &image))
-        {
-            opj_stream_destroy(l_stream);
-            opj_destroy_codec(l_codec);
-            opj_image_destroy(image);
-            return img;
-        }
-
-        // Decode image
-        if (!(opj_decode(l_codec, l_stream, image) &&
-              opj_end_decompress(l_codec, l_stream)))
-        {
-            opj_destroy_codec(l_codec);
-            opj_stream_destroy(l_stream);
-            opj_image_destroy(image);
-            return img;
-        }
-
-        // Parse into CImg
-        img = cimg_library::CImg<unsigned short>(image->x1, image->y1, 1, 1, 0);
-        for (int i = 0; i < int(image->x1 * image->y1); i++)
-            img[i] = image->comps[0].data[i];
-
-        // Free everything up
-        opj_destroy_codec(l_codec);
-        opj_stream_destroy(l_stream);
-        opj_image_destroy(image);
-
-        return img;
-    }
-
-    void simple_despeckle(cimg_library::CImg<unsigned short> &image, int thresold)
-    {
-        int h = image.height();
-        int w = image.width();
-
-        for (int x = 0; x < h; x++)
-        {
-            for (int y = 0; y < w; y++)
-            {
-                unsigned short current = image[x * w + y];
-
-                unsigned short below = x + 1 == h ? 0 : image[(x + 1) * w + y];
-                unsigned short left = y - 1 == -1 ? 0 : image[x * w + (y - 1)];
-                unsigned short right = y + 1 == w ? 0 : image[x * w + (y + 1)];
-
-                if ((current - left > thresold && current - right > thresold) ||
-                    (current - below > thresold && current - right > thresold))
-                {
-                    image[x * w + y] = (right + left) / 2;
-                }
-            }
-        }
-    }
-
-    void extract_percentile(cimg_library::CImg<unsigned short> &image, float percentilev1, float percentilev2, int channelCount)
-    {
-        int height = image.height();
-        int width = image.width();
-
-        unsigned short *sorted_array = new unsigned short[height * width];
-
-        for (int band_number = 0; band_number < channelCount; band_number++)
-        {
-            // Load the whole image band into our array
-            std::memcpy(sorted_array, &image.data()[band_number * width * height], width * height * sizeof(unsigned short));
-
-            // Sort it
-            std::sort(&sorted_array[0], &sorted_array[width * height]);
-
-            // Get percentiles
-            int percentile1 = percentile(sorted_array, width * height, percentilev1);
-            int percentile2 = percentile(sorted_array, width * height, percentilev2);
-
-            for (int i = 0; i < width * height; i++)
-            {
-                long balanced = (image[band_number * width * height + i] - percentile1) * 65535.0f / (percentile2 - percentile1);
-                if (balanced < 0)
-                    balanced = 0;
-                else if (balanced > 65535)
-                    balanced = 65535;
-                image[band_number * width * height + i] = balanced;
-            }
-        }
-
-        delete[] sorted_array;
     }
 
     template <typename T>
-    void linear_invert(cimg_library::CImg<T> &image)
+    Image<uint8_t> Image<T>::to8bits()
     {
-        float scale = std::numeric_limits<T>::max() - 1;
-
-        for (int i = 0; i < image.width() * image.height(); i++)
+        if (d_depth == 8)
         {
-            image[i] = scale - image[i];
+            return *((image::Image<uint8_t> *)this);
         }
-    }
-
-    void brightness_contrast_old(cimg_library::CImg<unsigned short> &image, float brightness, float contrast, int channelCount)
-    {
-        float brightness_v = brightness / 2.0f;
-        float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
-
-        for (int i = 0; i < image.height() * image.width() * channelCount; i++)
+        else if (d_depth == 16)
         {
-            float v = image[i];
-
-            if (brightness_v < 0.0f)
-                v = v * (65535.0f + brightness_v);
-            else
-                v = v + ((65535.0f - v) * brightness_v);
-
-            v = (v - 32767.5f) * slant + 32767.5f;
-
-            image[i] = std::min<float>(65535, std::max<float>(0, v * 2.0f));
+            image::Image<uint8_t> image8(d_width, d_height, d_channels);
+            for (size_t i = 0; i < data_size; i++)
+                image8[i] = d_data[i] >> 8;
+            return image8;
         }
+
+        return Image<uint8_t>(); // This should never happen
     }
 
-    cimg_library::CImg<unsigned short> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned short> input, bool vertical)
+    template <typename T>
+    Image<uint16_t> Image<T>::to16bits()
     {
-        if (vertical)
-            input.rotate(-90);
-        input.resize(x1 - x0, 1, 1, 3, 3);
-        cimg_library::CImg<unsigned short> out(width, 1, 1, 3);
-        std::memset(out, 0, width * 3);
-        out.draw_image(x0, 0, input);
-        return out;
+        if (d_depth == 16)
+        {
+            return *((image::Image<uint16_t> *)this);
+        }
+        else if (d_depth == 8)
+        {
+            image::Image<uint16_t> image16(d_width, d_height, d_channels);
+            for (size_t i = 0; i < data_size; i++)
+                image16[i] = d_data[i] << 8;
+            return image16;
+        }
+
+        return Image<uint16_t>(); // This should never happen
     }
 
-    cimg_library::CImg<unsigned char> generate_LUT(int width, int x0, int x1, cimg_library::CImg<unsigned char> input, bool vertical)
-    {
-        if (vertical)
-            input.rotate(-90);
-        input.resize(x1 - x0, 1, 1, 3, 3);
-        cimg_library::CImg<unsigned char> out(width, 1, 1, 3);
-        std::memset(out, 0, width * 3);
-        out.draw_image(x0, 0, input);
-        return out;
-    }
-
-    template void linear_invert<unsigned char>(cimg_library::CImg<unsigned char> &);
-    template void linear_invert<unsigned short>(cimg_library::CImg<unsigned short> &);
-
-    template void white_balance(cimg_library::CImg<unsigned char> &, float, int);
-    template void white_balance(cimg_library::CImg<unsigned short> &, float, int);
+    // Generate Images for uint16_t and uint8_t
+    template class Image<uint8_t>;
+    template class Image<uint16_t>;
 }

@@ -6,16 +6,14 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/vegetation_index.h"
+//#include "common/image/vegetation_index.h"
 #include "common/image/earth_curvature.h"
 #include "modules/metop/metop.h"
 #include "nlohmann/json_utils.h"
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/image/brightness_contrast.h"
-#include "common/image/xfr.h"
 #include "common/geodetic/projection/proj_file.h"
-#include "common/image/image.h"
+//#include "common/image/image.h"
 #include "common/image/composite.h"
 #include "common/map/leo_drawer.h"
 
@@ -183,11 +181,11 @@ namespace metop
 
             logger->info("Writing images.... (Can take a while)");
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/AVHRR-1.png");
@@ -236,18 +234,17 @@ namespace metop
                     std::string name = "AVHRR-" + compokey.key();
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
-                                                                                            {1, 2, 3, 4, 5},
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                                               {1, 2, 3, 4, 5},
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage.to8bits(), projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                     }
 
@@ -255,7 +252,7 @@ namespace metop
                     {
                         projector.setup_forward();
                         logger->info(name + "-MAP...");
-                        cimg_library::CImg<unsigned char> mapped_image = map::drawMapToLEO(compositeImage >> 8, projector);
+                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
                         WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 

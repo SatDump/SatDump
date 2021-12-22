@@ -1,4 +1,5 @@
 #include "lrit_data_decoder.h"
+#include <cstring>
 
 namespace gk2a
 {
@@ -18,7 +19,7 @@ namespace gk2a
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
 
-            image = cimg_library::CImg<unsigned char>(segment_width, segment_height * max_seg, 1);
+            image = image::Image<uint8_t>(segment_width, segment_height * max_seg, 1);
             seg_height = segment_height;
             seg_width = segment_width;
 

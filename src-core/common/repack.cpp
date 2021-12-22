@@ -27,7 +27,7 @@ int repackBytesTo10bits(uint8_t *bytes, int byte_length, uint16_t *words)
     }
 
     // Repack remaining using a slower method
-    uint16_t shifter;
+    uint16_t shifter = 0;
     int inshifter = 0;
     for (int i = 0; i < repack_slow; i++)
     {
@@ -66,7 +66,7 @@ int repackBytesTo12bits(uint8_t *bytes, int byte_length, uint16_t *words)
     }
 
     // Repack remaining using a slower method
-    uint16_t shifter;
+    uint16_t shifter = 0;
     int inshifter = 0;
     for (int i = 0; i < repack_slow; i++)
     {
@@ -111,7 +111,7 @@ int repackBytesTo13bits(uint8_t *bytes, int byte_length, uint16_t *words)
     }
 
     // Repack remaining using a slower method
-    uint16_t shifter;
+    uint16_t shifter = 0;
     int inshifter = 0;
     for (int i = 0; i < repack_slow; i++)
     {

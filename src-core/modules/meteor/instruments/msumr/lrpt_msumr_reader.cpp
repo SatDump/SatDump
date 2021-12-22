@@ -1,4 +1,5 @@
 #include "lrpt_msumr_reader.h"
+#include <ctime>
 
 namespace meteor
 {
@@ -94,7 +95,7 @@ namespace meteor
                 segCount[currentChannel]++;
             }
 
-            cimg_library::CImg<unsigned char> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
+            image::Image<uint8_t> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
             {
                 timestamps.clear();
 
@@ -154,7 +155,7 @@ namespace meteor
                     }
                 }
 
-                return cimg_library::CImg<unsigned short>(channels[channel], 1568, lines[channel]);
+                return image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
             }
 
             std::array<int32_t, 3> MSUMRReader::correlateChannels(int channel1, int channel2)

@@ -42,11 +42,11 @@ namespace fengyun3
             }
         }
 
-        cimg_library::CImg<unsigned short> MWRIReader::getChannel(int channel)
+        image::Image<uint16_t> MWRIReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> image(channels[channel].buf, 266, lines);
-            image.normalize(0, 65535);
-            image.equalize(1000);
+            image::Image<uint16_t> image(channels[channel].buf, 266, lines, 1);
+            image.normalize();
+            image.equalize();
             return image;
         }
     } // namespace virr

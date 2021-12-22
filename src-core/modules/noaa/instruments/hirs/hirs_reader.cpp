@@ -1,5 +1,5 @@
 #include "hirs_reader.h"
-
+#include <cmath>
 //#include "iostream"
 
 namespace noaa
@@ -83,9 +83,9 @@ namespace noaa
             }
         }
 
-        cimg_library::CImg<unsigned short> HIRSReader::getChannel(int channel)
+        image::Image<uint16_t> HIRSReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 56, line);
+            return image::Image<uint16_t>(channels[channel], 56, line, 1);
         }
     } // namespace hirs
 } // namespace noaa
