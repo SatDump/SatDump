@@ -22,7 +22,7 @@ namespace goes
             image::Image<uint16_t> image5;
             int sat_number;
             int vis_width;
-            tm imageTime;
+            time_t imageTime;
         };
 
         namespace events

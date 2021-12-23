@@ -53,8 +53,8 @@ namespace goes
 
         void GVARImageDecoderModule::writeImages(GVARImages &images, std::string directory)
         {
-            const time_t timevalue = time(0);
-            std::tm *timeReadable = &images.imageTime; //gmtime(&timevalue);
+            const time_t timevalue = images.imageTime;
+            std::tm *timeReadable = gmtime(&timevalue);
             std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                     (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
                                     (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
@@ -278,7 +278,8 @@ namespace goes
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-            struct tm imageTime={0,0,0,0,0,0,0,0,0,0,0};
+            time_t imageTime=0;
+            time_t imageTimeBackup=time(0);
             bool crc_valid=false;
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
@@ -313,9 +314,10 @@ namespace goes
                         }
                     }
                 }
-                if(crc_valid && imageTime.tm_year==0)
+                if(crc_valid && imageTime==0)
                 {//If this header passed CRC, and there is no image date set, then use the time from the header. This is a fallback in case no Block0's are found.
-                    imageTime=block_header.time_code_bcd;
+                    tm time=block_header.time_code_bcd;
+                    imageTime=mktime(&time)+time.tm_gmtoff;
                 }
                 // Is this imagery? Blocks 1 to 10 are imagery
                 if (block_header.block_id >= 1 && block_header.block_id <= 10)
@@ -350,9 +352,14 @@ namespace goes
                             if (endCount > 6)
                             {
                                 logger->info("Image start detected!");
+                                imageTimeBackup=time(0); //Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
 
                                 if (isImageInProgress)
                                 {
+                                    if(imageTime==0)
+                                    {//No time from headers, use fallback
+                                        imageTime=imageTimeBackup;
+                                    }
                                     if (writeImagesAync)
                                     {
                                         logger->debug("Saving Async...");
@@ -397,7 +404,7 @@ namespace goes
                                     visibleImageReader.startNewFullDisk();
 
                                     // Reset image time
-                                    imageTime.tm_year=0;
+                                    imageTime=0;
                                 }
 
                                 endCount = 0;
@@ -447,7 +454,7 @@ namespace goes
                         tm block0_image_time = block_header0.CIFST;
                         if(difftime(mktime(&block0_current_time),mktime(&block0_image_time))<3600) //Sanity Check. 
                         {//Image start time and current header time is within one hour, set image time.
-                            imageTime=block_header0.CIFST;
+                            imageTime=mktime(&block0_image_time)+block0_image_time.tm_gmtoff; 
                         }
                     }
                 }
@@ -481,6 +488,10 @@ namespace goes
             {
                 isImageInProgress = false;
                 isSavingInProgress = true;
+                if(imageTime==0)
+                {//No time from headers, use fallback
+                    imageTime=imageTimeBackup;
+                }
                 // Backup images
                 GVARImages images = {infraredImageReader1.getImage1(),
                                      infraredImageReader1.getImage2(),
