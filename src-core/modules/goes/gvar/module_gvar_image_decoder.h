@@ -78,6 +78,7 @@ namespace goes
             // Stats
             std::vector<int> scid_stats;
             std::vector<int> vis_width_stats, ir_width_stats;
+            std::vector<time_t> image_Time;
 
             // UI Stuff
             unsigned int textureID = 0;

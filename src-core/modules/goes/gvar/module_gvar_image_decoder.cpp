@@ -352,14 +352,18 @@ namespace goes
                             if (endCount > 6)
                             {
                                 logger->info("Image start detected!");
-                                imageTimeBackup=time(0); //Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
 
                                 if (isImageInProgress)
                                 {
-                                    if(imageTime==0)
-                                    {//No time from headers, use fallback
+                                    if(image_Time.size()!=0)
+                                    {//Collected some block0 time headers. Get most common
+                                        imageTime=most_common(image_Time.begin(),image_Time.end());
+                                    }
+                                    else if(imageTime==0)
+                                    {//No block0 headers, and no image block headers passed CRC, use fallback
                                         imageTime=imageTimeBackup;
                                     }
+                                    imageTimeBackup=time(0); //Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
                                     if (writeImagesAync)
                                     {
                                         logger->debug("Saving Async...");
@@ -403,10 +407,15 @@ namespace goes
                                     infraredImageReader2.startNewFullDisk();
                                     visibleImageReader.startNewFullDisk();
 
+                                    // Reset image time
+                                    imageTime=0;
+                                    image_Time.clear();
+                                }
+                                else
+                                {
+                                    imageTimeBackup=time(0); //Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
                                 }
 
-                                // Reset image time
-                                imageTime=0;
                                 endCount = 0;
                             }
                         }
@@ -457,7 +466,7 @@ namespace goes
                         float time_diff=difftime(current_time,image_time);
                         if(time_diff<3600 and time_diff>-60) //Sanity Check. 
                         {//Image start time and current header time is within one hour, set image time.
-                            imageTime=mktime(&block0_image_time)+block0_image_time.tm_gmtoff; 
+                            image_Time.push_back(mktime(&block0_image_time)+block0_image_time.tm_gmtoff); 
                         }
                     }
                 }
@@ -491,8 +500,12 @@ namespace goes
             {
                 isImageInProgress = false;
                 isSavingInProgress = true;
-                if(imageTime==0)
-                {//No time from headers, use fallback
+                if(image_Time.size()!=0)
+                {//Collected some block0 time headers. Get most common
+                    imageTime=most_common(image_Time.begin(),image_Time.end());
+                }
+                else if(imageTime==0)
+                {//No block0 headers, and no image block headers passed CRC, use fallback
                     imageTime=imageTimeBackup;
                 }
                 // Backup images
