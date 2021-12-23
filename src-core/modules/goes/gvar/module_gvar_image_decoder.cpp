@@ -403,10 +403,10 @@ namespace goes
                                     infraredImageReader2.startNewFullDisk();
                                     visibleImageReader.startNewFullDisk();
 
-                                    // Reset image time
-                                    imageTime=0;
                                 }
 
+                                // Reset image time
+                                imageTime=0;
                                 endCount = 0;
                             }
                         }
@@ -452,7 +452,10 @@ namespace goes
                     {//Basic XOR passed. Will only detect single bit errors. Not foolproof.
                         tm block0_current_time = block_header0.TCURR;
                         tm block0_image_time = block_header0.CIFST;
-                        if(difftime(mktime(&block0_current_time),mktime(&block0_image_time))<3600) //Sanity Check. 
+                        time_t current_time = mktime(&block0_current_time);
+                        time_t image_time = mktime(&block0_image_time);
+                        float time_diff=difftime(current_time,image_time);
+                        if(time_diff<3600 and time_diff>-60) //Sanity Check. 
                         {//Image start time and current header time is within one hour, set image time.
                             imageTime=mktime(&block0_image_time)+block0_image_time.tm_gmtoff; 
                         }
