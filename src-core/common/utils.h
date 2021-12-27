@@ -9,6 +9,7 @@
 #include <climits>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
+void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
 
 template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
 T most_common(InputIt begin, InputIt end)

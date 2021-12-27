@@ -119,8 +119,8 @@ namespace image
     void Image<T>::draw_image(int c, Image<T> image, int x0, int y0)
     {
         // Get min height and width, mostly for safety
-        int width = std::min<int>(d_width, image.width());
-        int height = std::min<int>(d_height, image.height());
+        int width = std::min<int>(d_width, x0 + image.width()) - x0;
+        int height = std::min<int>(d_height, y0 + image.height()) - y0;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
