@@ -30,62 +30,9 @@
                 }
             },
             "cadu": {
-                "new_metop_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true
-                }
-            },
-            "products": {
-                "metop_satid": {},
-                "metop_avhrr": {
-                    "composites": "composites/metop_avhrr.json.inc"
-                },
-                "metop_mhs": {},
-                "metop_amsu": {},
-                "metop_iasi": {
-                    "write_all": false
-                },
-                "metop_gome": {
-                    "write_all": false
-                },
-                "metop_ascat": {},
-                "metop_sem": {},
-                "metop_admin_msg": {}
-            }
-        }
-    },
-    "metop_ahrpt_old": {
-        "name": "MetOp AHRPT, old decoder",
-        "live": false,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
-        ],
-        "frequencies": [
-            1701.3
-        ],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
-        "work": {
-            "baseband": {},
-            "soft": {
-                "qpsk_demod": {
-                    "symbolrate": 2333333,
-                    "agc_rate": 0.00001,
-                    "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.003,
-                    "buffer_size": 8192
-                }
-            },
-            "cadu": {
                 "metop_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true
+                    "viterbi_outsync_after": 10,
+                    "viterbi_ber_thresold": 0.300
                 }
             },
             "products": {

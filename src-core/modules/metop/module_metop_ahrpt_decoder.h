@@ -1,9 +1,8 @@
 #pragma once
 
 #include "module.h"
-#include <complex>
 #include "common/ccsds/ccsds_1_0_1024/deframer.h"
-#include "viterbi.h"
+#include "common/codings/viterbi/viterbi_3_4.h"
 #include <fstream>
 
 namespace metop
@@ -13,23 +12,16 @@ namespace metop
     protected:
         int d_viterbi_outsync_after;
         float d_viterbi_ber_threasold;
-        bool d_soft_symbols;
-
-        int sw;
 
         uint8_t *viterbi_out;
-        std::complex<float> *sym_buffer;
         int8_t *soft_buffer;
-
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
 
         std::ifstream data_in;
         std::ofstream data_out;
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
-        MetopViterbi viterbi;
+        viterbi::Viterbi3_4 viterbi;
         ccsds::ccsds_1_0_1024::CADUDeframer deframer;
 
         int errors[4];
@@ -42,6 +34,8 @@ namespace metop
         ~MetOpAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
+        std::vector<ModuleDataType> getInputTypes();
+        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();
