@@ -1,7 +1,7 @@
 #pragma once
 
 #include "module.h"
-#include "common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include "common/codings/viterbi/viterbi_3_4.h"
 #include <fstream>
 
@@ -22,7 +22,7 @@ namespace metop
         std::atomic<size_t> progress;
 
         viterbi::Viterbi3_4 viterbi;
-        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
+        deframing::BPSK_CCSDS_Deframer deframer;
 
         int errors[4];
 
