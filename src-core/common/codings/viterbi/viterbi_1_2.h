@@ -8,21 +8,21 @@
 
 namespace viterbi
 {
-    class Viterbi3_4
+    class Viterbi1_2
     {
     private:
         // Settings
         const float d_ber_thresold;
         const float d_max_outsync;
         const int d_buffer_size;
-        const bool d_fymode;
+        const std::vector<phase_t> d_phases_to_check;
 
         // Variables
         int d_state;        // Main decoder state
         phase_t d_phase;    // Phase the decoder locked onto
         bool d_shift;       // Shift the decoder locked onto
         int d_invalid = 0;  // Number of invalid BER tests
-        float d_bers[2][2]; // BERs of all branches
+        float d_bers[4][2]; // BERs of all branches
         float d_ber;        // Main ber in LOCKED state
 
         // BER Testing
@@ -35,24 +35,19 @@ namespace viterbi
         // BER test buffers
         int8_t ber_test_buffer[TEST_BITS_LENGTH];
         uint8_t ber_soft_buffer[TEST_BITS_LENGTH];
-        uint8_t ber_depunc_buffer[TEST_BITS_LENGTH * 2];
-        uint8_t ber_decoded_buffer[TEST_BITS_LENGTH * 2];
-        uint8_t ber_encoded_buffer[TEST_BITS_LENGTH * 2];
+        uint8_t ber_decoded_buffer[TEST_BITS_LENGTH];
+        uint8_t ber_encoded_buffer[TEST_BITS_LENGTH];
 
         // Actual decoding buffers
         uint8_t *soft_buffer;
-        uint8_t *depunc_buffer;
         uint8_t *output_buffer;
 
         // Calculate BER between 2 buffers
         float get_ber(uint8_t *raw, uint8_t *rencoded, int len);
 
-        // Depuncture, for rate 3/4 puncturing
-        int depuncture(uint8_t *in, uint8_t *out, int size, bool shift);
-
     public:
-        Viterbi3_4(float ber_threshold, int max_outsync, int buffer_size, bool fymode = false);
-        ~Viterbi3_4();
+        Viterbi1_2(float ber_threshold, int max_outsync, int buffer_size, std::vector<phase_t> phases = {PHASE_0, PHASE_90, PHASE_180, PHASE_270});
+        ~Viterbi1_2();
 
         int work(int8_t *input, int size, uint8_t *output);
 

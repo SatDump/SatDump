@@ -2,7 +2,8 @@
 
 #include "module.h"
 #include <complex>
-#include "common/codings/viterbi/viterbi27.h"
+#include "common/codings/viterbi/viterbi_1_2.h"
+#include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include <fstream>
 #include "common/dsp/random.h"
 
@@ -22,7 +23,8 @@ namespace terra
         int errors[4];
         int cor;
 
-        viterbi::Viterbi27 viterbi;
+        viterbi::Viterbi1_2 viterbi;
+        deframing::BPSK_CCSDS_Deframer deframer;
 
         // UI Stuff
         float ber_history[200];
