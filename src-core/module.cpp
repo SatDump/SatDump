@@ -120,7 +120,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/meteor/instruments/mtvza/module_meteor_mtvza.h"
 
 #include "modules/npp/module_npp_hrd_decoder.h"
-#include "modules/npp/module_new_npp_hrd_decoder.h"
 
 #include "modules/jpss/instruments/atms/module_jpss_atms.h"
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
@@ -258,7 +257,6 @@ void registerModules()
 
     // S-NPP
     REGISTER_MODULE(npp::NPPHRDDecoderModule);
-    REGISTER_MODULE(npp::NewNPPHRDDecoderModule);
 
     // JPSS
     REGISTER_MODULE(jpss::satid::JPSSSatIDModule);

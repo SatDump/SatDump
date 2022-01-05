@@ -2,8 +2,8 @@
 
 #include "module.h"
 #include <complex>
-#include "viterbi.h"
-#include "common/ccsds/ccsds_1_0_1024/deframer.h"
+#include "common/codings/viterbi/viterbi_1_2.h"
+#include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include <fstream>
 
 namespace npp
@@ -13,12 +13,8 @@ namespace npp
     protected:
         int d_viterbi_outsync_after;
         float d_viterbi_ber_threasold;
-        bool d_soft_symbols;
-
-        int sw;
 
         uint8_t *viterbi_out;
-        std::complex<float> *sym_buffer;
         int8_t *soft_buffer;
 
         // Work buffers
@@ -30,8 +26,8 @@ namespace npp
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
-        HRDViterbi viterbi;
-        ccsds::ccsds_1_0_1024::CADUDeframer deframer;
+        viterbi::Viterbi1_2 viterbi;
+        deframing::BPSK_CCSDS_Deframer deframer;
 
         int errors[4];
 

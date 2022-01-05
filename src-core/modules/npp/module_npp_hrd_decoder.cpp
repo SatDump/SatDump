@@ -3,7 +3,9 @@
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
+#include "common/codings/randomization.h"
 
+#define FRAME_SIZE 1024
 #define BUFFER_SIZE 8192
 
 // Return filesize
@@ -14,19 +16,16 @@ namespace npp
     NPPHRDDecoderModule::NPPHRDDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                 d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
                                                                                                                                 d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
-                                                                                                                                d_soft_symbols(parameters["soft_symbols"].get<bool>()),
-                                                                                                                                sw(0),
-                                                                                                                                viterbi(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
+                                                                                                                                deframer(FRAME_SIZE * 8),
+                                                                                                                                viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, {PHASE_0, PHASE_90})
     {
-        viterbi_out = new uint8_t[BUFFER_SIZE];
-        sym_buffer = new std::complex<float>[BUFFER_SIZE];
-        soft_buffer = new int8_t[BUFFER_SIZE * 2];
+        viterbi_out = new uint8_t[BUFFER_SIZE * 2];
+        soft_buffer = new int8_t[BUFFER_SIZE];
     }
 
     NPPHRDDecoderModule::~NPPHRDDecoderModule()
     {
         delete[] viterbi_out;
-        delete[] sym_buffer;
         delete[] soft_buffer;
     }
 
@@ -47,50 +46,32 @@ namespace npp
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         int vout;
+        uint8_t frame_buffer[FRAME_SIZE * 10];
 
         while (!data_in.eof())
         {
             // Read a buffer
-            if (d_soft_symbols)
+            data_in.read((char *)soft_buffer, BUFFER_SIZE);
+
+            int vitout = viterbi.work((int8_t *)soft_buffer, BUFFER_SIZE, viterbi_out);
+
+            // Diff decoding
+            diff.decode_bits(viterbi_out, vitout);
+
+            int frames = deframer.work(viterbi_out, vitout, frame_buffer);
+
+            for (int i = 0; i < frames; i++)
             {
-                data_in.read((char *)soft_buffer, BUFFER_SIZE * 2);
+                uint8_t *cadu = &frame_buffer[i * FRAME_SIZE];
 
-                // Convert to hard symbols from soft symbols. We may want to work with soft only later?
-                for (int i = 0; i < BUFFER_SIZE; i++)
-                {
-                    using namespace std::complex_literals;
-                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 0] / 127.0f) + ((float)soft_buffer[i * 2 + 1] / 127.0f) * 1if;
-                }
-            }
-            else
-            {
-                data_in.read((char *)sym_buffer, sizeof(std::complex<float>) * BUFFER_SIZE);
-            }
+                // Derand
+                derand_ccsds(&cadu[4], FRAME_SIZE - 4);
 
-            // Perform Viterbi decoding
-            vout = viterbi.work(sym_buffer, BUFFER_SIZE, viterbi_out);
+                // RS Correction
+                rs.decode_interlaved(&cadu[4], true, 4, errors);
 
-            // Perform differential decoding
-            diff.decode(viterbi_out, vout);
-
-            if (vout > 0)
-            {
-                // Deframe (and derand)
-                std::vector<std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE>> frames = deframer.work(viterbi_out, vout);
-
-                // if we found frame, write them
-                if (frames.size() > 0)
-                {
-                    for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
-                    {
-                        // RS Correction
-                        rs.decode_interlaved(&cadu[4], true, 4, errors);
-
-                        // Write it out
-                        //data_out_total += ccsds::ccsds_1_0_1024::CADU_SIZE;
-                        data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
-                    }
-                }
+                // Write it out
+                data_out.write((char *)cadu, FRAME_SIZE);
             }
 
             progress = data_in.tellg();
@@ -124,8 +105,8 @@ namespace npp
 
                 for (int i = 0; i < 2048; i++)
                 {
-                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + sym_buffer[i].real() * 100 * ui_scale) % int(200 * ui_scale),
-                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + sym_buffer[i].imag() * 100 * ui_scale) % int(200 * ui_scale)),
+                    draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
+                                                      ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
                                                ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
                 }
@@ -168,9 +149,9 @@ namespace npp
 
                 ImGui::SameLine();
 
-                if (deframer.getState() == 0)
+                if (deframer.getState() == deframer.STATE_NOSYNC)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else if (deframer.getState() == 2 || deframer.getState() == 6)
+                else if (deframer.getState() == deframer.STATE_SYNCING)
                     ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
@@ -208,7 +189,7 @@ namespace npp
 
     std::vector<std::string> NPPHRDDecoderModule::getParameters()
     {
-        return {"viterbi_outsync_after", "viterbi_ber_thresold", "soft_symbols"};
+        return {"viterbi_outsync_after", "viterbi_ber_thresold"};
     }
 
     std::shared_ptr<ProcessingModule> NPPHRDDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)

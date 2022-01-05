@@ -21,6 +21,16 @@ namespace coriolis
         buffer = new uint8_t[BUFFER_SIZE];
     }
 
+    std::vector<ModuleDataType> CoriolisDBDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> CoriolisDBDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     CoriolisDBDecoderModule::~CoriolisDBDecoderModule()
     {
         delete[] buffer;
@@ -28,8 +38,12 @@ namespace coriolis
 
     void CoriolisDBDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -47,9 +61,10 @@ namespace coriolis
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
-            data_in.read((char *)buffer, BUFFER_SIZE);
-
-            //rotate_soft((int8_t *)buffer, BUFFER_SIZE, PHASE_0, true); // Symbols are swapped
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
             int vitout = viterbi.work((int8_t *)buffer, BUFFER_SIZE, viterbi_out_buffer);
 
@@ -77,7 +92,8 @@ namespace coriolis
         }
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     void CoriolisDBDecoderModule::drawUI(bool window)

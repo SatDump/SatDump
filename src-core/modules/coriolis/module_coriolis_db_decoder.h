@@ -37,6 +37,8 @@ namespace coriolis
         ~CoriolisDBDecoderModule();
         void process();
         void drawUI(bool window);
+        std::vector<ModuleDataType> getInputTypes();
+        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();
