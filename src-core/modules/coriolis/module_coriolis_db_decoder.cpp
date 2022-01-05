@@ -1,4 +1,4 @@
-#include "module_terra_db_decoder.h"
+#include "module_coriolis_db_decoder.h"
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/rotation.h"
@@ -12,21 +12,21 @@
 // Return filesize
 size_t getFilesize(std::string filepath);
 
-namespace terra
+namespace coriolis
 {
-    TerraDBDecoderModule::TerraDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                  deframer(FRAME_SIZE * 8),
-                                                                                                                                  viterbi(0.3, 20, BUFFER_SIZE, {PHASE_90})
+    CoriolisDBDecoderModule::CoriolisDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                        deframer(FRAME_SIZE * 8, 0x352ef853),
+                                                                                                                                        viterbi(0.3, 20, BUFFER_SIZE, {PHASE_0})
     {
         buffer = new uint8_t[BUFFER_SIZE];
     }
 
-    TerraDBDecoderModule::~TerraDBDecoderModule()
+    CoriolisDBDecoderModule::~CoriolisDBDecoderModule()
     {
         delete[] buffer;
     }
 
-    void TerraDBDecoderModule::process()
+    void CoriolisDBDecoderModule::process()
     {
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -39,8 +39,6 @@ namespace terra
         time_t lastTime = 0;
 
         // Viterbi, rs, etc
-        diff::NRZMDiff diff;
-        reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // Other buffers
         uint8_t frame_buffer[FRAME_SIZE * 10];
@@ -51,12 +49,9 @@ namespace terra
             // Read a buffer
             data_in.read((char *)buffer, BUFFER_SIZE);
 
-            rotate_soft((int8_t *)buffer, BUFFER_SIZE, PHASE_0, true); // Symbols are swapped
+            //rotate_soft((int8_t *)buffer, BUFFER_SIZE, PHASE_0, true); // Symbols are swapped
 
             int vitout = viterbi.work((int8_t *)buffer, BUFFER_SIZE, viterbi_out_buffer);
-
-            // Diff decoding
-            diff.decode_bits(viterbi_out_buffer, vitout);
 
             int frames = deframer.work(viterbi_out_buffer, vitout, frame_buffer);
 
@@ -64,14 +59,10 @@ namespace terra
             {
                 uint8_t *cadu = &frame_buffer[i * FRAME_SIZE];
 
-                // RS Correction
-                rs.decode_interlaved(&cadu[4], true, 4, errors);
-
-                // Derand
-                derand_ccsds(&cadu[10], 886);
-
                 // Write it out
-                data_out.write((char *)cadu, FRAME_SIZE);
+                if (cadu[58] >> 7 != 1)
+                    data_out.write((char *)cadu, FRAME_SIZE);
+                //data_out.write((char *)&cadu[63], 60);
             }
 
             progress = data_in.tellg();
@@ -89,9 +80,9 @@ namespace terra
         data_in.close();
     }
 
-    void TerraDBDecoderModule::drawUI(bool window)
+    void CoriolisDBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Terra DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("Coriolis DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 
@@ -157,24 +148,6 @@ namespace terra
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
             }
-
-            ImGui::Spacing();
-
-            ImGui::Button("Reed-Solomon", {200 * ui_scale, 20 * ui_scale});
-            {
-                ImGui::Text("RS    : ");
-                for (int i = 0; i < 4; i++)
-                {
-                    ImGui::SameLine();
-
-                    if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
-                    else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
-                    else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
-                }
-            }
         }
         ImGui::EndGroup();
 
@@ -183,18 +156,18 @@ namespace terra
         ImGui::End();
     }
 
-    std::string TerraDBDecoderModule::getID()
+    std::string CoriolisDBDecoderModule::getID()
     {
-        return "terra_db_decoder";
+        return "coriolis_db_decoder";
     }
 
-    std::vector<std::string> TerraDBDecoderModule::getParameters()
+    std::vector<std::string> CoriolisDBDecoderModule::getParameters()
     {
         return {};
     }
 
-    std::shared_ptr<ProcessingModule> TerraDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<ProcessingModule> CoriolisDBDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
-        return std::make_shared<TerraDBDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<CoriolisDBDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace meteor

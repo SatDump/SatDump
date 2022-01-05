@@ -180,6 +180,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/cryosat/module_cryosat_dump_decoder.h"
 #include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
 
+#include "modules/coriolis/module_coriolis_db_decoder.h"
+
 void registerModules()
 {
     // Register modules
@@ -332,6 +334,9 @@ void registerModules()
     // CRYOSAT
     REGISTER_MODULE(cryosat::CRYOSATDumpDecoderModule);
     REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
+
+    // Coriolis
+    REGISTER_MODULE(coriolis::CoriolisDBDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

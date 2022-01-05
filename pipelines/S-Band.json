@@ -177,5 +177,40 @@
                 "jason3_lpt": {}
             }
         }
+    },
+    "coriolis_db": {
+        "name": "Coriolis S-Band Tactical DB",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 512000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "coriolis_db_decoder": {}
+            }
+        }
     }
 }
