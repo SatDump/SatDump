@@ -29,12 +29,12 @@ namespace terra
 
     std::vector<ModuleDataType> TerraDBDemodModule::getInputTypes()
     {
-        return {DATA_FILE, DATA_STREAM};
+        return {DATA_FILE};
     }
 
     std::vector<ModuleDataType> TerraDBDemodModule::getOutputTypes()
     {
-        return {DATA_FILE};
+        return {DATA_FILE, DATA_STREAM};
     }
 
     TerraDBDemodModule::~TerraDBDemodModule()
@@ -52,8 +52,11 @@ namespace terra
         //if (input_data_type == DATA_FILE)
         //    data_in = std::ifstream(d_input_file, std::ios::binary);
 
-        data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".soft");
+        if (output_data_type == DATA_FILE)
+        {
+            data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
+            d_output_files.push_back(d_output_file_hint + ".soft");
+        }
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".soft");
@@ -90,7 +93,10 @@ namespace terra
 
             rec->output_stream->flush();
 
-            data_out.write((char *)sym_buffer, dat_size);
+            if (output_data_type == DATA_FILE)
+                data_out.write((char *)sym_buffer, dat_size);
+            else
+                output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
             progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -109,7 +115,8 @@ namespace terra
         pll->stop();
         rec->stop();
 
-        data_out.close();
+        if (output_data_type == DATA_FILE)
+            data_out.close();
     }
 
     void TerraDBDemodModule::drawUI(bool window)

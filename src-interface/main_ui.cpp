@@ -32,10 +32,13 @@ void renderMainUI(int wwidth, int wheight)
     if (satdumpUiStatus == OFFLINE_PROCESSING)
     {
         uiCallListMutex->lock();
+        float winheight = uiCallList->size() > 0 ? wheight / uiCallList->size() : wheight;
+        float currentPos = 0;
         for (std::shared_ptr<ProcessingModule> module : *uiCallList)
         {
-            ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
+            ImGui::SetNextWindowPos({0, currentPos});
+            currentPos += winheight;
+            ImGui::SetNextWindowSize({(float)wwidth, (float)winheight});
             module->drawUI(false);
         }
         uiCallListMutex->unlock();

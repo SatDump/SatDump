@@ -21,6 +21,16 @@ namespace terra
         buffer = new uint8_t[BUFFER_SIZE];
     }
 
+    std::vector<ModuleDataType> TerraDBDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> TerraDBDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     TerraDBDecoderModule::~TerraDBDecoderModule()
     {
         delete[] buffer;
@@ -28,8 +38,12 @@ namespace terra
 
     void TerraDBDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -49,7 +63,10 @@ namespace terra
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
-            data_in.read((char *)buffer, BUFFER_SIZE);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
             rotate_soft((int8_t *)buffer, BUFFER_SIZE, PHASE_0, true); // Symbols are swapped
 
@@ -74,7 +91,8 @@ namespace terra
                 data_out.write((char *)cadu, FRAME_SIZE);
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -86,7 +104,8 @@ namespace terra
         }
 
         data_out.close();
-        data_in.close();
+        if (input_data_type == DATA_FILE)
+            data_in.close();
     }
 
     void TerraDBDecoderModule::drawUI(bool window)
@@ -178,7 +197,8 @@ namespace terra
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

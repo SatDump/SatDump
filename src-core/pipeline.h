@@ -39,6 +39,8 @@ struct Pipeline
              bool ui = false,
              std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr,
              std::shared_ptr<std::mutex> uiCallListMutex = nullptr);
+
+    nlohmann::json prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params);
 };
 
 SATDUMP_DLL extern std::vector<Pipeline> pipelines;
