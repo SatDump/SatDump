@@ -206,7 +206,16 @@
                 }
             },
             "cadu": {
-                "jason3_decoder": {}
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
             },
             "products": {
                 "jason3_poseidon": {},

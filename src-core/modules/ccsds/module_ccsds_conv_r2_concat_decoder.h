@@ -34,7 +34,11 @@ namespace ccsds
     soon as possible. 0.300 seems to be good.
 
     The ASM Marker is left configurable as other satellites use 
-    similar protocols, just with a different syncword.
+    similar protocols, just with a different syncword. 
+
+    CCSDS naming is kept mostly because this specific convolutional
+    code is from the specification and most satellites will use
+    CCSDS-compliant concatenated codings anyway.
     */
     class CCSDSConvR2ConcatDecoderModule : public ProcessingModule
     {
