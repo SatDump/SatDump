@@ -54,7 +54,7 @@ namespace cryosat
         cfosat::CFOSATDiff diff;
         //diff::GenericDiff diff(4);
 
-        dsp::qpsk_constellation constellation;
+        dsp::constellation_t constellation(dsp::QPSK);
 
         while (!data_in.eof())
         {

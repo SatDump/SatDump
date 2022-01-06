@@ -4,6 +4,7 @@
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
+#include "common/dsp/constellation.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)
 #define FRAME_SIZE 1024
@@ -50,6 +51,7 @@ namespace aqua
 
         time_t lastTime = 0;
 
+        dsp::constellation_t constellation(dsp::QPSK);
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         // I/Q Buffers
@@ -72,32 +74,12 @@ namespace aqua
             else
                 input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
-            // Demodulate QPSK... This is the crappy way but it works
+            // Demodulate QPSK Constellation
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                int8_t sample_i = clamp(*((int8_t *)&buffer[i * 2 + 1]));
-                int8_t sample_q = clamp(*((int8_t *)&buffer[i * 2 + 0]));
-
-                if (sample_i == -1 && sample_q == -1)
-                {
-                    decodedBufQ[i] = 0;
-                    decodedBufI[i] = 0;
-                }
-                else if (sample_i == 1 && sample_q == -1)
-                {
-                    decodedBufQ[i] = 0;
-                    decodedBufI[i] = 1;
-                }
-                else if (sample_i == 1 && sample_q == 1)
-                {
-                    decodedBufQ[i] = 1;
-                    decodedBufI[i] = 1;
-                }
-                else if (sample_i == -1 && sample_q == 1)
-                {
-                    decodedBufQ[i] = 1;
-                    decodedBufI[i] = 0;
-                }
+                uint8_t demod = constellation.soft_demod((int8_t *)&buffer[i * 2]);
+                decodedBufI[i] = demod >> 1;
+                decodedBufQ[i] = demod & 1;
             }
 
             diff1.decode_bits(decodedBufI, BUFFER_SIZE / 2);
