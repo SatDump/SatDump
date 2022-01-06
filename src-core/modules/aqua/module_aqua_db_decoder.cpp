@@ -3,15 +3,10 @@
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
+#include "common/codings/randomization.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)
-
-// Returns the asked bit!
-template <typename T>
-inline bool getBit(T data, int bit)
-{
-    return (data >> bit) & 1;
-}
+#define FRAME_SIZE 1024
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -21,6 +16,7 @@ namespace aqua
     AquaDBDecoderModule::AquaDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[BUFFER_SIZE];
+        deframer.STATE_SYNCED = 10;
     }
 
     std::vector<ModuleDataType> AquaDBDecoderModule::getInputTypes()
@@ -59,19 +55,14 @@ namespace aqua
         // I/Q Buffers
         uint8_t decodedBufI[BUFFER_SIZE / 2];
         uint8_t decodedBufQ[BUFFER_SIZE / 2];
-        uint8_t bufI[(BUFFER_SIZE / 8) / 2];
-        uint8_t bufQ[(BUFFER_SIZE / 8) / 2];
 
         // Final buffer after decoding
-        uint8_t finalBuffer[(BUFFER_SIZE / 8)];
-
-        // Bits => Bytes stuff
-        uint8_t byteShifter = 0;
-        int inByteShifter = 0;
-        int inFinalByteBuffer;
+        uint8_t finalBuffer[BUFFER_SIZE];
 
         // 2 NRZ-M Decoders
         diff::NRZMDiff diff1, diff2;
+
+        uint8_t frame_buffer[FRAME_SIZE * 100];
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -109,75 +100,29 @@ namespace aqua
                 }
             }
 
-            // Group symbols into bytes now, I channel
-            inFinalByteBuffer = 1;
-            inByteShifter = 0;
+            diff1.decode_bits(decodedBufI, BUFFER_SIZE / 2);
+            diff2.decode_bits(decodedBufQ, BUFFER_SIZE / 2);
+
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                byteShifter = byteShifter << 1 | decodedBufI[i];
-                inByteShifter++;
-
-                if (inByteShifter == 8)
-                {
-                    bufI[inFinalByteBuffer++] = byteShifter;
-                    inByteShifter = 0;
-                }
+                finalBuffer[i * 2 + 0] = decodedBufI[i];
+                finalBuffer[i * 2 + 1] = decodedBufQ[i];
             }
 
-            // Group symbols into bytes now, Q channel
-            inFinalByteBuffer = 1;
-            inByteShifter = 0;
-            for (int i = 0; i < BUFFER_SIZE / 2; i++)
+            int frames = deframer.work(finalBuffer, BUFFER_SIZE, frame_buffer);
+
+            for (int i = 0; i < frames; i++)
             {
-                byteShifter = byteShifter << 1 | decodedBufQ[i];
-                inByteShifter++;
+                uint8_t *cadu = &frame_buffer[i * FRAME_SIZE];
 
-                if (inByteShifter == 8)
-                {
-                    bufQ[inFinalByteBuffer++] = byteShifter;
-                    inByteShifter = 0;
-                }
-            }
+                // Derand
+                derand_ccsds(&cadu[4], FRAME_SIZE - 4);
 
-            // Differential decoding for both of them
-            diff1.decode(bufI, (BUFFER_SIZE / 8) / 2);
-            diff2.decode(bufQ, (BUFFER_SIZE / 8) / 2);
+                // RS Correction
+                rs.decode_interlaved(&cadu[4], true, 4, errors);
 
-            // Interleave them back
-            for (int i = 0; i < (BUFFER_SIZE / 8) / 2; i++)
-            {
-                finalBuffer[i * 2] = getBit<uint8_t>(bufI[i], 7) << 7 |
-                                     getBit<uint8_t>(bufQ[i], 7) << 6 |
-                                     getBit<uint8_t>(bufI[i], 6) << 5 |
-                                     getBit<uint8_t>(bufQ[i], 6) << 4 |
-                                     getBit<uint8_t>(bufI[i], 5) << 3 |
-                                     getBit<uint8_t>(bufQ[i], 5) << 2 |
-                                     getBit<uint8_t>(bufI[i], 4) << 1 |
-                                     getBit<uint8_t>(bufQ[i], 4) << 0;
-                finalBuffer[i * 2 + 1] = getBit<uint8_t>(bufI[i], 3) << 7 |
-                                         getBit<uint8_t>(bufQ[i], 3) << 6 |
-                                         getBit<uint8_t>(bufI[i], 2) << 5 |
-                                         getBit<uint8_t>(bufQ[i], 2) << 4 |
-                                         getBit<uint8_t>(bufI[i], 1) << 3 |
-                                         getBit<uint8_t>(bufQ[i], 1) << 2 |
-                                         getBit<uint8_t>(bufI[i], 0) << 1 |
-                                         getBit<uint8_t>(bufQ[i], 0) << 0;
-            }
-
-            // Deframe that! (Integrated derand)
-            std::vector<std::array<uint8_t, CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
-
-            // If we found frames, write them out
-            if (frameBuffer.size() > 0)
-            {
-                for (std::array<uint8_t, CADU_SIZE> cadu : frameBuffer)
-                {
-                    // RS Correction
-                    rs.decode_interlaved(&cadu[4], true, 4, errors);
-
-                    // Write it to our output file!
-                    data_out.write((char *)&cadu, CADU_SIZE);
-                }
+                // Write it out
+                data_out.write((char *)cadu, FRAME_SIZE);
             }
 
             if (input_data_type == DATA_FILE)

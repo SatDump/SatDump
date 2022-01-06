@@ -48,7 +48,7 @@ namespace deframing
 
             if (d_state == STATE_NOSYNC)
             {
-                if (compare_32(shifter, CADU_ASM) < d_state)
+                if (shifter == CADU_ASM) //(compare_32(shifter, CADU_ASM) < d_state)
                 {
                     bit_inversion = false;
                     reset_frame();
@@ -56,7 +56,7 @@ namespace deframing
                     d_state = STATE_SYNCING;
                     d_good_asm = d_invalid_asm = 0;
                 }
-                else if (compare_32(shifter, CADU_ASM_INV) < d_state)
+                else if (shifter == CADU_ASM_INV) //(compare_32(shifter, CADU_ASM_INV) < d_state)
                 {
                     bit_inversion = true;
                     reset_frame();
