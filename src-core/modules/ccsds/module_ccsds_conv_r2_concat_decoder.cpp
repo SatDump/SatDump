@@ -29,7 +29,7 @@ namespace ccsds
 
           d_rs_interleaving_depth(parameters["rs_i"].get<int>()),
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
-          d_rs_type(parameters["rs_type"].get<std::string>())
+          d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
         viterbi_out = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
@@ -73,8 +73,13 @@ namespace ccsds
                 logger->critical("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
         }
 
+        // Parse sync marker if set
+        uint32_t asm_sync = 0x1acffc1d;
+        if (parameters.count("asm") > 0)
+            asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
+
         viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
-        deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size);
+        deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
     }

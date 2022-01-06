@@ -32,6 +32,9 @@ namespace ccsds
     It is recommended to use a rather low thresold for the Viterbi
     decoder, usually just below the average to ensure it locks as
     soon as possible. 0.300 seems to be good.
+
+    The ASM Marker is left configurable as other satellites use 
+    similar protocols, just with a different syncword.
     */
     class CCSDSConvR2ConcatDecoderModule : public ProcessingModule
     {
