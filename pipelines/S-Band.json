@@ -41,7 +41,26 @@
                 }
             },
             "products": {
-                "proba_chris": {},
+                "proba_chris": {
+                    "composites_low": {
+                        "RGB-221": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch16 * 4, ch16 * 4, ch9 * 4"
+                        }
+                    },
+                    "composites_all": {
+                        "RGB-221": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch1 * 4 - 0.2, ch7 * 4 - 0.2, ch7 * 4.4 - 0.2"
+                        }
+                    }
+                },
                 "proba_hrc": {}
             }
         }
