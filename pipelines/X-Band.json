@@ -181,7 +181,18 @@
                 }
             },
             "cadu": {
-                "terra_db_decoder": {}
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "derand_after_rs": true,
+                    "derand_start": 10,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
             },
             "products": {
                 "eos_modis": {
@@ -211,9 +222,15 @@
                 }
             },
             "cadu": {
-                "npp_hrd_decoder": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.300
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {

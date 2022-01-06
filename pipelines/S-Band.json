@@ -30,8 +30,14 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -71,8 +77,14 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -111,8 +123,14 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": true
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             }
         }

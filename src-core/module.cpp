@@ -119,14 +119,11 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/meteor/instruments/msumr/module_meteor_msumr_lrpt.h"
 #include "modules/meteor/instruments/mtvza/module_meteor_mtvza.h"
 
-#include "modules/npp/module_npp_hrd_decoder.h"
-
 #include "modules/jpss/instruments/atms/module_jpss_atms.h"
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
 #include "modules/jpss/instruments/omps/module_jpss_omps.h"
 #include "modules/jpss/module_jpss_satid.h"
 
-#include "modules/proba/module_proba_s_decoder.h"
 #include "modules/proba/instruments/swap/module_proba_swap.h"
 #include "modules/proba/instruments/chris/module_proba_chris.h"
 #include "modules/proba/instruments/hrc/module_proba_hrc.h"
@@ -138,7 +135,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
 
 #include "modules/terra/module_terra_db_demod.h"
-#include "modules/terra/module_terra_db_decoder.h"
 
 #include "modules/spacex/module_spacex_decoder.h"
 #include "modules/spacex/module_falcon_decoder.h"
@@ -148,7 +144,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/oceansat/module_oceansat2_db_decoder.h"
 #include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
 
-#include "modules/saral/module_saral_decoder.h"
 #include "modules/saral/argos/module_saral_argos.h"
 
 #include "modules/goes/gvar/module_gvar_decoder.h"
@@ -171,6 +166,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/angels/argos/module_angels_argos.h"
 
 #include "modules/ccsds/module_ccsds_analyzer.h"
+#include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
 
 #include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
@@ -255,9 +251,6 @@ void registerModules()
     REGISTER_MODULE(meteor::msumr::METEORMSUMRLRPTDecoderModule);
     REGISTER_MODULE(meteor::mtvza::METEORMTVZADecoderModule);
 
-    // S-NPP
-    REGISTER_MODULE(npp::NPPHRDDecoderModule);
-
     // JPSS
     REGISTER_MODULE(jpss::satid::JPSSSatIDModule);
     REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
@@ -265,7 +258,6 @@ void registerModules()
     REGISTER_MODULE(jpss::omps::JPSSOMPSDecoderModule);
 
     // Proba
-    REGISTER_MODULE(proba::ProbaSDecoderModule);
     REGISTER_MODULE(proba::swap::ProbaSWAPDecoderModule);
     REGISTER_MODULE(proba::chris::ProbaCHRISDecoderModule);
     REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
@@ -279,7 +271,6 @@ void registerModules()
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
-    REGISTER_MODULE(terra::TerraDBDecoderModule);
 
     // Falcon & Starship
     REGISTER_MODULE(spacex::SpaceXDecoderModule);
@@ -293,7 +284,6 @@ void registerModules()
     REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
 
     // Saral
-    REGISTER_MODULE(saral::SaralDecoderModule);
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // xRIT
@@ -322,6 +312,7 @@ void registerModules()
 
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
+    REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
 
     // GK-2A
     REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
