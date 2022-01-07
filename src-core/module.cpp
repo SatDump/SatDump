@@ -166,6 +166,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/ccsds/module_ccsds_analyzer.h"
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
+#include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 
 #include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
@@ -173,6 +174,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/cryosat/module_cryosat_dump_decoder.h"
 #include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
+
+#include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
 
 void registerModules()
 {
@@ -309,6 +312,7 @@ void registerModules()
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
     REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
+    REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
 
     // GK-2A
     REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
@@ -321,6 +325,9 @@ void registerModules()
     REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
 
     // Coriolis
+
+    // CloudSat
+    REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

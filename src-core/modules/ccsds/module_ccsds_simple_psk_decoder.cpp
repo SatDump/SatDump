@@ -1,4 +1,4 @@
-#include "module_ccsds_conv_r2_concat_decoder.h"
+#include "module_ccsds_simple_psk_decoder.h"
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
@@ -10,7 +10,7 @@ size_t getFilesize(std::string filepath);
 
 namespace ccsds
 {
-    CCSDSConvR2ConcatDecoderModule::CCSDSConvR2ConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    CCSDSSimplePSKDecoderModule::CCSDSSimplePSKDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : ProcessingModule(input_file, output_file_hint, parameters),
           is_ccsds(parameters.count("ccsds") > 0 ? parameters["ccsds"].get<bool>() : true),
 
@@ -19,9 +19,6 @@ namespace ccsds
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(d_cadu_size / 8),
           d_buffer_size(d_cadu_size),
-
-          d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
-          d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
 
           d_diff_decode(parameters.count("nrzm") > 0 ? parameters["nrzm"].get<bool>() : false),
 
@@ -33,7 +30,7 @@ namespace ccsds
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
-        viterbi_out = new uint8_t[d_buffer_size * 2];
+        bits_out = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
         frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
 
@@ -41,27 +38,11 @@ namespace ccsds
         if (d_constellation_str == "bpsk")
         {
             d_constellation = dsp::BPSK;
-            d_bpsk_90 = false;
         }
-        else if (d_constellation_str == "bpsk_90")
-        {
-            d_constellation = dsp::BPSK;
-            d_bpsk_90 = true;
-        }
-        else if (d_constellation_str == "qpsk")
-            d_constellation = dsp::QPSK;
+        //else if (d_constellation_str == "qpsk")
+        //    d_constellation = dsp::QPSK;
         else
-            logger->critical("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
-
-        std::vector<phase_t> d_phases;
-
-        // Get phases for the viterbi decoder to check
-        if (d_constellation == dsp::BPSK && !d_bpsk_90)
-            d_phases = {PHASE_0};
-        else if (d_constellation == dsp::BPSK && d_bpsk_90)
-            d_phases = {PHASE_90};
-        else if (d_constellation == dsp::QPSK)
-            d_phases = {PHASE_0, PHASE_90};
+            logger->critical("CCSDS Simple PSK Decoder : invalid constellation type!");
 
         // Parse RS
         reedsolomon::RS_TYPE rstype;
@@ -72,7 +53,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                logger->critical("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
+                logger->critical("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set
@@ -80,30 +61,29 @@ namespace ccsds
         if (parameters.count("asm") > 0)
             asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
 
-        viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
     }
 
-    std::vector<ModuleDataType> CCSDSConvR2ConcatDecoderModule::getInputTypes()
+    std::vector<ModuleDataType> CCSDSSimplePSKDecoderModule::getInputTypes()
     {
         return {DATA_FILE, DATA_STREAM};
     }
 
-    std::vector<ModuleDataType> CCSDSConvR2ConcatDecoderModule::getOutputTypes()
+    std::vector<ModuleDataType> CCSDSSimplePSKDecoderModule::getOutputTypes()
     {
         return {DATA_FILE, DATA_STREAM};
     }
 
-    CCSDSConvR2ConcatDecoderModule::~CCSDSConvR2ConcatDecoderModule()
+    CCSDSSimplePSKDecoderModule::~CCSDSSimplePSKDecoderModule()
     {
-        delete[] viterbi_out;
+        delete[] bits_out;
         delete[] soft_buffer;
         delete[] frame_buffer;
     }
 
-    void CCSDSConvR2ConcatDecoderModule::process()
+    void CCSDSSimplePSKDecoderModule::process()
     {
         if (input_data_type == DATA_FILE)
             filesize = getFilesize(d_input_file);
@@ -124,6 +104,8 @@ namespace ccsds
 
         diff::NRZMDiff diff;
 
+        dsp::constellation_t constetellation(dsp::BPSK);
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -132,17 +114,14 @@ namespace ccsds
             else
                 input_fifo->read((uint8_t *)soft_buffer, d_buffer_size);
 
-            if (d_bpsk_90) // Symbols are swapped for some BPSK sats
-                rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
-
-            // Perform Viterbi decoding
-            int vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+            for (int i = 0; i < d_buffer_size; i++)
+                bits_out[i] = soft_buffer[i] > 0;
 
             if (d_diff_decode) // Diff decoding if required
-                diff.decode_bits(viterbi_out, vitout);
+                diff.decode_bits(bits_out, d_buffer_size);
 
             // Run deframer
-            int frames = deframer->work(viterbi_out, vitout, frame_buffer);
+            int frames = deframer->work(bits_out, d_buffer_size, frame_buffer);
 
             for (int i = 0; i < frames; i++)
             {
@@ -167,9 +146,8 @@ namespace ccsds
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                std::string viterbi_state = viterbi->getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi->ber()) + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
             }
         }
 
@@ -178,10 +156,9 @@ namespace ccsds
             data_in.close();
     }
 
-    void CCSDSConvR2ConcatDecoderModule::drawUI(bool window)
+    void CCSDSSimplePSKDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
-        float ber = viterbi->ber();
+        ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
@@ -227,29 +204,6 @@ namespace ccsds
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
-            {
-                ImGui::Text("State : ");
-
-                ImGui::SameLine();
-
-                if (viterbi->getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
-
-                ImGui::Text("BER   : ");
-                ImGui::SameLine();
-                ImGui::TextColored(viterbi->getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
-
-                std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
-                ber_history[200 - 1] = ber;
-
-                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-            }
-
-            ImGui::Spacing();
-
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("State : ");
@@ -293,18 +247,18 @@ namespace ccsds
         ImGui::End();
     }
 
-    std::string CCSDSConvR2ConcatDecoderModule::getID()
+    std::string CCSDSSimplePSKDecoderModule::getID()
     {
-        return "ccsds_conv_r2_concat_decoder";
+        return "ccsds_simple_psk_decoder";
     }
 
-    std::vector<std::string> CCSDSConvR2ConcatDecoderModule::getParameters()
+    std::vector<std::string> CCSDSSimplePSKDecoderModule::getParameters()
     {
         return {"viterbi_outsync_after", "viterbi_ber_thresold"};
     }
 
-    std::shared_ptr<ProcessingModule> CCSDSConvR2ConcatDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<ProcessingModule> CCSDSSimplePSKDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
-        return std::make_shared<CCSDSConvR2ConcatDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<CCSDSSimplePSKDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace npp

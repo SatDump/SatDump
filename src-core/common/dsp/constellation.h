@@ -47,6 +47,7 @@ namespace dsp
         complex_t mod(uint8_t symbol);                                                                        // Modulate a raw symbol. Proper resampling and RRC filtering is still required!
         uint8_t demod(complex_t sample);                                                                      // Demodulate a complex sample to hard bits
         uint8_t soft_demod(int8_t *sample);                                                                   // Demodulate a complex sample stored as soft (I/Q) bits to hard bits
+        void soft_demod(int8_t *samples, int size, uint8_t *bits);                                            // Demodulate a full buffer of softs
         void demod_soft_calc(complex_t sample, int8_t *bits, float *phase_error = nullptr, float npwr = 1.0); // Demodulate to soft symbols
     };
 };

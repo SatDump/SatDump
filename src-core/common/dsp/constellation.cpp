@@ -205,6 +205,12 @@ namespace dsp
         }
     };
 
+    void constellation_t::soft_demod(int8_t *samples, int size, uint8_t *bits)
+    {
+        for (int i = 0; i < size / 2; i++)
+            bits[i] = soft_demod(&samples[i * 2]);
+    }
+
     void constellation_t::demod_soft_calc(complex_t sample, int8_t *bits, float *phase_error, float npwr)
     {
         int v;

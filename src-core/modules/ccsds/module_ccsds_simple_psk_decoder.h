@@ -12,42 +12,20 @@
 namespace ccsds
 {
     /*
-    This decoder is meant to decode convolutional r=2 k=7 codes
-    concatenated with Reed-Solomon parity bits. This soft of FEC
-    is pretty common on CCSDS-compliant satellites, with some
-    varients such as :
-        - Differential (NRZ-M) encoding
-        - Different CADU size
-        - RS 223 or 239 codes, with usually I=4 or I=5
-        - Bit swap and 90 degs phase rotation on BPSK
-        - Reed-Solomon lacking dual-basis
+    This decoder is meant to decode simple PSK signals
+    using or akin to the CCSDS standard.
 
-    All those variations are in the end pretty minor so a common
-    decoder can be used instead allowing a high degree of tuning.
-
-    Decoding is done by first locking a streaming viterbi decoder
-    onto a specific state of the provided modulation, to then feed
-    the decoded data to a deframer.
-
-    It is recommended to use a rather low thresold for the Viterbi
-    decoder, usually just below the average to ensure it locks as
-    soon as possible. 0.300 seems to be good.
-
-    The ASM Marker is left configurable as other satellites use 
-    similar protocols, just with a different syncword. 
-
-    CCSDS naming is kept mostly because this specific convolutional
-    code is from the specification and most satellites will use
-    CCSDS-compliant concatenated codings anyway.
+    Frame length, differential encoding or not are kept
+    configurable, alongside the ASM as this same decoder
+    can cover a lot of other specifications.
     */
-    class CCSDSConvR2ConcatDecoderModule : public ProcessingModule
+    class CCSDSSimplePSKDecoderModule : public ProcessingModule
     {
     protected:
         const bool is_ccsds; // Just to know if we should output .cadu or .frm
 
         const std::string d_constellation_str;     // Constellation type string
         dsp::constellation_type_t d_constellation; // Constellation type
-        bool d_bpsk_90;                            // Special case for BPSK shifted by 90 degs + IQ-swapped
 
         const int d_cadu_size;   // CADU Size in bits, including ASM
         const int d_cadu_bytes;  // CADU Size in bytes, including ASM
@@ -63,10 +41,7 @@ namespace ccsds
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
 
-        const int d_viterbi_outsync_after;
-        const float d_viterbi_ber_threasold;
-
-        uint8_t *viterbi_out;
+        uint8_t *bits_out;
         int8_t *soft_buffer;
         uint8_t *frame_buffer;
 
@@ -76,19 +51,17 @@ namespace ccsds
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
-        std::shared_ptr<viterbi::Viterbi1_2> viterbi;
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
         std::shared_ptr<reedsolomon::ReedSolomon> reed_solomon;
 
         int errors[10];
 
         // UI Stuff
-        float ber_history[200];
         dsp::Random rng;
 
     public:
-        CCSDSConvR2ConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~CCSDSConvR2ConcatDecoderModule();
+        CCSDSSimplePSKDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~CCSDSSimplePSKDecoderModule();
         void process();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();
