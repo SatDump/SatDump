@@ -4,6 +4,7 @@
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
+#include "common/codings/differential/qpsk_diff.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -20,6 +21,9 @@ namespace ccsds
           d_cadu_bytes(d_cadu_size / 8),
           d_buffer_size(d_cadu_size),
 
+          d_qpsk_swapiq(parameters.count("qpsk_swap_iq") > 0 ? parameters["qpsk_swap_iq"].get<bool>() : false),
+          d_qpsk_swapdiff(parameters.count("qpsk_swap_diff") > 0 ? parameters["qpsk_swap_diff"].get<bool>() : true),
+
           d_diff_decode(parameters.count("nrzm") > 0 ? parameters["nrzm"].get<bool>() : false),
 
           d_derand(parameters.count("derandomize") > 0 ? parameters["derandomize"].get<bool>() : true),
@@ -32,6 +36,7 @@ namespace ccsds
     {
         bits_out = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
+        qpsk_diff_buffer = new uint8_t[d_cadu_size * 2];
         frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
 
         // Get constellation
@@ -39,8 +44,8 @@ namespace ccsds
         {
             d_constellation = dsp::BPSK;
         }
-        //else if (d_constellation_str == "qpsk")
-        //    d_constellation = dsp::QPSK;
+        else if (d_constellation_str == "qpsk")
+            d_constellation = dsp::QPSK;
         else
             logger->critical("CCSDS Simple PSK Decoder : invalid constellation type!");
 
@@ -81,6 +86,7 @@ namespace ccsds
         delete[] bits_out;
         delete[] soft_buffer;
         delete[] frame_buffer;
+        delete[] qpsk_diff_buffer;
     }
 
     void CCSDSSimplePSKDecoderModule::process()
@@ -103,8 +109,11 @@ namespace ccsds
         time_t lastTime = 0;
 
         diff::NRZMDiff diff;
+        diff::QPSKDiff qpsk_diff;
 
-        dsp::constellation_t constetellation(dsp::BPSK);
+        qpsk_diff.swap = d_qpsk_swapdiff;
+
+        dsp::constellation_t qpsk_const(dsp::QPSK);
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -114,11 +123,25 @@ namespace ccsds
             else
                 input_fifo->read((uint8_t *)soft_buffer, d_buffer_size);
 
-            for (int i = 0; i < d_buffer_size; i++)
-                bits_out[i] = soft_buffer[i] > 0;
+            if (d_constellation == dsp::BPSK)
+            {
+                for (int i = 0; i < d_buffer_size; i++) // Convert BPSK to bits
+                    bits_out[i] = soft_buffer[i] > 0;
 
-            if (d_diff_decode) // Diff decoding if required
-                diff.decode_bits(bits_out, d_buffer_size);
+                if (d_diff_decode) // Diff decoding if required
+                    diff.decode_bits(bits_out, d_buffer_size);
+            }
+            else if (d_constellation == dsp::QPSK)
+            {
+                if (d_qpsk_swapiq) // Swap IQ if required
+                    rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
+
+                for (int i = 0; i < d_buffer_size / 2; i++) // Demod QPSK to bits
+                    qpsk_diff_buffer[i] = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+
+                // Perform differential decoding. For now only QPSK with diff coding is supported.
+                qpsk_diff.work(qpsk_diff_buffer, d_buffer_size / 2, bits_out);
+            }
 
             // Run deframer
             int frames = deframer->work(bits_out, d_buffer_size, frame_buffer);

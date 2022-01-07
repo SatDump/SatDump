@@ -115,7 +115,10 @@ namespace deframing
     void BPSK_CCSDS_Deframer::reset_frame()
     {
         memset(frame_buffer, 0, CADU_SIZE / 8);
-        memcpy(frame_buffer, &CADU_ASM, CADU_ASM_SIZE / 8);
+        frame_buffer[0] = 0x1a;
+        frame_buffer[1] = 0xcf;
+        frame_buffer[2] = 0xfc;
+        frame_buffer[3] = 0x1d;
         bit_of_frame = CADU_ASM_SIZE;
     }
 }

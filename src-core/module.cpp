@@ -129,7 +129,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/proba/instruments/hrc/module_proba_hrc.h"
 #include "modules/proba/instruments/vegetation/module_proba_vegetation.h"
 
-#include "modules/elektro_arktika/module_rdas_decoder.h"
 #include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
 #include "modules/elektro_arktika/module_tlm_demod.h"
 #include "modules/elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
@@ -170,9 +169,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
-#include "modules/cfosat/module_cfosat_dump_decoder.h"
-
-#include "modules/cryosat/module_cryosat_dump_decoder.h"
 #include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
 
 #include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
@@ -264,7 +260,6 @@ void registerModules()
     REGISTER_MODULE(proba::vegetation::ProbaVegetationDecoderModule);
 
     // ELEKTRO
-    REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
     REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
@@ -318,10 +313,8 @@ void registerModules()
     REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
 
     // CFOSAT
-    REGISTER_MODULE(cfosat::CFOSATDumpDecoderModule);
 
     // CRYOSAT
-    REGISTER_MODULE(cryosat::CRYOSATDumpDecoderModule);
     REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
 
     // Coriolis
