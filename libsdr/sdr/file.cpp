@@ -209,7 +209,7 @@ std::map<std::string, std::string> SDRFile::drawParamsUI()
 
     ImGui::Text("Baseband Type");
     ImGui::SameLine();
-    if (ImGui::Combo("#basebandtypefilesrc", &baseband_type_option, "f32\0"
+    if (ImGui::Combo("##basebandtypefilesrc", &baseband_type_option, "f32\0"
                                                                     "i16\0"
                                                                     "i8\0"
                                                                     "w8\0"

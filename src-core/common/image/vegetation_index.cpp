@@ -4,10 +4,10 @@ namespace image
 {
     namespace vegetation_index
     {
-        cimg_library::CImg<unsigned short> NDVI(cimg_library::CImg<unsigned short> redIm, cimg_library::CImg<unsigned short> nirIm)
+        Image<uint16_t> NDVI(Image<uint16_t> redIm, Image<uint16_t> nirIm)
         {
-            cimg_library::CImg<unsigned short> out(redIm.width(), redIm.height(), 1, 1);
-            for (unsigned int i = 0; i < redIm.size(); i++)
+            Image<uint16_t> out(redIm.width(), redIm.height(), 1);
+            for (int i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];
@@ -15,10 +15,10 @@ namespace image
             }
             return out;
         }
-        cimg_library::CImg<unsigned short> EVI2(cimg_library::CImg<unsigned short> redIm, cimg_library::CImg<unsigned short> nirIm)
+        Image<uint16_t> EVI2(Image<uint16_t> redIm, Image<uint16_t> nirIm)
         {
-            cimg_library::CImg<unsigned short> out(redIm.width(), redIm.height(), 1, 1);
-            for (unsigned int i = 0; i < redIm.size(); i++)
+            Image<uint16_t> out(redIm.width(), redIm.height(), 1);
+            for (int i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];
@@ -26,10 +26,10 @@ namespace image
             }
             return out;
         }
-        cimg_library::CImg<unsigned short> EVI(cimg_library::CImg<unsigned short> redIm, cimg_library::CImg<unsigned short> nirIm, cimg_library::CImg<unsigned short> blueIm)
+        Image<uint16_t> EVI(Image<uint16_t> redIm, Image<uint16_t> nirIm, Image<uint16_t> blueIm)
         {
-            cimg_library::CImg<unsigned short> out(redIm.width(), redIm.height(), 1, 1);
-            for (unsigned int i = 0; i < redIm.size(); i++)
+            Image<uint16_t> out(redIm.width(), redIm.height(), 1);
+            for (int i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];

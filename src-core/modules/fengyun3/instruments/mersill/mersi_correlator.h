@@ -30,24 +30,24 @@ namespace fengyun3
             void makeImages();
 
             // Images
-            cimg_library::CImg<unsigned short> image1;
-            cimg_library::CImg<unsigned short> image2;
-            cimg_library::CImg<unsigned short> image3;
-            cimg_library::CImg<unsigned short> image4;
-            cimg_library::CImg<unsigned short> image5;
-            cimg_library::CImg<unsigned short> image6;
-            cimg_library::CImg<unsigned short> image7;
-            cimg_library::CImg<unsigned short> image8;
-            cimg_library::CImg<unsigned short> image9;
-            cimg_library::CImg<unsigned short> image10;
-            cimg_library::CImg<unsigned short> image11;
-            cimg_library::CImg<unsigned short> image12;
-            cimg_library::CImg<unsigned short> image13;
-            cimg_library::CImg<unsigned short> image14;
-            cimg_library::CImg<unsigned short> image15;
-            cimg_library::CImg<unsigned short> image16;
-            cimg_library::CImg<unsigned short> image17;
-            cimg_library::CImg<unsigned short> image18;
+            image::Image<uint16_t> image1;
+            image::Image<uint16_t> image2;
+            image::Image<uint16_t> image3;
+            image::Image<uint16_t> image4;
+            image::Image<uint16_t> image5;
+            image::Image<uint16_t> image6;
+            image::Image<uint16_t> image7;
+            image::Image<uint16_t> image8;
+            image::Image<uint16_t> image9;
+            image::Image<uint16_t> image10;
+            image::Image<uint16_t> image11;
+            image::Image<uint16_t> image12;
+            image::Image<uint16_t> image13;
+            image::Image<uint16_t> image14;
+            image::Image<uint16_t> image15;
+            image::Image<uint16_t> image16;
+            image::Image<uint16_t> image17;
+            image::Image<uint16_t> image18;
         };
     } // namespace mersi2
 } // namespace fengyun

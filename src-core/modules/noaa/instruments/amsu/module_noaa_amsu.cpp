@@ -56,17 +56,17 @@ namespace noaa
 
             logger->info("AMSU Lines:" + std::to_string(amsureader.linesA1));
 
-            cimg_library::CImg<unsigned short> compo = cimg_library::CImg(240, 2 * amsureader.linesA1, 1, 1);
-            cimg_library::CImg<unsigned short> equcompo = cimg_library::CImg(240, 2 * amsureader.linesA1, 1, 1);
+            image::Image<uint16_t> compo = image::Image<uint16_t>(240, 2 * amsureader.linesA1, 1);
+            image::Image<uint16_t> equcompo = image::Image<uint16_t>(240, 2 * amsureader.linesA1, 1);
 
             for (int i = 0; i < 15; i++)
             {
-                cimg_library::CImg<unsigned short> image = amsureader.getChannel(i);
+                image::Image<uint16_t> image = amsureader.getChannel(i);
                 WRITE_IMAGE(image, directory + "/AMSU-" + std::to_string(i + 1) + ".png");
-                compo.draw_image((i % 8) * 30, ((int)i / 8) * (amsureader.linesA1), image);
-                image.equalize(1000);
+                compo.draw_image(0, image, (i % 8) * 30, ((int)i / 8) * (amsureader.linesA1));
+                image.equalize();
                 WRITE_IMAGE(image, directory + "/AMSU-" + std::to_string(i + 1) + "-EQU.png");
-                equcompo.draw_image((i % 8) * 30, ((int)i / 8) * (amsureader.linesA1), image);
+                equcompo.draw_image(0, image, (i % 8) * 30, ((int)i / 8) * (amsureader.linesA1));
             }
 
             WRITE_IMAGE(compo, directory + "/AMSU-ALL.png");

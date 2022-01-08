@@ -1,13 +1,14 @@
 #include "fft.h"
 #include <fftw3.h>
+#include <cmath>
 
 namespace image
 {
     /*
-   I spent hours trying to make this work... And ended up taking a look at
-   https://github.com/rpeyron/plugin-gimp-fourier/blob/main/fourier.c
-   and porting it over.
-   All credits go to the original authors.
+    I spent hours trying to make this work... And ended up taking a look at
+    https://github.com/rpeyron/plugin-gimp-fourier/blob/main/fourier.c
+    and porting it over.
+    All credits go to the original authors.
    */
 
     float normalize(int x, int y, int width, int height)
@@ -76,7 +77,7 @@ namespace image
             (*col2)++; /* take imaginary part */
     }
 
-    void fft_forward(cimg_library::CImg<unsigned short> &image)
+    void fft_forward(Image<uint16_t> &image)
     {
         int w = image.width();
         int h = image.height();
@@ -119,7 +120,7 @@ namespace image
         fftwf_destroy_plan(p);
     }
 
-    void fft_inverse(cimg_library::CImg<unsigned short> &image)
+    void fft_inverse(Image<uint16_t> &image)
     {
         int w = image.width();
         int h = image.height();

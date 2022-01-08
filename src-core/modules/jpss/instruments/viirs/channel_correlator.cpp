@@ -82,7 +82,7 @@ namespace jpss
                 segmentsChannels.push_back(seg1);
 
                 bool allChannelsHaveSegment = true;
-                for (int ch = 1; ch < channels.size(); ch++)
+                for (int ch = 1; ch < (int)channels.size(); ch++)
                 {
                     bool hasSegment = false;
                     for (Segment &seg2 : channels[ch].segments)
@@ -104,7 +104,7 @@ namespace jpss
 
                 if (allChannelsHaveSegment)
                 {
-                    for (int ch = 0; ch < channels.size(); ch++)
+                    for (int ch = 0; ch < (int)channels.size(); ch++)
                     {
                         channels_out[ch].segments.push_back(segmentsChannels[ch]);
                     }

@@ -10,8 +10,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/proj_file.h"
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
+#include "common/map/leo_drawer.h"
 
 #define BUFFER_SIZE 8192
 
@@ -103,11 +103,11 @@ namespace noaa
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/AVHRR-1.png");
@@ -129,54 +129,58 @@ namespace noaa
             {
                 //nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
                 int norad = 0; //28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                image4.equalize(1000);
+                //image4.equalize();
 
                 // Setup Projecition, based off N19
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.6,          // Scan angle
-                    -0.01,          // Roll offset
-                    0,              // Pitch offset
-                    -3.45,          // Yaw offset
-                    1,              // Time offset
-                    image4.width(), // Image width
-                    true,           // Invert scan
-                    tle::TLE(),     // TLEs
-                    timestamps      // Timestamps
-                );
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AVHRR.georef");
-                }
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json"); // Init it with something
 
                 // Identify satellite, and apply per-sat settings...
+                nlohmann::json jData;
                 int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
                 if (scid == 7) // N15
                 {
                     norad = 25338;
                     logger->info("Identified NOAA-15!");
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else if (scid == 13) // N18
                 {
                     norad = 28654;
                     logger->info("Identified NOAA-18!");
-                    proj_settings->roll_offset = -0.1;
-                    proj_settings->yaw_offset = -3.0;
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_18_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else if (scid == 15) // N19
                 {
                     norad = 33591;
                     logger->info("Identified NOAA-19!");
-                    //proj_settings.az_offset = -1.5;
-                    //proj_settings.proj_scale = 2.339;
+                    proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_19_avhrr.json");
+
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-15";
+                    jData["norad"] = norad;
                 }
                 else
                 {
                     logger->error("Unknwon NOAA Satellite! Only the KLM series 15, 18 and 19 are supported as others were decomissioned!");
+                    jData["scid"] = scid;
+                    jData["name"] = "NOAA-UNKNOWN";
+                    jData["norad"] = norad;
                 }
+
+                // For later decoders
+                saveJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json", jData);
 
                 // Load TLEs now
                 proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
+                proj_settings->utc_timestamps = timestamps; // Timestamps
 
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
@@ -195,12 +199,13 @@ namespace noaa
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool mapped = compositeDef.count("mapped") > 0 ? compositeDef["mapped"].get<bool>() : false;
                     bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
                     std::string name = "AVHRR-" + compokey.key();
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
+                    image::Image<uint16_t>
                         compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
                                                                                             {1, 2, 3, 4, 5},
                                                                                             expression,
@@ -211,8 +216,16 @@ namespace noaa
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (mapped)
+                    {
+                        projector.setup_forward(90, 10);
+                        logger->info(name + "-MAP...");
+                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
+                        WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 
                     if (corrected)

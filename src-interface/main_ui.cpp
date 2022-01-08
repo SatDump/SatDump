@@ -12,6 +12,7 @@
 #include "live/live_run.h"
 #include "projection/projection.h"
 #include "projection/projection_menu.h"
+#include "projection/overlay.h"
 
 satdump_ui_status satdumpUiStatus = MAIN_MENU;
 
@@ -31,10 +32,13 @@ void renderMainUI(int wwidth, int wheight)
     if (satdumpUiStatus == OFFLINE_PROCESSING)
     {
         uiCallListMutex->lock();
+        float winheight = uiCallList->size() > 0 ? wheight / uiCallList->size() : wheight;
+        float currentPos = 0;
         for (std::shared_ptr<ProcessingModule> module : *uiCallList)
         {
-            ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
+            ImGui::SetNextWindowPos({0, currentPos});
+            currentPos += winheight;
+            ImGui::SetNextWindowSize({(float)wwidth, (float)winheight});
             module->drawUI(false);
         }
         uiCallListMutex->unlock();
@@ -52,6 +56,10 @@ void renderMainUI(int wwidth, int wheight)
     else if (satdumpUiStatus == PROJECTION)
     {
         projection::renderProjection(wwidth, wheight);
+    }
+    else if (satdumpUiStatus == OVERLAY)
+    {
+        projection_overlay::renderOverlay(wwidth, wheight);
     }
     else if (satdumpUiStatus == MAIN_MENU)
     {

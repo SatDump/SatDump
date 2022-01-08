@@ -1,7 +1,7 @@
 #include "module_fengyun_ahrpt_decoder.h"
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
-#include "libs/sathelper/packetfixer.h"
+#include "common/codings/rotation.h"
 #include "diff.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "modules/metop/instruments/iasi/utils.h"
@@ -70,8 +70,7 @@ namespace fengyun3
         ctpl::thread_pool viterbi_pool(2);
 
         // Tests
-        sathelper::PhaseShift shift = sathelper::DEG_0;
-        sathelper::PacketFixer shifter;
+        phase_t shift = PHASE_0;
         bool iq_invert = false;
         int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
@@ -83,7 +82,7 @@ namespace fengyun3
             {
                 data_in.read((char *)soft_buffer, BUFFER_SIZE * 2);
 
-                shifter.fixPacket((uint8_t *)soft_buffer, BUFFER_SIZE * 2, shift, iq_invert);
+                rotate_soft((int8_t *)soft_buffer, BUFFER_SIZE * 2, shift, iq_invert);
 
                 // Convert to hard symbols from soft symbols. We may want to work with soft only later?
                 for (int i = 0; i < BUFFER_SIZE; i++)
@@ -145,10 +144,10 @@ namespace fengyun3
 
                 if (viterbiNoSyncRun == 10)
                 {
-                    if (shift == sathelper::DEG_0)
-                        shift = sathelper::DEG_90;
+                    if (shift == PHASE_0)
+                        shift = PHASE_90;
                     else
-                        shift = sathelper::DEG_0;
+                        shift = PHASE_0;
                 }
             }
 

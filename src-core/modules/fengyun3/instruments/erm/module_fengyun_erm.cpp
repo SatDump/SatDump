@@ -100,17 +100,9 @@ namespace fengyun3
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    102,                             // Scan angle
-                    -0.0,                            // Roll offset
-                    0,                               // Pitch offset
-                    -1,                              // Yaw offset
-                    2,                               // Time offset
-                    erm_reader.getChannel().width(), // Image width
-                    true,                            // Invert scan
-                    tle::getTLEfromNORAD(norad),     // TLEs
-                    erm_reader.timestamps            // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_abc_erm.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);  // TLEs
+                proj_settings->utc_timestamps = erm_reader.timestamps; // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
@@ -118,9 +110,9 @@ namespace fengyun3
                     geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
                 }
 
-                cimg_library::CImg<unsigned short> image = erm_reader.getChannel();
+                image::Image<uint16_t> image = erm_reader.getChannel();
                 logger->info("Projected Channel 1...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                 WRITE_IMAGE(projected_image, directory + "/ERM-1-PROJ.png");
             }
         }

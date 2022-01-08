@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace aqua
 {
@@ -20,7 +18,7 @@ namespace aqua
             ~CERESReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            cimg_library::CImg<unsigned short> getImage(int channel);
+            image::Image<uint16_t> getImage(int channel);
         };
     } // namespace ceres
 } // namespace aqua

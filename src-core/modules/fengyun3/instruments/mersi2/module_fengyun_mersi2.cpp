@@ -6,10 +6,8 @@
 #include "mersi_correlator.h"
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
-#include "common/image/image.h"
 #include "common/image/earth_curvature.h"
 #include "modules/fengyun3/fengyun3.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
 #include "modules/fengyun3/instruments/mersi_banding.h"
 
@@ -207,20 +205,20 @@ namespace fengyun3
                     std::string name = "MERSI2-" + compokey.key();
 
                     // Prepare what we'll need
-                    std::vector<cimg_library::CImg<unsigned short>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
-                                                                                    mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
-                                                                                    mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
-                                                                                    mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
-                                                                                    mersiCorrelator->image17, mersiCorrelator->image18, mersiCorrelator->image19, mersiCorrelator->image20,
-                                                                                    mersiCorrelator->image21, mersiCorrelator->image22, mersiCorrelator->image23, mersiCorrelator->image24,
-                                                                                    mersiCorrelator->image25};
+                    std::vector<image::Image<uint16_t>> all_channels = {mersiCorrelator->image1, mersiCorrelator->image2, mersiCorrelator->image3, mersiCorrelator->image4,
+                                                                        mersiCorrelator->image5, mersiCorrelator->image6, mersiCorrelator->image7, mersiCorrelator->image8,
+                                                                        mersiCorrelator->image9, mersiCorrelator->image10, mersiCorrelator->image11, mersiCorrelator->image12,
+                                                                        mersiCorrelator->image13, mersiCorrelator->image14, mersiCorrelator->image15, mersiCorrelator->image16,
+                                                                        mersiCorrelator->image17, mersiCorrelator->image18, mersiCorrelator->image19, mersiCorrelator->image20,
+                                                                        mersiCorrelator->image21, mersiCorrelator->image22, mersiCorrelator->image23, mersiCorrelator->image24,
+                                                                        mersiCorrelator->image25};
                     std::vector<int> all_channel_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25};
 
                     // Get required channels
                     std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
                     // Prepare them
-                    std::vector<cimg_library::CImg<unsigned short>> channels;
+                    std::vector<image::Image<uint16_t>> channels;
                     std::vector<int> channel_numbers;
                     for (int required_ch : requiredChannels)
                     {
@@ -229,26 +227,25 @@ namespace fengyun3
                     }
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
-                                                                                            channel_numbers,
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                                               channel_numbers,
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     if (do_banding_correct)
                     {
                         if (compositeImage.width() == 2048)
-                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_1000);
+                            mersi::banding_correct(compositeImage, scanHeight_1000);
                         if (compositeImage.width() == 8192)
-                            compositeImage = mersi::banding_correct(compositeImage, scanHeight_250);
+                            mersi::banding_correct(compositeImage, scanHeight_250);
                     }
 
                     if (bowtie)
                     {
                         if (compositeImage.width() == 2048)
-                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_1000, alpha, beta);
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.channels(), scanHeight_1000, alpha, beta);
                         if (compositeImage.width() == 8192)
-                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.spectrum(), scanHeight_250, alpha, beta);
+                            compositeImage = image::bowtie::correctGenericBowTie(compositeImage, compositeImage.channels(), scanHeight_250, alpha, beta);
                     }
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");

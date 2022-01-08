@@ -6,7 +6,6 @@
 #include "msu_vis_reader.h"
 #include "msu_ir_reader.h"
 #include "imgui/imgui.h"
-#include "common/image/image.h"
 #include "common/image/hue_saturation.h"
 
 #define BUFFER_SIZE 8192
@@ -141,9 +140,9 @@ namespace elektro_arktika
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image1 = vis1_reader.getImage();
-            cimg_library::CImg<unsigned short> image2 = vis2_reader.getImage();
-            cimg_library::CImg<unsigned short> image3 = vis3_reader.getImage();
+            image::Image<uint16_t> image1 = vis1_reader.getImage();
+            image::Image<uint16_t> image2 = vis2_reader.getImage();
+            image::Image<uint16_t> image3 = vis3_reader.getImage();
 
             logger->info("Channel VIS 1...");
             WRITE_IMAGE(image1, directory + "/MSU-GS-1.png");
@@ -162,25 +161,25 @@ namespace elektro_arktika
 
             logger->info("221 Composite...");
             {
-                cimg_library::CImg<unsigned short> image221(image1.width(), std::max<int>(image1.height(), image2.height()), 1, 3);
+                image::Image<uint16_t> image221(image1.width(), std::max<int>(image1.height(), image2.height()), 3);
                 {
-                    image221.draw_image(31 - 2, -2220 + 13 - 6, 0, 0, image2);
-                    image221.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
-                    image221.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+                    image221.draw_image(0, image2, 31 - 2, -2220 + 13 - 6);
+                    image221.draw_image(1, image2, 31 - 2, -2220 + 13 - 6);
+                    image221.draw_image(2, image1, 23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10);
                 }
-                image::white_balance(image221);
+                image221.white_balance();
                 WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221.png");
             }
 
             logger->info("Natural Color Composite...");
             {
-                cimg_library::CImg<unsigned short> imageNC(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+                image::Image<uint16_t> imageNC(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 3);
                 {
-                    imageNC.draw_image(0, 0, 0, 0, image3);
-                    imageNC.draw_image(31 - 2, -2220 + 13 - 6, 0, 1, image2);
-                    imageNC.draw_image(23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10, 0, 2, image1);
+                    imageNC.draw_image(0, image3);
+                    imageNC.draw_image(1, image2, 31 - 2, -2220 + 13 - 6);
+                    imageNC.draw_image(2, image1, 23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10);
 
-                    cimg_library::CImg<unsigned char> imageNC_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 1, 3);
+                    image::Image<uint8_t> imageNC_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 3);
 
                     for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
                         imageNC_8bits[i] = imageNC[i] / 255;
@@ -194,7 +193,7 @@ namespace elektro_arktika
                     for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
                         imageNC[i] = imageNC_8bits[i] * 255;
 
-                    image::white_balance(imageNC);
+                    imageNC.white_balance();
                 }
                 WRITE_IMAGE(imageNC, directory + "/MSU-GS-RGB-NC.png");
             }

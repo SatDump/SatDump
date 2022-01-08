@@ -41,7 +41,7 @@ uint64_t swapIQ(uint64_t in)
     return (i >> 1) | (q << 1);
 }
 
-Correlator::Correlator(modulation_t mod, uint64_t syncword) : d_modulation(mod)
+Correlator::Correlator(constellation_t mod, uint64_t syncword) : d_modulation(mod)
 {
     hard_buf = new uint8_t[8192 * 20];
 
@@ -77,7 +77,7 @@ int Correlator::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int &c
     uint8_t shifter = 0;
     for (int i = 0; i < length; i++)
     {
-        shifter = shifter << 1 | (soft_input[i] >= 0);
+        shifter = shifter << 1 | (soft_input[i] > 0);
         bits++;
 
         if (bits == 8)

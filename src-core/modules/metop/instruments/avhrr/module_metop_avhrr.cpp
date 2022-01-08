@@ -6,19 +6,16 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/vegetation_index.h"
+//#include "common/image/vegetation_index.h"
 #include "common/image/earth_curvature.h"
 #include "modules/metop/metop.h"
 #include "nlohmann/json_utils.h"
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/image/brightness_contrast.h"
-#include "common/image/xfr.h"
 #include "common/geodetic/projection/proj_file.h"
-#include "common/image/image.h"
+//#include "common/image/image.h"
 #include "common/image/composite.h"
-#include "common/map/map_drawer.h"
-#include "resources.h"
+#include "common/map/leo_drawer.h"
 
 #define BUFFER_SIZE 8192
 
@@ -184,11 +181,11 @@ namespace metop
 
             logger->info("Writing images.... (Can take a while)");
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/AVHRR-1.png");
@@ -211,17 +208,9 @@ namespace metop
                 //image4.equalize(1000);
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.6,                       // Scan angle
-                    -0.13,                       // Roll offset
-                    0,                           // Pitch offset
-                    0.0,                         // Yaw offset
-                    -0.1,                        // Time offset
-                    image4.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(norad), // TLEs
-                    reader.timestamps            // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("metop_abc_avhrr.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings->utc_timestamps = reader.timestamps;    // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
@@ -245,18 +234,17 @@ namespace metop
                     std::string name = "AVHRR-" + compokey.key();
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
-                                                                                            {1, 2, 3, 4, 5},
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5},
+                                                                                                               {1, 2, 3, 4, 5},
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage.to8bits(), projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
                     }
 
@@ -264,37 +252,7 @@ namespace metop
                     {
                         projector.setup_forward();
                         logger->info(name + "-MAP...");
-                        cimg_library::CImg<unsigned char> mapped_image = compositeImage >> 8;
-                        if (compositeImage.spectrum() == 1) // If WB, make RGB
-                        {
-                            cimg_library::CImg<unsigned char> rgb_image(mapped_image.width(), mapped_image.height(), 1, 3, 0);
-                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 0], &mapped_image[0], rgb_image.width() * rgb_image.height());
-                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 1], &mapped_image[0], rgb_image.width() * rgb_image.height());
-                            memcpy(&rgb_image[rgb_image.width() * rgb_image.height() * 2], &mapped_image[0], rgb_image.width() * rgb_image.height());
-                            mapped_image = rgb_image;
-                        }
-
-                        std::function<std::pair<int, int>(float, float, int, int)> projectionFunc;
-                        projectionFunc = [&projector](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-                        {
-                            int x;
-                            int y;
-                            projector.forward({lat, lon, 0}, x, y);
-
-                            if (x < 0 || x > map_width)
-                                return {-1, -1};
-                            if (y < 0 || y > map_height)
-                                return {-1, -1};
-
-                            return {x, y};
-                        };
-
-                        unsigned char color[3] = {0, 255, 0};
-                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")}, mapped_image, color, projectionFunc, 60);
-
-                        unsigned char color2[3] = {255, 0, 0};
-                        map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")}, mapped_image, color2, projectionFunc, 0.4);
-
+                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
                         WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 

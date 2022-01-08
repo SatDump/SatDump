@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -27,7 +25,7 @@ namespace gk2a
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, int segc);
             bool isComplete();
-            cimg_library::CImg<unsigned char> image;
+            image::Image<uint8_t> image;
             std::string image_id = "";
         };
 

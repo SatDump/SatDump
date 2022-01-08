@@ -75,11 +75,11 @@ namespace fengyun3
             }
         }
 
-        cimg_library::CImg<unsigned short> MWTS3Reader::getChannel(int channel)
+        image::Image<uint16_t> MWTS3Reader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> image(channels[channel].buf, 98, lines);
-            image.normalize(0, 65535);
-            image.equalize(1000);
+            image::Image<uint16_t> image(channels[channel].buf, 98, lines, 1);
+            image.normalize();
+            image.equalize();
             return image;
         }
     }

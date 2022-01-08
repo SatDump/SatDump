@@ -3,6 +3,10 @@
 #include <volk/volk.h>
 #include <algorithm>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
+
 namespace dsp
 {
     CCFIRBlock::CCFIRBlock(std::shared_ptr<dsp::stream<complex_t>> input, std::vector<float> taps) : Block(input)

@@ -13,10 +13,10 @@ namespace dsp
     class stream
     {
     public:
-        stream()
+        stream(int stream_size = STREAM_BUFFER_SIZE)
         {
-            writeBuf = (T *)volk_malloc(STREAM_BUFFER_SIZE * sizeof(T), volk_get_alignment());
-            readBuf = (T *)volk_malloc(STREAM_BUFFER_SIZE * sizeof(T), volk_get_alignment());
+            writeBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
+            readBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
         }
 
         ~stream()
@@ -158,7 +158,7 @@ namespace dsp
             readc = 0;
             readable = 0;
             writable = size;
-            memset(_buffer, 0, size * sizeof(T));
+            memset((void*)_buffer, 0, size * sizeof(T));
         }
 
         int read(T *data, int len)

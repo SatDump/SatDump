@@ -7,12 +7,12 @@ namespace geodetic
 {
     namespace projection
     {
-        void reprojectLEOtoProj(cimg_library::CImg<unsigned char> image,
+        void reprojectLEOtoProj(image::Image<uint8_t> image,
                                 projection::LEOScanProjector &projector,
-                                cimg_library::CImg<unsigned char> &projected_image,
+                                image::Image<uint8_t> &projected_image,
                                 int channels,
                                 std::function<std::pair<int, int>(float, float, int, int)> projectionFunction,
-                                float opacity,
+                                float /*opacity*/,
                                 float *progress)
         {
             for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
@@ -58,7 +58,7 @@ namespace geodetic
                         I guess time will tell how reliable that approximation is.
                         */
                         double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
-                        projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color, 0.4 * opacity);
+                        projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color);//, 0.4 * opacity);
                     }
 
                     //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
@@ -69,12 +69,12 @@ namespace geodetic
             }
         }
 
-        void reprojectGEOtoProj(cimg_library::CImg<unsigned char> image,
+        void reprojectGEOtoProj(image::Image<uint8_t> image,
                                 projection::GEOProjector &projector,
-                                cimg_library::CImg<unsigned char> &projected_image,
+                                image::Image<uint8_t> &projected_image,
                                 int channels,
                                 std::function<std::pair<int, int>(float, float, int, int)> projectionFunction,
-                                float opacity, float *progress)
+                                float /*opacity*/, float *progress)
         {
             for (double lat = -90; lat < 90; lat += 0.01)
             {
@@ -105,7 +105,8 @@ namespace geodetic
 
                     //logger->info(std::to_string(color[0]) + " " + std::to_string(color[1]) + " " + std::to_string(color[2]));
 
-                    projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    projected_image.draw_pixel(map_cc1.first, map_cc1.second, color);
                 }
 
                 if (progress != nullptr)
@@ -113,7 +114,7 @@ namespace geodetic
             }
         }
 
-        void projectEQUIToproj(cimg_library::CImg<unsigned char> image, cimg_library::CImg<unsigned char> &projected_image, int channels, std::function<std::pair<int, int>(float, float, int, int)> toMapCoords, float opacity, float *progress)
+        void projectEQUIToproj(image::Image<uint8_t> image, image::Image<uint8_t> &projected_image, int channels, std::function<std::pair<int, int>(float, float, int, int)> toMapCoords, float /*opacity*/, float *progress)
         {
             for (double lat = -90; lat < 90; lat += 0.01)
             {
@@ -144,7 +145,8 @@ namespace geodetic
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
                         continue;
 
-                    projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    projected_image.draw_pixel(map_cc1.first, map_cc1.second, color);
                 }
 
                 if (progress != nullptr)
@@ -152,19 +154,19 @@ namespace geodetic
             }
         }
 
-        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char> image,
-                                                                            projection::LEOScanProjector &projector,
-                                                                            int output_width,
-                                                                            int output_height,
-                                                                            int channels,
-                                                                            cimg_library::CImg<unsigned char> projected_image,
-                                                                            std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
+        image::Image<uint8_t> projectLEOToEquirectangularMapped(image::Image<uint8_t> image,
+                                                                projection::LEOScanProjector &projector,
+                                                                int output_width,
+                                                                int output_height,
+                                                                int channels,
+                                                                image::Image<uint8_t> projected_image,
+                                                                std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
 
         )
         {
             // Output mapped data
             if (projected_image.width() == 1 && projected_image.height() == 1)
-                projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
+                projected_image = image::Image<uint8_t>(output_width, output_height, 3);
 
             reprojectLEOtoProj(image, projector, projected_image, channels, toMapCoords);
 
@@ -177,21 +179,25 @@ namespace geodetic
             return projected_image;
         }
 
-        cimg_library::CImg<unsigned char> projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned short> image,
-                                                                            projection::LEOScanProjector &projector,
-                                                                            int output_width,
-                                                                            int output_height,
-                                                                            int channels,
-                                                                            cimg_library::CImg<unsigned char> projected_image,
-                                                                            std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
+        image::Image<uint8_t> projectLEOToEquirectangularMapped(image::Image<uint16_t> image,
+                                                                projection::LEOScanProjector &projector,
+                                                                int output_width,
+                                                                int output_height,
+                                                                int channels,
+                                                                image::Image<uint8_t> projected_image,
+                                                                std::function<std::pair<int, int>(float, float, int, int)> toMapCoords
 
         )
         {
             // Output mapped data
             if (projected_image.width() == 1 && projected_image.height() == 1)
-                projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
+                projected_image = image::Image<uint8_t>(output_width, output_height, 3);
 
-            reprojectLEOtoProj(image >> 8, projector, projected_image, channels, toMapCoords);
+            image::Image<uint8_t> image8(image.width(), image.height(), image.channels());
+            for (int i = 0; i < image.height() * image.width() * image.channels(); i++)
+                image8[i] = image[i] >> 8;
+
+            reprojectLEOtoProj(image8, projector, projected_image, channels, toMapCoords);
 
             unsigned char color[3] = {0, 255, 0};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},

@@ -104,64 +104,64 @@ namespace metop
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
                 WRITE_IMAGE(a2reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
-                WRITE_IMAGE(a2reader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
+                WRITE_IMAGE(a2reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
             }
 
             for (int i = 0; i < 13; i++)
             {
                 logger->info("Channel " + std::to_string(i + 3) + "...");
                 WRITE_IMAGE(a1reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
-                WRITE_IMAGE(a1reader.getChannel(i).equalize(1000).normalize(0, 65535), directory + "/AMSU-A1-" + std::to_string(i + 3) + "-EQU.png");
+                WRITE_IMAGE(a1reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A1-" + std::to_string(i + 3) + "-EQU.png");
             }
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1, 0);
+            image::Image<uint16_t> imageAll(30 * 8, a1reader.getChannel(0).height() * 2, 1);
             {
                 int height = a1reader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(30 * 0, 0, 0, 0, a2reader.getChannel(0));
-                imageAll.draw_image(30 * 1, 0, 0, 0, a2reader.getChannel(1));
-                imageAll.draw_image(30 * 2, 0, 0, 0, a1reader.getChannel(0));
-                imageAll.draw_image(30 * 3, 0, 0, 0, a1reader.getChannel(1));
-                imageAll.draw_image(30 * 4, 0, 0, 0, a1reader.getChannel(2));
-                imageAll.draw_image(30 * 5, 0, 0, 0, a1reader.getChannel(3));
-                imageAll.draw_image(30 * 6, 0, 0, 0, a1reader.getChannel(4));
-                imageAll.draw_image(30 * 7, 0, 0, 0, a1reader.getChannel(5));
+                imageAll.draw_image(0, a2reader.getChannel(0).equalize().normalize(), 30 * 0, 0);
+                imageAll.draw_image(0, a2reader.getChannel(1).equalize().normalize(), 30 * 1, 0);
+                imageAll.draw_image(0, a1reader.getChannel(0).equalize().normalize(), 30 * 2, 0);
+                imageAll.draw_image(0, a1reader.getChannel(1).equalize().normalize(), 30 * 3, 0);
+                imageAll.draw_image(0, a1reader.getChannel(2).equalize().normalize(), 30 * 4, 0);
+                imageAll.draw_image(0, a1reader.getChannel(3).equalize().normalize(), 30 * 5, 0);
+                imageAll.draw_image(0, a1reader.getChannel(4).equalize().normalize(), 30 * 6, 0);
+                imageAll.draw_image(0, a1reader.getChannel(5).equalize().normalize(), 30 * 7, 0);
 
                 // Row 2
-                imageAll.draw_image(30 * 0, height, 0, 0, a1reader.getChannel(6));
-                imageAll.draw_image(30 * 1, height, 0, 0, a1reader.getChannel(7));
-                imageAll.draw_image(30 * 2, height, 0, 0, a1reader.getChannel(8));
-                imageAll.draw_image(30 * 3, height, 0, 0, a1reader.getChannel(9));
-                imageAll.draw_image(30 * 4, height, 0, 0, a1reader.getChannel(10));
-                imageAll.draw_image(30 * 5, height, 0, 0, a1reader.getChannel(11));
-                imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12));
+                imageAll.draw_image(0, a1reader.getChannel(6).equalize().normalize(), 30 * 0, height);
+                imageAll.draw_image(0, a1reader.getChannel(7).equalize().normalize(), 30 * 1, height);
+                imageAll.draw_image(0, a1reader.getChannel(8).equalize().normalize(), 30 * 2, height);
+                imageAll.draw_image(0, a1reader.getChannel(9).equalize().normalize(), 30 * 3, height);
+                imageAll.draw_image(0, a1reader.getChannel(10).equalize().normalize(), 30 * 4, height);
+                imageAll.draw_image(0, a1reader.getChannel(11).equalize().normalize(), 30 * 5, height);
+                imageAll.draw_image(0, a1reader.getChannel(12).equalize().normalize(), 30 * 6, height);
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
-            imageAll = cimg_library::CImg<unsigned short>(30 * 8, a1reader.getChannel(0).height() * 2, 1, 1, 0);
+            imageAll = image::Image<uint16_t>(30 * 8, a1reader.getChannel(0).height() * 2, 1);
             {
                 int height = a1reader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(30 * 0, 0, 0, 0, a2reader.getChannel(0).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 1, 0, 0, 0, a2reader.getChannel(1).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 2, 0, 0, 0, a1reader.getChannel(0).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 3, 0, 0, 0, a1reader.getChannel(1).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 4, 0, 0, 0, a1reader.getChannel(2).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 5, 0, 0, 0, a1reader.getChannel(3).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 6, 0, 0, 0, a1reader.getChannel(4).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 7, 0, 0, 0, a1reader.getChannel(5).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(0, a2reader.getChannel(0).equalize().normalize(), 30 * 0, 0);
+                imageAll.draw_image(0, a2reader.getChannel(1).equalize().normalize(), 30 * 1, 0);
+                imageAll.draw_image(0, a1reader.getChannel(0).equalize().normalize(), 30 * 2, 0);
+                imageAll.draw_image(0, a1reader.getChannel(1).equalize().normalize(), 30 * 3, 0);
+                imageAll.draw_image(0, a1reader.getChannel(2).equalize().normalize(), 30 * 4, 0);
+                imageAll.draw_image(0, a1reader.getChannel(3).equalize().normalize(), 30 * 5, 0);
+                imageAll.draw_image(0, a1reader.getChannel(4).equalize().normalize(), 30 * 6, 0);
+                imageAll.draw_image(0, a1reader.getChannel(5).equalize().normalize(), 30 * 7, 0);
 
                 // Row 2
-                imageAll.draw_image(30 * 0, height, 0, 0, a1reader.getChannel(6).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 1, height, 0, 0, a1reader.getChannel(7).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 2, height, 0, 0, a1reader.getChannel(8).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 3, height, 0, 0, a1reader.getChannel(9).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 4, height, 0, 0, a1reader.getChannel(10).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 5, height, 0, 0, a1reader.getChannel(11).equalize(1000).normalize(0, 65535));
-                imageAll.draw_image(30 * 6, height, 0, 0, a1reader.getChannel(12).equalize(1000).normalize(0, 65535));
+                imageAll.draw_image(0, a1reader.getChannel(6).equalize().normalize(), 30 * 0, height);
+                imageAll.draw_image(0, a1reader.getChannel(7).equalize().normalize(), 30 * 1, height);
+                imageAll.draw_image(0, a1reader.getChannel(8).equalize().normalize(), 30 * 2, height);
+                imageAll.draw_image(0, a1reader.getChannel(9).equalize().normalize(), 30 * 3, height);
+                imageAll.draw_image(0, a1reader.getChannel(10).equalize().normalize(), 30 * 4, height);
+                imageAll.draw_image(0, a1reader.getChannel(11).equalize().normalize(), 30 * 5, height);
+                imageAll.draw_image(0, a1reader.getChannel(12).equalize().normalize(), 30 * 6, height);
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL-EQU.png");
 
@@ -174,30 +174,12 @@ namespace metop
 
                 // Setup Projecition. Twice with the same parameters except we need different timestamps
                 // There is no "real" guarantee the A1 / A2 output will always be identical
-                // Using the "/ 40" in instrument res slows things down but also avoids huge gaps
-                // in the resulting image...
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    98,                             // Scan angle
-                    0,                              // Roll offset
-                    0,                              // Pitch offset
-                    0,                              // Yaw offset
-                    10,                             // Time offset
-                    a1reader.getChannel(0).width(), // Image width
-                    true,                           // Invert scan
-                    tle::getTLEfromNORAD(norad),    // TLEs
-                    a1reader.timestamps             // Timestamps
-                );
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    98,                             // Scan angle
-                    0,                              // Roll offset
-                    0,                              // Pitch offset
-                    0,                              // Yaw offset
-                    10,                             // Time offset
-                    a2reader.getChannel(0).width(), // Image width
-                    true,                           // Invert scan
-                    tle::getTLEfromNORAD(norad),    // TLEs
-                    a2reader.timestamps             // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 = geodetic::projection::makeScalineSettingsFromJSON("metop_abc_amsu.json");
+                proj_settings_a1->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings_a1->utc_timestamps = a1reader.timestamps;  // Timestamps
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 = geodetic::projection::makeScalineSettingsFromJSON("metop_abc_amsu.json");
+                proj_settings_a2->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings_a2->utc_timestamps = a2reader.timestamps;  // Timestamps
                 geodetic::projection::LEOScanProjector projector_a1(proj_settings_a1);
                 geodetic::projection::LEOScanProjector projector_a2(proj_settings_a2);
 
@@ -210,21 +192,21 @@ namespace metop
 
                 for (int i = 0; i < 13; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = a1reader.getChannel(i).equalize(1000).normalize(0, 65535);
-                    image.equalize(1000);
-                    image.normalize(0, 65535);
+                    image::Image<uint16_t> image = a1reader.getChannel(i);
+                    image.equalize();
+                    image.normalize();
                     logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
                     WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
                 }
 
                 for (int i = 0; i < 2; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = a2reader.getChannel(i).equalize(1000).normalize(0, 65535);
-                    image.equalize(1000);
-                    image.normalize(0, 65535);
+                    image::Image<uint16_t> image = a2reader.getChannel(i);
+                    image.equalize();
+                    image.normalize();
                     logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
                     WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

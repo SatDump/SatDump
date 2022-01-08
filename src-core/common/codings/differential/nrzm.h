@@ -19,7 +19,8 @@ namespace diff
         uint8_t lastBit = 0;
 
     public:
-        void decode(uint8_t *data, int length);
+        void decode(uint8_t *data, int length);      // Decode on bytes
+        void decode_bits(uint8_t *data, int length); // Decode on bits
     };
 
     // Decode once with no continuity

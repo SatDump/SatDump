@@ -49,9 +49,9 @@ namespace metop
             }
         }
 
-        cimg_library::CImg<unsigned short> AVHRRReader::getChannel(int channel)
+        image::Image<uint16_t> AVHRRReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel].buf, 2048, lines);
+            return image::Image<uint16_t>(channels[channel].buf, 2048, lines, 1);
         }
     } // namespace avhrr
 } // namespace metop

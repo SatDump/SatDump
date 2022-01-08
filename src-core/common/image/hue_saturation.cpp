@@ -1,5 +1,5 @@
 #include "hue_saturation.h"
-#include "logger.h"
+#include <limits>
 
 namespace image
 {
@@ -72,7 +72,7 @@ namespace image
     }
 
     template <typename T>
-    void hue_saturation(cimg_library::CImg<T> &image, HueSaturation config)
+    void hue_saturation(Image<T> &image, HueSaturation config)
     {
         float scale = std::numeric_limits<T>::max() - 1;
 
@@ -253,6 +253,6 @@ namespace image
         }
     }
 
-    template void hue_saturation<unsigned char>(cimg_library::CImg<unsigned char> &, HueSaturation);
-    template void hue_saturation<unsigned short>(cimg_library::CImg<unsigned short> &, HueSaturation);
+    template void hue_saturation<uint8_t>(Image<uint8_t> &, HueSaturation);
+    template void hue_saturation<uint16_t>(Image<uint16_t> &, HueSaturation);
 }

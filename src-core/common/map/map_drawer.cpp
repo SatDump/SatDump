@@ -7,7 +7,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -149,18 +149,20 @@ namespace map
                     if (cc.first == -1 || cc.first == -1)
                         continue;
 
-                    map_image.draw_point(cc.first, cc.second, color);
+                    map_image.draw_pixel(cc.first, cc.second, color);
                 }
             }
         }
     }
 
-    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
-    template void drawProjectedMapGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
-    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
     {
+        std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
+
         for (std::string currentShapeFile : shapeFiles)
         {
             nlohmann::json shapeFile;
@@ -190,21 +192,21 @@ namespace map
 
                         map_image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
                         map_image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
-                        map_image.draw_circle(cc.first, cc.second, 10 * ratio, color);
+                        map_image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
 
                         std::string name = mapStruct["properties"]["nameascii"];
-                        map_image.draw_text(cc.first, cc.second + 30 * ratio, name.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
+                        map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
                     }
                 }
             }
         }
     }
 
-    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, cimg_library::CImg<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -256,7 +258,7 @@ namespace map
                 if (cc.first == -1 || cc.first == -1)
                     return;
 
-                map_image.draw_point(cc.first, cc.second, color);
+                map_image.draw_pixel(cc.first, cc.second, color);
             };
 
             for (shapefile::PolyLineRecord polylineRecord : shape_file.polyline_records)
@@ -274,12 +276,14 @@ namespace map
         }
     }
 
-    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
-    template void drawProjectedMapShapefile(std::vector<std::string>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
-    void drawProjectedLabels(std::vector<CustomLabel> labels, cimg_library::CImg<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
     {
+        std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
+
         for (CustomLabel &currentLabel : labels)
         {
             std::pair<float, float> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
@@ -290,12 +294,12 @@ namespace map
 
             image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
             image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
-            image.draw_circle(cc.first, cc.second, 10 * ratio, color);
+            image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
 
-            image.draw_text(cc.first, cc.second + 30 * ratio, currentLabel.label.c_str(), color, 0, 1, cimg_library::CImgList<unsigned char>::font(50 * ratio, true));
+            image.draw_text(cc.first, cc.second + 20 * ratio, color, font, currentLabel.label);
         }
     }
 
-    template void drawProjectedLabels(std::vector<CustomLabel>, cimg_library::CImg<unsigned char> &, unsigned char[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedLabels(std::vector<CustomLabel>, cimg_library::CImg<unsigned short> &, unsigned short[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
 }

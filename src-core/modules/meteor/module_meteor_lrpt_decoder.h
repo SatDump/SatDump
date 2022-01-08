@@ -12,7 +12,7 @@ namespace meteor
     protected:
         bool diff_decode;
 
-        uint8_t *buffer;
+        int8_t *buffer;
 
         std::ifstream data_in;
         std::ofstream data_out;

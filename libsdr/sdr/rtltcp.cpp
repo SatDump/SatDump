@@ -19,6 +19,7 @@ void SDRRtlTcp::runThread()
 SDRRtlTcp::SDRRtlTcp(std::map<std::string, std::string> parameters, uint64_t id) : SDRDevice(parameters, id)
 {
     READ_PARAMETER_IF_EXISTS_FLOAT(gain, "gain");
+    READ_PARAMETER_IF_EXISTS_FLOAT(agc, "agc");
 
     if (parameters.count("ip") == 0)
     {
@@ -44,6 +45,7 @@ SDRRtlTcp::SDRRtlTcp(std::map<std::string, std::string> parameters, uint64_t id)
 std::map<std::string, std::string> SDRRtlTcp::getParameters()
 {
     d_parameters["gain"] = std::to_string(gain);
+    d_parameters["agc"] = std::to_string((int)agc);
 
     return d_parameters;
 }
@@ -57,7 +59,7 @@ void SDRRtlTcp::start()
     client.setFrequency(d_frequency);
 
     client.setGainMode(1);
-    client.setGain(gain);
+    setGain(gain);
     should_run = true;
     workThread = std::thread(&SDRRtlTcp::runThread, this);
 }

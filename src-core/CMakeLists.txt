@@ -15,6 +15,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      libs/dlfcn/dlfcn.c
                                      common/map/maidenhead.c
                                      libs/correct/*.c
+                                     libs/openjp2/*.c
 )
 
 find_package(PkgConfig)

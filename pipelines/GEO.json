@@ -465,5 +465,22 @@
                 }
             }
         }
+    },
+    "goes_grb": {
+        "name": "GOES-R GRB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "bbframe": {},
+            "cadu": {
+                "goes_grb_cadu_extractor": {}
+            },
+            "products": {
+                "goes_grb_data_decoder": {}
+            }
+        }
     }
 }

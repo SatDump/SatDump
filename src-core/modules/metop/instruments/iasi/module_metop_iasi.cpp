@@ -7,7 +7,6 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/image.h"
 #include "common/image/bowtie.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "nlohmann/json_utils.h"
@@ -123,19 +122,19 @@ namespace metop
             if (iasireader.lines > 0)
             {
                 logger->info("Channel IR imaging...");
-                cimg_library::CImg<unsigned short> iasi_imaging = iasireader_img.getIRChannel();
+                image::Image<uint16_t> iasi_imaging = iasireader_img.getIRChannel();
                 iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
-                cimg_library::CImg<unsigned short> iasi_imaging_equ = iasi_imaging;
-                cimg_library::CImg<unsigned short> iasi_imaging_equ_inv = iasi_imaging;
+                image::Image<uint16_t> iasi_imaging_equ = iasi_imaging;
+                image::Image<uint16_t> iasi_imaging_equ_inv = iasi_imaging;
                 WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
-                iasi_imaging_equ.equalize(1000);
-                iasi_imaging_equ.normalize(0, 65535);
+                iasi_imaging_equ.equalize();
+                iasi_imaging_equ.normalize();
                 WRITE_IMAGE(iasi_imaging_equ, directory + "/IASI-IMG-EQU.png");
-                image::linear_invert(iasi_imaging_equ_inv);
-                iasi_imaging_equ_inv.equalize(1000);
-                iasi_imaging_equ_inv.normalize(0, 65535);
+                iasi_imaging_equ_inv.linear_invert();
+                iasi_imaging_equ_inv.equalize();
+                iasi_imaging_equ_inv.normalize();
                 WRITE_IMAGE(iasi_imaging_equ_inv, directory + "/IASI-IMG-EQU-INV.png");
 
                 /*cimg_library::CImg<unsigned char> thermalTest(iasi_imaging.width(), iasi_imaging.height(), 1, 3, 0);
@@ -182,7 +181,7 @@ namespace metop
                     }
 
                     logger->info("Projected imaging channel...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(iasi_imaging_equ, projector, 2048 * 4, 1024 * 4, 1);
                     WRITE_IMAGE(projected_image, directory + "/IASI-EQU-PROJ.png");
 
                     logger->info("Projected imaging channel inverted...");
@@ -204,7 +203,7 @@ namespace metop
                 logger->info("Global Composite...");
                 int all_width_count = 150;
                 int all_height_count = 60;
-                cimg_library::CImg<unsigned short> imageAll(60 * all_width_count, iasireader.getChannel(0).height() * all_height_count, 1, 1);
+                image::Image<uint16_t> imageAll(60 * all_width_count, iasireader.getChannel(0).height() * all_height_count, 1);
                 {
                     int height = iasireader.getChannel(0).height();
 
@@ -215,7 +214,7 @@ namespace metop
                             if (row * all_width_count + column >= 8461)
                                 break;
 
-                            imageAll.draw_image(60 * column, height * row, 0, 0, iasireader.getChannel(row * all_width_count + column));
+                            imageAll.draw_image(0, iasireader.getChannel(row * all_width_count + column), 60 * column, height * row);
                         }
                     }
                 }

@@ -96,19 +96,19 @@ namespace fengyun3
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(98 * 3, mwhs_reader.getChannel(0).height() * 2, 1, 1);
+            image::Image<uint16_t> imageAll(98 * 3, mwhs_reader.getChannel(0).height() * 2, 1);
             {
                 int height = mwhs_reader.getChannel(0).height();
 
                 // Row 1
-                imageAll.draw_image(98 * 0, 0, 0, 0, mwhs_reader.getChannel(0));
-                imageAll.draw_image(98 * 1, 0, 0, 0, mwhs_reader.getChannel(1));
-                imageAll.draw_image(98 * 2, 0, 0, 0, mwhs_reader.getChannel(2));
+                imageAll.draw_image(0, mwhs_reader.getChannel(0), 98 * 0, 0);
+                imageAll.draw_image(0, mwhs_reader.getChannel(1), 98 * 1, 0);
+                imageAll.draw_image(0, mwhs_reader.getChannel(2), 98 * 2, 0);
 
                 // Row 2
-                imageAll.draw_image(98 * 0, height, 0, 0, mwhs_reader.getChannel(3));
-                imageAll.draw_image(98 * 1, height, 0, 0, mwhs_reader.getChannel(4));
-                imageAll.draw_image(98 * 2, height, 0, 0, mwhs_reader.getChannel(5));
+                imageAll.draw_image(0, mwhs_reader.getChannel(3), 98 * 0, height);
+                imageAll.draw_image(0, mwhs_reader.getChannel(4), 98 * 1, height);
+                imageAll.draw_image(0, mwhs_reader.getChannel(5), 98 * 2, height);
             }
             WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
 
@@ -120,17 +120,9 @@ namespace fengyun3
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    108,                               // Scan angle
-                    -3.5,                              // Roll offset
-                    0,                                 // Pitch offset
-                    0,                                 // Yaw offset
-                    -1,                                // Time offset
-                    mwhs_reader.getChannel(0).width(), // Image width
-                    true,                              // Invert scan
-                    tle::getTLEfromNORAD(norad),       // TLEs
-                    mwhs_reader.timestamps             // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_ab_mwhs1.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);   // TLEs
+                proj_settings->utc_timestamps = mwhs_reader.timestamps; // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
@@ -140,9 +132,9 @@ namespace fengyun3
 
                 for (int i = 0; i < 5; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mwhs_reader.getChannel(i);
+                    image::Image<uint16_t> image = mwhs_reader.getChannel(i);
                     logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
                     WRITE_IMAGE(projected_image, directory + "/MWHS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

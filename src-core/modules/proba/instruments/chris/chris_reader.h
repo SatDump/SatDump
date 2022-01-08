@@ -2,12 +2,11 @@
 
 #include "common/ccsds/ccsds.h"
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <string>
 #include <map>
 #include <memory>
+#include "nlohmann/json.hpp"
 
 namespace proba
 {
@@ -27,9 +26,8 @@ namespace proba
             std::vector<std::string> &all_images;
 
         private:
-            void writeChlorophylCompos(cimg_library::CImg<unsigned short> &img);
-            void writeLandCompos(cimg_library::CImg<unsigned short> &img);
-            void writeAllCompos(cimg_library::CImg<unsigned short> &img);
+            void writeHighResCompos(image::Image<uint16_t> &img);
+            void writeAllCompos(image::Image<uint16_t> &img);
             std::string getModeName(int mode);
 
         public:
@@ -37,6 +35,9 @@ namespace proba
             ~CHRISImageParser();
             void save();
             void work(ccsds::CCSDSPacket &packet, int &ch);
+
+            nlohmann::json composites_all;
+            nlohmann::json composites_low;
         };
 
         class CHRISReader
@@ -51,6 +52,9 @@ namespace proba
             CHRISReader(std::string &outputfolder);
             void work(ccsds::CCSDSPacket &packet);
             void save();
+
+            nlohmann::json composites_all;
+            nlohmann::json composites_low;
         };
     } // namespace chris
 } // namespace proba

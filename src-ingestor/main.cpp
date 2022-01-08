@@ -213,7 +213,10 @@ int main(int argc, char *argv[])
     live_pipeline->stop();
 
     //logger->info("Stopping SDR...");
+    //radio->output_stream->clearReadStop();
+    //radio->output_stream->clearWriteStop();
     //radio->stop();
 
     logger->info("Done! Goodbye");
+    exit(0); // Some SDRs leave some threads hanging... Causing it to hang
 }

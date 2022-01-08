@@ -4,26 +4,18 @@ namespace meteor
 {
     namespace mtvza
     {
-        unsigned char reverse(unsigned char b)
-        {
-            b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-            b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-            b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-            return b;
-        }
-
         MTVZAReader::MTVZAReader()
         {
-            for (int i = 0; i < 150; i++)
+            for (int i = 0; i < 60; i++)
             {
-                channels[i] = new unsigned short[10000 * 26 * 2];
+                channels[i] = new unsigned short[2000 * 52];
             }
             lines = 0;
         }
 
         MTVZAReader::~MTVZAReader()
         {
-            for (int i = 0; i < 150; i++)
+            for (int i = 0; i < 60; i++)
             {
                 delete[] channels[i];
             }
@@ -33,13 +25,13 @@ namespace meteor
         {
             int counter = data[5];
 
-            if (counter <= 26)
+            if (counter <= 26 && counter > 0)
             {
                 int pos = 7;
                 for (int ch = 0; ch < 60; ch++)
                 {
-                    channels[ch][lines * 26 * 2 + (counter - 1) * 2 + 0] = data[pos + 0] << 8 | data[pos + 1];
-                    channels[ch][lines * 26 * 2 + (counter - 1) * 2 + 1] = data[pos + 120 + 0] << 8 | data[pos + 120 + 1];
+                    channels[ch][lines * 52 + (counter - 1) * 2 + 0] = data[pos + 0] << 8 | data[pos + 1];
+                    channels[ch][lines * 52 + (counter - 1) * 2 + 1] = data[pos + 120 + 0] << 8 | data[pos + 120 + 1];
                     pos += 2;
                 }
             }
@@ -49,11 +41,11 @@ namespace meteor
                 lines += 1;
         }
 
-        cimg_library::CImg<unsigned short> MTVZAReader::getChannel(int channel)
+        image::Image<uint16_t> MTVZAReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 26 * 2, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 52, lines, 1);
+            img.normalize();
+            img.equalize();
             //img.resize(img.width() * 2, img.height());
             //img.mirror('x');
             return img;

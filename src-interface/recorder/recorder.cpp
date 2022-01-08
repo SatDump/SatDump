@@ -21,6 +21,7 @@
 #ifdef BUILD_ZIQ
 #include "common/ziq.h"
 #endif
+#include "common/dsp/rational_resampler.h"
 
 #define FFT_SIZE (8192 * 1)
 #define WATERFALL_RESOLUTION 1000
@@ -29,6 +30,7 @@ namespace recorder
 {
     extern std::shared_ptr<SDRDevice> radio;
     extern int sample_format;
+    extern int decimation;
     float fft_buffer[FFT_SIZE];
     widgets::FFTPlot fftPlotWidget(fft_buffer, FFT_SIZE, 0, 1000, 15);
     bool recording = false;
@@ -46,6 +48,9 @@ namespace recorder
     void doDSP(int);
     void doFFT(int);
     dsp::RingBuffer<complex_t> circBuffer;
+
+    std::shared_ptr<dsp::stream<complex_t>> sampleInputStream;
+    std::shared_ptr<dsp::CCRationalResamplerBlock> resampler;
 
 #ifdef BUILD_ZIQ
     // ZIQ
@@ -95,24 +100,42 @@ namespace recorder
 
         shouldRun = true;
 
+        if (decimation > 1)
+        {
+            resampler = std::make_shared<dsp::CCRationalResamplerBlock>(radio->output_stream, 1, decimation);
+            sampleInputStream = resampler->output_stream;
+            resampler->start();
+        }
+        else
+        {
+            sampleInputStream = radio->output_stream;
+        }
+
         processThreadPool.push(doDSP);
         processThreadPool.push(doFFT);
     }
 
     void exitRecorder()
     {
-        volk_free(waterfall);
-        delete[] waterfallPallet;
-
         settings["recorder_scale"] = scale;
         settings["recorder_offset"] = offset;
         settings["recorder_sdr"][radio->getID()] = radio->getParameters();
         saveSettings();
 
-        radio->output_stream->stopWriter();
-        radio->output_stream->stopReader();
+        if (decimation > 1)
+        {
+            resampler->stop();
+            radio->output_stream->stopWriter();
+            radio->output_stream->stopReader();
+        }
+
+        sampleInputStream->stopWriter();
+        sampleInputStream->stopReader();
         radio->stop();
         radio.reset();
+
+        volk_free(waterfall);
+        delete[] waterfallPallet;
 
         satdumpUiStatus = MAIN_MENU;
     }
@@ -237,7 +260,7 @@ namespace recorder
                             formatstr = "ziq";
                             cfg.is_compressed = true;
                             cfg.bits_per_sample = 8;
-                            cfg.samplerate = radio->getSamplerate();
+                            cfg.samplerate = radio->getSamplerate() / decimation;
                             cfg.annotation = "";
                             enable_ziq = true;
                         }
@@ -318,7 +341,7 @@ namespace recorder
 
         while (shouldRun)
         {
-            int cnt = radio->output_stream->read();
+            int cnt = sampleInputStream->read();
 
             if (recording)
             {
@@ -327,32 +350,32 @@ namespace recorder
                 for (int i = 0; i < cnt; i++)
                 {
                     // Clamp samples
-                    radio->output_stream->readBuf[i] = complex_t(clampF(radio->output_stream->readBuf[i].real),
-                                                                 clampF(radio->output_stream->readBuf[i].imag));
+                    sampleInputStream->readBuf[i] = complex_t(clampF(sampleInputStream->readBuf[i].real),
+                                                              clampF(sampleInputStream->readBuf[i].imag));
                 }
 
                 // This is faster than a case
                 if (sample_format == 0)
                 {
-                    volk_32f_s32f_convert_8i(converted_buffer_i8, (float *)radio->output_stream->readBuf, 127, cnt * 2); // Scale to 8-bits
+                    volk_32f_s32f_convert_8i(converted_buffer_i8, (float *)sampleInputStream->readBuf, 127, cnt * 2); // Scale to 8-bits
                     data_out.write((char *)converted_buffer_i8, cnt * 2 * sizeof(uint8_t));
                     recordedSize += cnt * 2 * sizeof(uint8_t);
                 }
                 else if (sample_format == 1)
                 {
-                    volk_32f_s32f_convert_16i(converted_buffer_i16, (float *)radio->output_stream->readBuf, 65535, cnt * 2); // Scale to 16-bits
+                    volk_32f_s32f_convert_16i(converted_buffer_i16, (float *)sampleInputStream->readBuf, 65535, cnt * 2); // Scale to 16-bits
                     data_out.write((char *)converted_buffer_i16, cnt * 2 * sizeof(uint16_t));
                     recordedSize += cnt * 2 * sizeof(uint16_t);
                 }
                 else if (sample_format == 2)
                 {
-                    data_out.write((char *)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
+                    data_out.write((char *)sampleInputStream->readBuf, cnt * 2 * sizeof(float));
                     recordedSize += cnt * 2 * sizeof(float);
                 }
 #ifdef BUILD_ZIQ
                 else if (enable_ziq)
                 {
-                    compressedSamples += ziqWriter->write(radio->output_stream->readBuf, cnt);
+                    compressedSamples += ziqWriter->write(sampleInputStream->readBuf, cnt);
                     recordedSize += cnt * 2 * sizeof(uint8_t);
                 }
 #endif
@@ -360,9 +383,9 @@ namespace recorder
 
             // Write to FFT FIFO
             if (circBuffer.getWritable(false) >= cnt)
-                circBuffer.write(radio->output_stream->readBuf, cnt);
+                circBuffer.write(sampleInputStream->readBuf, cnt);
 
-            radio->output_stream->flush();
+            sampleInputStream->flush();
         }
 
         if (sample_format == 0)
@@ -382,7 +405,7 @@ namespace recorder
 #else
         int refresh_per_second = 60 * 2;
 #endif
-        int runs_per_second = radio->getSamplerate() / FFT_SIZE;
+        int runs_per_second = (radio->getSamplerate() / decimation) / FFT_SIZE;
         int runs_to_wait = runs_per_second / refresh_per_second;
         //int run_wait = 1000.0f / (runs_per_second / runs_to_wait);
         int y = 0, z = 0;

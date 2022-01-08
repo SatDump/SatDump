@@ -41,7 +41,7 @@ uint32_t swapIQ(uint32_t in)
     return (i >> 1) | (q << 1);
 }
 
-Correlator32::Correlator32(modulation_t mod, uint32_t syncword) : d_modulation(mod)
+Correlator32::Correlator32(constellation_t mod, uint32_t syncword) : d_modulation(mod)
 {
     hard_buf = new uint8_t[8192 * 20];
 

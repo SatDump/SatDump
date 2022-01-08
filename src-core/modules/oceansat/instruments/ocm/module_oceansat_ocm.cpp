@@ -61,14 +61,14 @@ namespace oceansat
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
-            cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
-            cimg_library::CImg<unsigned short> image7 = reader.getChannel(6);
-            cimg_library::CImg<unsigned short> image8 = reader.getChannel(7);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image6 = reader.getChannel(5);
+            image::Image<uint16_t> image7 = reader.getChannel(6);
+            image::Image<uint16_t> image8 = reader.getChannel(7);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/OCM-1.png");
@@ -96,95 +96,95 @@ namespace oceansat
 
             logger->info("642 Composite...");
             {
-                cimg_library::CImg<unsigned short> image642(4072, reader.lines, 1, 3);
+                image::Image<uint16_t> image642(4072, reader.lines, 3);
                 {
-                    image642.draw_image(0, 0, 0, 0, image6);
-                    image642.draw_image(0, 0, 0, 1, image4);
-                    image642.draw_image(0, 0, 0, 2, image2);
+                    image642.draw_image(0, image6);
+                    image642.draw_image(1, image4);
+                    image642.draw_image(2, image2);
                 }
                 WRITE_IMAGE(image642, directory + "/OCM-RGB-642.png");
-                image642.equalize(1000);
-                image642.normalize(0, std::numeric_limits<unsigned char>::max());
+                image642.equalize();
+                image642.normalize();
                 WRITE_IMAGE(image642, directory + "/OCM-RGB-642-EQU.png");
-                cimg_library::CImg<unsigned short> corrected642 = image::earth_curvature::correct_earth_curvature(image642,
-                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
-                                                                                                                  OCEANSAT2_OCM2_SWATH,
-                                                                                                                  OCEANSAT2_OCM2_RES);
+                image::Image<uint16_t> corrected642 = image::earth_curvature::correct_earth_curvature(image642,
+                                                                                                      OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                      OCEANSAT2_OCM2_SWATH,
+                                                                                                      OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected642, directory + "/OCM-RGB-642-EQU-CORRECTED.png");
             }
 
             logger->info("654 Composite...");
             {
-                cimg_library::CImg<unsigned short> image654(4072, reader.lines, 1, 3);
+                image::Image<uint16_t> image654(4072, reader.lines, 3);
                 {
-                    image654.draw_image(0, 0, 0, 0, image6);
-                    image654.draw_image(0, 0, 0, 1, image5);
-                    image654.draw_image(0, 0, 0, 2, image4);
+                    image654.draw_image(0, image6);
+                    image654.draw_image(1, image5);
+                    image654.draw_image(2, image4);
                 }
                 WRITE_IMAGE(image654, directory + "/OCM-RGB-654.png");
-                image654.equalize(1000);
-                image654.normalize(0, std::numeric_limits<unsigned char>::max());
+                image654.equalize();
+                image654.normalize();
                 WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU.png");
-                cimg_library::CImg<unsigned short> corrected654 = image::earth_curvature::correct_earth_curvature(image654,
-                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
-                                                                                                                  OCEANSAT2_OCM2_SWATH,
-                                                                                                                  OCEANSAT2_OCM2_RES);
+                image::Image<uint16_t> corrected654 = image::earth_curvature::correct_earth_curvature(image654,
+                                                                                                      OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                      OCEANSAT2_OCM2_SWATH,
+                                                                                                      OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected654, directory + "/OCM-RGB-654-EQU-CORRECTED.png");
             }
 
             logger->info("754 Composite...");
             {
-                cimg_library::CImg<unsigned short> image754(4072, reader.lines, 1, 3);
+                image::Image<uint16_t> image754(4072, reader.lines, 3);
                 {
-                    image754.draw_image(0, 0, 0, 0, image7);
-                    image754.draw_image(0, 0, 0, 1, image5);
-                    image754.draw_image(0, 0, 0, 2, image4);
+                    image754.draw_image(0, image7);
+                    image754.draw_image(1, image5);
+                    image754.draw_image(2, image4);
                 }
                 WRITE_IMAGE(image754, directory + "/OCM-RGB-754.png");
-                image754.equalize(1000);
-                image754.normalize(0, std::numeric_limits<unsigned char>::max());
+                image754.equalize();
+                image754.normalize();
                 WRITE_IMAGE(image754, directory + "/OCM-RGB-754-EQU.png");
-                cimg_library::CImg<unsigned short> corrected754 = image::earth_curvature::correct_earth_curvature(image754,
-                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
-                                                                                                                  OCEANSAT2_OCM2_SWATH,
-                                                                                                                  OCEANSAT2_OCM2_RES);
+                image::Image<uint16_t> corrected754 = image::earth_curvature::correct_earth_curvature(image754,
+                                                                                                      OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                      OCEANSAT2_OCM2_SWATH,
+                                                                                                      OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected754, directory + "/OCM-RGB-754-EQU-CORRECTED.png");
             }
-             logger->info("882 Composite...");
+            logger->info("882 Composite...");
             {
-                cimg_library::CImg<unsigned short> image882(4072, reader.lines, 1, 3);
+                image::Image<uint16_t> image882(4072, reader.lines, 3);
                 {
-                    image882.draw_image(0, 0, 0, 0, image8);
-                    image882.draw_image(0, 0, 0, 1, image8);
-                    image882.draw_image(0, 0, 0, 2, image2);
+                    image882.draw_image(0, image8);
+                    image882.draw_image(1, image8);
+                    image882.draw_image(2, image2);
                 }
                 WRITE_IMAGE(image882, directory + "/OCM-RGB-882.png");
-                image882.equalize(1000);
-                image882.normalize(0, std::numeric_limits<unsigned char>::max());
+                image882.equalize();
+                image882.normalize();
                 WRITE_IMAGE(image882, directory + "/OCM-RGB-882-EQU.png");
-                cimg_library::CImg<unsigned short> corrected882 = image::earth_curvature::correct_earth_curvature(image882,
-                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
-                                                                                                                  OCEANSAT2_OCM2_SWATH,
-                                                                                                                  OCEANSAT2_OCM2_RES);
+                image::Image<uint16_t> corrected882 = image::earth_curvature::correct_earth_curvature(image882,
+                                                                                                      OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                      OCEANSAT2_OCM2_SWATH,
+                                                                                                      OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected882, directory + "/OCM-RGB-882-EQU-CORRECTED.png");
             }
-            
+
             logger->info("662 Composite...");
             {
-                cimg_library::CImg<unsigned short> image662(4072, reader.lines, 1, 3);
+                image::Image<uint16_t> image662(4072, reader.lines, 3);
                 {
-                    image662.draw_image(0, 0, 0, 0, image6);
-                    image662.draw_image(0, 0, 0, 1, image6);
-                    image662.draw_image(0, 0, 0, 2, image2);
+                    image662.draw_image(0, image6);
+                    image662.draw_image(1, image6);
+                    image662.draw_image(2, image2);
                 }
                 WRITE_IMAGE(image662, directory + "/OCM-RGB-662.png");
-                image662.equalize(1000);
-                image662.normalize(0, std::numeric_limits<unsigned char>::max());
+                image662.equalize();
+                image662.normalize();
                 WRITE_IMAGE(image662, directory + "/OCM-RGB-662-EQU.png");
-                cimg_library::CImg<unsigned short> corrected662 = image::earth_curvature::correct_earth_curvature(image662,
-                                                                                                                  OCEANSAT2_ORBIT_HEIGHT,
-                                                                                                                  OCEANSAT2_OCM2_SWATH,
-                                                                                                                  OCEANSAT2_OCM2_RES);
+                image::Image<uint16_t> corrected662 = image::earth_curvature::correct_earth_curvature(image662,
+                                                                                                      OCEANSAT2_ORBIT_HEIGHT,
+                                                                                                      OCEANSAT2_OCM2_SWATH,
+                                                                                                      OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected662, directory + "/OCM-RGB-662-EQU-CORRECTED.png");
             }
         }

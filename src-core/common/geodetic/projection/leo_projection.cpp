@@ -9,6 +9,8 @@
 #include "common/geodetic/euler_raytrace.h"
 #include "common/geodetic/vincentys_calculations.h"
 #include "common/utils.h"
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 namespace geodetic
 {
@@ -195,6 +197,8 @@ namespace geodetic
 
         int LEOScanProjector::setup_forward(float timestamp_max, float timestamp_mix, int gcp_lines, int gcp_px_cnt)
         {
+            solvingMutex.lock();
+
             if (forward_ready)
                 return 0;
 
@@ -259,6 +263,7 @@ namespace geodetic
             }
             else
             {
+                solvingMutex.unlock();
                 return 1;
             }
 
@@ -268,12 +273,33 @@ namespace geodetic
             if (tps.init(gcps))
             {
                 logger->error("Error setting up forward transform!");
+                solvingMutex.unlock();
                 return 1;
             }
 
             forward_ready = true;
 
+            solvingMutex.unlock();
+
             return 0;
+        }
+
+        // JSON Loading
+        std::shared_ptr<LEOScanProjectorSettings_SCANLINE> makeScalineSettingsFromJSON(std::string filename)
+        {
+            nlohmann::json settings = loadJsonFile(resources::getResourcePath("projections_settings/" + filename));
+
+            return std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
+                settings["scan_angle"].get<double>(),   // Scan angle
+                settings["roll_offset"].get<double>(),  // Roll offset
+                settings["pitch_offset"].get<double>(), // Pitch offset
+                settings["yaw_offset"].get<double>(),   // Yaw offset
+                settings["time_offset"].get<double>(),  // Time offset
+                settings["image_width"].get<int>(),     // Image width
+                settings["invert_scan"].get<bool>(),    // Invert scan
+                tle::TLE(),                             // TLEs
+                std::vector<double>()                   // Timestamps
+            );
         }
     };
 };

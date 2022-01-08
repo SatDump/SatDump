@@ -78,11 +78,11 @@ namespace aqua
             }
         }
 
-        cimg_library::CImg<unsigned short> AMSUA1Reader::getChannel(int channel)
+        image::Image<uint16_t> AMSUA1Reader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(channels[channel], 30, lines);
-            img.normalize(0, 65535);
-            img.equalize(1000);
+            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 30, lines, 1);
+            img.normalize();
+            img.equalize();
             return img;
         }
     } // namespace amsu

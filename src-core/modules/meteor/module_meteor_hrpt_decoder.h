@@ -5,6 +5,7 @@
 #include <thread>
 #include <fstream>
 #include "deframer.h"
+#include "common/widgets/constellation.h"
 
 namespace meteor
 {
@@ -13,14 +14,16 @@ namespace meteor
     protected:
         std::shared_ptr<CADUDeframer> def;
 
-        uint8_t *read_buffer;
-        uint8_t *manchester_buffer;
+        int8_t *soft_buffer;
 
         std::ifstream data_in;
         std::ofstream data_out;
 
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
+
+        // UI Stuff
+        widgets::ConstellationViewer constellation;
 
     public:
         METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -44,7 +44,7 @@ protected:
     const float d_clock_gain_mu;
     const float d_clock_omega_relative_limit;
 
-    const int MAX_SPS = 2; // Maximum sample per symbol the demodulator will accept before resampling the input. We delay 1 branch so it has to be 2
+    const int FIXED_SPS = 2; // This has to be 2 since the I branch is delayed
     bool resample = false;
 
     int8_t *sym_buffer;

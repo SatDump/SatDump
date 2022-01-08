@@ -6,6 +6,7 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "libs/predict/predict.h"
 #include "tps_transform.h"
+#include <mutex>
 
 /*
 Code to reference a decoded image (or similar data) from a LEO satellite to Lat / Lon coordinates.
@@ -83,6 +84,8 @@ namespace geodetic
             }
         };
 
+        std::shared_ptr<LEOScanProjectorSettings_SCANLINE> makeScalineSettingsFromJSON(std::string filename);
+
         struct LEOScanProjectorSettings_IFOV : public LEOScanProjectorSettings
         {
             double scan_angle;                               // Total scan angle
@@ -150,6 +153,8 @@ namespace geodetic
             bool forward_ready = false;
             int img_height;
             int img_width;
+
+            std::mutex solvingMutex; // To make it thread-safe
 
         public:
             std::vector<predict_position> poss;

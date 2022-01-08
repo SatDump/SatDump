@@ -92,27 +92,27 @@ namespace fengyun3
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(266 * 3, reader.getChannel(0).height() * 4, 1, 1);
+            image::Image<uint16_t> imageAll(266 * 3, reader.lines * 4, 1);
             {
-                int height = reader.getChannel(0).height();
+                int height = reader.lines;
 
                 // Row 1
-                imageAll.draw_image(266 * 0, 0, 0, 0, reader.getChannel(0));
-                imageAll.draw_image(266 * 1, 0, 0, 0, reader.getChannel(1));
-                imageAll.draw_image(266 * 2, 0, 0, 0, reader.getChannel(2));
+                imageAll.draw_image(0, reader.getChannel(0), 266 * 0);
+                imageAll.draw_image(0, reader.getChannel(1), 266 * 1);
+                imageAll.draw_image(0, reader.getChannel(2), 266 * 2);
 
                 // Row 2
-                imageAll.draw_image(266 * 0, height, 0, 0, reader.getChannel(3));
-                imageAll.draw_image(266 * 1, height, 0, 0, reader.getChannel(4));
-                imageAll.draw_image(266 * 2, height, 0, 0, reader.getChannel(5));
+                imageAll.draw_image(0, reader.getChannel(3), 266 * 0, height);
+                imageAll.draw_image(0, reader.getChannel(4), 266 * 1, height);
+                imageAll.draw_image(0, reader.getChannel(5), 266 * 2, height);
 
                 // Row 3
-                imageAll.draw_image(266 * 0, height * 2, 0, 0, reader.getChannel(6));
-                imageAll.draw_image(266 * 1, height * 2, 0, 0, reader.getChannel(7));
-                imageAll.draw_image(266 * 2, height * 2, 0, 0, reader.getChannel(8));
+                imageAll.draw_image(0, reader.getChannel(6), 266 * 0, height * 2);
+                imageAll.draw_image(0, reader.getChannel(7), 266 * 1, height * 2);
+                imageAll.draw_image(0, reader.getChannel(8), 266 * 2, height * 2);
 
                 // Row 4
-                imageAll.draw_image(266 * 0, height * 3, 0, 0, reader.getChannel(9));
+                imageAll.draw_image(0, reader.getChannel(9), 266 * 0, height * 3);
             }
             WRITE_IMAGE(imageAll, directory + "/MWRI-ALL.png");
         }

@@ -64,11 +64,11 @@ namespace metop
                 count = 255;
 
             // Write on the map!
-            const unsigned char color0[] = {(unsigned char)count, (unsigned char)std::max<int>(0, 255 - count), 0};
-            map_image.draw_circle(imageLon, imageLat, 4, color0);
+            uint8_t color0[] = {(uint8_t)count, (uint8_t)std::max<int>(0, 255 - count), 0};
+            map_image.draw_circle(imageLon, imageLat, 4, color0, true);
         }
 
-        cimg_library::CImg<unsigned char> SEMReader::getImage()
+        image::Image<uint8_t> SEMReader::getImage()
         {
             return map_image;
         }

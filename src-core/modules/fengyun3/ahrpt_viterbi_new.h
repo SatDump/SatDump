@@ -2,10 +2,10 @@
 
 #define TEST_BITS_LENGTH 1024
 
-#include "libs/sathelper/packetfixer.h"
-#include "common/codings/viterbi/cc_decoder_impl.h"
-#include "common/codings/viterbi/cc_encoder_impl.h"
-#include "common/codings/viterbi/depuncture_bb_impl.h"
+#include "common/codings/rotation.h"
+#include "common/codings/viterbi/cc_decoder.h"
+#include "common/codings/viterbi/cc_encoder.h"
+#include "common/codings/viterbi/depuncture.h"
 #include "common/repack_bits_byte.h"
 
 namespace fengyun3
@@ -38,10 +38,9 @@ namespace fengyun3
         uint8_t d_ber_encoded_buffer[TEST_BITS_LENGTH * 2]; // 1.5
 
         // Current phase status
-        sathelper::PhaseShift d_phase_shift[2];
+        phase_t d_phase_shift[2];
         bool d_iq_inv[2];
         int d_skip[2], d_skip_perm[2];
-        sathelper::PacketFixer phaseShifter;
 
         // Work buffers
         uint8_t *fixed_soft_packet1;

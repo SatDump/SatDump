@@ -11,7 +11,7 @@ namespace proba
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
-        
+
         public:
             ProbaCHRISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();

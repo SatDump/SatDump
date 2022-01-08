@@ -1,8 +1,7 @@
 #include "module_xrit_decoder.h"
 #include "logger.h"
-#include "libs/sathelper/correlator.h"
-#include "libs/sathelper/packetfixer.h"
-#include "libs/sathelper/derandomizer.h"
+#include "common/codings/rotation.h"
+#include "common/codings/randomization.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/viterbi/viterbi27.h"
@@ -68,13 +67,11 @@ namespace xrit
         // Common objects
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
         diff::NRZMDiff diff;
-        sathelper::Derandomizer derand;
 
         if (is_bpsk) // BPSK Variant using a correlator
         {
             // Correlator and shifter
             Correlator correlator(BPSK, diff_decode ? 0xfc4ef4fd0cc2df89 : 0xfca2b63db00d9794);
-            sathelper::PacketFixer packetFixer;
 
             // Other buffers
             uint8_t frameBuffer[FRAME_SIZE];
@@ -106,7 +103,7 @@ namespace xrit
                 }
 
                 // Correct phase ambiguity
-                packetFixer.fixPacket(buffer, ENCODED_FRAME_SIZE, (sathelper::PhaseShift)(phase + 2), swap);
+                rotate_soft((int8_t *)buffer, ENCODED_FRAME_SIZE, (phase_t)(phase + 2), swap);
 
                 // Viterbi
                 viterbi.work((int8_t *)buffer, frameBuffer);
@@ -116,7 +113,7 @@ namespace xrit
                     diff.decode(frameBuffer, FRAME_SIZE);
 
                 // Derandomize that frame
-                derand.work(&frameBuffer[4], FRAME_SIZE - 4);
+                derand_ccsds(&frameBuffer[4], FRAME_SIZE - 4);
 
                 // RS Correction
                 rs.decode_interlaved(&frameBuffer[4], true, 4, errors);

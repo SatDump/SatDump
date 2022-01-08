@@ -6,7 +6,8 @@ enum satdump_ui_status
     LIVE_PROCESSING,
     BASEBAND_RECORDER,
     PROJECTION,
-    MAIN_MENU
+    OVERLAY,
+    MAIN_MENU,
 };
 
 extern satdump_ui_status satdumpUiStatus;

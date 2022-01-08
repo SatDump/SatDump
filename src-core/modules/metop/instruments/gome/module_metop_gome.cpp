@@ -84,6 +84,7 @@ namespace metop
             logger->info("VCID 24 (GOME) Frames :" + std::to_string(gome_cadu));
             logger->info("CCSDS Frames          : " + std::to_string(ccsds));
             logger->info("GOME Frames           : " + std::to_string(gome_ccsds));
+            logger->info("GOME Lines            : " + std::to_string(gome_reader.lines));
 
             logger->info("Writing images.... (Can take a while)");
 
@@ -105,9 +106,9 @@ namespace metop
             logger->info("Global Composite...");
             int all_width_count = 130;
             int all_height_count = 48;
-            cimg_library::CImg<unsigned short> imageAll(30 * all_width_count, gome_reader.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll(30 * all_width_count, gome_reader.lines * all_height_count, 1);
             {
-                int height = gome_reader.getChannel(0).height();
+                int height = gome_reader.lines;
 
                 for (int row = 0; row < all_height_count; row++)
                 {
@@ -116,11 +117,12 @@ namespace metop
                         if (row * all_width_count + column >= 6144)
                             break;
 
-                        imageAll.draw_image(30 * column, height * row, 0, 0, gome_reader.getChannel(row * all_width_count + column));
+                        imageAll.draw_image(0, gome_reader.getChannel(row * all_width_count + column), 30 * column, height * row);
                     }
                 }
             }
             WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
+            imageAll.clear();
         }
 
         void MetOpGOMEDecoderModule::drawUI(bool window)

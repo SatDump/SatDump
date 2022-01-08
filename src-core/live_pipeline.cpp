@@ -98,7 +98,6 @@ void LivePipeline::stop()
             mod->input_fifo->stopReader();
             mod->input_fifo->stopWriter();
         }
-        //logger->info("mod");
         mod->stop();
         moduleFutures[i].get();
     }

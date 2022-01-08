@@ -1,5 +1,5 @@
 #include "bpsk_carrier_pll.h"
-#include "fast_atan2f.h"
+#include "fast_trig.h"
 #include <cmath>
 
 #define M_TWOPI (2 * M_PI)

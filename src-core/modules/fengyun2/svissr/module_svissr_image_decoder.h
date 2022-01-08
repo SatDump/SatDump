@@ -33,11 +33,11 @@ namespace fengyun_svissr
         SVISSRReader vissrImageReader;
 
         // Images used as a buffer when writing it out
-        cimg_library::CImg<unsigned short> image1;
-        cimg_library::CImg<unsigned short> image2;
-        cimg_library::CImg<unsigned short> image3;
-        cimg_library::CImg<unsigned short> image4;
-        cimg_library::CImg<unsigned short> image5;
+        image::Image<uint16_t> image1;
+        image::Image<uint16_t> image2;
+        image::Image<uint16_t> image3;
+        image::Image<uint16_t> image4;
+        image::Image<uint16_t> image5;
 
         // Saving is multithreaded
         std::shared_ptr<ctpl::thread_pool> imageSavingThreadPool;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cc_decoder_impl.h"
-#include "cc_encoder_impl.h"
+#include "cc_decoder.h"
+#include "cc_encoder.h"
 
 namespace viterbi
 {

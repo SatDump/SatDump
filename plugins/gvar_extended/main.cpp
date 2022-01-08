@@ -11,6 +11,7 @@
 #include "tle.h"
 #include "common/geodetic/projection/geo_projection.h"
 #include "common/map/map_drawer.h"
+#include "common/image/image.h"
 
 #define FIXED_FLOAT(x) std::fixed << std::setprecision(3) << (x)
 
@@ -49,18 +50,18 @@ private:
     static void gvarSaveChannelImagesHandler(const goes::gvar::events::GVARSaveChannelImagesEvent &evt)
     {
         logger->info("Preview... preview.png");
-        cimg_library::CImg<unsigned char> preview(1300, 948, 1, 1);
-        cimg_library::CImg<unsigned char> previewImage;
+        image::Image<uint8_t> preview(1300, 948, 1);
+        image::Image<uint8_t> previewImage;
 
         // Preview generation
         {
-            cimg_library::CImg<unsigned char> channel1_8bit(1040, 948, 1, 1);
-            cimg_library::CImg<unsigned char> channel2_8bit(260, 237, 1, 1);
-            cimg_library::CImg<unsigned char> channel3_8bit(260, 237, 1, 1);
-            cimg_library::CImg<unsigned char> channel4_8bit(260, 237, 1, 1);
-            cimg_library::CImg<unsigned char> channel5_8bit(260, 237, 1, 1);
+            image::Image<uint8_t> channel1_8bit(1040, 948, 1);
+            image::Image<uint8_t> channel2_8bit(260, 237, 1);
+            image::Image<uint8_t> channel3_8bit(260, 237, 1);
+            image::Image<uint8_t> channel4_8bit(260, 237, 1);
+            image::Image<uint8_t> channel5_8bit(260, 237, 1);
 
-            cimg_library::CImg<unsigned short> resized5 = evt.images.image5;
+            image::Image<uint16_t> resized5 = evt.images.image5;
             resized5.resize(1040, 948);
 
             for (int i = 0; i < (int)channel1_8bit.size(); i++)
@@ -68,7 +69,7 @@ private:
                 channel1_8bit[i] = resized5[i] / 256;
             }
 
-            cimg_library::CImg<unsigned short> buff2 = evt.images.image1,
+            image::Image<uint16_t> buff2 = evt.images.image1,
                                                buff3 = evt.images.image2,
                                                buff4 = evt.images.image3,
                                                buff5 = evt.images.image4;
@@ -85,18 +86,19 @@ private:
                 channel4_8bit[i] = buff4[i] / 256;
                 channel5_8bit[i] = buff5[i] / 256;
             }
+            
+            channel1_8bit.simple_despeckle();
+            channel2_8bit.simple_despeckle();
+            channel3_8bit.simple_despeckle();
+            channel4_8bit.simple_despeckle();
+            channel5_8bit.simple_despeckle();
+            
 
-            channel1_8bit.blur_median(2);
-            channel2_8bit.blur_median(2);
-            channel3_8bit.blur_median(2);
-            channel4_8bit.blur_median(2);
-            channel5_8bit.blur_median(2);
-
-            preview.draw_image(channel1_8bit);
-            preview.draw_image(1040, 0, channel2_8bit);
-            preview.draw_image(1040, 237, channel3_8bit);
-            preview.draw_image(1040, 474, channel4_8bit);
-            preview.draw_image(1040, 711, channel5_8bit);
+            preview.draw_image(0, channel1_8bit, 0, 0);
+            preview.draw_image(0, channel2_8bit, 1040, 0);
+            preview.draw_image(0, channel3_8bit, 1040, 237);
+            preview.draw_image(0, channel4_8bit, 1040, 474);
+            preview.draw_image(0, channel5_8bit, 1040, 711);
         }
 
         // Overlay the preview
@@ -117,26 +119,28 @@ private:
             float offsetXratio = 0.005;
             float offsetYratio = 0.0025;
 
-            cimg_library::CImg<unsigned char> imgtext, imgtext1, imgtext2;
+            image::Image<uint8_t> imgtext, imgtext1, imgtext2;
 
             bar_height = preview.width() * bar_ratio;
             text_size = preview.width() * text_ratio;
             offsetX = preview.width() * offsetXratio;
             offsetY = preview.width() * offsetYratio;
 
-            previewImage = cimg_library::CImg<unsigned char>(preview.width(), preview.height() + 2 * bar_height, 1, 1, 0);
+            previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
 
             unsigned char color = 255;
 
-            previewImage.fill(0);
-            imgtext.draw_text(0, 0, sat_name.c_str(), &color, 0, 1, cimg_library::CImgList<unsigned char>::font(text_size, false));
-            imgtext1.draw_text(0, 0, date_time.c_str(), &color, 0, 1, cimg_library::CImgList<unsigned char>::font(text_size, false));
-            imgtext2.draw_text(0, 0, misc_preview_text.c_str(), &color, 0, 1, cimg_library::CImgList<unsigned char>::font(text_size, false));
+            std::vector<image::Image<uint8_t>> font = image::make_font(text_size);
 
-            previewImage.draw_image(offsetX, offsetY, 0, 0, imgtext);
-            previewImage.draw_image(previewImage.width() - imgtext1.width() - offsetX, offsetY, 0, 0, imgtext1);
-            previewImage.draw_image(offsetX, bar_height + preview.height() + offsetY, 0, 0, imgtext2);
-            previewImage.draw_image(0, bar_height, preview);
+            previewImage.fill(0);
+            imgtext.draw_text(0, 0, &color, font, sat_name.c_str());
+            imgtext1.draw_text(0, 0, &color, font, date_time.c_str());
+            imgtext2.draw_text(0, 0, &color, font, misc_preview_text.c_str());
+
+            previewImage.draw_image(0, imgtext, offsetX, offsetY);
+            previewImage.draw_image(0, imgtext1, previewImage.width() - imgtext1.width() - offsetX, offsetY);
+            previewImage.draw_image(0, imgtext2, offsetX, bar_height + preview.height() + offsetY);
+            previewImage.draw_image(0, preview, 0, bar_height);
         }
 
         previewImage.save_png(std::string(evt.directory + "/preview.png").c_str());
@@ -153,7 +157,7 @@ private:
 
                 std::ofstream output(evt.directory + "/temperatures.txt");
                 logger->info("Temperatures... temperatures.txt");
-                std::array<cimg_library::CImg<unsigned short>, 4> channels = {cropIR(evt.images.image1), cropIR(evt.images.image2), cropIR(evt.images.image3), cropIR(evt.images.image4)};
+                std::array<image::Image<uint16_t>, 4> channels = {cropIR(evt.images.image1), cropIR(evt.images.image2), cropIR(evt.images.image3), cropIR(evt.images.image4)};
 
                 geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 
@@ -214,17 +218,17 @@ private:
 
         logger->info("Generating mapped crops..");
         //mapped crops of europe. IR and VIS
-        cimg_library::CImg<unsigned short> mapProj = cropIR(evt.images.image3);
+        image::Image<uint16_t> mapProj = cropIR(evt.images.image3);
         drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
         mapProj.crop(500, 50, 500 + 1560, 50 + 890);
         logger->info("Europe IR crop.. europe_IR.png");
-        cimg_library::CImg<unsigned char>(mapProj>>8, false).save_png(std::string(evt.directory + "/europe_IR.png").c_str());
+        mapProj.to8bits().save_png(std::string(evt.directory + "/europe_IR.png").c_str());
 
         mapProj = cropVIS(evt.images.image5);
         drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
         mapProj.crop(1348, 240, 1348 + 5928, 240 + 4120);
         logger->info("Europe VIS crop.. europe_VIS.png");
-        cimg_library::CImg<unsigned char>(((mapProj/65535.0f).pow(0.7) *= 65535)>>8).save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
+        mapProj.to8bits().save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
         mapProj.clear();
     }
 
@@ -233,7 +237,7 @@ private:
         if (evt.sat_number == 13)
         {
             logger->info("Europe crop... europe.png");
-            cimg_library::CImg<unsigned char> crop = evt.false_color_image;
+            image::Image<uint8_t> crop = evt.false_color_image;
             if (crop.width() == 20836)
                 crop.crop(3198, 240, 3198 + 5928, 240 + 4120);
             else
@@ -271,26 +275,26 @@ private:
         return values;
     }
 
-    static unsigned short getAVG(cimg_library::CImg<unsigned short> &image, int x, int y, int r)
+    static unsigned short getAVG(image::Image<uint16_t> &image, int x, int y, int r)
     {
         uint64_t sum = 0;
         for (int i = 0; i < std::pow(r * 2 + 1, 2); i++)
         {
-            sum += *(image.data(x - r + i % (2 * r + 1), y - r + i / (2 * r + 1), 0, 0));
+            sum += image[(y - r + i / (2 * r + 1))*image.width() + (x - r + i % (2 * r + 1))];
         }
         return sum / std::pow(r * 2 + 1, 2);
     }
 
-    static cimg_library::CImg<unsigned short> cropIR(cimg_library::CImg<unsigned short> input)
+    static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
     {
-        cimg_library::CImg<unsigned short> output(4749, input.height(), 1, 1);
+        image::Image<uint16_t> output(4749, input.height(), 1);
         if (input.width() == 5206)
         {
-            output.draw_image(0, 0, 0, 0, input);
+            output.draw_image(0, input, 0, 0);
         }
         else if (input.width() == 5209)
         {
-            output.draw_image(-463, 0, 0, 0, input);
+            output.draw_image(0, input, -463, 0);
         }
         else
         {
@@ -299,16 +303,16 @@ private:
         return output;
     }
 
-    static cimg_library::CImg<unsigned short> cropVIS(cimg_library::CImg<unsigned short> input)
+    static image::Image<uint16_t> cropVIS(image::Image<uint16_t> input)
     {
-        cimg_library::CImg<unsigned short> output(18990, input.height(), 1, 1);
+        image::Image<uint16_t> output(18990, input.height(), 1);
         if (input.width() == 20824)
         {
-            output.draw_image(0, 0, 0, 0, input);
+            output.draw_image(0, input, 0, 0);
         }
         else if (input.width() == 20836)
         {
-            output.draw_image(-1852, 0, 0, 0, input);
+            output.draw_image(0, input, -1852, 0);
         }
         else
         {
@@ -340,7 +344,7 @@ private:
     }
 
     // Expect cropped IR
-    static void drawMapOverlay(int number, time_t time, cimg_library::CImg<unsigned short> &image)
+    static void drawMapOverlay(int number, time_t time, image::Image<uint16_t> &image)
     {
         geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 

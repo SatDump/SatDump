@@ -21,6 +21,17 @@ namespace diff
         }
     }
 
+    void NRZMDiff::decode_bits(uint8_t *data, int length)
+    {
+        uint8_t currentBit = 0;
+        for (int i = 0; i < length; i++)
+        {
+            currentBit = data[i];
+            data[i] = currentBit ^ lastBit;
+            lastBit = currentBit;
+        }
+    }
+
     void nrzm_decode(uint8_t *data, int length)
     {
         uint8_t mask, lastBit = 0;

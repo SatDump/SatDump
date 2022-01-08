@@ -1,5 +1,6 @@
 #include "ocm_reader.h"
 #include "modules/metop/instruments/iasi/utils.h"
+#include <cmath>
 
 namespace oceansat
 {
@@ -48,9 +49,9 @@ namespace oceansat
             lines++;
         }
 
-        cimg_library::CImg<unsigned short> OCMReader::getChannel(int channel)
+        image::Image<uint16_t> OCMReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 4072, lines);
+            return image::Image<uint16_t>(channels[channel], 4072, lines, 1);
         }
     } // namespace avhrr
 } // namespace noaa

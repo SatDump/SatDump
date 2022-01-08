@@ -1,9 +1,10 @@
 #include "brightness_contrast.h"
+#include <cmath>
 
 namespace image
 {
     template <typename T>
-    void brightness_contrast(cimg_library::CImg<T> &image, float brightness, float contrast, int channelCount)
+    void brightness_contrast(Image<T> &image, float brightness, float contrast, int channelCount)
     {
         float scale = std::numeric_limits<T>::max() - 1;
 
@@ -25,6 +26,6 @@ namespace image
         }
     }
 
-    template void brightness_contrast<unsigned char>(cimg_library::CImg<unsigned char> &, float, float, int);
-    template void brightness_contrast<unsigned short>(cimg_library::CImg<unsigned short> &, float, float, int);
+    template void brightness_contrast<uint8_t>(Image<uint8_t> &, float, float, int);
+    template void brightness_contrast<uint16_t>(Image<uint16_t> &, float, float, int);
 }

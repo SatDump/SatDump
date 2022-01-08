@@ -1,14 +1,15 @@
 #pragma once
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 namespace goes
 {
     namespace gvar
     {
-        cimg_library::CImg<unsigned short> cropIR(cimg_library::CImg<unsigned short> input);
-        cimg_library::CImg<unsigned short> cropVIS(cimg_library::CImg<unsigned short> input);
+        template <typename T>
+        image::Image<T> cropIR(image::Image<T> input);
+
+        template <typename T>
+        image::Image<T> cropVIS(image::Image<T> input);
     };
 };

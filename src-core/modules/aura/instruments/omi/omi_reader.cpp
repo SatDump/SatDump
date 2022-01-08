@@ -1,4 +1,5 @@
 #include "omi_reader.h"
+#include <cstring>
 
 namespace aura
 {
@@ -71,24 +72,24 @@ namespace aura
             }
         }
 
-        cimg_library::CImg<unsigned short> OMIReader::getChannel(int channel)
+        image::Image<uint16_t> OMIReader::getChannel(int channel)
         {
-            cimg_library::CImg<unsigned short> img(channels[channel], 65, lines);
-            img.equalize(1000);
-            img.normalize(0, 65535);
+            image::Image<uint16_t> img(channels[channel], 65, lines, 1);
+            img.equalize();
+            img.normalize();
             return img;
         }
 
-        cimg_library::CImg<unsigned short> OMIReader::getImageRaw()
+        image::Image<uint16_t> OMIReader::getImageRaw()
         {
-            return cimg_library::CImg<unsigned short>(channelRaw, 2047 * 28, lines);
+            return image::Image<uint16_t>(channelRaw, 2047 * 28, lines, 1);
         }
 
-        cimg_library::CImg<unsigned short> OMIReader::getImageVisible()
+        image::Image<uint16_t> OMIReader::getImageVisible()
         {
-            cimg_library::CImg<unsigned short> img(visibleChannel, 60 * 2, lines);
-            img.equalize(1000);
-            img.normalize(0, 65535);
+            image::Image<uint16_t> img(visibleChannel, 60 * 2, lines, 1);
+            img.equalize();
+            img.normalize();
             return img;
         }
     } // namespace ceres

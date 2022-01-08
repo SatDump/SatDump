@@ -118,7 +118,7 @@ namespace aqua
             logger->info("Global Composite...");
             int all_width_count = 100;
             int all_height_count = 27;
-            cimg_library::CImg<unsigned short> imageAll(90 * all_width_count, airs_reader.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll(90 * all_width_count, airs_reader.getChannel(0).height() * all_height_count, 1);
             {
                 int height = airs_reader.getChannel(0).height();
 
@@ -129,36 +129,36 @@ namespace aqua
                         if (row * all_width_count + column >= 2666)
                             break;
 
-                        imageAll.draw_image(90 * column, height * row, 0, 0, airs_reader.getChannel(row * all_width_count + column));
+                        imageAll.draw_image(0, airs_reader.getChannel(row * all_width_count + column), 90 * column, height * row);
                     }
                 }
             }
             WRITE_IMAGE(imageAll, directory + "/AIRS-ALL.png");
 
             logger->info("HD 221 Composite...");
-            cimg_library::CImg<unsigned short> image221(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
+            image::Image<uint16_t> image221(90 * 8, airs_reader.getHDChannel(0).height(), 3);
             {
-                image221.draw_image(0, 0, 0, 0, airs_reader.getHDChannel(1));
-                image221.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(1));
-                image221.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(0));
+                image221.draw_image(0, airs_reader.getHDChannel(1));
+                image221.draw_image(1, airs_reader.getHDChannel(1));
+                image221.draw_image(2, airs_reader.getHDChannel(0));
             }
             WRITE_IMAGE(image221, directory + "/AIRS-HD-RGB-221.png");
 
             logger->info("HD 332 Composite...");
-            cimg_library::CImg<unsigned short> image332(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
+            image::Image<uint16_t> image332(90 * 8, airs_reader.getHDChannel(0).height(), 3);
             {
-                image332.draw_image(0, 0, 0, 0, airs_reader.getHDChannel(2));
-                image332.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(2));
-                image332.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(1));
+                image332.draw_image(0, airs_reader.getHDChannel(2));
+                image332.draw_image(1, airs_reader.getHDChannel(2));
+                image332.draw_image(2, airs_reader.getHDChannel(1));
             }
             WRITE_IMAGE(image332, directory + "/AIRS-HD-RGB-332.png");
 
             logger->info("HD 321 Composite...");
-            cimg_library::CImg<unsigned short> image321(90 * 8, airs_reader.getHDChannel(0).height(), 1, 3);
+            image::Image<uint16_t> image321(90 * 8, airs_reader.getHDChannel(0).height(), 3);
             {
-                image321.draw_image(0, 0, 0, 0, airs_reader.getHDChannel(2));
-                image321.draw_image(0, 0, 0, 1, airs_reader.getHDChannel(1));
-                image321.draw_image(0, 0, 0, 2, airs_reader.getHDChannel(0));
+                image321.draw_image(0, airs_reader.getHDChannel(2));
+                image321.draw_image(1, airs_reader.getHDChannel(1));
+                image321.draw_image(2, airs_reader.getHDChannel(0));
             }
             WRITE_IMAGE(image321, directory + "/AIRS-HD-RGB-321.png");
 
@@ -169,7 +169,7 @@ namespace aqua
 
                 // Setup Projecition
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_IFOV> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_IFOV>(
-                    99,                              // Scan angle
+                    99,                                // Scan angle
                     1.1,                               // IFOV X scan angle
                     1.4,                               // IFOV Y scan angle
                     -0.5,                              // Roll offset
@@ -192,7 +192,7 @@ namespace aqua
                 }
 
                 logger->info("Projected 62 channel...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(airs_reader.getChannel(62), projector, 2048 * 4, 1024 * 4, 1);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(airs_reader.getChannel(62), projector, 2048 * 4, 1024 * 4, 1);
                 WRITE_IMAGE(projected_image, directory + "/AIRS-62-PROJ.png");
             }
 
@@ -226,7 +226,7 @@ namespace aqua
                 }
 
                 logger->info("Projected HD RGB 321 channel...");
-                cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
+                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image321, projector, 2048 * 4, 1024 * 4, 3);
                 WRITE_IMAGE(projected_image, directory + "/AIRS-HD-RGB-321-PROJ.png");
             }
         }

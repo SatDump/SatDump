@@ -109,7 +109,7 @@ namespace aura
             logger->info("Global Composite...");
             int all_width_count = 33;
             int all_height_count = 24;
-            cimg_library::CImg<unsigned short> imageAll1(65 * all_width_count, reader1.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll1(65 * all_width_count, reader1.getChannel(0).height() * all_height_count, 1);
             {
                 int height = reader1.getChannel(0).height();
 
@@ -120,11 +120,11 @@ namespace aura
                         if (row * all_width_count + column >= 792)
                             break;
 
-                        imageAll1.draw_image(65 * column, height * row, 0, 0, reader1.getChannel(row * all_width_count + column));
+                        imageAll1.draw_image(0, reader1.getChannel(row * all_width_count + column), 65 * column, height * row);
                     }
                 }
             }
-            cimg_library::CImg<unsigned short> imageAll2(65 * all_width_count, reader2.getChannel(0).height() * all_height_count, 1, 1);
+            image::Image<uint16_t> imageAll2(65 * all_width_count, reader2.getChannel(0).height() * all_height_count, 1);
             {
                 int height = reader2.getChannel(0).height();
 
@@ -135,7 +135,7 @@ namespace aura
                         if (row * all_width_count + column >= 792)
                             break;
 
-                        imageAll2.draw_image(65 * column, height * row, 0, 0, reader2.getChannel(row * all_width_count + column));
+                        imageAll2.draw_image(0, reader2.getChannel(row * all_width_count + column), 65 * column, height * row);
                     }
                 }
             }

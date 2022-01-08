@@ -11,8 +11,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/geodetic/projection/satellite_reprojector.h"
 #include "common/geodetic/projection/proj_file.h"
-#include "common/image/image.h"
 #include "common/image/composite.h"
+#include "common/map/leo_drawer.h"
 
 #define BUFFER_SIZE 8192
 
@@ -172,16 +172,16 @@ namespace fengyun3
 
             logger->info("Writing images.... (Can take a while)");
 
-            cimg_library::CImg<unsigned short> image1 = reader.getChannel(0);
-            cimg_library::CImg<unsigned short> image2 = reader.getChannel(1);
-            cimg_library::CImg<unsigned short> image3 = reader.getChannel(2);
-            cimg_library::CImg<unsigned short> image4 = reader.getChannel(3);
-            cimg_library::CImg<unsigned short> image5 = reader.getChannel(4);
-            cimg_library::CImg<unsigned short> image6 = reader.getChannel(5);
-            cimg_library::CImg<unsigned short> image7 = reader.getChannel(6);
-            cimg_library::CImg<unsigned short> image8 = reader.getChannel(7);
-            cimg_library::CImg<unsigned short> image9 = reader.getChannel(8);
-            cimg_library::CImg<unsigned short> image10 = reader.getChannel(9);
+            image::Image<uint16_t> image1 = reader.getChannel(0);
+            image::Image<uint16_t> image2 = reader.getChannel(1);
+            image::Image<uint16_t> image3 = reader.getChannel(2);
+            image::Image<uint16_t> image4 = reader.getChannel(3);
+            image::Image<uint16_t> image5 = reader.getChannel(4);
+            image::Image<uint16_t> image6 = reader.getChannel(5);
+            image::Image<uint16_t> image7 = reader.getChannel(6);
+            image::Image<uint16_t> image8 = reader.getChannel(7);
+            image::Image<uint16_t> image9 = reader.getChannel(8);
+            image::Image<uint16_t> image10 = reader.getChannel(9);
 
             // Takes a while so we say how we're doing
             logger->info("Channel 1...");
@@ -220,17 +220,9 @@ namespace fengyun3
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    110.4,                       // Scan angle
-                    -0.0,                        // Roll offset
-                    0,                           // Pitch offset
-                    -2.6,                        // Yaw offset
-                    0,                           // Time offset
-                    image1.width(),              // Image width
-                    true,                        // Invert scan
-                    tle::getTLEfromNORAD(norad), // TLEs
-                    reader.timestamps            // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_abc_virr.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
+                proj_settings->utc_timestamps = reader.timestamps;    // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
@@ -248,24 +240,32 @@ namespace fengyun3
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
+                    bool mapped = compositeDef.count("mapped") > 0 ? compositeDef["mapped"].get<bool>() : false;
                     bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
 
                     std::string name = "VIRR-" + compokey.key();
 
                     logger->info(name + "...");
-                    cimg_library::CImg<unsigned short>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5, image6, image7, image8, image9, image10},
-                                                                                            {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-                                                                                            expression,
-                                                                                            compositeDef);
+                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5, image6, image7, image8, image9, image10},
+                                                                                                               {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+                                                                                                               expression,
+                                                                                                               compositeDef);
 
                     WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
 
                     if (projected)
                     {
                         logger->info(name + "-PROJ...");
-                        cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(cimg_library::CImg<unsigned char>(compositeImage >> 8), projector, 2048 * 4, 1024 * 4, compositeImage.spectrum());
+                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.channels());
                         WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
+                    }
+
+                    if (mapped)
+                    {
+                        projector.setup_forward();
+                        logger->info(name + "-MAP...");
+                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
+                        WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
                     }
 
                     if (corrected)
@@ -282,59 +282,59 @@ namespace fengyun3
 
             logger->info("197 True Color XFR Composite... (by ZbychuButItWasTaken)");
             {
-                cimg_library::CImg<unsigned short> image197truecolorxfr(2048, reader.lines, 1, 3);
+                image::Image<uint16_t> image197truecolorxfr(2048, reader.lines, 3);
                 {
-                    cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
+                    image::Image<uint16_t> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
                     image::xfr::XFR trueColor(26, 663, 165, 34, 999, 162, 47, 829, 165);
 
                     image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
-                    image197truecolorxfr.draw_image(1, 0, 0, 0, tempImage1);
-                    image197truecolorxfr.draw_image(0, 0, 0, 1, tempImage9);
-                    image197truecolorxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                    image197truecolorxfr.draw_image(0, tempImage1, 1);
+                    image197truecolorxfr.draw_image(1, tempImage9, 0);
+                    image197truecolorxfr.draw_image(2, tempImage7, -2);
                 }
                 WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR.png");
-                cimg_library::CImg<unsigned short> corrected197truecolorxfr = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
-                                                                                                                              FY3_ORBIT_HEIGHT,
-                                                                                                                              FY3_VIRR_SWATH,
-                                                                                                                              FY3_VIRR_RES);
+                image::Image<uint16_t> corrected197truecolorxfr = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
+                                                                                                                  FY3_ORBIT_HEIGHT,
+                                                                                                                  FY3_VIRR_SWATH,
+                                                                                                                  FY3_VIRR_RES);
                 WRITE_IMAGE(corrected197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-CORRECTED.png");
-                image197truecolorxfr.equalize(1000);
+                image197truecolorxfr.equalize();
                 WRITE_IMAGE(image197truecolorxfr, directory + "/VIRR-RGB-197-TRUECOLOR-EQU.png");
-                cimg_library::CImg<unsigned short> corrected197truecolorxfrequ = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
-                                                                                                                                 FY3_ORBIT_HEIGHT,
-                                                                                                                                 FY3_VIRR_SWATH,
-                                                                                                                                 FY3_VIRR_RES);
+                image::Image<uint16_t> corrected197truecolorxfrequ = image::earth_curvature::correct_earth_curvature(image197truecolorxfr,
+                                                                                                                     FY3_ORBIT_HEIGHT,
+                                                                                                                     FY3_VIRR_SWATH,
+                                                                                                                     FY3_VIRR_RES);
                 WRITE_IMAGE(corrected197truecolorxfrequ, directory + "/VIRR-RGB-197-TRUECOLOR-EQU-CORRECTED.png");
             }
 
             logger->info("197 Night XFR Composite... (by ZbychuButItWasTaken)");
             {
-                cimg_library::CImg<unsigned short> image197nightxfr(2048, reader.lines, 1, 3);
+                image::Image<uint16_t> image197nightxfr(2048, reader.lines, 3);
                 {
-                    cimg_library::CImg<unsigned short> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
+                    image::Image<uint16_t> tempImage1 = image1, tempImage9 = image9, tempImage7 = image7;
 
                     image::xfr::XFR trueColor(23, 610, 153, 34, 999, 162, 39, 829, 165);
 
                     image::xfr::applyXFR(trueColor, tempImage1, tempImage9, tempImage7);
 
-                    image197nightxfr.draw_image(1, 0, 0, 0, tempImage1);
-                    image197nightxfr.draw_image(0, 0, 0, 1, tempImage9);
-                    image197nightxfr.draw_image(-2, 0, 0, 2, tempImage7);
+                    image197nightxfr.draw_image(0, tempImage1, 1);
+                    image197nightxfr.draw_image(1, tempImage9, 0);
+                    image197nightxfr.draw_image(2, tempImage7, -2);
                 }
                 WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT.png");
-                cimg_library::CImg<unsigned short> corrected97nightxfr = image::earth_curvature::correct_earth_curvature(image197nightxfr,
-                                                                                                                         FY3_ORBIT_HEIGHT,
-                                                                                                                         FY3_VIRR_SWATH,
-                                                                                                                         FY3_VIRR_RES);
+                image::Image<uint16_t> corrected97nightxfr = image::earth_curvature::correct_earth_curvature(image197nightxfr,
+                                                                                                             FY3_ORBIT_HEIGHT,
+                                                                                                             FY3_VIRR_SWATH,
+                                                                                                             FY3_VIRR_RES);
                 WRITE_IMAGE(corrected97nightxfr, directory + "/VIRR-RGB-197-NIGHT-CORRECTED.png");
-                image197nightxfr.equalize(1000);
+                image197nightxfr.equalize();
                 WRITE_IMAGE(image197nightxfr, directory + "/VIRR-RGB-197-NIGHT-EQU.png");
-                cimg_library::CImg<unsigned short> corrected97nightxfrequ = image::earth_curvature::correct_earth_curvature(image197nightxfr,
-                                                                                                                            FY3_ORBIT_HEIGHT,
-                                                                                                                            FY3_VIRR_SWATH,
-                                                                                                                            FY3_VIRR_RES);
+                image::Image<uint16_t> corrected97nightxfrequ = image::earth_curvature::correct_earth_curvature(image197nightxfr,
+                                                                                                                FY3_ORBIT_HEIGHT,
+                                                                                                                FY3_VIRR_SWATH,
+                                                                                                                FY3_VIRR_RES);
                 WRITE_IMAGE(corrected97nightxfrequ, directory + "/VIRR-RGB-197-NIGHT-EQU-CORRECTED.png");
             }
         }

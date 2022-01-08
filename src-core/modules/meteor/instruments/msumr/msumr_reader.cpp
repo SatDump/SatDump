@@ -47,9 +47,9 @@ namespace meteor
             lines++;
         }
 
-        cimg_library::CImg<unsigned short> MSUMRReader::getChannel(int channel)
+        image::Image<uint16_t> MSUMRReader::getChannel(int channel)
         {
-            return cimg_library::CImg<unsigned short>(channels[channel], 1572, lines);
+            return image::Image<uint16_t>(channels[channel], 1572, lines, 1);
         }
     } // namespace msumr
 } // namespace meteor

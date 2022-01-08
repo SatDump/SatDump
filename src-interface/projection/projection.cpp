@@ -6,9 +6,7 @@
 #include "main_ui.h"
 #include "imgui/imgui_image.h"
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 
 #include "imgui/file_selection.h"
 #include "common/map/map_drawer.h"
@@ -23,13 +21,14 @@
 #include "common/geodetic/projection/geo_projection.h"
 #include "modules/goes/gvar/image/crop.h"
 #include "settings.h"
+#include "findgeoref.h"
 
 namespace projection
 {
     extern int output_width;
     extern int output_height;
 
-    cimg_library::CImg<unsigned char> projected_image;
+    image::Image<uint8_t> projected_image;
     unsigned int textureID = 0;
     uint32_t *textureBuffer;
 
@@ -48,7 +47,7 @@ namespace projection
     bool draw_borders = true;
     bool draw_cities = true;
     bool draw_custom_labels = true;
-    float cities_size_ratio = 0.3;
+    float cities_size_ratio = 0.32;
 
     char newfile_image[1000];
     char newfile_georef[1000];
@@ -57,7 +56,7 @@ namespace projection
     {
         std::string filename;
         std::string timestamp;
-        cimg_library::CImg<unsigned char> image;
+        image::Image<uint8_t> image;
         std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> georef;
         bool show;
         float opacity;
@@ -86,7 +85,7 @@ namespace projection
 
     void initProjection()
     {
-        projected_image = cimg_library::CImg<unsigned char>(output_width, output_height, 1, 3, 0);
+        projected_image = image::Image<uint8_t>(output_width, output_height, 3);
 
         // Init texture
         textureID = makeImageTexture();
@@ -120,7 +119,7 @@ namespace projection
         filesToProject.clear();
         deleteImageTexture(textureID);
         delete[] textureBuffer;
-        projected_image = cimg_library::CImg<unsigned char>(1, 1, 1, 3, 0);
+        projected_image = image::Image<uint8_t>(1, 1, 3);
         satdumpUiStatus = MAIN_MENU;
     }
 
@@ -172,7 +171,7 @@ namespace projection
             if (toProj.georef->file_type == 0)
             {
                 logger->info("Reprojecting Equiectangular...");
-                geodetic::projection::projectEQUIToproj(toProj.image, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
+                geodetic::projection::projectEQUIToproj(toProj.image, projected_image, toProj.image.channels(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
             else if (toProj.georef->file_type == geodetic::projection::proj_file::LEO_TYPE)
             {
@@ -180,14 +179,14 @@ namespace projection
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings> settings = leoProjectionRefFile(leofile);
                 geodetic::projection::LEOScanProjector projector(settings);
                 logger->info("Reprojecting LEO...");
-                geodetic::projection::reprojectLEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
+                geodetic::projection::reprojectLEOtoProj(toProj.image, projector, projected_image, toProj.image.channels(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
             else if (toProj.georef->file_type == geodetic::projection::proj_file::GEO_TYPE)
             {
                 geodetic::projection::proj_file::GEO_GeodeticReferenceFile gsofile = *((geodetic::projection::proj_file::GEO_GeodeticReferenceFile *)toProj.georef.get());
                 logger->info("Reprojecting GEO...");
                 geodetic::projection::GEOProjector projector = geodetic::projection::proj_file::geoProjectionRefFile(gsofile);
-                geodetic::projection::reprojectGEOtoProj(toProj.image, projector, projected_image, toProj.image.spectrum(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
+                geodetic::projection::reprojectGEOtoProj(toProj.image, projector, projected_image, toProj.image.channels(), projectionFunc, toProj.opacity, (float *)&toProj.progress);
             }
         }
 
@@ -438,6 +437,13 @@ namespace projection
                     logger->debug("Dir " + input_file);
                     std::fill(newfile_image, &newfile_image[1000], 0);
                     std::memcpy(newfile_image, input_file.c_str(), input_file.length());
+
+                    std::optional<std::string> georef = findGeoRefForImage(input_file);
+                    if (georef.has_value())
+                    {
+                        std::fill(newfile_georef, &newfile_georef[1000], 0);
+                        std::memcpy(newfile_georef, georef.value().c_str(), georef.value().length());
+                    }
                 }
             }
 
@@ -462,10 +468,12 @@ namespace projection
 
             if (ImGui::Button("Add file") && std::filesystem::exists(newfile_image) && (std::filesystem::exists(newfile_georef) || use_equirectangular))
             {
-                cimg_library::CImg<unsigned short> new_image_full16(newfile_image);
-                new_image_full16.normalize(0, 65535);
-                cimg_library::CImg<unsigned char> new_image = new_image_full16 >> 8;
-                new_image_full16.clear(); // Free up memory now
+                //unsigned int bit_depth;
+                //cimg_library::CImg<unsigned short> new_image_full16;
+                //new_image_full16.load_png(newfile_image, &bit_depth);
+                image::Image<uint8_t> new_image; // = new_image_full16 >> (bit_depth == 16 ? 8 : 0);
+                new_image.load_png(newfile_image);
+                //new_image_full16.clear(); // Free up memory now
 
                 std::shared_ptr<geodetic::projection::proj_file::GeodeticReferenceFile> new_geofile;
                 if (use_equirectangular)

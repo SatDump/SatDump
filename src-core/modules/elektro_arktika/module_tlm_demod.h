@@ -21,6 +21,72 @@
 
 namespace elektro_arktika
 {
+    /*
+    This may be useful for other signals laters, but for now it can live here
+    */
+    class QuadratureRecomposer : public dsp::Block<complex_t, complex_t>
+    {
+    private:
+        complex_t phase_delta1, phase_delta2;
+        complex_t phase1, phase2;
+        complex_t *buffer1, *buffer2;
+        complex_t pshift;
+
+        complex_t lastSample;
+
+        void work()
+        {
+            int nsamples = input_stream->read();
+            if (nsamples <= 0)
+            {
+                input_stream->flush();
+                return;
+            }
+
+            volk_32fc_s32fc_x2_rotator_32fc((lv_32fc_t *)buffer1, (lv_32fc_t *)input_stream->readBuf, phase_delta1, (lv_32fc_t *)&phase1, nsamples); // Shift upper sideband down
+            volk_32fc_s32fc_x2_rotator_32fc((lv_32fc_t *)buffer2, (lv_32fc_t *)input_stream->readBuf, phase_delta2, (lv_32fc_t *)&phase2, nsamples); // Shift lower sideband up
+
+            // Swap I and Q for the lower sideband
+            float tmp;
+            for (int i = 0; i < nsamples; i++)
+            {
+                tmp = buffer2[i].real;
+                buffer2[i].real = buffer2[i].imag;
+                buffer2[i].imag = tmp;
+            }
+
+            // Shift the lower sideband by 90 degs in phase
+            volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)buffer2, (lv_32fc_t *)buffer2, pshift, nsamples);
+
+            // Add both
+            volk_32fc_x2_add_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)buffer1, (lv_32fc_t *)buffer2, nsamples);
+
+            input_stream->flush();
+            output_stream->swap(nsamples);
+        }
+
+    public:
+        QuadratureRecomposer(std::shared_ptr<dsp::stream<complex_t>> input, float samplerate, float symbolrate) : Block(input)
+        {
+            buffer1 = new complex_t[STREAM_BUFFER_SIZE];
+            buffer2 = new complex_t[STREAM_BUFFER_SIZE];
+
+            lastSample = 0;
+
+            phase1 = complex_t(1, 0);
+            phase2 = complex_t(1, 0);
+            phase_delta1 = complex_t(cos(2.0f * M_PI * (-symbolrate / samplerate)), sin(2.0f * M_PI * (-symbolrate / samplerate)));
+            phase_delta2 = complex_t(cos(2.0f * M_PI * (symbolrate / samplerate)), sin(2.0f * M_PI * (symbolrate / samplerate)));
+
+            pshift = complex_t(cos(M_PI / 2.0), sin(M_PI / 2.0));
+        }
+        ~QuadratureRecomposer()
+        {
+            delete[] buffer1;
+            delete[] buffer2;
+        }
+    };
+
     class TLMDemodModule : public ProcessingModule
     {
     protected:
@@ -29,7 +95,7 @@ namespace elektro_arktika
         std::shared_ptr<dsp::AGCBlock> agc;
         std::shared_ptr<dsp::PLLCarrierTrackingBlock> cpl;
         std::shared_ptr<dsp::DCBlockerBlock> dcb;
-        std::shared_ptr<dsp::FreqShiftBlock> shi;
+        std::shared_ptr<QuadratureRecomposer> reco;
         std::shared_ptr<dsp::CCFIRBlock> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
         std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
@@ -42,7 +108,7 @@ namespace elektro_arktika
         float *real_buffer;
         uint8_t *repacked_buffer;
 
-        const int MAX_SPS = 10; // Maximum sample per symbol the demodulator will accept before resampling the input
+        const int MAX_SPS = 5; // Maximum sample per symbol the demodulator will accept before resampling the input
         bool resample = false;
 
         int8_t *sym_buffer;

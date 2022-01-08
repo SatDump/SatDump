@@ -1,6 +1,6 @@
 #include "quadrature_demod.h"
 #include <volk/volk.h>
-#include "fast_atan2f.h"
+#include "fast_trig.h"
 
 namespace dsp
 {

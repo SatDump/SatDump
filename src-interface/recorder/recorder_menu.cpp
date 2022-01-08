@@ -19,6 +19,7 @@ namespace recorder
     char samplerate_field[100];
 
     int sample_format = 1;
+    int decimation = 1;
 
     void initRecorderMenu()
     {
@@ -61,6 +62,12 @@ namespace recorder
         ImGui::Text("Samplerate (Hz / SPS)");
         ImGui::SameLine();
         ImGui::InputText("##samplerate", samplerate_field, 100);
+
+        ImGui::Text("Decimation (1 = None)");
+        ImGui::SameLine();
+        if (decimation < 1)
+            decimation = 1;
+        ImGui::InputInt("##decimation", &decimation);
 
         ImGui::Text("Format");
         ImGui::SameLine();

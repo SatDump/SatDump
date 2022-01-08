@@ -95,12 +95,12 @@ namespace fengyun3
 
             // Output a few nice composites as well
             logger->info("Global Composite...");
-            cimg_library::CImg<unsigned short> imageAll(58 * 27, mwts_reader.getChannel(0).height() * 1, 1, 1);
+            image::Image<uint16_t> imageAll(58 * 27, mwts_reader.getChannel(0).height() * 1, 1);
             {
                 for (int i = 0; i < 27; i++)
                 {
                     // Row 1
-                    imageAll.draw_image(58 * i, 0, 0, 0, mwts_reader.getChannel(i));
+                    imageAll.draw_image(0, mwts_reader.getChannel(i), 58 * i, 0);
                 }
             }
             WRITE_IMAGE(imageAll, directory + "/MWTS-ALL.png");
@@ -115,17 +115,9 @@ namespace fengyun3
                 int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
 
                 // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                    108,                               // Scan angle
-                    3,                                 // Roll offset
-                    0,                                 // Pitch offset
-                    0,                                 // Yaw offset
-                    -1,                                // Time offset
-                    mwts_reader.getChannel(0).width(), // Image width
-                    true,                              // Invert scan
-                    tle::getTLEfromNORAD(norad),       // TLEs
-                    mwts_reader.timestamps             // Timestamps
-                );
+                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_ab_mwts1.json");
+                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);   // TLEs
+                proj_settings->utc_timestamps = mwts_reader.timestamps; // Timestamps
                 geodetic::projection::LEOScanProjector projector(proj_settings);
 
                 {
@@ -135,9 +127,9 @@ namespace fengyun3
 
                 for (int i = 0; i < 27; i++)
                 {
-                    cimg_library::CImg<unsigned short> image = mwts_reader.getChannel(i);
+                    image::Image<uint16_t> image = mwts_reader.getChannel(i);
                     logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    cimg_library::CImg<unsigned char> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
+                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
                     WRITE_IMAGE(projected_image, directory + "/MWTS-" + std::to_string(i + 1) + "-PROJ.png");
                 }
             }

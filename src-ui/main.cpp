@@ -14,6 +14,8 @@
 #include "main_ui.h"
 #include "live/live.h"
 #include "satdump_vars.h"
+#include "tle.h"
+#include "recorder/recorder.h"
 
 extern bool recorder_running;
 
@@ -119,6 +121,10 @@ int main(int argc, char *argv[])
 #endif
 
     parseSettingsOrDefaults();
+
+    // If we are asked to update TLEs on boot, do so
+    if (update_tles_on_startup)
+        tle::updateTLEsMT();
 
     // Init UI
     initMainUI();
@@ -227,6 +233,31 @@ int main(int argc, char *argv[])
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    tle::stopTLECleanMT(); // Let the TLE update thread shutdown cleanly
+
+    logger->info("UI Exit");
+
+    // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
+    if (satdumpUiStatus == OFFLINE_PROCESSING)
+#ifdef __APPLE__
+        exit(0);
+#else
+        quick_exit(0);
+#endif
+
+#ifdef BUILD_LIVE
+            if (satdumpUiStatus == BASEBAND_RECORDER)
+        {
+            recorder::exitRecorder();
+// Same story as offline processing, except we finish recording first
+#ifdef __APPLE__
+            exit(0);
+#else
+            quick_exit(0);
+#endif
+        }
+#endif
 
     processThreadPool.stop();
 

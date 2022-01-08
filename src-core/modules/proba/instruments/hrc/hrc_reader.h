@@ -2,9 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 
-#define cimg_use_png
-#define cimg_display 0
-#include "CImg.h"
+#include "common/image/image.h"
 #include <string>
 
 namespace proba
