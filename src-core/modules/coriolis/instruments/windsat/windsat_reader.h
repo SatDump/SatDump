@@ -12,7 +12,7 @@ namespace coriolis
         private:
             unsigned short *image1, *image2;
             int channel_id;
-            int scanline_id;
+            uint32_t scanline_id;
             int width;
 
         public:
