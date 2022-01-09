@@ -238,7 +238,7 @@
             ]
         ],
         "frequencies": [
-            2235
+            2221.5
         ],
         "samplerate": 4e6,
         "baseband_type": "i16",
