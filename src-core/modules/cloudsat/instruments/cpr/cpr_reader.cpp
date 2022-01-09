@@ -18,8 +18,6 @@ namespace cloudsat
             delete[] image;
         }
 
-        uint32_t buffer20[2000];
-
         void CPReader::work(uint8_t *buffer)
         {
 

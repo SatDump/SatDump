@@ -265,6 +265,9 @@
                     "rs_i": 0,
                     "asm": "0x352ef853"
                 }
+            },
+            "products": {
+                "coriolis_windsat": {}
             }
         }
     },

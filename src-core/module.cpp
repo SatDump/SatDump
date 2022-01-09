@@ -171,6 +171,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
 
+#include "modules/coriolis/instruments/windsat/module_coriolis_windsat.h"
+
 #include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
 
 void registerModules()
@@ -318,6 +320,7 @@ void registerModules()
     REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
 
     // Coriolis
+    REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
 
     // CloudSat
     REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);

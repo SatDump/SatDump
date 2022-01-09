@@ -11,6 +11,7 @@ namespace cloudsat
         {
         private:
             unsigned short *image;
+            uint32_t buffer20[2000];
 
         public:
             CPReader();
