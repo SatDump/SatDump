@@ -1,6 +1,16 @@
 #include "windsat_reader.h"
 #include "common/repack.h"
 
+#ifdef __APPLE__
+#include <libkern/OSByteOrder.h>
+#define __bswap_16 OSSwapInt16
+#elif _WIN32
+#define __bswap_16 _byteswap_ushort
+#elif __ANDROID__
+#include <byteswap.h>
+#define __bswap_16 __swap16
+#endif
+
 namespace coriolis
 {
     namespace windsat
