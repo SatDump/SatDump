@@ -1,8 +1,6 @@
 #include "windsat_reader.h"
 #include "common/repack.h"
 
-#include "logger.h"
-
 namespace coriolis
 {
     namespace windsat
@@ -29,7 +27,7 @@ namespace coriolis
             {
                 if ((frame[0] & 0b1111) == channel_id) // Select a channel
                 {
-                    uint32_t scan_id = frame[4] << 24 | frame[5] << 16 | frame[6] << 8 | frame[7]; // Scanline ID
+                    uint32_t scan_id = /*frame[4] << 24 |*/ frame[5] << 16 | frame[6] << 8 | frame[7]; // Scanline ID
                     int pixel_offset = (frame[8] & 0b1111) << 8 | frame[9];                        // Pixel offset
 
                     if (pixel_offset + 12 > width)
