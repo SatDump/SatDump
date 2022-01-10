@@ -32,5 +32,14 @@
         "corrected": true,
         "equalize": true,
         "normalize": true
+    },
+    "CH1-EQU": {
+        "channels": [
+            1
+        ],
+        "expression": "1 - ch1",
+        "corrected": true,
+        "equalize": true,
+        "normalize": true
     }
 }
