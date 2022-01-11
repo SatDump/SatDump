@@ -181,7 +181,18 @@
                 }
             },
             "cadu": {
-                "terra_db_decoder": {}
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "derand_after_rs": true,
+                    "derand_start": 10,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
             },
             "products": {
                 "eos_modis": {
@@ -211,10 +222,15 @@
                 }
             },
             "cadu": {
-                "new_npp_hrd_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -295,7 +311,13 @@
                 }
             },
             "cadu": {
-                "elektro_arktika_rdas_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
             },
             "products": {
                 "elektro_arktika_msugs": {}
@@ -321,7 +343,13 @@
                 }
             },
             "cadu": {
-                "elektro_arktika_rdas_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
             },
             "products": {
                 "elektro_arktika_msugs": {}
@@ -501,7 +529,13 @@
                 }
             },
             "cadu": {
-                "cfosat_dump_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
             }
         }
     },
@@ -525,7 +559,13 @@
                 }
             },
             "cadu": {
-                "cryosat_dump_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs229"
+                }
             },
             "products": {
                 "cryosat_siral": {}
@@ -579,9 +619,7 @@
                     "buffer_size": 8192
                 }
             },
-            "cadu": {
-                "cfosat_dump_decoder": {}
-            }
+            "cadu": {}
         }
     }
 }

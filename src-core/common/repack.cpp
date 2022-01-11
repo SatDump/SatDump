@@ -150,3 +150,30 @@ int repackBytesTo16bits(uint8_t *bytes, int byte_length, uint16_t *words)
 
     return wpos;
 }
+
+int repackBytesTo20bits(uint8_t *bytes, int byte_length, uint32_t *words)
+{
+    int bpos = 0;
+    int wpos = 0;
+
+    // Repack remaining using a slower method
+    uint32_t shifter = 0;
+    int inshifter = 0;
+    for (int i = 0; i < byte_length; i++)
+    {
+        for (int b = 7; b >= 0; b--)
+        {
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 0b11111111111111111111;
+            inshifter++;
+            if (inshifter == 20)
+            {
+                words[wpos++] = shifter;
+                inshifter = 0;
+            }
+        }
+
+        bpos++;
+    }
+
+    return wpos;
+}

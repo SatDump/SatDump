@@ -45,7 +45,7 @@
             "baseband": {},
             "soft": {
                 "oqpsk_demod": {
-                    "symbolrate": 20000000,
+                    "symbolrate": 10000000,
                     "agc_rate": 0.1,
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
@@ -53,14 +53,23 @@
                     "clock_gain_omega": 0.8,
                     "clock_mu": 0.9,
                     "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001,
+                    "clock_omega_relative_limit": 0.001,
                     "dc_block": true,
                     "constellation_scale": 100,
                     "buffer_size": 8192
                 }
             },
             "cadu": {
-                "jason3_decoder": {}
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10112,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0,
+                    "rs_type": "rs239"
+                }
             },
             "products": {
                 "gcom_amsr2": {}

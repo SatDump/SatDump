@@ -2,6 +2,7 @@
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "common/codings/randomization.h"
 
 #define BUFFER_SIZE 8192 * 2
 
@@ -17,6 +18,7 @@ namespace metop
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
+        deframer.STATE_SYNCED = 22;
     }
 
     std::vector<ModuleDataType> MetOpAHRPTDecoderModule::getInputTypes()
@@ -53,6 +55,8 @@ namespace metop
 
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
+        uint8_t frame_buffer[1024 * 10];
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -68,18 +72,19 @@ namespace metop
             if (num_samp > 0)
             {
                 // Deframe / derand
-                std::vector<std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE>> frames = deframer.work_bits(viterbi_out, num_samp);
+                int frames = deframer.work(viterbi_out, num_samp, frame_buffer);
 
-                if (frames.size() > 0)
+                for (int i = 0; i < frames; i++)
                 {
-                    for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
-                    {
-                        // RS Decoding
-                        rs.decode_interlaved(&cadu[4], true, 4, errors);
+                    uint8_t *cadu = &frame_buffer[i * 1024];
 
-                        // Write it out
-                        data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
-                    }
+                    derand_ccsds(&cadu[4], 1024 - 4);
+
+                    // RS Correction
+                    rs.decode_interlaved(&cadu[4], true, 4, errors);
+
+                    // Write it out
+                    data_out.write((char *)cadu, 1024);
                 }
             }
 
@@ -90,7 +95,7 @@ namespace metop
             {
                 lastTime = time(NULL);
                 std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
-                std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
+                std::string deframer_state = deframer.getState() == deframer.STATE_NOSYNC ? "NOSYNC" : (deframer.getState() == deframer.STATE_SYNCING ? "SYNCING" : "SYNCED");
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
             }
         }
@@ -161,9 +166,9 @@ namespace metop
 
                 ImGui::SameLine();
 
-                if (deframer.getState() == 0)
+                if (deframer.getState() == deframer.STATE_NOSYNC)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else if (deframer.getState() == 2 || deframer.getState() == 6)
+                else if (deframer.getState() == deframer.STATE_SYNCING)
                     ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");

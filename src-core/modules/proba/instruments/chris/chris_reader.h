@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "nlohmann/json.hpp"
 
 namespace proba
 {
@@ -25,8 +26,7 @@ namespace proba
             std::vector<std::string> &all_images;
 
         private:
-            void writeChlorophylCompos(image::Image<uint16_t> &img);
-            void writeLandCompos(image::Image<uint16_t> &img);
+            void writeHighResCompos(image::Image<uint16_t> &img);
             void writeAllCompos(image::Image<uint16_t> &img);
             std::string getModeName(int mode);
 
@@ -35,6 +35,9 @@ namespace proba
             ~CHRISImageParser();
             void save();
             void work(ccsds::CCSDSPacket &packet, int &ch);
+
+            nlohmann::json composites_all;
+            nlohmann::json composites_low;
         };
 
         class CHRISReader
@@ -49,6 +52,9 @@ namespace proba
             CHRISReader(std::string &outputfolder);
             void work(ccsds::CCSDSPacket &packet);
             void save();
+
+            nlohmann::json composites_all;
+            nlohmann::json composites_low;
         };
     } // namespace chris
 } // namespace proba

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block.h"
+#include <vector>
 
 namespace dsp
 {
@@ -24,7 +25,7 @@ namespace dsp
         void work();
 
     public:
-        CCRationalResamplerBlock(std::shared_ptr<dsp::stream<complex_t>> input, unsigned interpolation, unsigned decimation);
+        CCRationalResamplerBlock(std::shared_ptr<dsp::stream<complex_t>> input, unsigned interpolation, unsigned decimation, std::vector<float> custom_taps = std::vector<float>());
         ~CCRationalResamplerBlock();
     };
 }

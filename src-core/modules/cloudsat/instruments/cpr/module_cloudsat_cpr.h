@@ -2,18 +2,18 @@
 
 #include "module.h"
 
-namespace proba
+namespace cloudsat
 {
-    namespace chris
+    namespace cpr
     {
-        class ProbaCHRISDecoderModule : public ProcessingModule
+        class CloudSatCPRDecoderModule : public ProcessingModule
         {
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
         public:
-            ProbaCHRISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            CloudSatCPRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 

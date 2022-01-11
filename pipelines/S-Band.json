@@ -30,12 +30,37 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
-                "proba_chris": {},
+                "proba_chris": {
+                    "composites_low": {
+                        "RGB-221": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch16 * 4, ch16 * 4, ch9 * 4"
+                        }
+                    },
+                    "composites_all": {
+                        "RGB-221": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch1 * 4 - 0.2, ch7 * 4 - 0.2, ch7 * 4.4 - 0.2"
+                        }
+                    }
+                },
                 "proba_hrc": {}
             }
         }
@@ -71,8 +96,14 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -111,8 +142,14 @@
                 }
             },
             "cadu": {
-                "proba_s_decoder": {
-                    "derandomize": true
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
                 }
             }
         }
@@ -169,12 +206,114 @@
                 }
             },
             "cadu": {
-                "jason3_decoder": {}
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
             },
             "products": {
                 "jason3_poseidon": {},
                 "jason3_amr2": {},
                 "jason3_lpt": {}
+            }
+        }
+    },
+    "coriolis_db": {
+        "name": "Coriolis S-Band Tactical DB",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2221.5
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 512000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "frm": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 0,
+                    "asm": "0x352ef853"
+                }
+            },
+            "products": {
+                "coriolis_windsat": {}
+            }
+        }
+    },
+    "cloudsat_link": {
+        "name": "CloudSat S-Band Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2217.5
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 1000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "frm": {
+                "ccsds_simple_psk_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 3216,
+                    "derandomize": false,
+                    "nrzm": true,
+                    "rs_i": 0,
+                    "asm": "0x04b3e375"
+                }
+            },
+            "products": {
+                "cloudsat_cpr": {}
             }
         }
     }

@@ -2,18 +2,18 @@
 
 #include "module.h"
 
-namespace proba
+namespace coriolis
 {
-    namespace chris
+    namespace windsat
     {
-        class ProbaCHRISDecoderModule : public ProcessingModule
+        class CoriolisWindSatDecoderModule : public ProcessingModule
         {
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
         public:
-            ProbaCHRISDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            CoriolisWindSatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 

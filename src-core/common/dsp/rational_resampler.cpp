@@ -4,7 +4,7 @@
 
 namespace dsp
 {
-    CCRationalResamplerBlock::CCRationalResamplerBlock(std::shared_ptr<dsp::stream<complex_t>> input, unsigned interpolation, unsigned decimation)
+    CCRationalResamplerBlock::CCRationalResamplerBlock(std::shared_ptr<dsp::stream<complex_t>> input, unsigned interpolation, unsigned decimation, std::vector<float> custom_taps)
         : Block(input),
           d_interpolation(interpolation),
           d_decimation(decimation),
@@ -25,7 +25,7 @@ namespace dsp
         d_decimation /= gcd;
 
         // Generate taps
-        std::vector<float> rtaps = firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
+        std::vector<float> rtaps = custom_taps.size() > 0 ? custom_taps : firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
 
         // Filter number & tap number
         nfilt = d_interpolation;

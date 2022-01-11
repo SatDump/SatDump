@@ -3,7 +3,7 @@
 #include "module.h"
 #include <complex>
 #include <fstream>
-#include "deframer.h"
+#include "common/codings/deframing/bpsk_ccsds_deframer.h"
 
 namespace aqua
 {
@@ -30,7 +30,7 @@ namespace aqua
         uint8_t *buffer;
 
         int errors[4];
-        CADUDeframer deframer;
+        deframing::BPSK_CCSDS_Deframer deframer;
 
         std::ifstream data_in;
         std::ofstream data_out;

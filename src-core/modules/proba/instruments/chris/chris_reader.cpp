@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include "logger.h"
+#include "common/image/composite.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
@@ -129,7 +130,6 @@ namespace proba
 
             if ((count_marker > 50 && count_marker < 70) || (count_marker > 500 && count_marker < 520) || (count_marker > 700 && count_marker < 720))
             {
-
                 mode = most_common(modeMarkers.begin(), modeMarkers.end());
 
                 if (mode == WATER_MODE || mode == CHLOROPHYL_MODE || mode == LAND_MODE)
@@ -169,6 +169,8 @@ namespace proba
             {
                 logger->info("Found new CHRIS image! Marker " + std::to_string(channel_marker));
                 imageParsers.insert(std::pair<int, std::shared_ptr<CHRISImageParser>>(channel_marker, std::make_shared<CHRISImageParser>(count, output_folder, all_images)));
+                imageParsers[channel_marker]->composites_all = composites_all;
+                imageParsers[channel_marker]->composites_low = composites_low;
             }
 
             imageParsers[channel_marker]->work(packet, channel_marker);
@@ -183,12 +185,10 @@ namespace proba
                 img.normalize();
                 WRITE_IMAGE_LOCAL(img, output_folder + "/CHRIS-" + std::to_string(count_ref) + ".png");
 
-                if (mode == CHLOROPHYL_MODE)
-                    writeChlorophylCompos(img);
-                if (mode == LAND_MODE)
-                    writeLandCompos(img);
                 if (mode == ALL_MODE)
                     writeAllCompos(img);
+                else
+                    writeHighResCompos(img);
 
                 std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
                 count_ref++;
@@ -203,92 +203,68 @@ namespace proba
                 currentPair.second->save();
         }
 
-        void CHRISImageParser::writeChlorophylCompos(image::Image<uint16_t> &img)
+        void CHRISImageParser::writeHighResCompos(image::Image<uint16_t> &img)
         {
-            logger->info("Writing chlorophyl mode RGB compositions...");
-            image::Image<uint16_t> img9 = img;
-            image::Image<uint16_t> img13 = img;
-            image::Image<uint16_t> img16 = img;
-            img9.crop(3077, 3077 + 375);
-            img13.crop(4613, 4613 + 375);
-            img16.crop(5765, 5765 + 375);
-
-            image::Image<uint16_t> image16169(375, 748, 3);
-            image16169.draw_image(0, img16);
-            image16169.draw_image(1, img16);
-            image16169.draw_image(2, img9);
-            WRITE_IMAGE_LOCAL(image16169, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB16-16-9.png");
-
-            image::Image<uint16_t> image13169(375, 748, 3);
-            image13169.draw_image(0, img13);
-            image13169.draw_image(1, img16);
-            image13169.draw_image(2, img9);
-            WRITE_IMAGE_LOCAL(image13169, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png");
-        }
-
-        void CHRISImageParser::writeLandCompos(image::Image<uint16_t> &img)
-        {
-            logger->info("Writing water mode RGB compositions...");
-            image::Image<uint16_t> imgs[19];
+            logger->info("Writing high resolution mode RGB compositions...");
+            std::vector<int> channelIDs;
+            std::vector<image::Image<uint16_t>> channels;
             for (int i = 0; i < 19; i++)
             {
-                imgs[i] = img;
-                imgs[i].crop(5 + i * 384, 5 + i * 384 + 375);
+                image::Image<uint16_t> ch = img;
+                ch.crop(5 + i * 384, 5 + i * 384 + 375);
+                channelIDs.push_back(i + 1);
+                channels.push_back(ch);
             }
 
-            image::Image<uint16_t> image5170(375, 748, 3);
-            image5170.draw_image(0, imgs[5]);
-            image5170.draw_image(1, imgs[17]);
-            image5170.draw_image(2, imgs[0]);
-            WRITE_IMAGE_LOCAL(image5170, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB5-17-0.png");
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : composites_low.items())
+            {
+                nlohmann::json compositeDef = compokey.value();
 
-            image::Image<uint16_t> image81410(375, 748, 3);
-            image81410.draw_image(0, imgs[8]);
-            image81410.draw_image(1, imgs[14]);
-            image81410.draw_image(2, imgs[10]);
-            WRITE_IMAGE_LOCAL(image81410, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-14-10.png");
+                std::string expression = compositeDef["expression"].get<std::string>();
 
-            image::Image<uint16_t> image8130(375, 748, 3);
-            image8130.draw_image(0, imgs[8]);
-            image8130.draw_image(1, imgs[13]);
-            image8130.draw_image(2, imgs[0]);
-            WRITE_IMAGE_LOCAL(image8130, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-13-0.png");
+                std::string name = "CHRIS-" + std::to_string(count_ref) + "-" + compokey.key();
 
-            image::Image<uint16_t> image13169(375, 748, 3);
-            image13169.draw_image(0, imgs[13]);
-            image13169.draw_image(1, imgs[16]);
-            image13169.draw_image(2, imgs[9]);
-            WRITE_IMAGE_LOCAL(image13169, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png");
+                logger->info(name + "...");
+                image::Image<uint16_t>
+                    compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                        channelIDs,
+                                                                                        expression,
+                                                                                        compositeDef);
+
+                WRITE_IMAGE_LOCAL(compositeImage, output_folder + "/" + name + ".png");
+            }
         }
 
         void CHRISImageParser::writeAllCompos(image::Image<uint16_t> &img)
         {
             logger->info("Writing ALL mode RGB compositions...");
-            image::Image<uint16_t> imgs[63];
+            std::vector<int> channelIDs;
+            std::vector<image::Image<uint16_t>> channels;
             for (int i = 0; i < 63; i++)
             {
-                imgs[i] = img;
-                imgs[i].crop(4 + i * 192, 4 + i * 192 + 186);
-                //WRITE_IMAGE_LOCAL(imgs[i], output_folder + "/CHRIS-" + std::to_string(count_ref) + "-CHANNEL-" + std::to_string(i + 1) + ".png");
+                image::Image<uint16_t> ch = img;
+                ch.crop(4 + i * 192, 4 + i * 192 + 186);
+                channelIDs.push_back(i + 1);
+                channels.push_back(ch);
             }
 
-            image::Image<uint16_t> image8409(187, 374, 3);
-            image8409.draw_image(0, imgs[8]);
-            image8409.draw_image(1, imgs[40]);
-            image8409.draw_image(2, imgs[9]);
-            WRITE_IMAGE_LOCAL(image8409, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-40-9.png");
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : composites_all.items())
+            {
+                nlohmann::json compositeDef = compokey.value();
 
-            image::Image<uint16_t> image204060(187, 374, 3);
-            image204060.draw_image(0, imgs[20]);
-            image204060.draw_image(1, imgs[40]);
-            image204060.draw_image(2, imgs[60]);
-            WRITE_IMAGE_LOCAL(image204060, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB20-40-60.png");
+                std::string expression = compositeDef["expression"].get<std::string>();
 
-            image::Image<uint16_t> image305518(187, 374, 3);
-            image305518.draw_image(0, imgs[30]);
-            image305518.draw_image(1, imgs[55]);
-            image305518.draw_image(2, imgs[18]);
-            WRITE_IMAGE_LOCAL(image305518, output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB30-55-18.png");
+                std::string name = "CHRIS-" + std::to_string(count_ref) + "-" + compokey.key();
+
+                logger->info(name + "...");
+                image::Image<uint16_t>
+                    compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                        channelIDs,
+                                                                                        expression,
+                                                                                        compositeDef);
+
+                WRITE_IMAGE_LOCAL(compositeImage, output_folder + "/" + name + ".png");
+            }
         }
 
         std::string CHRISImageParser::getModeName(int mode)

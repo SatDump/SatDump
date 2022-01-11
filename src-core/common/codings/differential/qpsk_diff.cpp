@@ -1,10 +1,10 @@
-#include "diff.h"
+#include "qpsk_diff.h"
 
-namespace cfosat
+namespace diff
 {
-    void CFOSATDiff::work(uint8_t *in, int len, uint8_t *out)
+    void QPSKDiff::work(uint8_t *in, int len, uint8_t *out)
     {
-        int oo = 0;
+        oo = 0;
 
         // Process all given samples
         for (int ii = 0; ii < len; ii++)
@@ -31,17 +31,27 @@ namespace cfosat
             {
                 Xout = (Yin_1 ^ Yin);
                 Yout = (Xin_1 ^ Xin);
-                out[oo++] = (Xout << 1) + (Yout >> 1);
+                ou = (Xout << 1) + (Yout >> 1);
             }
             else
             {
                 Xout = (Xin_1 ^ Xin);
                 Yout = (Yin_1 ^ Yin);
-                out[oo++] = (Xout + Yout);
+                ou = (Xout + Yout);
             }
 
             // Output is inverted on CFOSAT
-            out[oo] = (out[oo] & 1) << 1 | out[oo] >> 1;
+            if (swap)
+            {
+                out[oo * 2 + 0] = ou & 1;
+                out[oo * 2 + 1] = ou >> 1;
+            }
+            else
+            {
+                out[oo * 2 + 0] = ou >> 1;
+                out[oo * 2 + 1] = ou & 1;
+            }
+            oo++;
         }
     }
 } // namespace fengyun
