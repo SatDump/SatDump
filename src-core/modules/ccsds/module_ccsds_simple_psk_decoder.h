@@ -18,6 +18,14 @@ namespace ccsds
     Frame length, differential encoding or not are kept
     configurable, alongside the ASM as this same decoder
     can cover a lot of other specifications.
+
+    For QPSK non-differentially encoded signals, 2 BPSK
+    deframers are used : one at 0 degs in phase, and another
+    at 90 degs out of phase.
+    This ensure one or the other will end up with the right
+    "BPSK-like" branch with the ASM potentially flipped.
+    That's fine to do it that way as the 2 deframers should
+    never lock at the same time.
     */
     class CCSDSSimplePSKDecoderModule : public ProcessingModule
     {
@@ -56,6 +64,7 @@ namespace ccsds
         std::atomic<size_t> progress;
 
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
+        std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer_qpsk;
         std::shared_ptr<reedsolomon::ReedSolomon> reed_solomon;
 
         int errors[10];

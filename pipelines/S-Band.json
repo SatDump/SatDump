@@ -316,5 +316,39 @@
                 "cloudsat_cpr": {}
             }
         }
+    },
+    "grace_fo_link": {
+        "name": "Grace-FO Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 20e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 1500000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.001,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
     }
 }

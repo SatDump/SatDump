@@ -67,6 +67,7 @@ namespace ccsds
             asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
 
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
+        deframer_qpsk = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync); // For QPSK without NRZ-M which gets split into 2 BPSK deframers
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
     }
@@ -117,6 +118,8 @@ namespace ccsds
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
+            int frames = 0;
+
             // Read a buffer
             if (input_data_type == DATA_FILE)
                 data_in.read((char *)soft_buffer, d_buffer_size);
@@ -136,15 +139,40 @@ namespace ccsds
                 if (d_qpsk_swapiq) // Swap IQ if required
                     rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 
-                for (int i = 0; i < d_buffer_size / 2; i++) // Demod QPSK to bits
-                    qpsk_diff_buffer[i] = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+                if (d_diff_decode) // Diff decoding if required
+                {
+                    for (int i = 0; i < d_buffer_size / 2; i++) // Demod QPSK to bits
+                        qpsk_diff_buffer[i] = qpsk_const.soft_demod(&soft_buffer[i * 2]);
 
-                // Perform differential decoding. For now only QPSK with diff coding is supported.
-                qpsk_diff.work(qpsk_diff_buffer, d_buffer_size / 2, bits_out);
+                    // Perform differential decoding. For now only QPSK with diff coding is supported.
+                    qpsk_diff.work(qpsk_diff_buffer, d_buffer_size / 2, bits_out);
+                }
+                else
+                {
+                    // Run deframer on 0 deg const
+                    for (int i = 0; i < d_buffer_size / 2; i++)
+                    {
+                        uint8_t sym = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+                        bits_out[i * 2 + 0] = sym >> 1;
+                        bits_out[i * 2 + 1] = sym & 1;
+                    }
+
+                    frames += deframer_qpsk->work(bits_out, d_buffer_size, &frame_buffer[frames * d_cadu_bytes]);
+
+                    // Now shift by 90 degs and let the main one do its thing
+                    rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_90, true);
+
+                    for (int i = 0; i < d_buffer_size / 2; i++)
+                    {
+                        uint8_t sym = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+                        bits_out[i * 2 + 0] = sym >> 1;
+                        bits_out[i * 2 + 1] = sym & 1;
+                    }
+                }
             }
 
             // Run deframer
-            int frames = deframer->work(bits_out, d_buffer_size, frame_buffer);
+            frames += deframer->work(bits_out, d_buffer_size, &frame_buffer[frames * d_cadu_bytes]);
 
             for (int i = 0; i < frames; i++)
             {
@@ -169,7 +197,11 @@ namespace ccsds
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                std::string deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
+                std::shared_ptr<deframing::BPSK_CCSDS_Deframer> def = deframer;
+                if (d_constellation == dsp::QPSK && !d_diff_decode)       // Is we are working with non-NRZM QPSK, check what deframer to use
+                    if (deframer_qpsk->getState() > deframer->getState()) // ...and use the one that is locked
+                        def = deframer_qpsk;
+                std::string deframer_state = def->getState() == def->STATE_NOSYNC ? "NOSYNC" : (def->getState() == def->STATE_SYNCING ? "SYNCING" : "SYNCED");
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
             }
         }
@@ -182,6 +214,11 @@ namespace ccsds
     void CCSDSSimplePSKDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+        std::shared_ptr<deframing::BPSK_CCSDS_Deframer> def = deframer;
+        if (d_constellation == dsp::QPSK && !d_diff_decode)       // Is we are working with non-NRZM QPSK, check what deframer to use
+            if (deframer_qpsk->getState() > deframer->getState()) // ...and use the one that is locked
+                def = deframer_qpsk;
 
         ImGui::BeginGroup();
         {
@@ -233,9 +270,9 @@ namespace ccsds
 
                 ImGui::SameLine();
 
-                if (deframer->getState() == deframer->STATE_NOSYNC)
+                if (def->getState() == def->STATE_NOSYNC)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else if (deframer->getState() == deframer->STATE_SYNCING)
+                else if (def->getState() == def->STATE_SYNCING)
                     ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
