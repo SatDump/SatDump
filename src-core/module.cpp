@@ -138,8 +138,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/spacex/module_spacex_decoder.h"
 #include "modules/spacex/module_falcon_decoder.h"
 
-#include "modules/smap/module_smap_s_decoder.h"
-
 #include "modules/oceansat/module_oceansat2_db_decoder.h"
 #include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
 
@@ -272,9 +270,6 @@ void registerModules()
     // Falcon & Starship
     REGISTER_MODULE(spacex::SpaceXDecoderModule);
     REGISTER_MODULE(spacex::FalconDecoderModule);
-
-    // SMAP
-    REGISTER_MODULE(smap::SMAPSDecoderModule);
 
     // Oceansat
     REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);

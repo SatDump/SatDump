@@ -173,7 +173,14 @@
                 }
             },
             "cadu": {
-                "smap_s_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 10232,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
             }
         }
     },
