@@ -320,6 +320,8 @@ void registerModules()
     // CloudSat
     REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
+    // IRIS
+
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});
 
