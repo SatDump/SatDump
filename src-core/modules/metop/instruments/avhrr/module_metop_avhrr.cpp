@@ -144,7 +144,7 @@ namespace metop
                                     struct tm timeinfo_struct;
 
 #ifdef _WIN32
-                                    memcpy(&timeinfo_struct, gmtime(&curr_time), sizeof(struct tm));
+                                    memcpy(&timeinfo_struct, gmtime(&line_timestamp), sizeof(struct tm));
 #else
                                     gmtime_r(&line_timestamp, &timeinfo_struct);
 #endif
