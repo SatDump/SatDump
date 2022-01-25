@@ -36,6 +36,7 @@ void http_handle(nng_aio *aio)
     nng_http_res *res;
     nng_http_res_alloc(&res);
     nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
     nng_aio_set_output(aio, 0, res);
     nng_aio_finish(aio, 0);
 }

@@ -3,12 +3,12 @@
 
 #ifdef __APPLE__
 #include <libkern/OSByteOrder.h>
-#define __bswap_16 OSSwapInt16
+#define __builtin_bswap16 OSSwapInt16
 #elif _WIN32
-#define __bswap_16 _byteswap_ushort
+#define __builtin_bswap16 _byteswap_ushort
 #elif __ANDROID__
 #include <byteswap.h>
-#define __bswap_16 __swap16
+#define __builtin_bswap16 __swap16
 #endif
 
 namespace coriolis
@@ -47,8 +47,8 @@ namespace coriolis
                     int16_t *data16 = (int16_t *)&frame[12];
                     for (int i = 0; i < 13; i++)
                     {
-                        uint16_t dd1 = __bswap_16(data16[i * 2 + 0]);
-                        uint16_t dd2 = __bswap_16(data16[i * 2 + 1]);
+                        uint16_t dd1 = __builtin_bswap16(data16[i * 2 + 0]);
+                        uint16_t dd2 = __builtin_bswap16(data16[i * 2 + 1]);
                         image1[lines * width + pixel_offset + (12 - i)] = *((int16_t *)&dd1) + 32768;
                         image2[lines * width + pixel_offset + (12 - i)] = *((int16_t *)&dd2) + 32768;
                     }

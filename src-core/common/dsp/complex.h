@@ -30,6 +30,12 @@ struct complex_t
         return complex_t{real, -imag};
     }
 
+    // Normal
+    float norm()
+    {
+        return sqrt(real * real + imag * imag);
+    }
+
     // Complex / Complex operations
     complex_t operator+(const complex_t &b)
     {
@@ -76,6 +82,13 @@ struct complex_t
     complex_t operator/(const float &b)
     {
         return complex_t(real / b, imag / b);
+    }
+
+    complex_t &operator*=(const float &b)
+    {
+        real *= b;
+        imag *= b;
+        return *this;
     }
 };
 //};

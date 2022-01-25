@@ -43,21 +43,84 @@
             "products": {
                 "proba_chris": {
                     "composites_low": {
-                        "RGB-221": {
+                        "RGB-080502": {
                             "channels": [
                                 1,
                                 2
                             ],
-                            "expression": "ch16 * 4, ch16 * 4, ch9 * 4"
+                            "expression": "(ch8-0.03)*3, (ch5-0.03)*2.7, (ch2-0.03)*3"
+                        },
+                        "EVI-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch19-ch8)/(ch19+6*ch8-7.5*ch2+1))*2"
+                        },
+                        "EVI-141908-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch14 * 1.5, (ch19 + (ch19-ch8)*1.5/(ch19+6*ch8-7.5*ch2+1)) * 1.5, ch8* 1.5"
+                        },
+                        "RGB-191908-(221)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch19*2, ch19*2, ch8*2"
+                        },
+                        "EVI-(vegetation)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch15-ch8)/(ch15+6*ch8-7.5*ch2+1))*1.5"
+                        },
+                        "EVI-101808-(vegetation)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch10 * 1.5, ch18 + (ch15-ch8)/(ch15+6*ch8-7.5*ch2+1) * 1.5, ch8* 1.5"
+                        },
+                        "RGB-151508-(221)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch19*2, ch19*2, ch8*2"
                         }
                     },
                     "composites_all": {
-                        "RGB-221": {
+                        "RGB-251607-(RGB)": {
                             "channels": [
                                 1,
                                 2
                             ],
-                            "expression": "ch1 * 4 - 0.2, ch7 * 4 - 0.2, ch7 * 4.4 - 0.2"
+                            "expression": "ch25 * 1.65, ch16 * 2.1, ch7 * 2"
+                        },
+                        "RGB-464625-(221)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch46 * 2, ch46 * 2, ch25 * 2"
+                        },
+                        "EVI-634625-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch63, ch46 + ((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1)), ch25"
+                        },
+                        "EVI-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1))*1.5"
                         }
                     }
                 },
@@ -173,7 +236,14 @@
                 }
             },
             "cadu": {
-                "smap_s_decoder": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 10232,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
             }
         }
     },
@@ -314,6 +384,40 @@
             },
             "products": {
                 "cloudsat_cpr": {}
+            }
+        }
+    },
+    "grace_fo_link": {
+        "name": "Grace-FO Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 20e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 1500000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.001,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
             }
         }
     }
