@@ -16,6 +16,13 @@
 
 satdump_ui_status satdumpUiStatus = MAIN_MENU;
 
+#ifdef BUILD_TRACKING
+#include "tracking/tracking.h"
+
+std::shared_ptr<TrackingUI> ui;
+bool renderTracking = false;
+#endif
+
 void initMainUI()
 {
     offline::initOfflineProcessingMenu();
@@ -27,8 +34,23 @@ void initMainUI()
 #endif
 }
 
+bool first = true;
+
 void renderMainUI(int wwidth, int wheight)
 {
+#ifdef BUILD_TRACKING
+    if (renderTracking)
+    {
+        if (first)
+        {
+            ui = std::make_shared<TrackingUI>();
+            first = false;
+        }
+        ui->draw(wwidth, wheight);
+        return;
+    }
+#endif
+
     if (satdumpUiStatus == OFFLINE_PROCESSING)
     {
         uiCallListMutex->lock();
@@ -107,6 +129,13 @@ void renderMainUI(int wwidth, int wheight)
                 credits::renderCredits(wwidth, wheight);
                 ImGui::EndTabItem();
             }
+#ifdef BUILD_TRACKING
+            if (ImGui::BeginTabItem("Tracking"))
+            {
+                renderTracking = true;
+                ImGui::EndTabItem();
+            }
+#endif
         }
         ImGui::EndTabBar();
 
