@@ -5,7 +5,7 @@
 namespace image
 {
     template <typename T>
-    void Image<T>::init(int width, int height, int channels)
+    void Image<T>::init(size_t width, size_t height, int channels)
     {
         // Reset image if we already had one
         if (has_data)
@@ -44,7 +44,7 @@ namespace image
     }
 
     template <typename T>
-    Image<T>::Image(int width, int height, int channels)
+    Image<T>::Image(size_t width, size_t height, int channels)
     {
         init(width, height, channels);
     }
@@ -58,7 +58,7 @@ namespace image
     }
 
     template <typename T>
-    Image<T>::Image(T *buffer, int width, int height, int channels)
+    Image<T>::Image(T *buffer, size_t width, size_t height, int channels)
     {
         // Copy contents of the image over
         init(width, height, channels);

@@ -112,7 +112,7 @@ namespace viterbi
         else
         {
             float ber = 10;
-            for (int p = 0; p < d_phases_to_check.size(); p++)
+            for (int p = 0; p < (int)d_phases_to_check.size(); p++)
             {
                 for (int o = 0; o < 2; o++)
                 {

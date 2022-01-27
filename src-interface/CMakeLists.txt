@@ -23,6 +23,10 @@ if(BUILD_ZIQ)
     target_compile_definitions(satdump_interface PUBLIC BUILD_ZIQ="1")
 endif()
 
+if(BUILD_TRACKING)
+    target_compile_definitions(satdump_interface PUBLIC BUILD_TRACKING="1")
+endif()
+
 # Link against the core
 target_link_libraries(satdump_interface PUBLIC satdump_core)
 

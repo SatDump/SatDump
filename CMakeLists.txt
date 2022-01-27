@@ -6,14 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_compile_definitions(SATDUMP_VERSION="0.0.38")
-
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_LIVE           "Build the live processing feature (WIP)"                   ON)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
+option(BUILD_TRACKING       "Build the very WIP Tracking UI"                            OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
 if(APPLE)
@@ -42,7 +41,9 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project (SatDump)
+project (SatDump VERSION "0.0.39")
+
+add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
 include(CheckCXXSourceCompiles)
 
@@ -96,3 +97,26 @@ endif ()
 # Create uninstall target
 configure_file(${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake @ONLY)
 add_custom_target(uninstall ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+# CPack Configuration
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME} CACHE STRING "satdump-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
+set(CPACK_PACKAGE_VENDOR "SatDump")
+set(CPACK_PACKAGE_CONTACT "Aang23")
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+set(CPACK_GENERATOR DEB)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+
+include(CPack)
