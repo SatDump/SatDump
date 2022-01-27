@@ -21,6 +21,10 @@ namespace viterbi
     {
         soft_buffer = new uint8_t[d_buffer_size * 2];
         output_buffer = new uint8_t[d_buffer_size * 2];
+                                                                                                                     
+        for(int i = 0; i < 2; i++)
+            for(int y = 0; y < 4; y++)
+                d_bers[y][i] = 10;
     }
 
     Viterbi1_2::~Viterbi1_2()
