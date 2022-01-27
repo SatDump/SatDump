@@ -204,7 +204,7 @@ namespace live
                 else
                 {
                     if (!std::filesystem::exists(output_file))
-                        std::filesystem::create_directory(output_file);
+                        std::filesystem::create_directories(output_file);
 
                     logger->info(downlink_pipeline);
 
