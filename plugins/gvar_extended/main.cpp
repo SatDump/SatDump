@@ -11,7 +11,6 @@
 #include "tle.h"
 #include "common/geodetic/projection/geo_projection.h"
 #include "common/map/map_drawer.h"
-#include "common/image/image.h"
 
 #define FIXED_FLOAT(x) std::fixed << std::setprecision(3) << (x)
 
@@ -119,27 +118,23 @@ private:
             float offsetXratio = 0.005;
             float offsetYratio = 0.0025;
 
-            image::Image<uint8_t> imgtext, imgtext1, imgtext2;
-
             bar_height = preview.width() * bar_ratio;
             text_size = preview.width() * text_ratio;
-            offsetX = preview.width() * offsetXratio;
-            offsetY = preview.width() * offsetYratio;
-
-            previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
+            offsetX = 5; //preview.width() * offsetXratio;
+            offsetY = 1; //preview.width() * offsetYratio;
 
             unsigned char color = 255;
 
-            std::vector<image::Image<uint8_t>> font = image::make_font(text_size);
+            image::Image<uint8_t> imgtext = image::generate_text_image(sat_name.c_str(), &color, bar_height, offsetX, offsetY); 
+            image::Image<uint8_t>imgtext1 = image::generate_text_image(date_time.c_str(), &color, bar_height, offsetX, offsetY); 
+            image::Image<uint8_t>imgtext2 = image::generate_text_image(misc_preview_text.c_str(), &color, bar_height, offsetX, offsetY); 
 
+            previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
             previewImage.fill(0);
-            imgtext.draw_text(0, 0, &color, font, sat_name.c_str());
-            imgtext1.draw_text(0, 0, &color, font, date_time.c_str());
-            imgtext2.draw_text(0, 0, &color, font, misc_preview_text.c_str());
 
-            previewImage.draw_image(0, imgtext, offsetX, offsetY);
-            previewImage.draw_image(0, imgtext1, previewImage.width() - imgtext1.width() - offsetX, offsetY);
-            previewImage.draw_image(0, imgtext2, offsetX, bar_height + preview.height() + offsetY);
+            previewImage.draw_image(0, imgtext, 0, 0);
+            previewImage.draw_image(0, imgtext1, previewImage.width() - imgtext1.width(), 0);
+            previewImage.draw_image(0, imgtext2, 0, bar_height + preview.height());
             previewImage.draw_image(0, preview, 0, bar_height);
         }
 
