@@ -69,6 +69,7 @@ namespace image
         void draw_circle(int x0, int y0, int radius, T color[], bool fill = false);                    // Draw a circle with Bresenham's Midpoint algorithm
         void draw_image(int channel, Image<T> image, int x = 0, int y = 0);                            // Draw a B&W Image onto a channel
         void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // Draw text onto the image
+        Image<T> generate_text_image(std::string text, T color[], int size, int padX, int padY);       //return text on a transparent background
 
     public:
         Image();                                                     // Init null image

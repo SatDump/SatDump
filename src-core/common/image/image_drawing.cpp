@@ -193,6 +193,16 @@ namespace image
         delete[] colorf;
     }
 
+    template <typename T>
+    Image<T> Image<T>::generate_text_image(std::string text, T color[], int height, int padX, int padY){
+        std::vector<Image<uint8_t>> font = make_font(height-2*padY);
+        int width = font[0].width()*text.length() + 2*padX;
+        int height = height;
+        Image<T> out(width, height, 1) = {0};
+        out.draw_text(padX, padY, color, font, text);
+        return out;
+    }
+
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
     template class Image<uint16_t>;
