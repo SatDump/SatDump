@@ -107,7 +107,7 @@ namespace goes
             images.image4.crop(0, 0, ir1_width, ir1_height);
 
             logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, "1") + ".png");
-            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str());
+            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str(), false);
 
             logger->info("Channel 2... " + getGvarFilename(sat_number, timeReadable, "2") + ".png");
             images.image1.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2") + ".png").c_str());

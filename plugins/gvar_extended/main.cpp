@@ -11,7 +11,6 @@
 #include "tle.h"
 #include "common/geodetic/projection/geo_projection.h"
 #include "common/map/map_drawer.h"
-#include "common/image/image.h"
 
 #define FIXED_FLOAT(x) std::fixed << std::setprecision(3) << (x)
 
@@ -111,35 +110,27 @@ private:
                                     (evt.timeReadable->tm_min > 9 ? std::to_string(evt.timeReadable->tm_min) : "0" + std::to_string(evt.timeReadable->tm_min)) + " UTC";
 
             int offsetX, offsetY, bar_height;
-            unsigned int text_size;
 
             //set ratios for calculating bar size
             float bar_ratio = 0.02;
-            float text_ratio = 0.015;
-            float offsetXratio = 0.005;
-            float offsetYratio = 0.0025;
 
-            image::Image<uint8_t> imgtext, imgtext1, imgtext2;
 
             bar_height = preview.width() * bar_ratio;
-            text_size = preview.width() * text_ratio;
-            offsetX = preview.width() * offsetXratio;
-            offsetY = preview.width() * offsetYratio;
-
-            previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
+            offsetX = 5; //preview.width() * offsetXratio;
+            offsetY = 1; //preview.width() * offsetYratio;
 
             unsigned char color = 255;
 
-            std::vector<image::Image<uint8_t>> font = image::make_font(text_size);
+            image::Image<uint8_t> imgtext = image::generate_text_image(sat_name.c_str(), &color, bar_height, offsetX, offsetY); 
+            image::Image<uint8_t>imgtext1 = image::generate_text_image(date_time.c_str(), &color, bar_height, offsetX, offsetY); 
+            image::Image<uint8_t>imgtext2 = image::generate_text_image(misc_preview_text.c_str(), &color, bar_height, offsetX, offsetY); 
 
+            previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
             previewImage.fill(0);
-            imgtext.draw_text(0, 0, &color, font, sat_name.c_str());
-            imgtext1.draw_text(0, 0, &color, font, date_time.c_str());
-            imgtext2.draw_text(0, 0, &color, font, misc_preview_text.c_str());
 
-            previewImage.draw_image(0, imgtext, offsetX, offsetY);
-            previewImage.draw_image(0, imgtext1, previewImage.width() - imgtext1.width() - offsetX, offsetY);
-            previewImage.draw_image(0, imgtext2, offsetX, bar_height + preview.height() + offsetY);
+            previewImage.draw_image(0, imgtext, 0, 0);
+            previewImage.draw_image(0, imgtext1, previewImage.width() - imgtext1.width(), 0);
+            previewImage.draw_image(0, imgtext2, 0, bar_height + preview.height());
             previewImage.draw_image(0, preview, 0, bar_height);
         }
 
@@ -157,7 +148,12 @@ private:
 
                 std::ofstream output(evt.directory + "/temperatures.txt");
                 logger->info("Temperatures... temperatures.txt");
-                std::array<image::Image<uint16_t>, 4> channels = {cropIR(evt.images.image1), cropIR(evt.images.image2), cropIR(evt.images.image3), cropIR(evt.images.image4)};
+
+                image::Image<uint16_t> im1 = cropIR(evt.images.image1);
+                image::Image<uint16_t> im2 = cropIR(evt.images.image2);
+                image::Image<uint16_t> im3 = cropIR(evt.images.image3);
+                image::Image<uint16_t> im4 = cropIR(evt.images.image4);
+                std::array<image::Image<uint16_t>, 4> channels = {im1, im2, im3, im4};
 
                 geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 
@@ -287,14 +283,14 @@ private:
 
     static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
     {
-        image::Image<uint16_t> output(4749, input.height(), 1);
+        image::Image<uint16_t> output = input;
         if (input.width() == 5206)
         {
-            output.draw_image(0, input, 0, 0);
+            output.crop(0, 4749);
         }
         else if (input.width() == 5209)
         {
-            output.draw_image(0, input, -463, 0);
+            output.crop(463, 5209);
         }
         else
         {
@@ -305,14 +301,14 @@ private:
 
     static image::Image<uint16_t> cropVIS(image::Image<uint16_t> input)
     {
-        image::Image<uint16_t> output(18990, input.height(), 1);
+        image::Image<uint16_t> output = input;
         if (input.width() == 20824)
         {
-            output.draw_image(0, input, 0, 0);
+            output.crop(0, 18990);
         }
         else if (input.width() == 20836)
         {
-            output.draw_image(0, input, -1852, 0);
+            output.crop(1852, 20826);
         }
         else
         {

@@ -18,17 +18,17 @@ namespace image
 
         // Size and parameters
         int d_depth = 0;
-        int d_width = 0;
-        int d_height = 0;
+        size_t d_width = 0;
+        size_t d_height = 0;
         int d_channels = 0;
 
     public:
         // Init
-        void init(int width, int height, int channels); // Init image buffer
-        void clear();                                   // Delete current buffer. To clear the image with a color instead, use fill()
+        void init(size_t width, size_t height, int channels); // Init image buffer
+        void clear();                                         // Delete current buffer. To clear the image with a color instead, use fill()
 
         // Operators
-        T &operator[](int i) { return d_data[i]; }
+        T &operator[](size_t i) { return d_data[i]; }
         Image<T> &operator=(const Image<T> &img);
         Image<T> &operator<<=(const int &shift);
 
@@ -36,10 +36,10 @@ namespace image
         T clamp(int input); // Clamp input value to what this image can handle
 
         int depth() const { return d_depth; }       // Returns image bit depth
-        int width() const { return d_width; }       // Returns image width
-        int height() const { return d_height; }     // Returns image height
+        size_t width() const { return d_width; }    // Returns image width
+        size_t height() const { return d_height; }  // Returns image height
         int channels() const { return d_channels; } // Returns image channel count
-        int size() const { return data_size; }      // Returns image data size
+        size_t size() const { return data_size; }   // Returns image data size
 
         T *data() { return d_data; }                                              // Return the raw image data buffer
         T *channel(int channel) { return &d_data[d_width * d_height * channel]; } // Return a pointer to a specific channel
@@ -71,11 +71,11 @@ namespace image
         void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // Draw text onto the image
 
     public:
-        Image();                                               // Init null image
-        Image(int width, int height, int channels);            // Init emtpy image, set to 0
-        Image(T *buffer, int width, int height, int channels); // Init from existing buffer
-        Image(const Image &img);                               // Copy constructor
-        ~Image();                                              // Destructor
+        Image();                                                     // Init null image
+        Image(size_t width, size_t height, int channels);            // Init emtpy image, set to 0
+        Image(T *buffer, size_t width, size_t height, int channels); // Init from existing buffer
+        Image(const Image &img);                                     // Copy constructor
+        ~Image();                                                    // Destructor
 
     public:
         // PNG Interface
@@ -89,7 +89,10 @@ namespace image
     // Others
 
     // Font creation
-    std::vector<Image<uint8_t>> make_font(int size); // Generate a font to be used by draw_text. Uses the bundled GNU FreeMono
+    std::vector<Image<uint8_t>> make_font(int size, bool text_mode = true);                                          // Generate a font to be used by draw_text. Uses the bundled GNU FreeMono
+    
+    template <typename T>                                      
+    Image<T> generate_text_image(std::string text, T color[], int size, int padX, int padY);  //return text on a transparent background
 
     // LUT functions
     template <typename T>
