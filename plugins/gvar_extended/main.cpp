@@ -281,16 +281,16 @@ private:
         return sum / std::pow(r * 2 + 1, 2);
     }
 
-    static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
+        static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
     {
-        image::Image<uint16_t> output = input;
+        image::Image<uint16_t> output(4749, input.height(), 1);
         if (input.width() == 5206)
         {
-            output.crop(0, 4749);
+            output.draw_image(0, input, 0, 0);
         }
         else if (input.width() == 5209)
         {
-            output.crop(463, 5209);
+            output.draw_image(0, input, -463, 0);
         }
         else
         {
@@ -301,14 +301,14 @@ private:
 
     static image::Image<uint16_t> cropVIS(image::Image<uint16_t> input)
     {
-        image::Image<uint16_t> output = input;
+        image::Image<uint16_t> output(18990, input.height(), 1);
         if (input.width() == 20824)
         {
-            output.crop(0, 18990);
+            output.draw_image(0, input, 0, 0);
         }
         else if (input.width() == 20836)
         {
-            output.crop(1852, 20826);
+            output.draw_image(0, input, -1852, 0);
         }
         else
         {
