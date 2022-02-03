@@ -469,7 +469,7 @@
         "baseband_type": "i16",
         "work": {
             "baseband": {},
-            "soft": {
+            "cadu": {
                 "elektro_arktika_tlm_demod": {
                     "buffer_size": 8192
                 }

@@ -262,6 +262,7 @@ void registerModules()
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
     REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
+    //REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
@@ -319,6 +320,9 @@ void registerModules()
     REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // IRIS
+
+    // CHEOPS
+    //REGISTER_MODULE(cheops::telescope::CHEOPSTelescopeDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

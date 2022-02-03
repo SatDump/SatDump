@@ -7,7 +7,7 @@ namespace ccsds
     namespace ccsds_1_0_proba
     {
         // Parse MPDU from CADU
-        MPDU parseMPDU(uint8_t *cadu, bool /*hasVCDUInsertZone*/)
+        MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone)
         {
             bool sync_flag = (cadu[8] >> 6) % 2;
             uint16_t first_header_pointer = (cadu[8] % (int)pow(2, 3)) << 8 | cadu[9];
@@ -21,7 +21,7 @@ namespace ccsds
             //    cadu[i] = cadu[i] << 7 | cadu[i + 1] >> (8 - 7);
             //}
 
-            return {sync_flag, first_header_pointer, &cadu[10]};
+            return {sync_flag, first_header_pointer, &cadu[hasVCDUInsertZone ? 14 : 10]};
         }
 
     } // namespace libccsds
