@@ -91,6 +91,13 @@
                                 2
                             ],
                             "expression": "ch19*2, ch19*2, ch8*2"
+                        },
+                        "RGB-120805-[water]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "(ch12-0.1)*4, (ch8-0.1)*4, (ch5-0.1)*4"
                         }
                     },
                     "composites_all": {
