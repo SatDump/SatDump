@@ -112,6 +112,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/noaa/instruments/hirs/module_noaa_hirs.h"
 #include "modules/noaa/instruments/mhs/module_noaa_mhs.h"
 #include "modules/noaa/instruments/amsu/module_noaa_amsu.h"
+#include "modules/noaa/instruments/avhrr/module_noaa_avhrr_gac.h"
 
 #include "modules/meteor/module_meteor_hrpt_decoder.h"
 #include "modules/meteor/module_meteor_lrpt_decoder.h"
@@ -171,6 +172,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/coriolis/instruments/windsat/module_coriolis_windsat.h"
 
 #include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
+
+//#include "modules/iris/module_iris_dump_decoder.h"
 
 void registerModules()
 {
@@ -238,6 +241,7 @@ void registerModules()
     REGISTER_MODULE(noaa::hirs::NOAAHIRSDecoderModule);
     REGISTER_MODULE(noaa::mhs::NOAAMHSDecoderModule);
     REGISTER_MODULE(noaa::amsu::NOAAAMSUDecoderModule);
+    REGISTER_MODULE(noaa::avhrr::NOAAAVHRRGACDecoderModule);
 
     // METEOR
     REGISTER_MODULE(meteor::METEORHRPTDecoderModule);
@@ -262,7 +266,7 @@ void registerModules()
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
     REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
-    //REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
+    // REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
@@ -320,9 +324,10 @@ void registerModules()
     REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // IRIS
+    // REGISTER_MODULE(iris::IRISDumpDecoderModule);
 
     // CHEOPS
-    //REGISTER_MODULE(cheops::telescope::CHEOPSTelescopeDecoderModule);
+    // REGISTER_MODULE(cheops::telescope::CHEOPSTelescopeDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

@@ -22,7 +22,9 @@ namespace noaa
 {
     namespace avhrr
     {
-        NOAAAVHRRDecoderModule::NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        NOAAAVHRRDecoderModule::NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : ProcessingModule(input_file, output_file_hint, parameters),
+              gac_mode(true)
         {
         }
 
@@ -38,7 +40,7 @@ namespace noaa
 
             time_t lastTime = 0;
 
-            AVHRRReader reader;
+            AVHRRReader reader(gac_mode);
 
             uint16_t buffer[11090];
 
@@ -127,9 +129,9 @@ namespace noaa
             // Reproject to an equirectangular proj
             if (reader.lines > 0)
             {
-                //nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = 0; //28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-                //image4.equalize();
+                // nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
+                int norad = 0; // 28654; //satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
+                // image4.equalize();
 
                 // Setup Projecition, based off N19
                 std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_15_avhrr.json"); // Init it with something
@@ -195,7 +197,7 @@ namespace noaa
                     nlohmann::json compositeDef = compokey.value();
 
                     // Not required here
-                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
+                    // std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
 
                     std::string expression = compositeDef["expression"].get<std::string>();
                     bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;

@@ -6,16 +6,14 @@ namespace noaa
 {
     namespace avhrr
     {
-        class NOAAAVHRRDecoderModule : public ProcessingModule
+        class NOAAAVHRRGACDecoderModule : public ProcessingModule
         {
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
-            bool gac_mode;
-
         public:
-            NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            NOAAAVHRRGACDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 

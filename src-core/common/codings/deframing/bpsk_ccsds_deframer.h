@@ -27,6 +27,7 @@ namespace deframing
         const uint32_t CADU_ASM_INV;  // Inverted ASM
         const int CADU_ASM_SIZE = 32; // ASM bit length
         const int CADU_SIZE;          // CADU bit length, with ASM
+        int CADU_PADDING = 0;         // Optional frame padding
 
         // There are left writable, so they can be customized if required
         int STATE_NOSYNC = 2;  // NOSYNC state, searching for a sync with very low tolerance (bit-level search)

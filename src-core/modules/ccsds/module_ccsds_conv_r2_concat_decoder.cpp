@@ -17,7 +17,7 @@ namespace ccsds
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
           d_cadu_size(parameters["cadu_size"].get<int>()),
-          d_cadu_bytes(d_cadu_size / 8),
+          d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
 
           d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
@@ -84,6 +84,12 @@ namespace ccsds
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
+
+        if (d_cadu_size % 8 != 0) // If this is not a perfect byte length match, pad the frames
+        {
+            deframer->CADU_PADDING = d_cadu_size % 8;
+            logger->info("Frames will be padded!");
+        }
     }
 
     std::vector<ModuleDataType> CCSDSConvR2ConcatDecoderModule::getInputTypes()

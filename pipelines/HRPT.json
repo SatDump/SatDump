@@ -505,5 +505,53 @@
                 }
             }
         }
+    },
+    "noaa_gac": {
+        "name": "NOAA GAC",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1702.5,
+            2247.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2.6616e6,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192,
+                    "dc_block": true
+                }
+            },
+            "frm": {
+                "ccsds_simple_psk_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 33270,
+                    "derandomize": false,
+                    "nrzm": false,
+                    "rs_i": 0,
+                    "asm": "0xA116FD71"
+                }
+            },
+            "products": {
+                "noaa_avhrr_gac": {}
+            }
+        }
     }
 }
