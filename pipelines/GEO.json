@@ -121,9 +121,15 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": true,
-                    "diff_decode": true
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -172,9 +178,15 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": true,
-                    "diff_decode": true
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "tcp": {
@@ -220,9 +232,14 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": true,
-                    "diff_decode": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -269,9 +286,14 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": true,
-                    "diff_decode": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "tcp": {
@@ -313,11 +335,14 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": false,
-                    "diff_decode": false,
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             }
         }
@@ -357,9 +382,14 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": true,
-                    "diff_decode": false
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -408,11 +438,14 @@
                 }
             },
             "cadu": {
-                "xrit_decoder": {
-                    "is_bpsk": false,
-                    "diff_decode": false,
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
@@ -436,7 +469,7 @@
         "baseband_type": "i16",
         "work": {
             "baseband": {},
-            "soft": {
+            "cadu": {
                 "elektro_arktika_tlm_demod": {
                     "buffer_size": 8192
                 }

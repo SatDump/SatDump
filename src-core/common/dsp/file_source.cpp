@@ -64,8 +64,8 @@ namespace dsp
                 d_input_file.read((char *)buffer_u8, d_buffer_size * sizeof(uint8_t) * 2);
                 for (int i = 0; i < d_buffer_size; i++)
                 {
-                    float imag = (buffer_u8[i * 2] - 127) * (1.0 / 127.0);
-                    float real = (buffer_u8[i * 2 + 1] - 127) * (1.0 / 127.0);
+                    float imag = (buffer_u8[i * 2 + 1] - 127) * (1.0 / 127.0);
+                    float real = (buffer_u8[i * 2 + 0] - 127) * (1.0 / 127.0);
                     output_stream->writeBuf[i] = complex_t(real, imag);
                 }
                 break;

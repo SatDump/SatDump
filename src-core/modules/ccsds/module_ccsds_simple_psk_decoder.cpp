@@ -23,6 +23,7 @@ namespace ccsds
 
           d_qpsk_swapiq(parameters.count("qpsk_swap_iq") > 0 ? parameters["qpsk_swap_iq"].get<bool>() : false),
           d_qpsk_swapdiff(parameters.count("qpsk_swap_diff") > 0 ? parameters["qpsk_swap_diff"].get<bool>() : true),
+          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
 
           d_diff_decode(parameters.count("nrzm") > 0 ? parameters["nrzm"].get<bool>() : false),
 
@@ -116,6 +117,8 @@ namespace ccsds
 
         dsp::constellation_t qpsk_const(dsp::QPSK);
 
+        int8_t last_q_oqpsk = 0; // For delaying OQPSK
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             int frames = 0;
@@ -136,6 +139,17 @@ namespace ccsds
             }
             else if (d_constellation == dsp::QPSK)
             {
+                // OQPSK Delay
+                if (d_oqpsk_delay)
+                {
+                    for (int i = 0; i < d_buffer_size / 2; i++)
+                    {
+                        int8_t back = soft_buffer[i * 2 + 0];
+                        soft_buffer[i * 2 + 0] = last_q_oqpsk;
+                        last_q_oqpsk = back;
+                    }
+                }
+
                 if (d_qpsk_swapiq) // Swap IQ if required
                     rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 

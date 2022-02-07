@@ -149,7 +149,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/goes/grb/module_goes_grb_cadu_extractor.h"
 #include "modules/goes/grb/module_goes_grb_data_decoder.h"
 
-#include "modules/xrit/module_xrit_decoder.h"
 #include "modules/xrit/module_goesrecv_publisher.h"
 
 #include "modules/fengyun2/svissr/module_svissr_decoder.h"
@@ -263,6 +262,7 @@ void registerModules()
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
     REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
+    //REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
@@ -279,7 +279,6 @@ void registerModules()
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // xRIT
-    REGISTER_MODULE(xrit::XRITDecoderModule);
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
     // GOES - GVAR / HRIT / GRB
@@ -321,6 +320,9 @@ void registerModules()
     REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // IRIS
+
+    // CHEOPS
+    //REGISTER_MODULE(cheops::telescope::CHEOPSTelescopeDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

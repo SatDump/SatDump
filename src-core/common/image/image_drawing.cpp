@@ -124,14 +124,16 @@ namespace image
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
-                channel(c)[(y + y0) * d_width + x + x0] = image[y * image.width() + x];
+                if (y + y0 >= 0 && x + x0 >= 0)
+                    channel(c)[(y + y0) * d_width + x + x0] = image[y * image.width() + x];
 
         if (c == 0 && image.channels() == d_channels) // Special case for non-grayscale images
         {
             for (int c = 1; c < d_channels; c++)
                 for (int x = 0; x < width; x++)
                     for (int y = 0; y < height; y++)
-                        channel(c)[(y + y0) * d_width + x + x0] = image.channel(c)[y * image.width() + x];
+                        if (y + y0 >= 0 && x + x0 >= 0)
+                            channel(c)[(y + y0) * d_width + x + x0] = image.channel(c)[y * image.width() + x];
         }
     }
 

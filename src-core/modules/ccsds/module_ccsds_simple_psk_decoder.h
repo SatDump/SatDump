@@ -41,6 +41,7 @@ namespace ccsds
 
         const bool d_qpsk_swapiq;   // If IQ should be swapped before being demodulated (to support different DQPSK modes)
         const bool d_qpsk_swapdiff; // If bits should be swapped after the output of the QPSK diff decoder
+        const bool d_oqpsk_delay;   // For some OQPSK satellites, the Q branch is delayed by 1 symbol
 
         const bool d_diff_decode; // If NRZ-M Decoding is required or not
 
