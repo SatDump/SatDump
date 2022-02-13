@@ -66,7 +66,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/metop/module_metop_ahrpt_decoder.h"
 #include "modules/metop/module_metop_dump_decoder.h"
-#include "modules/metop/module_new_metop_ahrpt_decoder.h"
 #include "modules/metop/instruments/avhrr/module_metop_avhrr.h"
 #include "modules/metop/instruments/mhs/module_metop_mhs.h"
 #include "modules/metop/instruments/iasi/module_metop_iasi.h"
@@ -120,37 +119,28 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/meteor/instruments/msumr/module_meteor_msumr_lrpt.h"
 #include "modules/meteor/instruments/mtvza/module_meteor_mtvza.h"
 
-#include "modules/npp/module_npp_hrd_decoder.h"
-#include "modules/npp/module_new_npp_hrd_decoder.h"
-
 #include "modules/jpss/instruments/atms/module_jpss_atms.h"
 #include "modules/jpss/instruments/viirs/module_jpss_viirs.h"
 #include "modules/jpss/instruments/omps/module_jpss_omps.h"
 #include "modules/jpss/module_jpss_satid.h"
 
-#include "modules/proba/module_proba_s_decoder.h"
 #include "modules/proba/instruments/swap/module_proba_swap.h"
 #include "modules/proba/instruments/chris/module_proba_chris.h"
 #include "modules/proba/instruments/hrc/module_proba_hrc.h"
 #include "modules/proba/instruments/vegetation/module_proba_vegetation.h"
 
-#include "modules/elektro_arktika/module_rdas_decoder.h"
 #include "modules/elektro_arktika/instruments/msugs/module_msugs.h"
 #include "modules/elektro_arktika/module_tlm_demod.h"
 #include "modules/elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
 
 #include "modules/terra/module_terra_db_demod.h"
-#include "modules/terra/module_terra_db_decoder.h"
 
 #include "modules/spacex/module_spacex_decoder.h"
 #include "modules/spacex/module_falcon_decoder.h"
 
-#include "modules/smap/module_smap_s_decoder.h"
-
 #include "modules/oceansat/module_oceansat2_db_decoder.h"
 #include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
 
-#include "modules/saral/module_saral_decoder.h"
 #include "modules/saral/argos/module_saral_argos.h"
 
 #include "modules/goes/gvar/module_gvar_decoder.h"
@@ -159,13 +149,11 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/goes/grb/module_goes_grb_cadu_extractor.h"
 #include "modules/goes/grb/module_goes_grb_data_decoder.h"
 
-#include "modules/xrit/module_xrit_decoder.h"
 #include "modules/xrit/module_goesrecv_publisher.h"
 
 #include "modules/fengyun2/svissr/module_svissr_decoder.h"
 #include "modules/fengyun2/svissr/module_svissr_image_decoder.h"
 
-#include "modules/jason3/module_jason3_decoder.h"
 #include "modules/jason3/instruments/poseidon/module_jason3_poseidon.h"
 #include "modules/jason3/instruments/amr2/module_jason3_amr2.h"
 #include "modules/jason3/instruments/lpt/module_jason3_lpt.h"
@@ -173,13 +161,16 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/angels/argos/module_angels_argos.h"
 
 #include "modules/ccsds/module_ccsds_analyzer.h"
+#include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
+#include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 
 #include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
-#include "modules/cfosat/module_cfosat_dump_decoder.h"
-
-#include "modules/cryosat/module_cryosat_dump_decoder.h"
 #include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
+
+#include "modules/coriolis/instruments/windsat/module_coriolis_windsat.h"
+
+#include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
 
 void registerModules()
 {
@@ -196,7 +187,6 @@ void registerModules()
     // MetOp
     REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
     REGISTER_MODULE(metop::MetOpDumpDecoderModule);
-    REGISTER_MODULE(metop::NewMetOpAHRPTDecoderModule);
     REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
     REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
     REGISTER_MODULE(metop::iasi::MetOpIASIDecoderModule);
@@ -256,10 +246,6 @@ void registerModules()
     REGISTER_MODULE(meteor::msumr::METEORMSUMRLRPTDecoderModule);
     REGISTER_MODULE(meteor::mtvza::METEORMTVZADecoderModule);
 
-    // S-NPP
-    REGISTER_MODULE(npp::NPPHRDDecoderModule);
-    REGISTER_MODULE(npp::NewNPPHRDDecoderModule);
-
     // JPSS
     REGISTER_MODULE(jpss::satid::JPSSSatIDModule);
     REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
@@ -267,39 +253,32 @@ void registerModules()
     REGISTER_MODULE(jpss::omps::JPSSOMPSDecoderModule);
 
     // Proba
-    REGISTER_MODULE(proba::ProbaSDecoderModule);
     REGISTER_MODULE(proba::swap::ProbaSWAPDecoderModule);
     REGISTER_MODULE(proba::chris::ProbaCHRISDecoderModule);
     REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
     REGISTER_MODULE(proba::vegetation::ProbaVegetationDecoderModule);
 
     // ELEKTRO
-    REGISTER_MODULE(elektro_arktika::RDASDecoderModule);
     REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
     REGISTER_MODULE(elektro_arktika::TLMDemodModule);
     REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
+    //REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
 
     // Terra
     REGISTER_MODULE(terra::TerraDBDemodModule);
-    REGISTER_MODULE(terra::TerraDBDecoderModule);
 
     // Falcon & Starship
     REGISTER_MODULE(spacex::SpaceXDecoderModule);
     REGISTER_MODULE(spacex::FalconDecoderModule);
-
-    // SMAP
-    REGISTER_MODULE(smap::SMAPSDecoderModule);
 
     // Oceansat
     REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);
     REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
 
     // Saral
-    REGISTER_MODULE(saral::SaralDecoderModule);
     REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // xRIT
-    REGISTER_MODULE(xrit::XRITDecoderModule);
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
     // GOES - GVAR / HRIT / GRB
@@ -314,7 +293,6 @@ void registerModules()
     REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
 
     // Jason-3
-    REGISTER_MODULE(jason3::Jason3DecoderModule);
     REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
     REGISTER_MODULE(jason3::amr2::Jason3AMR2DecoderModule);
     REGISTER_MODULE(jason3::lpt::Jason3LPTDecoderModule);
@@ -324,16 +302,27 @@ void registerModules()
 
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
+    REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
+    REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
 
     // GK-2A
     REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
 
     // CFOSAT
-    REGISTER_MODULE(cfosat::CFOSATDumpDecoderModule);
 
     // CRYOSAT
-    REGISTER_MODULE(cryosat::CRYOSATDumpDecoderModule);
     REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
+
+    // Coriolis
+    REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
+
+    // CloudSat
+    REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
+
+    // IRIS
+
+    // CHEOPS
+    //REGISTER_MODULE(cheops::telescope::CHEOPSTelescopeDecoderModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

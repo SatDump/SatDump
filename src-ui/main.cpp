@@ -247,16 +247,16 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef BUILD_LIVE
-            if (satdumpUiStatus == BASEBAND_RECORDER)
-        {
-            recorder::exitRecorder();
+    if (satdumpUiStatus == BASEBAND_RECORDER)
+    {
+        recorder::exitRecorder();
 // Same story as offline processing, except we finish recording first
 #ifdef __APPLE__
-            exit(0);
+        exit(0);
 #else
-            quick_exit(0);
+        quick_exit(0);
 #endif
-        }
+    }
 #endif
 
     processThreadPool.stop();

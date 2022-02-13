@@ -40,6 +40,9 @@ namespace proba
 
             CHRISReader chris_reader(directory);
 
+            chris_reader.composites_all = d_parameters["composites_all"];
+            chris_reader.composites_low = d_parameters["composites_low"];
+
             logger->info("Demultiplexing and deframing...");
 
             while (!data_in.eof())

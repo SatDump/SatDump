@@ -253,4 +253,34 @@ namespace tle
         if (tleUpdateThread.joinable())
             tleUpdateThread.join();
     }
+
+    void fetchOrUpdateOne(int norad)
+    {
+#ifndef __ANDROID__
+        nlohmann::json tleSettings = loadJsonFile(resources::getResourcePath("tles.json"));
+        std::string tle_fetch_url_template = tleSettings["url_template"].get<std::string>();
+
+        std::string tle_path = resources::getResourcePath("tle");
+
+        std::string url_str = tle_fetch_url_template;
+
+        while (url_str.find("%NORAD%") != std::string::npos)
+            url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+
+        logger->debug("Fetching from " + url_str);
+
+        std::string output;
+        if (!http_get(url_str, output))
+        {
+            std::string filename = tle_path + "/NORAD_" + std::to_string(norad) + ".tle";
+            logger->trace(filename);
+            std::ofstream(filename).write((char *)output.c_str(), output.length());
+            loadTLEs();
+        }
+        else
+        {
+            logger->error("Could not fetch TLE!");
+        }
+#endif
+    }
 }

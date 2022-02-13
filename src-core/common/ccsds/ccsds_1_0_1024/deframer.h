@@ -44,17 +44,19 @@ namespace ccsds
             int skip, errors, good, sep_errors, state_2_bits_count;
             // Output Frame buffer
             std::array<uint8_t, CADU_SIZE> frameBuffer;
-            // Found frame count
-            int numFrames;
+
+            // Output buffer
+            std::vector<std::array<uint8_t, CADU_SIZE>> frames;
+
+            void pushBit(uint8_t bit);
 
         public:
             CADUDeframer(bool derand = true);
-            // Get found frame count
-            int getFrameCount();
             // Return state
             int getState();
             // Perform deframing
             std::vector<std::array<uint8_t, CADU_SIZE>> work(uint8_t *input, int size);
+            std::vector<std::array<uint8_t, CADU_SIZE>> work_bits(uint8_t *input, int size);
         };
     }
 }

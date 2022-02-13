@@ -1,106 +1,53 @@
 #pragma once
-#define M_SQRT2 1.41421356237309504880
 
 #include "complex.h"
 
 namespace dsp
 {
+    enum constellation_type_t
+    {
+        BPSK,
+        QPSK,
+        PSK8,
+        APSK16,
+        APSK32
+    };
+
+    /*
+    This class was made using GNU Radio and LeanDVB's implementation
+    as an example, mostly because it was written while experimenting 
+    with DVB-S2.
+
+    TODO : Faster LUT Lookup for soft bits, to make it anywhere near
+    usable. This has not been yet as BPSK and QPSK can simply be 
+    soft-demodulated using the I and Q branches directly.
+
+    TODO : Optimize the soft calc function... We don't need to use a
+    std::vector and such.
+
+    This constellation parser expects symbols to be around 1 and -1.
+    */
     class constellation_t
     {
     protected:
-        int symbols_count;        // Number of symbols transmitted per modulated sample
-        complex_t *constellation; // LUT used for modulation
+        const constellation_type_t const_type; // Constellation type
+        int const_bits;                        // Number of bits transmitted per sample
+        int const_states;                      // Number of possible states
+        complex_t *constellation;              // LUT used for modulation
+        float const_amp = 1.0f;                // Required for APSK
+        float const_sca = 50.0f;               // Const scale for soft symbols
+
+        complex_t polar(float r, int n, float i);
+        int8_t clamp(float x);
 
     public:
-        constellation_t(int size)
-        {
-            constellation = new complex_t[size];
-        }
-        ~constellation_t()
-        {
-            delete[] constellation;
-        }
-        virtual complex_t mod(uint8_t symbol)
-        {
-            return constellation[symbol];
-        };
-        virtual uint8_t demod(complex_t sample) = 0;
-        virtual uint8_t soft_demod(int8_t *sample) = 0;
-    };
+        constellation_t(constellation_type_t type, float g1 = 0, float g2 = 0);
+        ~constellation_t();
 
-    class qpsk_constellation : public constellation_t
-    {
-    public:
-        qpsk_constellation() : constellation_t(4)
-        {
-            // Default constellation, Gray-Coded
-            constellation[0] = complex_t(-M_SQRT2, -M_SQRT2);
-            constellation[1] = complex_t(M_SQRT2, -M_SQRT2);
-            constellation[2] = complex_t(-M_SQRT2, M_SQRT2);
-            constellation[3] = complex_t(M_SQRT2, M_SQRT2);
-        }
-
-        uint8_t demod(complex_t sample)
-        {
-            return 2 * (sample.imag > 0) + (sample.real > 0);
-        }
-
-        uint8_t soft_demod(int8_t *sample)
-        {
-            return 2 * (sample[1] > 0) + (sample[0] > 0);
-        }
-    };
-
-    class dqpsk_constellation : public constellation_t
-    {
-    public:
-        dqpsk_constellation() : constellation_t(4)
-        {
-            // Default constellation, NOT Gray-Coded
-            constellation[0] = complex_t(+M_SQRT2, +M_SQRT2);
-            constellation[1] = complex_t(-M_SQRT2, +M_SQRT2);
-            constellation[2] = complex_t(-M_SQRT2, -M_SQRT2);
-            constellation[3] = complex_t(+M_SQRT2, -M_SQRT2);
-        }
-
-        uint8_t demod(complex_t sample)
-        {
-            bool a = sample.real > 0;
-            bool b = sample.imag > 0;
-            if (a)
-            {
-                if (b)
-                    return 0x0;
-                else
-                    return 0x3;
-            }
-            else
-            {
-                if (b)
-                    return 0x1;
-                else
-                    return 0x2;
-            }
-        }
-
-        uint8_t soft_demod(int8_t *sample)
-        {
-            bool a = sample[0] > 0;
-            bool b = sample[1] > 0;
-            if (a)
-            {
-                if (b)
-                    return 0x0;
-                else
-                    return 0x3;
-            }
-            else
-            {
-                if (b)
-                    return 0x1;
-                else
-                    return 0x2;
-            }
-        }
+        complex_t mod(uint8_t symbol);                                                                        // Modulate a raw symbol. Proper resampling and RRC filtering is still required!
+        uint8_t demod(complex_t sample);                                                                      // Demodulate a complex sample to hard bits
+        uint8_t soft_demod(int8_t *sample);                                                                   // Demodulate a complex sample stored as soft (I/Q) bits to hard bits
+        void soft_demod(int8_t *samples, int size, uint8_t *bits);                                            // Demodulate a full buffer of softs
+        void demod_soft_calc(complex_t sample, int8_t *bits, float *phase_error = nullptr, float npwr = 1.0); // Demodulate to soft symbols
     };
 };

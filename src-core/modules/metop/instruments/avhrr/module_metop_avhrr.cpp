@@ -16,6 +16,7 @@
 //#include "common/image/image.h"
 #include "common/image/composite.h"
 #include "common/map/leo_drawer.h"
+#include "common/ccsds/ccsds_time.h"
 
 #define BUFFER_SIZE 8192
 
@@ -137,7 +138,19 @@ namespace metop
 
                                 // Timestamp
                                 uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
-                                days -= 502;         // Scale from 1/1/2000 to days since first frame
+                                {
+                                    // Convert to day of year
+                                    time_t line_timestamp = ccsds::parseCCSDSTimeFull(pkt, 10957);
+                                    struct tm timeinfo_struct;
+
+#ifdef _WIN32
+                                    memcpy(&timeinfo_struct, gmtime(&line_timestamp), sizeof(struct tm));
+#else
+                                    gmtime_r(&line_timestamp, &timeinfo_struct);
+#endif
+
+                                    days = timeinfo_struct.tm_yday + 1;
+                                }
                                 days &= 0b111111111; // Cap to 9-bits
 
                                 hpt_buffer[10] = days >> 1;

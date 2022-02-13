@@ -119,30 +119,32 @@ namespace image
     void Image<T>::draw_image(int c, Image<T> image, int x0, int y0)
     {
         // Get min height and width, mostly for safety
-        int width = std::min<int>(d_width, image.width());
-        int height = std::min<int>(d_height, image.height());
+        int width = std::min<int>(d_width, x0 + image.width()) - x0;
+        int height = std::min<int>(d_height, y0 + image.height()) - y0;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
-                channel(c)[(y + y0) * d_width + x + x0] = image[y * image.width() + x];
+                if (y + y0 >= 0 && x + x0 >= 0)
+                    channel(c)[(y + y0) * d_width + x + x0] = image[y * image.width() + x];
 
         if (c == 0 && image.channels() == d_channels) // Special case for non-grayscale images
         {
             for (int c = 1; c < d_channels; c++)
                 for (int x = 0; x < width; x++)
                     for (int y = 0; y < height; y++)
-                        channel(c)[(y + y0) * d_width + x + x0] = image.channel(c)[y * image.width() + x];
+                        if (y + y0 >= 0 && x + x0 >= 0)
+                            channel(c)[(y + y0) * d_width + x + x0] = image.channel(c)[y * image.width() + x];
         }
     }
 
-    std::vector<Image<uint8_t>> make_font(int size)
+    std::vector<Image<uint8_t>> make_font(int size, bool text_mode)
     {
         Image<uint8_t> fontFile;
-        fontFile.load_png(resources::getResourcePath("fonts/FreeMono.png"));
+        fontFile.load_png(resources::getResourcePath("fonts/Roboto-Regular.png"));
 
         std::vector<Image<uint8_t>> font;
 
-        int char_size = 100;
+        int char_size = 120;
         int char_count = 95;
         int char_edge_crop = 15;
 
@@ -151,7 +153,7 @@ namespace image
             Image<uint8_t> char_img = fontFile;
             char_img.crop(i * char_size, 0, (i + 1) * char_size, char_size);
             char_img.crop(char_edge_crop, char_img.width() - char_edge_crop);
-            char_img.resize_bilinear((float)char_img.width() * ((float)size / (float)char_size), size, true);
+            char_img.resize_bilinear((float)char_img.width() * ((float)size / (float)char_size), size, text_mode);
             font.push_back(char_img);
         }
 
@@ -166,10 +168,10 @@ namespace image
 
         for (char character : text)
         {
-            if (size_t(character - 32) > font.size())
+            if (size_t(character - 31) > font.size())
                 continue;
 
-            Image<uint8_t> &img = font[character - 32];
+            Image<uint8_t> &img = font[character - 31];
 
             for (int x = 0; x < img.width(); x++)
             {
@@ -192,6 +194,19 @@ namespace image
 
         delete[] colorf;
     }
+
+    template <typename T>
+    Image<T> generate_text_image(std::string text, T color[], int height, int padX, int padY){
+        std::vector<Image<uint8_t>> font = make_font(height-2*padY, false);
+        int width = font[0].width()*text.length() + 2*padX;
+        Image<T> out(width, height, 1);
+        out.fill(0);
+        out.draw_text(padX, 0, color, font, text);
+        return out;
+    }
+
+    template Image<uint8_t> generate_text_image(std::string text, uint8_t color[], int height, int padX, int padY);
+    template Image<uint16_t> generate_text_image(std::string text, uint16_t color[], int height, int padX, int padY);
 
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
