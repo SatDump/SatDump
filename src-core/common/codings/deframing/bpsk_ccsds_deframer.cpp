@@ -8,7 +8,7 @@ namespace deframing
                                                                              CADU_ASM_INV(sync ^ 0xFFFFFFFF),
                                                                              CADU_SIZE(cadu_size)
     {
-        frame_buffer = new uint8_t[CADU_SIZE];
+        frame_buffer = new uint8_t[CADU_SIZE + CADU_PADDING];
     }
 
     BPSK_CCSDS_Deframer::~BPSK_CCSDS_Deframer()
@@ -35,7 +35,7 @@ namespace deframing
 
                 if (bit_of_frame == CADU_SIZE) // Write frame out
                 {
-                    memcpy(&output[frame_count * (CADU_SIZE / 8)], frame_buffer, CADU_SIZE / 8);
+                    memcpy(&output[frame_count * ((CADU_SIZE + CADU_PADDING) / 8)], frame_buffer, (CADU_SIZE + CADU_PADDING) / 8);
                     frame_count++;
                 }
                 else if (bit_of_frame == CADU_SIZE + CADU_ASM_SIZE - 1) // Skip to the next ASM
@@ -114,7 +114,7 @@ namespace deframing
 
     void BPSK_CCSDS_Deframer::reset_frame()
     {
-        memset(frame_buffer, 0, CADU_SIZE / 8);
+        memset(frame_buffer, 0, (CADU_SIZE + CADU_PADDING) / 8);
         frame_buffer[0] = CADU_ASM >> 24;
         frame_buffer[1] = CADU_ASM >> 16;
         frame_buffer[2] = CADU_ASM >> 8;

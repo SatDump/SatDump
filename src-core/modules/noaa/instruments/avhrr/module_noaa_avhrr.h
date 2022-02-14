@@ -12,6 +12,8 @@ namespace noaa
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
+            bool gac_mode;
+
         public:
             NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();

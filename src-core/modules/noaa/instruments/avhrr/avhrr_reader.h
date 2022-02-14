@@ -10,10 +10,13 @@ namespace noaa
         class AVHRRReader
         {
         private:
+            const bool gac_mode;
+            const int width;
+
             unsigned short *channels[5];
 
         public:
-            AVHRRReader();
+            AVHRRReader(bool gac);
             ~AVHRRReader();
             int lines;
             void work(uint16_t *buffer);

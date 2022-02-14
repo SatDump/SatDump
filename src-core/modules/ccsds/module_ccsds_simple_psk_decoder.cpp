@@ -18,7 +18,7 @@ namespace ccsds
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
           d_cadu_size(parameters["cadu_size"].get<int>()),
-          d_cadu_bytes(d_cadu_size / 8),
+          d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
 
           d_qpsk_swapiq(parameters.count("qpsk_swap_iq") > 0 ? parameters["qpsk_swap_iq"].get<bool>() : false),
@@ -71,6 +71,14 @@ namespace ccsds
         deframer_qpsk = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync); // For QPSK without NRZ-M which gets split into 2 BPSK deframers
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
+
+        if (d_cadu_size % 8 != 0) // If this is not a perfect byte length match, pad the frames
+        {
+            int pad = d_cadu_size % 8;
+            deframer->CADU_PADDING = pad;
+            deframer_qpsk->CADU_PADDING = pad;
+            logger->info("Frames will be padded!");
+        }
     }
 
     std::vector<ModuleDataType> CCSDSSimplePSKDecoderModule::getInputTypes()

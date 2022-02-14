@@ -15,6 +15,7 @@ BPSKDemodModule::BPSKDemodModule(std::string input_file, std::string output_file
                                                                                                                     d_loop_bw(parameters["costas_bw"].get<float>()),
                                                                                                                     d_buffer_size(parameters["buffer_size"].get<long>()),
                                                                                                                     d_dc_block(parameters.count("dc_block") > 0 ? parameters["dc_block"].get<bool>() : 0),
+                                                                                                                    d_post_costas_dc(parameters.count("post_costas_dc") > 0 ? parameters["post_costas_dc"].get<bool>() : 0),
                                                                                                                     constellation(0.5f, 0.5f, demod_constellation_size)
 {
     // Buffers
@@ -64,12 +65,16 @@ void BPSKDemodModule::init()
     // Costas
     pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
 
+    // Correction
+    if (d_post_costas_dc)
+        cor = std::make_shared<dsp::CorrectIQBlock>(pll->output_stream);
+
     // Clock recovery
     float omega_gain = d_parameters.count("clock_gain_omega") > 0 ? d_parameters["clock_gain_omega"].get<float>() : (pow(8.7e-3, 2) / 4.0);
     float mu = d_parameters.count("clock_mu") > 0 ? d_parameters["clock_mu"].get<float>() : 0.5f;
     float mu_gain = d_parameters.count("clock_gain_mu") > 0 ? d_parameters["clock_gain_mu"].get<float>() : 8.7e-3;
     float omegaLimit = d_parameters.count("clock_omega_relative_limit") > 0 ? d_parameters["clock_omega_relative_limit"].get<float>() : 0.005f;
-    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, omega_gain, mu, mu_gain, omegaLimit);
+    rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(d_post_costas_dc ? cor->output_stream : pll->output_stream, sps, omega_gain, mu, mu_gain, omegaLimit);
 }
 
 std::vector<ModuleDataType> BPSKDemodModule::getInputTypes()
@@ -116,6 +121,8 @@ void BPSKDemodModule::process()
     agc->start();
     rrc->start();
     pll->start();
+    if (d_post_costas_dc)
+        cor->start();
     rec->start();
 
     int dat_size = 0;
@@ -176,6 +183,8 @@ void BPSKDemodModule::stop()
     agc->stop();
     rrc->stop();
     pll->stop();
+    if (d_post_costas_dc)
+        cor->stop();
     rec->stop();
     rec->output_stream->stopReader();
 

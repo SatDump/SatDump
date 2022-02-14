@@ -54,7 +54,7 @@
             "cadu": {
                 "new_fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
+                    "viterbi_ber_thresold": 0.310,
                     "soft_symbols": true,
                     "invert_second_viterbi": true
                 }

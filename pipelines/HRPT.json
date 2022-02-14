@@ -285,41 +285,7 @@
             },
             "products": {
                 "noaa_avhrr": {
-                    "composites": {
-                        "RGB-221": {
-                            "expression": "ch2, ch2, ch1",
-                            "corrected": true
-                        },
-                        "RGB-221-EQU": {
-                            "expression": "ch2, ch2, ch1",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "RGB-(4)221": {
-                            "expression": "ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch1 * 2.2 - 0.15",
-                            "corrected": true
-                        },
-                        "4-EQU": {
-                            "expression": "ch4",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        },
-                        "RGB-124": {
-                            "expression": "ch1, ch2, ch4",
-                            "corrected": true
-                        },
-                        "RGB-124-EQU": {
-                            "expression": "ch1, ch2, ch4",
-                            "equalize": true,
-                            "normalize": true,
-                            "corrected": true,
-                            "projected": true
-                        }
-                    }
+                    "composites": "composites/noaa_avhrr.json.inc"
                 },
                 "noaa_extractor": {
                     "gac_mode": false
@@ -504,6 +470,49 @@
                     "viterbi_ber_thresold": 0.170,
                     "soft_symbols": true,
                     "invert_second_viterbi": false
+                }
+            }
+        }
+    },
+    "noaa_gac": {
+        "name": "NOAA GAC",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1702.5,
+            2247.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2.6616e6,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192,
+                    "post_costas_dc": true
+                }
+            },
+            "frm": {
+                "noaa_gac_decoder": {}
+            },
+            "products": {
+                "noaa_avhrr": {
+                    "composites": "composites/noaa_avhrr.json.inc",
+                    "gac_mode": true
                 }
             }
         }
