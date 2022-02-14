@@ -23,15 +23,15 @@ jobs:
 
       - name: Download SDRPlay API
         shell: powershell
-        run: Invoke-WebRequest -Uri "https://www.sdrplay.com/software/SDRplay_RSP_API-Windows-3.08.exe" -OutFile ${{runner.workspace}}/sdrplay.exe
+        run: Invoke-WebRequest -Uri "https://files.altillimity.com/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.ziq
 
       - name: Install SDRPlay API
         shell: powershell
-        run: ${{runner.workspace}}/sdrplay.exe /VERYSILENT
+        run: 7z x sdrplay.exe -O ./
 
       - name: Copy SDRPlay API Files
         shell: powershell
-        run: cp -r "C:/Program Files/SDRPlay/API/inc/*" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/include/; cp "C:/Program Files/SDRPlay/API/x64/sdrplay_api.dll" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/sdrplay_api.dll; cp "C:/Program Files/SDRPlay/API/x64/sdrplay_api.lib" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/lib/sdrplay_api.lib;
+        run: cp -r "./SDRPlay/API/inc/*" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/include/; cp "./SDRPlay/API/x64/sdrplay_api.dll" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/sdrplay_api.dll; cp "./SDRPlay/API/x64/sdrplay_api.lib" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/lib/sdrplay_api.lib;
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
