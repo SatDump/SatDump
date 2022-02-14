@@ -3,7 +3,7 @@
 #include "block.h"
 
 /*
-Costas loop implementation 
+Costas loop implementation
 with order 2, 4 and 8 support
 */
 namespace dsp

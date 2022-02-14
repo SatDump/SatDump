@@ -14,6 +14,7 @@
 #include "common/dsp/snr_estimator.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
+#include "common/dsp/correct_iq.h"
 
 class BPSKDemodModule : public ProcessingModule
 {
@@ -24,6 +25,7 @@ protected:
     std::shared_ptr<dsp::AGCBlock> agc;
     std::shared_ptr<dsp::CCFIRBlock> rrc;
     std::shared_ptr<dsp::CostasLoopBlock> pll;
+    std::shared_ptr<dsp::CorrectIQBlock> cor;
     std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
 
     const float d_agc_rate;
@@ -34,6 +36,7 @@ protected:
     const float d_loop_bw;
     /*const*/ int d_buffer_size;
     const bool d_dc_block;
+    const bool d_post_costas_dc;
 
     const int MAX_SPS = 3; // Maximum sample per symbol the demodulator will accept before resampling the input
     bool resample = false;

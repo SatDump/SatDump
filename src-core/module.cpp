@@ -106,13 +106,13 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/eos/instruments/modis/module_eos_modis.h"
 
 #include "modules/noaa/module_noaa_hrpt_decoder.h"
+#include "modules/noaa/module_noaa_gac_decoder.h"
 #include "modules/noaa/module_noaa_dsb_decoder.h"
 #include "modules/noaa/instruments/avhrr/module_noaa_avhrr.h"
 #include "modules/noaa/module_noaa_extractor.h"
 #include "modules/noaa/instruments/hirs/module_noaa_hirs.h"
 #include "modules/noaa/instruments/mhs/module_noaa_mhs.h"
 #include "modules/noaa/instruments/amsu/module_noaa_amsu.h"
-#include "modules/noaa/instruments/avhrr/module_noaa_avhrr_gac.h"
 
 #include "modules/meteor/module_meteor_hrpt_decoder.h"
 #include "modules/meteor/module_meteor_lrpt_decoder.h"
@@ -235,13 +235,13 @@ void registerModules()
 
     // NOAA
     REGISTER_MODULE(noaa::NOAAHRPTDecoderModule);
+    REGISTER_MODULE(noaa::NOAAGACDecoderModule);
     REGISTER_MODULE(noaa::NOAADSBDecoderModule);
     REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
     REGISTER_MODULE(noaa::NOAAExtractorModule);
     REGISTER_MODULE(noaa::hirs::NOAAHIRSDecoderModule);
     REGISTER_MODULE(noaa::mhs::NOAAMHSDecoderModule);
     REGISTER_MODULE(noaa::amsu::NOAAAMSUDecoderModule);
-    REGISTER_MODULE(noaa::avhrr::NOAAAVHRRGACDecoderModule);
 
     // METEOR
     REGISTER_MODULE(meteor::METEORHRPTDecoderModule);

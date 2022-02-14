@@ -12,6 +12,7 @@
 #include "common/utils.h"
 #include "common/image/composite.h"
 #include "common/map/leo_drawer.h"
+#include "common/repack.h"
 
 #define BUFFER_SIZE 8192
 
@@ -24,7 +25,7 @@ namespace noaa
     {
         NOAAAVHRRDecoderModule::NOAAAVHRRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters),
-              gac_mode(true)
+              gac_mode(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0)
         {
         }
 
@@ -71,10 +72,21 @@ namespace noaa
 
             std::vector<int> spacecraft_ids;
 
+            uint8_t buffer_gac[4159];
+
             while (!data_in.eof())
             {
-                // Read buffer
-                data_in.read((char *)buffer, 11090 * 2);
+                if (gac_mode)
+                {
+                    // Read and repack to 10-bits
+                    data_in.read((char *)buffer_gac, 4159);
+                    repackBytesTo10bits(buffer_gac, 4159, buffer);
+                }
+                else
+                {
+                    // Read buffer
+                    data_in.read((char *)buffer, 11090 * 2);
+                }
 
                 reader.work(buffer);
 
@@ -180,6 +192,9 @@ namespace noaa
                 // For later decoders
                 saveJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json", jData);
 
+                if (gac_mode)
+                    proj_settings->image_width = 409;
+
                 // Load TLEs now
                 proj_settings->sat_tle = tle::getTLEfromNORAD(norad);
                 proj_settings->utc_timestamps = timestamps; // Timestamps
@@ -236,7 +251,7 @@ namespace noaa
                         compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
                                                                                          NOAA_ORBIT_HEIGHT,
                                                                                          NOAA_AVHRR_SWATH,
-                                                                                         NOAA_AVHRR_RES);
+                                                                                         gac_mode ? NOAA_AVHRR_RES_GAC : NOAA_AVHRR_RES);
                         WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
                     }
                 }

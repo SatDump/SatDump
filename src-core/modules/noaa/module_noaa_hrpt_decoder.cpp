@@ -21,7 +21,7 @@ namespace noaa
 
     std::vector<ModuleDataType> NOAAHRPTDecoderModule::getInputTypes()
     {
-        return {DATA_FILE, DATA_DSP_STREAM};
+        return {DATA_FILE, DATA_STREAM};
     }
 
     std::vector<ModuleDataType> NOAAHRPTDecoderModule::getOutputTypes()

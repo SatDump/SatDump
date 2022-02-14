@@ -19,7 +19,7 @@ namespace noaa
 
         void AVHRRReader::work(uint16_t *buffer)
         {
-            int pos = gac_mode ? 1181 : 750; // AVHRR Data
+            int pos = gac_mode ? 1182 : 750; // AVHRR Data
 
             for (int channel = 0; channel < 5; channel++)
             {
