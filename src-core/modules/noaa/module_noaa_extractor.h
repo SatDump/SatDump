@@ -19,6 +19,8 @@ namespace noaa
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
+        bool gac_mode;
+
     public:
         NOAAExtractorModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~NOAAExtractorModule();

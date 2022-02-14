@@ -9,7 +9,7 @@ namespace noaa
         HIRSReader::HIRSReader()
         {
             for (int i = 0; i < 20; i++)
-                channels[i] = new unsigned short[180 * 56];
+                channels[i] = new unsigned short[1000 * 56];
         }
 
         HIRSReader::~HIRSReader()
@@ -78,7 +78,7 @@ namespace noaa
                         imageBuffer[i][enct][line] = abs(buffer);
                     }
 
-                    channels[i][56 - enct + 56 * line] = imageBuffer[i][enct][line];
+                    channels[i][55 - enct + 56 * line] = imageBuffer[i][enct][line];
                 }
             }
         }

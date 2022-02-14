@@ -7,7 +7,7 @@ namespace noaa
         AMSUReader::AMSUReader()
         {
             for (int i = 0; i < 15; i++)
-                channels[i] = new unsigned short[30 * 120];
+                channels[i] = new unsigned short[30 * 1000];
         }
 
         AMSUReader::~AMSUReader()

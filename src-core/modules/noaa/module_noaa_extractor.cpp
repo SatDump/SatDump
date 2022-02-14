@@ -1,16 +1,22 @@
 #include "module_noaa_extractor.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "common/repack.h"
 
 size_t getFilesize(std::string filepath);
 
 #define BUFFER_SIZE 11090 * 2
 
+#define GAC_BUFFER_SIZE 4159
+
 namespace noaa
 {
-    NOAAExtractorModule::NOAAExtractorModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    NOAAExtractorModule::NOAAExtractorModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters), gac_mode(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0)
     {
-        buffer = new uint16_t[BUFFER_SIZE / 2];
+        if (!gac_mode)
+            buffer = new uint16_t[BUFFER_SIZE / 2];
+        else
+            buffer = new uint16_t[3327];
         frameBuffer = new uint8_t[104];
     }
 
@@ -34,37 +40,60 @@ namespace noaa
         logger->info("Using input data " + d_input_file);
         logger->info("Extracting to " + d_output_file_hint + ".tip and " + d_output_file_hint + ".aip");
 
-        while (!data_in.eof())
+        if (!gac_mode)
         {
-            data_in.read((char *)buffer, BUFFER_SIZE);
-
-            int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
-
-            if (frmnum == 1 || frmnum == 3)
+            while (!data_in.eof())
             {
-                for (int i = 0; i < 5; i++)
+                data_in.read((char *)buffer, BUFFER_SIZE);
+
+                int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
+
+                if (frmnum == 1 || frmnum == 3)
                 {
-                    for (int j = 0; j < 104; j++)
+                    for (int i = 0; i < 5; i++)
                     {
-                        frameBuffer[j] = buffer[104 * (i + 1) + j - 1] >> 2;
-                    }
-                    if (frmnum == 1)
-                    {
-                        tip_out.write((char *)&frameBuffer[0], 104);
-                    }
-                    else
-                    {
-                        aip_out.write((char *)&frameBuffer[0], 104);
+                        for (int j = 0; j < 104; j++)
+                        {
+                            frameBuffer[j] = buffer[104 * (i + 1) + j - 1] >> 2;
+                        }
+                        if (frmnum == 1)
+                        {
+                            tip_out.write((char *)&frameBuffer[0], 104);
+                        }
+                        else
+                        {
+                            aip_out.write((char *)&frameBuffer[0], 104);
+                        }
                     }
                 }
+
+                progress = data_in.tellg();
+
+                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                {
+                    lastTime = time(NULL);
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                }
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+        } else {
+            while (!data_in.eof())
             {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                uint8_t rawWords[GAC_BUFFER_SIZE];
+                data_in.read((char *)rawWords, GAC_BUFFER_SIZE);
+                repackBytesTo10bits(rawWords, GAC_BUFFER_SIZE, buffer);
+                for (int i = 0; i < 5; i++)
+                    {
+                        for (int j = 0; j < 104; j++)
+                        {
+                            frameBuffer[j] = buffer[104 * (i + 1) + j - 1] >> 2;
+                        }
+                        tip_out.write((char *)&frameBuffer[0], 104);
+                        for (int j = 0; j < 104; j++)
+                        {
+                            frameBuffer[j] = buffer[104 * (i + 6) + j - 1] >> 2;
+                        }
+                        aip_out.write((char *)&frameBuffer[0], 104); 
+                    }          
             }
         }
 

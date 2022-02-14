@@ -321,7 +321,9 @@
                         }
                     }
                 },
-                "noaa_extractor": {},
+                "noaa_extractor": {
+                    "gac_mode": false
+                },
                 "noaa_hirs": {
                     "input_override": "noaa_hrpt.tip"
                 },
