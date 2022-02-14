@@ -513,6 +513,18 @@
                 "noaa_avhrr": {
                     "composites": "composites/noaa_avhrr.json.inc",
                     "gac_mode": true
+                },
+                "noaa_extractor": {
+                    "gac_mode": true
+                },
+                "noaa_hirs": {
+                    "input_override": "noaa_hrpt.tip"
+                },
+                "noaa_amsu": {
+                    "input_override": "noaa_hrpt.aip"
+                },
+                "noaa_mhs": {
+                    "input_override": "noaa_hrpt.aip"
                 }
             }
         }
