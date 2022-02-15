@@ -21,7 +21,7 @@ namespace noaa
 
             for (int j = 0; j < 14; j += 2)
             {
-                if ((buffer[j + 34] << 8) | (buffer[j + 35] != 1))
+                if ((buffer[j + 35] % 2 != 1) || (buffer[j + 34] == 0xFF) || (buffer[j + 35] == 0xFF))
                 {
                     amsuA2words.push_back(buffer[j + 34]);
                     amsuA2words.push_back(buffer[j + 35]);
@@ -29,7 +29,7 @@ namespace noaa
             }
             for (int j = 0; j < 26; j += 2)
             {
-                if ((buffer[j + 8] << 8) | (buffer[j + 9] != 1))
+                if ((buffer[j + 9] % 2 != 1) || (buffer[j + 8] == 0xFF) || (buffer[j + 9] == 0xFF))
                 {
                     amsuA1words.push_back(buffer[j + 8]);
                     amsuA1words.push_back(buffer[j + 9]);
