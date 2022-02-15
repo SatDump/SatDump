@@ -58,10 +58,10 @@ namespace geodetic
                         I guess time will tell how reliable that approximation is.
                         */
                         double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
-                        projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color);//, 0.4 * opacity);
+                        projected_image.draw_circle(map_cc1.first, map_cc1.second, ceil(circle_radius), color, true); //, 0.4 * opacity);
                     }
 
-                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
 
                     if (progress != nullptr)
                         *progress = float(currentScan) / float(image.height());
@@ -103,9 +103,9 @@ namespace geodetic
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
                         continue;
 
-                    //logger->info(std::to_string(color[0]) + " " + std::to_string(color[1]) + " " + std::to_string(color[2]));
+                    // logger->info(std::to_string(color[0]) + " " + std::to_string(color[1]) + " " + std::to_string(color[2]));
 
-                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
                     projected_image.draw_pixel(map_cc1.first, map_cc1.second, color);
                 }
 
@@ -145,7 +145,7 @@ namespace geodetic
                     if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
                         continue;
 
-                    //projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                    // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
                     projected_image.draw_pixel(map_cc1.first, map_cc1.second, color);
                 }
 

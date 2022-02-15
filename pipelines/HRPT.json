@@ -518,13 +518,13 @@
                     "gac_mode": true
                 },
                 "noaa_hirs": {
-                    "input_override": "noaa_hrpt.tip"
+                    "input_override": "noaa_gac.tip"
                 },
                 "noaa_amsu": {
-                    "input_override": "noaa_hrpt.aip"
+                    "input_override": "noaa_gac.aip"
                 },
                 "noaa_mhs": {
-                    "input_override": "noaa_hrpt.aip"
+                    "input_override": "noaa_gac.aip"
                 }
             }
         }
