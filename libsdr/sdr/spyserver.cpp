@@ -65,7 +65,7 @@ void SDRSpyServer::start()
         {
             float samplerate = client->devInfo.MaximumSampleRate / (float)(1 << i);
 
-            if (stageToUse == client->devInfo.MinimumIQDecimation && samplerate < d_samplerate)
+            if (stageToUse == client->devInfo.MinimumIQDecimation && samplerate < d_samplerate && samplerates.size() > 0)
             {
                 if (d_samplerate < samplerates.back())
                 {
