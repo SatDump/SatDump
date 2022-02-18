@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 {
     // SatDump init
     initLogger();
-    //initSatdump(); // We do NOT need everything in SatDuump to be usable for recording
+    //initSatdump(); // We do NOT need everything in SatDump to be usable for recording
 
 #ifndef _WIN32
     // Setup SIGINT handler
@@ -64,23 +64,25 @@ int main(int argc, char *argv[])
     for (std::tuple<std::string, sdr_device_type, uint64_t> dev : devices)
         logger->info(" - [" + deviceTypeStringByType(std::get<1>(dev)) + "] " + std::get<0>(dev));
 
+    // show usage
     if (argc < 5)
     {
-        logger->error("Usage : ./satdump-recorder sdr_config.json samplerate_Hz frequency_MHz [i8/w8/i16/f32"
+        logger->error("Usage : ./satdump-recorder sdr_config.json samplerate_Hz frequency_MHz [raw8/raw16/raw32"
 #ifdef BUILD_ZIQ
-                      "/ziq8/ziq16/ziq32"
+            "/ziq8/ziq16/ziq32"
 #endif
-                      "] [output_file]");
+            "/wav16] [output_file]");
         exit(1);
     }
 
+    // parse arguments
     std::string p_sdr_cfg = argv[1];
     std::string p_samplerate = argv[2];
     std::string p_frequency = argv[3];
     std::string p_format = argv[4];
     std::string p_output_file = argc >= 6 ? argv[5] : "";
 
-    // SDR Settings we're gonna be using
+    // load specified sdr config
     if (!std::filesystem::exists(p_sdr_cfg))
     {
         logger->error("Could not find SDR config file " + p_sdr_cfg + "!");
@@ -96,6 +98,7 @@ int main(int argc, char *argv[])
     sdr_device_type sdr_type = sdr_cfg.count("sdr_type") > 0 ? getDeviceIDbyIDString(sdr_cfg["sdr_type"].get<std::string>()) : NONE;
     float samplerate = std::stoi(p_samplerate);
     float frequency = std::stof(p_frequency);
+    int bits_per_sample;
     std::map<std::string, std::string> device_parameters = sdr_cfg["sdr_settings"].get<std::map<std::string, std::string>>();
 
     if (sdr_type == NONE)
@@ -104,7 +107,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // Init recording file
+    // get timestamp
     const time_t timevalue = time(0);
     std::tm *timeReadable = gmtime(&timevalue);
     std::string timestamp =
@@ -114,79 +117,71 @@ int main(int argc, char *argv[])
 
 #ifdef BUILD_ZIQ
     ziq::ziq_cfg cfg;
-    enable_ziq = false;
 #endif
 
+    // parse specified output format
     int format_type = 0;
-
     std::string formatstr = "";
-    if (p_format == "i8")
+    if (p_format == "raw8")
     {
-        formatstr = "i8";
         format_type = 0;
+        formatstr = "raw8";
+        bits_per_sample = 8;
     }
-    else if (p_format == "i16")
+    else if (p_format == "raw16")
     {
-        formatstr = "i16";
         format_type = 1;
+        formatstr = "raw16";
+        bits_per_sample = 16;
     }
-    else if (p_format == "f32")
+    else if (p_format == "raw32")
     {
-        formatstr = "f32";
         format_type = 2;
+        formatstr = "raw32";
+        bits_per_sample = 32;
+    }
+    else if (p_format == "wav16")
+    {
+        format_type = 1;
+        formatstr = "wav";
+        bits_per_sample = 16;
     }
 #ifdef BUILD_ZIQ
     else if (p_format == "ziq8")
     {
-        formatstr = "ziq";
         cfg.is_compressed = true;
-        cfg.bits_per_sample = 8;
-        cfg.samplerate = samplerate;
-        cfg.annotation = "";
+        formatstr = "ziq8";
         enable_ziq = true;
-        format_type = 4;
+        cfg.annotation = "";
+        cfg.bits_per_sample = 8;
+        format_type = 3;
     }
     else if (p_format == "ziq16")
     {
-        formatstr = "ziq";
         cfg.is_compressed = true;
-        cfg.bits_per_sample = 16;
-        cfg.samplerate = samplerate;
-        cfg.annotation = "";
+        formatstr = "ziq16";
         enable_ziq = true;
-        format_type = 5;
+        cfg.annotation = "";
+        cfg.bits_per_sample = 16;
+        format_type = 4;
     }
     else if (p_format == "ziq32")
     {
-        formatstr = "ziq";
         cfg.is_compressed = true;
-        cfg.bits_per_sample = 32;
-        cfg.samplerate = samplerate;
-        cfg.annotation = "";
+        formatstr = "ziq32";
         enable_ziq = true;
+        cfg.annotation = "";
+        cfg.bits_per_sample = 32;
         format_type = 5;
     }
 #endif
     else
-        logger->critical("Something went horribly wrong with sample format!");
-
-    if (p_output_file == "") // If empty, chose a filename
     {
-        p_output_file = "./" + timestamp + "_" + std::to_string((long)samplerate) + "SPS_" +
-                        std::to_string((long)frequency * 1e6) + "Hz." + formatstr;
+        logger->error("Specified output format is invalid!");
+        exit(1);
     }
 
-    data_out = std::ofstream(p_output_file, std::ios::binary);
-#ifdef BUILD_ZIQ
-    if (enable_ziq)
-        ziqWriter = std::make_shared<ziq::ziq_writer>(cfg, data_out);
-    compressedSamples = 0;
-#endif
-    recordedSize = 0;
-
-    logger->info("Output file " + p_output_file);
-
-    // Init the device
+    // initialize SDR device
     std::string devID = sdr_cfg["sdr_type"].get<std::string>();
     logger->debug("Device parameters " + devID + ":");
     for (const std::pair<std::string, std::string> param : device_parameters)
@@ -194,28 +189,48 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<SDRDevice> radio;
 
+    bool found = false;
+    for (int i = 0; i < (int)devices.size(); i++)
     {
-        bool found = false;
-        for (int i = 0; i < (int)devices.size(); i++)
+        std::tuple<std::string, sdr_device_type, uint64_t> &devListing = devices[i];
+        if (std::get<1>(devListing) == sdr_type)
         {
-            std::tuple<std::string, sdr_device_type, uint64_t> &devListing = devices[i];
-            if (std::get<1>(devListing) == sdr_type)
-            {
-                radio = getDeviceByID(devices, device_parameters, i);
-                found = true;
-            }
+            radio = getDeviceByID(devices, device_parameters, i);
+            found = true;
         }
-
-        if (!found)
-        {
-            logger->error("Could not find requested SDR Device!");
-            exit(1);
-        }
+    }
+    if (!found)
+    {
+        logger->error("Could not find requested SDR Device!");
+        exit(1);
     }
 
     radio->setFrequency(frequency * 1e6);
     radio->setSamplerate(samplerate);
     radio->start();
+
+    samplerate = radio->getSamplerate();
+
+    // create output file
+    if (p_output_file == "")
+    {
+        p_output_file = "./" + timestamp + "_" + std::to_string((long)samplerate) + "SPS_" +
+                        std::to_string((long)frequency * 1e6) + "Hz." + formatstr;
+    }
+
+    data_out = std::ofstream(p_output_file, std::ios::binary);
+    recordedSize = 0;
+
+    logger->info("Output file " + p_output_file);
+
+    #ifdef  BUILD_ZIQ
+    if (enable_ziq)
+    {
+        cfg.samplerate = samplerate;
+        ziqWriter = std::make_shared<ziq::ziq_writer>(cfg, data_out);
+    }
+    compressedSamples = 0;
+    #endif
 
     int8_t *converted_buffer_i8 = nullptr;
     int16_t *converted_buffer_i16 = nullptr;
@@ -224,8 +239,31 @@ int main(int argc, char *argv[])
     if (format_type == 1)
         converted_buffer_i16 = new int16_t[100000000];
 
+    // write wave header
+    if (p_format == "wav16")
+    {
+        int subchunk1_size = 16;
+        int audio_format = 1;
+        int num_channels = 2;
+        int sample_rate = (int)samplerate;
+        int byte_rate = sample_rate * num_channels * bits_per_sample / 8;
+        int block_align = num_channels * bits_per_sample / 8;
+
+        data_out.write("RIFF----WAVE", 12);
+        data_out.write("fmt ", 4);
+        data_out.write((char*)&subchunk1_size, 4);; // subchunk1_size
+        data_out.write((char*)&audio_format, 2); // audio format
+        data_out.write((char*)&num_channels, 2); // channels
+        data_out.write((char*)&sample_rate, 4); // sample rate
+        data_out.write((char*)&byte_rate, 4); // byte rate
+        data_out.write((char*)&block_align, 2); // block align
+        data_out.write((char*)&bits_per_sample, 2); // bits per sample
+        data_out.write("data----", 8);
+    }
+
     logger->info("Recording...");
 
+    // start recording
     time_t lastTime = 0;
     while (!should_stop)
     {
@@ -242,7 +280,7 @@ int main(int argc, char *argv[])
                                                              clampF(radio->output_stream->readBuf[i].imag));
             }
 
-            // This is faster than a case
+            // write data in specified format
             if (format_type == 0)
             {
                 volk_32f_s32f_convert_8i(converted_buffer_i8, (float *)radio->output_stream->readBuf, 127, cnt * 2); // Scale to 8-bits
@@ -257,7 +295,7 @@ int main(int argc, char *argv[])
             }
             else if (format_type == 2)
             {
-                data_out.write((char *)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
+                data_out.write((char *)(intptr_t)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
                 recordedSize += cnt * 2 * sizeof(float);
             }
 #ifdef BUILD_ZIQ
@@ -271,6 +309,7 @@ int main(int argc, char *argv[])
 
         radio->output_stream->flush();
 
+        // display data size info
         if (time(NULL) % 10 == 0 && lastTime != time(NULL))
         {
             lastTime = time(NULL);
@@ -295,6 +334,15 @@ int main(int argc, char *argv[])
         delete[] converted_buffer_i8;
     if (format_type == 1)
         delete[] converted_buffer_i16;
+
+    if (p_format == "wav16")
+    {
+        int chunk_size = recordedSize + 36;
+        data_out.seekp(4);
+        data_out.write((char*)&chunk_size, 4);
+        data_out.seekp(40);
+        data_out.write((char*)&recordedSize, 4);
+    }
 
     logger->info("Stop recording...");
 #ifdef BUILD_ZIQ
