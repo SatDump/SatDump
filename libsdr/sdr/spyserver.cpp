@@ -71,6 +71,7 @@ void SDRSpyServer::start()
                 {
                     logger->warn("Desired samplerate not available. Using next biggest samplerate. ({})", samplerates.back());
                 }
+                setSamplerate(samplerates.back());
                 stageToUse = samplerates.size() - 1;
             }
 
