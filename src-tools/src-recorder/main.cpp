@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
             }
             else if (format_type == 2)
             {
-                data_out.write((char *)(intptr_t)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
+                data_out.write((char *)radio->output_stream->readBuf, cnt * 2 * sizeof(float));
                 recordedSize += cnt * 2 * sizeof(float);
             }
 #ifdef BUILD_ZIQ
