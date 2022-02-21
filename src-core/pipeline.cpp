@@ -104,13 +104,11 @@ void Pipeline::run(std::string input_file,
             std::thread module1_thread([m1]()
                                        {
                                            m1->process();
-                                           logger->info("MODULE 1 DONE");
-                                       });
+                                           logger->info("MODULE 1 DONE"); });
             std::thread module2_thread([m2]()
                                        {
                                            m2->process();
-                                           logger->info("MODULE 2 DONE");
-                                       });
+                                           logger->info("MODULE 2 DONE"); });
 
             if (module1_thread.joinable())
                 module1_thread.join();
@@ -135,7 +133,7 @@ void Pipeline::run(std::string input_file,
         }
     }
 
-    for (; currentStep < steps.size(); currentStep++)
+    for (; currentStep < (int)steps.size(); currentStep++)
     {
         PipelineStep &step = steps[currentStep];
 
@@ -186,7 +184,7 @@ void Pipeline::run(std::string input_file,
                 uiCallListMutex->unlock();
             }
 
-            //module.reset();
+            // module.reset();
 
             std::vector<std::string> newfiles = module->getOutputs();
             files.insert(files.end(), newfiles.begin(), newfiles.end());
@@ -268,7 +266,7 @@ void loadPipeline(std::string filepath, std::string category)
                 pipelineString.replace(pipelineString.find(replace.first), replace.first.size(), replace.second);
         }
 
-        //logger->info(pipelineString);
+        // logger->info(pipelineString);
     }
 
     // Parse it
@@ -286,13 +284,15 @@ void loadPipeline(std::string filepath, std::string category)
         newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
         newPipeline.default_baseband_type = pipelineConfig.value()["baseband_type"];
         newPipeline.category = category;
-        //logger->info(newPipeline.name);
+        // logger->info(newPipeline.name);
+
+        bool hasAllModules = true;
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value()["work"].items())
         {
             PipelineStep newStep;
             newStep.level_name = pipelineStep.key();
-            //logger->warn(newStep.level_name);
+            // logger->warn(newStep.level_name);
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
             {
@@ -304,7 +304,13 @@ void loadPipeline(std::string filepath, std::string category)
                     newModule.input_override = newModule.parameters["input_override"];
                 else
                     newModule.input_override = "";
-                //logger->debug(newModule.module_name);
+                // logger->debug(newModule.module_name);
+
+                if (modules_registry.count(newModule.module_name) <= 0 && hasAllModules)
+                {
+                    logger->warn("Module " + newModule.module_name + " is not loaded. Skipping pipeline!");
+                    hasAllModules = false;
+                }
 
                 newStep.modules.push_back(newModule);
             }
@@ -312,7 +318,8 @@ void loadPipeline(std::string filepath, std::string category)
             newPipeline.steps.push_back(newStep);
         }
 
-        pipelines.push_back(newPipeline);
+        if (hasAllModules)
+            pipelines.push_back(newPipeline);
     }
 }
 
@@ -364,4 +371,19 @@ std::vector<Pipeline> getPipelinesInCategory(std::string category)
 Pipeline getPipelineInCategoryFromId(std::string category, int id)
 {
     return getPipelinesInCategory(category)[id];
+}
+
+std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)
+{
+    std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
+                                                      pipelines.end(),
+                                                      [&downlink_pipeline](const Pipeline &e)
+                                                      {
+                                                          return e.name == downlink_pipeline;
+                                                      });
+
+    if (it != pipelines.end())
+        return std::optional<Pipeline>(*it);
+    else
+        return std::optional<Pipeline>();
 }

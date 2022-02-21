@@ -6,6 +6,7 @@
 #include <vector>
 #include "dll_export.h"
 #include "nlohmann/json.hpp"
+#include <optional>
 
 struct PipelineModule
 {
@@ -49,3 +50,4 @@ SATDUMP_DLL extern std::vector<std::string> pipeline_categories;
 void loadPipelines(std::string filepath);
 std::vector<Pipeline> getPipelinesInCategory(std::string category);
 Pipeline getPipelineInCategoryFromId(std::string category, int id);
+std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);

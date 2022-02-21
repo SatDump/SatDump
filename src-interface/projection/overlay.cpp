@@ -19,7 +19,7 @@
 #include <filesystem>
 #include "global.h"
 #include "common/geodetic/projection/geo_projection.h"
-#include "modules/goes/gvar/image/crop.h"
+//#include "modules/goes/gvar/image/crop.h"
 #include "settings.h"
 #include "findgeoref.h"
 
@@ -71,8 +71,8 @@ namespace projection_overlay
                 logger->info("Cropping GOES-N data...");
 
                 // One of those should work
-                overlayed_image = goes::gvar::cropIR(overlayed_image);  // IR Case
-                overlayed_image = goes::gvar::cropVIS(overlayed_image); // VIS Case
+                //overlayed_image = goes::gvar::cropIR(overlayed_image);  // IR Case
+                //overlayed_image = goes::gvar::cropVIS(overlayed_image); // VIS Case
             }
 
             overlayed_image.resize(gsofile.image_width, gsofile.image_height); // Safety

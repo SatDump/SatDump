@@ -1,3 +1,20 @@
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
+
 add_subdirectory(sample)
 add_subdirectory(gvar_extended)
+
+add_subdirectory(spacex_support)
+add_subdirectory(fengyun2_support)
+add_subdirectory(fengyun3_support)
+add_subdirectory(proba_support)
+add_subdirectory(eos_support)
+add_subdirectory(meteor_support)
+add_subdirectory(jpss_support)
+add_subdirectory(goes_support)
+add_subdirectory(elektro_arktika_support)
+add_subdirectory(gk2a_support)
+add_subdirectory(noaa_metop_support)
+add_subdirectory(jason3_support)
+add_subdirectory(oceansat_support)

@@ -19,7 +19,7 @@
 #include <filesystem>
 #include "global.h"
 #include "common/geodetic/projection/geo_projection.h"
-#include "modules/goes/gvar/image/crop.h"
+//#include "modules/goes/gvar/image/crop.h"
 #include "settings.h"
 #include "findgeoref.h"
 
@@ -497,8 +497,8 @@ namespace projection
                         logger->info("Cropping GOES-N data...");
 
                         // One of those should work
-                        new_image = goes::gvar::cropIR(new_image);  // IR Case
-                        new_image = goes::gvar::cropVIS(new_image); // VIS Case
+                        //new_image = goes::gvar::cropIR(new_image);  // IR Case
+                        //new_image = goes::gvar::cropVIS(new_image); // VIS Case
                     }
 
                     new_image.resize(gsofile.image_width, gsofile.image_height); // Safety

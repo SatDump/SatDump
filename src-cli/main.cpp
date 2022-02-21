@@ -6,32 +6,22 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include "init.h"
-#include "project.h"
+#include "common/cli_utils.h"
 
 int main(int argc, char *argv[])
 {
-// Ignore SIGPIPE
-#ifndef _WIN32
-    signal(SIGPIPE, SIG_IGN);
-#endif
-
+    // Init logger
     initLogger();
 
-    if (argc > 1)
+    if (argc < 6) // Check overall command
     {
-        if (strcmp(argv[1], "project") == 0)
-        {
-            initSatdump();
-            return project(argc - 1, &argv[1]);
-        }
-    }
-    else if (argc < 6 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
-    {
-        logger->info("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
-        logger->info("Extra options : -samplerate [baseband_samplerate] -baseband_format [f32/i16/i8/w8] -dc_block -iq_swap");
-        exit(1);
+        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
+        logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+        return 1;
     }
 
+    // Init SatDump
     initSatdump();
 
     std::string downlink_pipeline = argv[1];
@@ -40,60 +30,28 @@ int main(int argc, char *argv[])
     std::string output_level = argv[4];
     std::string output_file = argv[5];
 
-    nlohmann::json parameters;
+    // Parse flags
+    nlohmann::json parameters = parse_common_flags(argc - 6, &argv[6]);
 
-    if (argc > 6)
-    {
-        for (int i = 6; i < argc; i++)
-        {
-            if (i + 1 != argc)
-            {
-                if (strcmp(argv[i], "-samplerate") == 0) // This is your parameter name
-                {
-                    parameters["samplerate"] = std::stol(argv[i + 1]); // The next value in the array is your value
-                    i++;                                               // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-baseband_format") == 0) // This is your parameter name
-                {
-                    parameters["baseband_format"] = argv[i + 1]; // The next value in the array is your value
-                    i++;                                         // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
-                {
-                    parameters["dc_block"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                    i++;                                                   // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-iq_swap") == 0) // This is your parameter name
-                {
-                    parameters["iq_swap"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                    i++;                                                  // Move to the next flag
-                }
-            }
-        }
-    }
+    // logger->warn("\n" + parameters.dump(4));
+    // exit(0);
 
+    // Print some useful info
     logger->info("Starting processing pipeline " + downlink_pipeline + "...");
     logger->debug("Input file (" + input_level + ") : " + input_file);
     logger->debug("Output file (" + output_level + ") : " + output_file);
 
+    // Create output dir
     if (!std::filesystem::exists(output_file))
-        std::filesystem::create_directory(output_file);
+        std::filesystem::create_directories(output_file);
 
-    std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                      pipelines.end(),
-                                                      [&downlink_pipeline](const Pipeline &e)
-                                                      {
-                                                          return e.name == downlink_pipeline;
-                                                      });
+    // Get pipeline
+    std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
 
-    if (it != pipelines.end())
-    {
-        it->run(input_file, output_file, parameters, input_level);
-    }
+    if (pipeline.has_value())
+        pipeline.value().run(input_file, output_file, parameters, input_level);
     else
-    {
         logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-    }
 
     logger->info("Done! Goodbye");
 }

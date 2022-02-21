@@ -79,3 +79,9 @@ int percentile(T *array, int size, float percentile)
 }
 
 std::vector<std::string> splitString(std::string input, char del);
+
+template <typename T>
+inline bool getBit(T &data, int &bit)
+{
+    return (data >> bit) & 1;
+}

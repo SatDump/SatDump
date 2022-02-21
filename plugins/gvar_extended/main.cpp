@@ -7,7 +7,7 @@
 #include <vector>
 #include <iomanip>
 #include "libs/predict/predict.h"
-#include "modules/goes/gvar/module_gvar_image_decoder.h"
+#include "goes/gvar/module_gvar_image_decoder.h"
 #include "tle.h"
 #include "common/geodetic/projection/geo_projection.h"
 #include "common/map/map_drawer.h"

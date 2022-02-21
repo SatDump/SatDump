@@ -1,0 +1,17 @@
+{
+    "plugins": [
+        "plugins/libelektro_arktika_support.so",
+        "plugins/libeos_support.so",
+        "plugins/libfengyun2_support.so",
+        "plugins/libfengyun3_support.so",
+        "plugins/libgk2a_support.so",
+        "plugins/libgoes_support.so",
+        "plugins/libjason3_support.so",
+        "plugins/libjpss_support.so",
+        "plugins/libmeteor_support.so",
+        "plugins/libnoaa_metop_support.so",
+        "plugins/liboceansat_support.so",
+        "plugins/libproba_support.so",
+        "plugins/libspacex_support.so"
+    ]
+}
