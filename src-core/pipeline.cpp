@@ -337,10 +337,7 @@ void loadPipelines(std::string filepath)
         {
             if (pipelinesIterator->path().filename().string().find(".json") != std::string::npos)
             {
-                if (pipelinesIterator->path().string().find(".json.inc") != std::string::npos)
-                {
-                }
-                else
+                if (pipelinesIterator->path().string().find(".json.inc") == std::string::npos)
                 {
                     logger->trace("Found pipeline file " + pipelinesIterator->path().string());
                     pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
