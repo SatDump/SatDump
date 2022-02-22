@@ -10,12 +10,13 @@
 #include "processing.h"
 #include <filesystem>
 #include "settings.h"
-#include "settingsui.h"
+//#include "settingsui.h"
 #include "main_ui.h"
-#include "live/live.h"
+//#include "live/live.h"
 #include "satdump_vars.h"
 #include "tle.h"
-#include "recorder/recorder.h"
+//#include "recorder/recorder.h"
+#include "common/cli_utils.h"
 
 extern bool recorder_running;
 
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
     bindFileDialogsFunctions();
-    //std::fill(error_message, &error_message[0], 0);
+    // std::fill(error_message, &error_message[0], 0);
 
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
@@ -43,88 +44,30 @@ int main(int argc, char *argv[])
 
     initLogger();
 
-    std::string downlink_pipeline = "";
-    std::string input_level = "";
-    std::string input_file = "";
-    std::string output_level = "products";
-    std::string output_file = "";
-    nlohmann::json parameters;
-
-    if (argc < 6 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+    if (argc < 6) // Check overall command
     {
-        logger->info("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
-        logger->info("Extra options : -samplerate [baseband_samplerate] -baseband_format [f32/i16/i8/w8] -dc_block -iq_swap");
-        // exit(1);
-    }
-    else
-    {
-        downlink_pipeline = argv[1];
-        input_level = argv[2];
-        input_file = argv[3];
-        output_level = argv[4];
-        output_file = argv[5];
-
-        if (argc > 6)
-        {
-            for (int i = 6; i < argc; i++)
-            {
-                if (i + 1 != argc)
-                {
-                    if (strcmp(argv[i], "-samplerate") == 0) // This is your parameter name
-                    {
-                        parameters["samplerate"] = std::stol(argv[i + 1]); // The next value in the array is your value
-                        i++;                                               // Move to the next flag
-                    }
-                    else if (strcmp(argv[i], "-baseband_format") == 0) // This is your parameter name
-                    {
-                        parameters["baseband_format"] = argv[i + 1]; // The next value in the array is your value
-                        i++;                                         // Move to the next flag
-                    }
-                    else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
-                    {
-                        parameters["dc_block"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                        i++;                                                   // Move to the next flag
-                    }
-                    else if (strcmp(argv[i], "-iq_swap") == 0) // This is your parameter name
-                    {
-                        parameters["iq_swap"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                        i++;                                                  // Move to the next flag
-                    }
-                }
-            }
-        }
-
-        satdumpUiStatus = OFFLINE_PROCESSING;
+        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
+        logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+        return 1;
     }
 
+    satdumpUiStatus = OFFLINE_PROCESSING;
+
+    // Init SatDump
     initSatdump();
 
-#ifdef _WIN32
-    loadSettings("settings.json");
-#else
-    if (std::filesystem::exists("settings.json"))
-    {
-        loadSettings("settings.json");
-    }
-    else
-    {
-        std::string cfg_path = std::string(getenv("HOME")) + "/.config/satdump";
+    std::string downlink_pipeline = argv[1];
+    std::string input_level = argv[2];
+    std::string input_file = argv[3];
+    std::string output_level = argv[4];
+    std::string output_file = argv[5];
 
-        if (!std::filesystem::exists(cfg_path))
-        {
-            logger->debug("Creating directory " + cfg_path);
-            std::filesystem::create_directories(cfg_path);
-        }
+    // Parse flags
+    nlohmann::json parameters = parse_common_flags(argc - 6, &argv[6]);
 
-        loadSettings(cfg_path + "/settings.json");
-    }
-#endif
-
-    parseSettingsOrDefaults();
-
-    // If we are asked to update TLEs on boot, do so
-    if (update_tles_on_startup)
-        tle::updateTLEsMT();
+    // logger->warn("\n" + parameters.dump(4));
+    // exit(0);
 
     // Init UI
     initMainUI();
@@ -173,6 +116,9 @@ int main(int argc, char *argv[])
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
+    bool use_light_theme = false;
+    float manual_dpi_scaling = 1;
+
     if (std::filesystem::exists("Roboto-Medium.ttf"))
     {
         if (use_light_theme)
@@ -218,7 +164,7 @@ int main(int argc, char *argv[])
             glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
         else
             glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-        //glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+        // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -249,7 +195,7 @@ int main(int argc, char *argv[])
 #ifdef BUILD_LIVE
     if (satdumpUiStatus == BASEBAND_RECORDER)
     {
-        recorder::exitRecorder();
+        // recorder::exitRecorder();
 // Same story as offline processing, except we finish recording first
 #ifdef __APPLE__
         exit(0);

@@ -23,23 +23,15 @@ namespace processing
         logger->debug("Output file (" + output_level + ") : " + output_file);
 
         if (!std::filesystem::exists(output_file))
-            std::filesystem::create_directory(output_file);
+            std::filesystem::create_directories(output_file);
 
-        std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                          pipelines.end(),
-                                                          [&downlink_pipeline](const Pipeline &e)
-                                                          {
-                                                              return e.name == downlink_pipeline;
-                                                          });
+        // Get pipeline
+        std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
 
-        if (it != pipelines.end())
-        {
-            it->run(input_file, output_file, parameters, input_level, true, uiCallList, uiCallListMutex);
-        }
+        if (pipeline.has_value())
+            pipeline.value().run(input_file, output_file, parameters, input_level, true, uiCallList, uiCallListMutex);
         else
-        {
             logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-        }
 
         logger->info("Done! Goodbye");
         satdumpUiStatus = MAIN_MENU;
