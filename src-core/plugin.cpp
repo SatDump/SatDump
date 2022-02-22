@@ -43,6 +43,14 @@ void loadPlugins()
     if (std::filesystem::exists("plugins"))
         plugins_path = "./plugins";
 
+#if defined(_WIN32)
+    std::string extension = ".dll";
+#elif defined(__APPLE__)
+    std::string extension = ".dylib";
+#else
+    std::string extension = ".so";
+#endif
+
     logger->info("Loading plugins from " + plugins_path);
 
     std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
