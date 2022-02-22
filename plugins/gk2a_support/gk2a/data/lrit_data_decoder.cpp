@@ -17,7 +17,7 @@
 #include "resources.h"
 extern "C"
 {
-#include "libs/libtom/tomcrypt_des.c"
+#include "libtom/tomcrypt_des.c"
 }
 
 namespace gk2a

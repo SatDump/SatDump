@@ -6,7 +6,7 @@ extern "C"
 {
 #include "libs/jpeg/jpeglib.h"
 }
-#include "libs/openjp2/openjpeg.h"
+//#include "libs/openjp2/openjpeg.h"
 
 namespace image
 {
@@ -81,7 +81,7 @@ namespace image
         return img;
     }
 
-    Image<uint16_t> decompress_j2k_openjp2(uint8_t *data, int length)
+    /*Image<uint16_t> decompress_j2k_openjp2(uint8_t *data, int length)
     {
         Image<uint16_t> img;
 
@@ -146,5 +146,5 @@ namespace image
         opj_image_destroy(image);
 
         return img;
-    }
+    }*/
 }
