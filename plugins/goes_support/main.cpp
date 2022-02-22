@@ -13,7 +13,7 @@ class GOESSupport : public satdump::Plugin
 public:
     std::string getID()
     {
-        return "spacex_support";
+        return "goes_support";
     }
 
     void init()

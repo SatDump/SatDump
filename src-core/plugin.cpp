@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "settings.h"
 #include <filesystem>
+#include "satdump_vars.h"
 
 std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 {
@@ -37,27 +38,44 @@ namespace satdump
 
 void loadPlugins()
 {
-    if (global_cfg.contains("plugins"))
+    std::string plugins_path = (std::string)RESOURCES_PATH + "plugins";
+
+    if (std::filesystem::exists("plugins"))
+        plugins_path = "./plugins";
+
+    logger->info("Loading plugins from " + plugins_path);
+
+    std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
+    std::error_code iteratorError;
+    while (pluginIterator != std::filesystem::recursive_directory_iterator())
     {
-        std::vector<std::string> pluginsToLoad = global_cfg["plugins"].get<std::vector<std::string>>();
-        for (std::string path : pluginsToLoad)
+        if (!std::filesystem::is_directory(pluginIterator->path()))
         {
-            if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
+            if (pluginIterator->path().filename().string().find(".so") != std::string::npos)
             {
-                std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                satdump::loaded_plugins.insert({pl->getID(), pl});
-            }
-            else
-            {
-                logger->error("File " + path + " is not a valid plugin!");
+                std::string path = pluginIterator->path().string();
+
+                if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
+                {
+                    std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
+                    satdump::loaded_plugins.insert({pl->getID(), pl});
+                }
+                else
+                {
+                    logger->error("File " + path + " is not a valid plugin!");
+                }
             }
         }
 
-        if (satdump::loaded_plugins.size() > 0)
-        {
-            logger->debug("Loaded plugins (" + std::to_string(satdump::loaded_plugins.size()) + ") : ");
-            for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : satdump::loaded_plugins)
-                logger->debug(" - " + it.first);
-        }
+        pluginIterator.increment(iteratorError);
+        if (iteratorError)
+            logger->critical(iteratorError.message());
+    }
+
+    if (satdump::loaded_plugins.size() > 0)
+    {
+        logger->debug("Loaded plugins (" + std::to_string(satdump::loaded_plugins.size()) + ") : ");
+        for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : satdump::loaded_plugins)
+            logger->debug(" - " + it.first);
     }
 }
