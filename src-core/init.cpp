@@ -3,7 +3,6 @@
 #include "module.h"
 #include "pipeline.h"
 #include <filesystem>
-#include "settings.h"
 #include "tle.h"
 #include "plugin.h"
 #include "satdump_vars.h"

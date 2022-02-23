@@ -12,11 +12,6 @@ else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
 endif()
 
-if(BUILD_LIVE)
-    add_compile_definitions(BUILD_LIVE="1")
-    target_link_libraries(satdump-ui PUBLIC sdr)
-endif()
-
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 

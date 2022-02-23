@@ -9,13 +9,9 @@
 #include "init.h"
 #include "processing.h"
 #include <filesystem>
-#include "settings.h"
-//#include "settingsui.h"
 #include "main_ui.h"
-//#include "live/live.h"
 #include "satdump_vars.h"
 #include "tle.h"
-//#include "recorder/recorder.h"
 #include "common/cli_utils.h"
 
 extern bool recorder_running;
@@ -26,14 +22,12 @@ static void glfw_error_callback(int error, const char *description)
 }
 
 void bindImageTextureFunctions();
-void bindFileDialogsFunctions();
+//void bindFileDialogsFunctions();
 
 int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
-    bindFileDialogsFunctions();
-    // std::fill(error_message, &error_message[0], 0);
-
+    
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
 

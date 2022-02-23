@@ -8,11 +8,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
-option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
-option(BUILD_LIVE           "Build the live processing feature (WIP)"                   ON)
+#option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           ON)
-option(BUILD_TRACKING       "Build the very WIP Tracking UI"                            OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
 if(APPLE)
@@ -56,18 +54,9 @@ endif()
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
-if(BUILD_LIVE)
-    add_subdirectory(libsdr)
-endif()
-
 if(NOT NOGUI)
     add_subdirectory(src-interface)
     add_subdirectory(src-ui)
-endif()
-
-if(BUILD_LIVE)
-    add_subdirectory(src-ingestor)
-    add_subdirectory(src-tools/src-recorder)
 endif()
 
 if(BUILD_TESTING)
@@ -76,12 +65,6 @@ endif()
 
 if(BUILD_PLUGINS)
     add_subdirectory(plugins)
-endif()
-
-# If GDAL is available, build the georef2geotiff tool
-find_library(GDAL_LIBRARY gdal)
-if(GDAL_LIBRARY)
-    add_subdirectory(src-tools/src-georef2geotiff)
 endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)

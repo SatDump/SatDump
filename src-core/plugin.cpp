@@ -6,7 +6,6 @@
 #include <dlfcn.h>
 #endif
 #include "logger.h"
-#include "settings.h"
 #include <filesystem>
 #include "satdump_vars.h"
 
