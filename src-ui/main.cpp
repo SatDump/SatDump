@@ -37,11 +37,6 @@ int main(int argc, char *argv[])
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
 
-// Ignore SIGPIPE
-#ifndef _WIN32
-    signal(SIGPIPE, SIG_IGN);
-#endif
-
     initLogger();
 
     if (argc < 6) // Check overall command
@@ -51,8 +46,8 @@ int main(int argc, char *argv[])
         logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
         return 1;
     }
-
-    satdumpUiStatus = OFFLINE_PROCESSING;
+    else
+        isProcessing = true;
 
     // Init SatDump
     initSatdump();
@@ -134,7 +129,7 @@ int main(int argc, char *argv[])
             style::setDarkStyle((std::string)RESOURCES_PATH);
     }
 
-    if (satdumpUiStatus == OFFLINE_PROCESSING)
+    if (isProcessing)
         processThreadPool.push([&](int)
                                { processing::process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
 
@@ -183,7 +178,7 @@ int main(int argc, char *argv[])
     logger->info("UI Exit");
 
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
-    if (satdumpUiStatus == OFFLINE_PROCESSING)
+    if (isProcessing)
 #ifdef __APPLE__
         exit(0);
 #else

@@ -14,17 +14,17 @@
 //#include "projection/projection_menu.h"
 //#include "projection/overlay.h"
 
-satdump_ui_status satdumpUiStatus = MAIN_MENU;
+//satdump_ui_status satdumpUiStatus = MAIN_MENU;
 
 void initMainUI()
 {
 }
 
-bool first = true;
+bool isProcessing = false;
 
 void renderMainUI(int wwidth, int wheight)
 {
-    if (satdumpUiStatus == OFFLINE_PROCESSING)
+    if (isProcessing)
     {
         uiCallListMutex->lock();
         float winheight = uiCallList->size() > 0 ? wheight / uiCallList->size() : wheight;

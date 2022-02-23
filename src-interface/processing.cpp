@@ -16,7 +16,7 @@ namespace processing
                  std::string output_file,
                  nlohmann::json parameters)
     {
-        satdumpUiStatus = OFFLINE_PROCESSING;
+        isProcessing = true;
 
         logger->info("Starting processing pipeline " + downlink_pipeline + "...");
         logger->debug("Input file (" + input_level + ") : " + input_file);
@@ -34,6 +34,6 @@ namespace processing
             logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
 
         logger->info("Done! Goodbye");
-        satdumpUiStatus = MAIN_MENU;
+        isProcessing = false;
     }
 }

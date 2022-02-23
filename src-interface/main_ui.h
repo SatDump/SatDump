@@ -1,16 +1,6 @@
 #pragma once
 
-enum satdump_ui_status
-{
-    OFFLINE_PROCESSING,
-    LIVE_PROCESSING,
-    BASEBAND_RECORDER,
-    PROJECTION,
-    OVERLAY,
-    MAIN_MENU,
-};
-
-extern satdump_ui_status satdumpUiStatus;
+extern bool isProcessing;
 
 void initMainUI();
 void renderMainUI(int wwidth, int wheight);
