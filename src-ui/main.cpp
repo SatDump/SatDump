@@ -180,8 +180,6 @@ int main(int argc, char *argv[])
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    tle::stopTLECleanMT(); // Let the TLE update thread shutdown cleanly
-
     logger->info("UI Exit");
 
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
@@ -190,19 +188,6 @@ int main(int argc, char *argv[])
         exit(0);
 #else
         quick_exit(0);
-#endif
-
-#ifdef BUILD_LIVE
-    if (satdumpUiStatus == BASEBAND_RECORDER)
-    {
-        // recorder::exitRecorder();
-// Same story as offline processing, except we finish recording first
-#ifdef __APPLE__
-        exit(0);
-#else
-        quick_exit(0);
-#endif
-    }
 #endif
 
     processThreadPool.stop();

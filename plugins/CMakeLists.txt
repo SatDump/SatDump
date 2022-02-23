@@ -69,6 +69,11 @@ if(PLUGIN_OCEANSAT OR PLUGINS_ALL)
 add_subdirectory(oceansat_support)
 endif()
 
+option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
+if(PLUGIN_OTHERS OR PLUGINS_ALL)
+add_subdirectory(others_support)
+endif()
+
 #add_subdirectory(sample)
 
 option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)

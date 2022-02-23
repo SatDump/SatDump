@@ -19,7 +19,7 @@ void initSatdump()
     logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
     logger->info("");
 
-    loadConfig();
+    //loadConfig();
 
     loadPlugins();
 

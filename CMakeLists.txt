@@ -41,7 +41,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project (SatDump VERSION "0.0.39")
+project (SatDump VERSION "1.0.0")
 
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 

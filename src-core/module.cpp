@@ -142,7 +142,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 //#include "modules/oceansat/module_oceansat2_db_decoder.h"
 //#include "modules/oceansat/instruments/ocm/module_oceansat_ocm.h"
 
-#include "modules/saral/argos/module_saral_argos.h"
+//#include "modules/saral/argos/module_saral_argos.h"
 
 //#include "modules/goes/gvar/module_gvar_decoder.h"
 //#include "modules/goes/gvar/module_gvar_image_decoder.h"
@@ -159,7 +159,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 //#include "modules/jason3/instruments/amr2/module_jason3_amr2.h"
 //#include "modules/jason3/instruments/lpt/module_jason3_lpt.h"
 
-#include "modules/angels/argos/module_angels_argos.h"
+//#include "modules/angels/argos/module_angels_argos.h"
 
 #include "modules/ccsds/module_ccsds_analyzer.h"
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
@@ -167,11 +167,11 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 //#include "modules/gk2a/module_gk2a_lrit_data_decoder.h"
 
-#include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
+//#include "modules/cryosat/instruments/siral/module_cryosat_siral.h"
 
-#include "modules/coriolis/instruments/windsat/module_coriolis_windsat.h"
+//#include "modules/coriolis/instruments/windsat/module_coriolis_windsat.h"
 
-#include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
+//#include "modules/cloudsat/instruments/cpr/module_cloudsat_cpr.h"
 
 //#include "modules/iris/module_iris_dump_decoder.h"
 
@@ -280,7 +280,7 @@ void registerModules()
     //REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
 
     // Saral
-    REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
+    //REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
@@ -302,7 +302,7 @@ void registerModules()
     //REGISTER_MODULE(jason3::lpt::Jason3LPTDecoderModule);
 
     // ANGELS
-    REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
+    //REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
 
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
@@ -315,13 +315,13 @@ void registerModules()
     // CFOSAT
 
     // CRYOSAT
-    REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
+    //REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
 
     // Coriolis
-    REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
+    //REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
 
     // CloudSat
-    REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
+    //REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // IRIS
     // REGISTER_MODULE(iris::IRISDumpDecoderModule);

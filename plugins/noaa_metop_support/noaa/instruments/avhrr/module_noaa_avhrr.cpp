@@ -74,6 +74,8 @@ namespace noaa
 
             uint8_t buffer_gac[4159];
 
+            // double last_timestamp = 0;
+
             while (!data_in.eof())
             {
                 if (gac_mode)
@@ -94,7 +96,13 @@ namespace noaa
                 int day_of_year = buffer[8] >> 1;
                 uint64_t milliseconds = (buffer[9] & 0x7F) << 20 | (buffer[10] << 10) | buffer[11];
                 double timestamp = dayYearValue + (day_of_year * 86400) + double(milliseconds) / 1000.0;
+
+                // if (last_timestamp < timestamp)
                 timestamps.push_back(timestamp);
+                // else
+                //     timestamps.push_back(-1);
+
+                // last_timestamp = timestamp;
 
                 // Parse ID
                 spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
@@ -107,6 +115,27 @@ namespace noaa
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
+
+            /*{
+                double cnt = 0;
+                for (double tt : timestamps)
+                    if (tt != -1)
+                        cnt++;
+
+                double avg = 0;
+                double v = 1.0 / cnt;
+
+                for (double tt : timestamps)
+                    avg += tt * v;
+
+                for (double &tt : timestamps)
+                {
+                    if (std::abs(tt - avg) > 3600 * 60 * 4 && tt != -1)
+                    {
+                        tt = -1;
+                    }
+                }
+            }*/
 
             data_in.close();
 
