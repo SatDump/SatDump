@@ -36,7 +36,8 @@
                 }
             },
             "products": {
-                "metop_satid": {},
+                "metop_instruments": {}
+                /*"metop_satid": {},
                 "metop_avhrr": {
                     "composites": "composites/metop_avhrr.json.inc"
                 },
@@ -50,7 +51,7 @@
                 },
                 "metop_ascat": {},
                 "metop_sem": {},
-                "metop_admin_msg": {}
+                "metop_admin_msg": {}*/
             }
         }
     },

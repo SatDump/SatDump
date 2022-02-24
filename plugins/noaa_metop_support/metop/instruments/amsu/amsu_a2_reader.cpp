@@ -25,8 +25,8 @@ namespace metop
 
             // This is is very messy, but the spacing between samples wasn't constant so...
             // We have to put it back together the hard way...
+            // There also are a few weird shifts here and there, which are fixed by checked at the filler AMSU word.
             int pos = 42;
-
             for (int i = 0; i < 15 * 14; i++)
             {
                 lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
@@ -34,7 +34,6 @@ namespace metop
             }
 
             pos = 470 - 6;
-
             for (int i = 15 * 14; i < 22 * 14; i++)
             {
                 lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
@@ -42,15 +41,14 @@ namespace metop
             }
 
             pos = 668 - 6;
-
             for (int i = 22 * 14; i < 23 * 14; i++)
             {
                 lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
                 pos += 2;
             }
 
-            pos = 702 - 6;
-
+            bool shifted = uint16_t(packet.payload[700 - 6 + 0] << 8 | packet.payload[700 - 6 + 1]) != 0b0000000000000001;
+            pos = (shifted ? 700 : 702) - 6;
             for (int i = 23 * 14; i < 24 * 14; i++)
             {
                 lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
@@ -58,7 +56,6 @@ namespace metop
             }
 
             pos = 734 - 6;
-
             for (int i = 24 * 14; i < 30 * 14; i++)
             {
                 lineBuffer[i] = packet.payload[pos + 0] << 8 | packet.payload[pos + 1];
@@ -67,13 +64,8 @@ namespace metop
 
             // Plot into an images
             for (int channel = 0; channel < 2; channel++)
-            {
                 for (int i = 0; i < 30; i++)
-                {
-                    uint16_t pixel = lineBuffer[i * 14 + channel];
-                    channels[channel][lines * 30 + 29 - i] = pixel;
-                }
-            }
+                    channels[channel][lines * 30 + 29 - i] = lineBuffer[i * 14 + channel];
 
             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
@@ -83,9 +75,7 @@ namespace metop
 
         image::Image<uint16_t> AMSUA2Reader::getChannel(int channel)
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 30, lines, 1);
-            //img.equalize(1000);
-            return img;
+            return image::Image<uint16_t>(channels[channel], 30, lines, 1);
         }
     } // namespace amsu
 } // namespace metop

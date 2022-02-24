@@ -8,19 +8,14 @@ namespace metop
         IASIReader::IASIReader()
         {
             for (int i = 0; i < 8461; i++)
-            {
                 channels[i] = new unsigned short[10000 * 30];
-            }
             lines = 0;
         }
 
         IASIReader::~IASIReader()
         {
             for (int i = 0; i < 8461; i++)
-            {
-                // Already deleted by CImg...
-                //delete[] channels[i];
-            }
+                delete[] channels[i];
         }
 
         struct unsigned_int16
@@ -40,7 +35,6 @@ namespace metop
                 return;
 
             int counter = packet.payload[16];
-
             int cnt1 = 0, cnt2 = 0;
 
             if (packet.header.apid == 130)
@@ -73,8 +67,7 @@ namespace metop
                             bit_pos++;
                         }
 
-                        channels[channel][(lines + cnt1) * 60 + (counter - 1) * 2 + cnt2] = ((raw_result));
-
+                        channels[channel][(lines + cnt1) * 60 + 59 - ((counter - 1) * 2 + cnt2)] = raw_result << (16 - sample_length);
                         channel++;
                     }
                 }
@@ -87,11 +80,7 @@ namespace metop
 
         image::Image<uint16_t> IASIReader::getChannel(int channel)
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 30 * 2, lines, 1);
-            //img.normalize();
-            img.equalize();
-            img.mirror(true, false);
-            return img;
+            return image::Image<uint16_t>(channels[channel], 30 * 2, lines, 1);
         }
     } // namespace iasi
 } // namespace metop

@@ -37,3 +37,12 @@ std::vector<std::string> splitString(std::string input, char del)
 
     return segs;
 }
+
+// Return filesize
+size_t getFilesize(std::string filepath)
+{
+    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    std::size_t fileSize = file.tellg();
+    file.close();
+    return fileSize;
+}

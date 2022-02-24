@@ -4,15 +4,16 @@
 
 #include "metop/module_metop_ahrpt_decoder.h"
 #include "metop/module_metop_dump_decoder.h"
-#include "metop/instruments/avhrr/module_metop_avhrr.h"
-#include "metop/instruments/mhs/module_metop_mhs.h"
-#include "metop/instruments/iasi/module_metop_iasi.h"
-#include "metop/instruments/amsu/module_metop_amsu.h"
-#include "metop/instruments/gome/module_metop_gome.h"
-#include "metop/instruments/ascat/module_metop_ascat.h"
+//#include "metop/instruments/avhrr/module_metop_avhrr.h"
+//#include "metop/instruments/mhs/module_metop_mhs.h"
+//#include "metop/instruments/iasi/module_metop_iasi.h"
+//#include "metop/instruments/amsu/module_metop_amsu.h"
+//#include "metop/instruments/gome/module_metop_gome.h"
+//#include "metop/instruments/ascat/module_metop_ascat.h"
 #include "metop/instruments/admin_msg/module_metop_admin_msg.h"
 #include "metop/module_metop_satid.h"
 #include "metop/instruments/sem/module_metop_sem.h"
+#include "metop/module_metop_instruments.h"
 
 #include "noaa/module_noaa_hrpt_decoder.h"
 #include "noaa/module_noaa_gac_decoder.h"
@@ -42,15 +43,17 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::MetOpAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::MetOpDumpDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::avhrr::MetOpAVHRRDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::mhs::MetOpMHSDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::iasi::MetOpIASIDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::amsu::MetOpAMSUDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::gome::MetOpGOMEDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::ascat::MetOpASCATDecoderModule);
+        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::avhrr::MetOpAVHRRDecoderModule);
+        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::mhs::MetOpMHSDecoderModule);
+        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::iasi::MetOpIASIDecoderModule);
+        //REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::amsu::MetOpAMSUDecoderModule);
+        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::gome::MetOpGOMEDecoderModule);
+        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::ascat::MetOpASCATDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::admin_msg::MetOpAdminMsgDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::satid::MetOpSatIDModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::sem::MetOpSEMDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::instruments::MetOpInstrumentsDModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa::NOAAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa::NOAAGACDecoderModule);

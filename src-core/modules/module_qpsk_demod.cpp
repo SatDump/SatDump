@@ -4,13 +4,7 @@
 #include "imgui/imgui.h"
 
 // Return filesize
-size_t getFilesize(std::string filepath)
-{
-    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
-    std::size_t fileSize = file.tellg();
-    file.close();
-    return fileSize;
-}
+size_t getFilesize(std::string filepath);
 
 QPSKDemodModule::QPSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                     d_agc_rate(parameters["agc_rate"].get<float>()),
@@ -55,7 +49,7 @@ void QPSKDemodModule::init()
 
     // Init DSP Blocks
     if (input_data_type == DATA_FILE)
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
     if (d_dc_block)
         dcb = std::make_shared<dsp::DCBlockerBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream, 1024, true);
 

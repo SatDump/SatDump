@@ -1,5 +1,4 @@
 #include "gome_reader.h"
-#include "utils.h"
 #include <cstring>
 
 namespace metop
@@ -9,27 +8,19 @@ namespace metop
         GOMEReader::GOMEReader()
         {
             for (int i = 0; i < 6144; i++)
-            {
                 channels[i] = new unsigned short[10000 * 15];
-            }
             lines = 0;
         }
 
         GOMEReader::~GOMEReader()
         {
             for (int i = 0; i < 6144; i++)
-            {
                 delete[] channels[i];
-            }
         }
 
         struct unsigned_int16
         {
-            operator unsigned short(void) const
-            {
-                return ((a << 8) + b);
-            }
-
+            operator unsigned short(void) const { return ((a << 8) + b); }
             unsigned char a;
             unsigned char b;
         };
@@ -51,7 +42,6 @@ namespace metop
                 return;
 
             unsigned_int16 *header = (unsigned_int16 *)&packet.payload[14];
-
             int counter = header[6];
 
             // Detect GOME mode
@@ -74,35 +64,19 @@ namespace metop
                         continue;
 
                     if ((header[17] >> (10 - band * 2)) & 3)
-                    {
-                        int val = bands[0][band_channels[band]].data[band_starts[band] + channel];
-
-                        channels[band * 1024 + channel][lines * 15 + counter] = val;
-                    }
-
-                    if ((header[18] >> (5 - band)) & 1)
-                    {
-                        int val = bands[1][band_channels[band]].data[band_starts[band] + channel];
-
-                        channels[band * 1024 + channel][lines * 15 + counter] = val;
-                    }
+                        channels[band * 1024 + channel][lines * 15 + 14 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
+                    else if ((header[18] >> (5 - band)) & 1)
+                        channels[band * 1024 + channel][lines * 15 + 14 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
                 }
             }
 
             if (counter == 15)
-            {
                 lines++;
-            }
         }
 
         image::Image<uint16_t> GOMEReader::getChannel(int channel)
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 15, lines, 1);
-            //img.normalize(0, 65535);
-            img.equalize();
-            img.mirror(true, false);
-            img.resize(30, lines);
-            return img;
+            return image::Image<uint16_t>(channels[channel], 15, lines, 1);
         }
     } // namespace gome
 } // namespace metop

@@ -4,18 +4,16 @@
 
 namespace metop
 {
-    namespace gome
+    namespace instruments
     {
-        class MetOpGOMEDecoderModule : public ProcessingModule
+        class MetOpInstrumentsDModule : public ProcessingModule
         {
         protected:
-            bool write_all;
-
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
         public:
-            MetOpGOMEDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 
@@ -25,5 +23,5 @@ namespace metop
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace gome
+    } // namespace amsu
 } // namespace metop

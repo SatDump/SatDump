@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <climits>
+#include <fstream>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
@@ -85,3 +86,6 @@ inline bool getBit(T &data, int &bit)
 {
     return (data >> bit) & 1;
 }
+
+// Return filesize
+size_t getFilesize(std::string filepath);

@@ -26,21 +26,9 @@ namespace metop
             if (packet.payload.size() < 654)
                 return;
 
-            int channel = 0;
+            int channel = packet.header.apid - 208;
 
-            if (packet.header.apid == 208)
-                channel = 0;
-            else if (packet.header.apid == 209)
-                channel = 1;
-            else if (packet.header.apid == 210)
-                channel = 2;
-            else if (packet.header.apid == 211)
-                channel = 3;
-            else if (packet.header.apid == 212)
-                channel = 4;
-            else if (packet.header.apid == 213)
-                channel = 5;
-            else
+            if (channel < 0 || channel > 6)
                 return;
 
             for (int i = 0; i < 256; i++)

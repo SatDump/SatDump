@@ -4,7 +4,7 @@
 
 /*
 Simple resizeable buffer.
-This was made for usecases where manual management is fine, 
+This was made for usecases where manual management is fine,
 and std::vector too slow... Such as all the image processing.
 
 The aim is not to automate memory management, but rather to be a
@@ -19,29 +19,31 @@ class ResizeableBuffer
 {
 private:
     size_t d_size;
+    size_t d_width;
+    size_t d_headroom;
 
 public:
     T *buf;
 
 public:
-    ResizeableBuffer()
+    ResizeableBuffer() { d_size = 0; }
+    ~ResizeableBuffer() {}
+
+    void destroy() { delete[] buf; }
+    size_t size() { return d_size; }
+
+    T &operator[](int i)
     {
-        d_size = 0;
+        // check(i / d_width);
+        return buf[i];
     }
 
-    ~ResizeableBuffer()
+    void create(size_t width, size_t headroom = 1000)
     {
-    }
-
-    void create(size_t size)
-    {
-        buf = new T[size];
-        d_size = size;
-    }
-
-    void destroy()
-    {
-        delete[] buf;
+        d_width = width;
+        d_headroom = headroom;
+        d_size = d_width * d_headroom;
+        buf = new T[d_size];
     }
 
     void resize(size_t newSize)
@@ -56,13 +58,9 @@ public:
         }
     }
 
-    size_t size()
+    void check(size_t lines)
     {
-        return d_size;
-    }
-
-    T &operator[](int i)
-    {
-        return buf[i];
+        if (lines * d_width >= d_size) // Check for 1 extra!
+            resize(d_width * (lines + d_headroom));
     }
 };

@@ -29,12 +29,8 @@ namespace metop
 
             // Plot into an image
             for (int channel = 0; channel < 5; channel++)
-            {
                 for (int i = 0; i < 90; i++)
-                {
                     channels[channel][lines * 90 + 89 - i] = mhs_buffer[i * 6 + channel + 3];
-                }
-            }
 
             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
@@ -44,8 +40,7 @@ namespace metop
 
         image::Image<uint16_t> MHSReader::getChannel(int channel)
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(channels[channel], 90, lines, 1);
-            return img;
+            return image::Image<uint16_t>(channels[channel], 90, lines, 1);
         }
     } // namespace mhs
 } // namespace metop
