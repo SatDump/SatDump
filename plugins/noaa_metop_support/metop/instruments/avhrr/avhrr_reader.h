@@ -2,7 +2,6 @@
 
 #include "common/ccsds/ccsds.h"
 #include "common/image/image.h"
-#include "common/resizeable_buffer.h"
 
 namespace metop
 {
@@ -11,14 +10,16 @@ namespace metop
         class AVHRRReader
         {
         private:
-            ResizeableBuffer<unsigned short> channels[5];
             uint16_t avhrr_buffer[10355];
+
+        public:
+            int lines;
+            std::vector<uint16_t> channels[5];
+            std::vector<double> timestamps;
 
         public:
             AVHRRReader();
             ~AVHRRReader();
-            int lines;
-            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             image::Image<uint16_t> getChannel(int channel);
         };

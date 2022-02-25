@@ -8,20 +8,16 @@
 #include "metop.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "instruments/avhrr/avhrr_reader.h"
-#include "instruments/mhs/mhs_reader.h"
-#include "instruments/ascat/ascat_reader.h"
-#include "instruments/iasi/iasi_reader.h"
-#include "instruments/iasi/iasi_imaging_reader.h"
-#include "instruments/amsu/amsu_a1_reader.h"
-#include "instruments/amsu/amsu_a2_reader.h"
-#include "instruments/gome/gome_reader.h"
 
 namespace metop
 {
     namespace instruments
     {
-        MetOpInstrumentsDModule::MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MetOpInstrumentsDModule::MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : ProcessingModule(input_file, output_file_hint, parameters) //,
+                                                                         // avhrr_image_preview(2048, 10000),
+                                                                         // mhs_image_preview(90, 1000),
+                                                                         // iasi_image_preview(36 * 64, 10000)
         {
         }
 
@@ -43,16 +39,17 @@ namespace metop
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid12(882, true);
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid15(882, true);
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid24(882, true);
+            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid34(882, true);
 
-            // Readers
-            avhrr::AVHRRReader avhrr_reader;
-            mhs::MHSReader mhs_reader;
-            ascat::ASCATReader ascat_reader;
-            iasi::IASIReader iasi_reader;
-            iasi::IASIIMGReader iasi_reader_img;
-            amsu::AMSUA1Reader amsu_a1_reader;
-            amsu::AMSUA2Reader amsu_a2_reader;
-            gome::GOMEReader gome_reader;
+            // Setup Admin Message
+            {
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Admin Messages";
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+                admin_msg_reader.directory = directory;
+            }
+
+            std::vector<uint8_t> metop_scids;
 
             while (!data_in.eof())
             {
@@ -62,19 +59,30 @@ namespace metop
                 // Parse this transport frame
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
+                if (vcdu.spacecraft_id == METOP_A_SCID ||
+                    vcdu.spacecraft_id == METOP_B_SCID ||
+                    vcdu.spacecraft_id == METOP_C_SCID)
+                    metop_scids.push_back(vcdu.spacecraft_id);
+
                 if (vcdu.vcid == 9) // AVHRR/3
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid9.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 103 || pkt.header.apid == 104)
+                        {
                             avhrr_reader.work(pkt);
+                            // avhrr_image_preview.hasToUpdate = true;
+                        }
                 }
                 else if (vcdu.vcid == 12) // MHS
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 34)
+                        {
                             mhs_reader.work(pkt);
+                            // mhs_image_preview.hasToUpdate = true;
+                        }
                 }
                 else if (vcdu.vcid == 15) // ASCAT
                 {
@@ -88,7 +96,10 @@ namespace metop
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 150)
+                        {
                             iasi_reader_img.work(pkt);
+                            // iasi_image_preview.hasToUpdate = true;
+                        }
                         else if (pkt.header.apid == 130 || pkt.header.apid == 135 || pkt.header.apid == 140 || pkt.header.apid == 145)
                             iasi_reader.work(pkt);
                     }
@@ -102,6 +113,8 @@ namespace metop
                             amsu_a1_reader.work(pkt);
                         else if (pkt.header.apid == 40)
                             amsu_a2_reader.work(pkt);
+                        else if (pkt.header.apid == 37)
+                            sem_reader.work(pkt);
                     }
                 }
                 else if (vcdu.vcid == 24) // GOME
@@ -111,6 +124,13 @@ namespace metop
                         if (pkt.header.apid == 384)
                             gome_reader.work(pkt);
                 }
+                else if (vcdu.vcid == 34) // Admin Messages
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid34.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        if (pkt.header.apid == 6)
+                            admin_msg_reader.work(pkt);
+                }
 
                 progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -118,6 +138,32 @@ namespace metop
                     lastTime = time(NULL);
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
+            }
+
+            int scid = most_common(metop_scids.begin(), metop_scids.end());
+            metop_scids.clear();
+
+            std::string sat_name = "Unknown MetOp";
+            if (scid == METOP_A_SCID)
+                sat_name = "MetOp-A";
+            else if (scid == METOP_B_SCID)
+                sat_name = "MetOp-B";
+            else if (scid == METOP_C_SCID)
+                sat_name = "MetOp-C";
+
+            int norad = 0;
+            if (scid == METOP_A_SCID)
+                norad = METOP_A_NORAD;
+            else if (scid == METOP_B_SCID)
+                norad = METOP_B_NORAD;
+            else if (scid == METOP_C_SCID)
+                norad = METOP_C_NORAD;
+
+            // Satellite ID
+            {
+                logger->info("----------- Satellite");
+                logger->info("NORAD : " + std::to_string(norad));
+                logger->info("Name  : " + sat_name);
             }
 
             // AVHRR
@@ -262,7 +308,7 @@ namespace metop
                 logger->info("Global Composite...");
                 int all_width_count = 130;
                 int all_height_count = 48;
-                image::Image<uint16_t> imageAll(15 * all_width_count, gome_reader.lines * all_height_count, 1);
+                image::Image<uint16_t> imageAll(16 * all_width_count, gome_reader.lines * all_height_count, 1);
                 {
                     int height = gome_reader.lines;
 
@@ -273,12 +319,18 @@ namespace metop
                             if (row * all_width_count + column >= 6144)
                                 break;
 
-                            imageAll.draw_image(0, gome_reader.getChannel(row * all_width_count + column), 15 * column, height * row);
+                            imageAll.draw_image(0, gome_reader.getChannel(row * all_width_count + column), 16 * column, height * row);
                         }
                     }
                 }
                 WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
                 imageAll.clear();
+            }
+
+            // Admin Messages
+            {
+                logger->info("----------- Admin Message");
+                logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
 
             data_in.close();
@@ -287,6 +339,31 @@ namespace metop
         void MetOpInstrumentsDModule::drawUI(bool window)
         {
             ImGui::Begin("MetOp Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+            if (ImGui::BeginTabBar("Instrument Preview", ImGuiTabBarFlags_None))
+            {
+                if (ImGui::BeginTabItem("AVHRR"))
+                {
+                    // if (ImGui::Combo("##metopavhrrchannel", &shown_avhrr_channel, "Channel 1\0Channel 2\0Channel 3\0Channel 4\0Channel 5\0"))
+                    //     avhrr_image_preview.hasToUpdate = true;
+                    // avhrr_image_preview.draw(avhrr_reader.channels[shown_avhrr_channel], 2048, avhrr_reader.lines, 200, 1000);
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("IASI"))
+                {
+                    // iasi_image_preview.draw(iasi_reader_img.ir_channel, 36 * 64, iasi_reader_img.lines * 64 + 64, 200, 1000);
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("MHS"))
+                {
+                    // if (ImGui::Combo("##metopmhschannel", &shown_mhs_channel, "Channel 1\0Channel 2\0Channel 3\0Channel 4\0Channel 5\0"))
+                    //     mhs_image_preview.hasToUpdate = true;
+                    // mhs_image_preview.draw(mhs_reader.channels[shown_mhs_channel], 90, mhs_reader.lines, 200, 1000);
+                    ImGui::EndTabItem();
+                }
+
+                ImGui::EndTabBar();
+            }
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

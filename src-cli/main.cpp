@@ -7,7 +7,7 @@
 #include <fstream>
 #include "init.h"
 #include "common/cli_utils.h"
-
+#include <thread>
 int main(int argc, char *argv[])
 {
     // Init logger
@@ -52,6 +52,8 @@ int main(int argc, char *argv[])
         pipeline.value().run(input_file, output_file, parameters, input_level);
     else
         logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     logger->info("Done! Goodbye");
 }

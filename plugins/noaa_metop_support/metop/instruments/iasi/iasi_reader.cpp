@@ -8,14 +8,14 @@ namespace metop
         IASIReader::IASIReader()
         {
             for (int i = 0; i < 8461; i++)
-                channels[i] = new unsigned short[10000 * 30];
+                channels[i].resize(60);
             lines = 0;
         }
 
         IASIReader::~IASIReader()
         {
             for (int i = 0; i < 8461; i++)
-                delete[] channels[i];
+                channels[i].clear();
         }
 
         struct unsigned_int16
@@ -39,11 +39,11 @@ namespace metop
 
             if (packet.header.apid == 130)
                 cnt1 = 1, cnt2 = 1;
-            if (packet.header.apid == 135)
+            else if (packet.header.apid == 135)
                 cnt1 = 0, cnt2 = 1;
-            if (packet.header.apid == 140)
+            else if (packet.header.apid == 140)
                 cnt1 = 1, cnt2 = 0;
-            if (packet.header.apid == 145)
+            else if (packet.header.apid == 145)
                 cnt1 = 0, cnt2 = 0;
 
             if (counter <= 30)
@@ -76,11 +76,14 @@ namespace metop
             // Frame counter
             if (counter == 30 && packet.header.apid == 130)
                 lines += 2;
+
+            for (int channel = 0; channel < 8461; channel++)
+                channels[channel].resize((lines + 2) * 60);
         }
 
         image::Image<uint16_t> IASIReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 30 * 2, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 30 * 2, lines, 1);
         }
     } // namespace iasi
 } // namespace metop

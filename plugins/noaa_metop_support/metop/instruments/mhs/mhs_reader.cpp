@@ -9,14 +9,14 @@ namespace metop
         MHSReader::MHSReader()
         {
             for (int i = 0; i < 5; i++)
-                channels[i] = new unsigned short[10000 * 90];
+                channels[i].resize(90);
             lines = 0;
         }
 
         MHSReader::~MHSReader()
         {
             for (int i = 0; i < 5; i++)
-                delete[] channels[i];
+                channels[i].clear();
         }
 
         void MHSReader::work(ccsds::CCSDSPacket &packet)
@@ -36,11 +36,14 @@ namespace metop
 
             // Frame counter
             lines++;
+
+            for (int channel = 0; channel < 5; channel++)
+                channels[channel].resize((lines + 1) * 90);
         }
 
         image::Image<uint16_t> MHSReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 90, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 90, lines, 1);
         }
     } // namespace mhs
 } // namespace metop

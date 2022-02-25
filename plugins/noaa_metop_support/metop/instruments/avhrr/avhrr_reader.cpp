@@ -9,14 +9,14 @@ namespace metop
         AVHRRReader::AVHRRReader()
         {
             for (int i = 0; i < 5; i++)
-                channels[i].create(2048);
+                channels[i].resize(2048);
             lines = 0;
         }
 
         AVHRRReader::~AVHRRReader()
         {
             for (int i = 0; i < 5; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void AVHRRReader::work(ccsds::CCSDSPacket &packet)
@@ -35,13 +35,14 @@ namespace metop
 
             // Frame counter
             lines++;
+
             for (int channel = 0; channel < 5; channel++)
-                channels[channel].check(lines);
+                channels[channel].resize((lines + 1) * 2048);
         }
 
         image::Image<uint16_t> AVHRRReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].buf, 2048, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 2048, lines, 1);
         }
     } // namespace avhrr
 } // namespace metop

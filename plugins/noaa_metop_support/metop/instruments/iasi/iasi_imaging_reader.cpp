@@ -8,14 +8,14 @@ namespace metop
     {
         IASIIMGReader::IASIIMGReader()
         {
-            ir_channel.create(64 * 36);
+            ir_channel.resize(64 * 64 * 36);
             lines = 0;
             timestamps_ifov.push_back(std::vector<double>(30, -1));
         }
 
         IASIIMGReader::~IASIIMGReader()
         {
-            ir_channel.destroy();
+            ir_channel.clear();
         }
 
         void IASIIMGReader::work(ccsds::CCSDSPacket &packet)
@@ -45,12 +45,12 @@ namespace metop
                 timestamps_ifov.push_back(std::vector<double>(30, -1));
             }
 
-            ir_channel.check((lines + 64 * 2) * 64);
+            ir_channel.resize((lines * 64 + 64) * 64 * 36);
         }
 
         image::Image<uint16_t> IASIIMGReader::getIRChannel()
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(ir_channel.buf, 36 * 64, lines * 64, 1);
+            image::Image<uint16_t> img = image::Image<uint16_t>(ir_channel.data(), 36 * 64, lines * 64, 1);
 
             // Calibrate to remove the noise junk
             int mask[64 * 64];

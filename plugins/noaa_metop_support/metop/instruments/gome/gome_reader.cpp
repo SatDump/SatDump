@@ -8,14 +8,14 @@ namespace metop
         GOMEReader::GOMEReader()
         {
             for (int i = 0; i < 6144; i++)
-                channels[i] = new unsigned short[10000 * 15];
+                channels[i].resize(16);
             lines = 0;
         }
 
         GOMEReader::~GOMEReader()
         {
             for (int i = 0; i < 6144; i++)
-                delete[] channels[i];
+                channels[i].clear();
         }
 
         struct unsigned_int16
@@ -64,19 +64,22 @@ namespace metop
                         continue;
 
                     if ((header[17] >> (10 - band * 2)) & 3)
-                        channels[band * 1024 + channel][lines * 15 + 14 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
+                        channels[band * 1024 + channel][lines * 15 + 15 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
                     else if ((header[18] >> (5 - band)) & 1)
-                        channels[band * 1024 + channel][lines * 15 + 14 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
+                        channels[band * 1024 + channel][lines * 15 + 15 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
                 }
             }
 
             if (counter == 15)
                 lines++;
+
+            for (int channel = 0; channel < 6144; channel++)
+                channels[channel].resize((lines + 1) * 16);
         }
 
         image::Image<uint16_t> GOMEReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 15, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 16, lines, 1);
         }
     } // namespace gome
 } // namespace metop

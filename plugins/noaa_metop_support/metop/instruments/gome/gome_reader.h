@@ -9,13 +9,13 @@ namespace metop
     {
         class GOMEReader
         {
-        private:
-            unsigned short *channels[6144];
+        public:
+            int lines;
+            std::vector<uint16_t> channels[6144];
 
         public:
             GOMEReader();
             ~GOMEReader();
-            int lines;
             void work(ccsds::CCSDSPacket &packet);
             image::Image<uint16_t> getChannel(int channel);
         };

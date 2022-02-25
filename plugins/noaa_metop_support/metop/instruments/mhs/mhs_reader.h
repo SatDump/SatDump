@@ -10,14 +10,16 @@ namespace metop
         class MHSReader
         {
         private:
-            unsigned short *channels[5];
             uint16_t mhs_buffer[540];
+
+        public:
+            int lines;
+            std::vector<uint16_t> channels[5];
+            std::vector<double> timestamps;
 
         public:
             MHSReader();
             ~MHSReader();
-            int lines;
-            std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
             image::Image<uint16_t> getChannel(int channel);
         };

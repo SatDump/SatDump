@@ -8,14 +8,14 @@ namespace metop
         AMSUA1Reader::AMSUA1Reader()
         {
             for (int i = 0; i < 13; i++)
-                channels[i] = new unsigned short[10000 * 30];
+                channels[i].resize(30);
             lines = 0;
         }
 
         AMSUA1Reader::~AMSUA1Reader()
         {
             for (int i = 0; i < 13; i++)
-                delete[] channels[i];
+                channels[i].clear();
         }
 
         void AMSUA1Reader::work(ccsds::CCSDSPacket &packet)
@@ -93,11 +93,14 @@ namespace metop
 
             // Frame counter
             lines++;
+
+            for (int i = 0; i < 13; i++)
+                channels[i].resize((lines + 1) * 30);
         }
 
         image::Image<uint16_t> AMSUA1Reader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 30, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 30, lines, 1);
         }
     } // namespace amsu
 } // namespace metop

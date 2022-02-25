@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <mutex>
 
 /*
 Simple resizeable buffer.
@@ -23,13 +24,21 @@ private:
     size_t d_headroom;
 
 public:
+    std::mutex buffer_lock;
     T *buf;
+
+    bool destroyed = false;
 
 public:
     ResizeableBuffer() { d_size = 0; }
-    ~ResizeableBuffer() {}
+    ~ResizeableBuffer() { destroy(); }
 
-    void destroy() { delete[] buf; }
+    void destroy()
+    {
+        if (!destroyed)
+            delete[] buf;
+        destroyed = true;
+    }
     size_t size() { return d_size; }
 
     T &operator[](int i)
@@ -48,6 +57,7 @@ public:
 
     void resize(size_t newSize)
     {
+        buffer_lock.lock();
         if (newSize > d_size)
         {
             T *newBuffer = new T[newSize];
@@ -56,6 +66,7 @@ public:
             buf = newBuffer;
             d_size = newSize;
         }
+        buffer_lock.unlock();
     }
 
     void check(size_t lines)

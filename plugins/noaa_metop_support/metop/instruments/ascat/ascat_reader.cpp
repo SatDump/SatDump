@@ -10,15 +10,15 @@ namespace metop
         {
             for (int i = 0; i < 6; i++)
             {
-                channels[i] = new unsigned short[10000 * 256];
+                channels[i].resize(256);
                 lines[i] = 0;
             }
         }
 
         ASCATReader::~ASCATReader()
         {
-            for (int i = 0; i < 5; i++)
-                delete[] channels[i];
+            for (int i = 0; i < 6; i++)
+                channels[i].clear();
         }
 
         void ASCATReader::work(ccsds::CCSDSPacket &packet)
@@ -65,11 +65,13 @@ namespace metop
 
             // Frame counter
             lines[channel]++;
+
+            channels[channel].resize((lines[channel] + 1) * 256);
         }
 
         image::Image<uint16_t> ASCATReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 256, lines[channel], 1);
+            return image::Image<uint16_t>(channels[channel].data(), 256, lines[channel], 1);
         }
     } // namespace avhrr
 } // namespace metop

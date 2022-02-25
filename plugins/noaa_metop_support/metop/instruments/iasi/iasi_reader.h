@@ -10,7 +10,7 @@ namespace metop
         class IASIReader
         {
         private:
-            unsigned short *channels[8461];
+            std::vector<uint16_t> channels[8461];
 
         public:
             IASIReader();

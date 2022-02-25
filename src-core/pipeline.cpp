@@ -184,10 +184,10 @@ void Pipeline::run(std::string input_file,
                 uiCallListMutex->unlock();
             }
 
-            // module.reset();
-
             std::vector<std::string> newfiles = module->getOutputs();
             files.insert(files.end(), newfiles.begin(), newfiles.end());
+
+            module.reset();
         }
 
         lastFiles = files;
