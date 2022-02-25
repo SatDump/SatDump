@@ -64,9 +64,9 @@ namespace metop
                         continue;
 
                     if ((header[17] >> (10 - band * 2)) & 3)
-                        channels[band * 1024 + channel][lines * 15 + 15 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
+                        channels[band * 1024 + channel][lines * 16 + 15 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
                     else if ((header[18] >> (5 - band)) & 1)
-                        channels[band * 1024 + channel][lines * 15 + 15 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
+                        channels[band * 1024 + channel][lines * 16 + 15 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
                 }
             }
 

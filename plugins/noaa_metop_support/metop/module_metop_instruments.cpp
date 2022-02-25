@@ -247,23 +247,8 @@ namespace metop
 
                 // Output a few nice composites as well
                 logger->info("Global Composite...");
-                int all_width_count = 150;
-                int all_height_count = 60;
-                image::Image<uint16_t> imageAll(60 * all_width_count, iasi_reader.getChannel(0).height() * all_height_count, 1);
-                {
-                    int height = iasi_reader.getChannel(0).height();
-
-                    for (int row = 0; row < all_height_count; row++)
-                    {
-                        for (int column = 0; column < all_width_count; column++)
-                        {
-                            if (row * all_width_count + column >= 8461)
-                                break;
-
-                            imageAll.draw_image(0, iasi_reader.getChannel(row * all_width_count + column), 60 * column, height * row);
-                        }
-                    }
-                }
+                image::Image<uint16_t> imageAll = image::make_manyimg_composite<uint16_t>(150, 56, 8461, [this](int c)
+                                                                                          { return iasi_reader.getChannel(c); });
                 WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
                 iasi_status = DONE;
             }
@@ -306,23 +291,8 @@ namespace metop
 
                 // Output a few nice composites as well
                 logger->info("Global Composite...");
-                int all_width_count = 130;
-                int all_height_count = 48;
-                image::Image<uint16_t> imageAll(16 * all_width_count, gome_reader.lines * all_height_count, 1);
-                {
-                    int height = gome_reader.lines;
-
-                    for (int row = 0; row < all_height_count; row++)
-                    {
-                        for (int column = 0; column < all_width_count; column++)
-                        {
-                            if (row * all_width_count + column >= 6144)
-                                break;
-
-                            imageAll.draw_image(0, gome_reader.getChannel(row * all_width_count + column), 16 * column, height * row);
-                        }
-                    }
-                }
+                image::Image<uint16_t> imageAll = image::make_manyimg_composite<uint16_t>(130, 48, 6144, [this](int c)
+                                                                                          { return gome_reader.getChannel(c); });
                 WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
                 imageAll.clear();
                 gome_status = DONE;

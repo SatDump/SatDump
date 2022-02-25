@@ -1,8 +1,6 @@
 #pragma once
 
 #include "module.h"
-#include "common/widgets/image_preview.h"
-
 #include "instruments/avhrr/avhrr_reader.h"
 #include "instruments/mhs/mhs_reader.h"
 #include "instruments/ascat/ascat_reader.h"
