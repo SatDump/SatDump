@@ -3,8 +3,8 @@
 #include "module.h"
 
 ImagePreviewWidget::ImagePreviewWidget(int width, int height)
-    : width(width),
-      height(height)
+    : d_width(width),
+      d_height(height)
 {
 }
 
@@ -15,26 +15,19 @@ ImagePreviewWidget::~ImagePreviewWidget()
         delete[] textureBuffer;
 }
 
-void ImagePreviewWidget::draw(ResizeableBuffer<uint16_t> &buffer, int width, int height, int render_width, int render_height)
-{
-    buffer.buffer_lock.lock();
-    draw(buffer.buf, width, height, render_width, render_height);
-    buffer.buffer_lock.unlock();
-}
-
 void ImagePreviewWidget::draw(uint16_t *buffer, int width, int height, int render_width, int render_height)
 {
     imageMutex.lock();
     if (texture == 0)
     {
         texture = makeImageTexture();
-        textureBuffer = new uint32_t[this->width * this->height];
+        textureBuffer = new uint32_t[d_width * d_height];
     }
 
     if (hasToUpdate)
     {
-        ushort_to_rgba(buffer, textureBuffer, this->width * height, 1);
-        updateImageTexture(texture, textureBuffer, this->width, this->height);
+        ushort_to_rgba(buffer, textureBuffer, d_width * height, 1);
+        updateImageTexture(texture, textureBuffer, d_width, d_height);
         hasToUpdate = false;
     }
 

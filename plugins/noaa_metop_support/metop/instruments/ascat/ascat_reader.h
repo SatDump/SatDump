@@ -9,7 +9,7 @@ namespace metop
     {
         class ASCATReader
         {
-        private:
+        public:
             std::vector<uint16_t> channels[6];
             int lines[6];
             std::vector<double> timestamps[6];

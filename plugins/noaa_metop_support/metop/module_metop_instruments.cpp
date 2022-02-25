@@ -14,10 +14,7 @@ namespace metop
     namespace instruments
     {
         MetOpInstrumentsDModule::MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters) //,
-                                                                         // avhrr_image_preview(2048, 10000),
-                                                                         // mhs_image_preview(90, 1000),
-                                                                         // iasi_image_preview(36 * 64, 10000)
+            : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -69,20 +66,14 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid9.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 103 || pkt.header.apid == 104)
-                        {
                             avhrr_reader.work(pkt);
-                            // avhrr_image_preview.hasToUpdate = true;
-                        }
                 }
                 else if (vcdu.vcid == 12) // MHS
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 34)
-                        {
                             mhs_reader.work(pkt);
-                            // mhs_image_preview.hasToUpdate = true;
-                        }
                 }
                 else if (vcdu.vcid == 15) // ASCAT
                 {
@@ -96,10 +87,7 @@ namespace metop
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (pkt.header.apid == 150)
-                        {
                             iasi_reader_img.work(pkt);
-                            // iasi_image_preview.hasToUpdate = true;
-                        }
                         else if (pkt.header.apid == 130 || pkt.header.apid == 135 || pkt.header.apid == 140 || pkt.header.apid == 145)
                             iasi_reader.work(pkt);
                     }
@@ -168,6 +156,7 @@ namespace metop
 
             // AVHRR
             {
+                avhrr_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AVHRR";
 
                 if (!std::filesystem::exists(directory))
@@ -189,10 +178,12 @@ namespace metop
 
                 logger->info("Channel 5...");
                 WRITE_IMAGE(avhrr_reader.getChannel(4), directory + "/AVHRR-5.png");
+                avhrr_status = DONE;
             }
 
             // MHS
             {
+                mhs_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MHS";
 
                 if (!std::filesystem::exists(directory))
@@ -205,10 +196,12 @@ namespace metop
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(mhs_reader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
                 }
+                mhs_status = DONE;
             }
 
             // ASCAT
             {
+                ascat_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ASCAT";
 
                 if (!std::filesystem::exists(directory))
@@ -222,10 +215,12 @@ namespace metop
                     image::Image<uint16_t> img = ascat_reader.getChannel(i);
                     WRITE_IMAGE(img, directory + "/ASCAT-" + std::to_string(i + 1) + ".png");
                 }
+                ascat_status = DONE;
             }
 
             // IASI
             {
+                iasi_img_status = iasi_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IASI";
 
                 if (!std::filesystem::exists(directory))
@@ -248,6 +243,7 @@ namespace metop
                     image::Image<uint16_t> iasi_imaging_equ_inv = iasi_imaging;
                     WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
                 }
+                iasi_img_status = DONE;
 
                 // Output a few nice composites as well
                 logger->info("Global Composite...");
@@ -269,10 +265,12 @@ namespace metop
                     }
                 }
                 WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
+                iasi_status = DONE;
             }
 
             // AMSU
             {
+                amsu_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AMSU";
 
                 if (!std::filesystem::exists(directory))
@@ -293,10 +291,12 @@ namespace metop
                     WRITE_IMAGE(amsu_a1_reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
                     // WRITE_IMAGE(amsu_a1_reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A1-" + std::to_string(i + 3) + "-EQU.png");
                 }
+                amsu_status = DONE;
             }
 
             // GOME
             {
+                gome_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/GOME";
 
                 if (!std::filesystem::exists(directory))
@@ -325,10 +325,12 @@ namespace metop
                 }
                 WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
                 imageAll.clear();
+                gome_status = DONE;
             }
 
             // Admin Messages
             {
+                admin_msg_status = DONE;
                 logger->info("----------- Admin Message");
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
@@ -340,29 +342,97 @@ namespace metop
         {
             ImGui::Begin("MetOp Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTabBar("Instrument Preview", ImGuiTabBarFlags_None))
+            if (ImGui::BeginTable("##metopinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
-                if (ImGui::BeginTabItem("AVHRR"))
-                {
-                    // if (ImGui::Combo("##metopavhrrchannel", &shown_avhrr_channel, "Channel 1\0Channel 2\0Channel 3\0Channel 4\0Channel 5\0"))
-                    //     avhrr_image_preview.hasToUpdate = true;
-                    // avhrr_image_preview.draw(avhrr_reader.channels[shown_avhrr_channel], 2048, avhrr_reader.lines, 200, 1000);
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("IASI"))
-                {
-                    // iasi_image_preview.draw(iasi_reader_img.ir_channel, 36 * 64, iasi_reader_img.lines * 64 + 64, 200, 1000);
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("MHS"))
-                {
-                    // if (ImGui::Combo("##metopmhschannel", &shown_mhs_channel, "Channel 1\0Channel 2\0Channel 3\0Channel 4\0Channel 5\0"))
-                    //     mhs_image_preview.hasToUpdate = true;
-                    // mhs_image_preview.draw(mhs_reader.channels[shown_mhs_channel], 90, mhs_reader.lines, 200, 1000);
-                    ImGui::EndTabItem();
-                }
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Instrument");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("Lines / Frames");
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("Status");
 
-                ImGui::EndTabBar();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("AVHRR");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", avhrr_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(avhrr_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("IASI");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(iasi_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("IASI Imaging");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader_img.lines * 64);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(iasi_img_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("MHS");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(mhs_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("AMSU A1");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a1_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(amsu_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("AMSU A2");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a2_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(amsu_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("GOME");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", gome_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(gome_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("ASCAT");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", ascat_reader.lines[0]);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(gome_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("SEM");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", sem_reader.samples);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(sem_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Admin Messages");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", admin_msg_reader.count);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(admin_msg_status);
+
+                ImGui::EndTable();
             }
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));

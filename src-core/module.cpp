@@ -188,121 +188,121 @@ void registerModules()
     REGISTER_MODULE(PMDemodModule);
 
     // MetOp
-    //REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
-    //REGISTER_MODULE(metop::MetOpDumpDecoderModule);
-    //REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
-    //REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
-    //REGISTER_MODULE(metop::iasi::MetOpIASIDecoderModule);
-    //REGISTER_MODULE(metop::amsu::MetOpAMSUDecoderModule);
-    //REGISTER_MODULE(metop::gome::MetOpGOMEDecoderModule);
-    //REGISTER_MODULE(metop::ascat::MetOpASCATDecoderModule);
-    //REGISTER_MODULE(metop::admin_msg::MetOpAdminMsgDecoderModule);
-    //REGISTER_MODULE(metop::satid::MetOpSatIDModule);
-    //REGISTER_MODULE(metop::sem::MetOpSEMDecoderModule);
+    // REGISTER_MODULE(metop::MetOpAHRPTDecoderModule);
+    // REGISTER_MODULE(metop::MetOpDumpDecoderModule);
+    // REGISTER_MODULE(metop::avhrr::MetOpAVHRRDecoderModule);
+    // REGISTER_MODULE(metop::mhs::MetOpMHSDecoderModule);
+    // REGISTER_MODULE(metop::iasi::MetOpIASIDecoderModule);
+    // REGISTER_MODULE(metop::amsu::MetOpAMSUDecoderModule);
+    // REGISTER_MODULE(metop::gome::MetOpGOMEDecoderModule);
+    // REGISTER_MODULE(metop::ascat::MetOpASCATDecoderModule);
+    // REGISTER_MODULE(metop::admin_msg::MetOpAdminMsgDecoderModule);
+    // REGISTER_MODULE(metop::satid::MetOpSatIDModule);
+    // REGISTER_MODULE(metop::sem::MetOpSEMDecoderModule);
 
     // FengYun-3
-    //REGISTER_MODULE(fengyun3::NewFengyunAHRPTDecoderModule);
-    //REGISTER_MODULE(fengyun3::FengyunAHRPTDecoderModule);
-    //REGISTER_MODULE(fengyun3::NewFengyunMPTDecoderModule);
-    //REGISTER_MODULE(fengyun3::FengyunMPTDecoderModule);
-    //REGISTER_MODULE(fengyun3::virr::FengyunVIRRDecoderModule);
-    //REGISTER_MODULE(fengyun3::mersi1::FengyunMERSI1DecoderModule);
-    //REGISTER_MODULE(fengyun3::mersi2::FengyunMERSI2DecoderModule);
-    //REGISTER_MODULE(fengyun3::erm::FengyunERMDecoderModule);
-    //REGISTER_MODULE(fengyun3::mwhs::FengyunMWHSDecoderModule);
-    //REGISTER_MODULE(fengyun3::waai::FengyunWAAIDecoderModule);
-    //REGISTER_MODULE(fengyun3::mwri::FengyunMWRIDecoderModule);
-    //REGISTER_MODULE(fengyun3::mwts::FengyunMWTSDecoderModule);
-    //REGISTER_MODULE(fengyun3::mwhs2::FengyunMWHS2DecoderModule);
-    //REGISTER_MODULE(fengyun3::satid::FengYunSatIDModule);
-    //REGISTER_MODULE(fengyun3::mersill::FengyunMERSILLDecoderModule);
-    //REGISTER_MODULE(fengyun3::windrad::FengyunWindRADDecoderModule);
-    //REGISTER_MODULE(fengyun3::mwts2::FengyunMWTS2DecoderModule);
-    //REGISTER_MODULE(fengyun3::mwts3::FengyunMWTS3DecoderModule);
-    //REGISTER_MODULE(fengyun3::xeuvi::FengyunXEUVIDecoderModule);
+    // REGISTER_MODULE(fengyun3::NewFengyunAHRPTDecoderModule);
+    // REGISTER_MODULE(fengyun3::FengyunAHRPTDecoderModule);
+    // REGISTER_MODULE(fengyun3::NewFengyunMPTDecoderModule);
+    // REGISTER_MODULE(fengyun3::FengyunMPTDecoderModule);
+    // REGISTER_MODULE(fengyun3::virr::FengyunVIRRDecoderModule);
+    // REGISTER_MODULE(fengyun3::mersi1::FengyunMERSI1DecoderModule);
+    // REGISTER_MODULE(fengyun3::mersi2::FengyunMERSI2DecoderModule);
+    // REGISTER_MODULE(fengyun3::erm::FengyunERMDecoderModule);
+    // REGISTER_MODULE(fengyun3::mwhs::FengyunMWHSDecoderModule);
+    // REGISTER_MODULE(fengyun3::waai::FengyunWAAIDecoderModule);
+    // REGISTER_MODULE(fengyun3::mwri::FengyunMWRIDecoderModule);
+    // REGISTER_MODULE(fengyun3::mwts::FengyunMWTSDecoderModule);
+    // REGISTER_MODULE(fengyun3::mwhs2::FengyunMWHS2DecoderModule);
+    // REGISTER_MODULE(fengyun3::satid::FengYunSatIDModule);
+    // REGISTER_MODULE(fengyun3::mersill::FengyunMERSILLDecoderModule);
+    // REGISTER_MODULE(fengyun3::windrad::FengyunWindRADDecoderModule);
+    // REGISTER_MODULE(fengyun3::mwts2::FengyunMWTS2DecoderModule);
+    // REGISTER_MODULE(fengyun3::mwts3::FengyunMWTS3DecoderModule);
+    // REGISTER_MODULE(fengyun3::xeuvi::FengyunXEUVIDecoderModule);
 
     // Aqua
-    //REGISTER_MODULE(aqua::AquaDBDecoderModule);
-    //REGISTER_MODULE(aqua::airs::AquaAIRSDecoderModule);
-    //REGISTER_MODULE(aqua::amsu::AquaAMSUDecoderModule);
-    //REGISTER_MODULE(aqua::ceres::AquaCERESDecoderModule);
+    // REGISTER_MODULE(aqua::AquaDBDecoderModule);
+    // REGISTER_MODULE(aqua::airs::AquaAIRSDecoderModule);
+    // REGISTER_MODULE(aqua::amsu::AquaAMSUDecoderModule);
+    // REGISTER_MODULE(aqua::ceres::AquaCERESDecoderModule);
 
     // Aura
-    //REGISTER_MODULE(aura::omi::AuraOMIDecoderModule);
+    // REGISTER_MODULE(aura::omi::AuraOMIDecoderModule);
 
     // EOS
-    //REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
+    // REGISTER_MODULE(eos::modis::EOSMODISDecoderModule);
 
     // NOAA
-    //REGISTER_MODULE(noaa::NOAAHRPTDecoderModule);
-    //REGISTER_MODULE(noaa::NOAAGACDecoderModule);
-    //REGISTER_MODULE(noaa::NOAADSBDecoderModule);
-    //REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
-    //REGISTER_MODULE(noaa::NOAAExtractorModule);
-    //REGISTER_MODULE(noaa::hirs::NOAAHIRSDecoderModule);
-    //REGISTER_MODULE(noaa::mhs::NOAAMHSDecoderModule);
-    //REGISTER_MODULE(noaa::amsu::NOAAAMSUDecoderModule);
+    // REGISTER_MODULE(noaa::NOAAHRPTDecoderModule);
+    // REGISTER_MODULE(noaa::NOAAGACDecoderModule);
+    // REGISTER_MODULE(noaa::NOAADSBDecoderModule);
+    // REGISTER_MODULE(noaa::avhrr::NOAAAVHRRDecoderModule);
+    // REGISTER_MODULE(noaa::NOAAExtractorModule);
+    // REGISTER_MODULE(noaa::hirs::NOAAHIRSDecoderModule);
+    // REGISTER_MODULE(noaa::mhs::NOAAMHSDecoderModule);
+    // REGISTER_MODULE(noaa::amsu::NOAAAMSUDecoderModule);
 
     // METEOR
-    //REGISTER_MODULE(meteor::METEORHRPTDecoderModule);
-    //REGISTER_MODULE(meteor::METEORLRPTDecoderModule);
-    //REGISTER_MODULE(meteor::msumr::METEORMSUMRDecoderModule);
-    //REGISTER_MODULE(meteor::msumr::METEORMSUMRLRPTDecoderModule);
-    //REGISTER_MODULE(meteor::mtvza::METEORMTVZADecoderModule);
+    // REGISTER_MODULE(meteor::METEORHRPTDecoderModule);
+    // REGISTER_MODULE(meteor::METEORLRPTDecoderModule);
+    // REGISTER_MODULE(meteor::msumr::METEORMSUMRDecoderModule);
+    // REGISTER_MODULE(meteor::msumr::METEORMSUMRLRPTDecoderModule);
+    // REGISTER_MODULE(meteor::mtvza::METEORMTVZADecoderModule);
 
     // JPSS
-    //REGISTER_MODULE(jpss::satid::JPSSSatIDModule);
-    //REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
-    //REGISTER_MODULE(jpss::viirs::JPSSVIIRSDecoderModule);
-    //REGISTER_MODULE(jpss::omps::JPSSOMPSDecoderModule);
+    // REGISTER_MODULE(jpss::satid::JPSSSatIDModule);
+    // REGISTER_MODULE(jpss::atms::JPSSATMSDecoderModule);
+    // REGISTER_MODULE(jpss::viirs::JPSSVIIRSDecoderModule);
+    // REGISTER_MODULE(jpss::omps::JPSSOMPSDecoderModule);
 
     // Proba
-    //REGISTER_MODULE(proba::swap::ProbaSWAPDecoderModule);
-    //REGISTER_MODULE(proba::chris::ProbaCHRISDecoderModule);
-    //REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
-    //REGISTER_MODULE(proba::vegetation::ProbaVegetationDecoderModule);
+    // REGISTER_MODULE(proba::swap::ProbaSWAPDecoderModule);
+    // REGISTER_MODULE(proba::chris::ProbaCHRISDecoderModule);
+    // REGISTER_MODULE(proba::hrc::ProbaHRCDecoderModule);
+    // REGISTER_MODULE(proba::vegetation::ProbaVegetationDecoderModule);
 
     // ELEKTRO
-    //REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
-    //REGISTER_MODULE(elektro_arktika::TLMDemodModule);
-    //REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
+    // REGISTER_MODULE(elektro_arktika::msugs::MSUGSDecoderModule);
+    // REGISTER_MODULE(elektro_arktika::TLMDemodModule);
+    // REGISTER_MODULE(elektro::lrit::ELEKTROLRITDataDecoderModule);
     // REGISTER_MODULE(elektro_arktika::ggak_e::GGAKEDecoderModule);
 
     // Terra
-    //REGISTER_MODULE(terra::TerraDBDemodModule);
+    // REGISTER_MODULE(terra::TerraDBDemodModule);
 
     // Falcon & Starship
-    //REGISTER_MODULE(spacex::SpaceXDecoderModule);
-    //REGISTER_MODULE(spacex::FalconDecoderModule);
+    // REGISTER_MODULE(spacex::SpaceXDecoderModule);
+    // REGISTER_MODULE(spacex::FalconDecoderModule);
 
     // Oceansat
-    //REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);
-    //REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
+    // REGISTER_MODULE(oceansat::Oceansat2DBDecoderModule);
+    // REGISTER_MODULE(oceansat::ocm::OceansatOCMDecoderModule);
 
     // Saral
-    //REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
+    // REGISTER_MODULE(saral::argos::SaralArgosDecoderModule);
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
     // GOES - GVAR / HRIT / GRB
-    //REGISTER_MODULE(goes::gvar::GVARDecoderModule);
-    //REGISTER_MODULE(goes::gvar::GVARImageDecoderModule);
-    //REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
-    //REGISTER_MODULE(goes::grb::GOESGRBCADUextractor);
-    //REGISTER_MODULE(goes::grb::GOESGRBDataDecoderModule);
+    // REGISTER_MODULE(goes::gvar::GVARDecoderModule);
+    // REGISTER_MODULE(goes::gvar::GVARImageDecoderModule);
+    // REGISTER_MODULE(goes::hrit::GOESLRITDataDecoderModule);
+    // REGISTER_MODULE(goes::grb::GOESGRBCADUextractor);
+    // REGISTER_MODULE(goes::grb::GOESGRBDataDecoderModule);
 
     // FengYun2 - S-VISSR / LRIT
-    //REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
-    //REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
+    // REGISTER_MODULE(fengyun_svissr::SVISSRDecoderModule);
+    // REGISTER_MODULE(fengyun_svissr::SVISSRImageDecoderModule);
 
     // Jason-3
-    //REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
-    //REGISTER_MODULE(jason3::amr2::Jason3AMR2DecoderModule);
-    //REGISTER_MODULE(jason3::lpt::Jason3LPTDecoderModule);
+    // REGISTER_MODULE(jason3::poseidon::Jason3PoseidonDecoderModule);
+    // REGISTER_MODULE(jason3::amr2::Jason3AMR2DecoderModule);
+    // REGISTER_MODULE(jason3::lpt::Jason3LPTDecoderModule);
 
     // ANGELS
-    //REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
+    // REGISTER_MODULE(angels::argos::AngelsArgosDecoderModule);
 
     // CCSDS
     REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
@@ -310,18 +310,18 @@ void registerModules()
     REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
 
     // GK-2A
-    //REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
+    // REGISTER_MODULE(gk2a::lrit::GK2ALRITDataDecoderModule);
 
     // CFOSAT
 
     // CRYOSAT
-    //REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
+    // REGISTER_MODULE(cryosat::siral::CryoSatSIRALDecoderModule);
 
     // Coriolis
-    //REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
+    // REGISTER_MODULE(coriolis::windsat::CoriolisWindSatDecoderModule);
 
     // CloudSat
-    //REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
+    // REGISTER_MODULE(cloudsat::cpr::CloudSatCPRDecoderModule);
 
     // IRIS
     // REGISTER_MODULE(iris::IRISDumpDecoderModule);
@@ -337,3 +337,17 @@ void registerModules()
     for (std::pair<const std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &it : modules_registry)
         logger->debug(" - " + it.first);
 }
+
+inline void drawStatus(instrument_status_t status)
+{
+    if (status == DECODING)
+        ImGui::TextColored(ImColor(255, 255, 0), "Decoding...");
+    else if (status == DECODING)
+        ImGui::TextColored(ImColor(200, 0, 255), "Processing...");
+    else if (status == SAVING)
+        ImGui::TextColored(ImColor(100, 255, 100), "Saving...");
+    else if (status == DONE)
+        ImGui::TextColored(ImColor(0, 255, 0), "Done");
+    else
+        ImGui::TextColored(ImColor(255, 0, 0), "Invalid!");
+};

@@ -24,12 +24,6 @@ namespace metop
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
-            // int shown_avhrr_channel = 3;
-            // int shown_mhs_channel = 2;
-            // ImagePreviewWidget avhrr_image_preview;
-            // ImagePreviewWidget mhs_image_preview;
-            // ImagePreviewWidget iasi_image_preview;
-
             // Readers
             avhrr::AVHRRReader avhrr_reader;
             mhs::MHSReader mhs_reader;
@@ -41,6 +35,17 @@ namespace metop
             gome::GOMEReader gome_reader;
             sem::SEMReader sem_reader;
             admin_msg::AdminMsgReader admin_msg_reader;
+
+            // Statuses
+            instrument_status_t avhrr_status = DECODING;
+            instrument_status_t iasi_status = DECODING;
+            instrument_status_t iasi_img_status = DECODING;
+            instrument_status_t mhs_status = DECODING;
+            instrument_status_t amsu_status = DECODING;
+            instrument_status_t gome_status = DECODING;
+            instrument_status_t ascat_status = DECODING;
+            instrument_status_t sem_status = DECODING;
+            instrument_status_t admin_msg_status = DECODING;
 
         public:
             MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
