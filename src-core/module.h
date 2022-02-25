@@ -98,4 +98,4 @@ enum instrument_status_t
     DONE,
 };
 
-inline void drawStatus(instrument_status_t status);
+void drawStatus(instrument_status_t status);

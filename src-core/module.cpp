@@ -338,7 +338,7 @@ void registerModules()
         logger->debug(" - " + it.first);
 }
 
-inline void drawStatus(instrument_status_t status)
+void drawStatus(instrument_status_t status)
 {
     if (status == DECODING)
         ImGui::TextColored(ImColor(255, 255, 0), "Decoding...");
