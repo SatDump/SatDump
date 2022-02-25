@@ -64,7 +64,7 @@ jobs:
       - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp -r $Env:GITHUB_WORKSPACE/build/plugins ${{runner.workspace}}/build/Release;
+        run: cp -r ${{runner.workspace}}/build/plugins ${{runner.workspace}}/build/Release;
 
       - name: Copy Fonts
         working-directory: ${{runner.workspace}}/build
