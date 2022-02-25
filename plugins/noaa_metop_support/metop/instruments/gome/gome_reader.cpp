@@ -60,7 +60,7 @@ namespace metop
             {
                 for (int channel = 0; channel < 1024; channel++)
                 {
-                    if (band_starts[band] >= 1024)
+                    if (band_starts[band] >= 1024 || counter > 15)
                         continue;
 
                     if ((header[17] >> (10 - band * 2)) & 3)

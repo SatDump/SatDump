@@ -447,21 +447,7 @@
                 "metop_dump_decoder": {}
             },
             "products": {
-                "metop_satid": {},
-                "metop_avhrr": {
-                    "composites": "composites/metop_avhrr.json.inc"
-                },
-                "metop_mhs": {},
-                "metop_amsu": {},
-                "metop_iasi": {
-                    "write_all": false
-                },
-                "metop_gome": {
-                    "write_all": false
-                },
-                "metop_ascat": {},
-                "metop_sem": {},
-                "metop_admin_msg": {}
+                "metop_instruments": {}
             }
         }
     },

@@ -25,7 +25,7 @@ namespace metop
 
             int counter = packet.payload[16];
 
-            if (counter <= 36)
+            if (counter <= 36 && counter > 0)
             {
                 // Repack to 12-bits
                 repackBytesTo12bits(&packet.payload.data()[50], 6144, iasi_buffer);

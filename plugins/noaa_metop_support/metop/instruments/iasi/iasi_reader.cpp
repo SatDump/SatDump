@@ -8,7 +8,7 @@ namespace metop
         IASIReader::IASIReader()
         {
             for (int i = 0; i < 8461; i++)
-                channels[i].resize(60);
+                channels[i].resize(60 * 2);
             lines = 0;
         }
 
@@ -46,7 +46,7 @@ namespace metop
             else if (packet.header.apid == 145)
                 cnt1 = 0, cnt2 = 0;
 
-            if (counter <= 30)
+            if (counter <= 30 && counter > 0)
             {
                 int bit_pos = 0, channel = 0;
                 unsigned_int16 *payload = (unsigned_int16 *)&packet.payload.data()[314];
