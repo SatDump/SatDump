@@ -12,6 +12,8 @@ namespace elektro_arktika
         private:
             unsigned short *imageBuffer;
             unsigned short msuLineBuffer[12044];
+
+        public:
             int frames;
 
         public:

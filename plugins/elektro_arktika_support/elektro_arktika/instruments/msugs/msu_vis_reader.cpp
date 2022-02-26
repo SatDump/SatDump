@@ -6,7 +6,7 @@ namespace elektro_arktika
     {
         MSUVISReader::MSUVISReader()
         {
-            imageBuffer = new unsigned short[30000 * 12008];
+            imageBuffer = new unsigned short[17200 * 12008];
             frames = 0;
         }
 
@@ -17,12 +17,9 @@ namespace elektro_arktika
 
         void MSUVISReader::pushFrame(uint8_t *data)
         {
-            // Skip marker
-            //if (data[18] == 0 && data[19] == 0)
-            //    return;
+            uint16_t counter = data[8] << 8 | data[9];
 
-            // Skip "black"
-            if (data[18] == 255 && data[19] == 255)
+            if (counter > 17200)
                 return;
 
             // Offset to start reading from
@@ -41,8 +38,8 @@ namespace elektro_arktika
             // Deinterleave and load into our image buffer
             for (int i = 0; i < 6004; i++)
             {
-                imageBuffer[frames * 12008 + i] = msuLineBuffer[i * 2 + 0] * 60;
-                imageBuffer[frames * 12008 + 6000 + i] = msuLineBuffer[i * 2 + 1] * 60;
+                imageBuffer[counter * 12008 + i] = msuLineBuffer[i * 2 + 0] << 6;
+                imageBuffer[counter * 12008 + 6000 + i] = msuLineBuffer[i * 2 + 1] << 6;
             }
 
             frames++;
@@ -50,7 +47,7 @@ namespace elektro_arktika
 
         image::Image<uint16_t> MSUVISReader::getImage()
         {
-            return image::Image<uint16_t>(&imageBuffer[0], 12008, frames, 1);
+            return image::Image<uint16_t>(&imageBuffer[0], 12008, 17200, 1);
         }
     } // namespace msugs
 } // namespace elektro_arktika

@@ -342,7 +342,7 @@ void drawStatus(instrument_status_t status)
 {
     if (status == DECODING)
         ImGui::TextColored(ImColor(255, 255, 0), "Decoding...");
-    else if (status == DECODING)
+    else if (status == PROCESSING)
         ImGui::TextColored(ImColor(200, 0, 255), "Processing...");
     else if (status == SAVING)
         ImGui::TextColored(ImColor(100, 255, 100), "Saving...");

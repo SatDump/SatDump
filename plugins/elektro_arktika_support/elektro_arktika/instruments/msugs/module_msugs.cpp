@@ -2,16 +2,10 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
-#include "simpledeframer.h"
-#include "msu_vis_reader.h"
-#include "msu_ir_reader.h"
 #include "imgui/imgui.h"
 #include "common/image/hue_saturation.h"
-
-#define BUFFER_SIZE 8192
-
-// Return filesize
-size_t getFilesize(std::string filepath);
+#include "common/utils.h"
+#include "common/simple_deframer.h"
 
 namespace elektro_arktika
 {
@@ -35,25 +29,15 @@ namespace elektro_arktika
 
             uint8_t cadu[1024];
 
-            int vis1_frames = 0;
-            int vis2_frames = 0;
-            int vis3_frames = 0;
-            int infr_frames = 0;
+            def::SimpleDeframer deframerVIS1(0x0218a7a392dd9abf, 64, 121680, 10, true);
+            def::SimpleDeframer deframerVIS2(0x0218a7a392dd9abf, 64, 121680, 10, true);
+            def::SimpleDeframer deframerVIS3(0x0218a7a392dd9abf, 64, 121680, 10, true);
+            def::SimpleDeframer deframerIR(0x0218a7a392dd9abf, 64, 14560, 10, true);
+            // def::SimpleDeframer deframerUnknown(0xa6007c, 24, 1680, 0, false);
 
-            SimpleDeframer<uint64_t, 64, 121680, 0x0218a7a392dd9abf, 10> deframerVIS1, deframerVIS2, deframerVIS3;
-            SimpleDeframer<uint64_t, 64, 14560, 0x0218a7a392dd9abf, 10> deframerIR;
-            SimpleDeframer<uint64_t, 24, 1680, 0xa6007c, 0> deframerUnknown;
-
-            //std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
-
-            MSUVISReader vis1_reader, vis2_reader, vis3_reader;
-            MSUIRReader infr_reader;
+            // std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
 
             logger->info("Demultiplexing and deframing...");
-
-            //std::ofstream data_out1(directory + "/data_msugs1.bin", std::ios::binary);
-            //std::ofstream data_out2(directory + "/data_msugs2.bin", std::ios::binary);
-            //std::ofstream data_out3(directory + "/data_msugs3.bin", std::ios::binary);
 
             while (!data_in.eof())
             {
@@ -62,43 +46,27 @@ namespace elektro_arktika
 
                 int vcid = (cadu[5] >> 1) & 7;
 
-                // logger->critical("VCID " + std::to_string(vcid));
-
                 if (vcid == 2)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
-                    vis1_frames += frames.size();
                     for (std::vector<uint8_t> &frame : frames)
-                    {
                         vis1_reader.pushFrame(&frame[0]);
-                        //data_out1.write((char *)frame.data(), frame.size());
-                    }
                 }
                 else if (vcid == 3)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
-                    vis2_frames += frames.size();
                     for (std::vector<uint8_t> &frame : frames)
-                    {
                         vis2_reader.pushFrame(&frame[0]);
-                        //data_out2.write((char *)frame.data(), frame.size());
-                    }
                 }
                 else if (vcid == 5)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
-                    vis3_frames += frames.size();
-
                     for (std::vector<uint8_t> &frame : frames)
-                    {
                         vis3_reader.pushFrame(&frame[0]);
-                        //data_out3.write((char *)frame.data(), frame.size());
-                    }
                 }
                 else if (vcid == 4)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerIR.work(&cadu[24], 1024 - 24);
-                    infr_frames += frames.size();
                     for (std::vector<uint8_t> &frame : frames)
                         infr_reader.pushFrame(&frame[0]);
                 }
@@ -111,7 +79,7 @@ namespace elektro_arktika
                     for (std::vector<uint8_t> &frame : frames)
                     {
                         int marker = (frame[3] >> 1) & 0b111;
-                        //logger->error(marker);
+                        // logger->error(marker);
                         if (marker == 5) // 0, 2, 3, 4, 5
                             data_unknown.write((char *)frame.data(), frame.size());
                     }
@@ -126,46 +94,63 @@ namespace elektro_arktika
                 }
             }
 
-            //data_unknown.close();
-
+            // data_unknown.close();
             data_in.close();
 
-            logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_frames));
-            logger->info("MSU-GS CH2 Lines        : " + std::to_string(vis2_frames));
-            logger->info("MSU-GS CH3 Lines        : " + std::to_string(vis3_frames));
-            logger->info("MSU-GS IR Frames        : " + std::to_string(infr_frames));
+            logger->info("----------- MSU-GS");
+            logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_reader.frames));
+            logger->info("MSU-GS CH2 Lines        : " + std::to_string(vis2_reader.frames));
+            logger->info("MSU-GS CH3 Lines        : " + std::to_string(vis3_reader.frames));
+            logger->info("MSU-GS IR Frames        : " + std::to_string(infr_reader.frames));
 
             logger->info("Writing images.... (Can take a while)");
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            channels_statuses[0] = channels_statuses[1] = channels_statuses[2] = PROCESSING;
             image::Image<uint16_t> image1 = vis1_reader.getImage();
             image::Image<uint16_t> image2 = vis2_reader.getImage();
             image::Image<uint16_t> image3 = vis3_reader.getImage();
 
+            image1.crop(0, 1421, 12008, 1421 + 12008);
+            image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
+            image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
+
+            channels_statuses[0] = SAVING;
             logger->info("Channel VIS 1...");
             WRITE_IMAGE(image1, directory + "/MSU-GS-1.png");
+            channels_statuses[0] = DONE;
 
+            channels_statuses[1] = SAVING;
             logger->info("Channel VIS 2...");
             WRITE_IMAGE(image2, directory + "/MSU-GS-2.png");
+            channels_statuses[1] = DONE;
 
+            channels_statuses[2] = SAVING;
             logger->info("Channel VIS 3...");
             WRITE_IMAGE(image3, directory + "/MSU-GS-3.png");
+            channels_statuses[2] = DONE;
 
             for (int i = 0; i < 7; i++)
             {
+                channels_statuses[3 + i] = PROCESSING;
                 logger->info("Channel IR " + std::to_string(i + 4) + "...");
-                WRITE_IMAGE(infr_reader.getImage(i), directory + "/MSU-GS-" + std::to_string(i + 4) + ".png");
+                image::Image<uint16_t> img = infr_reader.getImage(i);
+                img.crop(183, 3294);
+                channels_statuses[3 + i] = SAVING;
+                WRITE_IMAGE(img, directory + "/MSU-GS-" + std::to_string(i + 4) + ".png");
+                channels_statuses[3 + i] = DONE;
             }
 
+            /*
             logger->info("221 Composite...");
             {
                 image::Image<uint16_t> image221(image1.width(), std::max<int>(image1.height(), image2.height()), 3);
                 {
-                    image221.draw_image(0, image2, 31 - 2, -2220 + 13 - 6);
-                    image221.draw_image(1, image2, 31 - 2, -2220 + 13 - 6);
-                    image221.draw_image(2, image1, 23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10);
+                    image221.draw_image(0, image2, 0, 0);
+                    image221.draw_image(1, image2, 0, 0);
+                    image221.draw_image(2, image1, 0, 0);
                 }
                 image221.white_balance();
                 WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221.png");
@@ -175,33 +160,62 @@ namespace elektro_arktika
             {
                 image::Image<uint16_t> imageNC(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 3);
                 {
-                    imageNC.draw_image(0, image3);
-                    imageNC.draw_image(1, image2, 31 - 2, -2220 + 13 - 6);
-                    imageNC.draw_image(2, image1, 23 + 46 + 13 - 30 - 2, -440 + 10 - 17 + 40 - 10);
-
-                    image::Image<uint8_t> imageNC_8bits(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 3);
-
-                    for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
-                        imageNC_8bits[i] = imageNC[i] / 255;
+                    imageNC.draw_image(0, image3, 0, 0);
+                    imageNC.draw_image(1, image2, 0, 0);
+                    imageNC.draw_image(2, image1, 0, 0);
 
                     image::HueSaturation hueTuning;
                     hueTuning.hue[image::HUE_RANGE_YELLOW] = -45.0 / 180.0;
                     hueTuning.hue[image::HUE_RANGE_RED] = 90.0 / 180.0;
                     hueTuning.overlap = 100.0 / 100.0;
-                    image::hue_saturation(imageNC_8bits, hueTuning);
-
-                    for (int i = 0; i < imageNC.height() * imageNC.width() * 3; i++)
-                        imageNC[i] = imageNC_8bits[i] * 255;
+                    image::hue_saturation(imageNC, hueTuning);
 
                     imageNC.white_balance();
                 }
+                logger->info("Saving...");
                 WRITE_IMAGE(imageNC, directory + "/MSU-GS-RGB-NC.png");
             }
+            */
         }
 
         void MSUGSDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("ELEKTRO / ARKTIKA MSU-GS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+            if (ImGui::BeginTable("##msugstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("MSU-GS Channel");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("Frames");
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("Status");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    int frames = 0;
+
+                    if (i == 0)
+                        frames = vis1_reader.frames;
+                    else if (i == 1)
+                        frames = vis2_reader.frames;
+                    else if (i == 2)
+                        frames = vis3_reader.frames;
+                    else
+                        frames = infr_reader.frames;
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Channel %d", i + 1);
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", frames);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(channels_statuses[i]);
+                }
+
+                ImGui::EndTable();
+            }
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
