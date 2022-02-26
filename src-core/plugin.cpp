@@ -58,7 +58,7 @@ void loadPlugins()
     {
         if (!std::filesystem::is_directory(pluginIterator->path()))
         {
-            if (pluginIterator->path().filename().string().find(".so") != std::string::npos)
+            if (pluginIterator->path().filename().string().find(extension) != std::string::npos)
             {
                 std::string path = pluginIterator->path().string();
 
