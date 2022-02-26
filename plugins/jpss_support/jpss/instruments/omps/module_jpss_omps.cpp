@@ -8,8 +8,6 @@
 #include "omps_nadir_reader.h"
 #include "omps_limb_reader.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);

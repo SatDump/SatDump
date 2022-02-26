@@ -6,8 +6,6 @@
 #include "erm_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -91,30 +89,6 @@ namespace fengyun3
 
             logger->info("Channel 1...");
             WRITE_IMAGE(erm_reader.getChannel(), directory + "/ERM-1.png");
-
-            // Reproject to an equirectangular proj
-            if (erm_reader.lines > 0)
-            {
-                // Get satellite info
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_abc_erm.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);  // TLEs
-                proj_settings->utc_timestamps = erm_reader.timestamps; // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ERM.georef");
-                }
-
-                image::Image<uint16_t> image = erm_reader.getChannel();
-                logger->info("Projected Channel 1...");
-                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
-                WRITE_IMAGE(projected_image, directory + "/ERM-1-PROJ.png");
-            }
         }
 
         void FengyunERMDecoderModule::drawUI(bool window)

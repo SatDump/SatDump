@@ -7,8 +7,6 @@
 #include "mwhs_reader.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -111,33 +109,6 @@ namespace fengyun3
                 imageAll.draw_image(0, mwhs_reader.getChannel(5), 98 * 2, height);
             }
             WRITE_IMAGE(imageAll, directory + "/MWHS-ALL.png");
-
-            // Reproject to an equirectangular proj
-            if (mwhs_reader.lines > 0 && mwhs_reader.timestamps.size() > 0)
-            {
-                // Get satellite info
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_ab_mwhs1.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);   // TLEs
-                proj_settings->utc_timestamps = mwhs_reader.timestamps; // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MWHS.georef");
-                }
-
-                for (int i = 0; i < 5; i++)
-                {
-                    image::Image<uint16_t> image = mwhs_reader.getChannel(i);
-                    logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
-                    WRITE_IMAGE(projected_image, directory + "/MWHS-" + std::to_string(i + 1) + "-PROJ.png");
-                }
-            }
         }
 
         void FengyunMWHSDecoderModule::drawUI(bool window)

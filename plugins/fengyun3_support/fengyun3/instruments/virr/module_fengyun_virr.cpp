@@ -9,10 +9,6 @@
 #include "common/image/earth_curvature.h"
 #include "../../fengyun3.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
-#include "common/image/composite.h"
-#include "common/map/leo_drawer.h"
 
 #define BUFFER_SIZE 8192
 
@@ -213,72 +209,6 @@ namespace fengyun3
 
             logger->info("Channel 10...");
             WRITE_IMAGE(image10, directory + "/VIRR-10.png");
-
-            // Reproject to an equirectangular proj
-            if (reader.lines > 0)
-            {
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_abc_virr.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
-                proj_settings->utc_timestamps = reader.timestamps;    // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/VIRR.georef");
-                }
-
-                // Generate composites
-                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
-                {
-                    nlohmann::json compositeDef = compokey.value();
-
-                    // Not required here
-                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
-
-                    std::string expression = compositeDef["expression"].get<std::string>();
-                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
-                    bool mapped = compositeDef.count("mapped") > 0 ? compositeDef["mapped"].get<bool>() : false;
-                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
-
-                    std::string name = "VIRR-" + compokey.key();
-
-                    logger->info(name + "...");
-                    image::Image<uint16_t> compositeImage = image::generate_composite_from_equ<unsigned short>({image1, image2, image3, image4, image5, image6, image7, image8, image9, image10},
-                                                                                                               {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-                                                                                                               expression,
-                                                                                                               compositeDef);
-
-                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
-
-                    if (projected)
-                    {
-                        logger->info(name + "-PROJ...");
-                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, projector, 2048 * 4, 1024 * 4, compositeImage.channels());
-                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
-                    }
-
-                    if (mapped)
-                    {
-                        projector.setup_forward();
-                        logger->info(name + "-MAP...");
-                        image::Image<uint8_t> mapped_image = map::drawMapToLEO(compositeImage.to8bits(), projector);
-                        WRITE_IMAGE(mapped_image, directory + "/" + name + "-MAP.png");
-                    }
-
-                    if (corrected)
-                    {
-                        logger->info(name + "-CORRECTED...");
-                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
-                                                                                         FY3_ORBIT_HEIGHT,
-                                                                                         FY3_VIRR_SWATH,
-                                                                                         FY3_VIRR_RES);
-                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
-                    }
-                }
-            }
 
             logger->info("197 True Color XFR Composite... (by ZbychuButItWasTaken)");
             {

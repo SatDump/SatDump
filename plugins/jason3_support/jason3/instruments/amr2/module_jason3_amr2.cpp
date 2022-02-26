@@ -6,8 +6,6 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "amr2_reader.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -81,25 +79,6 @@ namespace jason3
 
             logger->info("Writing images.... (Can take a while)");
 
-            // Setup Projecition
-            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                2,                                // Scan angle
-                0,                                // Roll offset
-                0,                                // Pitch offset
-                0,                                // Yaw offset
-                0,                                // Time offset
-                reader.getImageNormal(0).width(), // Image width
-                false,                            // Invert scan
-                tle::getTLEfromNORAD(41240),      // TLEs
-                reader.timestamps                 // Timestamps
-            );
-            geodetic::projection::LEOScanProjector projector(proj_settings);
-
-            {
-                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(41240, proj_settings);
-                geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/AMR2.georef");
-            }
-
             for (int i = 0; i < 3; i++)
             {
                 logger->info("Channel " + std::to_string(i + 1) + "...");
@@ -108,9 +87,6 @@ namespace jason3
                 image::Image<uint16_t> image = reader.getImageNormal(i);
                 image.equalize();
                 WRITE_IMAGE(image, directory + "/AMR2-" + std::to_string(i + 1) + ".png");
-
-                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
-                WRITE_IMAGE(projected_image, directory + "/AMR2-" + std::to_string(i + 1) + "-PROJ.png");
             }
         }
 

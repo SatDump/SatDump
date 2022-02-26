@@ -6,8 +6,6 @@
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "mwts2_reader.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -129,35 +127,6 @@ namespace fengyun3
                 imageAll.draw_image(0, mwts_reader.getChannel(15), 90 * 3, height * 3);
             }
             WRITE_IMAGE(imageAll, directory + "/MWTS2-ALL.png");
-
-            // Reproject to an equirectangular proj.
-            // This instrument was a PAIN to align... So it's not perfect
-            // Also the low sampling rate doesn't help
-            if (mwts_reader.lines > 0)
-            {
-                // Get satellite info
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("fengyun_cd_mwts2.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad);   // TLEs
-                proj_settings->utc_timestamps = mwts_reader.timestamps; // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MWTS-2.georef");
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    image::Image<uint16_t> image = mwts_reader.getChannel(i);
-                    logger->info("Projected Channel " + std::to_string(i + 1) + "...");
-                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048 / 2, 1024 / 2);
-                    WRITE_IMAGE(projected_image, directory + "/MWTS2-" + std::to_string(i + 1) + "-PROJ.png");
-                }
-            }
         }
 
         void FengyunMWTS2DecoderModule::drawUI(bool window)

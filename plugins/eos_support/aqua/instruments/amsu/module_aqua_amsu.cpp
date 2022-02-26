@@ -7,8 +7,6 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 #include "../../../eos/eos.h"
 
 #define BUFFER_SIZE 8192
@@ -159,64 +157,6 @@ namespace aqua
                 imageAll.draw_image(0, a1reader.getChannel(12), 30 * 6, height);
             }
             WRITE_IMAGE(imageAll, directory + "/AMSU-ALL.png");
-
-            // Reproject to an equirectangular proj
-            if (a1reader.lines > 0 || a2reader.lines > 0)
-            {
-                // Get satellite info
-                int norad = EOS_AQUA_NORAD;
-
-                // Setup Projecition. Twice with the same parameters except we need different timestamps
-                // There is no "real" guarantee the A1 / A2 output will always be identical
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a1 = geodetic::projection::makeScalineSettingsFromJSON("aqua_amsu.json");
-                proj_settings_a1->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
-                proj_settings_a1->utc_timestamps = a1reader.timestamps;  // Timestamps
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_a2 = geodetic::projection::makeScalineSettingsFromJSON("aqua_amsu.json");
-                proj_settings_a2->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
-                proj_settings_a2->utc_timestamps = a2reader.timestamps;  // Timestamps
-
-                if (a1reader.lines > 0)
-                {
-                    geodetic::projection::LEOScanProjector projector_a1(proj_settings_a1);
-
-                    {
-                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
-                        geodetic::projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
-                    }
-
-                    for (int i = 0; i < 13; i++)
-                    {
-                        image::Image<uint16_t> image = a1reader.getChannel(i);
-                        image.equalize();
-                        image.normalize();
-                        logger->info("Projected channel A1 " + std::to_string(i + 3) + "...");
-                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a1, 1024, 512);
-                        WRITE_IMAGE(projected_image, directory + "/AMSU-A1-" + std::to_string(i + 3) + "-PROJ.png");
-                    }
-                }
-
-                if (a2reader.lines > 0)
-                {
-                    geodetic::projection::LEOScanProjector projector_a2(proj_settings_a2);
-
-                    {
-                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a1 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a1);
-                        geodetic::projection::proj_file::writeReferenceFile(geofile_a1, directory + "/AMSU-A1.georef");
-                        geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_a2 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_a2);
-                        geodetic::projection::proj_file::writeReferenceFile(geofile_a2, directory + "/AMSU-A2.georef");
-                    }
-
-                    for (int i = 0; i < 2; i++)
-                    {
-                        image::Image<uint16_t> image = a2reader.getChannel(i);
-                        image.equalize();
-                        image.normalize();
-                        logger->info("Projected channel A2 " + std::to_string(i + 1) + "...");
-                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector_a2, 1024, 512);
-                        WRITE_IMAGE(projected_image, directory + "/AMSU-A2-" + std::to_string(i + 1) + "-PROJ.png");
-                    }
-                }
-            }
         }
 
         void AquaAMSUDecoderModule::drawUI(bool window)

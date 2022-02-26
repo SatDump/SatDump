@@ -7,8 +7,6 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -381,45 +379,6 @@ namespace jpss
                 imageRgbAll.draw_image(0, image17166, 96 * 4, image1.height());
             }
             WRITE_IMAGE(imageRgbAll, directory + "/ATMS-RGB-ALL.png");
-
-            // Reproject to an equirectangular proj
-            if (reader.lines > 0)
-            {
-                // Get satellite info
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("jpss_atms.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
-                proj_settings->utc_timestamps = reader.timestamps;    // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/ATMS.georef");
-                }
-
-                for (int i = 0; i < 22; i++)
-                {
-                    image::Image<uint16_t> image = reader.getImage(i);
-                    image.equalize();
-                    logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
-                    WRITE_IMAGE(projected_image, directory + "/ATMS-" + std::to_string(i + 1) + "-PROJ.png");
-                }
-
-                image::Image<uint16_t> image3417(96, image1.height(), 3);
-                {
-                    image3417.draw_image(0, image3);
-                    image3417.draw_image(1, image4);
-                    image3417.draw_image(2, image17);
-                }
-                image3417.equalize();
-
-                image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image3417, projector, 2048, 1024, 3);
-                WRITE_IMAGE(projected_image, directory + "/ATMS-RGB-3.4.17-PROJ.png");
-            }
         }
 
         void JPSSATMSDecoderModule::drawUI(bool window)

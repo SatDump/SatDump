@@ -6,8 +6,6 @@
 #include "imgui/imgui.h"
 #include "common/image/image.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
 
 #include <iostream>
 
@@ -80,33 +78,6 @@ namespace noaa
 
             WRITE_IMAGE(compo, directory + "/MHS-ALL.png");
             WRITE_IMAGE(equcompo, directory + "/MHS-ALL-EQU.png");
-
-            // Reproject to an equirectangular proj
-            if (mhsreader.line > 0)
-            {
-                // Get satellite info
-                nlohmann::json satData = loadJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/sat_info.json");
-                int norad = satData.contains("norad") > 0 ? satData["norad"].get<int>() : 0;
-
-                // Setup Projecition
-                std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_mhs.json");
-                proj_settings->sat_tle = tle::getTLEfromNORAD(norad); // TLEs
-                proj_settings->utc_timestamps = mhsreader.timestamps; // Timestamps
-                geodetic::projection::LEOScanProjector projector(proj_settings);
-
-                {
-                    geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings);
-                    geodetic::projection::proj_file::writeReferenceFile(geofile, directory + "/MHS.georef");
-                }
-
-                for (int i = 0; i < 5; i++)
-                {
-                    image::Image<uint16_t> image = mhsreader.getChannel(i).equalize().normalize();
-                    logger->info("Projected channel " + std::to_string(i + 1) + "...");
-                    image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(image, projector, 2048, 1024);
-                    WRITE_IMAGE(projected_image, directory + "/MHS-" + std::to_string(i + 1) + "-PROJ.png");
-                }
-            }
 
             image::Image<uint8_t> rain(mhsreader.getChannel(3).width(), mhsreader.getChannel(3).height(), 3);
             std::vector<double> ch5 = mhsreader.get_calibrated_channel(4);

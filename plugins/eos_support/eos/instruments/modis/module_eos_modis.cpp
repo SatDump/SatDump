@@ -11,9 +11,6 @@
 #include "common/image/earth_curvature.h"
 #include "../../../eos/eos.h"
 #include "nlohmann/json_utils.h"
-#include "common/geodetic/projection/satellite_reprojector.h"
-#include "common/geodetic/projection/proj_file.h"
-#include "common/image/composite.h"
 
 #define BUFFER_SIZE 8192
 
@@ -200,53 +197,6 @@ namespace eos
             const long scanHeight_500 = 20;
             const long scanHeight_1000 = 10;
 
-            // Setup GEO projectors
-            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_1000 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                109.9,                       // Scan angle
-                -0.0,                        // Roll offset
-                0,                           // Pitch offset
-                -3.0,                        // Yaw offset
-                -3.5,                        // Time offset
-                1354,                        // Image width
-                true,                        // Invert scan
-                tle::getTLEfromNORAD(norad), // TLEs
-                reader.timestamps_1000       // Timestamps
-            );
-            geodetic::projection::LEOScanProjector projector_1000(proj_settings_1000);
-            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_500 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                109.9,                       // Scan angle
-                -0.0,                        // Roll offset
-                0,                           // Pitch offset
-                -3.0,                        // Yaw offset
-                -3.5,                        // Time offset
-                1354 * 2,                    // Image width
-                true,                        // Invert scan
-                tle::getTLEfromNORAD(norad), // TLEs
-                reader.timestamps_500        // Timestamps
-            );
-            geodetic::projection::LEOScanProjector projector_500(proj_settings_500);
-            std::shared_ptr<geodetic::projection::LEOScanProjectorSettings_SCANLINE> proj_settings_250 = std::make_shared<geodetic::projection::LEOScanProjectorSettings_SCANLINE>(
-                109.9,                       // Scan angle
-                -0.0,                        // Roll offset
-                0,                           // Pitch offset
-                -3.0,                        // Yaw offset
-                -3.5,                        // Time offset
-                1354 * 4,                    // Image width
-                true,                        // Invert scan
-                tle::getTLEfromNORAD(norad), // TLEs
-                reader.timestamps_250        // Timestamps
-            );
-            geodetic::projection::LEOScanProjector projector_250(proj_settings_250);
-
-            {
-                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_1000 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_1000);
-                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_500 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_500);
-                geodetic::projection::proj_file::LEO_GeodeticReferenceFile geofile_250 = geodetic::projection::proj_file::leoRefFileFromProjector(norad, proj_settings_250);
-                geodetic::projection::proj_file::writeReferenceFile(geofile_1000, directory + "/MODIS-1000.georef");
-                geodetic::projection::proj_file::writeReferenceFile(geofile_500, directory + "/MODIS-500.georef");
-                geodetic::projection::proj_file::writeReferenceFile(geofile_250, directory + "/MODIS-250.georef");
-            }
-
             for (int i = 0; i < 2; i++)
             {
                 image::Image<uint16_t> image = reader.getImage250m(i);
@@ -305,98 +255,6 @@ namespace eos
                 {
                     logger->info("Channel " + std::to_string(i + 6) + "...");
                     WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 6) + ".png");
-                }
-            }
-
-            if (reader.lines > 0)
-            {
-                // Generate composites
-                for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
-                {
-                    nlohmann::json compositeDef = compokey.value();
-
-                    // Not required here
-                    //std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
-
-                    std::string expression = compositeDef["expression"].get<std::string>();
-                    bool corrected = compositeDef.count("corrected") > 0 ? compositeDef["corrected"].get<bool>() : false;
-                    bool projected = compositeDef.count("projected") > 0 ? compositeDef["projected"].get<bool>() : false;
-
-                    std::string name = "MODIS-" + compokey.key();
-
-                    // Get required channels
-                    std::vector<int> requiredChannels = compositeDef["channels"].get<std::vector<int>>();
-
-                    // Prepare channels
-                    std::vector<image::Image<uint16_t>> channels;
-                    std::vector<int> channel_numbers;
-                    bool has250m = false, has500m = false;
-                    for (int i = 0; i < (int)requiredChannels.size(); i++)
-                    {
-                        int channel_number = requiredChannels[i];
-
-                        if (channel_number > 0 && channel_number <= 2)
-                        {
-                            channels.push_back(reader.getImage250m(channel_number - 1));
-                            channel_numbers.push_back(channel_number);
-                            if (bowtie)
-                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_250, alpha, beta);
-                            has250m = true;
-                        }
-                        else if (channel_number > 2 && channel_number <= 7)
-                        {
-                            channels.push_back(reader.getImage500m(channel_number - 3));
-                            channel_numbers.push_back(channel_number);
-                            if (bowtie)
-                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_500, alpha, beta);
-                            has500m = true;
-                        }
-                        else if ((channel_number > 7 && channel_number <= 36) || channel_number == -13 || channel_number == -14)
-                        {
-                            if (channel_number <= 12)
-                                channels.push_back(reader.getImage1000m(channel_number - 8));
-                            else if (channel_number == 13)
-                                channels.push_back(reader.getImage1000m(5));
-                            else if (channel_number == -13)
-                                channels.push_back(reader.getImage1000m(6));
-                            else if (channel_number == 14)
-                                channels.push_back(reader.getImage1000m(7));
-                            else if (channel_number == -14)
-                                channels.push_back(reader.getImage1000m(8));
-                            else
-                                channels.push_back(reader.getImage1000m(channel_number - 6));
-
-                            channel_numbers.push_back(channel_number);
-                            if (bowtie)
-                                channels[i] = image::bowtie::correctGenericBowTie(channels[i], 1, scanHeight_500, alpha, beta);
-                        }
-                    }
-
-                    logger->info(name + "...");
-                    image::Image<uint16_t>
-                        compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
-                                                                                            channel_numbers,
-                                                                                            expression,
-                                                                                            compositeDef);
-
-                    WRITE_IMAGE(compositeImage, directory + "/" + name + ".png");
-
-                    if (projected)
-                    {
-                        logger->info(name + "-PROJ...");
-                        image::Image<uint8_t> projected_image = geodetic::projection::projectLEOToEquirectangularMapped(compositeImage, (has250m ? projector_250 : (has500m ? projector_500 : projector_1000)), 2048 * 4, 1024 * 4, compositeImage.channels());
-                        WRITE_IMAGE(projected_image, directory + "/" + name + "-PROJ.png");
-                    }
-
-                    if (corrected)
-                    {
-                        logger->info(name + "-CORRECTED...");
-                        compositeImage = image::earth_curvature::correct_earth_curvature(compositeImage,
-                                                                                         EOS_ORBIT_HEIGHT,
-                                                                                         EOS_MODIS_SWATH,
-                                                                                         has250m ? EOS_MODIS_RES250 : (has500m ? EOS_MODIS_RES500 : EOS_MODIS_RES1000));
-                        WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
-                    }
                 }
             }
         }
