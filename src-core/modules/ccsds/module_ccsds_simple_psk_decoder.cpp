@@ -1,6 +1,5 @@
 #include "module_ccsds_simple_psk_decoder.h"
 #include "logger.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
