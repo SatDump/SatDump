@@ -163,22 +163,12 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AVHRR/3");
-
-                logger->info("Channel 1...");
-                WRITE_IMAGE(avhrr_reader.getChannel(0), directory + "/AVHRR-1.png");
-
-                logger->info("Channel 2...");
-                WRITE_IMAGE(avhrr_reader.getChannel(1), directory + "/AVHRR-2.png");
-
-                logger->info("Channel 3...");
-                WRITE_IMAGE(avhrr_reader.getChannel(2), directory + "/AVHRR-3.png");
-
-                logger->info("Channel 4...");
-                WRITE_IMAGE(avhrr_reader.getChannel(3), directory + "/AVHRR-4.png");
-
-                logger->info("Channel 5...");
-                WRITE_IMAGE(avhrr_reader.getChannel(4), directory + "/AVHRR-5.png");
-                avhrr_status = DONE;
+#pragma omp parallel for num_threads(5)
+                for (int i = 0; i < 5; i++)
+                {
+                    logger->info("Channel " + std::to_string(i + 1) + "...");
+                    WRITE_IMAGE(avhrr_reader.getChannel(0), directory + "/AVHRR-" + std::to_string(i + 1) + ".png");
+                }
             }
 
             // MHS
@@ -190,7 +180,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- MHS");
-
+#pragma omp parallel for num_threads(5)
                 for (int i = 0; i < 5; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
@@ -208,7 +198,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- ASCAT");
-
+#pragma omp parallel for num_threads(6)
                 for (int i = 0; i < 6; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
@@ -262,14 +252,14 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AMSU");
-
+#pragma omp parallel for num_threads(2)
                 for (int i = 0; i < 2; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(amsu_a2_reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
                     // WRITE_IMAGE(amsu_a2_reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
                 }
-
+#pragma omp parallel for num_threads(13)
                 for (int i = 0; i < 13; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 3) + "...");

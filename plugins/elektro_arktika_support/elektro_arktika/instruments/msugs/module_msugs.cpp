@@ -113,34 +113,49 @@ namespace elektro_arktika
             image::Image<uint16_t> image2 = vis2_reader.getImage();
             image::Image<uint16_t> image3 = vis3_reader.getImage();
 
-            image1.crop(0, 1421, 12008, 1421 + 12008);
-            image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
-            image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
-
-            channels_statuses[0] = SAVING;
-            logger->info("Channel VIS 1...");
-            WRITE_IMAGE(image1, directory + "/MSU-GS-1.png");
-            channels_statuses[0] = DONE;
-
-            channels_statuses[1] = SAVING;
-            logger->info("Channel VIS 2...");
-            WRITE_IMAGE(image2, directory + "/MSU-GS-2.png");
-            channels_statuses[1] = DONE;
-
-            channels_statuses[2] = SAVING;
-            logger->info("Channel VIS 3...");
-            WRITE_IMAGE(image3, directory + "/MSU-GS-3.png");
-            channels_statuses[2] = DONE;
-
-            for (int i = 0; i < 7; i++)
+#pragma omp parallel num_threads(3)
             {
-                channels_statuses[3 + i] = PROCESSING;
-                logger->info("Channel IR " + std::to_string(i + 4) + "...");
-                image::Image<uint16_t> img = infr_reader.getImage(i);
-                img.crop(183, 3294);
-                channels_statuses[3 + i] = SAVING;
-                WRITE_IMAGE(img, directory + "/MSU-GS-" + std::to_string(i + 4) + ".png");
-                channels_statuses[3 + i] = DONE;
+#pragma omp sections
+                {
+#pragma omp section
+                    {
+                        image1.crop(0, 1421, 12008, 1421 + 12008);
+                        channels_statuses[0] = SAVING;
+                        logger->info("Channel VIS 1...");
+                        WRITE_IMAGE(image1, directory + "/MSU-GS-1.png");
+                        channels_statuses[0] = DONE;
+                    }
+
+#pragma omp section
+                    {
+                        image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
+                        channels_statuses[1] = SAVING;
+                        logger->info("Channel VIS 2...");
+                        WRITE_IMAGE(image2, directory + "/MSU-GS-2.png");
+                        channels_statuses[1] = DONE;
+                    }
+
+#pragma omp section
+                    {
+                        image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
+                        channels_statuses[2] = SAVING;
+                        logger->info("Channel VIS 3...");
+                        WRITE_IMAGE(image3, directory + "/MSU-GS-3.png");
+                        channels_statuses[2] = DONE;
+                    }
+                }
+
+#pragma omp for
+                for (int i = 0; i < 7; i++)
+                {
+                    channels_statuses[3 + i] = PROCESSING;
+                    logger->info("Channel IR " + std::to_string(i + 4) + "...");
+                    image::Image<uint16_t> img = infr_reader.getImage(i);
+                    img.crop(183, 3294);
+                    channels_statuses[3 + i] = SAVING;
+                    WRITE_IMAGE(img, directory + "/MSU-GS-" + std::to_string(i + 4) + ".png");
+                    channels_statuses[3 + i] = DONE;
+                }
             }
 
             /*
