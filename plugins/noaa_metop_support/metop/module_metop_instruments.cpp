@@ -163,12 +163,13 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AVHRR/3");
-#pragma omp parallel for num_threads(5)
+
                 for (int i = 0; i < 5; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(avhrr_reader.getChannel(0), directory + "/AVHRR-" + std::to_string(i + 1) + ".png");
                 }
+                avhrr_status = DONE;
             }
 
             // MHS
@@ -180,7 +181,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- MHS");
-#pragma omp parallel for num_threads(5)
+
                 for (int i = 0; i < 5; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
@@ -198,7 +199,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- ASCAT");
-#pragma omp parallel for num_threads(6)
+
                 for (int i = 0; i < 6; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
@@ -252,14 +253,14 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AMSU");
-#pragma omp parallel for num_threads(2)
+
                 for (int i = 0; i < 2; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(amsu_a2_reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
                     // WRITE_IMAGE(amsu_a2_reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
                 }
-#pragma omp parallel for num_threads(13)
+
                 for (int i = 0; i < 13; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 3) + "...");
