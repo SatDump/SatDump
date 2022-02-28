@@ -193,7 +193,7 @@ namespace oceansat
         {
             ImGui::Begin("Oceansat OCM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTable("##metopinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            if (ImGui::BeginTable("##oc2instrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
