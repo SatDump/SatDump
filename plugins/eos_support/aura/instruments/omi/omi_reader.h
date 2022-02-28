@@ -11,10 +11,10 @@ namespace aura
         class OMIReader
         {
         private:
-            unsigned short *frameBuffer;
-            unsigned short *channelRaw;
-            unsigned short *visibleChannel;
-            unsigned short *channels[792];
+            uint16_t frameBuffer[2047 * 28];
+            std::vector<uint16_t> channelRaw;
+            std::vector<uint16_t> visibleChannel;
+            std::vector<uint16_t> channels[792];
 
         public:
             OMIReader();

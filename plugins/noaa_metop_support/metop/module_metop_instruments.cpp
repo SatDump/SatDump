@@ -26,7 +26,6 @@ namespace metop
             logger->info("Using input frames " + d_input_file);
 
             time_t lastTime = 0;
-
             uint8_t cadu[1024];
 
             // Demuxers
@@ -128,6 +127,8 @@ namespace metop
                 }
             }
 
+            data_in.close();
+
             int scid = most_common(metop_scids.begin(), metop_scids.end());
             metop_scids.clear();
 
@@ -163,6 +164,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AVHRR/3");
+                logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -181,6 +183,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- MHS");
+                logger->info("Lines : " + std::to_string(mhs_reader.lines));
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -199,6 +202,8 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- ASCAT");
+                for (int i = 0; i < 6; i++)
+                    logger->info("Channel " + std::to_string(i + 1) + " lines : " + std::to_string(ascat_reader.lines[i]));
 
                 for (int i = 0; i < 6; i++)
                 {
@@ -218,6 +223,8 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- IASI");
+                logger->info("Lines : " + std::to_string(iasi_reader.lines));
+                logger->info("Lines (Imaging) : " + std::to_string(iasi_reader_img.lines * 64));
 
                 const float alpha = 1.0 / 1.8;
                 const float beta = 0.58343;
@@ -253,19 +260,19 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AMSU");
+                logger->info("Lines (AMSU A1) : " + std::to_string(amsu_a1_reader.lines));
+                logger->info("Lines (AMSU A2) : " + std::to_string(amsu_a2_reader.lines));
 
                 for (int i = 0; i < 2; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(amsu_a2_reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
-                    // WRITE_IMAGE(amsu_a2_reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A2-" + std::to_string(i + 1) + "-EQU.png");
                 }
 
                 for (int i = 0; i < 13; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 3) + "...");
                     WRITE_IMAGE(amsu_a1_reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
-                    // WRITE_IMAGE(amsu_a1_reader.getChannel(i).equalize().normalize(), directory + "/AMSU-A1-" + std::to_string(i + 3) + "-EQU.png");
                 }
                 amsu_status = DONE;
             }
@@ -279,6 +286,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- GOME");
+                logger->info("Lines : " + std::to_string(gome_reader.lines));
 
                 // Output a few nice composites as well
                 logger->info("Global Composite...");
@@ -295,8 +303,6 @@ namespace metop
                 logger->info("----------- Admin Message");
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
-
-            data_in.close();
         }
 
         void MetOpInstrumentsDModule::drawUI(bool window)

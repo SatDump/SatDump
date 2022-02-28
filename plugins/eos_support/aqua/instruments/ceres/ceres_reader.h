@@ -11,7 +11,7 @@ namespace aqua
         class CERESReader
         {
         private:
-            unsigned short *channels[3];
+            std::vector<uint16_t> channels[3];
 
         public:
             CERESReader();

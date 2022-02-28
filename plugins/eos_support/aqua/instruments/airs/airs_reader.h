@@ -10,8 +10,10 @@ namespace aqua
         class AIRSReader
         {
         private:
-            unsigned short *channels[2666];
-            unsigned short *hd_channels[4];
+            uint8_t shifted_buffer[7000];
+            uint16_t line_buffer[4003 + 4];
+            std::vector<uint16_t> channels[2666];
+            std::vector<uint16_t> hd_channels[4];
 
         public:
             AIRSReader();

@@ -10,23 +10,6 @@ namespace aqua
     class AquaDBDecoderModule : public ProcessingModule
     {
     protected:
-        // Work buffers
-        uint8_t rsWorkBuffer[255];
-
-        // Clamp symbols
-        int8_t clamp(int8_t &x)
-        {
-            if (x >= 0)
-            {
-                return 1;
-            }
-            if (x <= -1)
-            {
-                return -1;
-            }
-            return x > 255.0 / 2.0;
-        }
-
         uint8_t *buffer;
 
         int errors[4];

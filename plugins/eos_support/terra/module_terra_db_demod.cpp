@@ -49,8 +49,8 @@ namespace terra
         else
             filesize = 0;
 
-        //if (input_data_type == DATA_FILE)
-        //    data_in = std::ifstream(d_input_file, std::ios::binary);
+        // if (input_data_type == DATA_FILE)
+        //     data_in = std::ifstream(d_input_file, std::ios::binary);
 
         if (output_data_type == DATA_FILE)
         {
@@ -87,9 +87,7 @@ namespace terra
                 peak_snr = snr;
 
             for (int i = 0; i < dat_size; i++)
-            {
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 50);
-            }
 
             rec->output_stream->flush();
 

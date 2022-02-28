@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include <map>
+#include <vector>
 #include "common/image/image.h"
 
 namespace eos
@@ -68,12 +68,15 @@ namespace eos
         class MODISReader
         {
         private:
+            uint16_t modis_ifov[416]; // All pixels + CRC
             int lastScanCount;
-            unsigned short *channels1000m[31];
-            unsigned short *channels500m[5];
-            unsigned short *channels250m[2];
+            std::vector<uint16_t> channels1000m[31];
+            std::vector<uint16_t> channels500m[5];
+            std::vector<uint16_t> channels250m[2];
             void processDayPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
             void processNightPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
+
+            uint16_t compute_crc(uint16_t *data, int size);
 
         public:
             MODISReader();
@@ -86,9 +89,6 @@ namespace eos
             image::Image<uint16_t> getImage250m(int channel);
             image::Image<uint16_t> getImage500m(int channel);
             image::Image<uint16_t> getImage1000m(int channel);
-
-            uint16_t common_day;
-            uint32_t common_coarse;
         };
     } // namespace modis
 } // namespace eos

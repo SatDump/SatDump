@@ -177,3 +177,36 @@ int repackBytesTo20bits(uint8_t *bytes, int byte_length, uint32_t *words)
 
     return wpos;
 }
+
+int repackBytesTo14bits(uint8_t *bytes, int byte_length, uint16_t *words)
+{
+    int bpos = 0;
+    int wpos = 0;
+
+    // Repack remaining using a slower method
+    uint16_t shifter = 0;
+    int inshifter = 0;
+    for (int i = 0; i < byte_length; i++)
+    {
+        for (int b = 7; b >= 0; b--)
+        {
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 0b11111111111111;
+            inshifter++;
+            if (inshifter == 14)
+            {
+                words[wpos++] = shifter;
+                inshifter = 0;
+            }
+        }
+
+        bpos++;
+    }
+
+    return wpos;
+}
+
+void shift_array_left(uint8_t *in, int byte_length, int shift, uint8_t *out)
+{
+    for (int i = 0; i < byte_length; i++)
+        out[i] = in[i + 0] << shift | in[i + 1] >> (8 - shift);
+}

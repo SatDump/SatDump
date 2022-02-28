@@ -155,14 +155,10 @@
                 "aqua_db_decoder": {}
             },
             "products": {
-                "eos_modis": {
-                    "terra_mode": false,
-                    "correct_bowtie": true,
-                    "composites": "composites/eos_modis.json.inc"
-                },
-                "aqua_airs": {},
-                "aqua_ceres": {},
-                "aqua_amsu": {}
+                "eos_instruments": {
+                    "satellite": "aqua",
+                    "modis_bowtie": true
+                }
             }
         }
     },
@@ -195,10 +191,9 @@
                 }
             },
             "products": {
-                "eos_modis": {
-                    "terra_mode": true,
-                    "correct_bowtie": true,
-                    "composites": "composites/eos_modis.json.inc"
+                "eos_instruments": {
+                    "satellite": "terra",
+                    "modis_bowtie": true
                 }
             }
         }
@@ -491,7 +486,10 @@
                 "aqua_db_decoder": {}
             },
             "products": {
-                "aura_omi": {}
+                "eos_instruments": {
+                    "satellite": "aura",
+                    "modis_bowtie": false
+                }
             }
         }
     },

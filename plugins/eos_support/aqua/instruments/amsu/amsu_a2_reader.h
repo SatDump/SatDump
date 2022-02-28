@@ -10,8 +10,8 @@ namespace aqua
         class AMSUA2Reader
         {
         private:
-            unsigned short *channels[2];
-            uint16_t lineBuffer[12944];
+            std::vector<uint16_t> channels[2];
+            uint16_t lineBuffer[1000];
 
         public:
             AMSUA2Reader();
