@@ -5,12 +5,10 @@
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
 #include "common/dsp/constellation.h"
+#include "common/utils.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)
 #define FRAME_SIZE 1024
-
-// Return filesize
-size_t getFilesize(std::string filepath);
 
 namespace aqua
 {

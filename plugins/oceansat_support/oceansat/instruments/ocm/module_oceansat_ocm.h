@@ -1,6 +1,7 @@
 #pragma once
 
 #include "module.h"
+#include "ocm_reader.h"
 
 namespace oceansat
 {
@@ -11,6 +12,9 @@ namespace oceansat
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
+
+            OCMReader ocm_reader;
+            instrument_status_t ocm_status = DECODING;
 
         public:
             OceansatOCMDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

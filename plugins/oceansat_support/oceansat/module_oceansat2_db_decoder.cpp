@@ -4,18 +4,9 @@
 #include "imgui/imgui.h"
 #include "oceansat2_deframer.h"
 #include "oceansat2_derand.h"
+#include "common/utils.h"
 
 #define BUFFER_SIZE 8192
-
-// Returns the asked bit!
-template <typename T>
-inline bool getBit(T data, int bit)
-{
-    return (data >> bit) & 1;
-}
-
-// Return filesize
-size_t getFilesize(std::string filepath);
 
 namespace oceansat
 {
@@ -53,6 +44,16 @@ namespace oceansat
         frame_count = 0;
     }
 
+    std::vector<ModuleDataType> Oceansat2DBDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> Oceansat2DBDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
+    }
+
     Oceansat2DBDecoderModule::~Oceansat2DBDecoderModule()
     {
         delete[] buffer;
@@ -85,57 +86,28 @@ namespace oceansat
         Oceansat2Deframer deframer1, deframer2;
         Oceansat2Derand derand;
 
-        // In this decoder both swapped and normal I/Q are always decoded. This does is crappier
+        // In this decoder both swapped and normal I/Q are always decoded. This does it crappier
         // than correlation, but works well enough and faster. And anyway, we aren't dealing with
         // that much data.
         // We can also safely assume frames will NEVER be found on both states in some weird way...
+        // And that, even if the second channel did contain some data, which it doesn't since only
+        // the OCM instrument is still alive on OceanSat-2
         // So I guess this is fine enough?
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read buffer
-            data_in.read((char *)buffer, BUFFER_SIZE);
+            if (input_data_type == DATA_FILE)
+                data_in.read((char *)buffer, BUFFER_SIZE);
+            else
+                input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
             // Demodulate DQPSK... This is the crappy way but it works
             for (int i = 0; i < BUFFER_SIZE / 2; i++)
             {
-                // Normal IQ
-                bool a = buffer[i * 2 + 0] > 0;
-                bool b = buffer[i * 2 + 1] > 0;
-
-                if (a)
-                {
-                    if (b)
-                        decodedBuffer1[i] = 0x0;
-                    else
-                        decodedBuffer1[i] = 0x3;
-                }
-                else
-                {
-                    if (b)
-                        decodedBuffer1[i] = 0x1;
-                    else
-                        decodedBuffer1[i] = 0x2;
-                }
-
-                // Inversed IQ
-                a = buffer[i * 2 + 1] > 0;
-                b = buffer[i * 2 + 0] > 0;
-
-                if (a)
-                {
-                    if (b)
-                        decodedBuffer2[i] = 0x0;
-                    else
-                        decodedBuffer2[i] = 0x3;
-                }
-                else
-                {
-                    if (b)
-                        decodedBuffer2[i] = 0x1;
-                    else
-                        decodedBuffer2[i] = 0x2;
-                }
+                uint8_t demod = dqpsk_demod(&buffer[i * 2]);
+                decodedBuffer1[i] = demod;
+                decodedBuffer2[i] = (demod >> 1) | (demod & 1) << 1;
             }
 
             int diff_count1 = diffdecoder1.work(decodedBuffer1, BUFFER_SIZE / 2, diffedBuffer1); // Diff normal IQ
@@ -212,15 +184,14 @@ namespace oceansat
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("Frames : ");
-
                 ImGui::SameLine();
-
                 ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frame_count));
             }
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

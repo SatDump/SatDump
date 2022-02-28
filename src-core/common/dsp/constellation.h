@@ -15,11 +15,11 @@ namespace dsp
 
     /*
     This class was made using GNU Radio and LeanDVB's implementation
-    as an example, mostly because it was written while experimenting 
+    as an example, mostly because it was written while experimenting
     with DVB-S2.
 
     TODO : Faster LUT Lookup for soft bits, to make it anywhere near
-    usable. This has not been yet as BPSK and QPSK can simply be 
+    usable. This has not been yet as BPSK and QPSK can simply be
     soft-demodulated using the I and Q branches directly.
 
     TODO : Optimize the soft calc function... We don't need to use a

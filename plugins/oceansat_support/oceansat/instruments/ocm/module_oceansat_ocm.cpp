@@ -1,6 +1,5 @@
 #include "module_oceansat_ocm.h"
 #include <fstream>
-#include "ocm_reader.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -26,22 +25,16 @@ namespace oceansat
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/OCM";
 
             logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-
-            OCMReader reader;
-
             uint8_t buffer[92220];
-
-            logger->info("Processing...");
 
             while (!data_in.eof())
             {
                 // Read buffer
                 data_in.read((char *)buffer, 92220);
 
-                reader.work(buffer);
+                ocm_reader.work(buffer);
 
                 progress = data_in.tellg();
 
@@ -54,21 +47,24 @@ namespace oceansat
 
             data_in.close();
 
-            logger->info("OCM Lines            : " + std::to_string(reader.lines));
+            logger->info("----------- OCM");
+            logger->info("Lines : " + std::to_string(ocm_reader.lines));
 
             logger->info("Writing images.... (Can take a while)");
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            image::Image<uint16_t> image1 = reader.getChannel(0);
-            image::Image<uint16_t> image2 = reader.getChannel(1);
-            image::Image<uint16_t> image3 = reader.getChannel(2);
-            image::Image<uint16_t> image4 = reader.getChannel(3);
-            image::Image<uint16_t> image5 = reader.getChannel(4);
-            image::Image<uint16_t> image6 = reader.getChannel(5);
-            image::Image<uint16_t> image7 = reader.getChannel(6);
-            image::Image<uint16_t> image8 = reader.getChannel(7);
+            ocm_status = SAVING;
+
+            image::Image<uint16_t> image1 = ocm_reader.getChannel(0);
+            image::Image<uint16_t> image2 = ocm_reader.getChannel(1);
+            image::Image<uint16_t> image3 = ocm_reader.getChannel(2);
+            image::Image<uint16_t> image4 = ocm_reader.getChannel(3);
+            image::Image<uint16_t> image5 = ocm_reader.getChannel(4);
+            image::Image<uint16_t> image6 = ocm_reader.getChannel(5);
+            image::Image<uint16_t> image7 = ocm_reader.getChannel(6);
+            image::Image<uint16_t> image8 = ocm_reader.getChannel(7);
 
             logger->info("Channel 1...");
             WRITE_IMAGE(image1, directory + "/OCM-1.png");
@@ -94,9 +90,12 @@ namespace oceansat
             logger->info("Channel 8...");
             WRITE_IMAGE(image8, directory + "/OCM-8.png");
 
+            ocm_status = DONE;
+
+            /*
             logger->info("642 Composite...");
             {
-                image::Image<uint16_t> image642(4072, reader.lines, 3);
+                image::Image<uint16_t> image642(4072, ocm_reader.lines, 3);
                 {
                     image642.draw_image(0, image6);
                     image642.draw_image(1, image4);
@@ -115,7 +114,7 @@ namespace oceansat
 
             logger->info("654 Composite...");
             {
-                image::Image<uint16_t> image654(4072, reader.lines, 3);
+                image::Image<uint16_t> image654(4072, ocm_reader.lines, 3);
                 {
                     image654.draw_image(0, image6);
                     image654.draw_image(1, image5);
@@ -134,7 +133,7 @@ namespace oceansat
 
             logger->info("754 Composite...");
             {
-                image::Image<uint16_t> image754(4072, reader.lines, 3);
+                image::Image<uint16_t> image754(4072, ocm_reader.lines, 3);
                 {
                     image754.draw_image(0, image7);
                     image754.draw_image(1, image5);
@@ -152,7 +151,7 @@ namespace oceansat
             }
             logger->info("882 Composite...");
             {
-                image::Image<uint16_t> image882(4072, reader.lines, 3);
+                image::Image<uint16_t> image882(4072, ocm_reader.lines, 3);
                 {
                     image882.draw_image(0, image8);
                     image882.draw_image(1, image8);
@@ -171,7 +170,7 @@ namespace oceansat
 
             logger->info("662 Composite...");
             {
-                image::Image<uint16_t> image662(4072, reader.lines, 3);
+                image::Image<uint16_t> image662(4072, ocm_reader.lines, 3);
                 {
                     image662.draw_image(0, image6);
                     image662.draw_image(1, image6);
@@ -187,11 +186,32 @@ namespace oceansat
                                                                                                       OCEANSAT2_OCM2_RES);
                 WRITE_IMAGE(corrected662, directory + "/OCM-RGB-662-EQU-CORRECTED.png");
             }
+            */
         }
 
         void OceansatOCMDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("Oceansat OCM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+
+            if (ImGui::BeginTable("##metopinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Instrument");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("Lines / Frames");
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("Status");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("OCM");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", ocm_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(ocm_status);
+                ImGui::EndTable();
+            }
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

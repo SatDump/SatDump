@@ -10,8 +10,8 @@ namespace oceansat
         class OCMReader
         {
         private:
-            unsigned short *channels[8];
-            unsigned short *lineBuffer;
+            std::vector<uint16_t> channels[8];
+            uint16_t lineBuffer[4072 * 10];
 
         public:
             OCMReader();
