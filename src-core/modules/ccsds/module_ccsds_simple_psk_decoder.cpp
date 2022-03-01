@@ -41,13 +41,11 @@ namespace ccsds
 
         // Get constellation
         if (d_constellation_str == "bpsk")
-        {
             d_constellation = dsp::BPSK;
-        }
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
         else
-            logger->critical("CCSDS Simple PSK Decoder : invalid constellation type!");
+            throw std::runtime_error("CCSDS Simple PSK Decoder : invalid constellation type!");
 
         // Parse RS
         reedsolomon::RS_TYPE rstype;
@@ -58,7 +56,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                logger->critical("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
+                throw std::runtime_error("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set

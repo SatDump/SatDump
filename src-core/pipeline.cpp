@@ -56,10 +56,7 @@ void Pipeline::run(std::string input_file,
         PipelineModule module2 = steps[2].modules[0];
 
         if (modules_registry.count(module1.module_name) <= 0 || modules_registry.count(module2.module_name) <= 0)
-        {
-            logger->critical("Module " + module1.module_name + " or " + module2.module_name + " is not registered. Cancelling pipeline.");
-            return;
-        }
+            throw std::runtime_error("Module " + module1.module_name + " or " + module2.module_name + " is not registered. Cancelling pipeline.");
 
         nlohmann::json params1 = prepareParameters(module1.parameters, parameters);
         nlohmann::json params2 = prepareParameters(module2.parameters, parameters);
@@ -152,10 +149,7 @@ void Pipeline::run(std::string input_file,
         {
             // Check module exists!
             if (modules_registry.count(modStep.module_name) <= 0)
-            {
-                logger->critical("Module " + modStep.module_name + " is not registered. Cancelling pipeline.");
-                return;
-            }
+                throw std::runtime_error("Module " + modStep.module_name + " is not registered. Cancelling pipeline.");
 
             nlohmann::json final_parameters = prepareParameters(modStep.parameters, parameters);
 

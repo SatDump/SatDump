@@ -23,7 +23,7 @@ namespace eos
             else if (parameters["satellite"] == "aura")
                 d_satellite = AURA;
             else
-                logger->critical("Set EOS satellite is not valid!");
+                throw std::runtime_error("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
         }
 
         void EOSInstrumentsDecoderModule::process()

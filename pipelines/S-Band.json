@@ -461,5 +461,35 @@
                 }
             }
         }
+    },
+    "timed_dump": {
+        "name": "TIMED S-Band Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": 2.295e6,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 9872,
+                    "nrzm": true,
+                    "qpsk_swap_iq": true,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }

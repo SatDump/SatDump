@@ -50,7 +50,7 @@ namespace ccsds
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
         else
-            logger->critical("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
+            throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
 
         std::vector<phase_t> d_phases;
 
@@ -71,7 +71,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                logger->critical("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
+                throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set

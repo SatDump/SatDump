@@ -49,7 +49,17 @@ int main(int argc, char *argv[])
     std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
 
     if (pipeline.has_value())
-        pipeline.value().run(input_file, output_file, parameters, input_level);
+    {
+        try
+        {
+            pipeline.value().run(input_file, output_file, parameters, input_level);
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Fatal error running pipeline : " + std::string(e.what()));
+            return 1;
+        }
+    }
     else
         logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
 
