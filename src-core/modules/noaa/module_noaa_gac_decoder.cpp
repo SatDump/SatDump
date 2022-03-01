@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
+#include <filesystem>
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -14,11 +15,12 @@ namespace noaa
 #include "gac_pn.h"
 
     NOAAGACDecoderModule::NOAAGACDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                  constellation(1.0, 0.15, demod_constellation_size)
+                                                                                                                                  constellation(1.0, 0.15, demod_constellation_size),
+                                                                                                                                  backward(parameters["backward"].get<bool>())
     {
         // Buffers
         soft_buffer = new int8_t[BUFSIZE];
-        deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(33270, 0xA116FD71);
+        deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(33270, backward ? 0x33c3e4a6 : 0xA116FD71);
         deframer->CADU_PADDING = 33270 % 8;
     }
 
@@ -47,7 +49,10 @@ namespace noaa
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
 
-        data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
+        if (backward)
+            data_out = std::ofstream(d_output_file_hint + ".frm.tmp", std::ios::binary);
+        else
+            data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".frm");
 
         logger->info("Using input symbols " + d_input_file);
@@ -87,6 +92,19 @@ namespace noaa
             {
                 uint8_t *frm = &frame_buffer[i * 4159];
 
+                if (backward) // Backward tape playback
+                {
+                    uint8_t invert_buf[4159];
+                    memcpy(invert_buf, frm, 4159);
+                    memset(frm, 0, 4159);
+
+                    for (int ii = 0; ii < 33270; ii++)
+                    {
+                        int inv = (33270 - 1) - ii;
+                        frm[ii / 8] = frm[ii / 8] << 1 | ((invert_buf[inv / 8] >> (7 - (inv % 8))) & 1);
+                    }
+                }
+
                 for (int i = 0; i < 4159; i++)
                     frm[i] ^= gac_pn[i];
 
@@ -101,6 +119,30 @@ namespace noaa
                 lastTime = time(NULL);
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames : " + std::to_string(frame_count / 11090));
             }
+        }
+
+        if (backward)
+        {
+            logger->info("This was a backward playback, reversing frame order...");
+            std::ifstream inversed_file(d_output_file_hint + ".frm.tmp", std::ios::binary);
+            data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
+
+            filesize = getFilesize(d_output_file_hint + ".frm.tmp");
+            for (int64_t fpos = filesize - 4159; fpos >= 0; fpos -= 4159)
+            {
+                inversed_file.seekg(fpos);
+                inversed_file.read((char *)frame_buffer, 4159);
+                data_out.write((char *)frame_buffer, 4159);
+                progress = filesize - fpos;
+                logger->info(fpos);
+            }
+
+            inversed_file.close();
+            data_out.close();
+
+            if (std::filesystem::exists(d_output_file_hint + ".frm.tmp"))
+                std::filesystem::remove(d_output_file_hint + ".frm.tmp");
+            logger->info("Done!");
         }
 
         logger->info("Demodulation finished");

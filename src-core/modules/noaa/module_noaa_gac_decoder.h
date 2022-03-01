@@ -12,6 +12,8 @@ namespace noaa
     class NOAAGACDecoderModule : public ProcessingModule
     {
     protected:
+        const bool backward;
+
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
 
         int8_t *soft_buffer;

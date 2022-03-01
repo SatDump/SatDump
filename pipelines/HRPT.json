@@ -489,6 +489,7 @@
         ],
         "frequencies": [
             1702.5,
+            1698.0,
             2247.5
         ],
         "samplerate": 6e6,
@@ -507,7 +508,67 @@
                 }
             },
             "frm": {
-                "noaa_gac_decoder": {}
+                "noaa_gac_decoder": {
+                    "backward": false
+                }
+            },
+            "products": {
+                "noaa_avhrr": {
+                    "composites": "composites/noaa_avhrr.json.inc",
+                    "gac_mode": true
+                },
+                "noaa_extractor": {
+                    "gac_mode": true
+                },
+                "noaa_hirs": {
+                    "input_override": "noaa_gac.tip"
+                },
+                "noaa_amsu": {
+                    "input_override": "noaa_gac.aip"
+                },
+                "noaa_mhs": {
+                    "input_override": "noaa_gac.aip"
+                }
+            }
+        }
+    },
+    "noaa_gac_backward": {
+        "name": "NOAA GAC - Backward playback",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1702.5,
+            1698.0,
+            2247.5
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2.6616e6,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192,
+                    "post_costas_dc": true
+                }
+            },
+            "frm": {
+                "noaa_gac_decoder": {
+                    "backward": true
+                }
             },
             "products": {
                 "noaa_avhrr": {
