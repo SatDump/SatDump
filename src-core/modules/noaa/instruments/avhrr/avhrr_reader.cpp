@@ -7,7 +7,7 @@ namespace noaa
         AVHRRReader::AVHRRReader(bool gac) : gac_mode(gac), width(gac_mode ? 409 : 2048)
         {
             for (int i = 0; i < 5; i++)
-                channels[i] = new unsigned short[14000 * width];
+                channels[i] = new unsigned short[(gac_mode ? 40000 : 14000) * width];
             lines = 0;
         }
 
