@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "oceansat/module_oceansat2_db_decoder.h"
 #include "oceansat/instruments/ocm/module_oceansat_ocm.h"

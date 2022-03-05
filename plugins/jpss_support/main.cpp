@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "jpss/instruments/atms/module_jpss_atms.h"
 #include "jpss/instruments/viirs/module_jpss_viirs.h"

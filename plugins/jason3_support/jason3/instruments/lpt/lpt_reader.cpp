@@ -1,7 +1,7 @@
 #define cimg_use_jpeg
 #include "lpt_reader.h"
 #include "resources.h"
-#include "tle.h"
+//#include "tle.h"
 #include "common/ccsds/ccsds_time.h"
 
 #ifndef M_PI
@@ -16,9 +16,9 @@ namespace jason3
                                                                                 channel_count(channel_count),
                                                                                 pkt_size(pkt_size)
         {
-            tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
+            //tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
 
-            jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
+            //jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
 
             map_image = new image::Image<uint8_t>[channel_count];
             for (int i = 0; i < channel_count; i++)
@@ -29,7 +29,7 @@ namespace jason3
 
         LPTReader::~LPTReader()
         {
-            delete jason3_object;
+           // delete jason3_object;
             delete[] map_image;
         }
 
@@ -40,7 +40,7 @@ namespace jason3
 
             // We need to know where the satellite was when that packet was created
             time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
-            predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
+            /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
             int map_height = map_image[0].height();
@@ -48,7 +48,7 @@ namespace jason3
             int imageLat = map_height - ((90.0f + (jason3_orbit.latitude * 180.0f / M_PI)) / 180.0f) * map_height;
             int imageLon = ((jason3_orbit.longitude * 180.0f / M_PI) / 360.0f) * map_width + (map_width / 2);
             if (imageLon >= map_width)
-                imageLon -= map_width;
+                imageLon -= map_width;*/
 
             for (int ch = 0; ch < channel_count; ch++)
             {
@@ -60,8 +60,8 @@ namespace jason3
                     sample = 255;
 
                 // Write on the map!
-                unsigned char color0[] = {(unsigned char)sample, (unsigned char)std::max(0, 255 - sample), 0};
-                map_image[ch].draw_circle(imageLon, imageLat, 2, color0);
+                //unsigned char color0[] = {(unsigned char)sample, (unsigned char)std::max(0, 255 - sample), 0};
+                //map_image[ch].draw_circle(imageLon, imageLat, 2, color0);
             }
         }
 

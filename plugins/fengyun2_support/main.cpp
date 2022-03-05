@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "fengyun2/svissr/module_svissr_decoder.h"
 #include "fengyun2/svissr/module_svissr_image_decoder.h"

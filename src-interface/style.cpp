@@ -5,7 +5,7 @@
 //#include <options.h>
 #include <spdlog/spdlog.h>
 #include <filesystem>
-#include "module.h"
+#include "core/module.h"
 
 namespace style
 {

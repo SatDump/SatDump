@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <complex>
 #include <fstream>
 #include "libs/ctpl/ctpl_stl.h"

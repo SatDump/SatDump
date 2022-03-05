@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include "ocm_reader.h"
 
 namespace oceansat

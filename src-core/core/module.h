@@ -84,7 +84,7 @@ struct RegisterModulesEvent
     std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry;
 };
 
-void registerModules();
+void registerModules(std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry = modules_registry);
 
 SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
 SATDUMP_DLL extern int demod_constellation_size; // Demodulator constellation size

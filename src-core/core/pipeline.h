@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "module.h"
+#include "core/module.h"
 #include <mutex>
 #include <vector>
 #include "dll_export.h"
@@ -32,6 +32,8 @@ struct Pipeline
     std::string default_baseband_type;
     std::vector<std::pair<int, int>> live_cfg;
 
+    nlohmann::json editable_parameters;
+
     std::vector<PipelineStep> steps;
     void run(std::string input_file,
              std::string output_directory,
@@ -47,7 +49,7 @@ struct Pipeline
 SATDUMP_DLL extern std::vector<Pipeline> pipelines;
 SATDUMP_DLL extern std::vector<std::string> pipeline_categories;
 
-void loadPipelines(std::string filepath);
+void loadPipelines(std::string filepath, std::vector<Pipeline> &pipelines = pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry = modules_registry);
 std::vector<Pipeline> getPipelinesInCategory(std::string category);
 Pipeline getPipelineInCategoryFromId(std::string category, int id);
 std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);

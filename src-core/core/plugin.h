@@ -33,4 +33,5 @@ namespace satdump
     SATDUMP_DLL extern std::shared_ptr<dp::event_bus> eventBus;
 }; // namespace satdump
 
-void loadPlugins();
+void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins = satdump::loaded_plugins,
+                 std::shared_ptr<dp::event_bus> &eventBus = satdump::eventBus);

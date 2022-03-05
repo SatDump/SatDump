@@ -2,7 +2,7 @@
 
 #include <mutex>
 #include <memory>
-#include "module.h"
+#include "core/module.h"
 #include "pipeline.h"
 
 extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;
@@ -13,7 +13,6 @@ namespace processing
     void process(std::string downlink_pipeline,
                  std::string input_level,
                  std::string input_file,
-                 std::string output_level,
                  std::string output_file,
                  nlohmann::json parameters);
 }

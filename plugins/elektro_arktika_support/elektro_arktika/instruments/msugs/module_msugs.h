@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <fstream>
 #include "msu_vis_reader.h"
 #include "msu_ir_reader.h"

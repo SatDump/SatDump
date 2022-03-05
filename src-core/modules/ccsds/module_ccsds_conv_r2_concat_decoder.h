@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <complex>
 #include "common/codings/viterbi/viterbi_1_2.h"
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"

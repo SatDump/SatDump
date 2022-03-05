@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "gk2a/module_gk2a_lrit_data_decoder.h"
 

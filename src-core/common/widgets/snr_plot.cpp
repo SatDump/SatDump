@@ -1,4 +1,4 @@
-#include "module.h"
+#include "core/module.h"
 #include <array>
 #include <cstring>
 #include "snr_plot.h"

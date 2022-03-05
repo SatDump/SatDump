@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pipeline.h"
+#include "core/pipeline.h"
 #include "libs/ctpl/ctpl_stl.h"
 
 class LivePipeline

@@ -478,6 +478,14 @@
             1698.0,
             2247.5
         ],
+        "parameters": {
+            "backward": {
+                "type": "bool",
+                "value": false,
+                "name": "Backward GAC",
+                "description": "Over the US, NOAA satellites often transmit\nGAC in reverse order. This mode allows\ndecoding those backward replays properly."
+            }
+        },
         "samplerate": 6e6,
         "baseband_type": "i16",
         "work": {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <complex>
 #include <fstream>
 #include "common/ccsds/ccsds_1_0_proba/deframer.h"

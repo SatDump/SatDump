@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "meteor/module_meteor_hrpt_decoder.h"
 #include "meteor/module_meteor_lrpt_decoder.h"

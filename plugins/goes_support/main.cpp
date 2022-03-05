@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "goes/gvar/module_gvar_decoder.h"
 #include "goes/gvar/module_gvar_image_decoder.h"

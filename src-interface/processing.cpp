@@ -1,6 +1,6 @@
 #include "logger.h"
-#include "module.h"
-#include "pipeline.h"
+#include "core/module.h"
+#include "core/pipeline.h"
 #include <filesystem>
 #include "nlohmann/json.hpp"
 #include <fstream>
@@ -12,7 +12,6 @@ namespace processing
     void process(std::string downlink_pipeline,
                  std::string input_level,
                  std::string input_file,
-                 std::string output_level,
                  std::string output_file,
                  nlohmann::json parameters)
     {
@@ -20,7 +19,7 @@ namespace processing
 
         logger->info("Starting processing pipeline " + downlink_pipeline + "...");
         logger->debug("Input file (" + input_level + ") : " + input_file);
-        logger->debug("Output file (" + output_level + ") : " + output_file);
+        logger->debug("Output file : " + output_file);
 
         if (!std::filesystem::exists(output_file))
             std::filesystem::create_directories(output_file);

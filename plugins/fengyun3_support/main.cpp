@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "fengyun3/module_new_fengyun_ahrpt_decoder.h"
 #include "fengyun3/module_fengyun_ahrpt_decoder.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "libs/ctpl/ctpl_stl.h"
-#include "module.h"
+#include "core/module.h"
 
 extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList;
 extern std::shared_ptr<std::mutex> uiCallListMutex;

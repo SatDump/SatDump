@@ -1,6 +1,6 @@
 #include "constellation.h"
 #include <cstring>
-#include "module.h"
+#include "core/module.h"
 
 namespace widgets
 {

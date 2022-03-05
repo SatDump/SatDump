@@ -1,7 +1,7 @@
 #define cimg_use_jpeg
 #include "amr2_reader.h"
 #include "resources.h"
-#include "tle.h"
+//#include "tle.h"
 #include "common/ccsds/ccsds_time.h"
 
 #ifndef M_PI
@@ -14,9 +14,9 @@ namespace jason3
     {
         AMR2Reader::AMR2Reader()
         {
-            tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
+            //tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
 
-            jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
+            //jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
 
             for (int i = 0; i < 3; i++)
             {
@@ -29,7 +29,7 @@ namespace jason3
 
         AMR2Reader::~AMR2Reader()
         {
-            delete jason3_object;
+            //delete jason3_object;
 
             for (int i = 0; i < 3; i++)
                 delete[] imageBuffer[i];
@@ -42,7 +42,7 @@ namespace jason3
 
             // We need to know where the satellite was when that packet was created
             time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
-            predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
+            /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
             int map_height = map_image[0].height();
@@ -81,7 +81,7 @@ namespace jason3
             map_image[1].draw_circle(imageLon, imageLat, 2, color1);
 
             unsigned char color2[] = {(unsigned char)sample2, (unsigned char)std::max(0, 255 - sample2), 0};
-            map_image[2].draw_circle(imageLon, imageLat, 2, color2);
+            map_image[2].draw_circle(imageLon, imageLat, 2, color2);*/
 
             // Also write them as a raw images
             for (int i = 0, y = 0; i < 12; i++)

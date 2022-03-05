@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <complex>
 #include "common/codings/viterbi/viterbi27.h"
 #include <fstream>

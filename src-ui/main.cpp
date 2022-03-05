@@ -11,7 +11,7 @@
 #include <filesystem>
 #include "main_ui.h"
 #include "satdump_vars.h"
-#include "tle.h"
+//#include "tle.h"
 #include "common/cli_utils.h"
 
 extern bool recorder_running;
@@ -22,20 +22,20 @@ static void glfw_error_callback(int error, const char *description)
 }
 
 void bindImageTextureFunctions();
-//void bindFileDialogsFunctions();
+// void bindFileDialogsFunctions();
 
 int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
-    
+
     uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
     uiCallListMutex = std::make_shared<std::mutex>();
 
     initLogger();
 
-    if (argc < 6) // Check overall command
+    if (argc < 5) // Check overall command
     {
-        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
+        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
         logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
         return 1;
@@ -49,8 +49,7 @@ int main(int argc, char *argv[])
     std::string downlink_pipeline = argv[1];
     std::string input_level = argv[2];
     std::string input_file = argv[3];
-    std::string output_level = argv[4];
-    std::string output_file = argv[5];
+    std::string output_file = argv[4];
 
     // Parse flags
     nlohmann::json parameters = parse_common_flags(argc - 6, &argv[6]);
@@ -125,7 +124,7 @@ int main(int argc, char *argv[])
 
     if (isProcessing)
         processThreadPool.push([&](int)
-                               { processing::process(downlink_pipeline, input_level, input_file, output_level, output_file, parameters); });
+                               { processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
 
     // Main loop
     while (!glfwWindowShouldClose(window))

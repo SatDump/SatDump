@@ -1,6 +1,6 @@
 #include "image_preview.h"
 #include "imgui/imgui_image.h"
-#include "module.h"
+#include "core/module.h"
 
 ImagePreviewWidget::ImagePreviewWidget(int width, int height)
     : d_width(width),

@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "metop/module_metop_ahrpt_decoder.h"
 #include "metop/module_metop_dump_decoder.h"

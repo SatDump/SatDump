@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 
 #include "instruments/modis/modis_reader.h"
 #include "../aqua/instruments/airs/airs_reader.h"

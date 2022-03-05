@@ -8,6 +8,7 @@
 #include "metop.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "products/products.h"
 
 namespace metop
 {
@@ -166,11 +167,17 @@ namespace metop
                 logger->info("----------- AVHRR/3");
                 logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
+                satdump::ImageProducts avhrr_products;
+                avhrr_products.instrument_name = "avhrr_3";
+                avhrr_products.has_timestamps = true;
+                avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                avhrr_products.set_timestamps(avhrr_reader.timestamps);
+
                 for (int i = 0; i < 5; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(avhrr_reader.getChannel(0), directory + "/AVHRR-" + std::to_string(i + 1) + ".png");
-                }
+                    avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", avhrr_reader.getChannel(i)});
+
+                avhrr_products.save(directory);
+
                 avhrr_status = DONE;
             }
 

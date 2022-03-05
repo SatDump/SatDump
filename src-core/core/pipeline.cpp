@@ -1,7 +1,7 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "pipeline.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -205,7 +205,7 @@ nlohmann::json Pipeline::prepareParameters(nlohmann::json &module_params, nlohma
     return final_parameters;
 }
 
-void loadPipeline(std::string filepath, std::string category)
+void loadPipeline(std::string filepath, std::string category, std::vector<Pipeline> &pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry)
 {
     logger->info("Loading pipelines from file " + filepath);
 
@@ -278,6 +278,7 @@ void loadPipeline(std::string filepath, std::string category)
         newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
         newPipeline.default_baseband_type = pipelineConfig.value()["baseband_type"];
         newPipeline.category = category;
+        newPipeline.editable_parameters = pipelineConfig.value()["parameters"];
         // logger->info(newPipeline.name);
 
         bool hasAllModules = true;
@@ -317,7 +318,7 @@ void loadPipeline(std::string filepath, std::string category)
     }
 }
 
-void loadPipelines(std::string filepath)
+void loadPipelines(std::string filepath, std::vector<Pipeline> &pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry)
 {
     logger->info("Loading pipelines from " + filepath);
 
@@ -346,7 +347,7 @@ void loadPipelines(std::string filepath)
 
     for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
     {
-        loadPipeline(pipeline.first, pipeline.second);
+        loadPipeline(pipeline.first, pipeline.second, pipelines, modules_registry);
         pipeline_categories.push_back(pipeline.second);
     }
 }

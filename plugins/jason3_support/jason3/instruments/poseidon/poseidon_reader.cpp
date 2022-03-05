@@ -1,7 +1,7 @@
 #define cimg_use_jpeg
 #include "poseidon_reader.h"
 #include "resources.h"
-#include "tle.h"
+//#include "tle.h"
 #include "common/ccsds/ccsds_time.h"
 
 #ifndef M_PI
@@ -14,9 +14,9 @@ namespace jason3
     {
         PoseidonReader::PoseidonReader()
         {
-            tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
+            //tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
 
-            jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
+            //jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
 
             map_image_height.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
             map_image_scatter.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
@@ -34,7 +34,7 @@ namespace jason3
 
             // We need to know where the satellite was when that packet was created
             time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
-            predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
+            /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
             int map_height = map_image_height.height();
@@ -102,7 +102,7 @@ namespace jason3
 
             // Write on the map
             unsigned char colorScatter[] = {(unsigned char)sampleScatter, (unsigned char)std::max(0, 255 - sampleScatter), 0};
-            map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);
+            map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);*/
         }
 
         image::Image<uint8_t> PoseidonReader::getImageHeight()

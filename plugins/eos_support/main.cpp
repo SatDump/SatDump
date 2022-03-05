@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "terra/module_terra_db_demod.h"
 #include "aqua/module_aqua_db_decoder.h"

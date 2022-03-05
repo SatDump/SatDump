@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "proba/instruments/swap/module_proba_swap.h"
 #include "proba/instruments/chris/module_proba_chris.h"

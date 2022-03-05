@@ -35,7 +35,8 @@ namespace satdump
     SATDUMP_DLL std::shared_ptr<dp::event_bus> eventBus = std::make_shared<dp::event_bus>();
 };
 
-void loadPlugins()
+void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins,
+                 std::shared_ptr<dp::event_bus> &eventBus)
 {
     std::string plugins_path = (std::string)RESOURCES_PATH + "plugins";
 
@@ -65,7 +66,7 @@ void loadPlugins()
                 if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
                 {
                     std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                    satdump::loaded_plugins.insert({pl->getID(), pl});
+                    loaded_plugins.insert({pl->getID(), pl});
                 }
                 else
                 {
@@ -79,10 +80,10 @@ void loadPlugins()
             logger->critical(iteratorError.message());
     }
 
-    if (satdump::loaded_plugins.size() > 0)
+    if (loaded_plugins.size() > 0)
     {
-        logger->debug("Loaded plugins (" + std::to_string(satdump::loaded_plugins.size()) + ") : ");
-        for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : satdump::loaded_plugins)
+        logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
+        for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
             logger->debug(" - " + it.first);
     }
 }

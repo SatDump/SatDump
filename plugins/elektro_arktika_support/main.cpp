@@ -1,6 +1,6 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
-#include "module.h"
+#include "core/module.h"
 
 #include "elektro_arktika/instruments/msugs/module_msugs.h"
 #include "elektro_arktika/module_tlm_demod.h"
