@@ -15,6 +15,11 @@
         "frequencies": [
             1701.3
         ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
         "samplerate": 6e6,
         "baseband_type": "i16",
         "work": {
@@ -32,7 +37,7 @@
             "cadu": {
                 "metop_ahrpt_decoder": {
                     "viterbi_outsync_after": 10,
-                    "viterbi_ber_thresold": 0.300
+                    "viterbi_ber_thresold": 0.280
                 }
             },
             "products": {

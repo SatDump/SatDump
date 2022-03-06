@@ -45,6 +45,8 @@ namespace satdump
             std::vector<std::string> d_options;
 
         public:
+            EditableParameter() {}
+
             EditableParameter(nlohmann::json p_json)
             {
                 std::string type_str = p_json["type"].get<std::string>();
@@ -147,6 +149,31 @@ namespace satdump
                     v = p_bool;
                 else if (d_type == PARAM_OPTIONS)
                     v = d_options[d_option];
+                return v;
+            }
+
+            nlohmann::json setValue(nlohmann::json v)
+            {
+                if (d_type == PARAM_STRING)
+                {
+                    memset(p_string, 0, 1000);
+                    std::string value = v.get<std::string>();
+                    memcpy(p_string, value.c_str(), std::min<int>(1000, value.size()));
+                }
+                else if (d_type == PARAM_INT)
+                    p_int = v.get<int>();
+                else if (d_type == PARAM_FLOAT)
+                    p_float = v.get<double>();
+                else if (d_type == PARAM_BOOL)
+                    p_bool = v.get<bool>();
+                else if (d_type == PARAM_OPTIONS)
+                {
+                    for (int i = 0; i < d_options.size(); i++)
+                    {
+                        if (d_options[i] == v.get<std::string>())
+                            d_option = i;
+                    }
+                }
                 return v;
             }
         };

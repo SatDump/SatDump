@@ -121,13 +121,13 @@ namespace dsp
 
     BasebandType BasebandTypeFromString(std::string type)
     {
-        if (type == "i16")
+        if (type == "s16")
             return INTEGER_16;
-        else if (type == "i8")
+        else if (type == "s8")
             return INTEGER_8;
         else if (type == "f32")
             return COMPLEX_FLOAT_32;
-        else if (type == "w8")
+        else if (type == "u8")
             return WAV_8;
 #ifdef BUILD_ZIQ
         else if (type == "ziq")

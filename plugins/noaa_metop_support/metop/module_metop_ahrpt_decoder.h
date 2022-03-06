@@ -11,7 +11,7 @@ namespace metop
     {
     protected:
         int d_viterbi_outsync_after;
-        float d_viterbi_ber_threasold;
+        float d_viterbi_ber_thresold;
 
         uint8_t *viterbi_out;
         int8_t *soft_buffer;

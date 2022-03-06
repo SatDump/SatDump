@@ -13,8 +13,8 @@ namespace metop
 {
     MetOpAHRPTDecoderModule::MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                         d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
-                                                                                                                                        d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
-                                                                                                                                        viterbi(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE)
+                                                                                                                                        d_viterbi_ber_thresold(parameters["viterbi_ber_thresold"].get<float>()),
+                                                                                                                                        viterbi(d_viterbi_ber_thresold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
