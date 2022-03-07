@@ -2,9 +2,9 @@
 #include <fstream>
 #include <filesystem>
 
-nlohmann::json loadJsonFile(std::string path)
+nlohmann::ordered_json loadJsonFile(std::string path)
 {
-    nlohmann::json j;
+    nlohmann::ordered_json j;
 
     if (std::filesystem::exists(path))
     {
@@ -16,7 +16,7 @@ nlohmann::json loadJsonFile(std::string path)
     return j;
 }
 
-void saveJsonFile(std::string path, nlohmann::json j)
+void saveJsonFile(std::string path, nlohmann::ordered_json j)
 {
     std::ofstream ostream(path);
     ostream << j.dump(4);

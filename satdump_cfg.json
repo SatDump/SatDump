@@ -1,0 +1,34 @@
+{
+    "user_interface": {
+        "default_offline_parameters": {
+            "baseband_format": {
+                "type": "options",
+                "value": 0,
+                "name": "Baseband Format",
+                "options": [
+                    "s8",
+                    "u8",
+                    "s16",
+                    "f32"
+                ]
+            },
+            "samplerate": {
+                "type": "int",
+                "value": 6000000,
+                "name": "Samplerate"
+            },
+            "dc_block": {
+                "type": "bool",
+                "value": false,
+                "name": "DC Blocking",
+                "description": "DC Blocking allows removing a DC Spike / Offset present on some SDR.\n A classic example would the HackRF which often has this sort of issues."
+            },
+            "iq_swap": {
+                "type": "bool",
+                "value": false,
+                "name": "IQ Swap",
+                "description": "In some cases, the I and Q branches can be swapped.\nThat can happen when using some downconverters,\nor perhaps some software that records the file in an unusual way."
+            }
+        }
+    }
+}

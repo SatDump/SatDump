@@ -6,6 +6,7 @@
 //#include "tle.h"
 #include "core/plugin.h"
 #include "satdump_vars.h"
+#include "core/config.h"
 
 void initSatdump()
 {
@@ -18,7 +19,7 @@ void initSatdump()
     logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
     logger->info("");
 
-    //loadConfig();
+    satdump::config::loadConfig("satdump_cfg.json");
 
     loadPlugins();
 
@@ -36,7 +37,7 @@ void initSatdump()
         logger->debug(" - " + pipeline.name);
 
     // TLEs
-    //tle::loadTLEs();
+    // tle::loadTLEs();
 
     // Let plugins know we started
     satdump::eventBus->fire_event<satdump::SatDumpStartedEvent>({});

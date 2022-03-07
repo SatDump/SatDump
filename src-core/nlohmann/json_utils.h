@@ -2,5 +2,5 @@
 
 #include "json.hpp"
 
-nlohmann::json loadJsonFile(std::string path);
-void saveJsonFile(std::string path, nlohmann::json j);
+nlohmann::ordered_json loadJsonFile(std::string path);
+void saveJsonFile(std::string path, nlohmann::ordered_json j);
