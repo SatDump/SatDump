@@ -1,0 +1,218 @@
+{
+    "elektro_rdas": {
+        "name": "ELEKTRO-L RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 30720000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.03,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {
+                "elektro_arktika_msugs": {}
+            }
+        }
+    },
+    "arktika_rdas": {
+        "name": "ARKTIKA-M RDAS",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 45e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 30720000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.03,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {
+                "elektro_arktika_msugs": {}
+            }
+        }
+    },
+    "elektro_lrit": {
+        "name": "ELEKTRO-L LRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1691.0
+        ],
+        "samplerate": 1e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 294000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "elektro_lrit_data_decoder": {}
+            }
+        }
+    },
+    "elektro_hrit": {
+        "name": "ELEKTRO-L HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1691.0
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 1150000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "clock_gain_omega": 2.5e-7,
+                    "clock_mu": 0.5,
+                    "clock_gain_mu": 0.001,
+                    "clock_omega_relative_limit": 0.005,
+                    "dc_block": false,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "elektro_lrit_data_decoder": {}
+            }
+        }
+    },
+    "elektro_tlm": {
+        "name": "ELEKTRO-L L-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1693.0
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "cadu": {
+                "elektro_arktika_tlm_demod": {
+                    "buffer_size": 8192
+                }
+            }
+        }
+    },
+    "arktika_tlm": {
+        "name": "ARKTIKA-M L-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            1703.0
+        ],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "elektro_arktika_tlm_demod": {
+                    "buffer_size": 8192
+                }
+            }
+        }
+    }
+}

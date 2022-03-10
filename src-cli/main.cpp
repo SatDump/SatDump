@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     }
 
     // Init SatDump
-    initSatdump();
+    satdump::initSatdump();
 
     std::string downlink_pipeline = argv[1];
     std::string input_level = argv[2];
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         std::filesystem::create_directories(output_file);
 
     // Get pipeline
-    std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
+    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
 
     if (pipeline.has_value())
     {

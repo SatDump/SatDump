@@ -1,16 +1,28 @@
 {
-    "noaa_dsb": {
-        "name": "NOAA DSB",
-        "live": false,
-        "frequencies": [],
-        "samplerate": 0,
+    "meteor_hrpt": {
+        "name": "METEOR HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            1700
+        ],
+        "samplerate": 3e6,
         "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
                 "pm_demod": {
-                    "symbolrate": 8320,
-                    "agc_rate": 0.001,
+                    "symbolrate": 665400,
+                    "agc_rate": 0.002e-3,
                     "pll_bw": 0.01,
                     "pll_max_offset": 0.5,
                     "rrc_alpha": 0.6,
@@ -20,11 +32,14 @@
                     "buffer_size": 8192
                 }
             },
-            "frames": {
-                "noaa_dsb_decoder": {}
+            "cadu": {
+                "meteor_hrpt_decoder": {}
             },
             "products": {
-                "noaa_hirs": {}
+                "meteor_msumr": {
+                    "composites": "composites/meteor_msumr.json.inc"
+                },
+                "meteor_mtvza": {}
             }
         }
     },

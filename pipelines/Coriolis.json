@@ -1,0 +1,49 @@
+{
+    "coriolis_db": {
+        "name": "Coriolis S-Band Tactical DB",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2221.5
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 512000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "frm": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 0,
+                    "asm": "0x352ef853"
+                }
+            },
+            "products": {
+                "coriolis_windsat": {}
+            }
+        }
+    }
+}

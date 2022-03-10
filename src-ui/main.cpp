@@ -5,7 +5,6 @@
 #include <signal.h>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui_flags.h"
-#include "global.h"
 #include "init.h"
 #include "processing.h"
 #include <filesystem>
@@ -27,10 +26,6 @@ void bindImageTextureFunctions();
 int main(int argc, char *argv[])
 {
     bindImageTextureFunctions();
-
-    uiCallList = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
-    uiCallListMutex = std::make_shared<std::mutex>();
-
     initLogger();
 
     if (argc < 5) // Check overall command
@@ -41,10 +36,10 @@ int main(int argc, char *argv[])
         return 1;
     }
     else
-        isProcessing = true;
+        satdump::processing::is_processing = true;
 
     // Init SatDump
-    initSatdump();
+    satdump::initSatdump();
 
     std::string downlink_pipeline = argv[1];
     std::string input_level = argv[2];
@@ -58,7 +53,7 @@ int main(int argc, char *argv[])
     // exit(0);
 
     // Init UI
-    initMainUI();
+    satdump::initMainUI();
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -122,9 +117,9 @@ int main(int argc, char *argv[])
             style::setDarkStyle((std::string)RESOURCES_PATH);
     }
 
-    if (isProcessing)
-        processThreadPool.push([&](int)
-                               { processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+    if (satdump::processing::is_processing)
+        satdump::ui_thread_pool.push([&](int)
+                                     { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -140,7 +135,7 @@ int main(int argc, char *argv[])
         glfwGetWindowSize(window, &wwidth, &wheight);
 
         // User rendering
-        renderMainUI(wwidth, wheight);
+        satdump::renderMainUI(wwidth, wheight);
 
         // Rendering
         ImGui::Render();
@@ -171,19 +166,19 @@ int main(int argc, char *argv[])
     logger->info("UI Exit");
 
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
-    if (isProcessing)
+    if (satdump::processing::is_processing)
 #ifdef __APPLE__
         exit(0);
 #else
         quick_exit(0);
 #endif
 
-    processThreadPool.stop();
+    satdump::ui_thread_pool.stop();
 
-    for (int i = 0; i < processThreadPool.size(); i++)
+    for (int i = 0; i < satdump::ui_thread_pool.size(); i++)
     {
-        if (processThreadPool.get_thread(i).joinable())
-            processThreadPool.get_thread(i).join();
+        if (satdump::ui_thread_pool.get_thread(i).joinable())
+            satdump::ui_thread_pool.get_thread(i).join();
     }
 
     logger->info("Exiting!");

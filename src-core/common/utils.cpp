@@ -46,3 +46,12 @@ size_t getFilesize(std::string filepath)
     file.close();
     return fileSize;
 }
+
+bool isStringPresent(std::string searched, std::string keyword)
+{
+    std::transform(searched.begin(), searched.end(), searched.begin(), tolower);
+    std::transform(keyword.begin(), keyword.end(), keyword.begin(), tolower);
+
+    auto found_it = searched.find(keyword, 0);
+    return found_it != std::string::npos;
+}

@@ -1,7 +1,10 @@
 #pragma once
 
-namespace offline
+namespace satdump
 {
-    void setup();
-    void render();
+    namespace offline
+    {
+        void setup();
+        void render();
+    }
 }

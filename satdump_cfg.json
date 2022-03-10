@@ -1,5 +1,7 @@
 {
+    // Settings for the SatDump UI
     "user_interface": {
+        // Parameters shown in the default UI table, for everything
         "default_offline_parameters": {
             "baseband_format": {
                 "type": "options",
@@ -10,7 +12,8 @@
                     "u8",
                     "s16",
                     "f32"
-                ]
+                ],
+                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc"
             },
             "samplerate": {
                 "type": "int",

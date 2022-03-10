@@ -1,0 +1,173 @@
+{
+    "goes_gvar": {
+        "name": "GOES GVAR",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1685.7
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2110000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.7,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.002,
+                    "clock_omega_relative_limit": 0.001,
+                    "buffer_size": 8192
+                }
+            },
+            "gvar": {
+                "goes_gvar_decoder": {}
+            },
+            "products": {
+                "goes_gvar_image_decoder": {}
+            }
+        }
+    },
+    "goes_hrit": {
+        "name": "GOES-R HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1694.1
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 927000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "goes_lrit_data_decoder": {
+                    "write_images": true,
+                    "write_emwin": true,
+                    "write_messages": true,
+                    "write_dcs": true,
+                    "write_unknown": false
+                }
+            }
+        }
+    },
+    "goes_hrit_tcp": {
+        "name": "GOES-R HRIT to goestools",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [
+            1694.1
+        ],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 927000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.02,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "tcp": {
+                "xrit_goesrecv_publisher": {
+                    "address": "0.0.0.0",
+                    "port": 5004
+                }
+            }
+        }
+    },
+    "goes_grb": {
+        "name": "GOES-R GRB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "bbframe": {},
+            "cadu": {
+                "goes_grb_cadu_extractor": {}
+            },
+            "products": {
+                "goes_grb_data_decoder": {}
+            }
+        }
+    }
+}

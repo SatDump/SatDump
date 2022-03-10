@@ -260,5 +260,163 @@
                 "iris_dump_decoder": {}
             }
         }
+    },
+    "smap_s_link": {
+        "name": "SMAP S-Band Link",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 3e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 590000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.04,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 10232,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    },
+    "cheops_link": {
+        "name": "CHEOPS S-Band Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 3e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 1142000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.001,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "oqpsk_delay": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "timed_dump": {
+        "name": "TIMED S-Band Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": 2.295e6,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 9872,
+                    "nrzm": true,
+                    "qpsk_swap_iq": true,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "grace_fo_link": {
+        "name": "Grace-FO Dump",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 20e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 1500000,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.001,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    },
+    "cfosat1_dump": {
+        "name": "CFOSAT-1 X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "samplerate": 40e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": 30000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.35,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.0189,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }

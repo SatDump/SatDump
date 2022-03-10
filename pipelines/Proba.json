@@ -1,0 +1,227 @@
+{
+    "proba1_dump": {
+        "name": "Proba-1 Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_chris": {
+                    "composites_low": {
+                        "RGB-080502": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "(ch8-0.03)*3, (ch5-0.03)*2.7, (ch2-0.03)*3"
+                        },
+                        "EVI-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch19-ch8)/(ch19+6*ch8-7.5*ch2+1))*2"
+                        },
+                        "EVI-141908-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch14 * 1.5, (ch19 + (ch19-ch8)*1.5/(ch19+6*ch8-7.5*ch2+1)) * 1.5, ch8* 1.5"
+                        },
+                        "RGB-191908-(221)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch19*2, ch19*2, ch8*2"
+                        },
+                        "EVI-(vegetation)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch15-ch8)/(ch15+6*ch8-7.5*ch2+1))*1.5"
+                        },
+                        "EVI-101808-(vegetation)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch10 * 1.5, ch18 + (ch15-ch8)/(ch15+6*ch8-7.5*ch2+1) * 1.5, ch8* 1.5"
+                        },
+                        "RGB-151508-(221)-[chlorophyll]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch19*2, ch19*2, ch8*2"
+                        },
+                        "RGB-120805-[water]": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "(ch12-0.1)*4, (ch8-0.1)*4, (ch5-0.1)*4"
+                        }
+                    },
+                    "composites_all": {
+                        "RGB-251607-(RGB)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch25 * 1.65, ch16 * 2.1, ch7 * 2"
+                        },
+                        "RGB-464625-(221)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch46 * 2, ch46 * 2, ch25 * 2"
+                        },
+                        "EVI-634625-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "ch63, ch46 + ((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1)), ch25"
+                        },
+                        "EVI-(vegetation)": {
+                            "channels": [
+                                1,
+                                2
+                            ],
+                            "expression": "((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1))*1.5"
+                        }
+                    }
+                },
+                "proba_hrc": {}
+            }
+        }
+    },
+    "proba2_dump": {
+        "name": "Proba-2 Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 2000000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_swap": {}
+            }
+        }
+    },
+    "probav_s_dump": {
+        "name": "Proba-V S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            2235
+        ],
+        "samplerate": 4e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "bpsk_demod": {
+                    "symbolrate": 1919000,
+                    "agc_rate": 0.00001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.004,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    }
+}

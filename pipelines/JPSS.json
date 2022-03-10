@@ -1,0 +1,91 @@
+{
+    "npp_hrd": {
+        "name": "Suomi NPP / JPSS-1 HRD",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 25e6,
+        "baseband_type": "w8",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "qpsk_demod": {
+                    "symbolrate": 15000000,
+                    "agc_rate": 0.0001,
+                    "rrc_alpha": 0.7,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "jpss_satid": {
+                    "npp_mode": true
+                },
+                "jpss_viirs": {
+                    "npp_mode": true,
+                    "composites": {
+                        "RGB-I221": {
+                            "channels": [
+                                101,
+                                102
+                            ],
+                            "expression": "ch102 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4.4 - 0.2"
+                        },
+                        "RGB-I321": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "ch103 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2"
+                        },
+                        "RGB-(23)21": {
+                            "channels": [
+                                101,
+                                102,
+                                103
+                            ],
+                            "expression": "(ch103 * 0.4 + ch102 * 0.6) * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2",
+                            "corrected": true
+                        },
+                        "RGB-M543": {
+                            "channels": [
+                                5,
+                                4,
+                                3
+                            ],
+                            "expression": "ch5, ch4, ch3",
+                            "equalize": true
+                        },
+                        "I4-EQU": {
+                            "channels": [
+                                104
+                            ],
+                            "expression": "ch104",
+                            "equalize": true,
+                            "normalize": true
+                        }
+                    }
+                },
+                "jpss_atms": {
+                    "npp_mode": true
+                },
+                "jpss_omps": {
+                    "npp_mode": true
+                }
+            }
+        }
+    }
+}

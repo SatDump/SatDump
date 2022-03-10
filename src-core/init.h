@@ -1,3 +1,6 @@
 #pragma once
 
-void initSatdump();
+namespace satdump
+{
+    void initSatdump();
+}

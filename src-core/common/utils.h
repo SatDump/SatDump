@@ -87,5 +87,7 @@ inline bool getBit(T &data, int &bit)
     return (data >> bit) & 1;
 }
 
+bool isStringPresent(std::string searched, std::string keyword);
+
 // Return filesize
 size_t getFilesize(std::string filepath);
