@@ -66,7 +66,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/xrit/module_goesrecv_publisher.h"
 
-#include "modules/ccsds/module_ccsds_analyzer.h"
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
 #include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 
@@ -86,7 +85,6 @@ void registerModules(std::map<std::string, std::function<std::shared_ptr<Process
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
 
     // CCSDS
-    REGISTER_MODULE(ccsds::analyzer::CCSDSAnalyzerModule);
     REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
 
