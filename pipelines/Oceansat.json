@@ -3,8 +3,11 @@
         "name": "OceanSat-2 DB",
         "live": false,
         "frequencies": [],
-        "samplerate": 35e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "samplerate": {
+                "value": 35e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

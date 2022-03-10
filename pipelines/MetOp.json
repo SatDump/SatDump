@@ -20,8 +20,6 @@
                 "value": 6e6
             }
         },
-        "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -52,8 +50,11 @@
         "frequencies": [
             7800
         ],
-        "samplerate": 45e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "samplerate": {
+                "value": 45e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

@@ -27,11 +27,9 @@ namespace satdump
     {
         std::string name;
         std::string readable_name;
-        std::string category;
+
         bool live;
         std::vector<float> frequencies;
-        long default_samplerate;
-        std::string default_baseband_type;
         std::vector<std::pair<int, int>> live_cfg;
 
         nlohmann::json editable_parameters;

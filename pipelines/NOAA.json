@@ -3,8 +3,11 @@
         "name": "NOAA DSB",
         "live": false,
         "frequencies": [],
-        "samplerate": 0,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 48e3
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -46,8 +49,11 @@
             1698,
             1702.5
         ],
-        "samplerate": 3e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 3e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -111,10 +117,11 @@
                 "value": false,
                 "name": "Backward GAC",
                 "description": "Over the US, NOAA satellites often transmit\nGAC in reverse order. This mode allows\ndecoding those backward replays properly."
+            },
+            "samplerate": {
+                "value": 6e6
             }
         },
-        "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

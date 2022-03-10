@@ -272,14 +272,13 @@ namespace satdump
             Pipeline newPipeline;
             newPipeline.name = pipelineConfig.key();
             newPipeline.readable_name = pipelineConfig.value()["name"];
+            newPipeline.editable_parameters = pipelineConfig.value()["parameters"];
+
             newPipeline.live = pipelineConfig.value()["live"];
             if (newPipeline.live)
                 newPipeline.live_cfg = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
             newPipeline.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<float>>();
-            newPipeline.default_samplerate = pipelineConfig.value()["samplerate"];
-            newPipeline.default_baseband_type = pipelineConfig.value()["baseband_type"];
-            newPipeline.category = category;
-            newPipeline.editable_parameters = pipelineConfig.value()["parameters"];
+
             // logger->info(newPipeline.name);
 
             bool hasAllModules = true;

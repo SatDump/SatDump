@@ -3,8 +3,11 @@
         "name": "Falcon 9 S-Band TLM",
         "live": false,
         "frequencies": [],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -30,8 +33,11 @@
         "name": "Starship S-Band TLM",
         "live": false,
         "frequencies": [],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

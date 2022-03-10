@@ -30,7 +30,7 @@ namespace satdump
             {
                 try
                 {
-                    pipeline.value().run(input_file, output_file, parameters, input_level);
+                    pipeline.value().run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex);
                 }
                 catch (std::exception &e)
                 {

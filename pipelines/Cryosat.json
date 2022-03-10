@@ -4,8 +4,11 @@
         "live": false,
         "live_cfg": [],
         "frequencies": [],
-        "samplerate": 60e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "samplerate": {
+                "value": 60e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

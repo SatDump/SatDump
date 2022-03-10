@@ -13,8 +13,11 @@
             ]
         ],
         "frequencies": [],
-        "samplerate": 3e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 3e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

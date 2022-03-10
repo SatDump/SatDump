@@ -3,8 +3,11 @@
         "name": "Suomi NPP / JPSS-1 HRD",
         "live": false,
         "frequencies": [],
-        "samplerate": 25e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "samplerate": {
+                "value": 25e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

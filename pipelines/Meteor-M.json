@@ -15,8 +15,11 @@
         "frequencies": [
             1700
         ],
-        "samplerate": 3e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 3e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -60,8 +63,11 @@
             137.1,
             137.9
         ],
-        "samplerate": 1e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -103,8 +109,11 @@
             137.1,
             137.9
         ],
-        "samplerate": 0,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
