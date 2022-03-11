@@ -43,9 +43,7 @@
                 }
             },
             "products": {
-                "jason3_poseidon": {},
-                "jason3_amr2": {},
-                "jason3_lpt": {}
+                "jason3_instruments": {}
             }
         }
     }

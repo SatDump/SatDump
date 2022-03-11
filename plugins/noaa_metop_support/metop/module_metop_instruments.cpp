@@ -14,12 +14,12 @@ namespace metop
 {
     namespace instruments
     {
-        MetOpInstrumentsDModule::MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        MetOpInstrumentsDecoderModule::MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
-        void MetOpInstrumentsDModule::process()
+        void MetOpInstrumentsDecoderModule::process()
         {
             filesize = getFilesize(d_input_file);
             std::ifstream data_in(d_input_file, std::ios::binary);
@@ -310,9 +310,11 @@ namespace metop
                 logger->info("----------- Admin Message");
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
+
+            // TODO SEM
         }
 
-        void MetOpInstrumentsDModule::drawUI(bool window)
+        void MetOpInstrumentsDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("MetOp Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
@@ -414,19 +416,19 @@ namespace metop
             ImGui::End();
         }
 
-        std::string MetOpInstrumentsDModule::getID()
+        std::string MetOpInstrumentsDecoderModule::getID()
         {
             return "metop_instruments";
         }
 
-        std::vector<std::string> MetOpInstrumentsDModule::getParameters()
+        std::vector<std::string> MetOpInstrumentsDecoderModule::getParameters()
         {
             return {};
         }
 
-        std::shared_ptr<ProcessingModule> MetOpInstrumentsDModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<ProcessingModule> MetOpInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
-            return std::make_shared<MetOpInstrumentsDModule>(input_file, output_file_hint, parameters);
+            return std::make_shared<MetOpInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
     } // namespace amsu
 } // namespace metop

@@ -16,7 +16,7 @@ namespace metop
 {
     namespace instruments
     {
-        class MetOpInstrumentsDModule : public ProcessingModule
+        class MetOpInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
             std::atomic<size_t> filesize;
@@ -46,7 +46,7 @@ namespace metop
             instrument_status_t admin_msg_status = DECODING;
 
         public:
-            MetOpInstrumentsDModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 

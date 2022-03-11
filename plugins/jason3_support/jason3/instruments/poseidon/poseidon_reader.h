@@ -12,18 +12,15 @@ namespace jason3
     {
         class PoseidonReader
         {
-        private:
-            predict_orbital_elements_t *jason3_object;
-            predict_position jason3_orbit;
-            image::Image<uint8_t> map_image_height, map_image_scatter;
-
+            // private:
         public:
             PoseidonReader();
             ~PoseidonReader();
 
+            int frames;
+            std::vector<double> timestamps;
+
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint8_t> getImageHeight();
-            image::Image<uint8_t> getImageScatter();
         };
     } // namespace modis
 } // namespace eos

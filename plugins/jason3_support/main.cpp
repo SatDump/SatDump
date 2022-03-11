@@ -2,9 +2,7 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "jason3/instruments/poseidon/module_jason3_poseidon.h"
-#include "jason3/instruments/amr2/module_jason3_amr2.h"
-#include "jason3/instruments/lpt/module_jason3_lpt.h"
+#include "jason3/module_jason3_instruments.h"
 
 class Jason3Support : public satdump::Plugin
 {
@@ -23,9 +21,7 @@ public:
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jason3::poseidon::Jason3PoseidonDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jason3::amr2::Jason3AMR2DecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jason3::lpt::Jason3LPTDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jason3::instruments::Jason3InstrumentsDecoderModule);
     }
 };
 

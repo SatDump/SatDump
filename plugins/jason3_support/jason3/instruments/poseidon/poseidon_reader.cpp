@@ -1,12 +1,5 @@
-#define cimg_use_jpeg
 #include "poseidon_reader.h"
-#include "resources.h"
-//#include "tle.h"
 #include "common/ccsds/ccsds_time.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846 /* pi */
-#endif
 
 namespace jason3
 {
@@ -14,17 +7,11 @@ namespace jason3
     {
         PoseidonReader::PoseidonReader()
         {
-            //tle::TLE jason_tle = tle::getTLEfromNORAD(41240); // This can be safely harcoded, only 1 satellite
-
-            //jason3_object = predict_parse_tle(jason_tle.line1.c_str(), jason_tle.line2.c_str());
-
-            map_image_height.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
-            map_image_scatter.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
+            frames = 0;
         }
 
         PoseidonReader::~PoseidonReader()
         {
-            delete jason3_object;
         }
 
         void PoseidonReader::work(ccsds::CCSDSPacket &packet)
@@ -32,8 +19,12 @@ namespace jason3
             if (packet.payload.size() < 930)
                 return;
 
+            frames++;
+
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
+            double currentTime = ccsds::parseCCSDSTimeFull(packet, 16743, 1);
+            timestamps.push_back(currentTime);
+
             /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
             // Scale to the map
@@ -103,16 +94,6 @@ namespace jason3
             // Write on the map
             unsigned char colorScatter[] = {(unsigned char)sampleScatter, (unsigned char)std::max(0, 255 - sampleScatter), 0};
             map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);*/
-        }
-
-        image::Image<uint8_t> PoseidonReader::getImageHeight()
-        {
-            return map_image_height;
-        }
-
-        image::Image<uint8_t> PoseidonReader::getImageScatter()
-        {
-            return map_image_scatter;
         }
     } // namespace modis
 } // namespace eos
