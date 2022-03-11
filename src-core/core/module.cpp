@@ -69,7 +69,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
 #include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 
-void registerModules(std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry)
+void registerModules()
 {
     // Register modules
 

@@ -48,6 +48,6 @@ namespace satdump
 
     SATDUMP_DLL extern std::vector<Pipeline> pipelines;
 
-    void loadPipelines(std::string filepath, std::vector<Pipeline> &pipelines = pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry = modules_registry);
+    void loadPipelines(std::string filepath);
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);
 }

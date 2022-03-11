@@ -206,7 +206,7 @@ namespace satdump
         return final_parameters;
     }
 
-    void loadPipeline(std::string filepath, std::string category, std::vector<Pipeline> &pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry)
+    void loadPipeline(std::string filepath, std::string category)
     {
         logger->info("Loading pipelines from file " + filepath);
 
@@ -318,7 +318,7 @@ namespace satdump
         }
     }
 
-    void loadPipelines(std::string filepath, std::vector<Pipeline> &pipelines, std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> &modules_registry)
+    void loadPipelines(std::string filepath)
     {
         logger->info("Loading pipelines from " + filepath);
 
@@ -346,7 +346,7 @@ namespace satdump
         }
 
         for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
-            loadPipeline(pipeline.first, pipeline.second, pipelines, modules_registry);
+            loadPipeline(pipeline.first, pipeline.second);
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)
