@@ -34,7 +34,7 @@ namespace satdump
         else
         {
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({wwidth, wheight});
+            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
             ImGui::Begin("Main", __null, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
