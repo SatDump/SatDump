@@ -39,10 +39,8 @@
                 "meteor_hrpt_decoder": {}
             },
             "products": {
-                "meteor_msumr": {
-                    "composites": "composites/meteor_msumr.json.inc"
-                },
-                "meteor_mtvza": {}
+                
+                "meteor_instruments": {}
             }
         }
     },

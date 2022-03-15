@@ -10,12 +10,18 @@ namespace meteor
         class MTVZAReader
         {
         private:
-            unsigned short *channels[60];
+            std::vector<uint16_t> channels[30];
+            void parse_samples(uint8_t *data, int ch_start, int offset, int ch_cnt, int nsamples, int counter);
 
         public:
             MTVZAReader();
             ~MTVZAReader();
+
             int lines;
+            std::vector<double> timestamps;
+
+            double latest_msumr_timestamp = -1;
+
             void work(uint8_t *data);
             image::Image<uint16_t> getChannel(int channel);
         };

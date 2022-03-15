@@ -64,19 +64,19 @@ namespace def
 
                         current_frame.push_back(data[byten]);
 
-                        if (current_frame.size() * 8 == d_frame_length)
+                        if ((int)current_frame.size() * 8 == d_frame_length)
                         {
                             output_frames.push_back(current_frame);
                             in_frame = false;
                         }
                     }
 
-                    if (corr_64(d_syncword, asm_shifter) < d_thresold)
+                    if (d_thresold == 0 ? (d_syncword == asm_shifter) : (corr_64(d_syncword, asm_shifter) < d_thresold))
                     {
                         if (in_frame)
                         {
                             // Fill up what we're missing
-                            while (current_frame.size() * 8 < d_frame_length)
+                            while ((int)current_frame.size() * 8 < d_frame_length)
                                 current_frame.push_back(0x00);
                             output_frames.push_back(current_frame);
                         }

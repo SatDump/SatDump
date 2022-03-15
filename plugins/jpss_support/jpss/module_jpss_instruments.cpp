@@ -36,6 +36,7 @@ namespace jpss
 
             // Demuxers
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
 
@@ -62,6 +63,15 @@ namespace jpss
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 528)
                             atms_reader.work(pkt);
+                }
+                else if (vcdu.vcid == 6) // CrIS
+                {
+                    // std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid6.work(cadu);
+                    // for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    //     if (pkt.header.apid == 1340)
+                    //     {
+                    //         logger->info(pkt.payload.size() + 6);
+                    //     }
                 }
                 else if (vcdu.vcid == 11) // OMPS
                 {

@@ -4,9 +4,8 @@
 
 #include "meteor/module_meteor_hrpt_decoder.h"
 #include "meteor/module_meteor_lrpt_decoder.h"
-#include "meteor/instruments/msumr/module_meteor_msumr.h"
 #include "meteor/instruments/msumr/module_meteor_msumr_lrpt.h"
-#include "meteor/instruments/mtvza/module_meteor_mtvza.h"
+#include "meteor/module_meteor_instruments.h"
 
 class MeteorSupport : public satdump::Plugin
 {
@@ -27,9 +26,8 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::METEORHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::METEORLRPTDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::msumr::METEORMSUMRDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::msumr::METEORMSUMRLRPTDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::mtvza::METEORMTVZADecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::instruments::MeteorInstrumentsDecoderModule);
     }
 };
 

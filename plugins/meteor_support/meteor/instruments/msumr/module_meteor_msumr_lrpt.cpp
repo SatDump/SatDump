@@ -1,6 +1,5 @@
 #include "module_meteor_msumr_lrpt.h"
 #include <fstream>
-#include "../../simpledeframer.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"

@@ -36,12 +36,8 @@ namespace meteor
             }
 
             for (int channel = 0; channel < 6; channel++)
-            {
                 for (int i = 0; i < 1572; i++)
-                {
-                    channels[channel][lines * 1572 + i] = msumrBuffer[channel][i] * 60;
-                }
-            }
+                    channels[channel][lines * 1572 + i] = msumrBuffer[channel][i] << 6;
 
             // Frame counter
             lines++;
