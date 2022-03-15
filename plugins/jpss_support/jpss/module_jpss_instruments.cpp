@@ -50,7 +50,10 @@ namespace jpss
                 ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == SNPP_SCID ||
-                    vcdu.spacecraft_id == JPSS1_SCID)
+                    vcdu.spacecraft_id == JPSS1_SCID ||
+                    vcdu.spacecraft_id == JPSS2_SCID ||
+                    vcdu.spacecraft_id == JPSS3_SCID ||
+                    vcdu.spacecraft_id == JPSS4_SCID)
                     jpss_scids.push_back(vcdu.spacecraft_id);
 
                 if (vcdu.vcid == 1) // ATMS
@@ -119,6 +122,12 @@ namespace jpss
                 norad = SNPP_NORAD;
             else if (scid == JPSS1_SCID)
                 norad = JPSS1_NORAD;
+            else if (scid == JPSS2_SCID)
+                norad = JPSS2_NORAD;
+            else if (scid == JPSS3_SCID)
+                norad = JPSS3_NORAD;
+            else if (scid == JPSS4_SCID)
+                norad = JPSS4_NORAD;
 
             // Satellite ID
             {
