@@ -11,17 +11,18 @@ namespace jpss
         class ATMSReader
         {
         private:
-            int endSequenceCount;
-            unsigned short *channels[22];
-            bool inScan;
+            int scan_pos;
+            std::vector<uint16_t> channels[22];
 
         public:
             ATMSReader();
             ~ATMSReader();
+
             int lines;
             std::vector<double> timestamps;
+
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImage(int channel);
+            image::Image<uint16_t> getChannel(int channel);
         };
     } // namespace atms
 } // namespace jpss

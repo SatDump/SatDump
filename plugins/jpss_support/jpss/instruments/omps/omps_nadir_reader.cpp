@@ -9,7 +9,7 @@ namespace jpss
         OMPSNadirReader::OMPSNadirReader()
         {
             for (int i = 0; i < 339; i++)
-                channels[i] = new unsigned short[10000 * 142];
+                channels[i].resize(142);
 
             lines = 0;
             finalFrameVector = new uint8_t[1024 * 3000];
@@ -23,7 +23,7 @@ namespace jpss
         OMPSNadirReader::~OMPSNadirReader()
         {
             for (int i = 0; i < 339; i++)
-                delete[] channels[i];
+                channels[i].clear();
             delete[] finalFrameVector;
         }
 
@@ -57,6 +57,9 @@ namespace jpss
 
                             lines++;
                             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
+
+                            for (int i = 0; i < 339; i++)
+                                channels[i].resize((lines + 1) * 142);
                         }
                     }
                     /*else if (packet.header.apid == 560) // Need to see what NPP requires
@@ -92,7 +95,7 @@ namespace jpss
 
         image::Image<uint16_t> OMPSNadirReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 142, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 142, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

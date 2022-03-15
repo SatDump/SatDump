@@ -2,10 +2,7 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "jpss/instruments/atms/module_jpss_atms.h"
-#include "jpss/instruments/viirs/module_jpss_viirs.h"
-#include "jpss/instruments/omps/module_jpss_omps.h"
-#include "jpss/module_jpss_satid.h"
+#include "jpss/module_jpss_instruments.h"
 
 class JPSSSupport : public satdump::Plugin
 {
@@ -24,10 +21,7 @@ public:
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::satid::JPSSSatIDModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::atms::JPSSATMSDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::viirs::JPSSVIIRSDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::omps::JPSSOMPSDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::instruments::JPSSInstrumentsDecoderModule);
     }
 };
 

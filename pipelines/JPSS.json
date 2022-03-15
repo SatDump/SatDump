@@ -12,7 +12,7 @@
             "baseband": {},
             "soft": {
                 "qpsk_demod": {
-                    "symbolrate": 15000000,
+                    "symbolrate": 15e6,
                     "agc_rate": 0.0001,
                     "rrc_alpha": 0.7,
                     "rrc_taps": 31,
@@ -33,60 +33,53 @@
                 }
             },
             "products": {
-                "jpss_satid": {
+                "jpss_instruments": {
                     "npp_mode": true
-                },
-                "jpss_viirs": {
-                    "npp_mode": true,
-                    "composites": {
-                        "RGB-I221": {
-                            "channels": [
-                                101,
-                                102
-                            ],
-                            "expression": "ch102 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4.4 - 0.2"
-                        },
-                        "RGB-I321": {
-                            "channels": [
-                                101,
-                                102,
-                                103
-                            ],
-                            "expression": "ch103 * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2"
-                        },
-                        "RGB-(23)21": {
-                            "channels": [
-                                101,
-                                102,
-                                103
-                            ],
-                            "expression": "(ch103 * 0.4 + ch102 * 0.6) * 4 - 0.2, ch102 * 4 - 0.2, ch101 * 4 - 0.2",
-                            "corrected": true
-                        },
-                        "RGB-M543": {
-                            "channels": [
-                                5,
-                                4,
-                                3
-                            ],
-                            "expression": "ch5, ch4, ch3",
-                            "equalize": true
-                        },
-                        "I4-EQU": {
-                            "channels": [
-                                104
-                            ],
-                            "expression": "ch104",
-                            "equalize": true,
-                            "normalize": true
-                        }
-                    }
-                },
-                "jpss_atms": {
-                    "npp_mode": true
-                },
-                "jpss_omps": {
-                    "npp_mode": true
+                }
+            }
+        }
+    },
+    "jpss_hrd": {
+        "name": "JPSS-2/3/4 HRD",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 40e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "oqpsk_demod": {
+                    "symbolrate": 25e6,
+                    "agc_rate": 0.1,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.006,
+                    "clock_gain_omega": 0.8,
+                    "clock_mu": 0.9,
+                    "clock_gain_mu": 0.037,
+                    "clock_omega_relative_limit": 0.001,
+                    "constellation_scale": 100,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "jpss_instruments": {
+                    "npp_mode": false
                 }
             }
         }

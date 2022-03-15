@@ -9,7 +9,7 @@ namespace jpss
         OMPSLimbReader::OMPSLimbReader()
         {
             for (int i = 0; i < 135; i++)
-                channels[i] = new unsigned short[10000 * 6];
+                channels[i].resize(6);
 
             lines = 0;
             finalFrameVector = new uint8_t[1024 * 3000];
@@ -23,7 +23,7 @@ namespace jpss
         OMPSLimbReader::~OMPSLimbReader()
         {
             for (int i = 0; i < 135; i++)
-                delete[] channels[i];
+                channels[i].clear();
             delete[] finalFrameVector;
         }
 
@@ -57,6 +57,9 @@ namespace jpss
 
                             lines++;
                             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
+
+                            for (int i = 0; i < 135; i++)
+                                channels[i].resize((lines + 1) * 6);
                         }
                     }
                     /*else if (packet.header.apid == 560) // Need to see what NPP requires
@@ -92,7 +95,7 @@ namespace jpss
 
         image::Image<uint16_t> OMPSLimbReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 6, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 6, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

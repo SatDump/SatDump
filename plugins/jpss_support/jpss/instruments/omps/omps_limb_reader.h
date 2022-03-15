@@ -15,7 +15,7 @@ namespace jpss
         class OMPSLimbReader
         {
         private:
-            unsigned short *channels[135];
+            std::vector<uint16_t> channels[135];
             uint8_t *finalFrameVector;
             std::vector<uint8_t> currentOMPSFrame;
             SZ_com_t rice_parameters;

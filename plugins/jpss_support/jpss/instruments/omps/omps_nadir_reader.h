@@ -15,7 +15,7 @@ namespace jpss
         class OMPSNadirReader
         {
         private:
-            unsigned short *channels[339];
+            std::vector<uint16_t> channels[339];
             uint8_t *finalFrameVector;
             std::vector<uint8_t> currentOMPSFrame;
             SZ_com_t rice_parameters;
