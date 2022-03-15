@@ -57,12 +57,12 @@ void ProcessingModule::drawUI(bool /*window*/)
 // Registry
 SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
 
-#include "modules/module_qpsk_demod.h"
-#include "modules/module_oqpsk_demod.h"
-#include "modules/module_bpsk_demod.h"
-#include "modules/module_fsk_demod.h"
-#include "modules/module_8psk_demod.h"
-#include "modules/module_pm_demod.h"
+#include "modules/demod/module_qpsk_demod.h"
+#include "modules/demod/module_oqpsk_demod.h"
+#include "modules/demod/module_bpsk_demod.h"
+#include "modules/demod/module_fsk_demod.h"
+#include "modules/demod/module_8psk_demod.h"
+#include "modules/demod/module_pm_demod.h"
 
 #include "modules/xrit/module_goesrecv_publisher.h"
 
