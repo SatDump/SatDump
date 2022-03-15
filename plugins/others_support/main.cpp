@@ -22,8 +22,6 @@ public:
 
     void init()
     {
-        logger->info("OthersSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

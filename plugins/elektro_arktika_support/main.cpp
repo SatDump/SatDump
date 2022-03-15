@@ -16,8 +16,6 @@ public:
 
     void init()
     {
-        logger->info("ElektroArktikaSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

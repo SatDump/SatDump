@@ -14,8 +14,6 @@ public:
 
     void init()
     {
-        logger->info("JPSSSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

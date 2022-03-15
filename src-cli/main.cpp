@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     // Init logger
     initLogger();
 
-    if (argc < 6) // Check overall command
+    if (argc < 5) // Check overall command
     {
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");

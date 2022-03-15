@@ -17,8 +17,6 @@ public:
 
     void init()
     {
-        logger->info("MeteorSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

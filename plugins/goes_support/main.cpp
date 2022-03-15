@@ -18,8 +18,6 @@ public:
 
     void init()
     {
-        logger->info("GOESSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

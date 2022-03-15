@@ -33,24 +33,23 @@ int main(int argc, char *argv[])
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
         logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
-        return 1;
     }
     else
         satdump::processing::is_processing = true;
 
-    // Init SatDump
-    satdump::initSatdump();
-
-    std::string downlink_pipeline = argv[1];
-    std::string input_level = argv[2];
-    std::string input_file = argv[3];
-    std::string output_file = argv[4];
+    std::string downlink_pipeline = satdump::processing::is_processing ? argv[1] : "";
+    std::string input_level = satdump::processing::is_processing ? argv[2] : "";
+    std::string input_file = satdump::processing::is_processing ? argv[3] : "";
+    std::string output_file = satdump::processing::is_processing ? argv[4] : "";
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 6, &argv[6]);
+    nlohmann::json parameters = satdump::processing::is_processing ? parse_common_flags(argc - 6, &argv[6]) : "";
 
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
+
+    // Init SatDump
+    satdump::initSatdump();
 
     // Init UI
     satdump::initMainUI();
@@ -118,8 +117,10 @@ int main(int argc, char *argv[])
     }
 
     if (satdump::processing::is_processing)
+    {
         satdump::ui_thread_pool.push([&](int)
                                      { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+    }
 
     // Main loop
     while (!glfwWindowShouldClose(window))

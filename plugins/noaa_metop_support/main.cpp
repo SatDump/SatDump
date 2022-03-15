@@ -25,8 +25,6 @@ public:
 
     void init()
     {
-        logger->info("NOAAMetOpSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

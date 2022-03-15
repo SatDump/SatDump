@@ -14,8 +14,6 @@ public:
 
     void init()
     {
-        logger->info("Jason3Support plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

@@ -15,8 +15,6 @@ public:
 
     void init()
     {
-        logger->info("FengYun2Support plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

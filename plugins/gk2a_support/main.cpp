@@ -14,8 +14,6 @@ public:
 
     void init()
     {
-        logger->info("GK2ASupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

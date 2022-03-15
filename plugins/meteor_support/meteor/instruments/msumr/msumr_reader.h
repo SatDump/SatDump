@@ -10,8 +10,7 @@ namespace meteor
         class MSUMRReader
         {
         private:
-            unsigned short *channels[6];
-            uint16_t msumrBuffer[6][1572];
+            std::vector<uint16_t> channels[6];
 
         public:
             MSUMRReader();

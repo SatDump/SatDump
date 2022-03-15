@@ -15,8 +15,6 @@ public:
 
     void init()
     {
-        logger->info("SpaceXSupport plugin loaded!");
-
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 
