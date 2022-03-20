@@ -7,6 +7,7 @@
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
 #include "common/utils.h"
+#include "products/products.h"
 
 namespace eos
 {
@@ -156,26 +157,26 @@ namespace eos
                 const long scanHeight_500 = 20;
                 const long scanHeight_1000 = 10;
 
+                satdump::ImageProducts modis_products;
+                modis_products.instrument_name = "modis";
+                modis_products.has_timestamps = true;
+                modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                // avhrr_products.set_timestamps(modis_reader.timestamps);
+
                 for (int i = 0; i < 2; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage250m(i);
-
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
-
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 1) + ".png");
+                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
                 }
 
                 for (int i = 0; i < 5; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage500m(i);
-
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
-
-                    logger->info("Channel " + std::to_string(i + 3) + "...");
-                    WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 3) + ".png");
+                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 3) + ".png", std::to_string(i + 3), image});
                 }
 
                 for (int i = 0; i < 31; i++)
@@ -186,36 +187,21 @@ namespace eos
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     if (i < 5)
-                    {
-                        logger->info("Channel " + std::to_string(i + 8) + "...");
-                        WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 8) + ".png");
-                    }
+                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 8) + ".png", std::to_string(i + 8), image});
                     else if (i == 5)
-                    {
-                        logger->info("Channel 13L...");
-                        WRITE_IMAGE(image, directory + "/MODIS-13L.png");
-                    }
+                        modis_products.images.push_back({"MODIS-13L.png", "13L", image});
                     else if (i == 6)
-                    {
-                        logger->info("Channel 13H...");
-                        WRITE_IMAGE(image, directory + "/MODIS-13H.png");
-                    }
+                        modis_products.images.push_back({"MODIS-13H.png", "13H", image});
                     else if (i == 7)
-                    {
-                        logger->info("Channel 14L...");
-                        WRITE_IMAGE(image, directory + "/MODIS-14L.png");
-                    }
+                        modis_products.images.push_back({"MODIS-14L.png", "13L", image});
                     else if (i == 8)
-                    {
-                        logger->info("Channel 14H...");
-                        WRITE_IMAGE(image, directory + "/MODIS-14H.png");
-                    }
+                        modis_products.images.push_back({"MODIS-14H.png", "14H", image});
                     else
-                    {
-                        logger->info("Channel " + std::to_string(i + 6) + "...");
-                        WRITE_IMAGE(image, directory + "/MODIS-" + std::to_string(i + 6) + ".png");
-                    }
+                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 6) + ".png", std::to_string(i + 6), image});
                 }
+
+                modis_products.save(directory);
+
                 modis_status = DONE;
             }
 
@@ -230,11 +216,22 @@ namespace eos
                 logger->info("----------- AIRS");
                 logger->info("Lines : " + std::to_string(airs_reader.lines));
 
+                // for (int i = 0; i < 4; i++)
+                //{
+                //     logger->info("HD Channel " + std::to_string(i + 1) + "...");
+                //     WRITE_IMAGE(airs_reader.getHDChannel(i), directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
+                // }
+
+                satdump::ImageProducts airs_products;
+                airs_products.instrument_name = "airs";
+                airs_products.has_timestamps = true;
+                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                // airs_products.set_timestamps(airs_reader.timestamps);
+
                 for (int i = 0; i < 4; i++)
-                {
-                    logger->info("HD Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(airs_reader.getHDChannel(i), directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
-                }
+                    airs_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getHDChannel(i)});
+
+                airs_products.save(directory);
 
                 // There nearly 3000 channels... So we write that in a specific folder not to fill up the main one
                 // if (!std::filesystem::exists(directory + "/Channels"))

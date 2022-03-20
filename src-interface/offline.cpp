@@ -8,6 +8,7 @@
 #include "processing.h"
 #include "main_ui.h"
 #include "common/utils.h"
+#include "imgui/imgui_stdlib.h"
 
 namespace satdump
 {
@@ -22,7 +23,7 @@ namespace satdump
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> parameters_ui;
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> parameters_ui_pipeline;
 
-        char pipeline_search_in[1000];
+        std::string pipeline_search_in;
         int pipeline_id = 0;
 
         std::string error_message = "";
@@ -32,9 +33,7 @@ namespace satdump
             nlohmann::ordered_json params = satdump::config::cfg["user_interface"]["default_offline_parameters"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
-                parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(cfg.value())});
-
-            memset(pipeline_search_in, 0, 1000);
+                parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
         }
 
         void updateSelectedPipeline()
@@ -66,15 +65,14 @@ namespace satdump
 
         void render()
         {
-            ImGui::InputTextWithHint("##pipelinesearchbox", "Search pipelines...", pipeline_search_in, 1000);
+            ImGui::InputTextWithHint("##pipelinesearchbox", "Search pipelines...", &pipeline_search_in);
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int n = 0; n < pipelines.size(); n++)
                 {
                     bool show = true;
-                    std::string search_query(pipeline_search_in);
-                    if (search_query.size() != 0)
-                        show = isStringPresent(pipelines[n].readable_name, search_query);
+                    if (pipeline_search_in.size() != 0)
+                        show = isStringPresent(pipelines[n].readable_name, pipeline_search_in);
 
                     if (show)
                     {

@@ -21,9 +21,9 @@ namespace viterbi
     {
         soft_buffer = new uint8_t[d_buffer_size * 2];
         output_buffer = new uint8_t[d_buffer_size * 2];
-                                                                                                                     
-        for(int i = 0; i < 2; i++)
-            for(int y = 0; y < 4; y++)
+
+        for (int i = 0; i < 2; i++)
+            for (int y = 0; y < 4; y++)
                 d_bers[y][i] = 10;
     }
 
@@ -112,13 +112,13 @@ namespace viterbi
         else
         {
             float ber = 10;
-            for (int p = 0; p < (int)d_phases_to_check.size(); p++)
+            for (phase_t phase : d_phases_to_check)
             {
                 for (int o = 0; o < 2; o++)
                 {
-                    if (ber > d_bers[p][o])
+                    if (ber > d_bers[phase][o])
                     {
-                        ber = d_bers[p][o];
+                        ber = d_bers[phase][o];
                     }
                 }
             }

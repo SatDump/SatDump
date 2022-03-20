@@ -20,12 +20,13 @@ namespace satdump
 
     public:
         virtual void save(std::string directory);
+        virtual void load(std::string file);
     };
 
     class ImageProducts : public Products
     {
     public:
-        std::vector<std::pair<std::string, image::Image<uint16_t>>> images;
+        std::vector<std::tuple<std::string, std::string, image::Image<uint16_t>>> images;
         bool has_timestamps = true;
 
         enum Timestamp_Type
@@ -44,5 +45,6 @@ namespace satdump
 
     public:
         virtual void save(std::string directory);
+        virtual void load(std::string file);
     };
 }

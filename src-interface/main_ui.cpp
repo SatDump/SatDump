@@ -5,15 +5,18 @@
 #include "offline.h"
 #include "error.h"
 
+#include "logger.h"
+#include "common/widgets/image_view.h"
+#include "common/image/composite.h"
+#include "imgui/imgui_stdlib.h"
+#include "products/products.h"
+
 namespace satdump
 {
     void initMainUI()
     {
         offline::setup();
     }
-
-    std::string error_message;
-    bool isError_UI = false;
 
     void renderMainUI(int wwidth, int wheight)
     {

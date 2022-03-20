@@ -174,7 +174,7 @@ namespace metop
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
 
                 for (int i = 0; i < 5; i++)
-                    avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", avhrr_reader.getChannel(i)});
+                    avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
 
                 avhrr_products.save(directory);
 
@@ -192,11 +192,23 @@ namespace metop
                 logger->info("----------- MHS");
                 logger->info("Lines : " + std::to_string(mhs_reader.lines));
 
-                for (int i = 0; i < 5; i++)
+                /*for (int i = 0; i < 5; i++)
                 {
                     logger->info("Channel " + std::to_string(i + 1) + "...");
                     WRITE_IMAGE(mhs_reader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
-                }
+                }*/
+
+                satdump::ImageProducts mhs_products;
+                mhs_products.instrument_name = "mhs";
+                mhs_products.has_timestamps = true;
+                mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mhs_products.set_timestamps(mhs_reader.timestamps);
+
+                for (int i = 0; i < 5; i++)
+                    mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+
+                mhs_products.save(directory);
+
                 mhs_status = DONE;
             }
 
@@ -249,6 +261,17 @@ namespace metop
                     WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
                 }
                 iasi_img_status = DONE;
+
+                // satdump::ImageProducts iasi_products;
+                // iasi_products.instrument_name = "iasi";
+                //  iasi_products.has_timestamps = true;
+                //  iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                //  iasi_products.set_timestamps(iasi_reader.timestamps);
+
+                // for (int i = 0; i < 8461; i++)
+                //     iasi_products.images.push_back({"IASI-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), iasi_reader.getChannel(i)});
+
+                // iasi_products.save(directory);
 
                 // Output a few nice composites as well
                 logger->info("Global Composite...");

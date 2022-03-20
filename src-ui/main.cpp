@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     std::string output_file = satdump::processing::is_processing ? argv[4] : "";
 
     // Parse flags
-    nlohmann::json parameters = satdump::processing::is_processing ? parse_common_flags(argc - 6, &argv[6]) : "";
+    nlohmann::json parameters = satdump::processing::is_processing ? parse_common_flags(argc - 5, &argv[5]) : "";
 
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);

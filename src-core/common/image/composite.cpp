@@ -11,7 +11,6 @@ namespace image
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
-        double *rgbOut;
         int outValsCnt = 0;
 
         // Get other parameters such as equalization, etc
@@ -56,9 +55,11 @@ namespace image
                 maxHeight = inputChannels[i].height();
         }
 
+        std::vector<std::pair<float, float>> image_scales;
+
         for (int i = 0; i < (int)inputChannels.size(); i++)
         {
-            inputChannels[i].resize(maxWidth, maxHeight);
+            image_scales.push_back({float(inputChannels[i].width()) / float(maxWidth), float(inputChannels[i].height()) / float(maxHeight)});
         }
 
         // Get output width
@@ -76,73 +77,77 @@ namespace image
         double B = 0;
 
         // Run though the entire image
-        for (size_t px = 0; px < img_fullch; px++)
+        for (size_t line = 0; line < img_height; line++)
         {
-            // Set variables and scale to 1.0
-            for (int i = 0; i < (int)inputChannels.size(); i++)
+            for (size_t pixel = 0; pixel < img_width; pixel++)
             {
-                int fpx = px;
-
-                // If we have to offset some channels
-                if (hasOffsets)
+                // Set variables and scale to 1.0
+                for (int i = 0; i < (int)inputChannels.size(); i++)
                 {
-                    if (offsets.count(channelNumbers[i]) > 0)
+                    int line_ch = line * image_scales[i].first;
+                    int pixe_ch = pixel * image_scales[i].second;
+
+                    // If we have to offset some channels
+                    if (hasOffsets)
                     {
-                        int currentPx = fpx % img_width + offsets[channelNumbers[i]];
-
-                        if (currentPx < 0)
+                        if (offsets.count(channelNumbers[i]) > 0)
                         {
-                            channelValues[i] = 0;
-                            continue;
-                        }
-                        else if (currentPx >= img_width)
-                        {
-                            channelValues[i] = 0;
-                            continue;
-                        }
+                            int currentPx = pixe_ch + offsets[channelNumbers[i]];
 
-                        fpx += offsets[channelNumbers[i]];
+                            if (currentPx < 0)
+                            {
+                                channelValues[i] = 0;
+                                continue;
+                            }
+                            else if (currentPx >= inputChannels[i].width())
+                            {
+                                channelValues[i] = 0;
+                                continue;
+                            }
+
+                            pixe_ch += offsets[channelNumbers[i]];
+                        }
                     }
+
+                    channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
                 }
 
-                channelValues[i] = double(inputChannels[i][fpx]) / double(std::numeric_limits<T>::max());
-            }
+                // Do the math
+                double *rgbOut = rgbParser.Eval(outValsCnt);
 
-            // Do the math
-            rgbOut = rgbParser.Eval(outValsCnt);
+                // Get output and scale back
+                R = rgbOut[0] * double(std::numeric_limits<T>::max());
+                if (isRgb)
+                {
+                    G = rgbOut[1] * double(std::numeric_limits<T>::max());
+                    B = rgbOut[2] * double(std::numeric_limits<T>::max());
+                }
 
-            // Get output and scale back
-            R = rgbOut[0] * double(std::numeric_limits<T>::max());
-            if (isRgb)
-            {
-                G = rgbOut[1] * double(std::numeric_limits<T>::max());
-                B = rgbOut[2] * double(std::numeric_limits<T>::max());
-            }
+                // Clamp
+                if (R < 0)
+                    R = 0;
 
-            // Clamp
-            if (R < 0)
-                R = 0;
+                if (R > std::numeric_limits<T>::max())
+                    R = std::numeric_limits<T>::max();
+                if (isRgb)
+                {
+                    if (G < 0)
+                        G = 0;
+                    if (G > std::numeric_limits<T>::max())
+                        G = std::numeric_limits<T>::max();
+                    if (B < 0)
+                        B = 0;
+                    if (B > std::numeric_limits<T>::max())
+                        B = std::numeric_limits<T>::max();
+                }
 
-            if (R > std::numeric_limits<T>::max())
-                R = std::numeric_limits<T>::max();
-            if (isRgb)
-            {
-                if (G < 0)
-                    G = 0;
-                if (G > std::numeric_limits<T>::max())
-                    G = std::numeric_limits<T>::max();
-                if (B < 0)
-                    B = 0;
-                if (B > std::numeric_limits<T>::max())
-                    B = std::numeric_limits<T>::max();
-            }
-
-            // Write output
-            rgb_output[img_fullch * 0 + px] = R;
-            if (isRgb)
-            {
-                rgb_output[img_fullch * 1 + px] = G;
-                rgb_output[img_fullch * 2 + px] = B;
+                // Write output
+                rgb_output[img_fullch * 0 + line * img_width + pixel] = R;
+                if (isRgb)
+                {
+                    rgb_output[img_fullch * 1 + line * img_width + pixel] = G;
+                    rgb_output[img_fullch * 2 + line * img_width + pixel] = B;
+                }
             }
         }
 
