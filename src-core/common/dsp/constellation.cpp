@@ -265,7 +265,7 @@ namespace dsp
 
         // Calculate phase error
         if (phase_error != nullptr)
-            *phase_error = atan2f(sample.real, sample.imag) - atan2f(closest.real, closest.imag);
+            *phase_error = (sample * closest.conj()).arg();
     }
 
     int8_t constellation_t::clamp(float x)

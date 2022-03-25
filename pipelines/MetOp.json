@@ -23,13 +23,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "qpsk_demod": {
+                "psk_demod": {
+                    "constellation": "qpsk",
                     "symbolrate": 2333333,
-                    "agc_rate": 0.00001,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.003,
-                    "buffer_size": 8192
+                    "pll_bw": 0.003
                 }
             },
             "cadu": {
@@ -58,13 +56,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "qpsk_demod": {
-                    "symbolrate": 35000000,
-                    "agc_rate": 0.00001,
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 35e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.03,
-                    "buffer_size": 8192
+                    "pll_bw": 0.03
                 }
             },
             "cadu": {

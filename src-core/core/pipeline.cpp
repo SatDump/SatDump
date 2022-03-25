@@ -195,7 +195,7 @@ namespace satdump
         nlohmann::json final_parameters = module_params;
         for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : pipeline_params.items())
             if (final_parameters.count(param.key()) > 0)
-                ; // Do Nothing //final_parameters[param.first] = param.second;
+                final_parameters[param.key()] = param.value();
             else
                 final_parameters.emplace(param.key(), param.value());
 

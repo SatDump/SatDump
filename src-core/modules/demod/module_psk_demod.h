@@ -4,36 +4,37 @@
 #include "common/dsp/fir.h"
 #include "common/dsp/costas_loop.h"
 #include "common/dsp/clock_recovery_mm.h"
-#include "common/dsp/pll_carrier_tracking.h"
-#include "common/dsp/pm_to_bpsk.h"
+#include "common/dsp/delay_one_imag.h"
 
 namespace demod
 {
-    class PMDemodModule : public BaseDemodModule
+    class PSKDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
-        std::shared_ptr<dsp::PMToBPSK> pm_psk;
         std::shared_ptr<dsp::CCFIRBlock> rrc;
-        std::shared_ptr<dsp::CostasLoopBlock> costas;
+        std::shared_ptr<dsp::CostasLoopBlock> pll;
+        std::shared_ptr<dsp::CorrectIQBlock> post_pll_dc;
+        std::shared_ptr<dsp::DelayOneImagBlock> delay;
         std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
 
-        float d_pll_bw;
-        float d_pll_max_offset = 0.5;
+        std::string constellation_type;
+        bool is_bpsk, is_oqpsk;
+
         float d_rrc_alpha;
         int d_rrc_taps = 31;
-        float d_loop_bw = 0.005;
+        float d_loop_bw;
+        bool d_post_costas_dc_blocking = false;
 
-        float d_clock_gain_omega = pow(0.01, 2) / 4.0;
+        float d_clock_gain_omega = pow(8.7e-3, 2) / 4.0;
         float d_clock_mu = 0.5f;
-        float d_clock_gain_mu = 0.01;
+        float d_clock_gain_mu = 8.7e-3;
         float d_clock_omega_relative_limit = 0.005f;
 
         int8_t *sym_buffer;
 
     public:
-        PMDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~PMDemodModule();
+        PSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~PSKDemodModule();
         void init();
         void stop();
         void process();

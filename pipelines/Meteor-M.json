@@ -25,14 +25,8 @@
             "soft": {
                 "pm_demod": {
                     "symbolrate": 665400,
-                    "agc_rate": 0.002e-3,
                     "pll_bw": 0.01,
-                    "pll_max_offset": 0.5,
-                    "rrc_alpha": 0.6,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.005,
-                    "clock_omega_relative_limit": 0.005,
-                    "buffer_size": 8192
+                    "rrc_alpha": 0.6
                 }
             },
             "cadu": {

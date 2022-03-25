@@ -57,12 +57,9 @@ void ProcessingModule::drawUI(bool /*window*/)
 // Registry
 SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
 
-#include "modules/demod/module_qpsk_demod.h"
-#include "modules/demod/module_oqpsk_demod.h"
-#include "modules/demod/module_bpsk_demod.h"
 #include "modules/demod/module_fsk_demod.h"
-#include "modules/demod/module_8psk_demod.h"
 #include "modules/demod/module_pm_demod.h"
+#include "modules/demod/module_psk_demod.h"
 
 #include "modules/xrit/module_goesrecv_publisher.h"
 
@@ -74,12 +71,10 @@ void registerModules()
     // Register modules
 
     // Demods
-    REGISTER_MODULE(QPSKDemodModule);
-    REGISTER_MODULE(OQPSKDemodModule);
-    REGISTER_MODULE(BPSKDemodModule);
     REGISTER_MODULE(FSKDemodModule);
-    REGISTER_MODULE(PSK8DemodModule);
-    REGISTER_MODULE(PMDemodModule);
+
+    REGISTER_MODULE(demod::PMDemodModule);
+    REGISTER_MODULE(demod::PSKDemodModule);
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
