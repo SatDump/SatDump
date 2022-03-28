@@ -134,7 +134,7 @@ namespace meteor
                 msumr_products.set_timestamps(msumr_timestamps);
 
                 for (int i = 0; i < 6; i++)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", msumr_reader.getChannel(i)});
+                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), msumr_reader.getChannel(i)});
 
                 msumr_products.save(directory);
 
@@ -159,7 +159,7 @@ namespace meteor
                 mtvza_products.set_timestamps(mtvza_reader.timestamps);
 
                 for (int i = 0; i < 30; i++)
-                    mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1) + ".png", mtvza_reader.getChannel(i)});
+                    mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mtvza_reader.getChannel(i)});
 
                 mtvza_products.save(directory);
 
