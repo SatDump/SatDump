@@ -6,7 +6,7 @@
 
 namespace widgets
 {
-    const int CONST_SIZE = 2048;
+#define CONST_SIZE 2048
 
     class ConstellationViewer
     {

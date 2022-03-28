@@ -88,7 +88,7 @@ namespace goes
                 // Feed in more data
                 if (best_pos != 0 && best_pos < BBFRAME_SIZE)
                 {
-                    std::memmove(bb_buffer, &bb_buffer[best_pos], best_pos);
+                    std::memmove(bb_buffer, &bb_buffer[best_pos], BBFRAME_SIZE - best_pos);
 
                     if (input_data_type == DATA_FILE)
                         data_in.read((char *)&bb_buffer[BBFRAME_SIZE - best_pos], best_pos);
@@ -133,9 +133,9 @@ namespace goes
                     // Feed in more data
                     if (best_pos != 0 && best_pos < CADU_SIZE)
                     {
-                        std::memmove(cadu_buffer, &cadu_buffer[best_pos], best_pos);
+                        std::memmove(cadu_buffer, &cadu_buffer[best_pos], CADU_SIZE - best_pos);
 
-                        memcpy(&cadu_buffer[BBFRAME_SIZE - best_pos], &caduVector[0], CADU_SIZE);
+                        memcpy(&cadu_buffer[BBFRAME_SIZE - best_pos], &caduVector[0], best_pos);
                         caduVector.erase(caduVector.begin(), caduVector.begin() + best_pos);
                     }
 

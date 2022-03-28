@@ -1,0 +1,50 @@
+#pragma once
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <complex>
+#include "dvbs2.h"
+
+typedef int8_t code_type;
+
+#include "common/codings/ldpc/simd.hh"
+#include "common/codings/ldpc/layered_decoder.hh"
+#include "common/codings/ldpc/algorithms.hh"
+
+namespace dvbs2
+{
+#if defined(__AVX2__)
+    typedef SIMD<code_type, 32> simd_type;
+#elif defined(__SSE4_1__)
+    typedef SIMD<code_type, 16> simd_type;
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+    typedef SIMD<code_type, 16> simd_type;
+#else
+    typedef SIMD<code_type, 1> simd_type;
+#endif
+
+    typedef NormalUpdate<simd_type> update_type;
+    typedef OffsetMinSumAlgorithm<simd_type, update_type, 2> algorithm_type;
+
+    class BBFrameLDPC
+    {
+    private:
+        simd_type *aligned_buffer;
+
+        LDPCInterface *ldpc;
+        LDPCDecoder<simd_type, algorithm_type> decoder;
+        void init();
+
+    public:
+        BBFrameLDPC(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate);
+        ~BBFrameLDPC();
+
+        int dataSize()
+        {
+            return ldpc->data_len();
+        }
+
+        int work(int8_t *frame, int max_trials);
+    };
+}

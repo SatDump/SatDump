@@ -30,7 +30,8 @@ namespace dsp
             {
                 // Wait to either swap or stop
                 std::unique_lock<std::mutex> lck(swapMtx);
-                swapCV.wait(lck, [this] { return (canSwap || writerStop); });
+                swapCV.wait(lck, [this]
+                            { return (canSwap || writerStop); });
 
                 // If writer was stopped, abandon operation
                 if (writerStop)
@@ -60,7 +61,8 @@ namespace dsp
         {
             // Wait for data to be ready or to be stopped
             std::unique_lock<std::mutex> lck(rdyMtx);
-            rdyCV.wait(lck, [this] { return (dataReady || readerStop); });
+            rdyCV.wait(lck, [this]
+                       { return (dataReady || readerStop); });
 
             return (readerStop ? -1 : dataSize);
         }
@@ -110,9 +112,14 @@ namespace dsp
             readerStop = false;
         }
 
-        int getDataSize() 
+        int getDataSize()
         {
             return dataSize;
+        }
+
+        bool getReady()
+        {
+            return dataReady;
         }
 
         T *writeBuf;
@@ -158,7 +165,7 @@ namespace dsp
             readc = 0;
             readable = 0;
             writable = size;
-            memset((void*)_buffer, 0, size * sizeof(T));
+            memset((void *)_buffer, 0, size * sizeof(T));
         }
 
         int read(T *data, int len)
@@ -265,7 +272,8 @@ namespace dsp
                 return _r;
             }
             std::unique_lock<std::mutex> lck(_readable_mtx);
-            canReadVar.wait(lck, [=]() { return ((this->getReadable(false) > 0) || this->getReadStop()); });
+            canReadVar.wait(lck, [=]()
+                            { return ((this->getReadable(false) > 0) || this->getReadStop()); });
             if (_stopReader)
             {
                 return -1;
@@ -336,7 +344,8 @@ namespace dsp
                 return _w;
             }
             std::unique_lock<std::mutex> lck(_writable_mtx);
-            canWriteVar.wait(lck, [=]() { return ((this->getWritable(false) > 0) || this->getWriteStop()); });
+            canWriteVar.wait(lck, [=]()
+                             { return ((this->getWritable(false) > 0) || this->getWriteStop()); });
             if (_stopWriter)
             {
                 return -1;

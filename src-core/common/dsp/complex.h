@@ -25,7 +25,7 @@ struct complex_t
     // operator std::complex<float> *() const { return (std::complex<float> *)this; }
 
     // Complex conjugate
-    complex_t conj()
+    complex_t conj() const
     {
         return complex_t{real, -imag};
     }

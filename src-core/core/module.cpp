@@ -60,6 +60,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_fsk_demod.h"
 #include "modules/demod/module_pm_demod.h"
 #include "modules/demod/module_psk_demod.h"
+#include "modules/demod/module_dvbs2_demod.h"
 
 #include "modules/xrit/module_goesrecv_publisher.h"
 
@@ -75,6 +76,8 @@ void registerModules()
 
     REGISTER_MODULE(demod::PMDemodModule);
     REGISTER_MODULE(demod::PSKDemodModule);
+
+    REGISTER_MODULE(demod::DVBS2DemodModule);
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);

@@ -39,12 +39,12 @@ namespace dsp
         ~Block()
         {
         }
-        void start()
+        virtual void start()
         {
             should_run = true;
             d_thread = std::thread(&Block::run, this);
         }
-        void stop()
+        virtual void stop()
         {
             should_run = false;
 

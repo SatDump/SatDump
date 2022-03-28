@@ -1,6 +1,7 @@
 #pragma once
 
 #include "complex.h"
+#include <vector>
 
 namespace dsp
 {
@@ -40,6 +41,19 @@ namespace dsp
         complex_t polar(float r, int n, float i);
         int8_t clamp(float x);
 
+        struct SoftResult
+        {
+            std::vector<int8_t> bits;
+            float phase_error;
+        };
+
+        int lut_resolution;
+        std::vector<std::vector<SoftResult>> lut;
+
+    public:
+        void make_lut(int resolution);
+        void demod_soft_lut(complex_t sample, int8_t *bits, float *phase_error = nullptr);
+
     public:
         constellation_t(constellation_type_t type, float g1 = 0, float g2 = 0);
         ~constellation_t();
@@ -49,5 +63,7 @@ namespace dsp
         uint8_t soft_demod(int8_t *sample);                                                                   // Demodulate a complex sample stored as soft (I/Q) bits to hard bits
         void soft_demod(int8_t *samples, int size, uint8_t *bits);                                            // Demodulate a full buffer of softs
         void demod_soft_calc(complex_t sample, int8_t *bits, float *phase_error = nullptr, float npwr = 1.0); // Demodulate to soft symbols
+
+        int getBitsCnt() { return const_bits; }
     };
 };

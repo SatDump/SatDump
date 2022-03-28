@@ -13,6 +13,8 @@ option(BUILD_ZIQ            "Build support for the custom ZIQ format"           
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           ON)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 
+option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
+
 if(APPLE)
     include_directories(/usr/local/include)
     include_directories(/usr/local/opt/jpeg-turbo/include)
@@ -25,6 +27,10 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -fopenmp")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+    if(BUILD_SSE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    endif()
 else()
     #set(CMAKE_CXX_FLAGS "-Wall")
     #set(CMAKE_CXX_FLAGS_DEBUG "-g")
