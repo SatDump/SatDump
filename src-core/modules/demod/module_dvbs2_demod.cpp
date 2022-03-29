@@ -126,8 +126,7 @@ namespace demod
             if (d_modcod == 18)
             {
                 s2_coderate = dvbs2::C2_3;
-                g1 = 2.66;
-                g2 = 3.15;
+                g1 = 3.15;
             }
         }
         else
