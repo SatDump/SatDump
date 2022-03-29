@@ -335,7 +335,7 @@ namespace demod
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("Freq : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", -(current_freq / (2.0f * M_PI)) * final_samplerate);
+            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", -((current_freq / final_sps) / (2.0f * M_PI)) * final_samplerate);
             snr_plot.draw(snr, peak_snr);
 
             // Header
