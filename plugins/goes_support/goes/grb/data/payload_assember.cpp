@@ -13,6 +13,13 @@ namespace goes
 
         void GRBFilePayloadAssembler::work(ccsds::CCSDSPacket &pkt)
         {
+            // Check the packet at least can contain a CRC
+            // if (pkt.payload.size() < 4)
+            //{
+            //    logger->error("Packet too small! Discarding payload.");
+            //    return;
+            //}
+
             // If lengths do not match, discard
             if (pkt.header.packet_length + 1 != (int)pkt.payload.size())
                 return;

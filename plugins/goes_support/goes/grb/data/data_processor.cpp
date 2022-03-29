@@ -55,6 +55,7 @@ namespace goes
                 }
                 else if (image_header.compression_algorithm == JPEG_2000)
                 {
+                    // payload.payload.resize(size + 2); // OpenJP2 sometimes read out of memory
                     img = image::decompress_j2k_openjp2(&payload.payload[34], size);
                 }
                 else if (image_header.compression_algorithm == SZIP)

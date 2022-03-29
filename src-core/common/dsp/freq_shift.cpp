@@ -28,4 +28,9 @@ namespace dsp
         input_stream->flush();
         output_stream->swap(nsamples);
     }
+
+    void FreqShiftBlock::set_freq_raw(float freq)
+    {
+        phase_delta = complex_t(cosf(freq), sinf(freq));
+    }
 }
