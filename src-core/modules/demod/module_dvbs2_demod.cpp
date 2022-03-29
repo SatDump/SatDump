@@ -263,11 +263,12 @@ namespace demod
         logger->info("Demodulation finished");
 
         should_stop = true;
-        if (th.joinable())
-            th.join();
 
         if (input_data_type == DATA_FILE)
             stop();
+
+        if (th.joinable())
+            th.join();
     }
 
     void DVBS2DemodModule::process_s2()
@@ -323,6 +324,8 @@ namespace demod
         s2_pll->stop();
         s2_bb_to_soft->stop();
         s2_bb_to_soft->output_stream->stopReader();
+        ring_buffer.stopWriter();
+        ring_buffer.stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();

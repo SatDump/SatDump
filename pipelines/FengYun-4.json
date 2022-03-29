@@ -1,0 +1,21 @@
+{
+    "fengyun4_lrit": {
+        "name": "FengYun-4 LRIT",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 1e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 90e3,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.01,
+                    "modcod": 3,
+                    "sof_thresold": 10 // Disable locking
+                }
+            }
+        }
+    }
+}
