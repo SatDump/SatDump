@@ -44,6 +44,8 @@ namespace demod
 
         name = "PM Demodulator";
         MAX_SPS = 20; // Here we do NOT want to resample unless really necessary
+
+        show_freq = true;
     }
 
     void PMDemodModule::init()
@@ -116,6 +118,9 @@ namespace demod
             if (snr > peak_snr)
                 peak_snr = snr;
 
+            // Update freq
+            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
+
             for (int i = 0; i < dat_size; i++)
             {
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 100);
@@ -134,6 +139,7 @@ namespace demod
             // Update module stats
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
+            module_stats["freq"] = display_freq;
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {

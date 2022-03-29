@@ -64,6 +64,9 @@ namespace demod
             name = "OQPSK Demodulator";
         else if (constellation_type == "8psk")
             name = "8PSK Demodulator";
+
+        // Show freq
+        show_freq = true;
     }
 
     void PSKDemodModule::init()
@@ -145,6 +148,9 @@ namespace demod
             if (snr > peak_snr)
                 peak_snr = snr;
 
+            // Update freq
+            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
+
             if (is_bpsk) // BPSK Only uses the Q branch... So don't output useless data
             {
                 for (int i = 0; i < dat_size; i++)
@@ -171,6 +177,7 @@ namespace demod
             // Update module stats
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
+            module_stats["freq"] = display_freq;
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();

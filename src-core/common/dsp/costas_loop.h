@@ -23,5 +23,7 @@ namespace dsp
 
     public:
         CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order);
+
+        float getFreq() { return freq; }
     };
 }

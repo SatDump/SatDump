@@ -228,6 +228,9 @@ namespace demod
             if (snr > peak_snr)
                 peak_snr = snr;
 
+            // Get freq
+            display_freq = ((current_freq / final_sps) / (2.0f * M_PI)) * final_samplerate;
+
             detected_modcod = s2_bb_to_soft->detect_modcod;
             detected_shortframes = s2_bb_to_soft->detect_shortframes;
             detected_pilots = s2_bb_to_soft->detect_pilots;
@@ -240,6 +243,13 @@ namespace demod
             current_freq -= s2_pll->getFreq() * freq_propagation_factor;
             freq_sh->set_freq_raw(current_freq);
             // logger->info("Freq {:f}, PLFreq {:f}", current_freq, s2_pll->getFreq());
+
+            // Update module stats
+            module_stats["snr"] = snr;
+            module_stats["peak_snr"] = peak_snr;
+            module_stats["freq"] = display_freq;
+            module_stats["ldpc_trials"] = ldpc_trials;
+            module_stats["bch_corrections"] = bch_corrections;
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -334,7 +344,7 @@ namespace demod
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("Freq : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", -((current_freq / final_sps) / (2.0f * M_PI)) * final_samplerate);
+            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
             snr_plot.draw(snr, peak_snr);
 
             // Header

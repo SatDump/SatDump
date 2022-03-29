@@ -57,6 +57,9 @@ namespace demod
         M2M4SNREstimator snr_estimator;
         float snr, peak_snr;
 
+        bool show_freq = false;
+        float display_freq = 0;
+
         // UI Stuff
         widgets::ConstellationViewer constellation;
         widgets::SNRPlotViewer snr_plot;

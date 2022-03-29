@@ -19,5 +19,7 @@ namespace dsp
 
     public:
         PLLCarrierTrackingBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, float max, float min);
+
+        float getFreq() { return d_freq; }
     };
 }

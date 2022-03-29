@@ -120,6 +120,12 @@ namespace demod
         {
             // Show SNR information
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            if (show_freq)
+            {
+                ImGui::Text("Freq : ");
+                ImGui::SameLine();
+                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+            }
             snr_plot.draw(snr, peak_snr);
         }
         ImGui::EndGroup();

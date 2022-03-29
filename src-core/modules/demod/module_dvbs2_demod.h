@@ -53,7 +53,6 @@ namespace demod
 
         // Running stuff
         bool should_stop = false;
-
         float current_freq = 0;
 
         // UI

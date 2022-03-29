@@ -176,5 +176,24 @@
                 "goes_grb_data_decoder": {}
             }
         }
+    },
+    "s2_test": {
+        "name": "GOES-R GRB",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.005,
+                    "modcod": 17,
+                    "freq_prop_factor": 0.01
+                }
+            }
+        }
     }
 }
