@@ -2,8 +2,9 @@
 
 #include "module_demod_base.h"
 #include "common/dsp/fir.h"
-#include "common/dsp/costas_loop.h"
 #include "common/dsp/clock_recovery_mm.h"
+
+#include "common/dsp/freq_shift.h"
 
 #include "dvbs2/dvbs2_pl_sync.h"
 #include "dvbs2/dvbs2_pll.h"
@@ -26,6 +27,8 @@ namespace demod
         std::shared_ptr<dsp::CCFIRBlock> rrc;
         std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
 
+        std::shared_ptr<dsp::FreqShiftBlock> freq_sh;
+
         std::shared_ptr<dvbs2::S2PLSyncBlock> pl_sync;
         std::shared_ptr<dvbs2::S2PLLBlock> s2_pll;
         std::shared_ptr<dvbs2::S2BBToSoft> s2_bb_to_soft;
@@ -35,6 +38,7 @@ namespace demod
         float d_rrc_alpha;
         int d_rrc_taps = 31;
         float d_loop_bw;
+        float freq_propagation_factor = 0.01;
 
         float d_clock_gain_omega = pow(8.7e-3, 2) / 4.0;
         float d_clock_mu = 0.5f;
@@ -49,6 +53,8 @@ namespace demod
 
         // Running stuff
         bool should_stop = false;
+
+        float current_freq = 0;
 
         // UI
         widgets::ConstellationViewerDVBS2 constellation_s2;

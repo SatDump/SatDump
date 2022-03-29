@@ -24,6 +24,9 @@ namespace demod
         else
             throw std::runtime_error("PLL BW parameter must be present!");
 
+        if (parameters.count("freq_prop_factor") > 0)
+            freq_propagation_factor = parameters["freq_prop_factor"].get<float>();
+
         if (parameters.count("clock_gain_omega") > 0)
             d_clock_gain_omega = parameters["clock_gain_omega"].get<float>();
 
@@ -139,8 +142,11 @@ namespace demod
         // Clock recovery
         rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(rrc->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 
+        // Freq correction
+        freq_sh = std::make_shared<dsp::FreqShiftBlock>(rec->output_stream, 1, 0);
+
         // PL (SOF) Synchronization
-        pl_sync = std::make_shared<dvbs2::S2PLSyncBlock>(rec->output_stream, frame_slot_count);
+        pl_sync = std::make_shared<dvbs2::S2PLSyncBlock>(freq_sh->output_stream, frame_slot_count);
         pl_sync->thresold = d_sof_thresold;
 
         // PLL
@@ -196,6 +202,7 @@ namespace demod
         BaseDemodModule::start();
         rrc->start();
         rec->start();
+        freq_sh->start();
         pl_sync->start();
         s2_pll->start();
         s2_bb_to_soft->start();
@@ -229,6 +236,11 @@ namespace demod
             ring_buffer.write(s2_bb_to_soft->output_stream->readBuf, d_shortframes ? 16200 : 64800);
 
             s2_bb_to_soft->output_stream->flush();
+
+            // Propagate frequency to an earlier rotator, slowly
+            current_freq -= s2_pll->getFreq() * freq_propagation_factor;
+            freq_sh->set_freq_raw(current_freq);
+            // logger->info("Freq {:f}, PLFreq {:f}", current_freq, s2_pll->getFreq());
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -297,6 +309,7 @@ namespace demod
 
         rrc->stop();
         rec->stop();
+        freq_sh->stop();
         pl_sync->stop();
         s2_pll->stop();
         s2_bb_to_soft->stop();
@@ -320,6 +333,9 @@ namespace demod
         {
             // Show SNR information
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            ImGui::Text("Freq : ");
+            ImGui::SameLine();
+            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", -(current_freq / (2.0f * M_PI)) * final_samplerate);
             snr_plot.draw(snr, peak_snr);
 
             // Header
