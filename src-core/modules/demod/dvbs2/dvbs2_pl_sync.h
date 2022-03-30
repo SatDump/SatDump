@@ -49,7 +49,7 @@ namespace dvbs2
         float freq = 0;
 
     public:
-        S2PLSyncBlock(std::shared_ptr<dsp::stream<complex_t>> input, int slot_number);
+        S2PLSyncBlock(std::shared_ptr<dsp::stream<complex_t>> input, int slot_number, bool pilots);
         ~S2PLSyncBlock();
 
         void start()

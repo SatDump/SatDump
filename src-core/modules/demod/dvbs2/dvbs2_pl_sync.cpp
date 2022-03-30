@@ -4,12 +4,27 @@
 
 namespace dvbs2
 {
-    S2PLSyncBlock::S2PLSyncBlock(std::shared_ptr<dsp::stream<complex_t>> input, int slot_number)
+    S2PLSyncBlock::S2PLSyncBlock(std::shared_ptr<dsp::stream<complex_t>> input, int slot_number, bool pilots)
         : Block(input), slot_number(slot_number)
     {
         ring_buffer.init(10000000);
 
         raw_frame_size = (slot_number + 1) * 90; // PL (90 Symbols) + slots of 90 symbols
+
+        if (pilots)
+        {
+            int raw_size = (raw_frame_size - 90) / 90;
+            int pilot_cnt = 1;
+            raw_size -= 16; // First pilot is 16 slots after the SOF
+
+            while (raw_size > 16)
+            {
+                raw_size -= 16; // The rest is 32 symbols further
+                pilot_cnt++;
+            }
+
+            raw_frame_size += pilot_cnt * 36;
+        }
 
         correlation_buffer = new complex_t[raw_frame_size];
     }
@@ -84,6 +99,8 @@ namespace dvbs2
         }
 
     skip_slow_corr:
+
+        // logger->info(best_pos);
 
         if (best_pos != 0 && best_pos < raw_frame_size) // Safety
         {

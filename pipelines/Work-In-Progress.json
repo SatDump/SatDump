@@ -418,5 +418,27 @@
                 }
             }
         }
+    },
+    "himawariast": {
+        "name": "HimawariCast",
+        "live": false,
+        "frequencies": [],
+        "samplerate": 6e6,
+        "baseband_type": "i16",
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 2586148,
+                    "rrc_alpha": 0.2,
+                    "pll_bw": 0.01,
+                    "modcod": 5,
+                    "shortframes": false,
+                    "pilots": true,
+                    //"sof_thresold": 10, // Disable locking
+                    "freq_prop_factor": 0.01
+                }
+            }
+        }
     }
 }

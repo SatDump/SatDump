@@ -28,11 +28,13 @@ namespace dvbs2
         for (int i = 0; i < (frame_slot_count + 1) * 90; i++)
         {
             tmp_val = input_stream->readBuf[i] * complex_t(cosf(-phase), sinf(-phase));
-            output_stream->writeBuf[i] = tmp_val;
 
             float error = 0;
             if (i >= 90)
+            {
                 constellation->demod_soft_lut(tmp_val, nullptr, &error);
+                output_stream->writeBuf[i] = tmp_val;
+            }
             else
             {
                 if (i < 26) // Use known symbols for SOF

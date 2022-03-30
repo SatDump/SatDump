@@ -145,7 +145,7 @@ namespace demod
         freq_sh = std::make_shared<dsp::FreqShiftBlock>(rec->output_stream, 1, 0);
 
         // PL (SOF) Synchronization
-        pl_sync = std::make_shared<dvbs2::S2PLSyncBlock>(freq_sh->output_stream, frame_slot_count);
+        pl_sync = std::make_shared<dvbs2::S2PLSyncBlock>(freq_sh->output_stream, frame_slot_count, d_pilots);
         pl_sync->thresold = d_sof_thresold;
 
         // PLL
