@@ -72,8 +72,7 @@ void registerModules()
     // Register modules
 
     // Demods
-    REGISTER_MODULE(FSKDemodModule);
-
+    REGISTER_MODULE(demod::FSKDemodModule);
     REGISTER_MODULE(demod::PMDemodModule);
     REGISTER_MODULE(demod::PSKDemodModule);
 
