@@ -10,6 +10,8 @@ namespace satdump
 
     extern ctpl::thread_pool ui_thread_pool;
 
+    extern bool light_theme;
+
     void initMainUI();
     void renderMainUI(int wwidth, int wheight);
 }

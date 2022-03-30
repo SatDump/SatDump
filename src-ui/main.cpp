@@ -51,9 +51,6 @@ int main(int argc, char *argv[])
     // Init SatDump
     satdump::initSatdump();
 
-    // Init UI
-    satdump::initMainUI();
-
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -98,23 +95,8 @@ int main(int argc, char *argv[])
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
-    bool use_light_theme = false;
-    float manual_dpi_scaling = 1;
-
-    if (std::filesystem::exists("Roboto-Medium.ttf"))
-    {
-        if (use_light_theme)
-            style::setLightStyle(".", manual_dpi_scaling);
-        else
-            style::setDarkStyle(".", manual_dpi_scaling);
-    }
-    else
-    {
-        if (use_light_theme)
-            style::setLightStyle((std::string)RESOURCES_PATH);
-        else
-            style::setDarkStyle((std::string)RESOURCES_PATH);
-    }
+    // Init UI
+    satdump::initMainUI();
 
     if (satdump::processing::is_processing)
     {
@@ -144,7 +126,7 @@ int main(int argc, char *argv[])
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        if (use_light_theme)
+        if (satdump::light_theme)
             glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
         else
             glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);

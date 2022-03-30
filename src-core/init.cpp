@@ -21,7 +21,13 @@ namespace satdump
         logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
         logger->info("");
 
-        config::loadConfig("satdump_cfg.json");
+#ifdef _WIN32
+        std::string user_path = ".";
+#else
+        std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+#endif
+
+        config::loadConfig("satdump_cfg.json", user_path);
 
         loadPlugins();
 

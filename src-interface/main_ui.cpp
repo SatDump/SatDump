@@ -3,19 +3,39 @@
 #include "imgui/imgui.h"
 #include "processing.h"
 #include "offline.h"
+#include "settings.h"
 #include "error.h"
-
-#include "logger.h"
-#include "common/widgets/image_view.h"
-#include "common/image/composite.h"
-#include "imgui/imgui_stdlib.h"
-#include "products/products.h"
+#include "satdump_vars.h"
+#include "core/config.h"
+#include "style.h"
 
 namespace satdump
 {
     void initMainUI()
     {
         offline::setup();
+        settings::setup();
+
+        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
+        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+
+        ui_scale = manual_dpi_scaling;
+
+        // Setup Theme
+        if (std::filesystem::exists("Roboto-Medium.ttf"))
+        {
+            if (light_theme)
+                style::setLightStyle(".", manual_dpi_scaling);
+            else
+                style::setDarkStyle(".", manual_dpi_scaling);
+        }
+        else
+        {
+            if (light_theme)
+                style::setLightStyle((std::string)RESOURCES_PATH);
+            else
+                style::setDarkStyle((std::string)RESOURCES_PATH);
+        }
     }
 
     void renderMainUI(int wwidth, int wheight)
@@ -46,6 +66,11 @@ namespace satdump
                     offline::render();
                     ImGui::EndTabItem();
                 }
+                if (ImGui::BeginTabItem("Settings"))
+                {
+                    settings::render();
+                    ImGui::EndTabItem();
+                }
             }
             ImGui::EndTabBar();
             ImGui::End();
@@ -54,6 +79,8 @@ namespace satdump
                 error::render();
         }
     }
+
+    bool light_theme;
 
     ctpl::thread_pool ui_thread_pool(8);
 }

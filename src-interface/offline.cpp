@@ -30,7 +30,7 @@ namespace satdump
 
         void setup()
         {
-            nlohmann::ordered_json params = satdump::config::cfg["user_interface"]["default_offline_parameters"];
+            nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
                 parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
