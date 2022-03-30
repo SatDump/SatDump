@@ -136,7 +136,7 @@ static INLINE OPJ_UINT32 read_le_uint32(const void* dataIn)
   *  Each run represents the number of zero events before a one event.
   */
 typedef struct dec_mel {
-    // data decoding machinary
+    // data decoding machinery
     OPJ_UINT8* data;  //!<the address of data (or bitstream)
     OPJ_UINT64 tmp;   //!<temporary buffer for read data
     int bits;         //!<number of bits stored in tmp
@@ -600,7 +600,7 @@ void rev_read_mrp(rev_struct_t *mrp)
   *         an architecture that read size must be compatible with the
   *         alignment of the read address
   *
-  *  There is another simiar subroutine rev_init.  This subroutine does
+  *  There is another similar subroutine rev_init.  This subroutine does
   *  NOT skip the first 12 bits, and starts with unstuff set to true.
   *
   *  @param [in]  mrp is a pointer to rev_struct structure
@@ -1566,7 +1566,7 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
         }
 
         //first quad, starting at first sample in quad and moving on
-        if (qinf[0] & 0x10) { //is it signifcant? (sigma_n)
+        if (qinf[0] & 0x10) { //is it significant? (sigma_n)
             OPJ_UINT32 val;
 
             ms_val = frwd_fetch(&magsgn);         //get 32 bits of magsgn data
@@ -1816,14 +1816,14 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
             if ((qinf[0] & 0xF0) & ((qinf[0] & 0xF0) - 1)) { // is \gamma_q 1?
                 OPJ_UINT32 E = (ls0 & 0x7Fu);
                 E = E > (lsp[1] & 0x7Fu) ? E : (lsp[1] & 0x7Fu); //max(E, E^NE, E^NF)
-                //since U_q alread has u_q + 1, we subtract 2 instead of 1
+                //since U_q already has u_q + 1, we subtract 2 instead of 1
                 U_q[0] += E > 2 ? E - 2 : 0;
             }
 
             if ((qinf[1] & 0xF0) & ((qinf[1] & 0xF0) - 1)) { //is \gamma_q 1?
                 OPJ_UINT32 E = (lsp[1] & 0x7Fu);
                 E = E > (lsp[2] & 0x7Fu) ? E : (lsp[2] & 0x7Fu); //max(E, E^NE, E^NF)
-                //since U_q alread has u_q + 1, we subtract 2 instead of 1
+                //since U_q already has u_q + 1, we subtract 2 instead of 1
                 U_q[1] += E > 2 ? E - 2 : 0;
             }
 
@@ -2153,13 +2153,13 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
                 nxt_sig = y & 0x4 ? sigma1 : sigma2; //future samples
                 nxt_mbr = y & 0x4 ? mbr1 : mbr2;     //future samples
                 val = 3u << (p - 2); // sample values for newly discovered
-                // signficant samples including the bin center
+                // significant samples including the bin center
                 for (i = 0; i < width;
                         i += 8, cur_sig++, cur_mbr++, nxt_sig++, nxt_mbr++) {
                     OPJ_UINT32 ux, tx;
                     OPJ_UINT32 mbr = *cur_mbr;
                     OPJ_UINT32 new_sig = 0;
-                    if (mbr) { //are there any samples that migt be signficant
+                    if (mbr) { //are there any samples that might be significant
                         OPJ_INT32 n;
                         for (n = 0; n < 8; n += 4) {
                             OPJ_UINT32 col_mask;
@@ -2187,7 +2187,7 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
                                     continue;
                                 }
 
-                                //scan mbr to find a new signficant sample
+                                //scan mbr to find a new significant sample
                                 sample_mask = 0x11111111u & col_mask; // LSB
                                 if (mbr & sample_mask) {
                                     assert(dp[0] == 0); // the sample must have been 0
@@ -2196,7 +2196,7 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
                                         OPJ_UINT32 t;
                                         new_sig |= sample_mask;  // new significant samples
                                         t = 0x32u << (j * 4);// propagation to neighbors
-                                        mbr |= t & inv_sig; //remove already signifcant samples
+                                        mbr |= t & inv_sig; //remove already significant samples
                                     }
                                     cwd >>= 1;
                                     ++cnt; //consume bit and increment number of
@@ -2254,7 +2254,7 @@ OPJ_BOOL opj_t1_ht_decode_cblk(opj_t1_t *t1,
                                 for (j = n; j < end; ++j, ++dp, col_mask <<= 4) {
                                     OPJ_UINT32 sample_mask;
 
-                                    if ((col_mask & new_sig) == 0) { //if non is signficant
+                                    if ((col_mask & new_sig) == 0) { //if non is significant
                                         continue;
                                     }
 

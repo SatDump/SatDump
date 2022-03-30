@@ -513,7 +513,7 @@ static void opj_idwt53_h(const opj_dwt_t *dwt,
 
 #if (defined(__SSE2__) || defined(__AVX2__)) && !defined(STANDARD_SLOW_VERSION)
 
-/* Conveniency macros to improve the readabilty of the formulas */
+/* Conveniency macros to improve the readability of the formulas */
 #if __AVX2__
 #define VREG        __m256i
 #define LOAD_CST(x) _mm256_set1_epi32(x)
@@ -801,7 +801,8 @@ static void opj_idwt3_v_cas0(OPJ_INT32* tmp,
                                       opj_int_add_no_overflow(opj_int_add_no_overflow(d1c, d1n), 2) >> 2);
 
         tmp[i  ] = s0c;
-        tmp[i + 1] = d1c + ((s0c + s0n) >> 1);
+        tmp[i + 1] = opj_int_add_no_overflow(d1c, opj_int_add_no_overflow(s0c,
+                                             s0n) >> 1);
     }
 
     tmp[i] = s0n;

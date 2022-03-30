@@ -277,7 +277,7 @@ static INLINE OPJ_INT32 opj_int_fix_mul_t1(OPJ_INT32 a, OPJ_INT32 b)
 }
 
 /**
-Addtion two signed integers with a wrap-around behaviour.
+Addition two signed integers with a wrap-around behaviour.
 Assumes complement-to-two signed integers.
 @param a
 @param b

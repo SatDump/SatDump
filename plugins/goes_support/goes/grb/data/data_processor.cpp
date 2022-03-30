@@ -50,18 +50,11 @@ namespace goes
                 int size = image_header.byte_offset_dqf;
 
                 if (image_header.compression_algorithm == NO_COMPRESSION)
-                {
                     img = image::Image<uint16_t>((uint16_t *)&payload.payload[34], image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block, 1);
-                }
                 else if (image_header.compression_algorithm == JPEG_2000)
-                {
-                    // payload.payload.resize(size + 2); // OpenJP2 sometimes read out of memory
                     img = image::decompress_j2k_openjp2(&payload.payload[34], size);
-                }
                 else if (image_header.compression_algorithm == SZIP)
-                {
                     logger->error("SZIP Compression is not supposed to be used on GRB! Please report this error, support has not been implemented yet.");
-                }
             }
             else
             {

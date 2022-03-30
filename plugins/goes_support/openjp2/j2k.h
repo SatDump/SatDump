@@ -402,6 +402,8 @@ typedef struct opj_cp {
     }
     m_specific_param;
 
+    /** OPJ_TRUE if entire bit stream must be decoded, OPJ_FALSE if partial bitstream decoding allowed */
+    OPJ_BOOL strict;
 
     /* UniPG>> */
 #ifdef USE_JPWL
@@ -550,6 +552,9 @@ typedef struct opj_j2k_enc {
     /* reserved bytes in m_encoded_tile_size for PLT markers */
     OPJ_UINT32 m_reserved_bytes_for_PLT;
 
+    /** Number of components */
+    OPJ_UINT32 m_nb_comps;
+
 } opj_j2k_enc_t;
 
 
@@ -621,6 +626,8 @@ Decoding parameters are returned in j2k->cp.
 @param parameters decompression parameters
 */
 void opj_j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters);
+
+void opj_j2k_decoder_set_strict_mode(opj_j2k_t *j2k, OPJ_BOOL strict);
 
 OPJ_BOOL opj_j2k_set_threads(opj_j2k_t *j2k, OPJ_UINT32 num_threads);
 
