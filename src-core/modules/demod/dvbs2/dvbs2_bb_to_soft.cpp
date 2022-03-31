@@ -1,11 +1,13 @@
 #include "dvbs2_bb_to_soft.h"
 
+#include "logger.h"
+
 namespace dvbs2
 {
     S2BBToSoft::S2BBToSoft(std::shared_ptr<dsp::stream<complex_t>> input)
         : Block(input)
     {
-        soft_slots_buffer = new int8_t[64800 * 10];
+        soft_slots_buffer = new int8_t[64800];
     }
 
     S2BBToSoft::~S2BBToSoft()

@@ -128,6 +128,44 @@ namespace demod
                 s2_coderate = dvbs2::C2_3;
                 g1 = 3.15;
             }
+            else if (d_modcod == 19)
+            {
+                s2_coderate = dvbs2::C3_4;
+                g1 = 2.85;
+            }
+            else if (d_modcod == 20)
+            {
+                s2_coderate = dvbs2::C4_5;
+                g1 = 2.75;
+            }
+            else if (d_modcod == 21)
+            {
+                s2_coderate = dvbs2::C5_6;
+                g1 = 2.70;
+            }
+            else if (d_modcod == 22)
+            {
+                s2_coderate = dvbs2::C8_9;
+                g1 = 2.60;
+            }
+            else if (d_modcod == 23)
+            {
+                s2_coderate = dvbs2::C9_10;
+                g1 = 2.57;
+            }
+        }
+        else if (d_modcod < 29) // 32-APSK Modcods
+        {
+            frame_slot_count = d_shortframes ? 36 : 144;
+            s2_constellation = dvbs2::MOD_32APSK;
+            s2_constel_obj_type = dsp::APSK32;
+
+            if (d_modcod == 24)
+            {
+                s2_coderate = dvbs2::C4_5;
+                g1 = 2.84;
+                g2 = 5.27;
+            }
         }
         else
             throw std::runtime_error("MODCOD not (yet?) supported!");

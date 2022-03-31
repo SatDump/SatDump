@@ -37,6 +37,7 @@ namespace dsp
         complex_t *constellation;              // LUT used for modulation
         float const_amp = 1.0f;                // Required for APSK
         float const_sca = 50.0f;               // Const scale for soft symbols
+        float const_prescale = 1.0f;           // Pre-scaling for input symbols
 
         complex_t polar(float r, int n, float i);
         int8_t clamp(float x);
