@@ -162,7 +162,7 @@ namespace demod
 
             if (d_modcod == 24)
             {
-                s2_coderate = dvbs2::C4_5;
+                s2_coderate = dvbs2::C3_4;
                 g1 = 2.84;
                 g2 = 5.27;
             }
