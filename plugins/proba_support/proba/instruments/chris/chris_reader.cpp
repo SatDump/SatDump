@@ -4,32 +4,13 @@
 #include <map>
 #include "logger.h"
 #include "common/image/composite.h"
+#include "common/utils.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
 #define LAND_MODE 3
 #define CHLOROPHYL_MODE 3
 #define LAND_ALL_MODE 100 // Never seen yet...
-
-#define WRITE_IMAGE_LOCAL(image, path)         \
-    image.save_png(std::string(path).c_str()); \
-    all_images.push_back(path);
-
-template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
-T most_common(InputIt begin, InputIt end)
-{
-    std::map<T, int> counts;
-    for (InputIt it = begin; it != end; ++it)
-    {
-        if (counts.find(*it) != counts.end())
-            ++counts[*it];
-        else
-            counts[*it] = 1;
-    }
-    return std::max_element(counts.begin(), counts.end(), [](const std::pair<T, int> &pair1, const std::pair<T, int> &pair2)
-                            { return pair1.second < pair2.second; })
-        ->first;
-}
 
 namespace proba
 {
@@ -41,7 +22,7 @@ namespace proba
             output_folder = outputfolder;
         }
 
-        CHRISImageParser::CHRISImageParser(int &count, std::string &outputfolder, std::vector<std::string> &a_images) : count_ref(count), all_images(a_images)
+        CHRISImageParser::CHRISImageParser(int &count, std::string &outputfolder) : count_ref(count)
         {
             tempChannelBuffer = new unsigned short[748 * 12096];
             mode = 0;
@@ -64,10 +45,10 @@ namespace proba
 
             int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
 
-            //logger->info("CH " << channel_marker );
-            //logger->info("CNT " << count_marker );
-            //logger->info("MODE " << mode_marker );
-            //logger->info("TMD " << tx_mode );
+            // logger->info("CH " << channel_marker );
+            // logger->info("CNT " << count_marker );
+            // logger->info("MODE " << mode_marker );
+            // logger->info("TMD " << tx_mode );
 
             int posb = 16;
 
@@ -162,13 +143,13 @@ namespace proba
 
             int channel_marker = (packet.payload[8 - 6] % (int)pow(2, 3)) << 1 | packet.payload[9 - 6] >> 7;
 
-            //logger->info("CH " << channel_marker );
+            // logger->info("CH " << channel_marker );
 
             // Start new image
             if (imageParsers.find(channel_marker) == imageParsers.end())
             {
                 logger->info("Found new CHRIS image! Marker " + std::to_string(channel_marker));
-                imageParsers.insert(std::pair<int, std::shared_ptr<CHRISImageParser>>(channel_marker, std::make_shared<CHRISImageParser>(count, output_folder, all_images)));
+                imageParsers.insert(std::pair<int, std::shared_ptr<CHRISImageParser>>(channel_marker, std::make_shared<CHRISImageParser>(count, output_folder)));
                 imageParsers[channel_marker]->composites_all = composites_all;
                 imageParsers[channel_marker]->composites_low = composites_low;
             }
@@ -182,8 +163,8 @@ namespace proba
             {
                 logger->info("Finished CHRIS image! Saving as CHRIS-" + std::to_string(count_ref) + ".png. Mode " + getModeName(mode));
                 image::Image<uint16_t> img = image::Image<uint16_t>(tempChannelBuffer, current_width, current_height, 1);
-                img.normalize();
-                WRITE_IMAGE_LOCAL(img, output_folder + "/CHRIS-" + std::to_string(count_ref) + ".png");
+                // img.normalize();
+                img.save_png(output_folder + "/CHRIS-" + std::to_string(count_ref) + ".png");
 
                 if (mode == ALL_MODE)
                     writeAllCompos(img);
@@ -231,7 +212,7 @@ namespace proba
                                                                                         expression,
                                                                                         compositeDef);
 
-                WRITE_IMAGE_LOCAL(compositeImage, output_folder + "/" + name + ".png");
+                compositeImage.save_png(output_folder + "/" + name + ".png");
             }
         }
 
@@ -263,7 +244,7 @@ namespace proba
                                                                                         expression,
                                                                                         compositeDef);
 
-                WRITE_IMAGE_LOCAL(compositeImage, output_folder + "/" + name + ".png");
+                compositeImage.save_png(output_folder + "/" + name + ".png");
             }
         }
 

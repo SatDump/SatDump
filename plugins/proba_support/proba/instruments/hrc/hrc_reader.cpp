@@ -1,11 +1,5 @@
 #include "hrc_reader.h"
-#include <fstream>
-#include <iostream>
-#include <map>
-
-#define WRITE_IMAGE_LOCAL(image, path)         \
-    image.save_png(std::string(path).c_str()); \
-    all_images.push_back(path);
+#include "logger.h"
 
 namespace proba
 {
@@ -75,14 +69,14 @@ namespace proba
         {
             if (frame_count != 0)
             {
-                std::cout << "Finished HRC image! Saving as HRC-" + std::to_string(count) + ".png" << std::endl;
+                logger->info("Finished HRC image! Saving as HRC-" + std::to_string(count) + ".png");
                 image::Image<uint16_t> img = image::Image<uint16_t>(tempChannelBuffer, 1072, 1072, 1);
+                img.save_png(output_folder + "/HRC-" + std::to_string(count) + ".png");
                 img.normalize();
-                WRITE_IMAGE_LOCAL(img, output_folder + "/HRC-" + std::to_string(count) + ".png");
                 img.equalize();
-                WRITE_IMAGE_LOCAL(img, output_folder + "/HRC-" + std::to_string(count) + "-EQU.png");
+                img.save_png(output_folder + "/HRC-" + std::to_string(count) + "-EQU.png");
 
-                std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
+                std::fill(&tempChannelBuffer[0], &tempChannelBuffer[74800 * 12096], 0);
                 count++;
             }
         }

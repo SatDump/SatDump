@@ -42,7 +42,8 @@
                 }
             },
             "products": {
-                "proba_chris": {
+                "proba_instruments": {
+                    "satellite": "proba1",
                     "composites_low": {
                         "RGB-080502": {
                             "channels": [
@@ -179,7 +180,9 @@
                 }
             },
             "products": {
-                "proba_swap": {}
+                "proba_instruments": {
+                    "satellite": "proba2"
+                }
             }
         }
     },

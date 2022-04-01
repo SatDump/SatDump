@@ -13,14 +13,16 @@ namespace proba
         {
         private:
             unsigned short *tempChannelBuffer;
-            int count;
+
             int frame_count;
             std::string output_folder;
 
         public:
-            std::vector<std::string> all_images;
             HRCReader(std::string &outputfolder);
             ~HRCReader();
+
+            int count;
+
             void save();
             void work(ccsds::CCSDSPacket &packet);
         };
