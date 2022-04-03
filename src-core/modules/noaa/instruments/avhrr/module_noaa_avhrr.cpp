@@ -168,7 +168,7 @@ namespace noaa
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_18_avhrr.json");
 
                     jData["scid"] = scid;
-                    jData["name"] = "NOAA-15";
+                    jData["name"] = "NOAA-18";
                     jData["norad"] = norad;
                 }
                 else if (scid == 15) // N19
@@ -178,7 +178,7 @@ namespace noaa
                     proj_settings = geodetic::projection::makeScalineSettingsFromJSON("noaa_19_avhrr.json");
 
                     jData["scid"] = scid;
-                    jData["name"] = "NOAA-15";
+                    jData["name"] = "NOAA-19";
                     jData["norad"] = norad;
                 }
                 else
