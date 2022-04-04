@@ -1,30 +1,4 @@
 {
-    "noaa_dsb": {
-        "name": "NOAA DSB",
-        "live": false,
-        "frequencies": [],
-        "parameters": {
-            "samplerate": {
-                "value": 48e3
-            }
-        },
-        "work": {
-            "baseband": {},
-            "soft": {
-                "pm_demod": {
-                    "symbolrate": 8320,
-                    "pll_bw": 0.01,
-                    "rrc_alpha": 0.6
-                }
-            },
-            "frames": {
-                "noaa_dsb_decoder": {}
-            },
-            "products": {
-                "noaa_hirs": {}
-            }
-        }
-    },
     "noaa_hrpt": {
         "name": "NOAA HRPT",
         "live": true,
@@ -63,21 +37,7 @@
                 }
             },
             "products": {
-                "noaa_avhrr": {
-                    "composites": "composites/noaa_avhrr.json.inc"
-                },
-                "noaa_extractor": {
-                    "gac_mode": false
-                },
-                "noaa_hirs": {
-                    "input_override": "noaa_hrpt.tip"
-                },
-                "noaa_amsu": {
-                    "input_override": "noaa_hrpt.aip"
-                },
-                "noaa_mhs": {
-                    "input_override": "noaa_hrpt.aip"
-                }
+                "noaa_instruments": {}
             }
         }
     },
@@ -127,21 +87,55 @@
                 }
             },
             "products": {
-                "noaa_avhrr": {
-                    "composites": "composites/noaa_avhrr.json.inc",
+                "noaa_instruments": {
                     "gac_mode": true
-                },
-                "noaa_extractor": {
-                    "gac_mode": true
-                },
-                "noaa_hirs": {
-                    "input_override": "noaa_gac.tip"
-                },
-                "noaa_amsu": {
-                    "input_override": "noaa_gac.aip"
-                },
-                "noaa_mhs": {
-                    "input_override": "noaa_gac.aip"
+                }
+            }
+        }
+    },
+    "noaa_dsb": {
+        "name": "NOAA DSB",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            137.35,
+            137.77
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 8320,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
+                    "buffer_size": 8192
+                }
+            },
+            "frames": {
+                "noaa_dsb_decoder": {}
+            },
+            "products": {
+                "noaa_instruments": {
+                    "dsb_mode": true
                 }
             }
         }

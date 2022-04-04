@@ -15,10 +15,14 @@ namespace noaa
 
             unsigned short *channels[5];
 
+            time_t dayYearValue = 0;
+
         public:
             AVHRRReader(bool gac);
             ~AVHRRReader();
             int lines;
+            std::vector<int> spacecraft_ids;
+            std::vector<double> timestamps;
             void work(uint16_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
         };

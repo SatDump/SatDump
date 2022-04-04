@@ -54,10 +54,10 @@ namespace noaa
         return state;
     }
 
-    std::vector<std::array<uint8_t, FRAME_SIZE>> DSBDeframer::work(int8_t *input, int size)
+    std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> DSBDeframer::work(int8_t *input, int size)
     {
         // Output buffer
-        std::vector<std::array<uint8_t, FRAME_SIZE>> frames;
+        std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> frames;
 
         // Loop in all bits!
         for (int i = 0; i < size; i++)
@@ -90,7 +90,7 @@ namespace noaa
                 }
 
                 // Did we write the entire frame?
-                if (wroteBytes == FRAME_SIZE)
+                if (wroteBytes == DSB_FRAME_SIZE)
                 {
                     // Exit of this loop, reset values and push the frame
                     writeFrame = false;
@@ -198,7 +198,7 @@ namespace noaa
                 {
                     state_2_bits_count++;
                     errors++;
-                    //skip = FRAME_SIZE * 8;
+                    //skip = DSB_FRAME_SIZE * 8;
 
                     if (state_2_bits_count >= 5 * 1024 * 8)
                     {

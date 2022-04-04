@@ -56,7 +56,7 @@ namespace noaa
             else
                 input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
 
-            std::vector<std::array<uint8_t, FRAME_SIZE>> frames = def->work(soft_buffer, BUFFER_SIZE);
+            std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> frames = def->work(soft_buffer, BUFFER_SIZE);
 
             // Count frames
             frame_count += frames.size();
@@ -64,9 +64,9 @@ namespace noaa
             // Write to file
             if (frames.size() > 0)
             {
-                for (std::array<uint8_t, FRAME_SIZE> frm : frames)
+                for (std::array<uint8_t, DSB_FRAME_SIZE> frm : frames)
                 {
-                    data_out.write((char *)&frm[0], FRAME_SIZE);
+                    data_out.write((char *)&frm[0], DSB_FRAME_SIZE);
                 }
             }
 

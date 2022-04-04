@@ -23,7 +23,7 @@ namespace noaa
         uint8_t outBuffer;
         int skip, errors, good, sep_errors, state_2_bits_count;
         // Output Frame buffer
-        std::array<uint8_t, FRAME_SIZE> frameBuffer;
+        std::array<uint8_t, DSB_FRAME_SIZE> frameBuffer;
         // Found frame count
         int numFrames;
 
@@ -34,6 +34,6 @@ namespace noaa
         // Return state
         int getState();
         // Perform deframing
-        std::vector<std::array<uint8_t, FRAME_SIZE>> work(int8_t *input, int size);
+        std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> work(int8_t *input, int size);
     };
 } // namespace noaa

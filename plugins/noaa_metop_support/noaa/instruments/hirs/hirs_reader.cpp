@@ -1,5 +1,6 @@
 #include "hirs_reader.h"
 #include <cmath>
+#include "common/repack.h"
 //#include "iostream"
 
 namespace noaa
@@ -45,26 +46,31 @@ namespace noaa
                 }
                 //last = enct;
 
-                imageBuffer[0][enct][line] = (HIRS_data[3] & 0b00111111) << 7 | HIRS_data[4] >> 1;
-                imageBuffer[16][enct][line] = (HIRS_data[4] & 0b00000001) << 12 | HIRS_data[5] << 4 | (HIRS_data[6] & 0b11110000) >> 4;
-                imageBuffer[1][enct][line] = (HIRS_data[6] & 0b00001111) << 9 | HIRS_data[7] << 1 | (HIRS_data[8] & 0b10000000) >> 7;
-                imageBuffer[2][enct][line] = (HIRS_data[8] & 0b01111111) << 6 | (HIRS_data[9] & 0b11111100) >> 2;
-                imageBuffer[12][enct][line] = (HIRS_data[9] & 0b00000011) << 11 | HIRS_data[10] << 3 | (HIRS_data[11] & 0b11100000) >> 5;
-                imageBuffer[3][enct][line] = (HIRS_data[11] & 0b00011111) << 8 | HIRS_data[12];
-                imageBuffer[17][enct][line] = HIRS_data[13] << 5 | (HIRS_data[14] & 0b11111000) >> 5;
-                imageBuffer[10][enct][line] = (HIRS_data[14] & 0b00000111) << 10 | HIRS_data[15] << 2 | (HIRS_data[16] & 0b11000000) >> 6;
-                imageBuffer[18][enct][line] = (HIRS_data[16] & 0b00111111) << 7 | HIRS_data[17] >> 1;
-                imageBuffer[6][enct][line] = (HIRS_data[17] & 0b10000000) << 12 | HIRS_data[18] << 4 | (HIRS_data[19] & 0b11110000) >> 4;
-                imageBuffer[7][enct][line] = (HIRS_data[19] & 0b00001111) << 9 | HIRS_data[20] << 1 | (HIRS_data[21] & 0b10000000) >> 7;
-                imageBuffer[19][enct][line] = (HIRS_data[21] & 0b01111111) << 6 | (HIRS_data[22] & 0b11111100) >> 2;
-                imageBuffer[9][enct][line] = (HIRS_data[22] & 0b00000011) << 11 | HIRS_data[23] << 3 | (HIRS_data[24] & 0b11100000) >> 5;
-                imageBuffer[13][enct][line] = (HIRS_data[24] & 0b00011111) << 8 | HIRS_data[25];
-                imageBuffer[5][enct][line] = HIRS_data[26] << 5 | (HIRS_data[27] & 0b11111000) >> 5;
-                imageBuffer[4][enct][line] = (HIRS_data[27] & 0b00000111) << 10 | HIRS_data[28] << 2 | (HIRS_data[29] & 0b11000000) >> 6;
-                imageBuffer[14][enct][line] = (HIRS_data[29] & 0b00111111) << 7 | HIRS_data[30] >> 1;
-                imageBuffer[11][enct][line] = (HIRS_data[30] & 0b10000000) << 12 | HIRS_data[31] << 4 | (HIRS_data[32] & 0b11110000) >> 4;
-                imageBuffer[15][enct][line] = (HIRS_data[32] & 0b00001111) << 9 | HIRS_data[33] << 1 | (HIRS_data[34] & 0b10000000) >> 7;
-                imageBuffer[8][enct][line] = (HIRS_data[34] & 0b01111111) << 6 | (HIRS_data[35] & 0b11111100) >> 2;
+                uint16_t words13bit[20] = {0};
+                uint8_t tmp[32];
+                shift_array_left(&HIRS_data[3], 32, 2, tmp);
+                repackBytesTo13bits(tmp, 32, words13bit);
+
+                imageBuffer[0][enct][line] = words13bit[0];
+                imageBuffer[16][enct][line] = words13bit[1];
+                imageBuffer[1][enct][line] = words13bit[2];
+                imageBuffer[2][enct][line] = words13bit[3];
+                imageBuffer[12][enct][line] = words13bit[4];
+                imageBuffer[3][enct][line] = words13bit[5];
+                imageBuffer[17][enct][line] = words13bit[6];
+                imageBuffer[10][enct][line] = words13bit[7];
+                imageBuffer[18][enct][line] = words13bit[8];
+                imageBuffer[6][enct][line] = words13bit[9];
+                imageBuffer[7][enct][line] = words13bit[10];
+                imageBuffer[19][enct][line] = words13bit[11];
+                imageBuffer[9][enct][line] = words13bit[12];
+                imageBuffer[13][enct][line] = words13bit[13];
+                imageBuffer[5][enct][line] = words13bit[14];
+                imageBuffer[4][enct][line] = words13bit[15];
+                imageBuffer[14][enct][line] = words13bit[16];
+                imageBuffer[11][enct][line] = words13bit[17];
+                imageBuffer[15][enct][line] = words13bit[18];
+                imageBuffer[8][enct][line] = words13bit[19];
 
                 for (int i = 0; i < 20; i++)
                 {
