@@ -52,7 +52,7 @@ namespace noaa
                 repackBytesTo13bits(tmp, 32, words13bit);
 
                 for (int i = 0; i < 20; i++)
-                    imageBuffer[HIRSPositions[i]][enct][line] = words13bit[i];
+                    imageBuffer[HIRSChannels[i]][enct][line] = words13bit[i];
 
                 for (int i = 0; i < 20; i++)
                 {
