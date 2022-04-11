@@ -6,6 +6,8 @@
 #include "common/image/composite.h"
 #include "common/utils.h"
 
+#include "common/repack.h"
+
 #define ALL_MODE 2
 #define WATER_MODE 3
 #define LAND_MODE 3
@@ -38,15 +40,40 @@ namespace proba
             delete[] tempChannelBuffer;
         }
 
+        std::ofstream chris_out("chris_out.bin");
+
+        uint8_t reverseBits(uint8_t byte)
+        {
+            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
+            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
+            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
+            return byte;
+        }
+
+        uint16_t reverse16Bits(uint16_t v)
+        {
+            uint16_t r = 0;
+            for (int i = 0; i < 16; ++i, v >>= 1)
+                r = (r << 1) | (v & 0x01);
+            return r;
+        }
+
         void CHRISImageParser::work(ccsds::CCSDSPacket &packet, int & /*ch*/)
         {
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
 
+            logger->critical(packet.payload.size());
+
+            for (int i = 0; i < packet.payload.size(); i++)
+                packet.payload[i] = reverseBits(packet.payload[i]);
+
+            chris_out.write((char *)packet.payload.data(), 11538);
+
             int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
 
             // logger->info("CH " << channel_marker );
-            // logger->info("CNT " << count_marker );
+            logger->info("CNT {:d}", count_marker);
             // logger->info("MODE " << mode_marker );
             // logger->info("TMD " << tx_mode );
 
@@ -86,16 +113,26 @@ namespace proba
                     posb = 16;
             }
 
+            uint16_t out[100000];
+
+            // uint32_t v = ((packet.payload[16] & 0b111111) << 3 | packet.payload[17] > 5);
+            //  logger->info(v);
+
+            bool bad = !(packet.payload[2] & 0b01000000);
+
+            repackBytesTo12bits(&packet.payload[bad ? 18 : 16], packet.payload.size() - 16, out);
+
             // Convert into 12-bits values
-            for (int i = 0; i < 7680; i += 2)
+            for (int i = 0; i < 7680; i += 1)
             {
                 if (count_marker <= max_value)
                 {
-                    uint16_t px1 = packet.payload[posb + 0] | ((packet.payload[posb + 1] & 0xF) << 8);
-                    uint16_t px2 = (packet.payload[posb + 1] >> 4) | (packet.payload[posb + 2] << 4);
-                    tempChannelBuffer[count_marker * 7680 + (i + 0)] = px1 << 4;
-                    tempChannelBuffer[count_marker * 7680 + (i + 1)] = px2 << 4;
-                    posb += 3;
+                    // uint16_t px1 = packet.payload[posb + 0] | ((packet.payload[posb + 1] & 0xF) << 8);
+                    // uint16_t px2 = (packet.payload[posb + 1] >> 4) | (packet.payload[posb + 2] << 4);
+
+                    tempChannelBuffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = reverse16Bits(out[i]);
+                    // tempChannelBuffer[count_marker * 7680 + (i + 1)] = px2 << 4;
+                    // posb += 3;
                 }
             }
 

@@ -43,6 +43,31 @@ namespace satdump
             contents["timestamps"] = timestamps;
         }
 
+        enum Calibration_Type
+        {
+            POLYNOMIAL,
+            POLYNOMIAL_PER_LINE,
+            CUSTOM,
+        };
+
+        void set_calibration_polynomial(std::vector<float> coefficients)
+        {
+            contents["calibration"]["type"] = "polynomial";
+            contents["calibration"]["coefs"] = coefficients;
+        }
+
+        void set_calibration_polynomial_per_line(std::vector<std::vector<float>> coefficients_per_line)
+        {
+            contents["calibration"]["type"] = "polynomial_per_line";
+            contents["calibration"]["coefs"] = coefficients_per_line;
+        }
+
+        void set_calibration_custom(std::string equation)
+        {
+            contents["calibration"]["type"] = "custom";
+            contents["calibration"]["equ"] = equation;
+        }
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);

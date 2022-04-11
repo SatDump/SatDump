@@ -9,8 +9,14 @@
 #include "core/config.h"
 #include "style.h"
 
+#include "app.h"
+
 namespace satdump
 {
+    std::shared_ptr<Application> current_app;
+
+    bool in_app = false;
+
     void initMainUI()
     {
         offline::setup();
@@ -36,11 +42,22 @@ namespace satdump
             else
                 style::setDarkStyle((std::string)RESOURCES_PATH);
         }
+
+        registerApplications();
+        current_app = application_registry["viewer"]();
     }
 
     void renderMainUI(int wwidth, int wheight)
     {
-        if (processing::is_processing)
+        if (in_app)
+        {
+            ImGui::SetNextWindowPos({0, 0});
+            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
+            ImGui::Begin("Main", __null, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
+            current_app->draw();
+            ImGui::End();
+        }
+        else if (processing::is_processing)
         {
             processing::ui_call_list_mutex->lock();
             float winheight = processing::ui_call_list->size() > 0 ? wheight / processing::ui_call_list->size() : wheight;
@@ -64,6 +81,21 @@ namespace satdump
                 if (ImGui::BeginTabItem("Offline processing"))
                 {
                     offline::render();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Applications"))
+                {
+                    // current_app->draw();
+
+                    for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
+                    {
+                        if (ImGui::Button(appEntry.first.c_str()))
+                        {
+                            in_app = true;
+                            current_app = application_registry[appEntry.first]();
+                        }
+                    }
+
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Settings"))

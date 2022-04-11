@@ -7,7 +7,7 @@ namespace image
 {
     // Generate a composite from channels and an equation
     template <typename T>
-    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<int> channelNumbers, std::string equation, nlohmann::json parameters)
+    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<int> channelNumbers, std::string equation, nlohmann::json parameters, float *progress)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
@@ -149,6 +149,9 @@ namespace image
                     rgb_output[img_fullch * 2 + line * img_width + pixel] = B;
                 }
             }
+
+            if (progress != nullptr)
+                *progress = (float)line / (float)img_height;
         }
 
         delete[] channelValues;
@@ -165,6 +168,6 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<int>, std::string, nlohmann::json);
-    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<int>, std::string, nlohmann::json);
+    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<int>, std::string, nlohmann::json, float *);
+    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<int>, std::string, nlohmann::json, float *);
 }
