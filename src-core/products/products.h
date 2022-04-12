@@ -74,6 +74,14 @@ namespace satdump
             contents["wavenumbers"][image_index] = waveumber;
         }
 
+        double get_wavenumber(int image_index)
+        {
+            if (!contents["wavenumbers"][image_index].empty())
+                contents["wavenumbers"][image_index].get<double>();
+            else
+                return 0;
+        }
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);

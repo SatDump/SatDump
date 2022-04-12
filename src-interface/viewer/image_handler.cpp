@@ -73,12 +73,10 @@ namespace satdump
                     radiance += c * powf(raw_value, level++);
                 }
 
-                const double wavenumber[5] = {2.968720, 5.236956, 6.114597, 6.114597, 6.348092};
-
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value >> (16 - bit_depth));
                 ImGui::Text("Radiance : %.10f", radiance);
-                ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, wavenumber[select_image_id - 1]) - 273.15);
+                ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15);
                 ImGui::EndTooltip();
 
                 /*if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
