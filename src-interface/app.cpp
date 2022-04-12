@@ -1,6 +1,6 @@
 #include "app.h"
 #include "imgui/imgui.h"
-#include "viewer.h"
+#include "viewer/viewer.h"
 #include "core/plugin.h"
 
 namespace satdump

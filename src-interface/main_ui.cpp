@@ -10,12 +10,13 @@
 #include "style.h"
 
 #include "app.h"
+#include "viewer/viewer.h"
 
 namespace satdump
 {
     std::shared_ptr<Application> current_app;
 
-    bool in_app = false;
+    bool in_app = true;
 
     void initMainUI()
     {
@@ -44,6 +45,8 @@ namespace satdump
         }
 
         registerApplications();
+        registerViewerHandlers();
+
         current_app = application_registry["viewer"]();
     }
 
@@ -85,7 +88,7 @@ namespace satdump
                 }
                 if (ImGui::BeginTabItem("Applications"))
                 {
-                    //current_app->draw();
+                    // current_app->draw();
 
                     for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
                     {

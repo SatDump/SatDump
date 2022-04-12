@@ -8,6 +8,7 @@ namespace satdump
     void Products::save(std::string directory)
     {
         contents["instrument"] = instrument_name;
+        contents["type"] = type;
 
         // Write the file out
         std::vector<uint8_t> cbor_data = nlohmann::json::to_cbor(contents);
@@ -33,10 +34,12 @@ namespace satdump
         contents = nlohmann::json::from_cbor(cbor_data);
 
         instrument_name = contents["instrument"].get<std::string>();
+        type = contents["type"].get<std::string>();
     }
 
     void ImageProducts::save(std::string directory)
     {
+        type = "image";
         contents["has_timestamps"] = has_timestamps;
 
         for (size_t c = 0; c < images.size(); c++)
@@ -62,5 +65,21 @@ namespace satdump
             image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
             images.push_back({contents["images"][c]["file"].get<std::string>(), contents["images"][c]["name"].get<std::string>(), image});
         }
+    }
+
+    std::shared_ptr<Products> loadProducts(std::string path)
+    {
+        std::shared_ptr<Products> final_products;
+        Products raw_products;
+
+        raw_products.load(path);
+
+        if (raw_products.type == "image")
+            final_products = std::make_shared<ImageProducts>();
+        else
+            final_products = std::make_shared<Products>();
+
+        final_products->load(path);
+        return final_products;
     }
 }

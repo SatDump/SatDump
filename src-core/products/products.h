@@ -17,6 +17,7 @@ namespace satdump
 
     public:
         std::string instrument_name;
+        std::string type;
 
     public:
         virtual void save(std::string directory);
@@ -72,4 +73,6 @@ namespace satdump
         virtual void save(std::string directory);
         virtual void load(std::string file);
     };
+
+    std::shared_ptr<Products> loadProducts(std::string path);
 }

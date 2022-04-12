@@ -103,7 +103,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
     if (imagePosX >= 0 && imagePosY >= 0 &&
         imagePosX < img_width && imagePosY < img_height &&
         ImGui::GetMousePos().x - window->Pos.x > 0 && ImGui::GetMousePos().y - window->Pos.y > 0)
-        tooltipCallback(imagePosX, imagePosY);
+        mouseCallback(imagePosX, imagePosY);
 
     if (ImGui::GetIO().MouseWheel != 0)
     {

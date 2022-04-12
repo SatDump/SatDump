@@ -48,5 +48,19 @@
             "name": "DPI Scaling",
             "description": "DPI Scaling defines the overall UI scale. This can be used to make it bigger or smaller depending on your display's pixel density."
         }
+    },
+    // Settings for the Viewer. Those also are default settings when generating viewer-less
+    "viewer": {
+        "instruments": {
+            "avhrr_3": {
+                "handler": "image_handler"
+            },
+            "modis": {
+                "handler": "image_handler"
+            },
+            "mhs": {
+                "handler": "image_handler"
+            }
+        }
     }
 }
