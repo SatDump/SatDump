@@ -51,7 +51,7 @@ namespace noaa
             std::vector<double> timestamps;
             void work(uint8_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
-            std::array<std::vector<std::vector<float>>, 5> calibration_coefs;
+            std::array<std::vector<std::vector<double>>, 5> calibration_coefs;
             void calibrate();
         };
     } // namespace hirs
