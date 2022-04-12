@@ -9,7 +9,7 @@ namespace satdump
         handler = new ImageViewerHandler();
 
         //pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
-        pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
+        pro.load("/home/zbyszek/Downloads/test/AVHRR/product.cbor");
         handler->products = &pro;
         handler->init();
         // image::Image<uint16_t> image;

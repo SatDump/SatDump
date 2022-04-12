@@ -25,135 +25,64 @@ namespace noaa
                 major_cycle_count = buffer[98] << 24 | buffer[99] << 16 | buffer[100] << 8 | buffer[101];
 
             if (major_cycle_count < last_major_cycle)
-                last_major_cycle = major_cycle_count; //little failsafe for corrupted data
+                last_major_cycle = major_cycle_count; // little failsafe for corrupted data
 
             if (major_cycle_count > last_major_cycle)
             {
                 last_major_cycle = major_cycle_count;
-                //get the SCI packets because the line is over
-                std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(2);
-                timestamps.push_back(get_timestamp(2, DAY_OFFSET));
+                // get the SCI packets because the line is over
                 std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
                 std::array<std::array<uint16_t, 8>, 5> calibbuff;
+                for (int p = 0; p < 3; p++)
+                {
+                    int pk = (p == 0 ? 2 : p - 1);
 
-                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
-                std::memset(&calibbuff, 0, 8 * 5 * 2);
+                    std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(pk);
+                    timestamps.push_back(get_timestamp(pk, DAY_OFFSET));
 
-                for (int i = 0; i < MHS_WIDTH; i++)
-                {
-                    for (int c = 1; c < 6; c++)
-                    {
-                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
-                    }
-                }
-                //get calibration data for this line
-                for (int i = 0; i < 8; i++)
-                {
-                    for (int c = 1; c < 6; c++)
-                    {
-                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
-                    }
-                }
-                for (int c = 0; c < 5; c++)
-                    for (int j = 0; j < 2; j++)
-                        tmp[c][j] = 0;
-                for (int c = 0; c < 5; c++)
-                {
-                    channels[c].push_back(linebuff[c]);
-                    for (int j = 0; j < 2; j++)
-                    {
-                        for (int k = 0; k < 4; k++)
-                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
-                    }
-                }
-                calibration.push_back(tmp);
-                PRT_readings.push_back(get_PRTs(SCI_packet));
-                PRT_calib.push_back(get_PRT_calib(SCI_packet));
-                HKTH.push_back(get_HKTH(SCI_packet));
-                line++;
+                    std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
+                    std::memset(&calibbuff, 0, 8 * 5 * 2);
 
-                SCI_packet = get_SCI_packet(0);
-                timestamps.push_back(get_timestamp(0, DAY_OFFSET));
-                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
-                std::memset(&calibbuff, 0, 8 * 5 * 2);
-                for (int i = 0; i < MHS_WIDTH; i++)
-                {
-                    for (int c = 1; c < 6; c++)
+                    for (int i = 0; i < MHS_WIDTH; i++)
                     {
-                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
+                        for (int c = 1; c < 6; c++)
+                        {
+                            linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
+                        }
                     }
-                }
-                //get calibration data for this line
-                for (int i = 0; i < 8; i++)
-                {
-                    for (int c = 1; c < 6; c++)
+                    // get calibration data for this line
+                    for (int i = 0; i < 8; i++)
                     {
-                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
+                        for (int c = 1; c < 6; c++)
+                        {
+                            calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
+                        }
                     }
-                }
-                for (int c = 0; c < 5; c++)
-                    for (int j = 0; j < 2; j++)
-                        tmp[c][j] = 0;
-                for (int c = 0; c < 5; c++)
-                {
-                    channels[c].push_back(linebuff[c]);
-                    for (int j = 0; j < 2; j++)
+                    for (int c = 0; c < 5; c++)
+                        for (int j = 0; j < 2; j++)
+                            tmp[c][j] = 0;
+                    for (int c = 0; c < 5; c++)
                     {
-                        for (int k = 0; k < 4; k++)
-                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
+                        channels[c].push_back(linebuff[c]);
+                        for (int j = 0; j < 2; j++)
+                        {
+                            for (int k = 0; k < 4; k++)
+                                tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
+                        }
                     }
+                    calibration.push_back(tmp);
+                    PRT_readings.push_back(get_PRTs(SCI_packet));
+                    PRT_calib.push_back(get_PRT_calib(SCI_packet));
+                    HKTH.push_back(get_HKTH(SCI_packet));
+                    line++;
                 }
-                calibration.push_back(tmp);
-                PRT_readings.push_back(get_PRTs(SCI_packet));
-                PRT_calib.push_back(get_PRT_calib(SCI_packet));
-                HKTH.push_back(get_HKTH(SCI_packet));
-                line++;
-
-                SCI_packet = get_SCI_packet(1);
-                timestamps.push_back(get_timestamp(1, DAY_OFFSET));
-                std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2);
-                std::memset(&calibbuff, 0, 8 * 5 * 2);
-                for (int i = 0; i < MHS_WIDTH; i++)
-                {
-                    for (int c = 1; c < 6; c++)
-                    {
-                        linebuff[c - 1][i] = SCI_packet[MHS_OFFSET + i * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + i * 12 + c * 2 + 1];
-                    }
-                }
-                //get calibration data for this line
-                for (int i = 0; i < 8; i++)
-                {
-                    for (int c = 1; c < 6; c++)
-                    {
-                        calibbuff[c - 1][i] = SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2] << 8 | SCI_packet[MHS_OFFSET + (i + MHS_WIDTH) * 12 + c * 2 + 1];
-                    }
-                }
-                for (int c = 0; c < 5; c++)
-                    for (int j = 0; j < 2; j++)
-                        tmp[c][j] = 0;
-                for (int c = 0; c < 5; c++)
-                {
-                    channels[c].push_back(linebuff[c]);
-                    for (int j = 0; j < 2; j++)
-                    {
-                        for (int k = 0; k < 4; k++)
-                            tmp[c][j] += (calibbuff[c][j * 4 + k] / 4);
-                    }
-                }
-                calibration.push_back(tmp);
-
-                PRT_readings.push_back(get_PRTs(SCI_packet));
-                PRT_calib.push_back(get_PRT_calib(SCI_packet));
-                HKTH.push_back(get_HKTH(SCI_packet));
-                line++;
-
                 std::memset(MIU_data, 0, 80 * 50);
             }
 
             for (int i = 0; i < 50; i++)
             {
                 if (cycle < 80)
-                    MIU_data[cycle][i] = buffer[i + 48]; //reading MIU data from AIP
+                    MIU_data[cycle][i] = buffer[i + 48]; // reading MIU data from AIP
             }
         }
 
@@ -196,15 +125,15 @@ namespace noaa
                 {
                     Tavg += Tth[i];
                 }
-                Tavg /= 19; //average temperature of the instrument
+                Tavg /= 19; // average temperature of the instrument
 
                 for (int i = 0; i < 5; i++)
                 {
-                    double Rw = temp_to_rad(Tw, calibration::wavenumber[i]);
-                    double Rc = temp_to_rad(2.73, calibration::wavenumber[i]);
+                    double Rw = temperature_to_radiance(Tw, calibration::wavenumber[i]);
+                    double Rc = temperature_to_radiance(2.73, calibration::wavenumber[i]);
 
-                    double CCw = calibration[l][i][1]; //blackbody count
-                    double CCc = calibration[l][i][0]; //space count
+                    double CCw = calibration[l][i][1]; // blackbody count
+                    double CCc = calibration[l][i][0]; // space count
 
                     double G = (CCw - CCc) / (Rw - Rc);
 
@@ -217,7 +146,7 @@ namespace noaa
 
                     for (int x = 0; x < MHS_WIDTH; x++)
                     {
-                        calibrated_line[x] = rad_to_temp((a0 + a1 * channels[i][l][x] + a2 * pow((double)channels[i][l][x], 2.0)), calibration::wavenumber[i]);
+                        calibrated_line[x] = radiance_to_temperature((a0 + a1 * channels[i][l][x] + a2 * pow((double)channels[i][l][x], 2.0)), calibration::wavenumber[i]);
                     }
                     calibrated_channels[i].push_back(calibrated_line);
                 }
@@ -226,7 +155,7 @@ namespace noaa
 
         double MHSReader::get_avg_count(int l, int ch, int blackbody)
         {
-            //blackbody 0 for space, blackbody 1 for blackbody
+            // blackbody 0 for space, blackbody 1 for blackbody
             int i = -3, j = 3;
             if (l < 3)
                 i = 0;
@@ -241,7 +170,7 @@ namespace noaa
                 Wsum += (double)(-1.0 * abs(i) + 4.0);
                 WCsum += (double)(-1.0 * abs(i) + 4.0) * calibration[l + i][ch][blackbody];
             }
-            //return WCsum / Wsum;
+            // return WCsum / Wsum;
             return calibration[l][ch][blackbody];
         }
 
@@ -339,7 +268,7 @@ namespace noaa
                     c++;
                 }
             }
-            //test_out.write((char *)&out[0], SCI_PACKET_SIZE);
+            // test_out.write((char *)&out[0], SCI_PACKET_SIZE);
             return out;
         }
 
@@ -373,16 +302,6 @@ namespace noaa
             return out;
         }
 
-        double MHSReader::temp_to_rad(double t, double v)
-        {
-            return (c1 * pow(v, 3.0)) / (pow(e_num, c2 * v / t) - 1);
-        }
-
-        double MHSReader::rad_to_temp(double L, double v)
-        {
-            return (c2 * v) / (log(c1 * pow(v, 3) / L + 1));
-        }
-
         double MHSReader::get_u(double temp, int ch)
         {
             if (temp == calibration::u_temps[0])
@@ -408,8 +327,8 @@ namespace noaa
         }
 
         double MHSReader::interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode)
-        {                  //where a1y > a2y and a1x < a1y
-            if (mode == 0) //between a1 and a2 or bx < a1x
+        {                  // where a1y > a2y and a1x < a1y
+            if (mode == 0) // between a1 and a2 or bx < a1x
                 return ((a2x - bx) * (a1y - a2y)) / (a2x - a1x) + a2y;
             else // > a2x
                 return -1 * (((bx - a2x) * (a1y - a2y)) / (a2x - a1x) - a2y);

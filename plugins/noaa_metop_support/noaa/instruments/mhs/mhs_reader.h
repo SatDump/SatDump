@@ -6,6 +6,7 @@
 #include <vector>
 #include "mhs_calibration_values.h"
 #include "common/image/image.h"
+#include "common/calibration.h"
 
 #define SCI_PACKET_SIZE 1286
 #define MIU_BYTE_OFFSET 48
@@ -45,8 +46,6 @@ namespace noaa
             std::array<uint16_t, 5> get_PRTs(std::array<uint8_t, SCI_PACKET_SIZE> &packet);
             std::array<uint16_t, 3> get_PRT_calib(std::array<uint8_t, SCI_PACKET_SIZE> &packet);
             std::array<uint8_t, 24> get_HKTH(std::array<uint8_t, SCI_PACKET_SIZE> &packet);
-            double temp_to_rad(double t, double v);
-            double rad_to_temp(double r, double v);
             double get_avg_count(int line, int ch, int blackbody);
             double get_u(double temp, int ch);
             double interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode);
