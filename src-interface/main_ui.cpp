@@ -15,7 +15,7 @@ namespace satdump
 {
     std::shared_ptr<Application> current_app;
 
-    bool in_app = false;//true;
+    bool in_app = false;
 
     void initMainUI()
     {
@@ -85,7 +85,7 @@ namespace satdump
                 }
                 if (ImGui::BeginTabItem("Applications"))
                 {
-                    // current_app->draw();
+                    //current_app->draw();
 
                     for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
                     {
