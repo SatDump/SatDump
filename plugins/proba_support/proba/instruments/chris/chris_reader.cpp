@@ -243,13 +243,13 @@ namespace proba
                 std::string name = "CHRIS-" + std::to_string(count_ref) + "-" + compokey.key();
 
                 logger->info(name + "...");
-                image::Image<uint16_t>
-                    compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
-                                                                                        channelIDs,
-                                                                                        expression,
-                                                                                        compositeDef);
+                /* image::Image<uint16_t>
+                     compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                         channelIDs,
+                                                                                         expression,
+                                                                                         compositeDef);
 
-                compositeImage.save_png(output_folder + "/" + name + ".png");
+                 compositeImage.save_png(output_folder + "/" + name + ".png");*/
             }
         }
 
@@ -275,13 +275,13 @@ namespace proba
                 std::string name = "CHRIS-" + std::to_string(count_ref) + "-" + compokey.key();
 
                 logger->info(name + "...");
-                image::Image<uint16_t>
-                    compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
-                                                                                        channelIDs,
-                                                                                        expression,
-                                                                                        compositeDef);
+                /* image::Image<uint16_t>
+                     compositeImage = image::generate_composite_from_equ<unsigned short>(channels,
+                                                                                         channelIDs,
+                                                                                         expression,
+                                                                                         compositeDef);
 
-                compositeImage.save_png(output_folder + "/" + name + ".png");
+                 compositeImage.save_png(output_folder + "/" + name + ".png");*/
             }
         }
 

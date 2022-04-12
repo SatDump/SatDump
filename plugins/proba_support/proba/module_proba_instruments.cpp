@@ -65,7 +65,10 @@ namespace proba
 
             // Demuxers
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1103, false);
+            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
+
+            // std::ofstream output("file.ccsds");
 
             while (!data_in.eof())
             {
@@ -74,6 +77,9 @@ namespace proba
 
                 // Parse this transport frame
                 ccsds::ccsds_1_0_proba::VCDU vcdu = ccsds::ccsds_1_0_proba::parseVCDU(cadu);
+
+                // logger->info(pkt.header.apid);
+                // logger->info(vcdu.vcid);
 
                 if (vcdu.vcid == 1) // Replay VCID
                 {
@@ -93,6 +99,20 @@ namespace proba
                         }
                     }
                 }
+                /*else if (vcdu.vcid == 2) // IDK VCID
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    {
+                        // if (d_satellite == PROBA_2)
+                        //     if (pkt.header.apid == 20)
+                        //         swap_reader->work(pkt);
+                        logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
+
+                        if(pkt.header.apid == 22)
+                        output.write((char*)pkt.payload.data(), 1340);
+                    }
+                }*/
                 else if (vcdu.vcid == 3) // SWAP VCID
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);

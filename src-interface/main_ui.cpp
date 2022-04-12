@@ -15,7 +15,7 @@ namespace satdump
 {
     std::shared_ptr<Application> current_app;
 
-    bool in_app = false;
+    bool in_app = false;//true;
 
     void initMainUI()
     {

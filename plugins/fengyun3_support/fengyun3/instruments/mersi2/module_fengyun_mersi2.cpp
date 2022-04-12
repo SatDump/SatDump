@@ -192,7 +192,7 @@ namespace fengyun3
 
             if (mersiCorrelator->complete > 0)
             {
-                // Generate composites
+             /*   // Generate composites
                 for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &compokey : d_parameters["composites"].items())
                 {
                     nlohmann::json compositeDef = compokey.value();
@@ -265,7 +265,7 @@ namespace fengyun3
                                                                                              FY3_MERSI_RES250);
                         WRITE_IMAGE(compositeImage, directory + "/" + name + "-CORRECTED.png");
                     }
-                }
+                }*/
             }
         }
 

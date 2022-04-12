@@ -7,7 +7,7 @@ namespace image
 {
     // Generate a composite from channels and an equation
     template <typename T>
-    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<int> channelNumbers, std::string equation, nlohmann::json parameters, float *progress)
+    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json parameters, float *progress)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
@@ -19,12 +19,12 @@ namespace image
         bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
         bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
         bool hasOffsets = parameters.count("offsets") > 0;
-        std::map<int, int> offsets;
+        std::map<std::string, int> offsets;
         if (hasOffsets)
         {
             std::map<std::string, int> offsetsStr = parameters["offsets"].get<std::map<std::string, int>>();
             for (std::pair<std::string, int> currentOff : offsetsStr)
-                offsets.emplace(std::stoi(currentOff.first), -currentOff.second);
+                offsets.emplace(currentOff.first, -currentOff.second);
         }
 
         // Compute channel variable names
@@ -33,7 +33,7 @@ namespace image
         for (int i = 0; i < (int)inputChannels.size(); i++)
         {
             channelValues[i] = 0;
-            rgbParser.DefineVar("ch" + std::to_string(channelNumbers[i]), &channelValues[i]);
+            rgbParser.DefineVar("ch" + channelNumbers[i], &channelValues[i]);
 
             // Also equalize if requested
             if (pre_equalize)
@@ -168,6 +168,6 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<int>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<int>, std::string, nlohmann::json, float *);
+    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
+    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
 }

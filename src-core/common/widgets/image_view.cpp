@@ -95,6 +95,16 @@ void ImageViewWidget::draw(ImVec2 win_size)
         //  window->Scroll.y = ;
     }*/
 
+    // Compute current pixel position
+    float imagePosX = window->Scroll.x + ImGui::GetMousePos().x - window->Pos.x;
+    float imagePosY = window->Scroll.y + ImGui::GetMousePos().y - window->Pos.y;
+    imagePosX /= ui_scale * img_scale;
+    imagePosY /= ui_scale * img_scale;
+    if (imagePosX >= 0 && imagePosY >= 0 &&
+        imagePosX < img_width && imagePosY < img_height &&
+        ImGui::GetMousePos().x - window->Pos.x > 0 && ImGui::GetMousePos().y - window->Pos.y > 0)
+        tooltipCallback(imagePosX, imagePosY);
+
     if (ImGui::GetIO().MouseWheel != 0)
     {
         float ratio = img_scale / scale_before;

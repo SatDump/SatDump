@@ -7,9 +7,14 @@ namespace satdump
         : Application("viewer")
     {
         handler = new ImageViewerHandler();
-        image::Image<uint16_t> image;
+
+        //pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
+        pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
+        handler->products = &pro;
+        handler->init();
+        // image::Image<uint16_t> image;
         // image.load_png("/home/alan/Downloads/probaaa.png");
-        ((ImageViewerHandler *)handler)->image_view.update(image);
+        // ((ImageViewerHandler *)handler)->image_view.update(image);
     }
 
     ViewerApplication::~ViewerApplication()
@@ -42,7 +47,7 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        handler->drawContents({viewer_size.x * 0.80, viewer_size.y});
+        handler->drawContents({viewer_size.x * 0.80 - 4, viewer_size.y});
         ImGui::EndGroup();
     }
 };
