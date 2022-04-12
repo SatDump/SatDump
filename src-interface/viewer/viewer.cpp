@@ -10,8 +10,8 @@ namespace satdump
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
-        // products = loadProducts("/home/alan/MHS/product.cbor");
-        products = loadProducts("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
+        products = loadProducts("/home/alan/MHS/product.cbor");
+        // products = loadProducts("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
 
         // Get instrument settings
         nlohmann::ordered_json instrument_viewer_settings;
