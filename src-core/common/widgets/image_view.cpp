@@ -64,9 +64,9 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
     if (ImGui::IsMouseHoveringRect(window->Pos, {window->Pos.x + win_size.x, window->Pos.y + win_size.y}))
     {
-        if (ImGui::GetIO().MouseWheel == 1)
+        if (ImGui::GetIO().MouseWheel > 0)
             img_scale *= 1.05;
-        else if (ImGui::GetIO().MouseWheel == -1)
+        else if (ImGui::GetIO().MouseWheel < 0)
             img_scale *= 0.95;
     }
 
