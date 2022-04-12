@@ -69,6 +69,11 @@ namespace satdump
             contents["calibration"][image_index]["equ"] = equation;
         }
 
+        void set_wavenumber(int image_index, double waveumber)
+        {
+            contents["wavenumbers"][image_index] = waveumber;
+        }
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);

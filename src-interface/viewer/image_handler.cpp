@@ -58,29 +58,34 @@ namespace satdump
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)
         {
-            int depth = config::main_cfg["viewer"]["instruments"][products->instrument_name]["bit_depth"].get<int>();
-
-            std::vector<double> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
-
-            double raw_value = current_image[y * current_image.width() + x] >> (16 - depth);
-
-            double radiance = 0;
-            int level = 0;
-            for (double c : coefs)
+            if (select_image_id > 0)
             {
-                radiance += c * powf(raw_value, level++);
+                int depth = config::main_cfg["viewer"]["instruments"][products->instrument_name]["bit_depth"].get<int>();
+
+                std::vector<double> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
+
+                int raw_value = /*current_image[y * current_image.width() + x]*/ std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - depth);
+
+                double radiance = 0;
+                int level = 0;
+                for (double c : coefs)
+                {
+                    radiance += c * powf(raw_value, level++);
+                }
+
+                const double wavenumber[5] = {2.968720, 5.236956, 6.114597, 6.114597, 6.348092};
+
+                ImGui::BeginTooltip();
+                ImGui::Text("Count : %d", raw_value >> (16 - bit_depth));
+                ImGui::Text("Radiance : %.10f", radiance);
+                ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, wavenumber[select_image_id - 1]) - 273.15);
+                ImGui::EndTooltip();
+
+                /*if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    logger->info("{:d}, {:d}", x, y);
+                }*/
             }
-
-            ImGui::BeginTooltip();
-            ImGui::Text("Count : %d", current_image[y * current_image.width() + x] >> (16 - bit_depth));
-            ImGui::Text("Radiance : %.10f", radiance);
-            ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(2.968720, radiance) - 273.15);
-            ImGui::EndTooltip();
-
-            /*if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                logger->info("{:d}, {:d}", x, y);
-            }*/
         };
     }
 
