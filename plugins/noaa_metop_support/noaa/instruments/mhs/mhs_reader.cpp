@@ -9,6 +9,8 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 #include "mhs_reader.h"
 #include <cstring>
 
+#include "logger.h"
+
 namespace noaa
 {
     namespace mhs
@@ -30,7 +32,6 @@ namespace noaa
             if (major_cycle_count > last_major_cycle)
             {
                 std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
-                std::array<std::array<uint16_t, 8>, 5> calibbuff;
                 last_major_cycle = major_cycle_count;
 
                 // get each science packet from the MIU frame
@@ -42,7 +43,6 @@ namespace noaa
                     timestamps.push_back(get_timestamp(pk, DAY_OFFSET));                  // push timestamp
 
                     std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2); // make some room
-                    std::memset(&calibbuff, 0, 8 * 5 * 2);
 
                     for (int i = 0; i < MHS_WIDTH; i++)
                     {
@@ -78,7 +78,7 @@ namespace noaa
                         HKTH[i] = SCI_packet[i + HKTH_offset];
 
                     std::array<std::array<uint16_t, 2>, 5> calibration_views;
-                    //get the calibration views from the blackbody and space
+                    // get the calibration views from the blackbody and space
                     for (int c = 0; c < 5; c++)
                         for (int j = 0; j < 2; j++)
                             calibration_views[c][j] = 0;
@@ -142,15 +142,15 @@ namespace noaa
                         float a2 = get_u(Tavg, i) * (1.0 / pow(G, 2.0));
                         calibration_coefs[i].push_back({a0, a1, a2});
                     }
-
-                    std::memset(MIU_data, 0, 80 * 50);
                 }
 
-                for (int i = 0; i < 50; i++)
-                {
-                    if (cycle < 80)
-                        MIU_data[cycle][i] = buffer[i + 48]; // reading MIU data from AIP
-                }
+                std::memset(MIU_data, 0, 80 * 50);
+            }
+            
+            for (int i = 0; i < 50; i++)
+            {
+                if (cycle < 80)
+                    MIU_data[cycle][i] = buffer[i + 48]; // reading MIU data from AIP
             }
         }
 
