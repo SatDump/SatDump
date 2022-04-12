@@ -183,6 +183,8 @@ namespace noaa
                     mhs_products.has_timestamps = true;
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     mhs_products.set_timestamps(mhs_reader.timestamps);
+                    for (int i = 0; i < 5; i++)
+                        mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
 
                     for (int i = 0; i < 5; i++)
                         mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
