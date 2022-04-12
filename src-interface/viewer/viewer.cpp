@@ -10,7 +10,8 @@ namespace satdump
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
-        products = loadProducts("/home/alan/MHS/product.cbor");
+        // products = loadProducts("/home/alan/MHS/product.cbor");
+        products = loadProducts("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
 
         // Get instrument settings
         nlohmann::ordered_json instrument_viewer_settings;
@@ -24,6 +25,7 @@ namespace satdump
         handler = viewer_handlers_registry[handler_id]();
 
         handler->products = products.get();
+        handler->instrument_cfg = instrument_viewer_settings;
         handler->init();
         // image::Image<uint16_t> image;
         // image.load_png("/home/alan/Downloads/probaaa.png");

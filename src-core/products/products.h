@@ -12,7 +12,7 @@ namespace satdump
 
     class Products
     {
-    protected:
+    public: // protected:
         nlohmann::json contents;
 
     public:
@@ -51,13 +51,13 @@ namespace satdump
             CUSTOM,
         };
 
-        void set_calibration_polynomial(int image_index, std::vector<float> coefficients)
+        void set_calibration_polynomial(int image_index, std::vector<double> coefficients)
         {
             contents["calibration"][image_index]["type"] = "polynomial";
             contents["calibration"][image_index]["coefs"] = coefficients;
         }
 
-        void set_calibration_polynomial_per_line(int image_index, std::vector<std::vector<float>> coefficients_per_line)
+        void set_calibration_polynomial_per_line(int image_index, std::vector<std::vector<double>> coefficients_per_line)
         {
             contents["calibration"][image_index]["type"] = "polynomial_per_line";
             contents["calibration"][image_index]["coefs"] = coefficients_per_line;

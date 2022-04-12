@@ -18,6 +18,7 @@ namespace satdump
     public:
         // Products
         ImageProducts *products;
+        int bit_depth = 16;
 
         // Image handling
         int select_image_id = 1;
@@ -30,6 +31,7 @@ namespace satdump
         bool rotate_image = false;
         bool equalize_image = false;
         bool invert_image = false;
+        bool normalize_image = false;
 
         // RGB Handling
         std::string rgb_equation;

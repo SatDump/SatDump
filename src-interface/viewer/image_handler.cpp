@@ -1,15 +1,21 @@
 #include "image_handler.h"
 
+#include "core/config.h"
+#include "common/calibration.h"
+
 namespace satdump
 {
     void ImageViewerHandler::init()
     {
         products = (ImageProducts *)ViewerHandler::products;
 
+        if (instrument_cfg.contains("bit_depth"))
+            bit_depth = instrument_cfg["bit_depth"].get<int>();
+
         // TMP
-        rgb_presets.push_back({"221", "ch2, ch2, ch1"});
-        rgb_presets.push_back({"321", "ch3, ch2, ch1"});
-        rgb_presets.push_back({"321/221 Mix", "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15"});
+        if (instrument_cfg.contains("rgb_composites"))
+            for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
+                rgb_presets.push_back({compo.key(), compo.value()["equation"].get<std::string>()});
 
         select_image_str += std::string("Composite") + '\0';
 
@@ -43,15 +49,32 @@ namespace satdump
         if (invert_image)
             current_image.linear_invert();
 
+        if (normalize_image)
+            current_image.normalize();
+
         image_view.update(current_image);
         // current_image.clear();
 
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)
         {
+            /*int depth = config::main_cfg["viewer"]["instruments"][products->instrument_name]["bit_depth"].get<int>();
+
+            std::vector<float> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
+
+            double raw_value = current_image[y * current_image.width() + x] >> (16 - depth);
+
+            double radiance = 0;
+            int level = 0;
+            for (float c : coefs)
+            {
+                radiance += raw_value * powf(c, level++);
+            }*/
+
             ImGui::BeginTooltip();
-            ImGui::Text("Raw (16-bits) : %d", current_image[y * current_image.width() + x]);
-            ImGui::Text("Temperature : %.2fC", current_image[y * current_image.width() + x] / 2000.0f);
+            ImGui::Text("Count : %d", current_image[y * current_image.width() + x] >> (16 - bit_depth));
+            // ImGui::Text("Radiance : %.10f", radiance);
+            // ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(2.968720, radiance) - 273.15);
             ImGui::EndTooltip();
 
             /*if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -95,6 +118,9 @@ namespace satdump
                 asyncUpdate();
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
+                asyncUpdate();
+
+            if (ImGui::Checkbox("Normalize", &normalize_image))
                 asyncUpdate();
 
             if (ImGui::Checkbox("Invert", &invert_image))

@@ -10,6 +10,7 @@ namespace satdump
     {
     public:
         Products *products;
+        nlohmann::ordered_json instrument_cfg;
 
         virtual void init() = 0;
         virtual void drawMenu() = 0;
