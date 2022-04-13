@@ -204,15 +204,7 @@ namespace satdump
                 {
                     for (size_t x = 0; x < std::get<2>(products->images[select_image_id - 1]).width(); x++)
                     {
-                        std::vector<double> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
-                        int raw_value = /*current_image[y * current_image.width() + x]*/ std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - bit_depth);
-
-                        double radiance = 0;
-                        int level = 0;
-                        for (double c : coefs)
-                            radiance += c * powf(raw_value, level++);
-
-                        float temp_c = radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15;
+                        float temp_c = radiance_to_temperature(products->get_radiance_value(select_image_id - 1, x, y), products->get_wavenumber(select_image_id - 1)) - 273.15;
 
                         image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
 
