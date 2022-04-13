@@ -14,10 +14,10 @@ namespace image
         int outValsCnt = 0;
 
         // Get other parameters such as equalization, etc
-        bool equalize = parameters.count("equalize") > 0 ? parameters["equalize"].get<bool>() : false;
-        bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
-        bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
-        bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
+        // bool equalize = parameters.count("equalize") > 0 ? parameters["equalize"].get<bool>() : false;
+        // bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
+        // bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
+        // bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
         bool hasOffsets = parameters.count("offsets") > 0;
         std::map<std::string, int> offsets;
         if (hasOffsets)
@@ -36,8 +36,8 @@ namespace image
             rgbParser.DefineVar("ch" + channelNumbers[i], &channelValues[i]);
 
             // Also equalize if requested
-            if (pre_equalize)
-                inputChannels[i].equalize();
+            // if (pre_equalize)
+            //    inputChannels[i].equalize();
         }
 
         // Set expression
@@ -156,14 +156,14 @@ namespace image
 
         delete[] channelValues;
 
-        if (white_balance)
-            rgb_output.white_balance();
+        // if (white_balance)
+        //     rgb_output.white_balance();
 
-        if (equalize)
-            rgb_output.equalize();
+        // if (equalize)
+        //     rgb_output.equalize();
 
-        if (normalize)
-            rgb_output.normalize();
+        // if (normalize)
+        //     rgb_output.normalize();
 
         return rgb_output;
     }

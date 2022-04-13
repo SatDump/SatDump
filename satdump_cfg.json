@@ -54,7 +54,6 @@
         "instruments": {
             "avhrr_3": {
                 "handler": "image_handler",
-                "bit_depth": 10,
                 "rgb_composites": {
                     "221": {
                         "equation": "ch2, ch2, ch1"
@@ -80,7 +79,6 @@
             },
             "mhs": {
                 "handler": "image_handler",
-                "bit_depth": 16,
                 "rgb_composites": {
                     "221": {
                         "equation": "ch2, ch2, ch1"

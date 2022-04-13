@@ -3,7 +3,7 @@
 #include "viewer.h"
 
 #include "logger.h"
-#include "products/products.h"
+#include "products/image_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/image/composite.h"
@@ -18,7 +18,6 @@ namespace satdump
     public:
         // Products
         ImageProducts *products;
-        int bit_depth = 16;
 
         // Image handling
         int select_image_id = 1;
@@ -32,6 +31,7 @@ namespace satdump
         bool equalize_image = false;
         bool invert_image = false;
         bool normalize_image = false;
+        bool white_balance_image = false;
 
         // RGB Handling
         std::string rgb_equation;

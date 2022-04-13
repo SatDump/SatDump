@@ -9,9 +9,6 @@ namespace satdump
     {
         products = (ImageProducts *)ViewerHandler::products;
 
-        if (instrument_cfg.contains("bit_depth"))
-            bit_depth = instrument_cfg["bit_depth"].get<int>();
-
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
@@ -46,6 +43,9 @@ namespace satdump
         if (equalize_image)
             current_image.equalize();
 
+        if (white_balance_image)
+            current_image.white_balance();
+
         if (invert_image)
             current_image.linear_invert();
 
@@ -60,23 +60,17 @@ namespace satdump
         {
             if (select_image_id > 0)
             {
-                int depth = config::main_cfg["viewer"]["instruments"][products->instrument_name]["bit_depth"].get<int>();
 
-                std::vector<double> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
-
-                int raw_value = /*current_image[y * current_image.width() + x]*/ std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - depth);
-
-                double radiance = 0;
-                int level = 0;
-                for (double c : coefs)
-                {
-                    radiance += c * powf(raw_value, level++);
-                }
+                int raw_value = std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - products->bit_depth);
+                double radiance = products->get_radiance_value(select_image_id - 1, x, y);
 
                 ImGui::BeginTooltip();
-                ImGui::Text("Count : %d", raw_value >> (16 - bit_depth));
-                ImGui::Text("Radiance : %.10f", radiance);
-                ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15);
+                ImGui::Text("Count : %d", raw_value);
+                if (products->has_calibation())
+                {
+                    ImGui::Text("Radiance : %.10f", radiance);
+                    ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15);
+                }
                 ImGui::EndTooltip();
 
                 /*if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -117,10 +111,41 @@ namespace satdump
             if (ImGui::Combo("##imagechannelcombo", &select_image_id, select_image_str.c_str()))
                 asyncUpdate();
 
+            if (select_image_id > 0)
+            {
+                if (products->get_wavenumber(select_image_id - 1) != 0)
+                {
+                    ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(select_image_id - 1));
+                    double wl_nm = 1e7 / products->get_wavenumber(select_image_id - 1);
+                    double frequency = 299792458.0 / (wl_nm * 10e-10);
+
+                    if (wl_nm < 1e3)
+                        ImGui::Text("Wavelength : %f nm", wl_nm);
+                    else if (wl_nm < 1e6)
+                        ImGui::Text("Wavelength : %f um", wl_nm / 1e3);
+                    else if (wl_nm < 1e9)
+                        ImGui::Text("Wavelength : %f mm", wl_nm / 1e6);
+                    else
+                        ImGui::Text("Wavelength : %f cm", wl_nm / 1e7);
+
+                    if (frequency < 1e3)
+                        ImGui::Text("Frequency : %f Hz", frequency);
+                    else if (frequency < 1e6)
+                        ImGui::Text("Frequency : %f kHz", frequency / 1e3);
+                    else if (frequency < 1e9)
+                        ImGui::Text("Frequency : %f MHz", frequency / 1e6);
+                    else
+                        ImGui::Text("Frequency : %f GHz", frequency / 1e9);
+                }
+            }
+
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
+                asyncUpdate();
+
+            if (ImGui::Checkbox("White Balance", &white_balance_image))
                 asyncUpdate();
 
             if (ImGui::Checkbox("Normalize", &normalize_image))
@@ -166,6 +191,47 @@ namespace satdump
                 style::endDisabled();
             ImGui::SameLine();
             ImGui::ProgressBar(rgb_progress);
+        }
+
+        if (ImGui::CollapsingHeader("Products"))
+        {
+            if (ImGui::Button("Temperature"))
+            {
+                rgb_image = std::get<2>(products->images[select_image_id - 1]);
+                rgb_image.to_rgb();
+
+                for (size_t y = 0; y < std::get<2>(products->images[select_image_id - 1]).height(); y++)
+                {
+                    for (size_t x = 0; x < std::get<2>(products->images[select_image_id - 1]).width(); x++)
+                    {
+                        std::vector<double> coefs = products->contents["calibration"][select_image_id - 1]["coefs"][y];
+                        int raw_value = /*current_image[y * current_image.width() + x]*/ std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - bit_depth);
+
+                        double radiance = 0;
+                        int level = 0;
+                        for (double c : coefs)
+                            radiance += c * powf(raw_value, level++);
+
+                        float temp_c = radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15;
+
+                        image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
+
+                        int value = ((temp_c + 100) / 100) * 256;
+
+                        if (value < 0)
+                            value = 0;
+                        if (value > 255)
+                            value = 255;
+
+                        rgb_image.channel(0)[y * rgb_image.width() + x] = lut.channel(0)[value];
+                        rgb_image.channel(1)[y * rgb_image.width() + x] = lut.channel(1)[value];
+                        rgb_image.channel(2)[y * rgb_image.width() + x] = lut.channel(2)[value];
+                    }
+                }
+
+                select_image_id = 0;
+                asyncUpdate();
+            }
         }
     }
 

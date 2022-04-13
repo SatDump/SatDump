@@ -2,6 +2,7 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
+#include "image_products.h"
 
 namespace satdump
 {
@@ -35,36 +36,6 @@ namespace satdump
 
         instrument_name = contents["instrument"].get<std::string>();
         type = contents["type"].get<std::string>();
-    }
-
-    void ImageProducts::save(std::string directory)
-    {
-        type = "image";
-        contents["has_timestamps"] = has_timestamps;
-
-        for (size_t c = 0; c < images.size(); c++)
-        {
-            contents["images"][c]["file"] = std::get<0>(images[c]);
-            contents["images"][c]["name"] = std::get<1>(images[c]);
-            logger->info("Saving " + std::get<0>(images[c]));
-            std::get<2>(images[c]).save_png(directory + "/" + std::get<0>(images[c]));
-        }
-
-        Products::save(directory);
-    }
-
-    void ImageProducts::load(std::string file)
-    {
-        Products::load(file);
-        std::string directory = std::filesystem::path(file).parent_path();
-
-        for (size_t c = 0; c < contents["images"].size(); c++)
-        {
-            image::Image<uint16_t> image;
-            logger->info("Loading " + contents["images"][c]["file"].get<std::string>());
-            image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
-            images.push_back({contents["images"][c]["file"].get<std::string>(), contents["images"][c]["name"].get<std::string>(), image});
-        }
     }
 
     std::shared_ptr<Products> loadProducts(std::string path)

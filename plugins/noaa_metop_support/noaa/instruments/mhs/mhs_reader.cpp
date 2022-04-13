@@ -140,8 +140,8 @@ namespace noaa
                         double a0 = Rw - (CCw / G) + get_u(Tavg, i) * ((CCw * CCc) / pow(G, 2.0));
                         double a1 = 1.0 / G - get_u(Tavg, i) * ((CCc + CCw) / pow(G, 2.0));
                         double a2 = get_u(Tavg, i) * (1.0 / pow(G, 2.0));
-                        
-                        logger->info(std::to_string(a0) + " " + std::to_string(a1) + " " + std::to_string(a2));
+
+                        // logger->info(std::to_string(a0) + " " + std::to_string(a1) + " " + std::to_string(a2));
                         calibration_coefs[i].push_back({a0, a1, a2});
                     }
                 }

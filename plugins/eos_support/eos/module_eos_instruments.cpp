@@ -7,7 +7,7 @@
 #include "imgui/imgui.h"
 #include "common/image/bowtie.h"
 #include "common/utils.h"
-#include "products/products.h"
+#include "products/image_products.h"
 
 namespace eos
 {

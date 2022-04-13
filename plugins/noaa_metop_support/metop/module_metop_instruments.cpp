@@ -8,7 +8,7 @@
 #include "metop.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "products/products.h"
+#include "products/image_products.h"
 
 namespace metop
 {

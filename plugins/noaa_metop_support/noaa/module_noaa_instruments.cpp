@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products/products.h"
+#include "products/image_products.h"
 
 namespace noaa
 {
@@ -131,6 +131,7 @@ namespace noaa
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
                     avhrr_products.has_timestamps = true;
+                    avhrr_products.bit_depth = 10;
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps);
 
@@ -156,6 +157,7 @@ namespace noaa
                     satdump::ImageProducts hirs_products;
                     hirs_products.instrument_name = "hirs";
                     hirs_products.has_timestamps = false;
+                    hirs_products.bit_depth = 13;
                     // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     // hirs_products.set_timestamps(hirs_reader.timestamps);
 
@@ -181,9 +183,11 @@ namespace noaa
                     satdump::ImageProducts mhs_products;
                     mhs_products.instrument_name = "mhs";
                     mhs_products.has_timestamps = true;
+                    mhs_products.bit_depth = 16;
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     mhs_products.set_timestamps(mhs_reader.timestamps);
-                    for (int i = 0; i < 5; i++){
+                    for (int i = 0; i < 5; i++)
+                    {
                         mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
                         mhs_products.set_wavenumber(i, mhs::calibration::wavenumber[i]);
                     }
@@ -211,6 +215,7 @@ namespace noaa
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu";
                     amsu_products.has_timestamps = false;
+                    amsu_products.bit_depth = 16;
                     // amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     // amsu_products.set_timestamps(amsu_reader.timestamps);
 
@@ -243,6 +248,7 @@ namespace noaa
                 satdump::ImageProducts hirs_products;
                 hirs_products.instrument_name = "hirs";
                 hirs_products.has_timestamps = false;
+                hirs_products.bit_depth = 13;
                 // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // hirs_products.set_timestamps(hirs_reader.timestamps);
 
