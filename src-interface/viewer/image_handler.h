@@ -20,7 +20,7 @@ namespace satdump
         ImageProducts *products;
 
         // Image handling
-        int select_image_id = 1;
+        int active_channel_id = 0, select_image_id = 1;
         std::string select_image_str;
         image::Image<uint16_t> rgb_image, current_image;
         std::vector<image::Image<uint16_t>> images_obj;
@@ -51,6 +51,7 @@ namespace satdump
 
         void drawMenu();
         void drawContents(ImVec2 win_size);
+        void drawTreeMenu();
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

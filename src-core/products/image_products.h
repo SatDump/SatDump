@@ -76,8 +76,8 @@ namespace satdump
 
         double get_wavenumber(int image_index)
         {
-            if (!contents["wavenumbers"][image_index].empty())
-                contents["wavenumbers"][image_index].get<double>();
+            if (contents.contains("wavenumbers"))
+                return contents["wavenumbers"][image_index].get<double>();
             else
                 return 0;
         }

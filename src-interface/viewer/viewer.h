@@ -15,6 +15,7 @@ namespace satdump
         virtual void init() = 0;
         virtual void drawMenu() = 0;
         virtual void drawContents(ImVec2 win_size) = 0;
+        virtual void drawTreeMenu() = 0;
 
         static std::string getID();
         static std::shared_ptr<ViewerHandler> getInstance();
@@ -32,13 +33,14 @@ namespace satdump
         virtual void drawPanel();
         virtual void drawContent();
 
-        std::shared_ptr<Products> products;
+        std::vector<std::pair<std::shared_ptr<Products>, std::shared_ptr<ViewerHandler>>> products_and_handlers;
+
+        int current_handler_id = 0;
+        void loadProductsInViewer(std::string path);
 
     public:
         ViewerApplication();
         ~ViewerApplication();
-
-        std::shared_ptr<ViewerHandler> handler;
 
     public:
         static std::string getID() { return "viewer"; }

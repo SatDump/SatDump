@@ -213,7 +213,7 @@ namespace noaa
                     logger->info("Lines A2: " + std::to_string(amsu_reader.linesA2));
 
                     satdump::ImageProducts amsu_products;
-                    amsu_products.instrument_name = "amsu";
+                    amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = false;
                     amsu_products.bit_depth = 16;
                     // amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;

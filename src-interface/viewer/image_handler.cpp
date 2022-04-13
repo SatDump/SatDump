@@ -58,18 +58,23 @@ namespace satdump
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)
         {
-            if (select_image_id > 0)
+            if (active_channel_id >= 0)
             {
+                if (rotate_image)
+                {
+                    x = current_image.width() - 1 - x;
+                    y = current_image.height() - 1 - y;
+                }
 
-                int raw_value = std::get<2>(products->images[select_image_id - 1])[y * current_image.width() + x] >> (16 - products->bit_depth);
-                double radiance = products->get_radiance_value(select_image_id - 1, x, y);
+                int raw_value = std::get<2>(products->images[active_channel_id])[y * current_image.width() + x] >> (16 - products->bit_depth);
+                double radiance = products->get_radiance_value(active_channel_id, x, y);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
                     ImGui::Text("Radiance : %.10f", radiance);
-                    ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(select_image_id - 1)) - 273.15);
+                    ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
                 }
                 ImGui::EndTooltip();
 
@@ -94,6 +99,7 @@ namespace satdump
     void ImageViewerHandler::updateRGB()
     {
         rgb_processing = true;
+        active_channel_id = -1;
         ui_thread_pool.push([this](int)
                             { 
                     logger->info("Generating RGB Composite");
@@ -109,14 +115,20 @@ namespace satdump
         if (ImGui::CollapsingHeader("Image"))
         {
             if (ImGui::Combo("##imagechannelcombo", &select_image_id, select_image_str.c_str()))
-                asyncUpdate();
-
-            if (select_image_id > 0)
             {
-                if (products->get_wavenumber(select_image_id - 1) != 0)
+                if (select_image_id == 0)
+                    active_channel_id = -1;
+                else
+                    active_channel_id = select_image_id - 1;
+                asyncUpdate();
+            }
+
+            if (active_channel_id >= 0)
+            {
+                if (products->get_wavenumber(active_channel_id) != 0)
                 {
-                    ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(select_image_id - 1));
-                    double wl_nm = 1e7 / products->get_wavenumber(select_image_id - 1);
+                    ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
+                    double wl_nm = 1e7 / products->get_wavenumber(active_channel_id);
                     double frequency = 299792458.0 / (wl_nm * 10e-10);
 
                     if (wl_nm < 1e3)
@@ -195,34 +207,39 @@ namespace satdump
 
         if (ImGui::CollapsingHeader("Products"))
         {
-            if (ImGui::Button("Temperature"))
+            if (products->has_calibation())
             {
-                rgb_image = std::get<2>(products->images[select_image_id - 1]);
-                rgb_image.to_rgb();
-
-                for (size_t y = 0; y < std::get<2>(products->images[select_image_id - 1]).height(); y++)
+                if (ImGui::Button("Temperature"))
                 {
-                    for (size_t x = 0; x < std::get<2>(products->images[select_image_id - 1]).width(); x++)
+                    active_channel_id = select_image_id - 1;
+
+                    rgb_image = std::get<2>(products->images[active_channel_id]);
+                    rgb_image.to_rgb();
+
+                    for (size_t y = 0; y < std::get<2>(products->images[active_channel_id]).height(); y++)
                     {
-                        float temp_c = radiance_to_temperature(products->get_radiance_value(select_image_id - 1, x, y), products->get_wavenumber(select_image_id - 1)) - 273.15;
+                        for (size_t x = 0; x < std::get<2>(products->images[active_channel_id]).width(); x++)
+                        {
+                            float temp_c = radiance_to_temperature(products->get_radiance_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
 
-                        image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
+                            image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
 
-                        int value = ((temp_c + 100) / 100) * 256;
+                            int value = ((temp_c + 10) / 15) * 256;
 
-                        if (value < 0)
-                            value = 0;
-                        if (value > 255)
-                            value = 255;
+                            if (value < 0)
+                                value = 0;
+                            if (value > 255)
+                                value = 255;
 
-                        rgb_image.channel(0)[y * rgb_image.width() + x] = lut.channel(0)[value];
-                        rgb_image.channel(1)[y * rgb_image.width() + x] = lut.channel(1)[value];
-                        rgb_image.channel(2)[y * rgb_image.width() + x] = lut.channel(2)[value];
+                            rgb_image.channel(0)[y * rgb_image.width() + x] = lut.channel(0)[value];
+                            rgb_image.channel(1)[y * rgb_image.width() + x] = lut.channel(1)[value];
+                            rgb_image.channel(2)[y * rgb_image.width() + x] = lut.channel(2)[value];
+                        }
                     }
-                }
 
-                select_image_id = 0;
-                asyncUpdate();
+                    select_image_id = 0;
+                    asyncUpdate();
+                }
             }
         }
     }
@@ -230,5 +247,27 @@ namespace satdump
     void ImageViewerHandler::drawContents(ImVec2 win_size)
     {
         image_view.draw(win_size);
+    }
+
+    void ImageViewerHandler::drawTreeMenu()
+    {
+        ImGui::TreeNodeEx("Channel 1 equ", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet);
+        if (ImGui::IsItemClicked())
+        {
+            select_image_id = 1;
+            active_channel_id = 0;
+            equalize_image = true;
+            asyncUpdate();
+        }
+
+        ImGui::TreeNodeEx("Channel 2 White Balance", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet);
+        if (ImGui::IsItemClicked())
+        {
+            select_image_id = 2;
+            active_channel_id = 1;
+            equalize_image = false;
+            white_balance_image = true;
+            asyncUpdate();
+        }
     }
 }

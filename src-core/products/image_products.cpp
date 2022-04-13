@@ -54,10 +54,15 @@ namespace satdump
     {
         std::vector<double> coefs;
 
-        if (get_calibration_type(image_index) == POLYNOMIAL)
-            coefs = calibration_polynomial_coefs[image_index][0];
-        else if (get_calibration_type(image_index) == POLYNOMIAL_PER_LINE)
-            coefs = calibration_polynomial_coefs[image_index][y];
+        if (has_calibation())
+        {
+            if (get_calibration_type(image_index) == POLYNOMIAL)
+                coefs = calibration_polynomial_coefs[image_index][0];
+            else if (get_calibration_type(image_index) == POLYNOMIAL_PER_LINE)
+                coefs = calibration_polynomial_coefs[image_index][y];
+            else
+                return 0;
+        }
         else
             return 0;
 
