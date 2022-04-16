@@ -123,6 +123,10 @@
                         "equation": "ch5, ch4, ch3"
                     }
                 }
+            },
+            "sem": {
+                "handler": "radiation_handler",
+                "name": "SEM"
             }
         }
     }

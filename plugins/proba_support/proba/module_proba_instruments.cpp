@@ -91,7 +91,8 @@ namespace proba
                             if (pkt.header.apid == 0)
                             {
                                 int mode_marker = pkt.payload[9] & 0x03;
-                                if (mode_marker == 1)
+
+                                if (mode_marker == 1 || mode_marker == 2)
                                     hrc_reader->work(pkt);
                                 else
                                     chris_reader->work(pkt);

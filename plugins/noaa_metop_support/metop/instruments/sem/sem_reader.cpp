@@ -1,6 +1,8 @@
 #include "sem_reader.h"
 #include "common/ccsds/ccsds_time.h"
 
+#include "logger.h"
+
 namespace metop
 {
     namespace sem
@@ -19,12 +21,14 @@ namespace metop
             if (packet.payload.size() < 656)
                 return;
 
-            timestamps.push_back(ccsds::parseCCSDSTime(packet, 10957));
+            double timestamp = ccsds::parseCCSDSTime(packet, 10957);
+            for (int i = 0; i < 32; i += 2) // 32 seconds intervals between packets. 2-seconds per "exposure"
+                timestamps.push_back(timestamp + i);
 
             // Get all samples
             for (int i = 0; i < 640; i += 40)
                 for (int j = 0; j < 40; j++)
-                    channels[j][i / 40].push_back(packet.payload[i + j] ^ 0xFF);
+                    channels[j].push_back(packet.payload[15 + i + j] ^ 0xFF);
 
             samples++;
         }

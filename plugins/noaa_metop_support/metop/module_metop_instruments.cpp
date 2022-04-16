@@ -9,6 +9,8 @@
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "products/image_products.h"
+#include "products/radiation_products.h"
+#include "products/dataset.h"
 
 namespace metop
 {
@@ -149,6 +151,17 @@ namespace metop
             else if (scid == METOP_C_SCID)
                 norad = METOP_C_NORAD;
 
+            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
+
+            if (!satellite_tle.has_value()) // Get from main stuff
+            {
+            }
+
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = avg_overflowless(avhrr_reader.timestamps);
+
             // Satellite ID
             {
                 logger->info("----------- Satellite");
@@ -178,6 +191,7 @@ namespace metop
                     avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
 
                 avhrr_products.save(directory);
+                dataset.products_list.push_back("AVHRR");
 
                 avhrr_status = DONE;
             }
@@ -210,6 +224,7 @@ namespace metop
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                 mhs_products.save(directory);
+                dataset.products_list.push_back("MHS");
 
                 mhs_status = DONE;
             }
@@ -336,7 +351,34 @@ namespace metop
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
 
-            // TODO SEM
+            // SEM
+            {
+                sem_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- SEM");
+                logger->info("Packets : " + std::to_string(sem_reader.samples));
+
+                satdump::RadiationProducts sem_products;
+                sem_products.instrument_name = "sem";
+                sem_products.has_timestamps = true;
+                sem_products.set_tle(satellite_tle);
+                sem_products.set_timestamps_all(sem_reader.timestamps);
+                sem_products.channel_counts.resize(40);
+                for (int i = 0; i < sem_reader.samples * 16; i++)
+                    for (int c = 0; c < 40; c++)
+                        sem_products.channel_counts[c].push_back(sem_reader.channels[c][i]);
+
+                sem_products.save(directory);
+                dataset.products_list.push_back("SEM");
+
+                sem_status = DONE;
+            }
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void MetOpInstrumentsDecoderModule::drawUI(bool window)

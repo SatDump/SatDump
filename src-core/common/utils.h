@@ -8,6 +8,7 @@
 #include <sstream>
 #include <climits>
 #include <fstream>
+#include <optional>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
@@ -79,6 +80,19 @@ int percentile(T *array, int size, float percentile)
         return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
 }
 
+template <typename T>
+double avg_overflowless(std::vector<T> const &v)
+{
+    T n = 0;
+    double mean = 0.0;
+    for (auto x : v)
+    {
+        double delta = x - mean;
+        mean += delta / ++n;
+    }
+    return mean;
+}
+
 std::vector<std::string> splitString(std::string input, char del);
 
 template <typename T>
@@ -91,3 +105,8 @@ bool isStringPresent(std::string searched, std::string keyword);
 
 // Return filesize
 size_t getFilesize(std::string filepath);
+
+// Perform a HTTP Request on the provided URL and return the result as a string
+int perform_http_request(std::string url, std::string &result);
+
+std::string timestamp_to_string(double timestamp);

@@ -51,7 +51,7 @@ namespace satdump
 
         void drawMenu();
         void drawContents(ImVec2 win_size);
-        void drawTreeMenu();
+        float drawTreeMenu();
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

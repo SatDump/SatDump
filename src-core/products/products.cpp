@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "image_products.h"
+#include "radiation_products.h"
 
 namespace satdump
 {
@@ -10,6 +11,9 @@ namespace satdump
     {
         contents["instrument"] = instrument_name;
         contents["type"] = type;
+
+        if (_has_tle)
+            contents["tle"] = tle;
 
         // Write the file out
         std::vector<uint8_t> cbor_data = nlohmann::json::to_cbor(contents);
@@ -36,6 +40,10 @@ namespace satdump
 
         instrument_name = contents["instrument"].get<std::string>();
         type = contents["type"].get<std::string>();
+
+        _has_tle = contents.contains("tle");
+        if (_has_tle)
+            tle = contents["tle"].get<TLE>();
     }
 
     std::shared_ptr<Products> loadProducts(std::string path)
@@ -43,10 +51,15 @@ namespace satdump
         std::shared_ptr<Products> final_products;
         Products raw_products;
 
+        if (std::filesystem::is_directory(path))
+            path = path + "/product.cbor";
+
         raw_products.load(path);
 
         if (raw_products.type == "image")
             final_products = std::make_shared<ImageProducts>();
+        else if (raw_products.type == "radiation")
+            final_products = std::make_shared<RadiationProducts>();
         else
             final_products = std::make_shared<Products>();
 

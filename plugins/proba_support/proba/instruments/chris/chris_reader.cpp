@@ -63,7 +63,7 @@ namespace proba
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
 
-            logger->critical(packet.payload.size());
+            //  logger->critical(packet.payload.size());
 
             for (int i = 0; i < packet.payload.size(); i++)
                 packet.payload[i] = reverseBits(packet.payload[i]);
@@ -73,7 +73,7 @@ namespace proba
             int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
 
             // logger->info("CH " << channel_marker );
-            logger->info("CNT {:d}", count_marker);
+            // logger->info("CNT {:d}", count_marker);
             // logger->info("MODE " << mode_marker );
             // logger->info("TMD " << tx_mode );
 

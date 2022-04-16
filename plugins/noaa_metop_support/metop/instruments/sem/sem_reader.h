@@ -10,7 +10,7 @@ namespace metop
         {
         public:
             int samples;
-            std::vector<int> channels[40][16];
+            std::vector<int> channels[40];
             std::vector<double> timestamps;
 
         public:

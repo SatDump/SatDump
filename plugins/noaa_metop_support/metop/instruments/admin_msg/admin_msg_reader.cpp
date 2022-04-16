@@ -34,6 +34,39 @@ namespace metop
             std::ofstream outputMessageFile(outputFileName);
             outputMessageFile.write((char *)message_out, outsize);
 
+            // TLE Parsing
+            {
+                // Parse
+                doc.parse<0>((char *)std::string(message_out, &message_out[outsize]).c_str()); // const char * to char * is needed...
+                root_node = doc.first_node("multi-mission-administrative-message");
+
+                // Convert to our usual TLE Registry stuff
+                for (rapidxml::xml_node<> *sat_node = root_node->first_node("message"); sat_node; sat_node = sat_node->next_sibling())
+                {
+                    satdump::TLE tle;
+                    tle.norad = std::stoi(sat_node->first_attribute("satellite-number")->value());
+                    tle.name = sat_node->first_attribute("satellite")->value();
+
+                    int linecnt = 0;
+                    for (rapidxml::xml_node<> *sat_tle_node = sat_node->first_node("navigation"); sat_tle_node; sat_tle_node = sat_tle_node->next_sibling())
+                    {
+                        for (rapidxml::xml_node<> *tle_node = sat_tle_node->first_node("two-line-elements"); tle_node; tle_node = tle_node->next_sibling())
+                        {
+                            for (rapidxml::xml_node<> *line1_node = tle_node->first_node("line-1"); line1_node; line1_node = line1_node->next_sibling())
+                            {
+                                if (linecnt++ == 0)
+                                    tle.line1 = line1_node->value();
+                                else
+                                    tle.line2 = line1_node->value();
+                            }
+                        }
+                    }
+
+                    // Done, save it
+                    tles.push_back(tle);
+                }
+            }
+
             count++;
         }
     } // namespace modis
