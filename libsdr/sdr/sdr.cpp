@@ -62,6 +62,7 @@ std::map<std::string, std::string> SDRDevice::drawParamsUI()
 #include "spyserver.h"
 #include "rtltcp.h"
 #include "file.h"
+#include "plutosdr.h"
 
 void initSDRs()
 {
@@ -134,6 +135,11 @@ std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> getAllDevices()
     results.insert(results.end(), sdrplay_results.begin(), sdrplay_results.end());
 #endif
 
+#ifndef DISABLE_SDR_PLUTOSDR
+    std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> plutosdr_results = SDRPlutoSDR::getDevices();
+    results.insert(results.end(), plutosdr_results.begin(), plutosdr_results.end());
+#endif
+
 #ifndef DISABLE_SDR_SPYSERVER
     std::vector<std::tuple<std::string, sdr_device_type, uint64_t>> spyserver_results = SDRSpyServer::getDevices();
     results.insert(results.end(), spyserver_results.begin(), spyserver_results.end());
@@ -162,6 +168,10 @@ std::map<std::string, std::string> drawParamsUIForID(std::vector<std::tuple<std:
     if (type == RTLTCP)
         return SDRRtlTcp::drawParamsUI();
 #endif
+#ifndef DISABLE_SDR_PLUTOSDR
+    if (type == PLUTOSDR)
+        return SDRPlutoSDR::drawParamsUI();
+#endif
     if (type == FILESRC)
         return SDRFile::drawParamsUI();
 
@@ -182,6 +192,8 @@ std::string deviceTypeStringByType(sdr_device_type type)
         return "airspyhf";
     if (type == SDRPLAY)
         return "sdrplay";
+    if (type == PLUTOSDR)
+        return "plutosdr";
     if (type == SPYSERVER)
         return "spyserver";
     if (type == RTLTCP)
@@ -212,6 +224,8 @@ sdr_device_type getDeviceIDbyIDString(std::string idString)
         return AIRSPYHF;
     else if (idString == "sdrplay")
         return SDRPLAY;
+    else if (idString == "plutosdr")
+        return PLUTOSDR;
     else if (idString == "spyserver")
         return SPYSERVER;
     else if (idString == "rtltcp")
@@ -262,6 +276,10 @@ std::shared_ptr<SDRDevice> getDeviceByID(std::vector<std::tuple<std::string, sdr
 #ifndef DISABLE_SDR_SDRPLAY
     if (type == SDRPLAY)
         return std::make_shared<SDRPlay>(parameters, id);
+#endif
+#ifndef DISABLE_SDR_PLUTOSDR
+    if (type == PLUTOSDR)
+        return std::make_shared<SDRPlutoSDR>(parameters, id);
 #endif
 #ifndef DISABLE_SDR_SPYSERVER
     if (type == SPYSERVER)

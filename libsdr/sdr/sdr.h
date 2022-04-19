@@ -19,6 +19,7 @@ enum sdr_device_type
     LIMESDR,
     AIRSPYHF,
     SDRPLAY,
+    PLUTOSDR,
     SPYSERVER,
     RTLTCP,
     FILESRC
