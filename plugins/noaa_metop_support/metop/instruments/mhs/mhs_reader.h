@@ -3,6 +3,8 @@
 #include "common/ccsds/ccsds.h"
 #include "common/image/image.h"
 
+#include <fstream>
+
 namespace metop
 {
     namespace mhs
@@ -11,6 +13,7 @@ namespace metop
         {
         private:
             uint16_t mhs_buffer[540];
+            std::ofstream testout;
 
         public:
             int lines;

@@ -8,6 +8,8 @@
 #include "common/image/image.h"
 #include "common/calibration.h"
 
+#include <fstream>
+
 #define SCI_PACKET_SIZE 1286
 #define MIU_BYTE_OFFSET 48
 #define MHS_OFFSET 49
@@ -44,6 +46,8 @@ namespace noaa
             double get_u(double temp, int ch);
             double interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode);
             double get_timestamp(int pkt, int offset, int ms_scale = 1000);
+
+            std::ofstream testout;
 
         public:
             MHSReader();

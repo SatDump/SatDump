@@ -11,12 +11,14 @@ namespace metop
             for (int i = 0; i < 5; i++)
                 channels[i].resize(90);
             lines = 0;
+            testout = std::ofstream("metop_test.bin");
         }
 
         MHSReader::~MHSReader()
         {
             for (int i = 0; i < 5; i++)
                 channels[i].clear();
+            testout.close();
         }
 
         void MHSReader::work(ccsds::CCSDSPacket &packet)
@@ -26,6 +28,8 @@ namespace metop
 
             // Repack samples to 16-bits
             repackBytesTo16bits(&packet.payload[59], 1080, mhs_buffer);
+
+            testout.write((char *)&packet.payload[0], packet.payload.size());
 
             // Plot into an image
             for (int channel = 0; channel < 5; channel++)

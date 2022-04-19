@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "meteor.h"
-#include "products/products.h"
+#include "products/image_products.h"
 #include "common/simple_deframer.h"
 
 namespace meteor
