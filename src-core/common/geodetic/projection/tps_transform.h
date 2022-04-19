@@ -33,8 +33,21 @@ namespace geodetic
             TPSTransform(std::vector<GCP> gcps);
             ~TPSTransform();
 
-            void forward(double lon, double lat, double &x, double &y);
-            void inverse(double x, double y, double &lon, double &lat);
+            inline void forward(double lon, double lat, double &x, double &y)
+            {
+                spline_forward->get_point(lon, lat, xy);
+                x = xy[0];
+                y = xy[1];
+            }
+
+            inline void inverse(double x, double y, double &lon, double &lat)
+            {
+                spline_reverse->get_point(x, y, xy);
+                lon = xy[0];
+                lat = xy[1];
+            }
+
+            inline VizGeorefSpline2D &getRawForward() { return *spline_forward; }
         };
     };
 };

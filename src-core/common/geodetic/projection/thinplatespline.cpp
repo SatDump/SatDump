@@ -42,6 +42,9 @@
 
 #include "logger.h"
 
+#include <armadillo>
+#define HAVE_ARMADILLO 1
+
 /*
  This file is originally from https://github.com/OSGeo/gdal
  It was modified for the purposes required here by Aang23.
@@ -53,6 +56,7 @@
 //// vizGeorefSpline2D
 //////////////////////////////////////////////////////////////////////////////
 
+//#define USE_OPTIMIZED_VizGeorefSpline2DBase_func4 1
 // #define VIZ_GEOREF_SPLINE_DEBUG 0
 
 namespace geodetic
@@ -100,7 +104,7 @@ namespace geodetic
             // see https://en.wikipedia.org/wiki/LU_decomposition#C_code_examples
             bool solve(TPSMatrix &A, TPSMatrix &RHS, TPSMatrix &X, double eps)
             {
-                //assert(A.getNumRows() == A.getNumCols());
+                // assert(A.getNumRows() == A.getNumCols());
                 if (eps < 0)
                     return false;
                 int const m = A.getNumRows();
@@ -125,7 +129,7 @@ namespace geodetic
                     }
                     if (dMax <= eps)
                     {
-                        //CPLError(CE_Failure, CPLE_AppDefined, "GDALLinearSystemSolve: matrix not invertible");
+                        // CPLError(CE_Failure, CPLE_AppDefined, "GDALLinearSystemSolve: matrix not invertible");
                         logger->error("TPS : Maxtrix not invertible!");
                         return false;
                     }
@@ -182,18 +186,31 @@ namespace geodetic
             /************************************************************************/
             bool GDALLinearSystemSolve(TPSMatrix &A, TPSMatrix &RHS, TPSMatrix &X)
             {
-                //assert(A.getNumRows() == RHS.getNumRows());
-                //assert(A.getNumCols() == X.getNumRows());
-                //assert(RHS.getNumCols() == X.getNumCols());
+                // assert(A.getNumRows() == RHS.getNumRows());
+                // assert(A.getNumCols() == X.getNumRows());
+                // assert(RHS.getNumCols() == X.getNumCols());
                 try
                 {
+#ifdef HAVE_ARMADILLO
+                    arma::mat matA(A.data(), A.getNumRows(), A.getNumCols(), false, true);
+                    arma::mat matRHS(RHS.data(), RHS.getNumRows(), RHS.getNumCols(), false, true);
+                    arma::mat matOut(X.data(), X.getNumRows(), X.getNumCols(), false, true);
+#if ARMA_VERSION_MAJOR > 6 || (ARMA_VERSION_MAJOR == 6 && ARMA_VERSION_MINOR >= 500)
+                    // Perhaps available in earlier versions, but didn't check
+                    return arma::solve(matOut, matA, matRHS,
+                                       arma::solve_opts::equilibrate + arma::solve_opts::no_approx);
+#else
+                    return arma::solve(matOut, matA, matRHS);
+#endif
+
                     return solve(A, RHS, X, 0);
+#endif
                 }
                 catch (std::exception const &e)
                 {
                     logger->error(e.what());
-                    //CPLError(CE_Failure, CPLE_AppDefined,
-                    //         "GDALLinearSystemSolve: %s", e.what());
+                    // CPLError(CE_Failure, CPLE_AppDefined,
+                    //          "GDALLinearSystemSolve: %s", e.what());
                     return false;
                 }
             }
@@ -297,72 +314,74 @@ namespace geodetic
 #endif // defined(__INTEL_COMPILER)
 #endif
 
+//#undef USE_OPTIMIZED_VizGeorefSpline2DBase_func4
+
 #if defined(USE_OPTIMIZED_VizGeorefSpline2DBase_func4)
 
         /* Derived and adapted from code originating from: */
 
         /* @(#)e_log.c 1.3 95/01/18 */
         /*
-        * ====================================================
-        * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
-        *
-        * Developed at SunSoft, a Sun Microsystems, Inc. business.
-        * Permission to use, copy, modify, and distribute this
-        * software is freely granted, provided that this notice
-        * is preserved.
-        * ====================================================
-        */
+         * ====================================================
+         * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+         *
+         * Developed at SunSoft, a Sun Microsystems, Inc. business.
+         * Permission to use, copy, modify, and distribute this
+         * software is freely granted, provided that this notice
+         * is preserved.
+         * ====================================================
+         */
 
         /* __ieee754_log(x)
-        * Return the logarithm of x
-        *
-        * Method:
-        *   1. Argument Reduction: find k and f such that
-        *                      x = 2^k * (1+f),
-        *         where  sqrt(2)/2 < 1+f < sqrt(2) .
-        *
-        *   2. Approximation of log(1+f).
-        *      Let s = f/(2+f) ; based on log(1+f) = log(1+s) - log(1-s)
-        *               = 2s + 2/3 s**3 + 2/5 s**5 + .....,
-        *               = 2s + s*R
-        *      We use a special Reme algorithm on [0,0.1716] to generate
-        *      a polynomial of degree 14 to approximate R The maximum error
-        *      of this polynomial approximation is bounded by 2**-58.45. In
-        *      other words,
-        *                      2      4      6      8      10      12      14
-        *          R(z) ~ Lg1*s +Lg2*s +Lg3*s +Lg4*s +Lg5*s  +Lg6*s  +Lg7*s
-        *      (the values of Lg1 to Lg7 are listed in the program)
-        *      and
-        *          |      2          14          |     -58.45
-        *          | Lg1*s +...+Lg7*s    -  R(z) | <= 2
-        *          |                             |
-        *      Note that 2s = f - s*f = f - hfsq + s*hfsq, where hfsq = f*f/2.
-        *      In order to guarantee error in log below 1ulp, we compute log
-        *      by
-        *              log(1+f) = f - s*(f - R)        (if f is not too large)
-        *              log(1+f) = f - (hfsq - s*(hfsq+R)).     (better accuracy)
-        *
-        *      3. Finally,  log(x) = k*ln2 + log(1+f).
-        *                          = k*ln2_hi+(f-(hfsq-(s*(hfsq+R)+k*ln2_lo)))
-        *         Here ln2 is split into two floating point number:
-        *                      ln2_hi + ln2_lo,
-        *         where n*ln2_hi is always exact for |n| < 2000.
-        *
-        * Special cases:
-        *      log(x) is NaN with signal if x < 0 (including -INF) ;
-        *      log(+INF) is +INF; log(0) is -INF with signal;
-        *      log(NaN) is that NaN with no signal.
-        *
-        * Accuracy:
-        *      according to an error analysis, the error is always less than
-        *      1 ulp (unit in the last place).
-        *
-        * Constants:
-        * The hexadecimal values are the intended ones for the following
-        * constants. The decimal values may be used, provided that the
-        * compiler will convert from decimal to binary accurately enough
-        * to produce the hexadecimal values shown.
-        */
+         * Return the logarithm of x
+         *
+         * Method:
+         *   1. Argument Reduction: find k and f such that
+         *                      x = 2^k * (1+f),
+         *         where  sqrt(2)/2 < 1+f < sqrt(2) .
+         *
+         *   2. Approximation of log(1+f).
+         *      Let s = f/(2+f) ; based on log(1+f) = log(1+s) - log(1-s)
+         *               = 2s + 2/3 s**3 + 2/5 s**5 + .....,
+         *               = 2s + s*R
+         *      We use a special Reme algorithm on [0,0.1716] to generate
+         *      a polynomial of degree 14 to approximate R The maximum error
+         *      of this polynomial approximation is bounded by 2**-58.45. In
+         *      other words,
+         *                      2      4      6      8      10      12      14
+         *          R(z) ~ Lg1*s +Lg2*s +Lg3*s +Lg4*s +Lg5*s  +Lg6*s  +Lg7*s
+         *      (the values of Lg1 to Lg7 are listed in the program)
+         *      and
+         *          |      2          14          |     -58.45
+         *          | Lg1*s +...+Lg7*s    -  R(z) | <= 2
+         *          |                             |
+         *      Note that 2s = f - s*f = f - hfsq + s*hfsq, where hfsq = f*f/2.
+         *      In order to guarantee error in log below 1ulp, we compute log
+         *      by
+         *              log(1+f) = f - s*(f - R)        (if f is not too large)
+         *              log(1+f) = f - (hfsq - s*(hfsq+R)).     (better accuracy)
+         *
+         *      3. Finally,  log(x) = k*ln2 + log(1+f).
+         *                          = k*ln2_hi+(f-(hfsq-(s*(hfsq+R)+k*ln2_lo)))
+         *         Here ln2 is split into two floating point number:
+         *                      ln2_hi + ln2_lo,
+         *         where n*ln2_hi is always exact for |n| < 2000.
+         *
+         * Special cases:
+         *      log(x) is NaN with signal if x < 0 (including -INF) ;
+         *      log(+INF) is +INF; log(0) is -INF with signal;
+         *      log(NaN) is that NaN with no signal.
+         *
+         * Accuracy:
+         *      according to an error analysis, the error is always less than
+         *      1 ulp (unit in the last place).
+         *
+         * Constants:
+         * The hexadecimal values are the intended ones for the following
+         * constants. The decimal values may be used, provided that the
+         * compiler will convert from decimal to binary accurately enough
+         * to produce the hexadecimal values shown.
+         */
 
         typedef double V2DF __attribute__((__vector_size__(16)));
         typedef union
@@ -585,7 +604,7 @@ namespace geodetic
 
             if (SSxx * SSyy == 0.0)
             {
-                //CPLError(CE_Failure, CPLE_AppDefined, "Degenerate system. Computation aborted.");
+                // CPLError(CE_Failure, CPLE_AppDefined, "Degenerate system. Computation aborted.");
                 logger->error("TPS : Degenerate system. Computation aborted");
                 return 0;
             }
@@ -637,7 +656,7 @@ namespace geodetic
 
             if (_nof_eqs > std::numeric_limits<int>::max() / _nof_eqs)
             {
-                //CPLError(CE_Failure, CPLE_AppDefined, "Too many coefficients. Computation aborted.");
+                // CPLError(CE_Failure, CPLE_AppDefined, "Too many coefficients. Computation aborted.");
                 logger->error("TPS : Too many coefficients. Computation aborted");
                 return 0;
             }
@@ -785,9 +804,9 @@ namespace geodetic
             }
             case VIZ_GEOREF_SPLINE_POINT_WAS_ADDED:
             {
-                //CPLError(CE_Failure, CPLE_AppDefined,
-                //         "A point was added after the last solve."
-                //         " NO interpolation - return values are zero");
+                // CPLError(CE_Failure, CPLE_AppDefined,
+                //          "A point was added after the last solve."
+                //          " NO interpolation - return values are zero");
                 logger->error("A point was added after the last solve. NO interpolation - return values are zero");
                 for (int v = 0; v < _nof_vars; v++)
                     vars[v] = 0.0;
@@ -795,9 +814,9 @@ namespace geodetic
             }
             case VIZ_GEOREF_SPLINE_POINT_WAS_DELETED:
             {
-                //CPLError(CE_Failure, CPLE_AppDefined,
-                //         "A point was added after the last solve."
-                //         " NO interpolation - return values are zero");
+                // CPLError(CE_Failure, CPLE_AppDefined,
+                //          "A point was added after the last solve."
+                //          " NO interpolation - return values are zero");
                 logger->error("A point was added after the last solve. NO interpolation - return values are zero");
                 for (int v = 0; v < _nof_vars; v++)
                     vars[v] = 0.0;

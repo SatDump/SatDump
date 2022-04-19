@@ -1,7 +1,7 @@
 #pragma once
 
 /******************************************************************************
- * 
+ *
  *
  * Project:  GDAL Warp API
  * Purpose:  Declarations for 2D Thin Plate Spline transformer.
@@ -110,6 +110,7 @@ namespace geodetic
         private:
             vizGeorefInterType type;
 
+        public:
             const int _nof_vars;
             int _nof_points;
             int _max_nof_points;

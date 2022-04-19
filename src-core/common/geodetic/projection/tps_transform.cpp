@@ -83,8 +83,7 @@ namespace geodetic
             std::thread solveFwd([this]()
                                  {
                                      fwd_solved = spline_forward->solve() != 0;
-                                     logger->info("Forward solved");
-                                 });
+                                     logger->info("Forward solved"); });
             rev_solved = spline_reverse->solve() != 0;
             logger->info("Reverse solved");
             if (solveFwd.joinable())
@@ -107,20 +106,5 @@ namespace geodetic
                 delete spline_forward;
             }
         }
-
-        void TPSTransform::forward(double lon, double lat, double &x, double &y)
-        {
-            spline_forward->get_point(lon, lat, xy);
-            x = xy[0];
-            y = xy[1];
-        }
-
-        void TPSTransform::inverse(double x, double y, double &lon, double &lat)
-        {
-            spline_reverse->get_point(x, y, xy);
-            lon = xy[0];
-            lat = xy[1];
-        }
-
     };
 };

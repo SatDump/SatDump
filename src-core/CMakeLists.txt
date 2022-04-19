@@ -32,7 +32,7 @@ endif()
 
 # Threads
 find_package(Threads REQUIRED)
-target_link_libraries(satdump_core PUBLIC Threads::Threads)
+target_link_libraries(satdump_core PUBLIC Threads::Threads armadillo)
 
 # Set Spdlog to build the library
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")

@@ -183,6 +183,7 @@ namespace metop
                 satdump::ImageProducts avhrr_products;
                 avhrr_products.instrument_name = "avhrr_3";
                 avhrr_products.has_timestamps = true;
+                avhrr_products.set_tle(satellite_tle);
                 avhrr_products.bit_depth = 10;
                 avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
