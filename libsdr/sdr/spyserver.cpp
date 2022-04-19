@@ -64,17 +64,19 @@ void SDRSpyServer::start()
         for (int i = client->devInfo.MinimumIQDecimation; i <= (int)client->devInfo.DecimationStageCount; i++)
         {
             float samplerate = client->devInfo.MaximumSampleRate / (float)(1 << i);
+
+            if (stageToUse == client->devInfo.MinimumIQDecimation && samplerate < d_samplerate && samplerates.size() > 0)
+            {
+                if (d_samplerate < samplerates.back())
+                {
+                    logger->warn("Desired samplerate not available. Using next biggest samplerate. ({})", samplerates.back());
+                }
+                setSamplerate(samplerates.back());
+                stageToUse = samplerates.size() - 1;
+            }
+
             samplerates.push_back(samplerate);
             logger->trace(samplerate);
-        }
-
-        if (std::find(samplerates.begin(), samplerates.end(), d_samplerate) != samplerates.end())
-        {
-            stageToUse = std::find(samplerates.begin(), samplerates.end(), d_samplerate) - samplerates.begin();
-        }
-        else
-        {
-            logger->error("Desired samplerate not available. Default to max.");
         }
     }
 
