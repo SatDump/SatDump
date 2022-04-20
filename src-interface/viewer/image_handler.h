@@ -34,11 +34,11 @@ namespace satdump
         bool white_balance_image = false;
 
         // RGB Handling
-        std::string rgb_equation;
+        ImageCompositeCfg rgb_compo_cfg;
         std::vector<std::string> channel_numbers;
         float rgb_progress = 0;
         bool rgb_processing = false;
-        std::vector<std::pair<std::string, std::string>> rgb_presets;
+        std::vector<std::pair<std::string, ImageCompositeCfg>> rgb_presets;
         std::string rgb_presets_str;
         int select_rgb_presets = -1;
 

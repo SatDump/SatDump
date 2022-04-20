@@ -29,12 +29,13 @@ void kernel warp_image_thin_plate_spline(
 
   int map_img_width = img_settings[0];
   int map_img_height = img_settings[1];
+  int crop_width = img_settings[8] - img_settings[7];
+  int crop_height = img_settings[6] - img_settings[5];
   int img_width = img_settings[2];
   int img_height = img_settings[3];
   int img_channels = img_settings[4];
 
-  size_t n =
-      (img_settings[8] - img_settings[7]) * (img_settings[6] - img_settings[5]);
+  size_t n = crop_width * crop_height;
 
   size_t ratio = (n / nthreads); // number of elements for each thread
   size_t start = ratio * id;
@@ -52,12 +53,14 @@ void kernel warp_image_thin_plate_spline(
   double y_mean = *tps_ymean;
 
   for (size_t xy_ptr = start; xy_ptr < stop; xy_ptr++) {
-    int x = (xy_ptr % (img_settings[8] - img_settings[7])) + img_settings[7];
-    int y = (xy_ptr / (img_settings[8] - img_settings[7])) + img_settings[5];
+    int x = (xy_ptr % crop_width);
+    int y = (xy_ptr / crop_width);
 
     // Scale to the map
-    double lat = -((double)y / (double)map_img_height) * 180 + 90;
-    double lon = ((double)x / (double)map_img_width) * 360 - 180;
+    double lat =
+        -((double)(y + img_settings[5]) / (double)map_img_height) * 180 + 90;
+    double lon =
+        ((double)(x + img_settings[7]) / (double)map_img_width) * 360 - 180;
 
     // Perform TPS
     {
@@ -92,7 +95,7 @@ void kernel warp_image_thin_plate_spline(
       continue;
 
     for (int c = 0; c < img_channels; c++)
-      map_image[(map_img_width * map_img_height) * c + y * map_img_width + x] =
+      map_image[(crop_width * crop_height) * c + y * crop_width + x] =
           img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
   }
 }

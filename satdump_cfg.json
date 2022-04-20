@@ -67,6 +67,25 @@
                     }
                 }
             },
+            "viirs": {
+                "handler": "image_handler",
+                "name": "VIIRS",
+                "rgb_composites": {
+                    "I221": {
+                        "equation": "chi2, chi2, chi1"
+                    },
+                    "I321": {
+                        "equation": "chi3, chi2, chi1"
+                    },
+                    "I321/I221 Mix": {
+                        "equation": "(chi3 * 0.4 + chi2 * 0.6) * 4 - 0.2, chi2 * 4 - 0.2, chi1 * 4 - 0.2"
+                    },
+                    "M543": {
+                        "equation": "chm5, chm4, chm3",
+                        "equalize": true
+                    }
+                }
+            },
             "modis": {
                 "handler": "image_handler",
                 "name": "MODIS",

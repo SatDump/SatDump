@@ -7,22 +7,17 @@ namespace image
 {
     // Generate a composite from channels and an equation
     template <typename T>
-    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json parameters, float *progress)
+    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
         int outValsCnt = 0;
 
-        // Get other parameters such as equalization, etc
-        // bool equalize = parameters.count("equalize") > 0 ? parameters["equalize"].get<bool>() : false;
-        // bool pre_equalize = parameters.count("pre_equalize") > 0 ? parameters["pre_equalize"].get<bool>() : false;
-        // bool normalize = parameters.count("normalize") > 0 ? parameters["normalize"].get<bool>() : false;
-        // bool white_balance = parameters.count("white_balance") > 0 ? parameters["white_balance"].get<bool>() : false;
-        bool hasOffsets = parameters.count("offsets") > 0;
+        bool hasOffsets = !offsets_cfg.empty();
         std::map<std::string, int> offsets;
         if (hasOffsets)
         {
-            std::map<std::string, int> offsetsStr = parameters["offsets"].get<std::map<std::string, int>>();
+            std::map<std::string, int> offsetsStr = offsets_cfg.get<std::map<std::string, int>>();
             for (std::pair<std::string, int> currentOff : offsetsStr)
                 offsets.emplace(currentOff.first, -currentOff.second);
         }
@@ -63,8 +58,8 @@ namespace image
         }
 
         // Get output width
-        int img_width = inputChannels[0].width();
-        int img_height = inputChannels[0].height();
+        int img_width = maxWidth;   // inputChannels[0].width();
+        int img_height = maxHeight; // inputChannels[0].height();
         size_t img_fullch = img_width * img_height;
 
         // Output image
@@ -155,15 +150,6 @@ namespace image
         }
 
         delete[] channelValues;
-
-        // if (white_balance)
-        //     rgb_output.white_balance();
-
-        // if (equalize)
-        //     rgb_output.equalize();
-
-        // if (normalize)
-        //     rgb_output.normalize();
 
         return rgb_output;
     }

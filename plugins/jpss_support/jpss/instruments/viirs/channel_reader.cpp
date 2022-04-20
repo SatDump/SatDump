@@ -149,7 +149,7 @@ namespace jpss
 
                 for (size_t seg_line = 0; seg_line < (size_t)channelSettings.zoneHeight; seg_line++)
                 {
-                    size_t current_line = seg_n * channelSettings.zoneHeight + (31 - seg_line);
+                    size_t current_line = seg_n * channelSettings.zoneHeight + ((channelSettings.zoneHeight - 1) - seg_line);
                     size_t det_offset = 0;
 
                     for (size_t det_n = 0; det_n < 6; det_n++)
