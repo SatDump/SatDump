@@ -40,6 +40,9 @@ namespace noaa_metop
             //*******CALIBRATION*********
             //***************************
 
+            calib = get_calibration_values(id);
+            double RCALn = calib.RCAL[0] + calib.RCAL[1] + calib.RCAL[2];
+
             // declare all the variables
             double a, b;
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw, Tavg = 0;
@@ -75,7 +78,7 @@ namespace noaa_metop
             // math for calculating PRT temperature
             double CCALn = PRT_calib[0] + PRT_calib[1] + PRT_calib[2];
             double C2CALn = pow((double)PRT_calib[0], 2.0) + pow((double)PRT_calib[1], 2.0) + pow((double)PRT_calib[2], 2.0);
-            double RCCALn = (double)PRT_calib[0] * calibration::RCAL[0] + (double)PRT_calib[1] * calibration::RCAL[1] + (double)PRT_calib[2] * calibration::RCAL[2];
+            double RCCALn = (double)PRT_calib[0] * calib.RCAL[0] + (double)PRT_calib[1] * calib.RCAL[1] + (double)PRT_calib[2] * calib.RCAL[2];
             a = (RCALn * C2CALn - CCALn * RCCALn) / (3 * C2CALn - pow(CCALn, 2.0));
             b = (3 * RCCALn - RCALn * CCALn) / (3 * C2CALn - pow(CCALn, 2.0));
 
@@ -85,10 +88,10 @@ namespace noaa_metop
                 Tk[i] = 0;
                 for (int j = 0; j <= 3; j++)
                 {
-                    Tk[i] += calibration::f[i][j] * pow(R[i], (double)j);
+                    Tk[i] += calib.f[i][j] * pow(R[i], (double)j);
                 }
-                WTk += (calibration::W[i] * Tk[i]);
-                Wk += calibration::W[i];
+                WTk += (calib.W[i] * Tk[i]);
+                Wk += calib.W[i];
             }
             Tw = WTk / Wk;
 
@@ -98,7 +101,7 @@ namespace noaa_metop
                 Tth[i] = 0.0;
                 for (int j = 0; j <= 4; j++)
                 {
-                    Tth[i] += (calibration::g[j] * pow((double)HKTH[i], (double)j));
+                    Tth[i] += (calib.g[j] * pow((double)HKTH[i], (double)j));
                 }
             }
             for (int i = 1; i < 20; i++)
@@ -110,8 +113,8 @@ namespace noaa_metop
             // calibration of each channel
             for (int i = 0; i < 5; i++)
             {
-                double Rw = temperature_to_radiance(Tw, calibration::wavenumber[i]);
-                double Rc = temperature_to_radiance(2.73, calibration::wavenumber[i]);
+                double Rw = temperature_to_radiance(Tw, calib.wavenumber[i]);
+                double Rc = temperature_to_radiance(2.73, calib.wavenumber[i]);
 
                 double CCw = calibration_views[i][1]; // blackbody count
                 double CCc = calibration_views[i][0]; // space count
@@ -143,26 +146,26 @@ namespace noaa_metop
 
         double MHSReader::get_u(double temp, int ch)
         {
-            if (temp == calibration::u_temps[0])
-                return calibration::u[0][ch];
+            if (temp == calib.u_temps[0])
+                return calib.u[0][ch];
 
-            if (temp == calibration::u_temps[1])
-                return calibration::u[1][ch];
+            if (temp == calib.u_temps[1])
+                return calib.u[1][ch];
 
-            if (temp == calibration::u_temps[2])
-                return calibration::u[2][ch];
+            if (temp == calib.u_temps[2])
+                return calib.u[2][ch];
 
-            if (temp < calibration::u_temps[0])
-                return interpolate(calibration::u_temps[0], calibration::u[0][ch], calibration::u_temps[1], calibration::u[1][ch], temp, 0);
+            if (temp < calib.u_temps[0])
+                return interpolate(calib.u_temps[0], calib.u[0][ch], calib.u_temps[1], calib.u[1][ch], temp, 0);
 
-            if (temp > calibration::u_temps[0] && temp < calibration::u_temps[1])
-                return interpolate(calibration::u_temps[0], calibration::u[0][ch], calibration::u_temps[1], calibration::u[1][ch], temp, 0);
+            if (temp > calib.u_temps[0] && temp < calib.u_temps[1])
+                return interpolate(calib.u_temps[0], calib.u[0][ch], calib.u_temps[1], calib.u[1][ch], temp, 0);
 
-            if (temp > calibration::u_temps[1] && temp < calibration::u_temps[2])
-                return interpolate(calibration::u_temps[1], calibration::u[1][ch], calibration::u_temps[2], calibration::u[2][ch], temp, 0);
+            if (temp > calib.u_temps[1] && temp < calib.u_temps[2])
+                return interpolate(calib.u_temps[1], calib.u[1][ch], calib.u_temps[2], calib.u[2][ch], temp, 0);
 
             else
-                return interpolate(calibration::u_temps[1], calibration::u[1][ch], calibration::u_temps[2], calibration::u[2][ch], temp, 1);
+                return interpolate(calib.u_temps[1], calib.u[1][ch], calib.u_temps[2], calib.u[2][ch], temp, 1);
         }
 
         double MHSReader::interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode)

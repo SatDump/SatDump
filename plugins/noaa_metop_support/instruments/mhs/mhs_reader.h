@@ -43,7 +43,6 @@ namespace noaa_metop
             uint32_t last_major_cycle = 0;
 
             //calib values
-            const double RCALn = calibration::RCAL[0] + calibration::RCAL[1] + calibration::RCAL[2];
             MHS_calibration_Values calib;
 
             //calib functions

@@ -13,7 +13,7 @@ namespace satdump
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
-        loadProductsInViewer("/home/zbyszek/Downloads/test/AVHRR/product.cbor");
+        loadProductsInViewer("/home/zbyszek/Downloads/test/MHS/product.cbor");
         /*
         loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/noaa_mhs_test/MHS/product.cbor");

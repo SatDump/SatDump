@@ -189,7 +189,7 @@ namespace noaa
                     for (int i = 0; i < 5; i++)
                     {
                         mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
-                        //mhs_products.set_wavenumber(i, mhs::calibration::wavenumber[i]);
+                        mhs_products.set_wavenumber(i, noaa_metop::mhs::calibration::wavenumber[i]);
                     }
 
                     for (int i = 0; i < 5; i++)
