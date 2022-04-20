@@ -18,7 +18,6 @@ namespace noaa
         MHSReader::MHSReader()
         {
             std::memset(MIU_data, 0, 80 * 50);
-            testout = std::ofstream("noaa_test.bin");
         }
 
         void MHSReader::work(uint8_t *buffer)
@@ -42,7 +41,6 @@ namespace noaa
 
                     std::array<uint8_t, SCI_PACKET_SIZE> SCI_packet = get_SCI_packet(pk); // get packet
                     timestamps.push_back(get_timestamp(pk, DAY_OFFSET));                  // push timestamp
-                    testout.write((char *)&SCI_packet[0], SCI_PACKET_SIZE);
                     std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2); // make some room
 
                     for (int i = 0; i < MHS_WIDTH; i++)

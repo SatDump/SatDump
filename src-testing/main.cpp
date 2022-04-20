@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     }
 
     satdump::ImageProducts img_pro;
-    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_3/AVHRR/product.cbor");
+    img_pro.load("/home/zbyszek/Downloads/test/AVHRR/product.cbor");
 
     // ThinPlateSpline::PointList input_points;
     // ThinPlateSpline::PointList output_points;
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
         simple_add.setArg(9, buffer_img_settings);
 
         logger->info("Start GPU");
-        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(1920), cl::NullRange);
+        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(640), cl::NullRange);
         // logger->info("Stop GPU");
 
         // read result from GPU to here

@@ -75,7 +75,14 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 34)
-                            mhs_reader.work(pkt);
+                        {
+                            if (vcdu.spacecraft_id == METOP_A_SCID)
+                                mhs_reader.work_metop(pkt, 1);
+                            else if (vcdu.spacecraft_id == METOP_B_SCID)
+                                mhs_reader.work_metop(pkt, 2);
+                            else if (vcdu.spacecraft_id == METOP_C_SCID)
+                                mhs_reader.work_metop(pkt, 3);
+                        }
                 }
                 else if (vcdu.vcid == 15) // ASCAT
                 {
@@ -206,7 +213,7 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- MHS");
-                logger->info("Lines : " + std::to_string(mhs_reader.lines));
+                logger->info("Lines : " + std::to_string(mhs_reader.line));
 
                 /*for (int i = 0; i < 5; i++)
                 {
@@ -424,7 +431,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MHS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.lines);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mhs_status);
 
