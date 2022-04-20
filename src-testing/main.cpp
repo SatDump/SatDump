@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     }
 
     satdump::ImageProducts img_pro;
-    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_3/AVHRR/product.cbor");
+    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
 
     // ThinPlateSpline::PointList input_points;
     // ThinPlateSpline::PointList output_points;
@@ -87,10 +87,9 @@ int main(int argc, char *argv[])
 
     satdump::SatelliteTracker sat_tracker(img_pro.get_tle());
 
-    image::Image<uint16_t> img_map(2048 * 8, 1024 * 8, 3);
-
     std::vector<int> values;
 
+#if 1
     for (int x = 0; x < 2048; x += 100)
         values.push_back(x);
 
@@ -143,6 +142,60 @@ int main(int argc, char *argv[])
 
         y++;
     }
+#else
+    for (int x = 0; x < 90; x += 5)
+        values.push_back(x);
+
+    values.push_back(90 - 1);
+
+    int y = 0;
+    for (double timestamp : img_pro.contents["timestamps"].get<std::vector<double>>())
+    {
+        timestamp -= 1;
+
+        geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
+        geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
+
+        double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+
+        for (int x : values)
+        {
+            //  if (y % 200 == 0)
+            //      logger->info(x);
+            bool invert_scan = true;
+
+            float roll_offset = -1.0;
+            float pitch_offset = 0;
+            float yaw_offset = 0;
+            float scan_angle = 99;
+
+            double final_x = invert_scan ? (90 - 1) - x : x;
+            bool ascending = false;
+
+            geodetic::euler_coords_t satellite_pointing;
+            satellite_pointing.roll = -(((final_x - (90.0 / 2.0)) / 90.0) * scan_angle) + roll_offset;
+            satellite_pointing.pitch = pitch_offset;
+            satellite_pointing.yaw = (90 + (ascending ? yaw_offset : -yaw_offset)) - az_angle;
+
+            geodetic::geodetic_coords_t ground_position;
+            geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            ground_position.toDegs();
+
+            // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
+
+            if (y % 5 == 0 || y + 1 == img_pro.contents["timestamps"].get<std::vector<double>>().size())
+            {
+                gcps.push_back({x, y, ground_position.lon, ground_position.lat});
+                //  output_points.push_back(Eigen::Vector3d(x, y, 0));
+                //  input_points.push_back(Eigen::Vector3d(image_x, image_y, 0));
+            }
+        }
+
+        // logger->info("{:d}", y);
+
+        y++;
+    }
+#endif
 
     logger->info(gcps.size());
 
@@ -157,10 +210,13 @@ int main(int argc, char *argv[])
     int p_lon_min = -180;
     int p_lon_max = 180;
 
+    int map_height = 1024 * 8;
+    int map_width = 2048 * 8;
+
     int p_y_min = 0;
-    int p_y_max = img_map.height();
+    int p_y_max = map_height; // img_map.height();
     int p_x_min = 0;
-    int p_x_max = img_map.width();
+    int p_x_max = map_width; // img_map.width();
 
     // Determine min/max lat/lon we have to cover to warp this image properly
     {
@@ -205,10 +261,10 @@ int main(int argc, char *argv[])
         // int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;
         //                                int imageLon = (lon / 360.0f) * map_width + (map_width / 2);
 
-        p_y_max = img_map.height() - ((90.0f + p_lat_min) / 180.0f) * img_map.height();
-        p_y_min = img_map.height() - ((90.0f + p_lat_max) / 180.0f) * img_map.height();
-        p_x_min = (p_lon_min / 360.0f) * img_map.width() + (img_map.width() / 2);
-        p_x_max = (p_lon_max / 360.0f) * img_map.width() + (img_map.width() / 2);
+        p_y_max = map_height - ((90.0f + p_lat_min) / 180.0f) * map_height;
+        p_y_min = map_height - ((90.0f + p_lat_max) / 180.0f) * map_height;
+        p_x_min = (p_lon_min / 360.0f) * map_width + (map_width / 2);
+        p_x_max = (p_lon_max / 360.0f) * map_width + (map_width / 2);
 
         logger->info("Y min {:d}", p_y_min);
         logger->info("Y max {:d}", p_y_max);
@@ -216,7 +272,15 @@ int main(int argc, char *argv[])
         logger->info("X max {:d}", p_x_max);
     }
 
-    image::Image<uint16_t> img = image::generate_composite_from_equ<uint16_t>({std::get<2>(img_pro.images[0]), std::get<2>(img_pro.images[1]), std::get<2>(img_pro.images[2])}, {"1", "2", "3"}, "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15", "");
+    image::Image<uint16_t> img_map(p_x_max - p_x_min, p_y_max - p_y_min, 3);
+
+    satdump::ImageCompositeCfg rgb_cfg;
+    rgb_cfg.equation = "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+
+    image::Image<uint16_t> img = satdump::make_composite_from_product(img_pro, rgb_cfg);
+    // img.equalize();
+
+    // img.resize_bilinear(img.width() * 4, img.height() * 4);
 
     time_t gpu_start = time(0);
     {
@@ -233,7 +297,7 @@ int main(int argc, char *argv[])
         cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(double));
         cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(double));
 
-        int img_settings[] = {img_map.width(), img_map.height(), img.width(), img.height(), img_map.channels(), p_y_min, p_y_max, p_x_min, p_x_max};
+        int img_settings[] = {map_width, map_height, img.width(), img.height(), img_map.channels(), p_y_min, p_y_max, p_x_min, p_x_max};
 
         cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
 
@@ -282,51 +346,58 @@ int main(int argc, char *argv[])
     time_t gpu_time = time(0) - gpu_start;
     logger->info("GPU Time {:d}", gpu_time);
 
-    /*
-        time_t cpu_start = time(0);
-        double xx, yy;
+#if 0
+    time_t cpu_start = time(0);
+    double xx, yy;
 
-        for (int y = 0; y < img_map.height(); y++)
+    for (int y = p_y_min; y < p_y_max; y++)
+    {
+        for (int x = p_x_min; x < p_x_max; x++)
         {
-            for (int x = 0; x < img_map.width(); x++)
-            {
-                // Scale to the map
-                double lat = -(double(y) / double(img_map.height())) * 180 + 90;
-                double lon = (double(x) / double(img_map.width())) * 360 - 180;
+            // Scale to the map
+            double lat = -(double(y) / double(img_map.height())) * 180 + 90;
+            double lon = (double(x) / double(img_map.width())) * 360 - 180;
 
-                 tps.forward(lon, lat, xx, yy);
-                //  logger->info("{:f} {:f}", xx, yy);
+            tps.forward(lon, lat, xx, yy);
+            //  logger->info("{:f} {:f}", xx, yy);
 
-                if (xx < 0 || yy < 0)
-                    continue;
+            if (xx < 0 || yy < 0)
+                continue;
 
-                if (xx > img1.width() - 1 || yy > img1.height() - 1)
-                    continue;
+            if (xx > img.width() - 1 || yy > img.height() - 1)
+                continue;
 
-                // for (int c = 0; c < 3; c++)
-                img_map.channel(0)[y * img_map.width() + x] = img2.channel(0)[int(yy) * img1.width() + int(xx)];
-                img_map.channel(1)[y * img_map.width() + x] = img2.channel(0)[int(yy) * img1.width() + int(xx)];
-                img_map.channel(2)[y * img_map.width() + x] = img1.channel(0)[int(yy) * img1.width() + int(xx)];
-                //  img_map.channel(1)[y * img1.width() + x] = img1.channel(1)[(int)floor(yy) * img1.width() + (int)floor(xx)];
-                //  img_map.channel(2)[y * img1.width() + x] = img1.channel(2)[(int)floor(yy) * img1.width() + (int)floor(xx)];
-            }
-
-            logger->info("{:d}", y);
+            for (int c = 0; c < 3; c++)
+                img_map.channel(c)[y * img_map.width() + x] = img.channel(c)[(int)yy * img.width() + (int)xx];
         }
-        time_t cpu_time = time(0) - cpu_start;
-        logger->info("CPU Time {:d}", cpu_time);
-    */
+
+        logger->info("{:d}", y);
+    }
+    time_t cpu_time = time(0) - cpu_start;
+    logger->info("CPU Time {:d}", cpu_time);
+#endif
 
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    img_map,
                                    color,
-                                   [](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+                                   [map_width, map_height, p_y_min, p_x_min, p_y_max, p_x_max](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
                                    {
                                        int imageLat = map_height - ((90.0f + lat) / 180.0f) * map_height;
                                        int imageLon = (lon / 360.0f) * map_width + (map_width / 2);
+
+                                       imageLat -= p_y_min;
+                                       imageLon -= p_x_min;
+
+                                       if (imageLat < 0 || imageLat > map_height2)
+                                           return {-1, -1};
+                                       if (imageLon < 0 || imageLon > map_width2)
+                                           return {-1, -1};
+
                                        return {imageLon, imageLat};
                                    });
+
+    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
 
     img_map.save_png("test.png");
 }

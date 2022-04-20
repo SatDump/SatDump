@@ -14,19 +14,19 @@ namespace satdump
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
-                rgb_presets.push_back({compo.key(), compo.value()["equation"].get<std::string>()});
+                rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
 
         select_image_str += std::string("Composite") + '\0';
 
         for (int i = 0; i < products->images.size(); i++)
         {
             auto img = products->images[i];
-            select_image_str += "Channel " + std::get<1>(img) + '\0';
-            channel_numbers.push_back(std::get<1>(img));
-            images_obj.push_back(std::get<2>(img));
+            select_image_str += "Channel " + img.channel_name + '\0';
+            channel_numbers.push_back(img.channel_name);
+            images_obj.push_back(img.image);
         }
 
-        for (std::pair<std::string, std::string> &compo : rgb_presets)
+        for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
             rgb_presets_str += compo.first + '\0';
 
         asyncUpdate();
@@ -37,7 +37,7 @@ namespace satdump
         if (select_image_id == 0)
             current_image = rgb_image;
         else
-            current_image = std::get<2>(products->images[select_image_id - 1]);
+            current_image = products->images[select_image_id - 1].image;
 
         if (rotate_image)
             current_image.mirror(true, true);
@@ -68,7 +68,7 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = std::get<2>(products->images[active_channel_id])[y * current_image.width() + x] >> (16 - products->bit_depth);
+                int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
                 double radiance = products->get_radiance_value(active_channel_id, x, y);
 
                 ImGui::BeginTooltip();
@@ -105,7 +105,16 @@ namespace satdump
         ui_thread_pool.push([this](int)
                             { 
                     logger->info("Generating RGB Composite");
-                    rgb_image = image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    satdump::ImageCompositeCfg cfg;
+                    cfg.equation = rgb_compo_cfg.equation;
+                    cfg.offsets = rgb_compo_cfg.offsets;
+
+                    equalize_image = rgb_compo_cfg.equalize;
+                    invert_image = rgb_compo_cfg.invert;
+                    normalize_image = rgb_compo_cfg.normalize;
+                    white_balance_image = rgb_compo_cfg.white_balance;
+
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -189,11 +198,11 @@ namespace satdump
         {
             if (ImGui::Combo("Preset", &select_rgb_presets, rgb_presets_str.c_str()))
             {
-                rgb_equation = rgb_presets[select_rgb_presets].second;
+                rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
                 updateRGB();
             }
 
-            ImGui::InputText("##rgbEquation", &rgb_equation);
+            ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation);
             if (rgb_processing)
                 style::beginDisabled();
             if (ImGui::Button("Apply") && !rgb_processing)
@@ -215,12 +224,12 @@ namespace satdump
                 {
                     active_channel_id = select_image_id - 1;
 
-                    rgb_image = std::get<2>(products->images[active_channel_id]);
+                    rgb_image = products->images[active_channel_id].image;
                     rgb_image.to_rgb();
 
-                    for (size_t y = 0; y < std::get<2>(products->images[active_channel_id]).height(); y++)
+                    for (size_t y = 0; y < products->images[active_channel_id].image.height(); y++)
                     {
-                        for (size_t x = 0; x < std::get<2>(products->images[active_channel_id]).width(); x++)
+                        for (size_t x = 0; x < products->images[active_channel_id].image.width(); x++)
                         {
                             float temp_c = radiance_to_temperature(products->get_radiance_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
 

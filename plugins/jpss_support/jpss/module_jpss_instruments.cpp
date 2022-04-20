@@ -9,6 +9,7 @@
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "products/products.h"
+#include "products/image_products.h"
 //#include "instruments/viirs/channel_correlator.h"
 
 namespace jpss
@@ -231,6 +232,15 @@ namespace jpss
                 const float alpha = 1.0 / 1.9;
                 const float beta = 0.52333; // 1.0 - alpha;
 
+                satdump::ImageProducts viirs_products;
+                viirs_products.instrument_name = "viirs";
+                viirs_products.has_timestamps = true;
+                viirs_products.needs_correlation = true;
+                // viirs_products.set_tle(satellite_tle);
+                viirs_products.bit_depth = 16;
+                viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                // viirs_products.set_timestamps(mhs_reader.timestamps);
+
                 for (int i = 0; i < 16; i++)
                 {
                     if (viirs_reader_moderate[i].segments.size() > 0)
@@ -239,7 +249,12 @@ namespace jpss
                         image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
-                        WRITE_IMAGE(viirs_image, directory + "/VIIRS-M" + std::to_string(i + 1) + ".png");
+
+                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1) + ".png",
+                                                         "m" + std::to_string(i + 1),
+                                                         viirs_image,
+                                                         viirs_reader_moderate[i].timestamps,
+                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
                     }
                     viirs_moderate_status[i] = DONE;
                 }
@@ -252,7 +267,12 @@ namespace jpss
                         image::Image<uint16_t> viirs_image = viirs_reader_imaging[i].getImage();
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
-                        WRITE_IMAGE(viirs_image, directory + "/VIIRS-I" + std::to_string(i + 1) + ".png");
+
+                        viirs_products.images.push_back({"VIIRS-I" + std::to_string(i + 1) + ".png",
+                                                         "i" + std::to_string(i + 1),
+                                                         viirs_image,
+                                                         viirs_reader_imaging[i].timestamps,
+                                                         viirs_reader_imaging[i].channelSettings.zoneHeight});
                     }
                     viirs_imaging_status[i] = DONE;
                 }
@@ -261,21 +281,38 @@ namespace jpss
                 if (viirs_reader_dnb[0].segments.size() > 0)
                 {
                     logger->info("DNB...");
-                    WRITE_IMAGE(viirs_reader_dnb[0].getImage(), directory + "/VIIRS-DNB.png");
+
+                    viirs_products.images.push_back({"VIIRS-DNB.png",
+                                                     "dnb",
+                                                     viirs_reader_dnb[0].getImage(),
+                                                     viirs_reader_dnb[0].timestamps,
+                                                     viirs_reader_dnb[0].channelSettings.zoneHeight});
                 }
 
                 if (viirs_reader_dnb[1].segments.size() > 0)
                 {
                     logger->info("DNB MGS...");
-                    WRITE_IMAGE(viirs_reader_dnb[1].getImage(), directory + "/VIIRS-DNB-MGS.png");
+
+                    viirs_products.images.push_back({"VIIRS-DNB-MGS.png",
+                                                     "dnbmgs",
+                                                     viirs_reader_dnb[1].getImage(),
+                                                     viirs_reader_dnb[1].timestamps,
+                                                     viirs_reader_dnb[1].channelSettings.zoneHeight});
                 }
 
                 if (viirs_reader_dnb[2].segments.size() > 0)
                 {
                     logger->info("DNB LGS...");
-                    WRITE_IMAGE(viirs_reader_dnb[2].getImage(), directory + "/VIIRS-DNB-LGS.png");
+
+                    viirs_products.images.push_back({"VIIRS-DNB-LGS.png",
+                                                     "dnblgs",
+                                                     viirs_reader_dnb[2].getImage(),
+                                                     viirs_reader_dnb[2].timestamps,
+                                                     viirs_reader_dnb[2].channelSettings.zoneHeight});
                 }
                 viirs_dnb_status = DONE;
+
+                viirs_products.save(directory);
             }
         }
 
