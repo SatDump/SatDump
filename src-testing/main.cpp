@@ -333,8 +333,18 @@ int main(int argc, char *argv[])
         simple_add.setArg(8, buffer_tps_ymean);
         simple_add.setArg(9, buffer_img_settings);
 
+        size_t wg = 0;
+        // int wg2 = default_device.getInfo(CL_KERNEL_WORK_GROUP_SIZE, &wg);
+        clGetDeviceInfo(default_device.get(), CL_KERNEL_WORK_GROUP_SIZE, 0, NULL, &wg);
+        cl_uint size_wg;
+        clGetDeviceInfo(default_device.get(), CL_KERNEL_WORK_GROUP_SIZE, wg, &size_wg, NULL);
+        // logger->critical(size_wg);
+
         logger->info("Start GPU");
-        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(1920), cl::NullRange);
+
+        logger->debug("Workgroup size {:d}", size_wg);
+
+        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(size_wg), cl::NullRange);
         // logger->info("Stop GPU");
 
         // read result from GPU to here
