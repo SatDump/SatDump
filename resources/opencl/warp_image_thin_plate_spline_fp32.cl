@@ -21,7 +21,7 @@
 inline float SQ(const float x) { return x * x; }
 
 inline void VizGeorefSpline2DBase_func4(float *res, const float *pxy,
-                                        const float *xr, const float *yr) {
+                                        global const float *xr, global const float *yr) {
   float dist0 = SQ(xr[0] - pxy[0]) + SQ(yr[0] - pxy[1]);
   res[0] = dist0 != 0.0 ? dist0 * log(dist0) : 0.0;
   float dist1 = SQ(xr[1] - pxy[0]) + SQ(yr[1] - pxy[1]);
@@ -66,7 +66,7 @@ void kernel warp_image_thin_plate_spline(
   float xx, yy;
 
   float vars[2];
-  float *coef[2] = {tps_coef_1, tps_coef_2};
+  global float *coef[2] = {tps_coef_1, tps_coef_2};
   int _nof_points = *tps_no_points;
   int _nof_vars = 2;
   float x_mean = *tps_xmean;

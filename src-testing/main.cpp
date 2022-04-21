@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     initLogger();
 
     satdump::ImageProducts img_pro;
-    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_3/AVHRR/product.cbor");
+    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
 
     std::vector<satdump::projection::GCP> gcps;
 
