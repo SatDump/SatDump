@@ -1,6 +1,6 @@
 #include "geos.h"
 #include <cmath>
-#include "../wgs84.h"
+#include "common/geodetic/wgs84.h"
 
 /*
 ** This file was adapted and simplified from libproj, and the below

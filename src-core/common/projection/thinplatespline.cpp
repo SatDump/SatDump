@@ -59,7 +59,7 @@
 //#define USE_OPTIMIZED_VizGeorefSpline2DBase_func4 1
 // #define VIZ_GEOREF_SPLINE_DEBUG 0
 
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {

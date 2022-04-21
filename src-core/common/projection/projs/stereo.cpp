@@ -1,6 +1,6 @@
 #include "stereo.h"
 #include <cmath>
-#include "../wgs84.h"
+#include "common/geodetic/wgs84.h"
 #ifndef M_PI_2
 #define M_PI_2 1.57079632679489661923 /* pi/2 */
 #endif

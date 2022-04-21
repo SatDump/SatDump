@@ -12,6 +12,7 @@ option(BUILD_TESTING        "Build the testing program"                         
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           ON)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
+option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
 
 option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
 
@@ -48,6 +49,17 @@ endif()
 project (SatDump VERSION "1.0.0")
 
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
+
+# Check we have OpenCL
+find_package(OpenCL REQUIRED)
+
+if(OPENCL_FOUND AND BUILD_OPENCL)
+    message("OpenCL Found! SatDump will support accelerated GPU computing.")
+    add_compile_definitions(USE_OPENCL="1")
+else()
+    message("OpenCL NOT found or disabled!")
+    set(BUILD_OPENCL OFF)
+endif()
 
 include(CheckCXXSourceCompiles)
 

@@ -1,21 +1,12 @@
 #pragma once
 
 #include <vector>
-#include "thinplatespline.h"
+#include "../thinplatespline.h"
 
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {
-        // Ground Control Point
-        struct GCP
-        {
-            double x;
-            double y;
-            double lon;
-            double lat;
-        };
-
         class TPSTransform
         {
         private:

@@ -9,6 +9,7 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "../../meteor.h"
+#include "products/image_products.h"
 #include <ctime>
 
 #define BUFFER_SIZE 8192
@@ -81,6 +82,22 @@ namespace meteor
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            satdump::ImageProducts msumr_products;
+            msumr_products.instrument_name = "msu_mr";
+            msumr_products.has_timestamps = true;
+            msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+            msumr_products.needs_correlation = true;
+            // msumr_products.set_timestamps(msumr_timestamps);
+
+            for (int i = 0; i < 6; i++)
+            {
+                image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
+                if (img.size() > 0)
+                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), img, msureader.timestamps, 8});
+            }
+
+            msumr_products.save(directory);
 
             // TODO : Add detection system!!!!!!!!
             // Currently not *that* mandatory as only M2 is active on VHF

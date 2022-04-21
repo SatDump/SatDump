@@ -39,10 +39,19 @@
  All credits go to the GDAL Project and the VIZRT Team.
 */
 
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {
+        // Ground Control Point
+        struct GCP
+        {
+            double x;
+            double y;
+            double lon;
+            double lat;
+        };
+
         typedef enum
         {
             VIZ_GEOREF_SPLINE_ZERO_POINTS,

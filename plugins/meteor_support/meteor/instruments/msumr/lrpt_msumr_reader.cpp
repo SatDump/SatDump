@@ -37,8 +37,8 @@ namespace meteor
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
-                //if (packet.payload.size() - 1 != packet.header.packet_length)
-                //    return;
+                // if (packet.payload.size() - 1 != packet.header.packet_length)
+                //     return;
 
                 int currentChannel = -1;
 
@@ -133,8 +133,7 @@ namespace meteor
 
                                 if (!hasDoneTimestamps)
                                 {
-                                    for (int i = -4; i < 4; i++)
-                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp + i * 0.153 - 3 * 3600);
+                                    timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
                                     hasDoneTimestamps = true;
                                 }
                             }
@@ -150,8 +149,7 @@ namespace meteor
 
                     if (!hasDoneTimestamps)
                     {
-                        for (int i = -4; i < 4; i++)
-                            timestamps.push_back(-1);
+                        timestamps.push_back(-1);
                     }
                 }
 

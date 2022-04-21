@@ -10,7 +10,7 @@
  All credits go to the GDAL Project
 */
 
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {

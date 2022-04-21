@@ -62,13 +62,12 @@
         "work": {
             "baseband": {},
             "soft": {
-                "qpsk_demod": {
-                    "symbolrate": 72000,
-                    "agc_rate": 0.1,
-                    "rrc_alpha": 0.6,
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 72e3,
                     "rrc_taps": 361,
-                    "costas_bw": 0.004,
-                    "buffer_size": 8192
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
                 }
             },
             "cadu": {

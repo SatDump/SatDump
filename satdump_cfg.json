@@ -67,6 +67,21 @@
                     }
                 }
             },
+            "msu_mr": {
+                "handler": "image_handler",
+                "name": "MSU-MR",
+                "rgb_composites": {
+                    "221": {
+                        "equation": "ch2, ch2, ch1"
+                    },
+                    "321": {
+                        "equation": "ch3, ch2, ch1"
+                    },
+                    "321/221 Mix": {
+                        "equation": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15"
+                    }
+                }
+            },
             "viirs": {
                 "handler": "image_handler",
                 "name": "VIIRS",
