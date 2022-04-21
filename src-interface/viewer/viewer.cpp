@@ -155,7 +155,7 @@ namespace satdump
     {
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
         ImGui::BeginGroup();
-        ImGui::BeginChild("ViewerChildPanel", {(float)viewer_size.x * 0.20, (float)viewer_size.y}, false);
+        ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * 0.20), float(viewer_size.y)}, false);
         {
             drawPanel();
             products_and_handlers[current_handler_id].handler->drawMenu();
@@ -166,7 +166,7 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        products_and_handlers[current_handler_id].handler->drawContents({(float)viewer_size.x * 0.80 - 4, (float)viewer_size.y});
+        products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
         ImGui::EndGroup();
     }
 
