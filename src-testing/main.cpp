@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
                 // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
 
                 if (y % 100 == 0 || y + 1 == img_pro.contents["timestamps"].get<std::vector<double>>().size())
-                    gcps.push_back({x, y, ground_position.lon, ground_position.lat});
+                    gcps.push_back({(double)x, (double)y, (double)ground_position.lon, (double)ground_position.lat});
             }
 
             y++;
