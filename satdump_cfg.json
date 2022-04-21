@@ -49,6 +49,42 @@
             "description": "DPI Scaling defines the overall UI scale. This can be used to make it bigger or smaller depending on your display's pixel density."
         }
     },
+    // More generic SatDump settings
+    "satdump_general": {
+        "update_tles_startup": {
+            "type": "bool",
+            "value": false,
+            "name": "Update TLEs on Startup",
+            "description": "If this is enabled, TLEs will be updated each time SatDump is started"
+        }
+    },
+    // TLE settings
+    "tle_settings": {
+        "url_template": "http://www.celestrak.com/NORAD/elements/gp.php?CATNR=%NORAD%",
+        "tles_to_fetch": [
+            29499, // MetOp-A
+            38771, // MetOp-B
+            43689, // MetOp-C
+            25338, // NOAA-15
+            28654, // NOAA-18
+            33591, // NOAA-19
+            32958, // FengYun-3A
+            37214, // FengYun-3B
+            39260, // FengYun-3C
+            43010, // FengYun-3D
+            49008, // FengYun-3E
+            35865, // METEOR-M1
+            40069, // METEOR-M2
+            44387, // METEOR-M2-2
+            25994, // Terra
+            27424, // Aqua
+            28376, // Aura
+            37849, // Suomi-NPP
+            43013, // JPSS-1
+            41240, // Jason-3
+            43662 // CFOSAT-1
+        ]
+    },
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {

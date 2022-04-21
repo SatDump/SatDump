@@ -1,3 +1,23 @@
+/*
+  OpenCL Kernel capable of wraping an image
+  to an equirectangular projection using a Thin
+  Plate Spline transformation that was already
+  solved on the CPU.
+
+  This has a huge performance boost over doing
+  it purely on CPU, unless you have a potato
+  as a GPU of course!
+
+  The TPS code is nearly a 1:1 port of Vizz's
+  in C++. Only 2D is supported as realistically
+  for any usecase worth doing on GPU... It will
+  be 2D.
+
+  This is the 64-bits float (double) version,
+  which has better accuracy (only required for
+  very high resolution usecases).
+*/
+
 inline double SQ(const double x) { return x * x; }
 
 inline void VizGeorefSpline2DBase_func4(double *res, const double *pxy,

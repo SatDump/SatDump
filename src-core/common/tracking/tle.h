@@ -50,4 +50,9 @@ namespace satdump
                 return std::optional<TLE>();
         };
     };
+
+    extern TLERegistry general_tle_registry;
+
+    void updateTLEFile(std::string path);
+    void loadTLEFileIntoRegistry(std::string path);
 }

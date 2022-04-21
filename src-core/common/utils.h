@@ -110,3 +110,11 @@ size_t getFilesize(std::string filepath);
 int perform_http_request(std::string url, std::string &result);
 
 std::string timestamp_to_string(double timestamp);
+
+inline std::vector<float> double_buffer_to_float(double *ptr, int size)
+{
+    std::vector<float> ret;
+    for (int i = 0; i < size; i++)
+        ret.push_back(ptr[i]);
+    return ret;
+}

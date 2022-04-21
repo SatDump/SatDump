@@ -8,6 +8,8 @@
 #include "satdump_vars.h"
 #include "core/config.h"
 
+#include "common/tracking/tle.h"
+
 namespace satdump
 {
     void initSatdump()
@@ -45,7 +47,9 @@ namespace satdump
             logger->debug(" - " + pipeline.name);
 
         // TLEs
-        // tle::loadTLEs();
+        if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>())
+            updateTLEFile(user_path + "/satdump_tles.txt");
+        loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});

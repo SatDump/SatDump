@@ -221,12 +221,12 @@ namespace satdump
         }
 
 #ifdef USE_OPENCL
-        WarpResult warpOnGPU(cl::Context context, cl::Device device, WarpOperation op)
+        WarpResult warpOnGPU_fp64(cl::Context context, cl::Device device, WarpOperation op)
         {
             WarpResult result;
 
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline.cl"));
+            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
 
             // Select Area to crop (hence reducing the workload a LOT)
             WarpCropSettings crop_set = choseCropArea(op);
@@ -324,6 +324,116 @@ namespace satdump
 
             return result;
         }
+
+        WarpResult warpOnGPU_fp32(cl::Context context, cl::Device device, WarpOperation op)
+        {
+            WarpResult result;
+
+            // Build GPU Kernel
+            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
+
+            // Select Area to crop (hence reducing the workload a LOT)
+            WarpCropSettings crop_set = choseCropArea(op);
+
+            // Compute TPS
+            projection::VizGeorefSpline2D *tps = initTPSTransform(op);
+
+            // Prepare the output, since we can
+            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
+            result.top_left = {0, 0, crop_set.lon_min, crop_set.lat_min};                                                                  // 0,0
+            result.top_right = {result.output_image.width() - 1, 0, crop_set.lon_max, crop_set.lat_min};                                   // 1,0
+            result.bottom_left = {0, result.output_image.height() - 1, crop_set.lon_min, crop_set.lat_max};                                // 0,1
+            result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
+
+            // Now, run the actual OpenCL Kernel
+            time_t gpu_start = time(0);
+            {
+                // Images
+                cl::Buffer buffer_map(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size());
+                cl::Buffer buffer_img(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size());
+
+                // TPS Stuff
+                cl::Buffer buffer_tps_npoints(context, CL_MEM_READ_WRITE, sizeof(int));
+                cl::Buffer buffer_tps_x(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points);
+                cl::Buffer buffer_tps_y(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points);
+                cl::Buffer buffer_tps_coefs1(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs);
+                cl::Buffer buffer_tps_coefs2(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs);
+                cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(float));
+                cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(float));
+
+                int img_settings[] = {op.output_width, op.output_height,
+                                      op.input_image.width(), op.input_image.height(),
+                                      op.input_image.channels(),
+                                      crop_set.y_min, crop_set.y_max,
+                                      crop_set.x_min, crop_set.x_max};
+
+                cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
+
+                // Create an OpenCL queue
+                cl::CommandQueue queue(context, device);
+
+                // Write all of buffers to the GPU, also converting to FP32
+                queue.enqueueWriteBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
+                queue.enqueueWriteBuffer(buffer_img, CL_TRUE, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data());
+                queue.enqueueWriteBuffer(buffer_tps_npoints, CL_TRUE, 0, sizeof(int), &tps->_nof_points);
+                std::vector<float> tps_x = double_buffer_to_float(tps->x, tps->_nof_points);
+                std::vector<float> tps_y = double_buffer_to_float(tps->y, tps->_nof_points);
+                std::vector<float> tps_coef1 = double_buffer_to_float(tps->coef[0], tps->_nof_eqs);
+                std::vector<float> tps_coef2 = double_buffer_to_float(tps->coef[1], tps->_nof_eqs);
+                float tps_x_mean = tps->x_mean;
+                float tps_y_mean = tps->y_mean;
+                queue.enqueueWriteBuffer(buffer_tps_x, CL_TRUE, 0, sizeof(float) * tps->_nof_points, tps_x.data());
+                queue.enqueueWriteBuffer(buffer_tps_y, CL_TRUE, 0, sizeof(float) * tps->_nof_points, tps_y.data());
+                queue.enqueueWriteBuffer(buffer_tps_coefs1, CL_TRUE, 0, sizeof(float) * tps->_nof_eqs, tps_coef1.data());
+                queue.enqueueWriteBuffer(buffer_tps_coefs2, CL_TRUE, 0, sizeof(float) * tps->_nof_eqs, tps_coef2.data());
+                queue.enqueueWriteBuffer(buffer_tps_xmean, CL_TRUE, 0, sizeof(float), &tps_x_mean);
+                queue.enqueueWriteBuffer(buffer_tps_ymean, CL_TRUE, 0, sizeof(float), &tps_y_mean);
+                queue.enqueueWriteBuffer(buffer_img_settings, CL_TRUE, 0, sizeof(int) * 9, img_settings);
+
+                // Init the kernel
+                cl::Kernel warping_kernel(warping_program, "warp_image_thin_plate_spline");
+                warping_kernel.setArg(0, buffer_map);
+                warping_kernel.setArg(1, buffer_img);
+                warping_kernel.setArg(2, buffer_tps_npoints);
+                warping_kernel.setArg(3, buffer_tps_x);
+                warping_kernel.setArg(4, buffer_tps_y);
+                warping_kernel.setArg(5, buffer_tps_coefs1);
+                warping_kernel.setArg(6, buffer_tps_coefs2);
+                warping_kernel.setArg(7, buffer_tps_xmean);
+                warping_kernel.setArg(8, buffer_tps_ymean);
+                warping_kernel.setArg(9, buffer_img_settings);
+
+                // Get proper workload size
+                cl_uint size_wg;
+                cl_uint compute_units;
+
+                {
+                    size_t wg = 0;
+                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &wg);
+                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, wg, &size_wg, NULL);
+                }
+
+                {
+                    size_t wg = 0;
+                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &wg);
+                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, wg, &compute_units, NULL);
+                }
+
+                logger->debug("Workgroup size {:d}", size_wg * compute_units);
+
+                // Run the kernel!
+                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(size_wg * compute_units), cl::NullRange);
+
+                // Read image result back from VRAM
+                queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
+            }
+            time_t gpu_time = time(0) - gpu_start;
+            logger->debug("GPU Processing Time {:d}", gpu_time);
+
+            delete tps;
+
+            return result;
+        }
 #endif
 
         WarpResult warpOnAvailable(WarpOperation op)
@@ -333,7 +443,7 @@ namespace satdump
             {
                 logger->debug("Using GPU!");
                 std::pair<cl::Context, cl::Device> opencl_context = opencl::getDeviceAndContext(0, 0);
-                return warpOnGPU(opencl_context.first, opencl_context.second, op);
+                return warpOnGPU_fp32(opencl_context.first, opencl_context.second, op);
             }
             catch (std::runtime_error &e)
             {

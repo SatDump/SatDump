@@ -48,7 +48,8 @@ namespace satdump
         WarpResult warpOnCPU(WarpOperation op);
 
 #ifdef USE_OPENCL
-        WarpResult warpOnGPU(cl::Context context, cl::Device device, WarpOperation op);
+        WarpResult warpOnGPU_fp64(cl::Context context, cl::Device device, WarpOperation op);
+        WarpResult warpOnGPU_fp32(cl::Context context, cl::Device device, WarpOperation op);
 #endif
 
         WarpResult warpOnAvailable(WarpOperation op);
