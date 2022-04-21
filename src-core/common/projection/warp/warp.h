@@ -1,8 +1,13 @@
 #pragma once
-
+#define USE_OPENCL
 #include "common/image/image.h"
 #include "common/projection/thinplatespline.h"
 #ifdef USE_OPENCL
+#if 0
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#endif
+#define __CL_ENABLE_EXCEPTIONS
 #include <CL/opencl.hpp>
 #endif
 

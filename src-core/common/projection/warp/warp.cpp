@@ -312,7 +312,7 @@ namespace satdump
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
                 // Run the kernel!
-                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(size_wg * compute_units), cl::NullRange);
+                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(int(size_wg) * int(compute_units)), cl::NullRange);
 
                 // Read image result back from VRAM
                 queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
@@ -422,7 +422,7 @@ namespace satdump
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
                 // Run the kernel!
-                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(size_wg * compute_units), cl::NullRange);
+                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(int(size_wg) * int(compute_units)), cl::NullRange);
 
                 // Read image result back from VRAM
                 queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
