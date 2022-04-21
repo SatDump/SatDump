@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     initLogger();
 
     satdump::ImageProducts img_pro;
-    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_3/AVHRR/product.cbor");
+    img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_2/AVHRR/product.cbor");
 
     std::vector<satdump::projection::GCP> gcps;
 
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 #endif
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch3, ch2, ch1"; //*/ "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch1, ch2, ch4"; //*/ "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
 
     satdump::warp::WarpOperation operation;

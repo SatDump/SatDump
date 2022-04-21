@@ -2,6 +2,7 @@
 #include "logger.h"
 #include <map>
 #include "common/utils.h"
+#include "resources.h"
 
 namespace satdump
 {
@@ -225,7 +226,7 @@ namespace satdump
             WarpResult result;
 
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(context, device, "../src-testing/kernel.cl");
+            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline.cl"));
 
             // Select Area to crop (hence reducing the workload a LOT)
             WarpCropSettings crop_set = choseCropArea(op);
