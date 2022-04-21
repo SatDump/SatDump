@@ -449,6 +449,10 @@ namespace satdump
             {
                 logger->error(e.what());
             }
+            catch (cl::Error &e)
+            {
+                logger->error(e.what());
+            }
 #endif
 
             logger->debug("Using CPU!");
