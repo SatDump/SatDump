@@ -92,7 +92,7 @@ namespace satdump
                 }
             }
 
-            logger->info("Solving TPS equations...");
+            logger->info("Solving TPS equations for {:d} GCPs...", gcps.size());
             bool solved = spline_transform->solve() != 0;
             if (solved)
                 logger->info("Solved!");
@@ -147,20 +147,20 @@ namespace satdump
             cset.lat_max = ceil(lat_max);
             cset.lon_max = ceil(lon_max);
 
-            //logger->info("Lat min {:d}", cset.lat_min);
-            //logger->info("Lat max {:d}", cset.lat_max);
-            //logger->info("Lon min {:d}", cset.lon_min);
-            //logger->info("Lon max {:d}", cset.lon_max);
+            // logger->info("Lat min {:d}", cset.lat_min);
+            // logger->info("Lat max {:d}", cset.lat_max);
+            // logger->info("Lon min {:d}", cset.lon_min);
+            // logger->info("Lon max {:d}", cset.lon_max);
 
             cset.y_max = op.output_height - ((90.0f + cset.lat_min) / 180.0f) * op.output_height;
             cset.y_min = op.output_height - ((90.0f + cset.lat_max) / 180.0f) * op.output_height;
             cset.x_min = (cset.lon_min / 360.0f) * op.output_width + (op.output_width / 2);
             cset.x_max = (cset.lon_max / 360.0f) * op.output_width + (op.output_width / 2);
 
-            //logger->info("Y min {:d}", cset.y_min);
-            //logger->info("Y max {:d}", cset.y_max);
-            //logger->info("X min {:d}", cset.x_min);
-            //logger->info("X max {:d}", cset.x_max);
+            // logger->info("Y min {:d}", cset.y_min);
+            // logger->info("Y max {:d}", cset.y_max);
+            // logger->info("X min {:d}", cset.x_min);
+            // logger->info("X max {:d}", cset.x_max);
 
             return cset;
         }

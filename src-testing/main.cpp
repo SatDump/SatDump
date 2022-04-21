@@ -28,11 +28,7 @@ int main(int argc, char *argv[])
     initLogger();
 
     satdump::ImageProducts img_pro;
-<<<<<<< HEAD
     img_pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_3/AVHRR/product.cbor");
-=======
-    img_pro.load("/home/zbyszek/Downloads/test/AVHRR/product.cbor");
->>>>>>> d326a128e6f6f266a6b2dca98f303a3ad3b7c543
 
     std::vector<satdump::projection::GCP> gcps;
 
@@ -86,8 +82,6 @@ int main(int argc, char *argv[])
 
             y++;
         }
-
-        logger->info(gcps.size());
     }
 #else
     {
@@ -139,8 +133,6 @@ int main(int argc, char *argv[])
 
             y++;
         }
-
-        logger->info(gcps.size());
     }
 #endif
 
@@ -161,85 +153,85 @@ int main(int argc, char *argv[])
 <<<<<<< HEAD
     logger->info("Drawing map...");
 =======
-        cl::Buffer buffer_tps_npoints(context, CL_MEM_READ_WRITE, sizeof(int));
-        cl::Buffer buffer_tps_x(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_points);
-        cl::Buffer buffer_tps_y(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_points);
-        cl::Buffer buffer_tps_coefs1(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_eqs);
-        cl::Buffer buffer_tps_coefs2(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_eqs);
+    cl::Buffer buffer_tps_npoints(context, CL_MEM_READ_WRITE, sizeof(int));
+    cl::Buffer buffer_tps_x(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_points);
+    cl::Buffer buffer_tps_y(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_points);
+    cl::Buffer buffer_tps_coefs1(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_eqs);
+    cl::Buffer buffer_tps_coefs2(context, CL_MEM_READ_WRITE, sizeof(double) * tps.getRawForward()._nof_eqs);
 
-        cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(double));
-        cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(double));
+    cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(double));
+    cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(double));
 
-        int img_settings[] = {map_width, map_height, img.width(), img.height(), img_map.channels(), p_y_min, p_y_max, p_x_min, p_x_max};
+    int img_settings[] = {map_width, map_height, img.width(), img.height(), img_map.channels(), p_y_min, p_y_max, p_x_min, p_x_max};
 
-        cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
+    cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
 
-        // create a queue (a queue of commands that the GPU will execute)
-        cl::CommandQueue queue(context, default_device);
+    // create a queue (a queue of commands that the GPU will execute)
+    cl::CommandQueue queue(context, default_device);
 
-        // push write commands to queue
-        queue.enqueueWriteBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * img_map.size(), img_map.data());
-        queue.enqueueWriteBuffer(buffer_img, CL_TRUE, 0, sizeof(uint16_t) * img.size(), img.data());
+    // push write commands to queue
+    queue.enqueueWriteBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * img_map.size(), img_map.data());
+    queue.enqueueWriteBuffer(buffer_img, CL_TRUE, 0, sizeof(uint16_t) * img.size(), img.data());
 
-        queue.enqueueWriteBuffer(buffer_tps_npoints, CL_TRUE, 0, sizeof(int), &tps.getRawForward()._nof_points);
-        queue.enqueueWriteBuffer(buffer_tps_x, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_points, tps.getRawForward().x);
-        queue.enqueueWriteBuffer(buffer_tps_y, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_points, tps.getRawForward().y);
-        queue.enqueueWriteBuffer(buffer_tps_coefs1, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_eqs, tps.getRawForward().coef[0]);
-        queue.enqueueWriteBuffer(buffer_tps_coefs2, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_eqs, tps.getRawForward().coef[1]);
-        queue.enqueueWriteBuffer(buffer_tps_xmean, CL_TRUE, 0, sizeof(double), &tps.getRawForward().x_mean);
-        queue.enqueueWriteBuffer(buffer_tps_ymean, CL_TRUE, 0, sizeof(double), &tps.getRawForward().y_mean);
-        queue.enqueueWriteBuffer(buffer_img_settings, CL_TRUE, 0, sizeof(int) * 9, img_settings);
+    queue.enqueueWriteBuffer(buffer_tps_npoints, CL_TRUE, 0, sizeof(int), &tps.getRawForward()._nof_points);
+    queue.enqueueWriteBuffer(buffer_tps_x, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_points, tps.getRawForward().x);
+    queue.enqueueWriteBuffer(buffer_tps_y, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_points, tps.getRawForward().y);
+    queue.enqueueWriteBuffer(buffer_tps_coefs1, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_eqs, tps.getRawForward().coef[0]);
+    queue.enqueueWriteBuffer(buffer_tps_coefs2, CL_TRUE, 0, sizeof(double) * tps.getRawForward()._nof_eqs, tps.getRawForward().coef[1]);
+    queue.enqueueWriteBuffer(buffer_tps_xmean, CL_TRUE, 0, sizeof(double), &tps.getRawForward().x_mean);
+    queue.enqueueWriteBuffer(buffer_tps_ymean, CL_TRUE, 0, sizeof(double), &tps.getRawForward().y_mean);
+    queue.enqueueWriteBuffer(buffer_img_settings, CL_TRUE, 0, sizeof(int) * 9, img_settings);
 
-        logger->critical(tps.getRawForward()._nof_eqs);
+    logger->critical(tps.getRawForward()._nof_eqs);
 
-        // RUN ZE KERNEL
-        cl::Kernel simple_add(program, "warp_image_thin_plate_spline");
-        simple_add.setArg(0, buffer_map);
-        simple_add.setArg(1, buffer_img);
+    // RUN ZE KERNEL
+    cl::Kernel simple_add(program, "warp_image_thin_plate_spline");
+    simple_add.setArg(0, buffer_map);
+    simple_add.setArg(1, buffer_img);
 
-        simple_add.setArg(2, buffer_tps_npoints);
-        simple_add.setArg(3, buffer_tps_x);
-        simple_add.setArg(4, buffer_tps_y);
-        simple_add.setArg(5, buffer_tps_coefs1);
-        simple_add.setArg(6, buffer_tps_coefs2);
-        simple_add.setArg(7, buffer_tps_xmean);
-        simple_add.setArg(8, buffer_tps_ymean);
-        simple_add.setArg(9, buffer_img_settings);
+    simple_add.setArg(2, buffer_tps_npoints);
+    simple_add.setArg(3, buffer_tps_x);
+    simple_add.setArg(4, buffer_tps_y);
+    simple_add.setArg(5, buffer_tps_coefs1);
+    simple_add.setArg(6, buffer_tps_coefs2);
+    simple_add.setArg(7, buffer_tps_xmean);
+    simple_add.setArg(8, buffer_tps_ymean);
+    simple_add.setArg(9, buffer_img_settings);
 
-        cl_uint size_wg;
-        cl_uint compute_units;
+    cl_uint size_wg;
+    cl_uint compute_units;
 
-        {
-            size_t wg = 0;
-            clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &wg);
-            clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, wg, &size_wg, NULL);
-        }
+    {
+        size_t wg = 0;
+        clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &wg);
+        clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, wg, &size_wg, NULL);
+    }
 
-        {
-            size_t wg = 0;
-            clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &wg);
-            clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, wg, &compute_units, NULL);
-        }
+    {
+        size_t wg = 0;
+        clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &wg);
+        clGetDeviceInfo(default_device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, wg, &compute_units, NULL);
+    }
 
-        logger->info("Start GPU");
+    logger->info("Start GPU");
 <<<<<<< HEAD
-        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(640), cl::NullRange);
+    queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(640), cl::NullRange);
 =======
 
-        logger->debug("Workgroup size {:d}", size_wg * compute_units);
+    logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
-        queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(size_wg * compute_units), cl::NullRange);
+    queue.enqueueNDRangeKernel(simple_add, cl::NullRange, cl::NDRange(size_wg * compute_units), cl::NullRange);
 >>>>>>> 9861a6918f6ed072eb45cb88f4e4e389ec31076e
-        // logger->info("Stop GPU");
+    // logger->info("Stop GPU");
 
-        // read result from GPU to here
-        queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * img_map.size(), img_map.data());
-        logger->info("GPU Done");
+    // read result from GPU to here
+    queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * img_map.size(), img_map.data());
+    logger->info("GPU Done");
 
-        logger->info(img_map[0]);
-    }
-    time_t gpu_time = time(0) - gpu_start;
-    logger->info("GPU Time {:d}", gpu_time);
+    logger->info(img_map[0]);
+}
+time_t gpu_time = time(0) - gpu_start;
+logger->info("GPU Time {:d}", gpu_time);
 
 #if 0
     time_t cpu_start = time(0);
@@ -292,11 +284,11 @@ int main(int argc, char *argv[])
                                        imageLat -= total_height - ((90.0f + result.bottom_left.lat) / 180.0f) * total_height;
                                        imageLon -= (result.top_left.lon / 360.0f) * total_width + (total_width / 2);
 #else
-            int imageLat = operation.output_height - ((90.0f + lat) / 180.0f) * operation.output_height;
-            int imageLon = (lon / 360.0f) * operation.output_width + (operation.output_width / 2);
+        int imageLat = operation.output_height - ((90.0f + lat) / 180.0f) * operation.output_height;
+        int imageLon = (lon / 360.0f) * operation.output_width + (operation.output_width / 2);
 
-            imageLat -= crop_set.y_min;
-            imageLon -= crop_set.x_min;
+        imageLat -= crop_set.y_min;
+        imageLon -= crop_set.x_min;
 #endif
                                        if (imageLat < 0 || imageLat > map_height2)
                                            return {-1, -1};

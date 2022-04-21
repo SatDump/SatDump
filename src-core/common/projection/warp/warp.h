@@ -44,6 +44,7 @@ namespace satdump
 
         WarpCropSettings choseCropArea(WarpOperation &op);
 
+        // Should we even expose those 2 functions?
         WarpResult warpOnCPU(WarpOperation op);
 
 #ifdef USE_OPENCL
