@@ -184,7 +184,7 @@ namespace satdump
             result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
-            time_t cpu_start = time(0);
+            auto cpu_start = std::chrono::system_clock::now();
             {
                 double xx, yy;
                 double xy[2];
@@ -212,8 +212,8 @@ namespace satdump
                         result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
                 }
             }
-            time_t cpu_time = time(0) - cpu_start;
-            logger->debug("CPU Processing Time {:d}", cpu_time);
+            auto cpu_time = (std::chrono::system_clock::now() - cpu_start);
+            logger->debug("CPU Processing Time {:f}", cpu_time.count() / 1e9);
 
             delete tps;
 
@@ -242,7 +242,7 @@ namespace satdump
             result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
-            time_t gpu_start = time(0);
+            auto gpu_start = std::chrono::system_clock::now();
             {
                 // Images
                 cl::Buffer buffer_map(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size());
@@ -317,8 +317,8 @@ namespace satdump
                 // Read image result back from VRAM
                 queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
             }
-            time_t gpu_time = time(0) - gpu_start;
-            logger->debug("GPU Processing Time {:d}", gpu_time);
+            auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
+            logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
 
             delete tps;
 
@@ -346,7 +346,7 @@ namespace satdump
             result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
-            time_t gpu_start = time(0);
+            auto gpu_start = std::chrono::system_clock::now();
             {
                 // Images
                 cl::Buffer buffer_map(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size());
@@ -427,8 +427,8 @@ namespace satdump
                 // Read image result back from VRAM
                 queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
             }
-            time_t gpu_time = time(0) - gpu_start;
-            logger->debug("GPU Processing Time {:d}", gpu_time);
+            auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
+            logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
 
             delete tps;
 
