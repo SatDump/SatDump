@@ -258,7 +258,7 @@ namespace satdump
                 cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(double));
 
                 int img_settings[] = {op.output_width, op.output_height,
-                                      op.input_image.width(), op.input_image.height(),
+                                      (int)op.input_image.width(), (int)op.input_image.height(),
                                       op.input_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
@@ -362,7 +362,7 @@ namespace satdump
                 cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(float));
 
                 int img_settings[] = {op.output_width, op.output_height,
-                                      op.input_image.width(), op.input_image.height(),
+                                      (int)op.input_image.width(), (int)op.input_image.height(),
                                       op.input_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
