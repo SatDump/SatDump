@@ -132,6 +132,7 @@ namespace noaa
                     avhrr_products.instrument_name = "avhrr_3";
                     avhrr_products.has_timestamps = true;
                     avhrr_products.bit_depth = 10;
+                    avhrr_products.set_tle(satdump::TLE{1000, "NOAA 19", "1 33591U 09005A   22021.51188828  .00000069  00000-0  62719-4 0  9997", "2 33591  99.1662  52.4317 0013144 238.6990 121.2894 14.12523801667708"});
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps);
 

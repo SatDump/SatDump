@@ -1,5 +1,5 @@
 #pragma once
-#define USE_OPENCL
+
 #include "common/image/image.h"
 #include "common/projection/thinplatespline.h"
 #ifdef USE_OPENCL

@@ -178,10 +178,10 @@ namespace satdump
 
             // Prepare the output, since we can
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, crop_set.lon_min, crop_set.lat_min};                                                                  // 0,0
-            result.top_right = {result.output_image.width() - 1, 0, crop_set.lon_max, crop_set.lat_min};                                   // 1,0
-            result.bottom_left = {0, result.output_image.height() - 1, crop_set.lon_min, crop_set.lat_max};                                // 0,1
-            result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
             auto cpu_start = std::chrono::system_clock::now();
@@ -236,10 +236,10 @@ namespace satdump
 
             // Prepare the output, since we can
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, crop_set.lon_min, crop_set.lat_min};                                                                  // 0,0
-            result.top_right = {result.output_image.width() - 1, 0, crop_set.lon_max, crop_set.lat_min};                                   // 1,0
-            result.bottom_left = {0, result.output_image.height() - 1, crop_set.lon_min, crop_set.lat_max};                                // 0,1
-            result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -340,10 +340,10 @@ namespace satdump
 
             // Prepare the output, since we can
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, crop_set.lon_min, crop_set.lat_min};                                                                  // 0,0
-            result.top_right = {result.output_image.width() - 1, 0, crop_set.lon_max, crop_set.lat_min};                                   // 1,0
-            result.bottom_left = {0, result.output_image.height() - 1, crop_set.lon_min, crop_set.lat_max};                                // 0,1
-            result.bottom_right = {result.output_image.width() - 1, result.output_image.height() - 1, crop_set.lon_max, crop_set.lat_max}; // 1,1
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
