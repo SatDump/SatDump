@@ -98,6 +98,88 @@ std::vector<satdump::projection::GCP> compute_gcps(SingleLineCfg cfg)
     return gcps;
 }
 
+class EquirectangularProjector
+{
+private:
+    int image_height;
+    int image_width;
+
+    float top_left_lat;
+    float top_left_lon;
+
+    float bottom_right_lat;
+    float bottom_right_lon;
+
+    float covered_lat;
+    float covered_lon;
+
+    float offset_lat;
+    float offset_lon;
+
+public:
+    void init(int img_width, int img_height, float tl_lon, float tl_lat, float br_lon, float br_lat)
+    {
+        image_height = img_height;
+        image_width = img_width;
+
+        top_left_lat = tl_lat;
+        top_left_lon = tl_lon;
+
+        bottom_right_lat = br_lat;
+        bottom_right_lon = br_lon;
+
+        // Compute how much we cover on the input image
+        covered_lat = abs(top_left_lat - bottom_right_lat);
+        covered_lon = abs(top_left_lon - bottom_right_lon);
+
+        // Compute the offset the top right corner has
+        offset_lat = abs(top_left_lat - 90);
+        offset_lon = abs(top_left_lon + 180);
+    }
+
+    void forward(float lon, float lat, int &x, int &y)
+    {
+        if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
+        {
+            x = y = -1;
+            return;
+        }
+
+        lat = 180.0f - (lat + 90.0f);
+        lon += 180;
+
+        lat -= offset_lat;
+        lon -= offset_lon;
+
+        y = (lat / covered_lat) * image_height;
+        x = (lon / covered_lon) * image_width;
+
+        if (y < 0 || y >= image_height || x < 0 || x >= image_width)
+            x = y = -1;
+    }
+
+    void reverse(int x, int y, float &lon, float &lat)
+    {
+        if (y < 0 || y >= image_height || x < 0 || x >= image_width)
+        {
+            lon = lat = -1;
+            return;
+        }
+
+        lat = (y / (float)image_height) * covered_lat;
+        lon = (x / (float)image_width) * covered_lon;
+
+        lat += offset_lat;
+        lon += offset_lon;
+
+        lat = 180.0f - (lat + 90.0f);
+        lon -= 180;
+
+        if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
+            lon = lat = -1;
+    }
+};
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -145,43 +227,18 @@ int main(int argc, char *argv[])
 
     logger->info("Drawing map...");
 
+    EquirectangularProjector projector;
+    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    result.output_image,
                                    color,
-                                   [operation, &result](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                   [operation, &result, &projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
                                    {
-                                       // First check if we are in bounds
-                                       if (lat > result.top_left.lat || lat < result.bottom_right.lat)
-                                           return {-1, -1};
-                                       if (lon < result.top_left.lon || lon > result.bottom_right.lon)
-                                           return {-1, -1};
-
-                                       // Check how much we cover on the input image
-                                       float covered_lat = abs(result.top_left.lat - result.bottom_right.lat);
-                                       float covered_lon = abs(result.top_left.lon - result.bottom_right.lon);
-
-                                       // Check how much offset the top right corner has
-                                       float offset_lat = abs(result.top_right.lat - 90);
-                                       float offset_lon = abs(result.top_left.lon + 180);
-
-                                       // Bring lat / lon to 0-180, 0-360
-                                       lat = 180.0f - (lat + 90.0f);
-                                       lon += 180;
-
-                                       // Offset
-                                       lat -= offset_lat;
-                                       lon -= offset_lon;
-
-                                       int imageLat = (lat / covered_lat) * map_height2;
-                                       int imageLon = (lon / covered_lon) * map_width2;
-
-                                       if (imageLat < 0 || imageLat > map_height2)
-                                           return {-1, -1};
-                                       if (imageLon < 0 || imageLon > map_width2)
-                                           return {-1, -1};
-
-                                       return {imageLon, imageLat};
+                                       int x, y;
+                                       projector.forward(lon, lat, x, y);
+                                       return {x, y};
                                    });
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
