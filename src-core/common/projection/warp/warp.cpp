@@ -94,9 +94,10 @@ namespace satdump
             }
 
             logger->info("Solving TPS equations for {:d} GCPs...", gcps.size());
+            auto solve_start = std::chrono::system_clock::now();
             bool solved = spline_transform->solve() != 0;
             if (solved)
-                logger->info("Solved!");
+                logger->info("Solved! Took {:f}", (std::chrono::system_clock::now() - solve_start).count() / 1e9);
             else
                 logger->error("Failure solving!");
 

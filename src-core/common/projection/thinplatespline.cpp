@@ -43,7 +43,7 @@
 #include "logger.h"
 
 #include <armadillo>
-#define HAVE_ARMADILLO 1
+//#define HAVE_ARMADILLO 1
 
 /*
  This file is originally from https://github.com/OSGeo/gdal
@@ -202,6 +202,7 @@ namespace satdump
 #else
                     return arma::solve(matOut, matA, matRHS);
 #endif
+#else
 
                     return solve(A, RHS, X, 0);
 #endif
@@ -314,7 +315,7 @@ namespace satdump
 #endif // defined(__INTEL_COMPILER)
 #endif
 
-//#undef USE_OPTIMIZED_VizGeorefSpline2DBase_func4
+        //#undef USE_OPTIMIZED_VizGeorefSpline2DBase_func4
 
 #if defined(USE_OPTIMIZED_VizGeorefSpline2DBase_func4)
 
