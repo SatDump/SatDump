@@ -42,7 +42,7 @@
 
 #include "logger.h"
 
-#include <armadillo>
+//#include <armadillo>
 //#define HAVE_ARMADILLO 1
 
 /*

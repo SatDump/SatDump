@@ -43,6 +43,9 @@ namespace satdump
 
         std::vector<double> get_timestamps(int image_index = -1)
         {
+            if (image_index == -1)
+                return contents["timestamps"].get<std::vector<double>>();
+
             if (images[image_index].timestamps.size() > 0)
                 return images[image_index].timestamps;
             else

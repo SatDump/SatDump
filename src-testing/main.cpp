@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 
     SingleLineCfg metop_avhrr_cfg;
     metop_avhrr_cfg.tles = img_pro.get_tle();
-    metop_avhrr_cfg.timestamps = img_pro.contents["timestamps"].get<std::vector<double>>();
+    metop_avhrr_cfg.timestamps = img_pro.get_timestamps(0);
     metop_avhrr_cfg.image_width = 2048;
     metop_avhrr_cfg.timestamp_offset = -0.3;
     metop_avhrr_cfg.scan_angle = 110.6;
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 
     SingleLineCfg metop_mhs_cfg;
     metop_mhs_cfg.tles = img_pro.get_tle();
-    metop_mhs_cfg.timestamps = img_pro.contents["timestamps"].get<std::vector<double>>();
+    metop_mhs_cfg.timestamps = img_pro.get_timestamps(0);
     metop_mhs_cfg.image_width = 90;
     metop_mhs_cfg.timestamp_offset = -2;
     metop_mhs_cfg.scan_angle = 100;
