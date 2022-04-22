@@ -23,6 +23,81 @@
 #include <iostream>
 #include "common/projection/warp/warp.h"
 
+struct SingleLineCfg
+{
+    satdump::TLE tles;
+    std::vector<double> timestamps;
+
+    int image_width;
+    float scan_angle;
+
+    int gcp_spacing_x = 100;
+    int gcp_spacing_y = 100;
+
+    double timestamp_offset = 0;
+    bool invert_scan = false;
+
+    float roll_offset = 0;
+    float pitch_offset = 0;
+    float yaw_offset = 0;
+};
+
+std::vector<satdump::projection::GCP> compute_gcps(SingleLineCfg cfg)
+{
+    std::vector<satdump::projection::GCP> gcps;
+
+    satdump::SatelliteTracker sat_tracker(cfg.tles);
+
+    std::vector<int> values;
+    for (int x = 0; x < cfg.image_width; x += cfg.gcp_spacing_x)
+        values.push_back(x);
+    values.push_back(cfg.image_width - 1);
+
+    int y = 0;
+    bool last_was_invalid = false;
+    for (double timestamp : cfg.timestamps)
+    {
+        if (timestamp == -1)
+        {
+            last_was_invalid = true;
+            continue;
+        }
+
+        timestamp += cfg.timestamp_offset;
+
+        geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
+        geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
+
+        double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+
+        for (int x : values)
+        {
+            double final_x = !cfg.invert_scan ? (cfg.image_width - 1) - x : x;
+            bool ascending = false;
+
+            geodetic::euler_coords_t satellite_pointing;
+            satellite_pointing.roll = -(((final_x - (cfg.image_width / 2.0)) / cfg.image_width) * cfg.scan_angle) + cfg.roll_offset;
+            satellite_pointing.pitch = cfg.pitch_offset;
+            satellite_pointing.yaw = (90 + (ascending ? cfg.yaw_offset : -cfg.yaw_offset)) - az_angle;
+
+            geodetic::geodetic_coords_t ground_position;
+            geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            ground_position.toDegs();
+
+            // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
+
+            if (y % cfg.gcp_spacing_y == 0 || y + 1 == cfg.timestamps.size() || last_was_invalid)
+                gcps.push_back({(double)x, (double)y, (double)ground_position.lon, (double)ground_position.lat});
+
+            last_was_invalid = false;
+        }
+
+        y++;
+    }
+
+    return gcps;
+}
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -30,115 +105,31 @@ int main(int argc, char *argv[])
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
 
-    std::vector<satdump::projection::GCP> gcps;
+    SingleLineCfg metop_avhrr_cfg;
+    metop_avhrr_cfg.tles = img_pro.get_tle();
+    metop_avhrr_cfg.timestamps = img_pro.contents["timestamps"].get<std::vector<double>>();
+    metop_avhrr_cfg.image_width = 2048;
+    metop_avhrr_cfg.timestamp_offset = -0.3;
+    metop_avhrr_cfg.scan_angle = 110.6;
+    metop_avhrr_cfg.roll_offset = -0.13;
+    metop_avhrr_cfg.gcp_spacing_x = 100;
+    metop_avhrr_cfg.gcp_spacing_y = 100;
 
-#if 1
-    {
-        satdump::SatelliteTracker sat_tracker(img_pro.get_tle());
+    SingleLineCfg metop_mhs_cfg;
+    metop_mhs_cfg.tles = img_pro.get_tle();
+    metop_mhs_cfg.timestamps = img_pro.contents["timestamps"].get<std::vector<double>>();
+    metop_mhs_cfg.image_width = 90;
+    metop_mhs_cfg.timestamp_offset = -2;
+    metop_mhs_cfg.scan_angle = 100;
+    metop_mhs_cfg.roll_offset = -1.1;
+    metop_mhs_cfg.gcp_spacing_x = 5;
+    metop_mhs_cfg.gcp_spacing_y = 5;
 
-        std::vector<int> values;
-
-        for (int x = 0; x < 2048; x += 100)
-            values.push_back(x);
-
-        values.push_back(2047);
-
-        int y = 0;
-        for (double timestamp : img_pro.contents["timestamps"].get<std::vector<double>>())
-        {
-            timestamp -= 0.3;
-
-            geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
-            geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-
-            double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
-
-            for (int x : values)
-            {
-                bool invert_scan = true;
-
-                float roll_offset = -0.13;
-                float pitch_offset = 0;
-                float yaw_offset = 0;
-                float scan_angle = 110.6;
-
-                double final_x = invert_scan ? (2048 - 1) - x : x;
-                bool ascending = false;
-
-                geodetic::euler_coords_t satellite_pointing;
-                satellite_pointing.roll = -(((final_x - (2048.0 / 2.0)) / 2048.0) * scan_angle) + roll_offset;
-                satellite_pointing.pitch = pitch_offset;
-                satellite_pointing.yaw = (90 + (ascending ? yaw_offset : -yaw_offset)) - az_angle;
-
-                geodetic::geodetic_coords_t ground_position;
-                geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
-                ground_position.toDegs();
-
-                // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
-
-                if (y % 100 == 0 || y + 1 == img_pro.contents["timestamps"].get<std::vector<double>>().size())
-                    gcps.push_back({(double)x, (double)y, (double)ground_position.lon, (double)ground_position.lat});
-            }
-
-            y++;
-        }
-    }
-#else
-    {
-        satdump::SatelliteTracker sat_tracker(img_pro.get_tle());
-
-        std::vector<int> values;
-
-        for (int x = 0; x < 90; x += 5)
-            values.push_back(x);
-
-        values.push_back(90 - 1);
-
-        int y = 0;
-        for (double timestamp : img_pro.contents["timestamps"].get<std::vector<double>>())
-        {
-            timestamp -= 2;
-
-            geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
-            geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-
-            double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
-
-            for (int x : values)
-            {
-                bool invert_scan = true;
-
-                float roll_offset = -1.1;
-                float pitch_offset = 0;
-                float yaw_offset = 0;
-                float scan_angle = 100;
-
-                double final_x = invert_scan ? (90 - 1) - x : x;
-                bool ascending = false;
-
-                geodetic::euler_coords_t satellite_pointing;
-                satellite_pointing.roll = -(((final_x - (90.0 / 2.0)) / 90.0) * scan_angle) + roll_offset;
-                satellite_pointing.pitch = pitch_offset;
-                satellite_pointing.yaw = (90 + (ascending ? yaw_offset : -yaw_offset)) - az_angle;
-
-                geodetic::geodetic_coords_t ground_position;
-                geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
-                ground_position.toDegs();
-
-                // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
-
-                if (y % 5 == 0 || y + 1 == img_pro.contents["timestamps"].get<std::vector<double>>().size())
-                    gcps.push_back({x, y, ground_position.lon, ground_position.lat});
-            }
-
-            y++;
-        }
-    }
-#endif
+    std::vector<satdump::projection::GCP> gcps = compute_gcps(metop_avhrr_cfg);
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = false;
+    rgb_cfg.equation = "ch1, ch2, ch4"; // "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equalize = true;
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
@@ -152,35 +143,39 @@ int main(int argc, char *argv[])
 
     satdump::warp::WarpResult result = warper.warp();
 
-    satdump::warp::WarpCropSettings crop_set = choseCropArea(operation);
-
     logger->info("Drawing map...");
 
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    result.output_image,
                                    color,
-                                   [operation, &result, crop_set](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                   [operation, &result](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
                                    {
-#if 0
-                                       double covered_lat = fabs(result.top_left.lat - result.bottom_left.lat);
-                                       double covered_lon = fabs(result.top_left.lon - result.top_right.lon);
+                                       // First check if we are in bounds
+                                       if (lat > result.top_left.lat || lat < result.bottom_right.lat)
+                                           return {-1, -1};
+                                       if (lon < result.top_left.lon || lon > result.bottom_right.lon)
+                                           return {-1, -1};
 
-                                       double total_height = ceil((180.0 / covered_lat) * map_height2);
-                                       double total_width = ceil((360.0 / covered_lon) * map_width2);
+                                       // Check how much we cover on the input image
+                                       float covered_lat = abs(result.top_left.lat - result.bottom_right.lat);
+                                       float covered_lon = abs(result.top_left.lon - result.bottom_right.lon);
 
-                                       double imageLat = total_height - ((90.0f + lat) / 180.0f) * total_height;
-                                       double imageLon = (lon / 360.0f) * total_width + (total_width / 2);
+                                       // Check how much offset the top right corner has
+                                       float offset_lat = abs(result.top_right.lat - 90);
+                                       float offset_lon = abs(result.top_left.lon + 180);
 
-                                       imageLat -= total_height - ((90.0f + result.bottom_left.lat) / 180.0f) * total_height;
-                                       imageLon -= (result.top_left.lon / 360.0f) * total_width + (total_width / 2);
-#else
-            int imageLat = operation.output_height - ((90.0f + lat) / 180.0f) * operation.output_height;
-            int imageLon = (lon / 360.0f) * operation.output_width + (operation.output_width / 2);
+                                       // Bring lat / lon to 0-180, 0-360
+                                       lat = 180.0f - (lat + 90.0f);
+                                       lon += 180;
 
-            imageLat -= crop_set.y_min;
-            imageLon -= crop_set.x_min;
-#endif
+                                       // Offset
+                                       lat -= offset_lat;
+                                       lon -= offset_lon;
+
+                                       int imageLat = (lat / covered_lat) * map_height2;
+                                       int imageLon = (lon / covered_lon) * map_width2;
+
                                        if (imageLat < 0 || imageLat > map_height2)
                                            return {-1, -1};
                                        if (imageLon < 0 || imageLon > map_width2)

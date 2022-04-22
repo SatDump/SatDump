@@ -143,25 +143,23 @@ namespace satdump
                     lon_min = g.lon;
             }
 
+            // Round to integer degrees
             cset.lat_min = floor(lat_min);
             cset.lon_min = floor(lon_min);
             cset.lat_max = ceil(lat_max);
             cset.lon_max = ceil(lon_max);
 
-            // logger->info("Lat min {:d}", cset.lat_min);
-            // logger->info("Lat max {:d}", cset.lat_max);
-            // logger->info("Lon min {:d}", cset.lon_min);
-            // logger->info("Lon max {:d}", cset.lon_max);
-
+            // Compute to pixels
             cset.y_max = op.output_height - ((90.0f + cset.lat_min) / 180.0f) * op.output_height;
             cset.y_min = op.output_height - ((90.0f + cset.lat_max) / 180.0f) * op.output_height;
             cset.x_min = (cset.lon_min / 360.0f) * op.output_width + (op.output_width / 2);
             cset.x_max = (cset.lon_max / 360.0f) * op.output_width + (op.output_width / 2);
 
-            // logger->info("Y min {:d}", cset.y_min);
-            // logger->info("Y max {:d}", cset.y_max);
-            // logger->info("X min {:d}", cset.x_min);
-            // logger->info("X max {:d}", cset.x_max);
+            // Pixels can offset it a bit - recompute to be 100% accurate
+            cset.lat_max = ((op.output_height - cset.y_min) / (double)op.output_height) * 180.0f - 90.0f;
+            cset.lat_min = ((op.output_height - cset.y_max) / (double)op.output_height) * 180.0f - 90.0f;
+            cset.lon_min = (cset.x_min / (double)op.output_width) * 360.0f - 180.0f;
+            cset.lon_max = (cset.x_max / (double)op.output_width) * 360.0f - 180.0f;
 
             return cset;
         }
@@ -391,10 +389,10 @@ namespace satdump
 
             // Prepare the output
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
-            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
-            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
-            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_min}; // 1,1
 
 #ifdef USE_OPENCL
             try

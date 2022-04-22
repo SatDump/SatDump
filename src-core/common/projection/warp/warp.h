@@ -55,10 +55,10 @@ namespace satdump
         */
         struct WarpCropSettings
         {
-            int lat_min;
-            int lat_max;
-            int lon_min;
-            int lon_max;
+            float lat_min;
+            float lat_max;
+            float lon_min;
+            float lon_max;
             int y_min;
             int y_max;
             int x_min;
