@@ -55,9 +55,9 @@ namespace satdump
 
     namespace warp
     {
-        projection::VizGeorefSpline2D *initTPSTransform(WarpOperation &op)
+        std::unique_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
         {
-            projection::VizGeorefSpline2D *spline_transform = new projection::VizGeorefSpline2D(2);
+            std::unique_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_unique<projection::VizGeorefSpline2D>(2);
 
             std::vector<projection::GCP> gcps = op.ground_control_points;
 
@@ -166,24 +166,9 @@ namespace satdump
             return cset;
         }
 
-        WarpResult warpOnCPU(WarpOperation op)
+        void ImageWarper::warpOnCPU(WarpResult &result)
         {
-            WarpResult result;
-
-            // Select Area to crop (hence reducing the workload a LOT)
-            WarpCropSettings crop_set = choseCropArea(op);
-
-            // Compute TPS
-            projection::VizGeorefSpline2D *tps = initTPSTransform(op);
-
-            // Prepare the output, since we can
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
-            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
-            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
-            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
-
-            // Now, run the actual OpenCL Kernel
+            // Now, warp the image
             auto cpu_start = std::chrono::system_clock::now();
             {
                 double xx, yy;
@@ -214,32 +199,13 @@ namespace satdump
             }
             auto cpu_time = (std::chrono::system_clock::now() - cpu_start);
             logger->debug("CPU Processing Time {:f}", cpu_time.count() / 1e9);
-
-            delete tps;
-
-            return result;
         }
 
 #ifdef USE_OPENCL
-        WarpResult warpOnGPU_fp64(cl::Context context, cl::Device device, WarpOperation op)
+        void ImageWarper::warpOnGPU_fp64(cl::Context context, cl::Device device, WarpResult &result)
         {
-            WarpResult result;
-
             // Build GPU Kernel
             cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
-
-            // Select Area to crop (hence reducing the workload a LOT)
-            WarpCropSettings crop_set = choseCropArea(op);
-
-            // Compute TPS
-            projection::VizGeorefSpline2D *tps = initTPSTransform(op);
-
-            // Prepare the output, since we can
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
-            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
-            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
-            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -319,31 +285,12 @@ namespace satdump
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
             logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
-
-            delete tps;
-
-            return result;
         }
 
-        WarpResult warpOnGPU_fp32(cl::Context context, cl::Device device, WarpOperation op)
+        void ImageWarper::warpOnGPU_fp32(cl::Context context, cl::Device device, WarpResult &result)
         {
-            WarpResult result;
-
             // Build GPU Kernel
             cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
-
-            // Select Area to crop (hence reducing the workload a LOT)
-            WarpCropSettings crop_set = choseCropArea(op);
-
-            // Compute TPS
-            projection::VizGeorefSpline2D *tps = initTPSTransform(op);
-
-            // Prepare the output, since we can
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
-            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
-            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
-            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
-            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -429,34 +376,48 @@ namespace satdump
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
             logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
-
-            delete tps;
-
-            return result;
         }
 #endif
 
-        WarpResult warpOnAvailable(WarpOperation op)
+        void ImageWarper::update()
         {
+            tps = initTPSTransform(op);
+            crop_set = choseCropArea(op);
+        }
+
+        WarpResult ImageWarper::warp()
+        {
+            WarpResult result;
+
+            // Prepare the output
+            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_min};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_min};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_max};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_max}; // 1,1
+
 #ifdef USE_OPENCL
             try
             {
                 logger->debug("Using GPU!");
                 std::pair<cl::Context, cl::Device> opencl_context = opencl::getDeviceAndContext(0, 0);
-                return warpOnGPU_fp32(opencl_context.first, opencl_context.second, op);
+                warpOnGPU_fp32(opencl_context.first, opencl_context.second, result);
+                return result;
             }
             catch (std::runtime_error &e)
             {
-                logger->error(e.what());
+                logger->error("Error warping on GPU : {:s}", e.what());
             }
             catch (cl::Error &e)
             {
-                logger->error(e.what());
+                logger->error("OpenCL error warping on GPU : {:s}", e.what());
             }
 #endif
 
             logger->debug("Using CPU!");
-            return warpOnCPU(op);
+            warpOnCPU(result);
+
+            return result;
         }
     }
 }

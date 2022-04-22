@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 #endif
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch1, ch2, ch4"; //*/ "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = true;
+    rgb_cfg.equation = "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equalize = false;
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
@@ -146,9 +146,13 @@ int main(int argc, char *argv[])
     operation.output_width = 2048 * 8;
     operation.output_height = 1024 * 8;
 
-    satdump::warp::WarpCropSettings crop_set = choseCropArea(operation);
+    satdump::warp::ImageWarper warper;
+    warper.op = operation;
+    warper.update();
 
-    satdump::warp::WarpResult result = satdump::warp::warpOnAvailable(operation);
+    satdump::warp::WarpResult result = warper.warp();
+
+    satdump::warp::WarpCropSettings crop_set = choseCropArea(operation);
 
     logger->info("Drawing map...");
 
