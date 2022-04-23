@@ -3,12 +3,7 @@
 #include "common/image/image.h"
 #include "common/projection/thinplatespline.h"
 #include <memory>
-#ifdef USE_OPENCL
-//#define CL_HPP_TARGET_OPENCL_VERSION 120
-#define CL_HPP_MINIMUM_OPENCL_VERSION 110 // Support down to 1.1
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/opencl.hpp>
-#endif
+#include "common/opencl.h"
 
 namespace satdump
 {

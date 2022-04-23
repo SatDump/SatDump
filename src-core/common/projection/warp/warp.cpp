@@ -6,53 +6,6 @@
 
 namespace satdump
 {
-#ifdef USE_OPENCL
-    namespace opencl
-    {
-        cl::Program buildCLKernel(cl::Context context, cl::Device device, std::string path)
-        {
-            cl::Program::Sources sources;
-            std::ifstream isf(path);
-            std::string kernel_src(std::istreambuf_iterator<char>{isf}, {});
-            sources.push_back({kernel_src.c_str(), kernel_src.length()});
-
-            cl::Program program(context, sources);
-            if (program.build({device}) != CL_SUCCESS)
-            {
-                logger->error("Error building: {:s}", program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
-                return program;
-            }
-
-            return program;
-        }
-
-        std::pair<cl::Context, cl::Device> getDeviceAndContext(int platform, int device)
-        {
-            std::vector<cl::Platform> all_platforms;
-            cl::Platform::get(&all_platforms);
-
-            if (all_platforms.size() == 0)
-                std::runtime_error("No platforms found. Check OpenCL installation!");
-
-            cl::Platform default_platform = all_platforms[platform];
-            logger->info("Using platform: {:s}", default_platform.getInfo<CL_PLATFORM_NAME>());
-
-            // get default device (CPUs, GPUs) of the default platform
-            std::vector<cl::Device> all_devices;
-            default_platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-            if (all_devices.size() == 0)
-                std::runtime_error("No devices found. Check OpenCL installation!");
-
-            cl::Device default_device = all_devices[device];
-            logger->info("Using device: {:s}", default_device.getInfo<CL_DEVICE_NAME>());
-
-            cl::Context context({default_device});
-
-            return std::pair<cl::Context, cl::Device>(context, default_device);
-        }
-    };
-#endif
-
     namespace warp
     {
         std::unique_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
@@ -259,20 +212,8 @@ namespace satdump
                 warping_kernel.setArg(9, buffer_img_settings);
 
                 // Get proper workload size
-                cl_uint size_wg;
-                cl_uint compute_units;
-
-                {
-                    size_t wg = 0;
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &wg);
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, wg, &size_wg, NULL);
-                }
-
-                {
-                    size_t wg = 0;
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &wg);
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, wg, &compute_units, NULL);
-                }
+                cl_uint size_wg = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+                cl_uint compute_units = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
 
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
@@ -350,20 +291,8 @@ namespace satdump
                 warping_kernel.setArg(9, buffer_img_settings);
 
                 // Get proper workload size
-                cl_uint size_wg;
-                cl_uint compute_units;
-
-                {
-                    size_t wg = 0;
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &wg);
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_WORK_GROUP_SIZE, wg, &size_wg, NULL);
-                }
-
-                {
-                    size_t wg = 0;
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &wg);
-                    clGetDeviceInfo(device.get(), CL_DEVICE_MAX_COMPUTE_UNITS, wg, &compute_units, NULL);
-                }
+                cl_uint size_wg = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+                cl_uint compute_units = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
 
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
