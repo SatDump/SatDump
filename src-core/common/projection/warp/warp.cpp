@@ -34,7 +34,7 @@ namespace satdump
             if (all_platforms.size() == 0)
                 std::runtime_error("No platforms found. Check OpenCL installation!");
 
-            cl::Platform default_platform = all_platforms[0];
+            cl::Platform default_platform = all_platforms[platform];
             logger->info("Using platform: {:s}", default_platform.getInfo<CL_PLATFORM_NAME>());
 
             // get default device (CPUs, GPUs) of the default platform
@@ -43,7 +43,7 @@ namespace satdump
             if (all_devices.size() == 0)
                 std::runtime_error("No devices found. Check OpenCL installation!");
 
-            cl::Device default_device = all_devices[0];
+            cl::Device default_device = all_devices[device];
             logger->info("Using device: {:s}", default_device.getInfo<CL_DEVICE_NAME>());
 
             cl::Context context({default_device});
