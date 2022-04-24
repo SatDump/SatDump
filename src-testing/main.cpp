@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include "common/projection/warp/warp.h"
+#include "core/config.h"
 
 struct SingleLineCfg
 {
@@ -183,6 +184,8 @@ public:
 int main(int argc, char *argv[])
 {
     initLogger();
+    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    satdump::config::loadConfig("satdump_cfg.json", user_path);
 
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);

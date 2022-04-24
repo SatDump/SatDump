@@ -3,6 +3,7 @@
 #include <map>
 #include "common/utils.h"
 #include "resources.h"
+#include "core/config.h"
 
 namespace satdump
 {
@@ -328,7 +329,9 @@ namespace satdump
             try
             {
                 logger->debug("Using GPU!");
-                std::pair<cl::Context, cl::Device> opencl_context = opencl::getDeviceAndContext(0, 0);
+                int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
+                int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
+                std::pair<cl::Context, cl::Device> opencl_context = opencl::getDeviceAndContext(p, d);
                 warpOnGPU_fp32(opencl_context.first, opencl_context.second, result);
                 return result;
             }
