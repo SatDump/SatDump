@@ -4,10 +4,14 @@
 #include <fstream>
 
 #ifdef USE_OPENCL
-//#define CL_HPP_TARGET_OPENCL_VERSION 120
 #define CL_HPP_MINIMUM_OPENCL_VERSION 110 // Support down to 1.1
 #define __CL_ENABLE_EXCEPTIONS
+#ifdef __APPLE__
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include "libs/opencl/opencl.hpp"
+#else
 #include <CL/opencl.hpp>
+#endif
 
 namespace opencl
 {
