@@ -8,7 +8,7 @@
 #define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
 #define CL_HPP_TARGET_OPENCL_VERSION 120
-#include "common/opencl.hpp"
+#include "libs/opencl/opencl.hpp"
 #else
 #include <CL/opencl.hpp>
 #endif
