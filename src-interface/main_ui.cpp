@@ -16,7 +16,7 @@ namespace satdump
 {
     std::shared_ptr<Application> current_app;
 
-    bool in_app = true;
+    bool in_app = false; // true;
 
     void initMainUI()
     {
@@ -47,7 +47,7 @@ namespace satdump
         registerApplications();
         registerViewerHandlers();
 
-        current_app = application_registry["viewer"]();
+        // current_app = application_registry["viewer"]();
     }
 
     void renderMainUI(int wwidth, int wheight)

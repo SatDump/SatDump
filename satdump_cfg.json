@@ -51,6 +51,10 @@
     },
     // More generic SatDump settings
     "satdump_general": {
+        "opencl_device": {
+            "platform": 0,
+            "device": 0
+        },
         "update_tles_startup": {
             "type": "bool",
             "value": false,
