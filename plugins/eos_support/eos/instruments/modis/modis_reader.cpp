@@ -4,6 +4,8 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 
+#include "logger.h"
+
 namespace eos
 {
     namespace modis
@@ -199,7 +201,7 @@ namespace eos
             repackBytesTo12bits(&packet.payload[12], 258, modis_ifov);
 
             // Check CRC
-            if (compute_crc(modis_ifov, 258) != modis_ifov[258])
+            if (compute_crc(modis_ifov, 171) != modis_ifov[171])
                 return;
 
             // std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
