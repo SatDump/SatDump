@@ -12,6 +12,18 @@ namespace widgets
     {
     }
 
+    void ConstellationViewer::pushComplexScaled(complex_t *buffer, int size, float scale)
+    {
+        int to_copy = std::min<int>(CONST_SIZE, size);
+        int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
+
+        if (to_move > 0)
+            std::memmove(&sample_buffer_complex_float[size], sample_buffer_complex_float, to_move * sizeof(complex_t));
+
+        for (int i = 0; i < to_copy; i++)
+            sample_buffer_complex_float[i] = buffer[i] * scale;
+    }
+
     void ConstellationViewer::pushComplex(complex_t *buffer, int size)
     {
         int to_copy = std::min<int>(CONST_SIZE, size);

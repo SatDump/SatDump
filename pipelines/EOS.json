@@ -52,8 +52,7 @@
             "baseband": {},
             "soft": {
                 "terra_db_demod": {
-                    "dc_block": false,
-                    "buffer_size": 8192
+                    "symbolrate": 13.125e6
                 }
             },
             "cadu": {

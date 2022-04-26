@@ -8,33 +8,24 @@ size_t getFilesize(std::string filepath);
 
 namespace terra
 {
-    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                              d_samplerate(parameters["samplerate"].get<long>()),
-                                                                                                                              d_buffer_size(parameters["buffer_size"].get<long>()),
-                                                                                                                              d_dc_block(parameters.count("dc_block") > 0 ? parameters["dc_block"].get<bool>() : 0),
-                                                                                                                              constellation(0.5f, 0.5f, demod_constellation_size)
+    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : demod::BaseDemodModule(input_file, output_file_hint, parameters)
     {
-        // Init DSP blocks
-        file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(parameters["baseband_format"]), d_buffer_size);
-        agc = std::make_shared<dsp::AGCBlock>(file_source->output_stream, 1e-3, 1.0f, 1.0f, 65536);
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, d_samplerate, 13.125e6 * 2, 0.5f, 31));
-        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2);
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, ((float)d_samplerate / (float)13.125e6) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
-
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
-        snr = 0;
-        peak_snr = 0;
+
+        // Window Name in the UI
+        name = "Terra DB Demodulator";
+
+        // Show freq
+        show_freq = true;
     }
 
-    std::vector<ModuleDataType> TerraDBDemodModule::getInputTypes()
+    void TerraDBDemodModule::init()
     {
-        return {DATA_FILE};
-    }
-
-    std::vector<ModuleDataType> TerraDBDemodModule::getOutputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
+        BaseDemodModule::init();
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate * 2, 0.5f, 31));
+        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2);
+        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, ((float)final_samplerate / (float)d_symbolrate) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
     }
 
     TerraDBDemodModule::~TerraDBDemodModule()
@@ -49,9 +40,6 @@ namespace terra
         else
             filesize = 0;
 
-        // if (input_data_type == DATA_FILE)
-        //     data_in = std::ifstream(d_input_file, std::ios::binary);
-
         if (output_data_type == DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
@@ -60,31 +48,36 @@ namespace terra
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".soft");
-        logger->info("Buffer size : " + std::to_string(d_buffer_size));
+        logger->info("Buffer size : {:d}", d_buffer_size);
 
         time_t lastTime = 0;
 
         // Start
-        file_source->start();
-        agc->start();
+        BaseDemodModule::start();
         rrc->start();
         pll->start();
         rec->start();
 
         int dat_size = 0;
-        while (/*input_data_type == DATA_STREAM ? input_active.load() : */ !file_source->eof())
+        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
         {
             dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
                 continue;
 
-            // Estimate SNR, only on part of the samples to limit CPU usage
-            snr_estimator.update(rec->output_stream->readBuf, dat_size / 100);
+            // Push into constellation
+            constellation.pushComplexScaled(rec->output_stream->readBuf, dat_size, 0.5);
+
+            // Estimate SNR
+            snr_estimator.update(rec->output_stream->readBuf, dat_size);
             snr = snr_estimator.snr();
 
             if (snr > peak_snr)
                 peak_snr = snr;
+
+            // Update freq
+            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
 
             for (int i = 0; i < dat_size; i++)
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 50);
@@ -96,7 +89,8 @@ namespace terra
             else
                 output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
-            progress = file_source->getPosition();
+            if (input_data_type == DATA_FILE)
+                progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -106,39 +100,22 @@ namespace terra
 
         logger->info("Demodulation finished");
 
+        if (input_data_type == DATA_FILE)
+            stop();
+    }
+
+    void TerraDBDemodModule::stop()
+    {
         // Stop
-        file_source->stop();
-        agc->stop();
+        BaseDemodModule::stop();
+
         rrc->stop();
         pll->stop();
         rec->stop();
+        rec->output_stream->stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();
-    }
-
-    void TerraDBDemodModule::drawUI(bool window)
-    {
-        ImGui::Begin("Terra DB Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
-
-        ImGui::BeginGroup();
-        constellation.pushComplex(rec->output_stream->readBuf, rec->output_stream->getDataSize());
-        constellation.draw();
-        ImGui::EndGroup();
-
-        ImGui::SameLine();
-
-        ImGui::BeginGroup();
-        {
-            // Show SNR information
-            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-            snr_plot.draw(snr, peak_snr);
-        }
-        ImGui::EndGroup();
-
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
-
-        ImGui::End();
     }
 
     std::string TerraDBDemodModule::getID()
@@ -148,7 +125,7 @@ namespace terra
 
     std::vector<std::string> TerraDBDemodModule::getParameters()
     {
-        return {"samplerate", "buffer_size", "dc_block", "baseband_format"};
+        return BaseDemodModule::getParameters();
     }
 
     std::shared_ptr<ProcessingModule> TerraDBDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
