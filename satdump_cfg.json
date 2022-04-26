@@ -47,6 +47,12 @@
             "value": 1.0,
             "name": "DPI Scaling",
             "description": "DPI Scaling defines the overall UI scale. This can be used to make it bigger or smaller depending on your display's pixel density."
+        },
+        "open_viewer_post_processing": {
+            "type": "bool",
+            "value": true,
+            "name": "Open Viewer after decoding",
+            "description": "Open the decoded data in the viewer after decoding is done"
         }
     },
     // More generic SatDump settings
@@ -104,6 +110,10 @@
                     },
                     "321/221 Mix": {
                         "equation": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15"
+                    },
+                    "543": {
+                        "equation": "ch5, ch4, ch3",
+                        "equalize": true
                     }
                 }
             },

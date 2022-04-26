@@ -42,6 +42,9 @@ namespace aqua
             else
                 pix_pos -= 534;
 
+            if (pix_pos > 89)
+                return;
+
             // Decode 14-bits channels
             {
                 repackBytesTo14bits(&packet.payload[12], 1581, line_buffer);

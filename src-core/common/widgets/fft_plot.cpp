@@ -22,7 +22,7 @@ namespace widgets
         const ImRect inner_bb({frame_bb.Min.x + style.FramePadding.x, frame_bb.Min.y + style.FramePadding.y},
                               {frame_bb.Max.x - style.FramePadding.x, frame_bb.Max.y - style.FramePadding.y});
 
-        int res_w = ImMin((int)size.x, values_size) - 1;
+        int res_w = /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
         int item_count = values_size - 1;
         const float t_step = 1.0f / (float)res_w;
         const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));

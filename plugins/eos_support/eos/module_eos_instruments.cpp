@@ -8,6 +8,7 @@
 #include "common/image/bowtie.h"
 #include "common/utils.h"
 #include "products/image_products.h"
+#include "products/dataset.h"
 
 namespace eos
 {
@@ -139,8 +140,19 @@ namespace eos
 
             data_in.close();
 
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            if (d_satellite == AQUA)
+                dataset.satellite_name = "Aqua";
+            else if (d_satellite == TERRA)
+                dataset.satellite_name = "Terra";
+            else if (d_satellite == AURA)
+                dataset.satellite_name = "Aura";
+
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
+                dataset.timestamp = avg_overflowless(modis_reader.timestamps_1000);
+
                 modis_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";
 
@@ -201,6 +213,7 @@ namespace eos
                 }
 
                 modis_products.save(directory);
+                dataset.products_list.push_back("MODIS");
 
                 modis_status = DONE;
             }
@@ -330,6 +343,8 @@ namespace eos
                 WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2.png");
                 omi_status = DONE;
             }
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void EOSInstrumentsDecoderModule::drawUI(bool window)

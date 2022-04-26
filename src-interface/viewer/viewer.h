@@ -5,6 +5,8 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
+#include "viewer/viewer.h"
+
 namespace satdump
 {
     class ViewerHandler
@@ -56,12 +58,12 @@ namespace satdump
         }
 
         int current_handler_id = 0;
-        void loadDatasetInViewer(std::string path);
-        void loadProductsInViewer(std::string path, std::string dataset_name = "");
 
     public:
         ViewerApplication();
         ~ViewerApplication();
+        void loadDatasetInViewer(std::string path);
+        void loadProductsInViewer(std::string path, std::string dataset_name = "");
 
     public:
         static std::string getID() { return "viewer"; }

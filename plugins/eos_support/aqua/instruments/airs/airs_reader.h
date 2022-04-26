@@ -11,7 +11,7 @@ namespace aqua
         {
         private:
             uint8_t shifted_buffer[7000];
-            uint16_t line_buffer[4003 + 4];
+            uint16_t line_buffer[4003 + 100];
             std::vector<uint16_t> channels[2666];
             std::vector<uint16_t> hd_channels[4];
 

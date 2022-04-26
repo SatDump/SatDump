@@ -4,8 +4,15 @@
 #include "core/pipeline.h"
 #include "error.h"
 
+#include "viewer/viewer.h"
+#include "core/config.h"
+
 namespace satdump
 {
+    // TMP, MOVE TO HEADER
+    extern std::shared_ptr<Application> current_app;
+    extern bool in_app;
+
     namespace processing
     {
         void process(std::string downlink_pipeline,
@@ -44,6 +51,19 @@ namespace satdump
                 logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
 
             logger->info("Done! Goodbye");
+
+            if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            {
+                if (std::filesystem::exists(output_file + "/dataset.json"))
+                {
+                    logger->info("Opening viewer!");
+                    std::shared_ptr<ViewerApplication> viewer = std::make_shared<ViewerApplication>();
+                    viewer->loadDatasetInViewer(output_file + "/dataset.json");
+                    in_app = true;
+                    current_app = viewer;
+                }
+            }
+
             is_processing = false;
         }
 

@@ -7,11 +7,14 @@
 #include <atomic>
 #include "common/dsp/agc.h"
 #include "common/dsp/file_source.h"
+#include "common/dsp/splitter.h"
+#include "common/dsp/fft.h"
 #include "common/dsp/correct_iq.h"
 #include "common/dsp/rational_resampler.h"
 #include "common/dsp/snr_estimator.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
+#include "common/widgets/fft_plot.h"
 
 namespace demod
 {
@@ -26,6 +29,8 @@ namespace demod
     {
     protected:
         std::shared_ptr<dsp::FileSourceBlock> file_source;
+        std::shared_ptr<dsp::SplitterBlock> fft_splitter;
+        std::shared_ptr<dsp::FFTBlock> fft_proc;
         std::shared_ptr<dsp::CorrectIQBlock> dc_blocker;
         std::shared_ptr<dsp::CCRationalResamplerBlock> resampler;
         std::shared_ptr<dsp::AGCBlock> agc;
@@ -63,6 +68,10 @@ namespace demod
         // UI Stuff
         widgets::ConstellationViewer constellation;
         widgets::SNRPlotViewer snr_plot;
+        bool show_fft = false;
+        std::shared_ptr<widgets::FFTPlot> fft_plot;
+
+        void drawFFT();
 
         // Util
         int8_t clamp(float x)

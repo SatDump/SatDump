@@ -54,18 +54,26 @@ namespace demod
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
+
         if (d_dc_block)
             dc_blocker = std::make_shared<dsp::CorrectIQBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
         // Cleanup things a bit
         std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
+        fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data);
+        fft_splitter->set_output_2nd(true);
+
+        fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
+        fft_proc->set_fft_settings(8192);
+        fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20);
+
         // Init resampler if required
         if (resample)
-            resampler = std::make_shared<dsp::CCRationalResamplerBlock>(input_data, final_samplerate, d_samplerate);
+            resampler = std::make_shared<dsp::CCRationalResamplerBlock>(fft_splitter->output_stream, final_samplerate, d_samplerate);
 
         // AGC
-        agc = std::make_shared<dsp::AGCBlock>(resample ? resampler->output_stream : input_data, d_agc_rate, 1.0f, 1.0f, 65536);
+        agc = std::make_shared<dsp::AGCBlock>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()
@@ -89,6 +97,8 @@ namespace demod
             file_source->start();
         if (d_dc_block)
             dc_blocker->start();
+        fft_splitter->start();
+        fft_proc->start();
         if (resample)
             resampler->start();
         agc->start();
@@ -101,6 +111,8 @@ namespace demod
             file_source->stop();
         if (d_dc_block)
             dc_blocker->stop();
+        fft_splitter->stop();
+        fft_proc->stop();
         if (resample)
             resampler->stop();
         agc->stop();
@@ -127,6 +139,8 @@ namespace demod
                 ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr);
+            if (ImGui::Checkbox("Show FFT", &show_fft) && !streamingInput)
+                fft_splitter->set_output_2nd(show_fft);
         }
         ImGui::EndGroup();
 
@@ -134,6 +148,31 @@ namespace demod
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
+
+        drawFFT();
+    }
+
+    void BaseDemodModule::drawFFT()
+    {
+        if (show_fft && !streamingInput)
+        {
+            ImGui::SetNextWindowSize({400 * ui_scale, 200 * ui_scale});
+            ImGui::Begin("Baseband FFT");
+            fft_plot->draw({ImGui::GetWindowSize().x - 0, ImGui::GetWindowSize().y - 40 * ui_scale});
+            float min = 1000;
+            for (int i = 0; i < 8192; i++)
+                if (fft_proc->output_stream->writeBuf[i] < min)
+                    min = fft_proc->output_stream->writeBuf[i];
+            float max = -1000;
+            for (int i = 0; i < 8192; i++)
+                if (fft_proc->output_stream->writeBuf[i] > max)
+                    max = fft_proc->output_stream->writeBuf[i];
+
+            fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
+            fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+
+            ImGui::End();
+        }
     }
 
     std::vector<std::string> BaseDemodModule::getParameters()
