@@ -1,8 +1,6 @@
 #include "channel_reader.h"
 #include "common/ccsds/ccsds_time.h"
 
-#include <iostream>
-
 namespace jpss
 {
     namespace viirs
@@ -63,7 +61,7 @@ namespace jpss
                         // Check this detector is valid
                         if (data_payload_size <= 0)
                             continue;
-                        if (checksum_offset < 4 || checksum_offset >= (packet.payload.size() - det_offset) + 4)
+                        if (checksum_offset < 4 || checksum_offset >= (packet.payload.size() - det_offset) - 4)
                             continue;
 
                         // Parse syncword
@@ -91,7 +89,7 @@ namespace jpss
                             aec_decode_end(&aec_cfg);
 
                             // We read as big-endian, now convert to little endian for this to work...
-                            for (int y = 0; y < channelSettings.zoneWidth[det_n] * channelSettings.oversampleZone[det_n]; y++)
+                            for (int y = 0; y < current_segment.detector_data[detector][det_n].size(); y++)
                                 current_segment.detector_data[detector][det_n][y] = ((current_segment.detector_data[detector][det_n][y] & 0xff) << 8) | ((current_segment.detector_data[detector][det_n][y] & 0xff00) >> 8);
 
                             // If this detector is oversampled, decimate and average samples
