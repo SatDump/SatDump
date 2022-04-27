@@ -10,7 +10,7 @@
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
-//#include "instruments/viirs/channel_correlator.h"
+#include "products/dataset.h"
 
 namespace jpss
 {
@@ -140,6 +140,11 @@ namespace jpss
             else if (scid == JPSS4_SCID)
                 norad = JPSS4_NORAD;
 
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = avg_overflowless(atms_reader.timestamps);
+
             // Satellite ID
             {
                 logger->info("----------- Satellite");
@@ -158,11 +163,20 @@ namespace jpss
                 logger->info("----------- ATMS");
                 logger->info("Lines : " + std::to_string(atms_reader.lines));
 
+                satdump::ImageProducts atms_products;
+                atms_products.instrument_name = "atms";
+                atms_products.has_timestamps = true;
+                // atms_products.set_tle(satellite_tle);
+                atms_products.bit_depth = 16;
+                atms_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                atms_products.set_timestamps(atms_reader.timestamps);
+
                 for (int i = 0; i < 22; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(atms_reader.getChannel(i), directory + "/ATMS-" + std::to_string(i + 1) + ".png");
-                }
+                    atms_products.images.push_back({"ATMS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), atms_reader.getChannel(i)});
+
+                atms_products.save(directory);
+                dataset.products_list.push_back("ATMS");
+
                 atms_status = DONE;
             }
 
@@ -313,7 +327,10 @@ namespace jpss
                 viirs_dnb_status = DONE;
 
                 viirs_products.save(directory);
+                dataset.products_list.push_back("VIIRS");
             }
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void JPSSInstrumentsDecoderModule::drawUI(bool window)

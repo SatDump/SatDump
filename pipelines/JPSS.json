@@ -15,7 +15,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 15e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.001
+                    "pll_bw": 0.005
                 }
             },
             "cadu": {
