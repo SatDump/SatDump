@@ -16,10 +16,10 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #   define WIN32_LEAN_AND_MEAN 1
 #endif
-#include <Windows.h>
+#include <windows.h>
 #include <commdlg.h>
-#include <ShlObj.h>
-#include <ShObjIdl.h> // IFileDialog
+#include <shlobj.h>
+#include <shobjidl.h> // IFileDialog
 #include <shellapi.h>
 #include <strsafe.h>
 #include <future>     // std::async
@@ -30,6 +30,11 @@
 #else
 #ifndef _POSIX_C_SOURCE
 #   define _POSIX_C_SOURCE 2 // for popen()
+#endif
+#ifdef __APPLE__
+#   ifndef _DARWIN_C_SOURCE
+#       define _DARWIN_C_SOURCE
+#   endif
 #endif
 #include <cstdio>     // popen()
 #include <cstdlib>    // std::getenv()
@@ -47,6 +52,17 @@
 #include <regex>    // std::regex
 #include <thread>   // std::mutex, std::this_thread
 #include <chrono>   // std::chrono
+
+// Versions of mingw64 g++ up to 9.3.0 do not have a complete IFileDialog
+#ifndef PFD_HAS_IFILEDIALOG
+#   define PFD_HAS_IFILEDIALOG 1
+#   if (defined __MINGW64__ || defined __MINGW32__) && defined __GXX_ABI_VERSION
+#       if __GXX_ABI_VERSION <= 1013
+#           undef PFD_HAS_IFILEDIALOG
+#           define PFD_HAS_IFILEDIALOG 0
+#       endif
+#   endif
+#endif
 
 namespace pfd
 {
@@ -286,7 +302,9 @@ protected:
 
 #if _WIN32
     static int CALLBACK bffcallback(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData);
+#if PFD_HAS_IFILEDIALOG
     std::string select_folder_vista(IFileDialog *ifd, bool force_path);
+#endif
 
     std::wstring m_wtitle;
     std::wstring m_wdefault_path;
@@ -488,6 +506,9 @@ inline bool settings::available()
     return true;
 #elif __APPLE__
     return true;
+#elif __EMSCRIPTEN__
+    // FIXME: Return true after implementation is complete.
+    return false;
 #else
     settings tmp;
     return tmp.flags(flag::has_zenity) ||
@@ -581,7 +602,6 @@ inline bool internal::executor::kill()
     }
 #elif __EMSCRIPTEN__ || __NX__
     // FIXME: do something
-    (void)timeout;
     return false; // cannot kill
 #else
     ::kill(m_pid, SIGKILL);
@@ -957,6 +977,7 @@ inline internal::file_dialog::file_dialog(type in_type,
         // Folder selection uses a different method
         if (in_type == type::folder)
         {
+#if PFD_HAS_IFILEDIALOG
             if (flags(flag::is_vista))
             {
                 // On Vista and higher we should be able to use IFileDialog for folder selection
@@ -968,6 +989,7 @@ inline internal::file_dialog::file_dialog(type in_type,
                 if (SUCCEEDED(hr))
                     return select_folder_vista(ifd, options & opt::force_path);
             }
+#endif
 
             BROWSEINFOW bi;
             memset(&bi, 0, sizeof(bi));
@@ -1071,6 +1093,13 @@ inline internal::file_dialog::file_dialog(type in_type,
 
         return "";
     });
+#elif __EMSCRIPTEN__
+    // FIXME: do something
+    (void)in_type;
+    (void)title;
+    (void)default_path;
+    (void)filters;
+    (void)options;
 #else
     auto command = desktop_helper();
 
@@ -1172,7 +1201,10 @@ inline internal::file_dialog::file_dialog(type in_type,
             case type::folder: command.push_back("--getexistingdirectory"); break;
         }
         if (options & opt::multiselect)
-            command.push_back(" --multiple");
+        {
+            command.push_back("--multiple");
+            command.push_back("--separate-output");
+        }
 
         command.push_back(default_path);
 
@@ -1200,8 +1232,8 @@ inline std::string internal::file_dialog::string_result()
     auto ret = m_async->result();
     // Strip potential trailing newline (zenity). Also strip trailing slash
     // added by osascript for consistency with other backends.
-    while (ret.back() == '\n' || ret.back() == '/')
-        ret = ret.substr(0, ret.size() - 1);
+    while (!ret.empty() && (ret.back() == '\n' || ret.back() == '/'))
+        ret.pop_back();
     return ret;
 #endif
 }
@@ -1242,6 +1274,7 @@ inline int CALLBACK internal::file_dialog::bffcallback(HWND hwnd, UINT uMsg,
     return 0;
 }
 
+#if PFD_HAS_IFILEDIALOG
 inline std::string internal::file_dialog::select_folder_vista(IFileDialog *ifd, bool force_path)
 {
     std::string result;
@@ -1302,6 +1335,7 @@ inline std::string internal::file_dialog::select_folder_vista(IFileDialog *ifd, 
 
     return result;
 }
+#endif
 #endif
 
 // notify implementation
@@ -1374,6 +1408,10 @@ inline notify::notify(std::string const &title,
 
     // Display the new icon
     Shell_NotifyIconW(NIM_ADD, nid.get());
+#elif __EMSCRIPTEN__
+    // FIXME: do something
+    (void)title;
+    (void)message;
 #else
     auto command = desktop_helper();
 
@@ -1417,7 +1455,9 @@ inline message::message(std::string const &title,
                         icon _icon /* = icon::info */)
 {
 #if _WIN32
-    UINT style = MB_TOPMOST;
+    // Use MB_SYSTEMMODAL rather than MB_TOPMOST to ensure the message window is brought
+    // to front. See https://github.com/samhocevar/portable-file-dialogs/issues/52
+    UINT style = MB_SYSTEMMODAL;
     switch (_icon)
     {
         case icon::warning: style |= MB_ICONWARNING; break;
@@ -1444,7 +1484,7 @@ inline message::message(std::string const &title,
     m_mappings[IDRETRY] = button::retry;
     m_mappings[IDIGNORE] = button::ignore;
 
-    m_async->start_func([this, text, title, style](int* exit_code) -> std::string
+    m_async->start_func([text, title, style](int* exit_code) -> std::string
     {
         auto wtext = internal::str2wstr(text);
         auto wtitle = internal::str2wstr(title);
@@ -1701,4 +1741,3 @@ inline std::string select_folder::result()
 #endif // PFD_SKIP_IMPLEMENTATION
 
 } // namespace pfd
-
