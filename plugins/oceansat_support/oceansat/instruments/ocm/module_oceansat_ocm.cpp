@@ -5,6 +5,8 @@
 #include "imgui/imgui.h"
 #include "common/image/earth_curvature.h"
 #include "../../oceansat.h"
+#include "products/image_products.h"
+#include "products/dataset.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -55,42 +57,27 @@ namespace oceansat
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = "OceanSat-2";
+            dataset.timestamp = time(NULL); // avg_overflowless(avhrr_reader.timestamps);
+
             ocm_status = SAVING;
 
-            image::Image<uint16_t> image1 = ocm_reader.getChannel(0);
-            image::Image<uint16_t> image2 = ocm_reader.getChannel(1);
-            image::Image<uint16_t> image3 = ocm_reader.getChannel(2);
-            image::Image<uint16_t> image4 = ocm_reader.getChannel(3);
-            image::Image<uint16_t> image5 = ocm_reader.getChannel(4);
-            image::Image<uint16_t> image6 = ocm_reader.getChannel(5);
-            image::Image<uint16_t> image7 = ocm_reader.getChannel(6);
-            image::Image<uint16_t> image8 = ocm_reader.getChannel(7);
+            satdump::ImageProducts ocm_products;
+            ocm_products.instrument_name = "ocm_oc2";
+            ocm_products.has_timestamps = false;
+            ocm_products.bit_depth = 12;
 
-            logger->info("Channel 1...");
-            WRITE_IMAGE(image1, directory + "/OCM-1.png");
+            for (int i = 0; i < 8; i++)
+                ocm_products.images.push_back({"OCM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ocm_reader.getChannel(i)});
 
-            logger->info("Channel 2...");
-            WRITE_IMAGE(image2, directory + "/OCM-2.png");
-
-            logger->info("Channel 3...");
-            WRITE_IMAGE(image3, directory + "/OCM-3.png");
-
-            logger->info("Channel 4...");
-            WRITE_IMAGE(image4, directory + "/OCM-4.png");
-
-            logger->info("Channel 5...");
-            WRITE_IMAGE(image5, directory + "/OCM-5.png");
-
-            logger->info("Channel 6...");
-            WRITE_IMAGE(image6, directory + "/OCM-6.png");
-
-            logger->info("Channel 7...");
-            WRITE_IMAGE(image7, directory + "/OCM-7.png");
-
-            logger->info("Channel 8...");
-            WRITE_IMAGE(image8, directory + "/OCM-8.png");
+            ocm_products.save(directory);
+            dataset.products_list.push_back("OCM");
 
             ocm_status = DONE;
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
 
             /*
             logger->info("642 Composite...");

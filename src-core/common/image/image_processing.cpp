@@ -342,6 +342,46 @@ namespace image
         }
     }
 
+    template <typename T>
+    void Image<T>::median_blur()
+    {
+        for (int c = 0; c < d_channels; c++)
+        {
+            T *data_ptr = channel(c);
+
+            int h = d_height;
+            int w = d_width;
+
+            std::vector<T> values(5);
+
+            for (int x = 0; x < h; x++)
+            {
+                for (int y = 0; y < w; y++)
+                {
+                    values[0] =
+                        values[1] =
+                            values[2] =
+                                values[3] =
+                                    values[4] = data_ptr[x * w + y];
+
+                    if (x != 0)
+                        values[1] = data_ptr[(x - 1) * w + y];
+                    if (y != 0)
+                        values[2] = data_ptr[x * w + (y - 1)];
+
+                    if (x != h - 1)
+                        values[3] = data_ptr[(x + 1) * w + y];
+                    if (y != w - 1)
+                        values[4] = data_ptr[x * w + (y + 1)];
+
+                    std::sort(values.begin(), values.end());
+
+                    data_ptr[x * w + y] = values[2];
+                }
+            }
+        }
+    }
+
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
     template class Image<uint16_t>;

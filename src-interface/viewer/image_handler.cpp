@@ -39,6 +39,9 @@ namespace satdump
         else
             current_image = products->images[select_image_id - 1].image;
 
+        if (median_blur)
+            current_image.median_blur();
+
         if (rotate_image)
             current_image.mirror(true, true);
 
@@ -161,6 +164,9 @@ namespace satdump
                         ImGui::Text("Frequency : %f GHz", frequency / 1e9);
                 }
             }
+
+            if (ImGui::Checkbox("Median Blur", &median_blur))
+                asyncUpdate();
 
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();

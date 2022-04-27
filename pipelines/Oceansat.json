@@ -11,13 +11,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "qpsk_demod": {
-                    "symbolrate": 21226000,
-                    "agc_rate": 0.00001,
-                    "rrc_alpha": 0.8,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.01,
-                    "buffer_size": 8192
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 21.226e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.01
                 }
             },
             "frames": {

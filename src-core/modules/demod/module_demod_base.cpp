@@ -66,7 +66,7 @@ namespace demod
 
         fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
         fft_proc->set_fft_settings(8192);
-        fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20);
+        fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
 
         // Init resampler if required
         if (resample)

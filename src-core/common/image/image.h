@@ -63,6 +63,7 @@ namespace image
         void brightness_contrast_old(float brightness, float contrast);      // Brightness-Contrast algorithm from old Gimp versions
         void linear_invert();                                                // Invert the entire image
         void simple_despeckle(int thresold = 10);                            // Very basic despeckle algorithm
+        void median_blur();                                                  // Median blur algorithm
 
         // Drawing functions
         void draw_pixel(int x, int y, T color[]);                                                      // Set a pixel's color

@@ -27,6 +27,7 @@ namespace satdump
         ImageViewWidget image_view;
 
         // Other controls
+        bool median_blur = false;
         bool rotate_image = false;
         bool equalize_image = false;
         bool invert_image = false;
