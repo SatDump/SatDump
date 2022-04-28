@@ -48,6 +48,9 @@ namespace dsp
         delete[] fft_output_buffer;
     }
 
+    int decimation = 10;
+    int ii = 0;
+
     void FFTBlock::work()
     {
         int nsamples = input_stream->read();
@@ -70,6 +73,9 @@ namespace dsp
             int position_ptr = 0;
             while (in_main_buffer - position_ptr > fft_size)
             {
+                if (ii++ % decimation != 0)
+                    continue;
+
                 complex_t *buffer_ptr = &fft_main_buffer[position_ptr];
 
                 volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps, fft_size);

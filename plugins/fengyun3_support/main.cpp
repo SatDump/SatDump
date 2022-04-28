@@ -4,7 +4,6 @@
 
 #include "fengyun3/module_new_fengyun_ahrpt_decoder.h"
 #include "fengyun3/module_fengyun_ahrpt_decoder.h"
-#include "fengyun3/module_new_fengyun_mpt_decoder.h"
 #include "fengyun3/module_fengyun_mpt_decoder.h"
 #include "fengyun3/instruments/virr/module_fengyun_virr.h"
 #include "fengyun3/instruments/mersi1/module_fengyun_mersi1.h"
@@ -39,7 +38,6 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::NewFengyunAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::FengyunAHRPTDecoderModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::NewFengyunMPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::FengyunMPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::virr::FengyunVIRRDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::mersi1::FengyunMERSI1DecoderModule);
