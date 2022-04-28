@@ -2,7 +2,6 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "fengyun3/module_new_fengyun_ahrpt_decoder.h"
 #include "fengyun3/module_fengyun_ahrpt_decoder.h"
 #include "fengyun3/module_fengyun_mpt_decoder.h"
 #include "fengyun3/instruments/virr/module_fengyun_virr.h"
@@ -36,7 +35,6 @@ public:
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::NewFengyunAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::FengyunAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::FengyunMPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun3::virr::FengyunVIRRDecoderModule);
