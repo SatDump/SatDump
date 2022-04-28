@@ -160,7 +160,7 @@ namespace demod
     {
         if (show_fft && !streamingInput)
         {
-            ImGui::SetNextWindowSize({400 * ui_scale, (showWaterfall ? 400 : 200) * ui_scale});
+            ImGui::SetNextWindowSize({400 * (double)ui_scale, (double)(showWaterfall ? 400 : 200) * (double)ui_scale});
             ImGui::Begin("Baseband FFT", __null, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize);
             fft_plot->draw({ImGui::GetWindowSize().x - 0, (ImGui::GetWindowSize().y - 40 * ui_scale) * (showWaterfall ? 0.5 : 1.0)});
             float min = 1000;
@@ -176,7 +176,7 @@ namespace demod
             waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
 
             if (showWaterfall)
-                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (ImGui::GetWindowSize().y - 40 * ui_scale) * 2});
+                waterfall_plot->draw({(double)ImGui::GetWindowSize().x - 0, (double)(ImGui::GetWindowSize().y - 40 * ui_scale) * 2});
 
             ImGui::End();
         }
