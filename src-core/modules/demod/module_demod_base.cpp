@@ -1,6 +1,7 @@
 #include "module_demod_base.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "core/config.h"
 
 namespace demod
 {
@@ -30,6 +31,8 @@ namespace demod
 
         snr = 0;
         peak_snr = 0;
+
+        showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
     }
 
     void BaseDemodModule::init()
@@ -67,6 +70,7 @@ namespace demod
         fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
         fft_proc->set_fft_settings(8192);
         fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
+        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);
 
         // Init resampler if required
         if (resample)
@@ -156,9 +160,9 @@ namespace demod
     {
         if (show_fft && !streamingInput)
         {
-            ImGui::SetNextWindowSize({400 * ui_scale, 200 * ui_scale});
-            ImGui::Begin("Baseband FFT");
-            fft_plot->draw({ImGui::GetWindowSize().x - 0, ImGui::GetWindowSize().y - 40 * ui_scale});
+            ImGui::SetNextWindowSize({400 * ui_scale, (showWaterfall ? 400 : 200) * ui_scale});
+            ImGui::Begin("Baseband FFT", __null, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize);
+            fft_plot->draw({ImGui::GetWindowSize().x - 0, (ImGui::GetWindowSize().y - 40 * ui_scale) * (showWaterfall ? 0.5 : 1.0)});
             float min = 1000;
             for (int i = 0; i < 8192; i++)
                 if (fft_proc->output_stream->writeBuf[i] < min)
@@ -168,8 +172,11 @@ namespace demod
                 if (fft_proc->output_stream->writeBuf[i] > max)
                     max = fft_proc->output_stream->writeBuf[i];
 
-            fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
-            fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+            waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
+            waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+
+            if (showWaterfall)
+                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (ImGui::GetWindowSize().y - 40 * ui_scale) * 2});
 
             ImGui::End();
         }

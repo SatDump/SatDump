@@ -53,6 +53,12 @@
             "value": true,
             "name": "Open Viewer after decoding",
             "description": "Open the decoded data in the viewer after decoding is done"
+        },
+        "show_waterfall_demod_fft": {
+            "type": "bool",
+            "value": true,
+            "name": "Demod FFT Waterfall",
+            "description": "Enable the FFT Waterfall shown in the small FFT available in demodulators\nThis does increase CPU usage"
         }
     },
     // More generic SatDump settings

@@ -15,6 +15,7 @@
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
 #include "common/widgets/fft_plot.h"
+#include "common/widgets/waterfall_plot.h"
 
 namespace demod
 {
@@ -70,7 +71,9 @@ namespace demod
         widgets::SNRPlotViewer snr_plot;
         bool show_fft = false;
         std::shared_ptr<widgets::FFTPlot> fft_plot;
+        std::shared_ptr<widgets::WaterfallPlot> waterfall_plot;
 
+        bool showWaterfall = false;
         void drawFFT();
 
         // Util
