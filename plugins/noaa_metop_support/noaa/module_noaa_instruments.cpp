@@ -5,6 +5,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "products/image_products.h"
+#include "products/dataset.h"
 
 namespace noaa
 {
@@ -110,6 +111,13 @@ namespace noaa
                     sat_name = "NOAA-19";
                 }
 
+                // Products dataset
+                satdump::ProductDataSet dataset;
+                dataset.satellite_name = sat_name;
+                dataset.timestamp = avg_overflowless(avhrr_reader.timestamps);
+
+                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+
                 // SATELLITE ID
                 {
                     logger->info("----------- Satellite");
@@ -132,7 +140,7 @@ namespace noaa
                     avhrr_products.instrument_name = "avhrr_3";
                     avhrr_products.has_timestamps = true;
                     avhrr_products.bit_depth = 10;
-                    avhrr_products.set_tle(satdump::TLE{1000, "NOAA 19", "1 33591U 09005A   22021.51188828  .00000069  00000-0  62719-4 0  9997", "2 33591  99.1662  52.4317 0013144 238.6990 121.2894 14.12523801667708"});
+                    avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps);
 
@@ -140,6 +148,7 @@ namespace noaa
                         avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
 
                     avhrr_products.save(directory);
+                    dataset.products_list.push_back("AVHRR");
 
                     avhrr_status = DONE;
                 }
@@ -159,6 +168,7 @@ namespace noaa
                     hirs_products.instrument_name = "hirs";
                     hirs_products.has_timestamps = false;
                     hirs_products.bit_depth = 13;
+                    hirs_products.set_tle(satellite_tle);
                     // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     // hirs_products.set_timestamps(hirs_reader.timestamps);
 
@@ -166,6 +176,7 @@ namespace noaa
                         hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
+                    dataset.products_list.push_back("HIRS");
 
                     hirs_status = DONE;
                 }
@@ -185,6 +196,7 @@ namespace noaa
                     mhs_products.instrument_name = "mhs";
                     mhs_products.has_timestamps = true;
                     mhs_products.bit_depth = 16;
+                    mhs_products.set_tle(satellite_tle);
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     mhs_products.set_timestamps(mhs_reader.timestamps);
                     for (int i = 0; i < 5; i++)
@@ -197,6 +209,7 @@ namespace noaa
                         mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                     mhs_products.save(directory);
+                    dataset.products_list.push_back("MHS");
 
                     mhs_status = DONE;
                 }
@@ -217,6 +230,7 @@ namespace noaa
                     amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = false;
                     amsu_products.bit_depth = 16;
+                    amsu_products.set_tle(satellite_tle);
                     // amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     // amsu_products.set_timestamps(amsu_reader.timestamps);
 
@@ -224,6 +238,7 @@ namespace noaa
                         amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i)});
 
                     amsu_products.save(directory);
+                    dataset.products_list.push_back("AMSU");
 
                     amsu_status = DONE;
                 }
@@ -250,6 +265,7 @@ namespace noaa
                 hirs_products.instrument_name = "hirs";
                 hirs_products.has_timestamps = false;
                 hirs_products.bit_depth = 13;
+                hirs_products.set_tle(satellite_tle);
                 // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // hirs_products.set_timestamps(hirs_reader.timestamps);
 
@@ -257,6 +273,7 @@ namespace noaa
                     hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                 hirs_products.save(directory);
+                dataset.products_list.push_back("HIRS");
 
                 hirs_status = DONE;
             }

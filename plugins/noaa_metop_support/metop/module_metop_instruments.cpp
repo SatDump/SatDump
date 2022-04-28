@@ -11,6 +11,7 @@
 #include "products/image_products.h"
 #include "products/radiation_products.h"
 #include "products/dataset.h"
+#include "common/tracking/tle.h"
 
 namespace metop
 {
@@ -159,6 +160,8 @@ namespace metop
                 norad = METOP_C_NORAD;
 
             std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
+            if (!satellite_tle.has_value())
+                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
             if (!satellite_tle.has_value()) // Get from main stuff
             {
