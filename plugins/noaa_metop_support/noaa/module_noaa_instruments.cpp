@@ -275,7 +275,7 @@ namespace noaa
                     hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                 hirs_products.save(directory);
-                dataset.products_list.push_back("HIRS");
+                // dataset.products_list.push_back("HIRS");
 
                 hirs_status = DONE;
             }
