@@ -7,6 +7,8 @@
 #include "meteor.h"
 #include "products/image_products.h"
 #include "common/simple_deframer.h"
+#include "common/tracking/tle.h"
+#include "products/dataset.h"
 
 namespace meteor
 {
@@ -109,6 +111,11 @@ namespace meteor
             else if (msumr_serial_number == 2)
                 norad = 44387; // M2-2
 
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = avg_overflowless(msumr_timestamps);
+
             // Satellite ID
             {
                 logger->info("----------- Satellite");
@@ -131,12 +138,14 @@ namespace meteor
                 msumr_products.instrument_name = "msu_mr";
                 msumr_products.has_timestamps = true;
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 msumr_products.set_timestamps(msumr_timestamps);
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), msumr_reader.getChannel(i)});
 
                 msumr_products.save(directory);
+                dataset.products_list.push_back("MSU-MR");
 
                 msumr_status = DONE;
             }
@@ -156,15 +165,19 @@ namespace meteor
                 mtvza_products.instrument_name = "mtvza";
                 mtvza_products.has_timestamps = true;
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 mtvza_products.set_timestamps(mtvza_reader.timestamps);
 
                 for (int i = 0; i < 30; i++)
                     mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mtvza_reader.getChannel(i)});
 
                 mtvza_products.save(directory);
+                dataset.products_list.push_back("MTVZA");
 
                 mtvza_status = DONE;
             }
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void MeteorInstrumentsDecoderModule::drawUI(bool window)
