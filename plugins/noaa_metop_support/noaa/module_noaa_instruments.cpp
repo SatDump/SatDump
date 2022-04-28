@@ -242,6 +242,8 @@ namespace noaa
 
                     amsu_status = DONE;
                 }
+
+                dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }
             else
             {
@@ -265,7 +267,7 @@ namespace noaa
                 hirs_products.instrument_name = "hirs";
                 hirs_products.has_timestamps = false;
                 hirs_products.bit_depth = 13;
-                hirs_products.set_tle(satellite_tle);
+                // hirs_products.set_tle(satellite_tle);
                 // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // hirs_products.set_timestamps(hirs_reader.timestamps);
 
@@ -277,8 +279,6 @@ namespace noaa
 
                 hirs_status = DONE;
             }
-
-            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void NOAAInstrumentsDecoderModule::drawUI(bool window)
