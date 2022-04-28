@@ -6,8 +6,6 @@
 #include "common/codings/randomization.h"
 #include "imgui/imgui.h"
 
-#include "common/repack_bits_byte.h"
-
 #define BUFFER_SIZE 8192
 
 // Return filesize
@@ -77,10 +75,6 @@ namespace fengyun3
         bool iq_invert = true;
         int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
-        std::ofstream output_raw("cadu_raw.bin");
-        uint8_t testbb[BUFFER_SIZE * 100];
-        RepackBitsByte rep;
-
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -121,9 +115,6 @@ namespace fengyun3
 
             // Perform differential decoding
             diff.work2(viterbi2_out, viterbi1_out, vout, diff_out);
-
-            int bbb = rep.work(diff_out, vout * 2, testbb);
-            output_raw.write((char *)testbb, bbb);
 
             // Reconstruct into bytes and write to output file
             if (v1 > 0 && v2 > 0)
