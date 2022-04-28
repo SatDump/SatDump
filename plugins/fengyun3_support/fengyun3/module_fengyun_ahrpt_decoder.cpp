@@ -3,9 +3,10 @@
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/rotation.h"
 #include "diff.h"
-#include "libs/ctpl/ctpl_stl.h"
-#include "common/utils.h"
+#include "common/codings/randomization.h"
 #include "imgui/imgui.h"
+
+#include "common/repack_bits_byte.h"
 
 #define BUFFER_SIZE 8192
 
@@ -17,39 +18,46 @@ namespace fengyun3
     FengyunAHRPTDecoderModule::FengyunAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                             d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
                                                                                                                                             d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
-                                                                                                                                            d_soft_symbols(parameters["soft_symbols"].get<bool>()),
                                                                                                                                             d_invert_second_viterbi(parameters["invert_second_viterbi"].get<bool>()),
-                                                                                                                                            viterbi1(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE),
-                                                                                                                                            viterbi2(true, d_viterbi_ber_threasold, 1, d_viterbi_outsync_after, 50, BUFFER_SIZE)
+                                                                                                                                            viterbi1(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, true),
+                                                                                                                                            viterbi2(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, true)
     {
-        viterbi_out = new uint8_t[BUFFER_SIZE];
-        sym_buffer = new std::complex<float>[BUFFER_SIZE];
         soft_buffer = new int8_t[BUFFER_SIZE * 2];
+        q_soft_buffer = new int8_t[BUFFER_SIZE];
+        i_soft_buffer = new int8_t[BUFFER_SIZE];
         viterbi1_out = new uint8_t[BUFFER_SIZE];
         viterbi2_out = new uint8_t[BUFFER_SIZE];
-        iSamples = new std::complex<float>[BUFFER_SIZE];
-        qSamples = new std::complex<float>[BUFFER_SIZE];
-        diff_in = new uint8_t[BUFFER_SIZE];
-        diff_out = new uint8_t[BUFFER_SIZE];
+        diff_out = new uint8_t[BUFFER_SIZE * 20];
+    }
+
+    std::vector<ModuleDataType> FengyunAHRPTDecoderModule::getInputTypes()
+    {
+        return {DATA_FILE, DATA_STREAM};
+    }
+
+    std::vector<ModuleDataType> FengyunAHRPTDecoderModule::getOutputTypes()
+    {
+        return {DATA_FILE};
     }
 
     FengyunAHRPTDecoderModule::~FengyunAHRPTDecoderModule()
     {
-        delete[] viterbi_out;
-        delete[] sym_buffer;
         delete[] soft_buffer;
+        delete[] q_soft_buffer;
+        delete[] i_soft_buffer;
         delete[] viterbi1_out;
         delete[] viterbi2_out;
-        delete[] iSamples;
-        delete[] qSamples;
-        delete[] diff_in;
         delete[] diff_out;
     }
 
     void FengyunAHRPTDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
+        if (input_data_type == DATA_FILE)
+            filesize = getFilesize(d_input_file);
+        else
+            filesize = 0;
+        if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
@@ -58,157 +66,101 @@ namespace fengyun3
 
         time_t lastTime = 0;
 
-        // Our 2 Viterbi decoders and differential decoder
+        // Differential
         FengyunDiff diff;
-
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
-        uint8_t frameBuffer[BUFFER_SIZE];
-        int inFrameBuffer = 0;
-
-        // Multithreading stuff
-        ctpl::thread_pool viterbi_pool(2);
+        uint8_t frame_buffer[1024 * 10];
 
         // Tests
-        phase_t shift = PHASE_0;
-        bool iq_invert = false;
+        int shift = 0;
+        bool iq_invert = true;
         int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
-        while (!data_in.eof())
+        std::ofstream output_raw("cadu_raw.bin");
+        uint8_t testbb[BUFFER_SIZE * 100];
+        RepackBitsByte rep;
+
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-
             // Read a buffer
-            if (d_soft_symbols)
-            {
+            if (input_data_type == DATA_FILE)
                 data_in.read((char *)soft_buffer, BUFFER_SIZE * 2);
-
-                rotate_soft((int8_t *)soft_buffer, BUFFER_SIZE * 2, shift, iq_invert);
-
-                // Convert to hard symbols from soft symbols. We may want to work with soft only later?
-                for (int i = 0; i < BUFFER_SIZE; i++)
-                {
-                    using namespace std::complex_literals;
-                    sym_buffer[i] = ((float)soft_buffer[i * 2 + 0] / 127.0f) + ((float)soft_buffer[i * 2 + 1] / 127.0f) * 1if;
-                }
-            }
             else
+                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE * 2);
+
+            rotate_soft(soft_buffer, BUFFER_SIZE * 2, PHASE_0, iq_invert);
+
+            for (int i = 0; i < BUFFER_SIZE; i++)
             {
-                data_in.read((char *)sym_buffer, sizeof(std::complex<float>) * BUFFER_SIZE);
+                i_soft_buffer[i] = soft_buffer[(i + shift) * 2 + 0];
+                q_soft_buffer[i] = d_invert_second_viterbi ? ~soft_buffer[(i + shift) * 2 + 1] : soft_buffer[(i + shift) * 2 + 1]; // TODO SUPPORT SWAPPING
             }
 
-            inI = 0;
-            inQ = 0;
-
-            // Deinterleave I & Q for the 2 Viterbis
-            for (int i = 0; i < BUFFER_SIZE / 2; i++)
+#pragma omp parallel sections num_threads(2)
             {
-                using namespace std::complex_literals;
-                std::complex<float> iS = sym_buffer[i * 2 + shift].imag() + sym_buffer[i * 2 + 1 + shift].imag() * 1if;
-                std::complex<float> qS = sym_buffer[i * 2 + shift].real() + sym_buffer[i * 2 + 1 + shift].real() * 1if;
-                iSamples[inI++] = iS;
-                qSamples[inQ++] = d_invert_second_viterbi ? -qS : qS; // FY3C
+#pragma omp section
+                v1 = viterbi1.work(i_soft_buffer, BUFFER_SIZE, viterbi1_out);
+#pragma omp section
+                v2 = viterbi2.work(q_soft_buffer, BUFFER_SIZE, viterbi2_out);
             }
+            vout = std::min(v1, v2);
 
-            // Run Viterbi!
-            v1_fut = viterbi_pool.push([&](int)
-                                       { v1 = viterbi1.work(qSamples, inQ, viterbi1_out); });
-            v2_fut = viterbi_pool.push([&](int)
-                                       { v2 = viterbi2.work(iSamples, inI, viterbi2_out); });
-            v1_fut.get();
-            v2_fut.get();
-
-            diffin = 0;
-
-            // Interleave and pack output into 2 bits chunks
-            if (v1 > 0 || v2 > 0)
-            {
-                if (v1 == v2)
-                {
-                    uint8_t bit1, bit2;
-                    for (int y = 0; y < v1; y++)
-                    {
-                        for (int i = 7; i >= 0; i--)
-                        {
-                            bit1 = getBit<uint8_t>(viterbi1_out[y], i);
-                            bit2 = getBit<uint8_t>(viterbi2_out[y], i);
-                            diff_in[diffin++] = bit2 << 1 | bit1;
-                        }
-                    }
-                }
-                viterbiNoSyncRun = 0;
-            }
-
-            if (viterbi1.getState() == 0 || viterbi1.getState() == 0)
+            if (viterbi1.getState() == 0 || viterbi2.getState() == 0)
             {
                 viterbiNoSyncRun++;
 
-                if (viterbiNoSyncRun == 10)
+                if (viterbiNoSyncRun >= 10)
                 {
-                    if (shift == PHASE_0)
-                        shift = PHASE_90;
+                    if (shift == 0)
+                        shift = 1;
                     else
-                        shift = PHASE_0;
+                        shift = 0;
                 }
             }
 
             // Perform differential decoding
-            diff.work(diff_in, diffin, diff_out);
+            diff.work2(viterbi2_out, viterbi1_out, vout, diff_out);
+
+            int bbb = rep.work(diff_out, vout * 2, testbb);
+            output_raw.write((char *)testbb, bbb);
 
             // Reconstruct into bytes and write to output file
-            if (diffin > 0)
+            if (v1 > 0 && v2 > 0)
             {
-
-                inFrameBuffer = 0;
-                // Reconstruct into bytes and write to output file
-                for (int i = 0; i < diffin / 4; i++)
-                {
-                    frameBuffer[inFrameBuffer++] = diff_out[i * 4] << 6 | diff_out[i * 4 + 1] << 4 | diff_out[i * 4 + 2] << 2 | diff_out[i * 4 + 3];
-                }
-
                 // Deframe / derand
-                std::vector<std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE>> frames = deframer.work(frameBuffer, inFrameBuffer);
+                int frames = deframer.work(diff_out, vout * 2, frame_buffer);
 
-                if (frames.size() > 0)
+                for (int i = 0; i < frames; i++)
                 {
-                    for (std::array<uint8_t, ccsds::ccsds_1_0_1024::CADU_SIZE> cadu : frames)
-                    {
-                        // RS Decoding
-                        rs.decode_interlaved(&cadu[4], true, 4, errors);
+                    uint8_t *cadu = &frame_buffer[i * 1024];
 
-                        // Write it out
-                        // data_out_total += ccsds::ccsds_1_0_1024::CADU_SIZE;
-                        data_out.write((char *)&cadu, ccsds::ccsds_1_0_1024::CADU_SIZE);
-                    }
-                }
+                    derand_ccsds(&cadu[4], 1024 - 4);
 
-                if (deframer.getState() == 0)
-                    noSyncRuns++;
-                else
-                {
-                    noSyncRuns = 0;
-                    viterbiNoSyncRun = 0;
-                }
-                if (noSyncRuns == 10)
-                {
-                    iq_invert = !iq_invert;
-                    noSyncRuns = 0;
+                    // RS Correction
+                    rs.decode_interlaved(&cadu[4], true, 4, errors);
+
+                    // Write it out
+                    data_out.write((char *)cadu, 1024);
                 }
             }
 
-            progress = data_in.tellg();
+            if (input_data_type == DATA_FILE)
+                progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string viterbi1_state = viterbi1.getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string viterbi2_state = viterbi2.getState() == 0 ? "NOSYNC" : "SYNCED";
-                std::string deframer_state = deframer.getState() == 0 ? "NOSYNC" : (deframer.getState() == 2 || deframer.getState() == 6 ? "SYNCING" : "SYNCED");
+                std::string deframer_state = deframer.getState() == deframer.STATE_NOSYNC ? "NOSYNC" : (deframer.getState() == deframer.STATE_SYNCING ? "SYNCING" : "SYNCED");
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi 1 : " + viterbi1_state + " BER : " + std::to_string(viterbi1.ber()) + ", Viterbi 2 : " + viterbi2_state + " BER : " + std::to_string(viterbi2.ber()) + ", Deframer : " + deframer_state);
             }
         }
 
         data_out.close();
-        data_in.close();
+        if (output_data_type == DATA_FILE)
+            data_in.close();
     }
 
     void FengyunAHRPTDecoderModule::drawUI(bool window)
@@ -311,9 +263,9 @@ namespace fengyun3
 
                 ImGui::SameLine();
 
-                if (deframer.getState() == 0)
+                if (deframer.getState() == deframer.STATE_NOSYNC)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else if (deframer.getState() == 2 || deframer.getState() == 6)
+                else if (deframer.getState() == deframer.STATE_SYNCING)
                     ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
@@ -321,7 +273,8 @@ namespace fengyun3
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

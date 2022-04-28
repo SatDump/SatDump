@@ -22,9 +22,6 @@ namespace fengyun3
         uint8_t *viterbi1_out;
         uint8_t *viterbi2_out;
 
-        // A few buffers for processing
-        bool d_invert_second_viterbi;
-
         int v1, v2, vout;
 
         // Diff decoder input and output

@@ -25,7 +25,11 @@ if(APPLE)
 endif()
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    if(APPLE)
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    else()
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -fopenmp")
+    endif()
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

@@ -20,6 +20,10 @@ namespace viterbi
         soft_buffer = new uint8_t[d_buffer_size * 2];
         depunc_buffer = new uint8_t[d_buffer_size * 2];
         output_buffer = new uint8_t[d_buffer_size * 2];
+
+        for (int p = 0; p < 2; p++)
+            for (int o = 0; o < 2; o++)
+                d_bers[p][o] = 10;
     }
 
     Viterbi3_4::~Viterbi3_4()
@@ -172,15 +176,10 @@ namespace viterbi
         {
             float ber = 10;
             for (int p = 0; p < 2; p++)
-            {
                 for (int o = 0; o < 2; o++)
-                {
                     if (ber > d_bers[p][o])
-                    {
                         ber = d_bers[p][o];
-                    }
-                }
-            }
+
             return ber;
         }
     }

@@ -24,7 +24,7 @@ namespace fengyun3
         i_soft_buffer = new int8_t[BUFFER_SIZE];
         viterbi1_out = new uint8_t[BUFFER_SIZE];
         viterbi2_out = new uint8_t[BUFFER_SIZE];
-        diff_out = new uint8_t[BUFFER_SIZE];
+        diff_out = new uint8_t[BUFFER_SIZE * 20];
     }
 
     std::vector<ModuleDataType> FengyunMPTDecoderModule::getInputTypes()
@@ -93,8 +93,13 @@ namespace fengyun3
             rotate_soft(i_soft_buffer, BUFFER_SIZE, PHASE_0, true);
             rotate_soft(q_soft_buffer, BUFFER_SIZE, PHASE_0, true);
 
-            v1 = viterbi1.work(i_soft_buffer, BUFFER_SIZE, viterbi1_out);
-            v2 = viterbi2.work(q_soft_buffer, BUFFER_SIZE, viterbi2_out);
+#pragma omp parallel sections num_threads(2)
+            {
+#pragma omp section
+                v1 = viterbi1.work(i_soft_buffer, BUFFER_SIZE, viterbi1_out);
+#pragma omp section
+                v2 = viterbi2.work(q_soft_buffer, BUFFER_SIZE, viterbi2_out);
+            }
             vout = std::min(v1, v2);
 
             if (viterbi1.getState() == 0 || viterbi1.getState() == 0)
@@ -261,7 +266,8 @@ namespace fengyun3
         }
         ImGui::EndGroup();
 
-        ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        if (!streamingInput)
+            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

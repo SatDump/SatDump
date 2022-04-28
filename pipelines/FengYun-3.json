@@ -112,8 +112,7 @@
             "cadu": {
                 "fengyun_mpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.300,
-                    "soft_symbols": true
+                    "viterbi_ber_thresold": 0.300
                 }
             },
             "products": {
@@ -142,10 +141,9 @@
                 }
             },
             "cadu": {
-                "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.310,
-                    "soft_symbols": true,
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.25,
                     "invert_second_viterbi": true
                 }
             },
@@ -181,10 +179,9 @@
                 }
             },
             "cadu": {
-                "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true,
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.25,
                     "invert_second_viterbi": true
                 }
             },

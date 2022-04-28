@@ -113,15 +113,9 @@ namespace viterbi
         {
             float ber = 10;
             for (phase_t phase : d_phases_to_check)
-            {
                 for (int o = 0; o < 2; o++)
-                {
                     if (ber > d_bers[phase][o])
-                    {
                         ber = d_bers[phase][o];
-                    }
-                }
-            }
             return ber;
         }
     }
