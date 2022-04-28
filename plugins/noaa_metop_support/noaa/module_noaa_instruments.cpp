@@ -277,6 +277,8 @@ namespace noaa
 
                 hirs_status = DONE;
             }
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void NOAAInstrumentsDecoderModule::drawUI(bool window)
