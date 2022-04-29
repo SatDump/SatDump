@@ -120,6 +120,13 @@ namespace fengyun3
                                     erm_reader.work(pkt);
                         }
                     }
+                    else if (d_downlink == DPT || d_downlink == MPT)
+                    {
+                        if (vcdu.vcid == 3) // MERSI-1
+                        {
+                            mersi1_reader.work(&cadu[14], 882);
+                        }
+                    }
                 }
                 else if (d_satellite == FY_3C)
                 {
@@ -144,7 +151,11 @@ namespace fengyun3
                 }
                 else if (d_satellite == FY_3D)
                 {
-                    if (vcdu.vcid == 5) // WAAI
+                    if (vcdu.vcid == 3) // MERSI-LL
+                    {
+                        mersi2_reader.work(&cadu[14], 882);
+                    }
+                    else if (vcdu.vcid == 5) // WAAI
                     {
                         std::vector<std::vector<uint8_t>> out = waai_deframer.work(&cadu[14], 882);
                         for (std::vector<uint8_t> frameVec : out)
@@ -168,7 +179,11 @@ namespace fengyun3
                 }
                 else if (d_satellite == FY_3E)
                 {
-                    if (vcdu.vcid == 5) // XEUVI
+                    if (vcdu.vcid == 3) // MERSI-LL
+                    {
+                        mersill_reader.work(&cadu[14], 882);
+                    }
+                    else if (vcdu.vcid == 5) // XEUVI
                     {
                         std::vector<std::vector<uint8_t>> out = xeuvi_deframer.work(&cadu[14], 882);
                         for (std::vector<uint8_t> frameVec : out)
@@ -272,7 +287,7 @@ namespace fengyun3
                 windrad_C_status = windrad_Ku_status = DONE;
             }
 
-            if (d_satellite == FY_AB) // MWHS-1
+            if (d_satellite == FY_AB && (d_downlink == DPT || d_downlink == AHRPT)) // MWHS-1
             {
                 mwhs1_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWHS-1";
@@ -330,7 +345,7 @@ namespace fengyun3
                 mwhs2_status = DONE;
             }
 
-            if (d_satellite == FY_AB || d_satellite == FY_3C) // VIRR
+            if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == DPT || d_downlink == AHRPT)) // VIRR
             {
                 virr_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/VIRR";
@@ -357,6 +372,132 @@ namespace fengyun3
                 dataset.products_list.push_back("VIRR");
 
                 virr_status = DONE;
+            }
+
+            if (d_satellite == FY_AB) // MERSI-1
+            {
+                mersi1_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-1";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_250 = 40;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- MERSI-1");
+                logger->info("Segments : " + std::to_string(mersi1_reader.segments));
+
+                satdump::ImageProducts mersi1_products;
+                mersi1_products.instrument_name = "mersi1";
+                mersi1_products.has_timestamps = true;
+                mersi1_products.set_tle(satellite_tle);
+                mersi1_products.bit_depth = 12;
+                mersi1_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+
+                for (int i = 0; i < 20; i++)
+                {
+                    image::Image<uint16_t> image = mersi1_reader.getChannel(i);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                }
+
+                // virr_products.set_timestamps(mwts2_reader.timestamps);
+
+                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersi1_products.save(directory);
+                dataset.products_list.push_back("MERSI-1");
+
+                mersi1_status = DONE;
+            }
+
+            if (d_satellite == FY_3D) // MERSI-2
+            {
+                mersi2_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-2";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_250 = 40;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- MERSI-2");
+                logger->info("Segments : " + std::to_string(mersi2_reader.segments));
+
+                satdump::ImageProducts mersi2_products;
+                mersi2_products.instrument_name = "mersi2";
+                mersi2_products.has_timestamps = true;
+                mersi2_products.set_tle(satellite_tle);
+                mersi2_products.bit_depth = 12;
+                mersi2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+
+                for (int i = 0; i < 25; i++)
+                {
+                    image::Image<uint16_t> image = mersi2_reader.getChannel(i);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                    mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                }
+
+                // virr_products.set_timestamps(mwts2_reader.timestamps);
+
+                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersi2_products.save(directory);
+                dataset.products_list.push_back("MERSI-2");
+
+                mersi2_status = DONE;
+            }
+
+            if (d_satellite == FY_3E) // MERSI-LL
+            {
+                mersill_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-LL";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_250 = 40;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- MERSI-LL");
+                logger->info("Segments : " + std::to_string(mersill_reader.segments));
+
+                satdump::ImageProducts mersill_products;
+                mersill_products.instrument_name = "mersill";
+                mersill_products.has_timestamps = true;
+                mersill_products.set_tle(satellite_tle);
+                mersill_products.bit_depth = 12;
+                mersill_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+
+                for (int i = 0; i < 18; i++)
+                {
+                    image::Image<uint16_t> image = mersill_reader.getChannel(i);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                    mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                }
+
+                // virr_products.set_timestamps(mwts2_reader.timestamps);
+
+                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersill_products.save(directory);
+                dataset.products_list.push_back("MERSI-LL");
+
+                mersill_status = DONE;
             }
 
             if (d_satellite == FY_3D) // MWRI
@@ -416,7 +557,7 @@ namespace fengyun3
                 waai_status = DONE;
             }
 
-            if (d_satellite == FY_AB || d_satellite == FY_3C) // ERM
+            if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == DPT || d_downlink == AHRPT)) // ERM
             {
                 erm_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ERM";
@@ -444,7 +585,7 @@ namespace fengyun3
                 erm_status = DONE;
             }
 
-            if (d_satellite == FY_AB) // MWTS-1
+            if (d_satellite == FY_AB && (d_downlink == DPT || d_downlink == AHRPT)) // MWTS-1
             {
                 mwts1_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWTS-1";
@@ -548,7 +689,40 @@ namespace fengyun3
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Text("Status");
 
-                if (d_satellite == FY_AB || d_satellite == FY_3C)
+                if (d_satellite == FY_AB && (d_downlink == MPT || d_downlink == DPT))
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MERSI-1");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mersi1_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mersi1_status);
+                }
+
+                if (d_satellite == FY_3D)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MERSI-2");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mersi2_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mersi2_status);
+                }
+
+                if (d_satellite == FY_3E)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MERSI-LL");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mersill_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mersill_status);
+                }
+
+                if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == AHRPT || d_downlink == DPT))
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -567,7 +741,7 @@ namespace fengyun3
                     drawStatus(erm_status);
                 }
 
-                if (d_satellite == FY_AB)
+                if (d_satellite == FY_AB && (d_downlink == AHRPT || d_downlink == DPT))
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -578,7 +752,7 @@ namespace fengyun3
                     drawStatus(mwts1_status);
                 }
 
-                if (d_satellite == FY_AB)
+                if (d_satellite == FY_AB && (d_downlink == AHRPT || d_downlink == DPT))
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);

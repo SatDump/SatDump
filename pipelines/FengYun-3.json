@@ -108,7 +108,8 @@
             "products": {
                 "fy3_instruments": {
                     "satellite": "fy3ab",
-                    "downlink": "mpt"
+                    "downlink": "mpt",
+                    "mersi_bowtie": true
                 }
             }
         }
@@ -201,7 +202,8 @@
             "products": {
                 "fy3_instruments": {
                     "satellite": "fy3ab",
-                    "downlink": "dpt"
+                    "downlink": "dpt",
+                    "mersi_bowtie": true
                 }
             }
         }

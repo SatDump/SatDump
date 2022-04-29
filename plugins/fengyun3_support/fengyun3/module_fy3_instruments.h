@@ -13,6 +13,7 @@
 #include "instruments/virr/virr_reader.h"
 #include "instruments/mwhs/mwhs_reader.h"
 #include "instruments/erm/erm_reader.h"
+#include "instruments/mersi/mersi_reader.h"
 
 namespace fengyun3
 {
@@ -55,8 +56,14 @@ namespace fengyun3
             mwhs2::MWHS2Reader mwhs2_reader;
             std::unique_ptr<windrad::WindRADReader> windrad_reader1, windrad_reader2;
             std::unique_ptr<xeuvi::XEUVIReader> xeuvi_reader;
+            mersi::MERSI1Reader mersi1_reader;
+            mersi::MERSI2Reader mersi2_reader;
+            mersi::MERSILLReader mersill_reader;
 
             // Statuses
+            instrument_status_t mersi1_status = DECODING;
+            instrument_status_t mersi2_status = DECODING;
+            instrument_status_t mersill_status = DECODING;
             instrument_status_t erm_status = DECODING;
             instrument_status_t virr_status = DECODING;
             instrument_status_t waai_status = DECODING;
