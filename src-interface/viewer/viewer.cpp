@@ -49,7 +49,11 @@ namespace satdump
                 logger->error("Unknown instrument : {:s}!", products->instrument_name);
 
             // Init Handler
-            std::string handler_id = instrument_viewer_settings["handler"].get<std::string>();
+            std::string handler_id;
+            if (instrument_viewer_settings.contains("handler"))
+                instrument_viewer_settings["handler"].get<std::string>();
+            else if (products->contents["type"] == "image")
+                handler_id = "image_handler";
             logger->debug("Using handler {:s} for instrument {:s}", handler_id, products->instrument_name);
             std::shared_ptr<ViewerHandler> handler = viewer_handlers_registry[handler_id]();
 

@@ -89,9 +89,6 @@ namespace fengyun3
                     line++;
                     timestamps.push_back(lineData.first);
                 }
-
-                img.equalize();
-                img.normalize();
             }
 
             return img;

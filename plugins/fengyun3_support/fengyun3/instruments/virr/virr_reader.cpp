@@ -7,7 +7,7 @@ namespace fengyun3
         VIRRReader::VIRRReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i].create(10000 * 2048);
+                channels[i].resize(2048);
 
             lines = 0;
         }
@@ -15,7 +15,7 @@ namespace fengyun3
         VIRRReader::~VIRRReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void VIRRReader::work(std::vector<uint8_t> &packet)
@@ -36,13 +36,8 @@ namespace fengyun3
             }
 
             for (int channel = 0; channel < 10; channel++)
-            {
                 for (int i = 0; i < 2048; i++)
-                {
-                    uint16_t pixel = virrBuffer[channel + i * 10];
-                    channels[channel][lines * 2048 + i] = pixel * 60;
-                }
-            }
+                    channels[channel][lines * 2048 + i] = virrBuffer[channel + i * 10] * 64;
 
             // Frame counter
             lines++;
@@ -66,16 +61,13 @@ namespace fengyun3
             }
 
             // Make sure we have enough room
-            if (lines * 2048 >= (int)channels[0].size())
-            {
-                for (int i = 0; i < 10; i++)
-                    channels[i].resize((lines + 1000) * 2048);
-            }
+            for (int i = 0; i < 10; i++)
+                channels[i].resize((lines + 1) * 2048);
         }
 
         image::Image<uint16_t> VIRRReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].buf, 2048, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 2048, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

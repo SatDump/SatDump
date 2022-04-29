@@ -12,7 +12,7 @@ namespace fengyun3
         class VIRRReader
         {
         private:
-            ResizeableBuffer<unsigned short> channels[10];
+            std::vector<uint16_t> channels[10];
             uint16_t virrBuffer[204800];
 
         public:

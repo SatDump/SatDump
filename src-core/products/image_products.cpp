@@ -53,7 +53,8 @@ namespace satdump
 
             img_holder.filename = contents["images"][c]["file"].get<std::string>();
             img_holder.channel_name = contents["images"][c]["name"].get<std::string>();
-            img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
+            if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
+                img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
 
             if (contents["images"][c].contains("timestamps"))
             {

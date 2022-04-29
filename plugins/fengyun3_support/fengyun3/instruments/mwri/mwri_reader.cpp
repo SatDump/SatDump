@@ -44,10 +44,7 @@ namespace fengyun3
 
         image::Image<uint16_t> MWRIReader::getChannel(int channel)
         {
-            image::Image<uint16_t> image(channels[channel].buf, 266, lines, 1);
-            image.normalize();
-            image.equalize();
-            return image;
+            return image::Image<uint16_t>(channels[channel].buf, 266, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

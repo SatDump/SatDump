@@ -64,10 +64,7 @@ namespace fengyun3
 
         image::Image<uint16_t> WindRADReader::getChannel(int channel)
         {
-            image::Image<uint16_t> image(channels[channel].buf, width, lines, 1);
-            image.normalize();
-            image.equalize();
-            return image;
+            return image::Image<uint16_t>(channels[channel].buf, width, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

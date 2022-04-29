@@ -74,10 +74,7 @@ namespace fengyun3
 
         image::Image<uint16_t> MWTS3Reader::getChannel(int channel)
         {
-            image::Image<uint16_t> image(channels[channel].data(), 98, lines, 1);
-            image.normalize();
-            image.equalize();
-            return image;
+            return image::Image<uint16_t>(channels[channel].data(), 98, lines, 1);
         }
     }
 }
