@@ -11,7 +11,7 @@ namespace fengyun3
         class MWTS3Reader
         {
         private:
-            ResizeableBuffer<unsigned short> channels[18];
+            std::vector<uint16_t> channels[18];
             time_t lastTime;
             unsigned short lineBuf[1000];
 

@@ -163,10 +163,6 @@ namespace metop
             if (!satellite_tle.has_value())
                 satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
-            if (!satellite_tle.has_value()) // Get from main stuff
-            {
-            }
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;

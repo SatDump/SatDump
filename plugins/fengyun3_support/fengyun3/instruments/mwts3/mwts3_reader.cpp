@@ -8,7 +8,7 @@ namespace fengyun3
         MWTS3Reader::MWTS3Reader()
         {
             for (int i = 0; i < 18; i++)
-                channels[i].create(10000 * 98);
+                channels[i].resize(98);
 
             lines = 0;
         }
@@ -16,7 +16,7 @@ namespace fengyun3
         MWTS3Reader::~MWTS3Reader()
         {
             for (int i = 0; i < 18; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void MWTS3Reader::work(ccsds::CCSDSPacket &packet)
@@ -68,16 +68,13 @@ namespace fengyun3
             }
 
             // Make sure we have enough room
-            if (lines * 98 >= (int)channels[0].size())
-            {
-                for (int i = 0; i < 18; i++)
-                    channels[i].resize((lines + 1000) * 98);
-            }
+            for (int i = 0; i < 18; i++)
+                channels[i].resize((lines + 1) * 98);
         }
 
         image::Image<uint16_t> MWTS3Reader::getChannel(int channel)
         {
-            image::Image<uint16_t> image(channels[channel].buf, 98, lines, 1);
+            image::Image<uint16_t> image(channels[channel].data(), 98, lines, 1);
             image.normalize();
             image.equalize();
             return image;

@@ -30,6 +30,9 @@ namespace def
             return cor;
         }
 
+        uint8_t byte_shifter;
+        int in_byte_buffer = 0;
+
     public:
         SimpleDeframer(uint64_t syncword, int syncword_bit_length, int frame_length_bits, int thresold, bool byte_aligned = false)
             : d_syncword(syncword),
@@ -39,6 +42,17 @@ namespace def
               d_thresold(thresold),
               d_byte_aligned(byte_aligned)
         {
+        }
+
+        void push_bit(uint8_t bit)
+        {
+            byte_shifter = (byte_shifter << 1) | bit;
+            in_byte_buffer++;
+            if (in_byte_buffer == 8)
+            {
+                current_frame.push_back(byte_shifter);
+                in_byte_buffer = 0;
+            }
         }
 
         std::vector<std::vector<uint8_t>> work(uint8_t *data, int size)
@@ -88,7 +102,48 @@ namespace def
             }
             else
             {
-                // TODO
+                for (int byten = 0; byten < size; byten++)
+                {
+                    for (int i = 7; i >= 0; i--)
+                    {
+                        uint8_t bit = (data[byten] >> i) & 1;
+                        asm_shifter = (asm_shifter << 1 | bit) % d_sync_modulo;
+
+                        if (in_frame)
+                        {
+                            if (current_frame.size() == 0) // Push ASM
+                            {
+                                for (int shift = d_syncword_length - 1; shift >= 0; shift -= 1)
+                                {
+                                    uint8_t bit = (d_syncword >> shift) & 1;
+                                    push_bit(bit);
+                                }
+                            }
+
+                            push_bit(bit);
+
+                            if ((int)current_frame.size() * 8 == d_frame_length)
+                            {
+                                output_frames.push_back(current_frame);
+                                in_frame = false;
+                            }
+                        }
+
+                        if (d_thresold == 0 ? (d_syncword == asm_shifter) : (corr_64(d_syncword, asm_shifter) < d_thresold))
+                        {
+                            if (in_frame)
+                            {
+                                // Fill up what we're missing
+                                while ((int)current_frame.size() * 8 < d_frame_length)
+                                    push_bit(0);
+                                output_frames.push_back(current_frame);
+                            }
+
+                            in_frame = true;
+                            current_frame.clear();
+                        }
+                    }
+                }
             }
 
             return output_frames;

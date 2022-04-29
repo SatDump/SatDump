@@ -28,20 +28,16 @@
                 }
             },
             "cadu": {
-                "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true,
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.25,
                     "invert_second_viterbi": false
                 }
             },
             "products": {
-                "fengyun_satid": {},
-                "fengyun_virr": {
-                    "composites": "composites/fengyun_virr.json.inc"
-                },
-                "fengyun_erm": {},
-                "fengyun_mwhs": {}
+                "fy3_instruments": {
+                    "satellite": "fy3ab"
+                }
             }
         }
     },
@@ -74,22 +70,16 @@
                 }
             },
             "cadu": {
-                "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true,
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.25,
                     "invert_second_viterbi": false
                 }
             },
             "products": {
-                "fengyun_satid": {
-                    "scid_hint": 51
-                },
-                "fengyun_virr": {
-                    "composites": "composites/fengyun_virr.json.inc"
-                },
-                "fengyun_erm": {},
-                "fengyun_mwhs2": {}
+                "fy3_instruments": {
+                    "satellite": "fy3c"
+                }
             }
         }
     },
@@ -116,10 +106,9 @@
                 }
             },
             "products": {
-                "fengyun_satid": {},
-                "fengyun_mersi1": {
-                    "correct_bowtie": true,
-                    "composites": "composites/fengyun_mersi1.json.inc"
+                "fy3_instruments": {
+                    "satellite": "fy3ab",
+                    "downlink": "mpt"
                 }
             }
         }
@@ -148,17 +137,10 @@
                 }
             },
             "products": {
-                "fengyun_satid": {
-                    "scid_hint": 52
-                },
-                "fengyun_mersi2": {
-                    "correct_bowtie": true,
-                    "composites": "composites/fengyun_mersi2.json.inc"
-                },
-                "fengyun_mwts2": {},
-                "fengyun_waai": {},
-                "fengyun_mwri": {},
-                "fengyun_mwhs2": {}
+                "fy3_instruments": {
+                    "satellite": "fy3d",
+                    "mersi_bowtie": true
+                }
             }
         }
     },
@@ -186,17 +168,10 @@
                 }
             },
             "products": {
-                "fengyun_satid": {
-                    "scid_hint": 56
-                },
-                "fengyun_mersill": {
-                    "correct_bowtie": true,
-                    "composites": "composites/fengyun_mersill.json.inc"
-                },
-                "fengyun_xeuvi": {},
-                "fengyun_windrad": {},
-                "fengyun_mwts3": {},
-                "fengyun_mwhs2": {}
+                "fy3_instruments": {
+                    "satellite": "fy3e",
+                    "mersi_bowtie": true
+                }
             }
         }
     },
@@ -217,24 +192,17 @@
                 }
             },
             "cadu": {
-                "new_fengyun_ahrpt_decoder": {
-                    "viterbi_outsync_after": 5,
-                    "viterbi_ber_thresold": 0.170,
-                    "soft_symbols": true,
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.25,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fengyun_satid": {},
-                "fengyun_mersi1": {
-                    "correct_bowtie": true,
-                    "composites": "composites/fengyun_mersi1.json.inc"
-                },
-                "fengyun_virr": {
-                    "composites": "composites/fengyun_virr.json.inc"
-                },
-                "fengyun_erm": {},
-                "fengyun_mwhs": {}
+                "fy3_instruments": {
+                    "satellite": "fy3ab",
+                    "downlink": "dpt"
+                }
             }
         }
     }
