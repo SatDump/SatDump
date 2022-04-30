@@ -15,6 +15,12 @@
                     "modcod": 3,
                     "sof_thresold": 10 // Disable locking
                 }
+            },
+            "cadu": {
+                "s2_udp_cadu_extractor": {
+                    "bb_size": 25728,
+                    "pid": 3002
+                }
             }
         }
     }

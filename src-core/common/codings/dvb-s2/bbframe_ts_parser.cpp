@@ -28,89 +28,9 @@
 
 namespace dvbs2
 {
-    BBFrameTSParser::BBFrameTSParser(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate)
+    BBFrameTSParser::BBFrameTSParser(int bbframe_size)
     {
-        if (framesize == FECFRAME_NORMAL)
-        {
-            switch (rate)
-            {
-            case C1_4:
-                kbch = 16008;
-                break;
-            case C1_3:
-                kbch = 21408;
-                break;
-            case C2_5:
-                kbch = 25728;
-                break;
-            case C1_2:
-                kbch = 32208;
-                break;
-            case C3_5:
-                kbch = 38688;
-                break;
-            case C2_3:
-                kbch = 43040;
-                break;
-            case C3_4:
-                kbch = 48408;
-                break;
-            case C4_5:
-                kbch = 51648;
-                break;
-            case C5_6:
-                kbch = 53840;
-                break;
-            case C8_9:
-                kbch = 57472;
-                break;
-            case C9_10:
-                kbch = 58192;
-                break;
-            default:
-                kbch = 0;
-                break;
-            }
-        }
-        else if (framesize == FECFRAME_SHORT)
-        {
-            switch (rate)
-            {
-            case C1_4:
-                kbch = 3072;
-                break;
-            case C1_3:
-                kbch = 5232;
-                break;
-            case C2_5:
-                kbch = 6312;
-                break;
-            case C1_2:
-                kbch = 7032;
-                break;
-            case C3_5:
-                kbch = 9552;
-                break;
-            case C2_3:
-                kbch = 10632;
-                break;
-            case C3_4:
-                kbch = 11712;
-                break;
-            case C4_5:
-                kbch = 12432;
-                break;
-            case C5_6:
-                kbch = 13152;
-                break;
-            case C8_9:
-                kbch = 14232;
-                break;
-            default:
-                kbch = 0;
-                break;
-            }
-        }
+        kbch = bbframe_size;
 
         max_dfl = kbch - 80;
         build_crc8_table();
@@ -204,7 +124,7 @@ namespace dvbs2
             if (crc_check != true)
             {
                 synched = false;
-                //logger->info("BBHeader CRC Fail");
+                // logger->info("BBHeader CRC Fail");
                 continue;
             }
 
@@ -215,14 +135,14 @@ namespace dvbs2
             if (header.dfl > max_dfl)
             {
                 synched = false;
-                //logger->info("DFL Too long!");
+                // logger->info("DFL Too long!");
                 continue;
             }
 
             if (header.dfl % 8 != 0)
             {
                 synched = false;
-                //logger->info("DFL Not a multiple of 8!");
+                // logger->info("DFL Not a multiple of 8!");
                 continue;
             }
 
@@ -233,7 +153,7 @@ namespace dvbs2
 
             if (!synched)
             {
-                //logger->info("Resynchronizing...");
+                // logger->info("Resynchronizing...");
 
                 bbf += header.syncd / 8 + 1;
                 df_remaining -= header.syncd / 8 + 1;

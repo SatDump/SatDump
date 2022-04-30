@@ -63,6 +63,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_dvbs2_demod.h"
 
 #include "modules/xrit/module_goesrecv_publisher.h"
+#include "modules/xrit/module_s2udp_xrit_cadu_extractor.h"
 
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
 #include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
@@ -80,6 +81,7 @@ void registerModules()
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);
+    REGISTER_MODULE(xrit::S2UDPxRITCADUextractor);
 
     // CCSDS
     REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);

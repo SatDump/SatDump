@@ -80,7 +80,7 @@ namespace dvbs2
         unsigned int check_crc8(const unsigned char *, int);
 
     public:
-        BBFrameTSParser(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate);
+        BBFrameTSParser(int bbframe_size);
         ~BBFrameTSParser();
 
         int work(uint8_t *bbframe, int cnt, uint8_t *tsframes); // TSFrame should be at least as big as bbframe to be safe
