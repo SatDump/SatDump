@@ -18,49 +18,16 @@ namespace fengyun3
 
             delete[] repacked_mersi_line;
             delete[] mersi_line_buffer;
+            delete[] repacked_calib;
         }
 
         void MERSIReader::process_head()
         {
-#if 0
-            logger->info("Head {:d} {:d}", current_frame.size() * 8, bits_wrote_output_frame);
+            int out = repackBytesTo12bits(&current_frame[calib_byte_offset], current_frame.size() - (calib_byte_offset + 6), repacked_calib);
 
-            if (bits_wrote_output_frame != 1329256)
-                return;
-
-            int out = repackBytesTo12bits(&current_frame[551], current_frame.size() - 557, repacked_calib);
-
-
-            for (int channel = 0; channel < 6; channel++)
-            {
-                double calib_tmp[40];
-
-                for (int detector = 0; detector < 40; detector++)
-                {
-                    std::vector<double> avg;
-                    for (int value = 0; value < 64; value++)
-                        avg.push_back(repacked_calib[92000 + (channel * 40 + detector) * 64 + value] << 4);
-                    calib_tmp[detector] = avg_overflowless(avg);
-                }
-
-                double init = calib_tmp[0];
-
-                for (int detector = 0; detector < 40; detector++)
-                {
-                    double delta = calib_tmp[detector] - init;
-                    if (delta > 2000)
-                        return;
-                    calib_channel_250[channel][detector] = delta;
-
-                    logger->info("Avg is {:0.1f} for det {:d}", calib_channel_250[channel][detector], detector);
-                }
-            }
-
-            for (int i = 0; i < 110400; i++)
-                calibration[calib_line * 110400 + i] = repacked_calib[i] << 4;
-            calib_line++;
-            calibration.resize(110400 * (calib_line + 2));
-#endif
+            for (int i = 0; i < calib_length; i++)
+                calibration[(segments + 1) * calib_length + i] = repacked_calib[i] << 4;
+            calibration.resize(calib_length * (segments + 3));
         }
 
         void MERSIReader::process_scan()
@@ -180,8 +147,8 @@ namespace fengyun3
 
         image::Image<uint16_t> MERSIReader::getChannel(int channel)
         {
-            // if (channel == -1)
-            //    return image::Image<uint16_t>(calibration.data(), 110400, calib_line, 1);
+            if (channel == -1)
+                return image::Image<uint16_t>(calibration.data(), calib_length, (segments + 1), 1);
 
             if (channel < ch_cnt_250)
                 return image::Image<uint16_t>(channels_250m[channel].data(), ch250_width, (segments + 1) * 40, 1);

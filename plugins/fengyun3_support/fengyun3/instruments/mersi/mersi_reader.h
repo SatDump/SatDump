@@ -22,6 +22,9 @@ namespace fengyun3
             int imagery_offset_bytes;
             int imagery_offset_bits;
 
+            int calib_byte_offset;
+            int calib_length;
+
             // Computed stuff
             int counter_250_end;
             int counter_max;
@@ -41,21 +44,19 @@ namespace fengyun3
                 counter_max = ch_cnt_250 * 40 + ch_cnt_1000 * 10;
                 ch1000_width = ch250_width / 4;
 
+                repacked_calib = new uint16_t[calib_length * 2];
+
                 for (int i = 0; i < ch_cnt_250; i++)
                     channels_250m[i].resize(ch250_width * 40);
                 for (int i = 0; i < ch_cnt_1000; i++)
                     channels_1000m[i].resize(ch1000_width * 10);
-                // calibration.resize(110400);
+                calibration.resize(calib_length * 3);
                 segments = 0;
             }
 
         private:
-#if 0
-            int calib_line = 0;
             std::vector<uint16_t> calibration;
-            uint16_t repacked_calib[110400];
-            double calib_channel_250[CHCNT_250][40];
-#endif
+            uint16_t *repacked_calib;
 
             std::vector<std::vector<uint16_t>> channels_250m;
             std::vector<std::vector<uint16_t>> channels_1000m;
@@ -94,17 +95,20 @@ namespace fengyun3
         public:
             MERSI1Reader()
             {
-                // Configuration for MERSI-2
+                // Configuration for MERSI-1
                 ch_cnt_250 = 5;
                 ch_cnt_1000 = 15;
                 ch250_width = 8192;
 
-                frame_head_size = 206054;
+                frame_head_size = 206048;
                 frame_scan_250_size = 99120;
                 frame_scan_1000_size = 25392;
 
                 imagery_offset_bytes = 92;
                 imagery_offset_bits = 6;
+
+                calib_byte_offset = 92;
+                calib_length = 17102;
 
                 MERSIReader::init();
             }
@@ -127,6 +131,9 @@ namespace fengyun3
                 imagery_offset_bytes = 59;
                 imagery_offset_bits = 6;
 
+                calib_byte_offset = 551;
+                calib_length = 110400;
+
                 MERSIReader::init();
             }
         };
@@ -147,6 +154,9 @@ namespace fengyun3
 
                 imagery_offset_bytes = 146;
                 imagery_offset_bits = 6;
+
+                calib_byte_offset = 551;
+                calib_length = 34560;
 
                 MERSIReader::init();
             }

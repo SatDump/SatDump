@@ -492,7 +492,7 @@ namespace fengyun3
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);
 
-                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+                // mersill_reader.getChannel(-1).save_png(directory + "/calib.png");
 
                 mersill_products.save(directory);
                 dataset.products_list.push_back("MERSI-LL");
