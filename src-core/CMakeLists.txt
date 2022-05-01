@@ -38,7 +38,9 @@ target_link_libraries(satdump_core PUBLIC Threads::Threads)
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
 # OpenCL if we found it
-target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
+if(BUILD_OPENCL)
+    target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
+endif()
 
 if(MSVC)
     #target_link_libraries(satdump_core PUBLIC correct.dll)
