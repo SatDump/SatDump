@@ -50,10 +50,17 @@ namespace dvbs2
         detect_shortframes = best_header & 2;
         detect_pilots = best_header & 1;
 
+        int pilots_offset = 0;
+
         // Derandomize and decode slots
         descrambler.reset();
         for (int i = 0; i < frame_slot_count * 90; i++)
-            constellation->demod_soft_lut(descrambler.descramble(input_stream->readBuf[90 + i]), &soft_slots_buffer[i * constellation->getBitsCnt()]);
+        {
+            if (i % 1476 == 0 && i != 0 && pilots)
+                pilots_offset += 36;
+
+            constellation->demod_soft_lut(descrambler.descramble(input_stream->readBuf[90 + i]), &soft_slots_buffer[(i - pilots_offset) * constellation->getBitsCnt()]);
+        }
 
         // Deinterleave
         deinterleaver->work(soft_slots_buffer, output_stream->writeBuf);

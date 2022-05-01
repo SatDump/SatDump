@@ -193,6 +193,7 @@ namespace demod
         s2_pll->constellation->make_lut(256);
         s2_pll->frame_slot_count = frame_slot_count;
         s2_pll->pls_code = d_modcod << 2 | d_shortframes << 1 | d_pilots;
+        s2_pll->update();
 
         // BB to soft syms
         s2_bb_to_soft = std::make_shared<dvbs2::S2BBToSoft>(s2_pll->output_stream);

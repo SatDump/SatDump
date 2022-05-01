@@ -25,7 +25,7 @@ namespace dvbs2
             return;
         }
 
-        for (int i = 0; i < (frame_slot_count + 1) * 90; i++)
+        for (int i = 0; i < (frame_slot_count + 1) * 90 + pilot_cnt * 36; i++)
         {
             tmp_val = input_stream->readBuf[i] * complex_t(cosf(-phase), sinf(-phase));
 
