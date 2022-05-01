@@ -61,7 +61,7 @@ namespace elektro_arktika
         cpl = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, 6e-3f, 10e3, -10e3);
 
         // DC Blocking
-        dcb = std::make_shared<dsp::DCBlockerBlock>(cpl->output_stream, 32, true);
+        dcb = std::make_shared<dsp::CorrectIQBlock>(cpl->output_stream);
 
         // Frequency translation
         reco = std::make_shared<QuadratureRecomposer>(dcb->output_stream, samplerate, symbolrate);

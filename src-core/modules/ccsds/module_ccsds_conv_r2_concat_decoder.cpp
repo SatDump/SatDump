@@ -119,7 +119,8 @@ namespace ccsds
 
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + extension, std::ios::binary);
+        if (output_data_type == DATA_FILE)
+            data_out = std::ofstream(d_output_file_hint + extension, std::ios::binary);
         d_output_files.push_back(d_output_file_hint + extension);
 
         logger->info("Using input symbols " + d_input_file);
@@ -163,7 +164,10 @@ namespace ccsds
                     derand_ccsds(&cadu[d_derand_from], d_cadu_bytes - d_derand_from);
 
                 // Write it out
-                data_out.write((char *)cadu, d_cadu_bytes);
+                if (output_data_type == DATA_STREAM)
+                    output_fifo.write((uint8_t *)cadu, d_cadu_bytes);
+                else
+                    data_out.write((char *)cadu, d_cadu_bytes);
             }
 
             if (input_data_type == DATA_FILE)
@@ -178,7 +182,8 @@ namespace ccsds
             }
         }
 
-        data_out.close();
+        if (output_data_type == DATA_FILE)
+            data_out.close();
         if (input_data_type == DATA_FILE)
             data_in.close();
     }

@@ -9,7 +9,7 @@
 #include "common/dsp/costas_loop.h"
 #include "common/dsp/clock_recovery_mm.h"
 #include "common/dsp/file_source.h"
-#include "common/dsp/dc_blocker.h"
+#include "common/dsp/correct_iq.h"
 #include "common/dsp/rational_resampler.h"
 #include "common/dsp/snr_estimator.h"
 #include "common/dsp/pll_carrier_tracking.h"
@@ -94,7 +94,7 @@ namespace elektro_arktika
         std::shared_ptr<dsp::CCRationalResamplerBlock> res;
         std::shared_ptr<dsp::AGCBlock> agc;
         std::shared_ptr<dsp::PLLCarrierTrackingBlock> cpl;
-        std::shared_ptr<dsp::DCBlockerBlock> dcb;
+        std::shared_ptr<dsp::CorrectIQBlock> dcb;
         std::shared_ptr<QuadratureRecomposer> reco;
         std::shared_ptr<dsp::CCFIRBlock> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
