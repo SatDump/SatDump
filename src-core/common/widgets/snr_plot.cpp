@@ -9,11 +9,11 @@ namespace widgets
     {
         ImGui::Text("SNR (dB) : ");
         ImGui::SameLine();
-        ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(snr));
+        ImGui::TextColored(snr > 2 ? snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, "%0.3f", snr);
 
         ImGui::Text("Peak SNR (dB) : ");
         ImGui::SameLine();
-        ImGui::TextColored(peak_snr > 2 ? peak_snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, UITO_C_STR(peak_snr));
+        ImGui::TextColored(peak_snr > 2 ? peak_snr > 10 ? IMCOLOR_SYNCED : IMCOLOR_SYNCING : IMCOLOR_NOSYNC, "%0.3f", peak_snr);
 
         std::memmove(&snr_history[0], &snr_history[1], (200 - 1) * sizeof(float));
         snr_history[200 - 1] = snr;
