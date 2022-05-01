@@ -55,7 +55,7 @@ project (SatDump VERSION "1.0.0")
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
 # Check we have OpenCL
-find_package(OpenCL REQUIRED)
+find_package(OpenCL)
 
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
