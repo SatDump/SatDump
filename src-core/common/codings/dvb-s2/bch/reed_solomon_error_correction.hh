@@ -37,7 +37,7 @@ namespace dvbs2
                 static int
                 search(ValueType *locator, int locator_degree, IndexType *locations)
                 {
-                    ValueType tmp[locator_degree + 1];
+                    std::vector<ValueType> tmp(locator_degree + 1);
                     for (int i = 0; i <= locator_degree; ++i)
                     {
                         tmp[i] = locator[i];

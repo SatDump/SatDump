@@ -1,7 +1,8 @@
+#define SATDUMP_DLL_EXPORT2 1
+#include "core/plugin.h"
 #include "app.h"
 #include "imgui/imgui.h"
 #include "viewer/viewer.h"
-#include "core/plugin.h"
 
 namespace satdump
 {
@@ -33,7 +34,7 @@ namespace satdump
         ImGui::Text("Nothing implemented there yet!");
     }
 
-    SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<Application>()>> application_registry;
+    SATDUMP_DLL2 std::map<std::string, std::function<std::shared_ptr<Application>()>> application_registry;
 
     void registerApplications()
     {

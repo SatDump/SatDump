@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "tle.h"
 #include <fstream>
 #include "common/utils.h"

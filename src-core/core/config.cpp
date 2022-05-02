@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "config.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"

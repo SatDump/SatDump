@@ -29,7 +29,7 @@ namespace satdump
         static std::shared_ptr<Application> getInstance();
     };
 
-    SATDUMP_DLL extern std::map<std::string, std::function<std::shared_ptr<Application>()>> application_registry;
+    SATDUMP_DLL2 extern std::map<std::string, std::function<std::shared_ptr<Application>()>> application_registry;
 
     // Event where applications are registered, so plugins can load theirs
     struct RegisterApplicationsEvent

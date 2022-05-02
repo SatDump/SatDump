@@ -44,7 +44,7 @@ namespace xrit
 
         const int udp_cadu_size = 1104;
 
-        uint8_t bb_buffer[bbframe_size];
+        uint8_t *bb_buffer = new uint8_t[bbframe_size];
         uint8_t ts_frames[188 * 100];
         int cadu_demuxed_cnt = 0;
         uint8_t cadu_demuxed[1104];
@@ -95,6 +95,8 @@ namespace xrit
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
             }
         }
+
+        delete[] bb_buffer;
 
         data_out.close();
         if (output_data_type == DATA_FILE)

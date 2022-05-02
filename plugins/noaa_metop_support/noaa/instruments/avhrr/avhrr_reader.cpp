@@ -1,4 +1,5 @@
 #include "avhrr_reader.h"
+#include <ctime>
 
 namespace noaa
 {

@@ -3,6 +3,7 @@
 #include <string>
 #include "nlohmann/json.hpp"
 #include <optional>
+#include "dll_export.h"
 
 namespace satdump
 {
@@ -51,7 +52,7 @@ namespace satdump
         };
     };
 
-    extern TLERegistry general_tle_registry;
+    SATDUMP_DLL extern TLERegistry general_tle_registry;
 
     void updateTLEFile(std::string path);
     void loadTLEFileIntoRegistry(std::string path);

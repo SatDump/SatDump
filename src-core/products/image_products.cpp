@@ -35,7 +35,7 @@ namespace satdump
     void ImageProducts::load(std::string file)
     {
         Products::load(file);
-        std::string directory = std::filesystem::path(file).parent_path();
+        std::string directory = std::filesystem::path(file).parent_path().string();
 
         if (has_calibation())
             calibration_polynomial_coefs.resize(contents["images"].size());

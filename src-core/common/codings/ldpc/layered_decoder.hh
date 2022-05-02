@@ -9,6 +9,7 @@ Copyright 2018 Ahmet Inan <xdsopl@gmail.com>
 
 #include <stdlib.h>
 #include "ldpc.hh"
+#include <volk/volk_alloc.hh>
 
 template <typename TYPE, typename ALG>
 class LDPCDecoder
@@ -54,7 +55,7 @@ class LDPCDecoder
 			for (int j = 0; j < M; ++j)
 			{
 				int deg = cnt + 2 - !(i | j);
-				TYPE inp[deg], out[deg];
+				std::vector<TYPE> inp(deg), out(deg);
 				for (int c = 0; c < cnt; ++c)
 					inp[c] = out[c] = alg.sub(data[pos[CNL * (M * i + j) + c]], bl[c]);
 				inp[cnt] = out[cnt] = alg.sub(parity[M * i + j], bl[cnt]);
@@ -62,7 +63,7 @@ class LDPCDecoder
 					inp[cnt + 1] = out[cnt + 1] = alg.sub(parity[M * (i - 1) + j], bl[cnt + 1]);
 				else if (j)
 					inp[cnt + 1] = out[cnt + 1] = alg.sub(parity[j + (q - 1) * M - 1], bl[cnt + 1]);
-				alg.finalp(out, deg);
+				alg.finalp(out.data(), deg);
 				for (int d = 0; d < deg; ++d)
 					alg.update(bl + d, out[d]);
 				for (int c = 0; c < cnt; ++c)
@@ -138,8 +139,8 @@ public:
 		}
 		LT = ldpc->links_total();
 		delete ldpc;
-		bnl = reinterpret_cast<TYPE *>(aligned_alloc(sizeof(TYPE), sizeof(TYPE) * LT));
-		pty = reinterpret_cast<TYPE *>(aligned_alloc(sizeof(TYPE), sizeof(TYPE) * R));
+		bnl = reinterpret_cast<TYPE *>(volk_malloc(sizeof(TYPE) * LT, sizeof(TYPE)));
+		pty = reinterpret_cast<TYPE *>(volk_malloc(sizeof(TYPE) * R, sizeof(TYPE)));
 		uint16_t *tmp = new uint16_t[R * CNL];
 		for (int i = 0; i < q; ++i)
 			for (int j = 0; j < M; ++j)

@@ -30,7 +30,7 @@ namespace satdump
         ProductDataSet dataset;
         dataset.load(path);
 
-        std::string pro_directory = std::filesystem::path(path).parent_path();
+        std::string pro_directory = std::filesystem::path(path).parent_path().string();
         for (std::string pro_path : dataset.products_list)
             loadProductsInViewer(pro_directory + "/" + pro_path, dataset.satellite_name + " " + timestamp_to_string(dataset.timestamp));
     }

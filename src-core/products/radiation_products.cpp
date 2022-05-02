@@ -16,7 +16,7 @@ namespace satdump
     void RadiationProducts::load(std::string file)
     {
         Products::load(file);
-        std::string directory = std::filesystem::path(file).parent_path();
+        std::string directory = std::filesystem::path(file).parent_path().string();
 
         channel_counts = contents["counts"].get<std::vector<std::vector<int>>>();
     }
