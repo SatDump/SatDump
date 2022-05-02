@@ -166,7 +166,7 @@ namespace ccsds
 
                 // Write it out
                 if (output_data_type == DATA_STREAM)
-                    output_fifo.write((uint8_t *)cadu, d_cadu_bytes);
+                    output_fifo->write((uint8_t *)cadu, d_cadu_bytes);
                 else
                     data_out.write((char *)cadu, d_cadu_bytes);
             }
