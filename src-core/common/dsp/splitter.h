@@ -23,5 +23,17 @@ namespace dsp
             enable_second = value;
             state_mutex.unlock();
         }
+
+        void stop_tmp()
+        {
+            should_run = false;
+
+            if (d_got_input)
+                input_stream->stopReader();
+            // output_stream->stopWriter();
+
+            if (d_thread.joinable())
+                d_thread.join();
+        }
     };
 }

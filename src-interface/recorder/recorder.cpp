@@ -23,8 +23,12 @@ namespace satdump
         source_ptr->open();
         source_ptr->set_frequency(100e6);
 
-        fft = std::make_shared<dsp::FFTBlock>(source_ptr->output_stream);
+        splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
+        splitter->set_output_2nd(false);
+
+        fft = std::make_shared<dsp::FFTBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size);
+        fft->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 2000);
@@ -64,8 +68,8 @@ namespace satdump
                     if (ImGui::Button("Start"))
                     {
                         source_ptr->start();
-                        fft->input_stream = source_ptr->output_stream;
-                        fft->start();
+                        splitter->input_stream = source_ptr->output_stream;
+                        splitter->start();
                         is_started = true;
                     }
                 }
@@ -73,7 +77,7 @@ namespace satdump
                 {
                     if (ImGui::Button("Stop"))
                     {
-                        fft->stop();
+                        splitter->stop_tmp();
                         source_ptr->stop();
                         is_started = false;
                     }
@@ -104,7 +108,6 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Processing"))
             {
-                
             }
         }
         ImGui::EndChild();

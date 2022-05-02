@@ -65,7 +65,7 @@ namespace demod
         std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
         fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data);
-        fft_splitter->set_output_2nd(true);
+        fft_splitter->set_output_2nd(show_fft);
 
         fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
         fft_proc->set_fft_settings(8192);
