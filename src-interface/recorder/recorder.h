@@ -8,6 +8,7 @@
 #include "common/dsp_sample_source/dsp_sample_source.h"
 #include "common/dsp/splitter.h"
 #include "common/dsp/fft.h"
+#include "common/dsp/file_sink.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 
@@ -19,13 +20,17 @@ namespace satdump
         void drawUI();
 
         double frequency_mhz = 100;
-        bool is_started = false;
+        bool is_started = false, is_recording = false;
 
         int fft_size = 8192; // * 4;
+
+        std::string recorder_filename;
+        int select_sample_format = 0;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SplitterBlock> splitter;
         std::shared_ptr<dsp::FFTBlock> fft;
+        std::shared_ptr<dsp::FileSinkBlock> file_sink;
         std::shared_ptr<widgets::FFTPlot> fft_plot;
         std::shared_ptr<widgets::WaterfallPlot> waterfall_plot;
 

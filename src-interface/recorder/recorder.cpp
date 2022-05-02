@@ -30,6 +30,10 @@ namespace satdump
         fft->set_fft_settings(fft_size);
         fft->start();
 
+        file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
+        file_sink->set_output_sample_type(dsp::COMPLEX_FLOAT_32);
+        file_sink->start();
+
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 2000);
     }
@@ -109,6 +113,74 @@ namespace satdump
             if (ImGui::CollapsingHeader("Processing"))
             {
             }
+
+            if (ImGui::CollapsingHeader("Recording"))
+            {
+                if (is_recording)
+                    style::beginDisabled();
+                if (ImGui::Combo("Format", &select_sample_format, "f32\0"
+                                                                  "s16\0"
+                                                                  "s8\0"))
+                {
+                    if (select_sample_format == 0)
+                        file_sink->set_output_sample_type(dsp::COMPLEX_FLOAT_32);
+                    else if (select_sample_format == 1)
+                        file_sink->set_output_sample_type(dsp::INTEGER_16);
+                    else if (select_sample_format == 2)
+                        file_sink->set_output_sample_type(dsp::INTEGER_8);
+                }
+                if (is_recording)
+                    style::endDisabled();
+
+                if (file_sink->get_written() < 1e9)
+                    ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
+                else
+                    ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+                ImGui::Text("File : %s", recorder_filename.c_str());
+
+                ImGui::Spacing();
+
+                if (!is_recording)
+                    ImGui::TextColored(ImColor(255, 0, 0), "IDLE");
+                else
+                    ImGui::TextColored(ImColor(0, 255, 0), "RECORDING");
+
+                ImGui::Spacing();
+
+                if (!is_recording)
+                {
+                    if (ImGui::Button("Start###startrecording"))
+                    {
+                        splitter->set_output_2nd(true);
+
+                        const time_t timevalue = time(0);
+                        std::tm *timeReadable = gmtime(&timevalue);
+                        std::string timestamp =
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+                        std::string filename = "./" + timestamp + "_" + std::to_string((long)source_ptr->get_samplerate()) + "SPS_" +
+                                               std::to_string(long(frequency_mhz * 1e6)) + "Hz";
+
+                        recorder_filename = file_sink->start_recording(filename);
+
+                        logger->info("Recording to " + recorder_filename);
+
+                        is_recording = true;
+                    }
+                }
+                else
+                {
+                    if (ImGui::Button("Stop##stoprecording"))
+                    {
+                        file_sink->stop_recording();
+                        splitter->set_output_2nd(false);
+                        recorder_filename = "";
+                        is_recording = false;
+                    }
+                }
+            }
         }
         ImGui::EndChild();
         ImGui::EndGroup();
@@ -119,19 +191,6 @@ namespace satdump
         ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * 0.80), float(recorder_size.y)}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         {
             fft_plot->draw({float(recorder_size.x * 0.80 - 4), float(recorder_size.y * 0.3)});
-            /*
-            float min = 1000;
-            for (int i = 0; i < fft_size; i++)
-                if (fft->output_stream->writeBuf[i] < min)
-                    min = fft->output_stream->writeBuf[i];
-            float max = -1000;
-            for (int i = 0; i < fft_size; i++)
-                if (fft->output_stream->writeBuf[i] > max)
-                    max = fft->output_stream->writeBuf[i];
-
-            waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
-            waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
-            */
             waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(recorder_size.y * 0.7) * 4});
         }
         ImGui::EndChild();
