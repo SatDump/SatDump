@@ -8,7 +8,7 @@
 #include "imgui/imgui_stdlib.h"
 #include "common/image/composite.h"
 #include "main_ui.h"
-#include "style.h"
+#include "core/style.h"
 #include "pfd/portable-file-dialogs.h"
 
 namespace satdump

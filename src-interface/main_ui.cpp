@@ -7,7 +7,7 @@
 #include "error.h"
 #include "satdump_vars.h"
 #include "core/config.h"
-#include "style.h"
+#include "core/style.h"
 
 #include "app.h"
 #include "viewer/viewer.h"

@@ -80,3 +80,10 @@ option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)
 if(PLUGIN_GVAR_EXTENDED)
 add_subdirectory(gvar_extended)
 endif()
+
+#######################
+
+option(PLUGIN_AIRSPY_SDR_EXTENDED "Enable Airspy SDR Support plugin" ON)
+if(PLUGIN_AIRSPY_SDR_EXTENDED OR PLUGINS_ALL)
+add_subdirectory(sdr_sources/airspy_sdr_support)
+endif()

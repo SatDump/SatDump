@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "style.h"
+#include "core/style.h"
 #include "gl.h"
 #include "logger.h"
 #include <signal.h>
