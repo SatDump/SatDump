@@ -92,3 +92,8 @@ option(PLUGIN_AIRSPYHF_SDR_EXTENDED "Enable AirspyHF SDR Support plugin" ON)
 if(PLUGIN_AIRSPYHF_SDR_EXTENDED OR PLUGINS_ALL)
 add_subdirectory(sdr_sources/airspyhf_sdr_support)
 endif()
+
+option(PLUGIN_HACKRF_SDR_EXTENDED "Enable HackRF SDR Support plugin" ON)
+if(PLUGIN_HACKRF_SDR_EXTENDED OR PLUGINS_ALL)
+add_subdirectory(sdr_sources/hackrf_sdr_support)
+endif()
