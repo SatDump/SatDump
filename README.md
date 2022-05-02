@@ -150,7 +150,7 @@ tar xf fftw-3.3.9.tar.gz
 rm fftw-3.3.9.tar.gz
 cd fftw-3.3.9
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
 make
 sudo make install
 cd ../..
