@@ -9,6 +9,7 @@ Copyright 2018 Ahmet Inan <xdsopl@gmail.com>
 
 #include "generic.hh"
 #include "exclusive_reduce.hh"
+#include <vector>
 
 template <typename VALUE, int WIDTH>
 struct SelfCorrectedUpdate<SIMD<VALUE, WIDTH>>
@@ -175,7 +176,7 @@ struct OffsetMinSumAlgorithm<SIMD<VALUE, WIDTH>, UPDATE, FACTOR>
 			mags[i] = vmax(vsub(vabs(links[i]), beta), vzero<TYPE>());
 		CODE::exclusive_reduce(mags, mins, cnt, min);
 
-		std:vector<TYPE> signs(cnt);
+		std::vector<TYPE> signs(cnt);
 		CODE::exclusive_reduce(links, signs, cnt, sign);
 
 		for (int i = 0; i < cnt; ++i)

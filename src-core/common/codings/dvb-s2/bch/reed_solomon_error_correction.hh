@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <vector>
 
 namespace dvbs2
 {
