@@ -84,22 +84,27 @@ namespace satdump
             {
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
+            }
 
-                if (fft_plot->scale_max < fft_plot->scale_min)
-                {
-                    fft_plot->scale_min = waterfall_plot->scale_min;
-                    fft_plot->scale_max = waterfall_plot->scale_max;
-                }
-                else if (fft_plot->scale_min > fft_plot->scale_max)
-                {
-                    fft_plot->scale_min = waterfall_plot->scale_min;
-                    fft_plot->scale_max = waterfall_plot->scale_max;
-                }
-                else
-                {
-                    waterfall_plot->scale_min = fft_plot->scale_min;
-                    waterfall_plot->scale_max = fft_plot->scale_max;
-                }
+            if (fft_plot->scale_max < fft_plot->scale_min)
+            {
+                fft_plot->scale_min = waterfall_plot->scale_min;
+                fft_plot->scale_max = waterfall_plot->scale_max;
+            }
+            else if (fft_plot->scale_min > fft_plot->scale_max)
+            {
+                fft_plot->scale_min = waterfall_plot->scale_min;
+                fft_plot->scale_max = waterfall_plot->scale_max;
+            }
+            else
+            {
+                waterfall_plot->scale_min = fft_plot->scale_min;
+                waterfall_plot->scale_max = fft_plot->scale_max;
+            }
+
+            if (ImGui::CollapsingHeader("Processing"))
+            {
+                
             }
         }
         ImGui::EndChild();

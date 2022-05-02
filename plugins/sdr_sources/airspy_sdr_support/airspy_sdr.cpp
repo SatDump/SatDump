@@ -43,9 +43,9 @@ void AirspySource::set_settings(nlohmann::json settings)
     manual_gains[1] = getValueOrDefault(d_settings["mixer_gain"], manual_gains[1]);
     manual_gains[2] = getValueOrDefault(d_settings["vga_gain"], manual_gains[2]);
 
-    bias_enabled = getValueOrDefault(d_settings["bias_enabled"], bias_enabled);
-    lna_agc_enabled = getValueOrDefault(d_settings["lna_agc_enabled"], lna_agc_enabled);
-    mixer_agc_enabled = getValueOrDefault(d_settings["mixer_agc_enabled"], mixer_agc_enabled);
+    bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
+    lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
+    mixer_agc_enabled = getValueOrDefault(d_settings["mixer_agc"], mixer_agc_enabled);
 }
 
 nlohmann::json AirspySource::get_settings(nlohmann::json)
@@ -56,9 +56,9 @@ nlohmann::json AirspySource::get_settings(nlohmann::json)
     d_settings["mixer_gain"] = manual_gains[1];
     d_settings["vga_gain"] = manual_gains[2];
 
-    d_settings["bias_enabled"] = bias_enabled;
-    d_settings["lna_agc_enabled"] = lna_agc_enabled;
-    d_settings["mixer_agc_enabled"] = mixer_agc_enabled;
+    d_settings["bias"] = bias_enabled;
+    d_settings["lna_agc"] = lna_agc_enabled;
+    d_settings["mixer_agc"] = mixer_agc_enabled;
 
     return d_settings;
 }
@@ -106,6 +106,7 @@ void AirspySource::start()
 
     set_gains();
     set_bias();
+    set_agcs();
 
     airspy_start_rx(airspy_dev_obj, &_rx_callback, &output_stream);
 
