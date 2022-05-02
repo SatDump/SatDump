@@ -134,6 +134,6 @@ namespace dsp
             return ZIQ;
 #endif
         else
-            std::runtime_error("Unknown baseband type " + type);
+            throw std::runtime_error("Unknown baseband type " + type);
     }
 }

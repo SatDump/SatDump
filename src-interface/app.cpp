@@ -3,6 +3,7 @@
 #include "app.h"
 #include "imgui/imgui.h"
 #include "viewer/viewer.h"
+#include "recorder/recorder.h"
 
 namespace satdump
 {
@@ -40,6 +41,7 @@ namespace satdump
     {
         // Register local apps
         application_registry.emplace(ViewerApplication::getID(), ViewerApplication::getInstance);
+        application_registry.emplace(RecorderApplication::getID(), RecorderApplication::getInstance);
 
         // Plugin applicatins
         satdump::eventBus->fire_event<RegisterApplicationsEvent>({application_registry});
