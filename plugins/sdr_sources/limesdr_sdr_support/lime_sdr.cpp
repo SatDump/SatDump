@@ -77,8 +77,11 @@ void LimeSDRSource::start()
 void LimeSDRSource::stop()
 {
     needs_to_run = false;
-    limeStream->Stop();
-    limeDevice->DestroyStream(limeStream);
+    if (is_started)
+    {
+        limeStream->Stop();
+        limeDevice->DestroyStream(limeStream);
+    }
     is_started = false;
 }
 
@@ -156,7 +159,7 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
         std::stringstream ss;
         ss << std::hex << device_info->boardSerialNumber;
         LMS_Close(device);
-        results.push_back({"limesdr", "LimeSDR " + ss.str(), i});
+        results.push_back({"limesdr", "LimeSDR " + ss.str(), (uint64_t)i});
     }
 
     return results;
