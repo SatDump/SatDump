@@ -206,7 +206,10 @@ namespace satdump
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                             (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-                        std::string filename = "./" + timestamp + "_" + std::to_string((long)source_ptr->get_samplerate()) + "SPS_" +
+                        std::string recorder_path;
+                        recorder_path = config::main_cfg["satdump_outputfilepaths"]["recording_path"]["value"].get<std::string>();
+
+                        std::string filename = recorder_path + "/" + timestamp + "_" + std::to_string((long)source_ptr->get_samplerate()) + "SPS_" +
                                                std::to_string(long(frequency_mhz * 1e6)) + "Hz";
 
                         recorder_filename = file_sink->start_recording(filename);

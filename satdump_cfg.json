@@ -76,6 +76,15 @@
             "description": "If this is enabled, TLEs will be updated each time SatDump is started"
         }
     },
+    // Output filepaths
+    "satdump_outputfilepaths":{
+        "recording_path":{
+            "type": "string",
+            "value": "./",
+            "name": "Recording folder filepath",
+            "description": "Filepath for a folder where I/Q recordings will be saved"
+        }
+    },
     // TLE settings
     "tle_settings": {
         "url_template": "http://www.celestrak.com/NORAD/elements/gp.php?CATNR=%NORAD%",
