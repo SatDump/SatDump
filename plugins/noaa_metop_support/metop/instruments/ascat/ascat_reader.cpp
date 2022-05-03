@@ -28,7 +28,7 @@ namespace metop
 
             int channel = packet.header.apid - 208;
 
-            if (channel < 0 || channel > 6)
+            if (channel < 0 || channel >= 6)
                 return;
 
             for (int i = 0; i < 256; i++)

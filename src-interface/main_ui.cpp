@@ -60,7 +60,7 @@ namespace satdump
             current_app->draw();
             ImGui::End();
         }
-        else if (processing::is_processing)
+        /*else if (processing::is_processing)
         {
             processing::ui_call_list_mutex->lock();
             float winheight = processing::ui_call_list->size() > 0 ? wheight / processing::ui_call_list->size() : wheight;
@@ -73,7 +73,7 @@ namespace satdump
                 module->drawUI(false);
             }
             processing::ui_call_list_mutex->unlock();
-        }
+        }*/
         else
         {
             ImGui::SetNextWindowPos({0, 0});
@@ -83,7 +83,29 @@ namespace satdump
             {
                 if (ImGui::BeginTabItem("Offline processing"))
                 {
-                    offline::render();
+                    if (processing::is_processing)
+                    {
+                        // ImGui::BeginChild("OfflineProcessingChild");
+                        processing::ui_call_list_mutex->lock();
+                        int live_width = wwidth; // ImGui::GetWindowWidth();
+                        int live_height = ImGui::GetWindowHeight() - ImGui::GetCursorPos().y;
+                        float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
+                        float currentPos = ImGui::GetCursorPos().y;
+                        for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+                        {
+                            ImGui::SetNextWindowPos({0, currentPos});
+                            currentPos += winheight;
+                            ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
+                            module->drawUI(true);
+                        }
+                        processing::ui_call_list_mutex->unlock();
+                        // ImGui::EndChild();
+                    }
+                    else
+                    {
+                        offline::render();
+                    }
+
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Applications"))

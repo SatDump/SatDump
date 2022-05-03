@@ -3,11 +3,15 @@
 #include "common/utils.h"
 #include "core/style.h"
 #include "logger.h"
+#include "imgui/imgui_stdlib.h"
+#include "core/pipeline.h"
+
+#include "main_ui.h"
 
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
-        : Application("recorder")
+        : Application("recorder"), pipeline_selector(true)
     {
         dsp::registerAllSources();
 
@@ -25,6 +29,7 @@ namespace satdump
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
         splitter->set_output_2nd(false);
+        splitter->set_output_3rd(false);
 
         fft = std::make_shared<dsp::FFTBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size);
@@ -112,6 +117,46 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Processing"))
             {
+                if (!is_started)
+                    style::beginDisabled();
+                if (is_processing)
+                    style::beginDisabled();
+                pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvailWidth());
+                pipeline_selector.drawMainparamsLive();
+                pipeline_selector.renderParamTable();
+                if (is_processing)
+                    style::endDisabled();
+
+                if (!is_processing)
+                {
+                    if (ImGui::Button("Start###startprocessing"))
+                    {
+                        nlohmann::json params2 = pipeline_selector.getParameters();
+                        params2["samplerate"] = source_ptr->get_samplerate();
+                        params2["baseband_format"] = "f32";
+                        params2["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
+
+                        live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, pipeline_selector.outputdirselect.getPath());
+                        splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
+                        live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
+                        splitter->set_output_3rd(true);
+
+                        is_processing = true;
+                    }
+                }
+                else
+                {
+                    if (ImGui::Button("Stop##stopprocessing"))
+                    {
+                        is_processing = false;
+                        splitter->set_output_3rd(false);
+                        live_pipeline->stop();
+                        live_pipeline.reset();
+                    }
+                }
+
+                if (!is_started)
+                    style::endDisabled();
             }
 
             if (ImGui::CollapsingHeader("Recording"))
@@ -195,5 +240,8 @@ namespace satdump
         }
         ImGui::EndChild();
         ImGui::EndGroup();
+
+        if (is_processing)
+            live_pipeline->drawUIs();
     }
 };

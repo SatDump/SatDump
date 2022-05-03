@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include <filesystem>
 #include "portable-file-dialogs.h"
+#include "imgui/imgui_stdlib.h"
 
 struct FileSelectWidget
 {
@@ -11,7 +12,7 @@ struct FileSelectWidget
     std::string id;
     std::string btnid;
 
-    char path[10000];
+    std::string path;
     bool file_valid;
 
     bool directory;
@@ -23,7 +24,7 @@ struct FileSelectWidget
 
         if (!file_valid)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-        ImGui::InputText(id.c_str(), path, 10000);
+        ImGui::InputText(id.c_str(), &path);
         if (!file_valid)
             ImGui::PopStyleColor();
         ImGui::SameLine();
@@ -37,10 +38,7 @@ struct FileSelectWidget
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
                 if (fileselect.result().size() > 0)
-                {
-                    memset(path, 0, 10000);
-                    memcpy(path, fileselect.result()[0].c_str(), fileselect.result()[0].size());
-                }
+                    path = fileselect.result()[0];
             }
             else
             {
@@ -50,10 +48,7 @@ struct FileSelectWidget
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
                 if (dirselect.result().size() > 0)
-                {
-                    memset(path, 0, 10000);
-                    memcpy(path, dirselect.result().c_str(), dirselect.result().size());
-                }
+                    path = dirselect.result();
             }
         }
     }

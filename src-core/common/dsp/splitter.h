@@ -9,10 +9,12 @@ namespace dsp
     private:
         std::mutex state_mutex;
         bool enable_second;
+        bool enable_third;
         void work();
 
     public:
         std::shared_ptr<dsp::stream<complex_t>> output_stream_2;
+        std::shared_ptr<dsp::stream<complex_t>> output_stream_3;
 
     public:
         SplitterBlock(std::shared_ptr<dsp::stream<complex_t>> input);
@@ -21,6 +23,13 @@ namespace dsp
         {
             state_mutex.lock();
             enable_second = value;
+            state_mutex.unlock();
+        }
+
+        void set_output_3rd(bool value)
+        {
+            state_mutex.lock();
+            enable_third = value;
             state_mutex.unlock();
         }
 

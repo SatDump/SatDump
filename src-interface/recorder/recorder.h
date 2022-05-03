@@ -12,6 +12,9 @@
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 
+#include "pipeline_selector.h"
+#include "live_pipeline.h"
+
 namespace satdump
 {
     class RecorderApplication : public Application
@@ -20,7 +23,7 @@ namespace satdump
         void drawUI();
 
         double frequency_mhz = 100;
-        bool is_started = false, is_recording = false;
+        bool is_started = false, is_recording = false, is_processing = false;
 
         int fft_size = 8192; // * 4;
 
@@ -38,6 +41,9 @@ namespace satdump
 
         int sdr_select_id = 0;
         std::string sdr_select_string;
+
+        PipelineUISelector pipeline_selector;
+        std::unique_ptr<satdump::LivePipeline> live_pipeline;
 
     public:
         RecorderApplication();

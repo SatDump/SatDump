@@ -13,12 +13,14 @@
                     "s16",
                     "f32"
                 ],
-                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc"
+                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
+                "no_live": true
             },
             "samplerate": {
                 "type": "int",
                 "value": 6000000,
-                "name": "Samplerate"
+                "name": "Samplerate",
+                "no_live": true
             },
             "dc_block": {
                 "type": "bool",
