@@ -42,8 +42,6 @@ protected:
     bool is_wav;
     bool iq_swap = false;
 
-    // Image Preview (FFT)
-
 public:
     FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
