@@ -14,7 +14,7 @@ namespace satdump
     {
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> settings_user_interface;
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> settings_general;
-        std::vector<std::pair<std::string, satdump::params::EditableParameter>> settings_outputfilepaths;
+        std::vector<std::pair<std::string, satdump::params::EditableParameter>> settings_output_directories;
 
 #ifdef USE_OPENCL
         // OpenCL Selection
@@ -42,14 +42,14 @@ namespace satdump
                 if (cfg.value().contains("type") && cfg.value().contains("value") && cfg.value().contains("name"))
                     settings_general.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
-            
-            params = satdump::config::main_cfg["satdump_outputfilepaths"];
+
+            params = satdump::config::main_cfg["satdump_output_directories"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             {
                 // Check setting type, and create an EditableParameter if possible
                 if (cfg.value().contains("type") && cfg.value().contains("value") && cfg.value().contains("name"))
-                    settings_outputfilepaths.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
+                    settings_output_directories.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
 #ifdef USE_OPENCL
@@ -101,24 +101,14 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Output filepaths"))
             {
-                if (ImGui::BeginTable("##satdumpoutputfilepaths", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                if (ImGui::BeginTable("##satdumpoutput_directories", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {
-#ifdef USE_OPENCL
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("OpenCL Device");
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip("OpenCL Device SatDump will use for accelerated computing where it can help, eg, for some image processing tasks such as projections.");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Combo("##opencldeviceselection", &opencl_devices_id, opencl_devices_str.c_str());
-#endif
-
-                    for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_outputfilepaths)
+                    for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
                         p.second.draw();
                     ImGui::EndTable();
                 }
             }
-            
+
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
@@ -130,8 +120,8 @@ namespace satdump
                     satdump::config::main_cfg["user_interface"][p.first]["value"] = p.second.getValue();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
                     satdump::config::main_cfg["satdump_general"][p.first]["value"] = p.second.getValue();
-                for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_outputfilepaths)
-                    satdump::config::main_cfg["satdump_outputfilepaths"][p.first]["value"] = p.second.getValue();
+                for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
+                    satdump::config::main_cfg["satdump_output_directories"][p.first]["value"] = p.second.getValue();
                 config::saveUserConfig();
             }
         }

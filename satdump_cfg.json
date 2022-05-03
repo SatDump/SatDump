@@ -76,13 +76,13 @@
             "description": "If this is enabled, TLEs will be updated each time SatDump is started"
         }
     },
-    // Output filepaths
-    "satdump_outputfilepaths":{
-        "recording_path":{
+    // Output directories
+    "satdump_output_directories": {
+        "recording_path": {
             "type": "string",
             "value": "./",
             "name": "Recording folder filepath",
-            "description": "Filepath for a folder where I/Q recordings will be saved"
+            "description": "Filepath to a folder where I/Q recordings will be saved"
         }
     },
     // TLE settings
