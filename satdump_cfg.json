@@ -81,7 +81,7 @@
         "recording_path":{
             "type": "string",
             "value": "./",
-            "name": "Recording fold filepath",
+            "name": "Recording folder filepath",
             "description": "Filepath for a folder where I/Q recordings will be saved"
         }
     },
