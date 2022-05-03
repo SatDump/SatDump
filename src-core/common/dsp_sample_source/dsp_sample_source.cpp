@@ -1,6 +1,8 @@
 #include "dsp_sample_source.h"
 #include "core/plugin.h"
 
+#include "file_source.h"
+
 namespace dsp
 {
     std::map<std::string, RegisteredSource> dsp_sources_registry;
@@ -28,7 +30,7 @@ namespace dsp
 
     void registerAllSources()
     {
-        // dsp_sources_registry.insert({AirspySource::getID(), {AirspySource::getInstance, AirspySource::getAvailableSources}});
+        dsp_sources_registry.insert({FileSource::getID(), {FileSource::getInstance, FileSource::getAvailableSources}});
 
         // Plugin Sources
         satdump::eventBus->fire_event<RegisterDSPSampleSourcesEvent>({dsp_sources_registry});
