@@ -36,7 +36,7 @@ namespace satdump
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
-        file_sink->set_output_sample_type(dsp::COMPLEX_FLOAT_32);
+        file_sink->set_output_sample_type(dsp::CF_32);
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
@@ -169,11 +169,11 @@ namespace satdump
                                                                   "s8\0"))
                 {
                     if (select_sample_format == 0)
-                        file_sink->set_output_sample_type(dsp::COMPLEX_FLOAT_32);
+                        file_sink->set_output_sample_type(dsp::CF_32);
                     else if (select_sample_format == 1)
-                        file_sink->set_output_sample_type(dsp::INTEGER_16);
+                        file_sink->set_output_sample_type(dsp::IS_16);
                     else if (select_sample_format == 2)
-                        file_sink->set_output_sample_type(dsp::INTEGER_8);
+                        file_sink->set_output_sample_type(dsp::IS_8);
                 }
                 if (is_recording)
                     style::endDisabled();

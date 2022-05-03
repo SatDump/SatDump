@@ -35,11 +35,11 @@ namespace dsp
         {
             rec_mutex.lock();
             std::string finalt;
-            if (d_sample_format == COMPLEX_FLOAT_32)
+            if (d_sample_format == CF_32)
                 finalt = path_without_ext + ".f32";
-            else if (d_sample_format == INTEGER_16)
+            else if (d_sample_format == IS_16)
                 finalt = path_without_ext + ".s16";
-            else if (d_sample_format == INTEGER_8)
+            else if (d_sample_format == IS_8)
                 finalt = path_without_ext + ".s8";
 
             current_size_out = 0;

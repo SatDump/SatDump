@@ -27,18 +27,18 @@ namespace dsp
         rec_mutex.lock();
         if (should_work)
         {
-            if (d_sample_format == COMPLEX_FLOAT_32)
+            if (d_sample_format == CF_32)
             {
                 output_file.write((char *)input_stream->readBuf, nsamples * sizeof(complex_t));
                 current_size_out += nsamples * sizeof(complex_t);
             }
-            else if (d_sample_format == INTEGER_16)
+            else if (d_sample_format == IS_16)
             {
                 volk_32f_s32f_convert_16i(buffer_s16, (float *)input_stream->readBuf, 65535, nsamples * 2);
                 output_file.write((char *)buffer_s16, nsamples * sizeof(int16_t) * 2);
                 current_size_out += nsamples * sizeof(int16_t) * 2;
             }
-            else if (d_sample_format == INTEGER_8)
+            else if (d_sample_format == IS_8)
             {
                 volk_32f_s32f_convert_8i(buffer_s8, (float *)input_stream->readBuf, 255, nsamples * 2);
                 output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);

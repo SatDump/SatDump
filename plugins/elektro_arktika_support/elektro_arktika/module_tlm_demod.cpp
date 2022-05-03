@@ -45,7 +45,7 @@ namespace elektro_arktika
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
-            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size);
 
         // Cleanup things a bit
         std::shared_ptr<dsp::stream<complex_t>> input_data = input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream;

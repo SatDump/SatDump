@@ -56,7 +56,7 @@ namespace demod
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
-            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::BasebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
 
         if (d_dc_block)
             dc_blocker = std::make_shared<dsp::CorrectIQBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);

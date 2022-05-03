@@ -5,7 +5,8 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <fstream>
-#include "common/dsp/file_source.h"
+#include "common/dsp/baseband_interface.h"
+#include <thread>
 
 class FileSource : public dsp::DSPSampleSource
 {
@@ -17,19 +18,7 @@ protected:
     int ns_to_wait;
     int buffer_size = 8192;
     std::string file_path;
-
-    std::ifstream input_file;
-
-    std::mutex file_mutex;
-    float file_progress = 0;
-    uint64_t filesize;
-
-    // Int16 buffer
-    int16_t *buffer_i16;
-    // Int8 buffer
-    int8_t *buffer_i8;
-    // Uint8 buffer
-    uint8_t *buffer_u8;
+    bool iq_swap = false;
 
     int select_sample_format;
     std::string baseband_type = "f32";
@@ -39,8 +28,9 @@ protected:
     std::thread work_thread;
     void run_thread();
 
-    bool is_wav;
-    bool iq_swap = false;
+    float file_progress = 0;
+
+    dsp::BasebandReader baseband_reader;
 
 public:
     FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)

@@ -8,8 +8,8 @@ namespace dsp
     {
     private:
         std::mutex state_mutex;
-        bool enable_second;
-        bool enable_third;
+        bool enable_second = false;
+        bool enable_third = false;
         void work();
 
     public:
