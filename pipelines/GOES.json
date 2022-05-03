@@ -24,14 +24,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": 2110000,
-                    "agc_rate": 0.00001,
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2.11e6,
                     "rrc_alpha": 0.7,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.002,
-                    "clock_omega_relative_limit": 0.001,
-                    "buffer_size": 8192
+                    "pll_bw": 0.002
                 }
             },
             "gvar": {
