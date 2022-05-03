@@ -166,7 +166,13 @@ namespace satdump
                     style::beginDisabled();
                 if (ImGui::Combo("Format", &select_sample_format, "f32\0"
                                                                   "s16\0"
-                                                                  "s8\0"))
+                                                                  "s8\0"
+#ifdef BUILD_ZIQ
+                                                                  "ziq s8\0"
+                                                                  "ziq s16\0"
+                                                                  "ziq f32\0"
+#endif
+                                 ))
                 {
                     if (select_sample_format == 0)
                         file_sink->set_output_sample_type(dsp::CF_32);
@@ -174,6 +180,23 @@ namespace satdump
                         file_sink->set_output_sample_type(dsp::IS_16);
                     else if (select_sample_format == 2)
                         file_sink->set_output_sample_type(dsp::IS_8);
+#ifdef BUILD_ZIQ
+                    else if (select_sample_format == 3)
+                    {
+                        file_sink->set_output_sample_type(dsp::ZIQ);
+                        ziq_bit_depth = 8;
+                    }
+                    else if (select_sample_format == 4)
+                    {
+                        file_sink->set_output_sample_type(dsp::ZIQ);
+                        ziq_bit_depth = 16;
+                    }
+                    else if (select_sample_format == 5)
+                    {
+                        file_sink->set_output_sample_type(dsp::ZIQ);
+                        ziq_bit_depth = 32;
+                    }
+#endif
                 }
                 if (is_recording)
                     style::endDisabled();
@@ -182,6 +205,17 @@ namespace satdump
                     ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
                 else
                     ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+
+#ifdef BUILD_ZIQ
+                if (select_sample_format == 3 || select_sample_format == 4 || select_sample_format == 5)
+                {
+                    if (file_sink->get_written_raw() < 1e9)
+                        ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);
+                    else
+                        ImGui::Text("Size (raw) : %.2f GB", file_sink->get_written_raw() / 1e9);
+                }
+#endif
+
                 ImGui::Text("File : %s", recorder_filename.c_str());
 
                 ImGui::Spacing();
@@ -206,11 +240,11 @@ namespace satdump
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                             (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-                        std::string filename = config::main_cfg["satdump_outputfilepaths"]["recording_path"]["value"].get<std::string>() +
-                                               "/" + timestamp + "_" + std::to_string((long)source_ptr->get_samplerate()) + "SPS_" +
+                        std::string filename = config::main_cfg["satdump_output_directories"]["recording_path"]["value"].get<std::string>() +
+                                               "/" + timestamp + "_" + std::to_string(source_ptr->get_samplerate()) + "SPS_" +
                                                std::to_string(long(frequency_mhz * 1e6)) + "Hz";
 
-                        recorder_filename = file_sink->start_recording(filename);
+                        recorder_filename = file_sink->start_recording(filename, source_ptr->get_samplerate(), ziq_bit_depth);
 
                         logger->info("Recording to " + recorder_filename);
 

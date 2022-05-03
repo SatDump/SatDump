@@ -44,6 +44,13 @@ namespace dsp
                 output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);
                 current_size_out += nsamples * sizeof(int8_t) * 2;
             }
+#ifdef BUILD_ZIQ
+            else if (d_sample_format == ZIQ)
+            {
+                current_size_out += ziqWriter->write(input_stream->readBuf, nsamples);
+                current_size_out_raw += (ziqcfg.bits_per_sample / 4) * nsamples;
+            }
+#endif
 
             input_stream->flush();
 

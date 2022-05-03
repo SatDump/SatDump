@@ -119,7 +119,7 @@ void AirspyHFSource::drawControlUI()
     if (ImGui::SliderInt("Attenuation", &attenuation, 0, 48))
         set_atte();
 
-    if (ImGui::Combo("LNA Mode", &agc_mode, "OFF\0"
+    if (ImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
                                             "LOW\0"
                                             "HIGH\0"))
         set_agcs();
