@@ -79,7 +79,7 @@ namespace dsp
                 volk_32fc_s32f_power_spectrum_32f(fft_output_buffer, (lv_32fc_t *)fftw_out, 1, fft_size);
 
                 for (int i = 0; i < fft_size; i++)
-                    output_stream->writeBuf[i] = output_stream->writeBuf[i] * 0.99 + fft_output_buffer[i] * 0.01;
+                    output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
                 // output_stream->swap(fft_size);
 
                 position_ptr += fft_size;

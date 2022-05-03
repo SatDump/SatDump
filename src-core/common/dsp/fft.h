@@ -28,5 +28,7 @@ namespace dsp
         FFTBlock(std::shared_ptr<dsp::stream<complex_t>> input);
         ~FFTBlock();
         void set_fft_settings(int size);
+
+        float avg_rate = 0.01;
     };
 }

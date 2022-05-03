@@ -55,7 +55,7 @@ namespace satdump
                 {
                     if (it == parameters_ui.end() && cfg.value().contains("type"))
                         parameters_ui_pipeline.push_back({cfg.key(), satdump::params::EditableParameter(cfg.value())});
-                    else if (!cfg.value().contains("type"))
+                    else if (!cfg.value().contains("type") && it != parameters_ui.end())
                         it->second.setValue(cfg.value()["value"]);
                 }
                 else

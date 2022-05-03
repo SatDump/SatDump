@@ -1,11 +1,13 @@
 #include "file_source.h"
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
+#include "common/wav.h"
 
 void FileSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
+    iq_swap = getValueOrDefault(d_settings["iq_swap"], iq_swap);
     buffer_size = getValueOrDefault(d_settings["buffer_size"], buffer_size);
     file_path = getValueOrDefault(d_settings["file_path"], file_path);
     baseband_type = getValueOrDefault(d_settings["baseband_type"], baseband_type);
@@ -13,6 +15,7 @@ void FileSource::set_settings(nlohmann::json settings)
 
 nlohmann::json FileSource::get_settings(nlohmann::json)
 {
+    d_settings["iq_swap"] = iq_swap;
     d_settings["buffer_size"] = buffer_size;
     d_settings["file_path"] = file_path;
     d_settings["baseband_type"] = baseband_type;
@@ -62,6 +65,14 @@ void FileSource::run_thread()
 
             default:
                 break;
+            }
+
+            if (is_wav ^ iq_swap) // WAV Has I/Q Swapped compared to raw
+            {
+                for (int i = 0; i < buffer_size; i++)
+                {
+                    output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
+                }
             }
 
             output_stream->swap(buffer_size);
@@ -119,11 +130,45 @@ void FileSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::InputText("File", &file_path);
+
+    bool update_format = false;
+
+    if (ImGui::InputText("File", &file_path))
+    {
+        if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
+        {
+            if (wav::isValidWav(wav::parseHeaderFromFileWav(file_path)))
+            {
+                logger->debug("File is wav!");
+                is_wav = true;
+                current_samplerate = wav::parseHeaderFromFileWav(file_path).samplerate;
+                if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 8)
+                    select_sample_format = 2;
+                else if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 16)
+                    select_sample_format = 1;
+                update_format = true;
+            }
+            else if (wav::isValidRF64(wav::parseHeaderFromFileWav(file_path)))
+            {
+                logger->debug("File is RF64!");
+                is_wav = true;
+                current_samplerate = wav::parseHeaderFromFileRF64(file_path).samplerate;
+                if (wav::parseHeaderFromFileRF64(file_path).bits_per_sample == 8)
+                    select_sample_format = 2;
+                else if (wav::parseHeaderFromFileRF64(file_path).bits_per_sample == 16)
+                    select_sample_format = 1;
+                update_format = true;
+            }
+            else
+                is_wav = false;
+        }
+    }
+
     ImGui::InputInt("Samplerate", &current_samplerate);
     if (ImGui::Combo("Format", &select_sample_format, "f32\0"
                                                       "s16\0"
-                                                      "s8\0"))
+                                                      "s8\0") ||
+        update_format)
     {
         if (select_sample_format == 0)
             baseband_type = "f32";
@@ -132,6 +177,9 @@ void FileSource::drawControlUI()
         else if (select_sample_format == 2)
             baseband_type = "s8";
     }
+
+    ImGui::Checkbox("IQ Swap", &iq_swap);
+
     if (is_started)
         style::endDisabled();
 

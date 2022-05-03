@@ -97,6 +97,7 @@ namespace satdump
             {
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
+                ImGui::SliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99);
             }
 
             if (fft_plot->scale_max < fft_plot->scale_min)

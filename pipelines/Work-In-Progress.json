@@ -417,7 +417,13 @@
     },
     "himawaricast": {
         "name": "HimawariCast",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [],
         "samplerate": 6e6,
         "baseband_type": "i16",
