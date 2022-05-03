@@ -13,6 +13,7 @@ option(BUILD_ZIQ            "Build support for the custom ZIQ format"           
 option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           ON)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
+option(BUILD_OPENMP         "Build with OpenMP Optimizations"               ON)
 
 option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
 
@@ -25,14 +26,21 @@ if(APPLE)
 endif()
 
 if(UNIX)
-    if(APPLE)
-        set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-    else()
-        set(CMAKE_CXX_FLAGS "-Wall -Wextra -fopenmp")
-    endif()
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+    if(BUILD_OPENMP)
+        message("Compiling with OpenMP support!")
+        if(APPLE)
+            set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
+            set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/usr/local/opt/llvm/include")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+        endif()
+    endif()
+    
     if(BUILD_SSE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
     endif()

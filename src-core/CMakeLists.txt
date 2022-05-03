@@ -42,6 +42,11 @@ if(BUILD_OPENCL)
     target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
 endif()
 
+# OpenMP Linking for macOS
+if(APPLE AND BUILD_OPENMP)
+    target_link_libraries(satdump_core PUBLIC omp) 
+endif()
+
 if(MSVC)
     #target_link_libraries(satdump_core PUBLIC correct.dll)
     target_link_libraries(satdump_core PUBLIC jpeg)
