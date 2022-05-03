@@ -99,7 +99,7 @@ namespace satdump
                 }
             }
 
-            if (ImGui::CollapsingHeader("Output filepaths"))
+            if (ImGui::CollapsingHeader("Output Directories"))
             {
                 if (ImGui::BeginTable("##satdumpoutput_directories", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {

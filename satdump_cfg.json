@@ -80,8 +80,8 @@
     "satdump_output_directories": {
         "recording_path": {
             "type": "string",
-            "value": "./",
-            "name": "Recording folder filepath",
+            "value": ".",
+            "name": "Baseband Recorder directory",
             "description": "Filepath to a folder where I/Q recordings will be saved"
         }
     },
