@@ -129,6 +129,7 @@ void FileSource::drawControlUI()
     if (ImGui::Combo("Format", &select_sample_format, "f32\0"
                                                       "s16\0"
                                                       "s8\0"
+                                                      "u8\0"
 #ifdef BUILD_ZIQ
                                                       "ziq\0"
 #endif
@@ -141,8 +142,10 @@ void FileSource::drawControlUI()
             baseband_type = "s16";
         else if (select_sample_format == 2)
             baseband_type = "s8";
-#ifdef BUILD_ZIQ
         else if (select_sample_format == 3)
+            baseband_type = "u8";
+#ifdef BUILD_ZIQ
+        else if (select_sample_format == 4)
             baseband_type = "ziq";
 #endif
     }
