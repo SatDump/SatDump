@@ -7,6 +7,7 @@
 #include <fstream>
 #include "common/dsp/baseband_interface.h"
 #include <thread>
+#include "imgui/pfd/widget.h"
 
 class FileSource : public dsp::DSPSampleSource
 {
@@ -19,6 +20,8 @@ protected:
     int buffer_size = 8192;
     std::string file_path;
     bool iq_swap = false;
+
+    FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
 
     int select_sample_format;
     std::string baseband_type = "f32";

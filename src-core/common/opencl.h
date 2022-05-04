@@ -23,9 +23,13 @@ namespace opencl
         sources.push_back({kernel_src.c_str(), kernel_src.length()});
 
         cl::Program program(context, sources);
-        if (program.build({device}) != CL_SUCCESS)
+        try
         {
-            logger->error("Error building: {:s}", program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+            program.build({device});
+        }
+        catch (cl::BuildError &e)
+        {
+            logger->error("Error building: {:s}", program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device).c_str());
             return program;
         }
 

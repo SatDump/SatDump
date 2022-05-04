@@ -6,7 +6,7 @@
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/params.h"
-#include "pfd/widget.h"
+#include "imgui/pfd/widget.h"
 #include "core/pipeline.h"
 
 namespace satdump

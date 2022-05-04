@@ -9,7 +9,7 @@
 #include "common/image/composite.h"
 #include "main_ui.h"
 #include "core/style.h"
-#include "pfd/portable-file-dialogs.h"
+#include "imgui/pfd/portable-file-dialogs.h"
 
 namespace satdump
 {

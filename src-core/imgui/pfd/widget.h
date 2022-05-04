@@ -17,14 +17,16 @@ struct FileSelectWidget
 
     bool directory;
 
-    void draw()
+    bool draw()
     {
+        bool changed = false;
+
         bool is_dir = std::filesystem::is_directory(path);
         file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
 
         if (!file_valid)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-        ImGui::InputText(id.c_str(), &path);
+        changed |= ImGui::InputText(id.c_str(), &path);
         if (!file_valid)
             ImGui::PopStyleColor();
         ImGui::SameLine();
@@ -32,7 +34,7 @@ struct FileSelectWidget
         {
             if (!directory)
             {
-                auto fileselect = pfd::open_file(selection_text.c_str(), ".", {}, false);
+                auto fileselect = pfd::open_file(selection_text.c_str(), ".", {});
 
                 while (!fileselect.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -50,7 +52,12 @@ struct FileSelectWidget
                 if (dirselect.result().size() > 0)
                     path = dirselect.result();
             }
+
+            changed = true;
+            file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
         }
+
+        return file_valid && changed;
     }
 
     FileSelectWidget(std::string label, std::string selection_text, bool directory = false)

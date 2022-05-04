@@ -90,8 +90,10 @@ void FileSource::drawControlUI()
 
     bool update_format = false;
 
-    if (ImGui::InputText("File", &file_path))
+    if (file_input.draw())
     {
+        file_path = file_input.getPath();
+
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
             if (wav::isValidWav(wav::parseHeaderFromFileWav(file_path)))
