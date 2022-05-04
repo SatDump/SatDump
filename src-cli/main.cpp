@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     std::string output_file = argv[4];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 6, &argv[5]);
+    nlohmann::json parameters = parse_common_flags(argc - 5, &argv[5]);
 
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
