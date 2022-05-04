@@ -99,7 +99,7 @@ void FileSource::drawControlUI()
                 logger->debug("File is wav!");
                 current_samplerate = wav::parseHeaderFromFileWav(file_path).samplerate;
                 if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 8)
-                    select_sample_format = 2;
+                    select_sample_format = 3;
                 else if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 16)
                     select_sample_format = 1;
                 update_format = true;
@@ -117,7 +117,7 @@ void FileSource::drawControlUI()
 #ifdef BUILD_ZIQ
             else if (ziq::isValidZIQ(file_path))
             {
-                select_sample_format = 3;
+                select_sample_format = 4;
                 update_format = true;
                 current_samplerate = ziq::getCfgFromFile(file_path).samplerate;
             }

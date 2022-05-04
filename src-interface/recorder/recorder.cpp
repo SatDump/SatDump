@@ -64,6 +64,17 @@ namespace satdump
                     source_ptr->open();
                     source_ptr->set_frequency(100e6);
                 }
+                if (ImGui::Button("Refresh"))
+                {
+                    sources = dsp::getAllAvailableSources();
+
+                    sdr_select_string.clear();
+                    for (dsp::SourceDescriptor src : sources)
+                    {
+                        logger->debug("Device " + src.name);
+                        sdr_select_string += src.name + '\0';
+                    }
+                }
                 if (is_started)
                     style::endDisabled();
 

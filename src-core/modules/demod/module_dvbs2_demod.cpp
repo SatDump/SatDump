@@ -306,6 +306,9 @@ namespace demod
         if (input_data_type == DATA_FILE)
             stop();
 
+        ring_buffer.stopReader();
+        ring_buffer.stopWriter();
+
         if (th.joinable())
             th.join();
     }
