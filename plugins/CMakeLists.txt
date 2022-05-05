@@ -103,6 +103,11 @@ if(PLUGIN_LIMESDR_SDR_SUPPORT)
 add_subdirectory(sdr_sources/limesdr_sdr_support)
 endif()
 
+option(PLUGIN_SDRPLAY_SDR_SUPPORT "Enable SDRPlay SDR Support plugin" ON)
+if(PLUGIN_SDRPLAY_SDR_SUPPORT)
+add_subdirectory(sdr_sources/sdrplay_sdr_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 if(PLUGIN_SDDC_SDR_SUPPORT)
