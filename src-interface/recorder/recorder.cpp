@@ -52,7 +52,8 @@ namespace satdump
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
         ImGui::BeginGroup();
 
-        ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * 0.20), float(recorder_size.y)}, false);
+        float wf_size = recorder_size.y - (is_processing ? 250 : 0);
+        ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * 0.20), wf_size}, false);
         {
             if (ImGui::CollapsingHeader("Device"))
             {
@@ -109,6 +110,7 @@ namespace satdump
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
                 ImGui::SliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99);
+                ImGui::Checkbox("Show Waterfall", &show_waterfall);
             }
 
             if (fft_plot->scale_max < fft_plot->scale_min)
@@ -280,15 +282,29 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * 0.80), float(recorder_size.y)}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * 0.80), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         {
-            fft_plot->draw({float(recorder_size.x * 0.80 - 4), float(recorder_size.y * 0.3)});
-            waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(recorder_size.y * 0.7) * 4});
+            fft_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * (show_waterfall ? 0.3 : 1.0))});
+            if (show_waterfall)
+                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * 0.7) * 4});
         }
         ImGui::EndChild();
         ImGui::EndGroup();
 
         if (is_processing)
-            live_pipeline->drawUIs();
+        {
+            int y_pos = ImGui::GetCursorPosY() + 10 * ui_scale;
+            int live_width = recorder_size.x + 16 * ui_scale;
+            int live_height = 250;
+            float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
+            float currentPos = 0;
+            for (std::shared_ptr<ProcessingModule> module : live_pipeline->modules)
+            {
+                ImGui::SetNextWindowPos({currentPos, y_pos});
+                currentPos += winwidth;
+                ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
+                module->drawUI(true);
+            }
+        }
     }
 };

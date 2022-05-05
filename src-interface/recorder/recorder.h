@@ -23,6 +23,7 @@ namespace satdump
         void drawUI();
 
         double frequency_mhz = 100;
+        bool show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false;
 
         int fft_size = 8192; // * 4;
@@ -45,9 +46,9 @@ namespace satdump
         PipelineUISelector pipeline_selector;
         std::unique_ptr<satdump::LivePipeline> live_pipeline;
 
-//#ifdef BUILD_ZIQ
+        //#ifdef BUILD_ZIQ
         int ziq_bit_depth;
-//#endif
+        //#endif
 
     public:
         RecorderApplication();

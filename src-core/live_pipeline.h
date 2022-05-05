@@ -9,7 +9,6 @@ namespace satdump
     {
     private:
         nlohmann::json d_parameters;
-        std::vector<std::shared_ptr<ProcessingModule>> modules;
         std::vector<std::future<void>> moduleFutures;
 
     public:
@@ -17,6 +16,8 @@ namespace satdump
                      nlohmann::json parameters,
                      std::string output_dir);
         ~LivePipeline();
+
+        std::vector<std::shared_ptr<ProcessingModule>> modules;
 
         void start(std::shared_ptr<dsp::stream<complex_t>> stream, ctpl::thread_pool &threadPool);
         void stop();

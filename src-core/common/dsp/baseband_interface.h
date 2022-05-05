@@ -135,9 +135,9 @@ namespace dsp
                 break;
             }
 
-            if (is_wav) // WAV Has I/Q Swapped compared to raw
-                for (int i = 0; i < buffer_size; i++)
-                    output_buffer[i] = complex_t(output_buffer[i].imag, output_buffer[i].real);
+            //if (is_wav)
+            //    for (int i = 0; i < buffer_size; i++)
+            //        output_buffer[i] = complex_t(output_buffer[i].imag, output_buffer[i].real);
 
             progress = input_file.tellg();
 
