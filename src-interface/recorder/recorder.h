@@ -45,9 +45,9 @@ namespace satdump
         PipelineUISelector pipeline_selector;
         std::unique_ptr<satdump::LivePipeline> live_pipeline;
 
-#ifdef BUILD_ZIQ
+//#ifdef BUILD_ZIQ
         int ziq_bit_depth;
-#endif
+//#endif
 
     public:
         RecorderApplication();

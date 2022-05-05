@@ -83,22 +83,28 @@ endif()
 
 #######################
 
-option(PLUGIN_AIRSPY_SDR_EXTENDED "Enable Airspy SDR Support plugin" ON)
-if(PLUGIN_AIRSPY_SDR_EXTENDED OR PLUGINS_ALL)
+option(PLUGIN_AIRSPY_SDR_SUPPORT "Enable Airspy SDR Support plugin" ON)
+if(PLUGIN_AIRSPY_SDR_SUPPORT)
 add_subdirectory(sdr_sources/airspy_sdr_support)
 endif()
 
-option(PLUGIN_AIRSPYHF_SDR_EXTENDED "Enable AirspyHF SDR Support plugin" ON)
-if(PLUGIN_AIRSPYHF_SDR_EXTENDED OR PLUGINS_ALL)
+option(PLUGIN_AIRSPYHF_SDR_SUPPORT "Enable AirspyHF SDR Support plugin" ON)
+if(PLUGIN_AIRSPYHF_SDR_SUPPORT)
 add_subdirectory(sdr_sources/airspyhf_sdr_support)
 endif()
 
-option(PLUGIN_HACKRF_SDR_EXTENDED "Enable HackRF SDR Support plugin" ON)
-if(PLUGIN_HACKRF_SDR_EXTENDED OR PLUGINS_ALL)
+option(PLUGIN_HACKRF_SDR_SUPPORT "Enable HackRF SDR Support plugin" ON)
+if(PLUGIN_HACKRF_SDR_SUPPORT)
 add_subdirectory(sdr_sources/hackrf_sdr_support)
 endif()
 
-option(PLUGIN_LIMESDR_SDR_EXTENDED "Enable LimeSDR SDR Support plugin" ON)
-if(PLUGIN_LIMESDR_SDR_EXTENDED OR PLUGINS_ALL)
+option(PLUGIN_LIMESDR_SDR_SUPPORT "Enable LimeSDR SDR Support plugin" ON)
+if(PLUGIN_LIMESDR_SDR_SUPPORT)
 add_subdirectory(sdr_sources/limesdr_sdr_support)
+endif()
+
+# Disable by default, sort of experimental
+option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
+if(PLUGIN_SDDC_SDR_SUPPORT)
+add_subdirectory(sdr_sources/sddc_sdr_support)
 endif()
