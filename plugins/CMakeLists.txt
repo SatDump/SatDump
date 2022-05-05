@@ -108,6 +108,11 @@ if(PLUGIN_SDRPLAY_SDR_SUPPORT)
 add_subdirectory(sdr_sources/sdrplay_sdr_support)
 endif()
 
+option(PLUGIN_RTLSDR_SDR_SUPPORT "Enable RTL-SDR SDR Support plugin" ON)
+if(PLUGIN_RTLSDR_SDR_SUPPORT)
+add_subdirectory(sdr_sources/rtlsdr_sdr_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 if(PLUGIN_SDDC_SDR_SUPPORT)
