@@ -145,17 +145,24 @@ namespace satdump
                 {
                     if (ImGui::Button("Start###startprocessing"))
                     {
-                        nlohmann::json params2 = pipeline_selector.getParameters();
-                        params2["samplerate"] = source_ptr->get_samplerate();
-                        params2["baseband_format"] = "f32";
-                        params2["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
+                        if (pipeline_selector.outputdirselect.file_valid)
+                        {
+                            nlohmann::json params2 = pipeline_selector.getParameters();
+                            params2["samplerate"] = source_ptr->get_samplerate();
+                            params2["baseband_format"] = "f32";
+                            params2["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
 
-                        live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, pipeline_selector.outputdirselect.getPath());
-                        splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
-                        live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
-                        splitter->set_output_3rd(true);
+                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, pipeline_selector.outputdirselect.getPath());
+                            splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
+                            live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
+                            splitter->set_output_3rd(true);
 
-                        is_processing = true;
+                            is_processing = true;
+                        }
+                        else
+                        {
+                            error = "Please select a valid output directory!";
+                        }
                     }
                 }
                 else
@@ -168,6 +175,9 @@ namespace satdump
                         live_pipeline.reset();
                     }
                 }
+
+                ImGui::SameLine();
+                ImGui::TextColored(ImColor(255, 0, 0), error.c_str());
 
                 if (!is_started)
                     style::endDisabled();

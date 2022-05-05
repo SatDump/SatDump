@@ -31,6 +31,8 @@ namespace satdump
         std::string recorder_filename;
         int select_sample_format = 0;
 
+        std::string error;
+
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SplitterBlock> splitter;
         std::shared_ptr<dsp::FFTBlock> fft;
