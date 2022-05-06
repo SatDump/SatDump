@@ -299,15 +299,10 @@ namespace demod
             }
         }
 
-        logger->info("Demodulation finished");
-
         should_stop = true;
 
         if (input_data_type == DATA_FILE)
             stop();
-
-        ring_buffer.stopReader();
-        ring_buffer.stopWriter();
 
         if (th.joinable())
             th.join();
@@ -320,7 +315,10 @@ namespace demod
 
         while (!should_stop)
         {
-            ring_buffer.read(sym_buffer, (d_shortframes ? 16200 : 64800) * dvbs2::simd_type::SIZE);
+            int read = ring_buffer.read(sym_buffer, (d_shortframes ? 16200 : 64800) * dvbs2::simd_type::SIZE);
+
+            if (read <= 0)
+                continue;
 
             ldpc_trials = ldpc_decoder->work(sym_buffer, d_max_ldpc_trials);
 

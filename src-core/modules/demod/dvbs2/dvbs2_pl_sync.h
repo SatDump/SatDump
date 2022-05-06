@@ -62,6 +62,8 @@ namespace dvbs2
         {
             Block::stop();
             should_run2 = false;
+            ring_buffer.stopReader();
+            ring_buffer.stopWriter();
 
             if (d_thread2.joinable())
                 d_thread2.join();
