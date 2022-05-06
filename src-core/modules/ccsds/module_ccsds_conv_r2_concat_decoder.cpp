@@ -194,6 +194,7 @@ namespace ccsds
         float ber = viterbi->ber();
 
         ImGui::BeginGroup();
+        if (!streamingInput)
         {
             // Constellation
             if (d_constellation == dsp::BPSK)

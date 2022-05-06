@@ -8,6 +8,8 @@
 
 #include "main_ui.h"
 
+#include "imgui/imgui_internal.h"
+
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
@@ -311,9 +313,13 @@ namespace satdump
             for (std::shared_ptr<ProcessingModule> module : live_pipeline->modules)
             {
                 ImGui::SetNextWindowPos({currentPos, y_pos});
-                currentPos += winwidth;
                 ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
                 module->drawUI(true);
+                currentPos += winwidth;
+
+                // if (ImGui::GetCurrentContext()->last_window != NULL)
+                //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
+                //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
             }
         }
     }

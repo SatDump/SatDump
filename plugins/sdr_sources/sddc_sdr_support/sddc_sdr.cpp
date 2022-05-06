@@ -9,7 +9,7 @@ get running at all, at least it seems to work with the RX888. Untested with othe
 Not even sure I'm doing samplerate stuff correctly either :-)
 */
 
-complex_t SDDCSource::ddc_phase_delta = complex_t(cos(M_PI * 0.5), sin(M_PI * 0.5));
+complex_t SDDCSource::ddc_phase_delta = complex_t(cos(-M_PI * 0.5), sin(-M_PI * 0.5));
 complex_t SDDCSource::ddc_phase = complex_t(1, 0);
 
 void SDDCSource::_rx_callback(uint32_t data_size, const float *data, void *context)
@@ -73,12 +73,10 @@ void SDDCSource::open()
 
     // Get available samplerates
     available_samplerates.clear();
-    // available_samplerates.push_back(1e6);
-    // available_samplerates.push_back(2e6);
-    // available_samplerates.push_back(4e6);
-    available_samplerates.push_back(8e6);
     available_samplerates.push_back(16e6);
     available_samplerates.push_back(32e6);
+    available_samplerates.push_back(64e6);
+    available_samplerates.push_back(128e6);
 
     // Init UI stuff
     samplerate_option_str = "";
