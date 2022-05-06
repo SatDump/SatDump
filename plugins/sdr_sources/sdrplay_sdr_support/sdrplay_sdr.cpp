@@ -102,6 +102,14 @@ void SDRPlaySource::set_settings(nlohmann::json settings)
     am_port = getValueOrDefault(d_settings["am_port"], am_port);
     antenna_input = getValueOrDefault(d_settings["antenna_input"], antenna_input);
     agc_mode = getValueOrDefault(d_settings["agc_mode"], agc_mode);
+
+    if (is_open && is_started)
+    {
+        set_gains();
+        set_bias();
+        set_agcs();
+        set_others();
+    }
 }
 
 nlohmann::json SDRPlaySource::get_settings(nlohmann::json)

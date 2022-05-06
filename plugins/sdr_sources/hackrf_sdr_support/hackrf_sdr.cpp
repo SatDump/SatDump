@@ -30,6 +30,12 @@ void HackRFSource::set_settings(nlohmann::json settings)
     vga_gain = getValueOrDefault(d_settings["vga_gain"], vga_gain);
 
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
+
+    if (is_open)
+    {
+        set_gains();
+        set_bias();
+    }
 }
 
 nlohmann::json HackRFSource::get_settings(nlohmann::json)

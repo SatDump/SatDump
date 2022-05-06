@@ -46,6 +46,13 @@ void AirspySource::set_settings(nlohmann::json settings)
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
     mixer_agc_enabled = getValueOrDefault(d_settings["mixer_agc"], mixer_agc_enabled);
+
+    if (is_open)
+    {
+        set_gains();
+        set_bias();
+        set_agcs();
+    }
 }
 
 nlohmann::json AirspySource::get_settings(nlohmann::json)

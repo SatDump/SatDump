@@ -14,6 +14,11 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     tia_gain = getValueOrDefault(d_settings["tia_gain"], tia_gain);
     lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
     pga_gain = getValueOrDefault(d_settings["pga_gain"], pga_gain);
+
+    if (is_open)
+    {
+        set_gains();
+    }
 }
 
 nlohmann::json LimeSDRSource::get_settings(nlohmann::json)

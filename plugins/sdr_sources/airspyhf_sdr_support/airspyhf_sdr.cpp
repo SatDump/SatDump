@@ -31,6 +31,13 @@ void AirspyHFSource::set_settings(nlohmann::json settings)
     agc_mode = getValueOrDefault(d_settings["agc_mode"], agc_mode);
     attenuation = getValueOrDefault(d_settings["attenuation"], attenuation);
     hf_lna_enabled = getValueOrDefault(d_settings["hf_lna"], hf_lna_enabled);
+
+    if (is_open)
+    {
+        set_atte();
+        set_lna();
+        set_agcs();
+    }
 }
 
 nlohmann::json AirspyHFSource::get_settings(nlohmann::json)

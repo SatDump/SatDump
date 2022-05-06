@@ -30,6 +30,13 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     gain = getValueOrDefault(d_settings["gain"], gain);
     lna_agc_enabled = getValueOrDefault(d_settings["agc"], lna_agc_enabled);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
+
+    if (is_open)
+    {
+        set_gains();
+        set_bias();
+        set_agcs();
+    }
 }
 
 nlohmann::json RtlSdrSource::get_settings(nlohmann::json)
