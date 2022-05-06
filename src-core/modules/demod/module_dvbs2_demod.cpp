@@ -391,8 +391,9 @@ namespace demod
             ImGui::SameLine();
             ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
             snr_plot.draw(snr, peak_snr);
-            if (ImGui::Checkbox("Show FFT", &show_fft) && !streamingInput)
-                fft_splitter->set_output_2nd(show_fft);
+            if (!streamingInput)
+                if (ImGui::Checkbox("Show FFT", &show_fft))
+                    fft_splitter->set_output_2nd(show_fft);
 
             // Header
             ImGui::Button("Header", {200 * ui_scale, 20 * ui_scale});

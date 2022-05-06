@@ -45,6 +45,7 @@ namespace satdump
         int sdr_select_id = 0;
         std::string sdr_select_string;
 
+        bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
         std::unique_ptr<satdump::LivePipeline> live_pipeline;
 

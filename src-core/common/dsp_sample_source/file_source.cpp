@@ -128,12 +128,12 @@ void FileSource::drawControlUI()
     }
 
     ImGui::InputInt("Samplerate", &current_samplerate);
-    if (ImGui::Combo("Format", &select_sample_format, "f32\0"
-                                                      "s16\0"
-                                                      "s8\0"
-                                                      "u8\0"
+    if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "f32\0"
+                                                                             "s16\0"
+                                                                             "s8\0"
+                                                                             "u8\0"
 #ifdef BUILD_ZIQ
-                                                      "ziq\0"
+                                                                             "ziq\0"
 #endif
                      ) ||
         update_format)

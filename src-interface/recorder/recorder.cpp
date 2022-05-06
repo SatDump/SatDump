@@ -17,6 +17,8 @@ namespace satdump
     {
         dsp::registerAllSources();
 
+        automated_live_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_autogen"]["value"].get<bool>();
+
         sources = dsp::getAllAvailableSources();
 
         for (dsp::SourceDescriptor src : sources)
@@ -138,7 +140,8 @@ namespace satdump
                 if (is_processing)
                     style::beginDisabled();
                 pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvailWidth());
-                pipeline_selector.drawMainparamsLive();
+                if (!automated_live_output_dir)
+                    pipeline_selector.drawMainparamsLive();
                 pipeline_selector.renderParamTable();
                 if (is_processing)
                     style::endDisabled();
@@ -147,14 +150,37 @@ namespace satdump
                 {
                     if (ImGui::Button("Start###startprocessing"))
                     {
-                        if (pipeline_selector.outputdirselect.file_valid)
+                        if (pipeline_selector.outputdirselect.file_valid || automated_live_output_dir)
                         {
                             nlohmann::json params2 = pipeline_selector.getParameters();
                             params2["samplerate"] = source_ptr->get_samplerate();
                             params2["baseband_format"] = "f32";
                             params2["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
 
-                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, pipeline_selector.outputdirselect.getPath());
+                            std::string output_dir;
+
+                            if (automated_live_output_dir)
+                            {
+                                const time_t timevalue = time(0);
+                                std::tm *timeReadable = gmtime(&timevalue);
+                                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+                                output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
+                                             timestamp + "_" +
+                                             pipelines[pipeline_selector.pipeline_id].name + "_" +
+                                             std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
+                                std::filesystem::create_directories(output_dir);
+                                logger->info("Generated folder name : " + output_dir);
+                            }
+                            else
+                            {
+                                output_dir = pipeline_selector.outputdirselect.getPath();
+                            }
+
+                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, output_dir);
                             splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
                             live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
                             splitter->set_output_3rd(true);
@@ -314,7 +340,7 @@ namespace satdump
             {
                 ImGui::SetNextWindowPos({currentPos, y_pos});
                 ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
-                module->drawUI(true);
+                module->drawUI(false);
                 currentPos += winwidth;
 
                 // if (ImGui::GetCurrentContext()->last_window != NULL)

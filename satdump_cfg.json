@@ -82,7 +82,19 @@
             "type": "string",
             "value": ".",
             "name": "Baseband Recorder directory",
-            "description": "Filepath to a folder where I/Q recordings will be saved"
+            "description": "Path to a folder where I/Q recordings will be saved"
+        },
+        "live_processing_autogen": {
+            "type": "bool",
+            "value": true,
+            "name": "Live Processing Output Autogeneration",
+            "description": "Should live processing automatically generate an output folder?"
+        },
+        "live_processing_path": {
+            "type": "string",
+            "value": "./live_output",
+            "name": "Live Processing Directory",
+            "description": "Path to the default folder to use to store live processing\nOnly valid when automatic generation is enabled!"
         }
     },
     // TLE settings
