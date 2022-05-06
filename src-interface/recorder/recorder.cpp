@@ -49,6 +49,11 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
+        source_ptr->stop();
+        source_ptr->close();
+        splitter->stop();
+        fft->stop();
+        file_sink->stop();
     }
 
     void RecorderApplication::drawUI()

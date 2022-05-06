@@ -13,7 +13,7 @@
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.005,
-                    "modcod": 23,
+                    "modcod": 17,
                     "freq_prop_factor": 0.01
                 }
             }
