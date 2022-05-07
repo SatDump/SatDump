@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
                 if (elapsed_time >= timeout)
                     break;
             }
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         source_ptr->stop();
