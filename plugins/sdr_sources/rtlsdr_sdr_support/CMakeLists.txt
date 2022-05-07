@@ -11,7 +11,7 @@ if(RTLSDR_LIBRARY OR MSVC)
     add_library(rtlsdr_sdr_support SHARED ${rtlsdr_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(sdr PUBLIC rtlsdr.dll)
+        target_link_libraries(rtlsdr_sdr_support PUBLIC rtlsdr.dll)
     else()
         target_link_libraries(rtlsdr_sdr_support PUBLIC satdump_core ${RTLSDR_LIBRARY})
     endif()

@@ -11,7 +11,7 @@ if(AIRSPY_LIBRARY OR MSVC)
     add_library(airspy_sdr_support SHARED ${airspy_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(sdr PUBLIC sdrplay_api.dll)
+        target_link_libraries(airspy_sdr_support PUBLIC sdrplay_api.dll)
     else()
         target_link_libraries(airspy_sdr_support PUBLIC satdump_core ${AIRSPY_LIBRARY})
     endif()

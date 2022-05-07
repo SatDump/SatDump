@@ -11,7 +11,7 @@ if(HACKRF_LIBRARY OR MSVC)
     add_library(hackrf_sdr_support SHARED ${hackrf_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(sdr PUBLIC hackrf.dll)
+        target_link_libraries(hackrf_sdr_support PUBLIC hackrf.dll)
     else()
         target_link_libraries(hackrf_sdr_support PUBLIC satdump_core ${HACKRF_LIBRARY})
     endif()
