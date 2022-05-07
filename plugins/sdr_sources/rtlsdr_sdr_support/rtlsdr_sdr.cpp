@@ -11,16 +11,19 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 void RtlSdrSource::set_gains()
 {
     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain);
+    logger->debug("Set RTL-SDR Gain to {:d}", gain);
 }
 
 void RtlSdrSource::set_bias()
 {
     rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled);
+    logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
 }
 
 void RtlSdrSource::set_agcs()
 {
     rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
+    logger->debug("Set RTL-SDR AGC to {:d}", (int)!lna_agc_enabled);
 }
 
 void RtlSdrSource::set_settings(nlohmann::json settings)

@@ -5,6 +5,10 @@ void LimeSDRSource::set_gains()
     limeDevice->SetGain(false, 0, tia_gain, "TIA");
     limeDevice->SetGain(false, 0, lna_gain, "LNA");
     limeDevice->SetGain(false, 0, pga_gain, "PGA");
+
+    logger->debug("Set LimeSDR TIA to {:d}", tia_gain);
+    logger->debug("Set LimeSDR LNA to {:d}", lna_gain);
+    logger->debug("Set LimeSDR PGA to {:d}", pga_gain);
 }
 
 void LimeSDRSource::set_settings(nlohmann::json settings)

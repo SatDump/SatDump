@@ -11,17 +11,20 @@ int AirspyHFSource::_rx_callback(airspyhf_transfer_t *t)
 void AirspyHFSource::set_atte()
 {
     airspyhf_set_hf_att(airspyhf_dev_obj, attenuation / 6.0f);
+    logger->debug("Set AirspyHF HF Attentuation to {:d}", attenuation);
 }
 
 void AirspyHFSource::set_lna()
 {
     airspyhf_set_hf_lna(airspyhf_dev_obj, hf_lna_enabled);
+    logger->debug("Set AirspyHF HF LNA to {:d}", (int)hf_lna_enabled);
 }
 
 void AirspyHFSource::set_agcs()
 {
     airspyhf_set_hf_agc(airspyhf_dev_obj, agc_mode != 0);
     airspyhf_set_hf_agc_threshold(airspyhf_dev_obj, agc_mode - 1);
+    logger->debug("Set AirspyHF HF AGC Mode to {:d}", (int)agc_mode);
 }
 
 void AirspyHFSource::set_settings(nlohmann::json settings)

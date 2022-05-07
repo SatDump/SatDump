@@ -27,6 +27,8 @@ void SDRPlaySource::set_gains()
     channel_params->tunerParams.gain.LNAstate = (max_gain - 1) - lna_gain;
     channel_params->tunerParams.gain.gRdB = (59 - 1) - if_gain;
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
+    logger->debug("Set SDRPlay LNA to {:d}", lna_gain);
+    logger->debug("Set SDRPlay IF gain to {:d}", if_gain);
 }
 
 void SDRPlaySource::set_bias()
@@ -35,16 +37,19 @@ void SDRPlaySource::set_bias()
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_BiasTControl, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
         channel_params->rsp2TunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_BiasTControl, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
         dev_params->devParams->rspDxParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
+        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
     }
 }
 
@@ -56,6 +61,8 @@ void SDRPlaySource::set_others()
         dev_params->devParams->rsp1aParams.rfDabNotchEnable = dab_notch;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_RfNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_RfDabNotchControl, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
+        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
@@ -65,6 +72,9 @@ void SDRPlaySource::set_others()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_RfNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AntennaControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AmPortSelect, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
+        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
+        logger->debug("Set SDRPlay AM Port to {:d}", am_port);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
@@ -74,6 +84,9 @@ void SDRPlaySource::set_others()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_RfNotchControl);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_AntennaControl);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_RfDabNotchControl);
+        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
+        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
+        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
     }
 }
 

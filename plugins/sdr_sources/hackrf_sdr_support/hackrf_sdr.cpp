@@ -15,14 +15,14 @@ void HackRFSource::set_gains()
     hackrf_set_lna_gain(hackrf_dev_obj, lna_gain);
     hackrf_set_vga_gain(hackrf_dev_obj, vga_gain);
     logger->debug("Set HackRF AMP to {:d}", (int)amp_enabled);
-    logger->debug("Set HackRF LNA gain (linear) to {:d}", lna_gain);
-    logger->debug("Set HackRF VGA gain (linear) to {:d}", vga_gain);
+    logger->debug("Set HackRF LNA gain to {:d}", lna_gain);
+    logger->debug("Set HackRF VGA gain to {:d}", vga_gain);
 }
 
 void HackRFSource::set_bias()
 {
     hackrf_set_antenna_enable(hackrf_dev_obj, bias_enabled);
-    logger->debug("Set HackRF bias (linear) to {:d}", (int)bias_enabled);
+    logger->debug("Set HackRF bias to {:d}", (int)bias_enabled);
 }
 
 void HackRFSource::set_settings(nlohmann::json settings)
