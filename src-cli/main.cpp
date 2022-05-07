@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
         {
             if (timeout > 0)
             {
-                int elapsed_time = time(0) - start_time;
+                uint64_t elapsed_time = time(0) - start_time;
                 if (elapsed_time >= timeout)
                     break;
             }
