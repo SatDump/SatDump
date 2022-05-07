@@ -59,9 +59,11 @@ namespace satdump
     void RecorderApplication::drawUI()
     {
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
+        // recorder_size.y -= ImGui::GetCursorPosY();
+
         ImGui::BeginGroup();
 
-        float wf_size = recorder_size.y - (is_processing ? 250 : 0);
+        float wf_size = recorder_size.y - (is_processing ? 240 * ui_scale : 0);
         ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * 0.20), wf_size}, false);
         {
             if (ImGui::CollapsingHeader("Device"))
@@ -336,7 +338,7 @@ namespace satdump
 
         if (is_processing)
         {
-            float y_pos = ImGui::GetCursorPosY() + 10 * ui_scale;
+            float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
             float live_width = recorder_size.x + 16 * ui_scale;
             float live_height = 250;
             float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;

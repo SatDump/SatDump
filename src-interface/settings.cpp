@@ -135,6 +135,8 @@ namespace satdump
                     satdump::config::main_cfg["satdump_output_directories"][p.first]["value"] = p.second.getValue();
                 config::saveUserConfig();
             }
+
+            ImGui::TextColored(ImColor(255, 255, 0), "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }
 }

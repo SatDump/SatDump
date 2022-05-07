@@ -2,6 +2,9 @@
 
 #include <string>
 #include "libs/ctpl/ctpl_stl.h"
+#include "app.h"
+#include "viewer/viewer.h"
+#include "recorder/recorder.h"
 
 namespace satdump
 {
@@ -11,6 +14,9 @@ namespace satdump
     extern ctpl::thread_pool ui_thread_pool;
 
     extern bool light_theme;
+
+    extern std::shared_ptr<RecorderApplication> recorder_app;
+    extern std::shared_ptr<ViewerApplication> viewer_app;
 
     void initMainUI();
     void renderMainUI(int wwidth, int wheight);

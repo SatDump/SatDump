@@ -9,12 +9,10 @@
 #include "core/config.h"
 #include "core/style.h"
 
-#include "app.h"
-#include "viewer/viewer.h"
-
 namespace satdump
 {
-    std::shared_ptr<Application> current_app;
+    std::shared_ptr<RecorderApplication> recorder_app;
+    std::shared_ptr<ViewerApplication> viewer_app;
 
     bool in_app = false; // true;
 
@@ -47,19 +45,20 @@ namespace satdump
         registerApplications();
         registerViewerHandlers();
 
-        // current_app = application_registry["viewer"]();
+        recorder_app = std::make_shared<RecorderApplication>();
+        viewer_app = std::make_shared<ViewerApplication>();
     }
 
     void renderMainUI(int wwidth, int wheight)
     {
-        if (in_app)
+        /*if (in_app)
         {
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             current_app->draw();
             ImGui::End();
-        }
+        }*/
         /*else if (processing::is_processing)
         {
             processing::ui_call_list_mutex->lock();
@@ -74,7 +73,7 @@ namespace satdump
             }
             processing::ui_call_list_mutex->unlock();
         }*/
-        else
+        // else
         {
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
@@ -108,16 +107,33 @@ namespace satdump
 
                     ImGui::EndTabItem();
                 }
+                if (ImGui::BeginTabItem("Recorder"))
+                {
+                    recorder_app->draw();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Viewer"))
+                {
+                    viewer_app->draw();
+                    ImGui::EndTabItem();
+                }
                 if (ImGui::BeginTabItem("Applications"))
                 {
                     // current_app->draw();
-
-                    for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
+                    if (in_app)
                     {
-                        if (ImGui::Button(appEntry.first.c_str()))
+                        // current_app->draw();
+                    }
+                    else
+                    {
+
+                        for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
                         {
-                            in_app = true;
-                            current_app = application_registry[appEntry.first]();
+                            if (ImGui::Button(appEntry.first.c_str()))
+                            {
+                                in_app = true;
+                                // current_app = application_registry[appEntry.first]();
+                            }
                         }
                     }
 

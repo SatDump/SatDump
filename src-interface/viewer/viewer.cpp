@@ -51,7 +51,7 @@ namespace satdump
             // Init Handler
             std::string handler_id;
             if (instrument_viewer_settings.contains("handler"))
-                instrument_viewer_settings["handler"].get<std::string>();
+                handler_id = instrument_viewer_settings["handler"].get<std::string>();
             else if (products->contents["type"] == "image")
                 handler_id = "image_handler";
             logger->debug("Using handler {:s} for instrument {:s}", handler_id, products->instrument_name);
@@ -162,7 +162,8 @@ namespace satdump
         ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * 0.20), float(viewer_size.y)}, false);
         {
             drawPanel();
-            products_and_handlers[current_handler_id].handler->drawMenu();
+            if (products_and_handlers.size() > 0)
+                products_and_handlers[current_handler_id].handler->drawMenu();
         }
         ImGui::EndChild();
         ImGui::EndGroup();
@@ -170,7 +171,8 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+        if (products_and_handlers.size() > 0)
+            products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
         ImGui::EndGroup();
     }
 
