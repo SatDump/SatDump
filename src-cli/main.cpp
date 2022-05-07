@@ -35,10 +35,23 @@ int main(int argc, char *argv[])
         // Parse flags
         nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4]);
 
-        uint64_t samplerate = parameters["samplerate"].get<uint64_t>();
-        uint64_t frequency = parameters["frequency"].get<uint64_t>();
-        uint64_t timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
-        std::string handler_id = parameters["source"].get<std::string>();
+        uint64_t samplerate;
+        uint64_t frequency;
+        uint64_t timeout;
+        std::string handler_id;
+
+        try
+        {
+            samplerate = parameters["samplerate"].get<uint64_t>();
+            frequency = parameters["frequency"].get<uint64_t>();
+            timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
+            handler_id = parameters["source"].get<std::string>();
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error parsing arguments! {:s}", e.what());
+            return 1;
+        }
 
         // Create output dir
         if (!std::filesystem::exists(output_file))
@@ -52,10 +65,20 @@ int main(int argc, char *argv[])
         for (dsp::SourceDescriptor src : source_tr)
             logger->debug("Device " + src.name);
 
+        bool src_found = false;
         for (dsp::SourceDescriptor src : source_tr)
         {
             if (handler_id == src.source_type)
+            {
                 selected_src = src;
+                src_found = true;
+            }
+        }
+
+        if (!src_found)
+        {
+            logger->error("Could not find a handler for source type : {:s}!", handler_id.c_str());
+            return 1;
         }
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
@@ -66,13 +89,29 @@ int main(int argc, char *argv[])
 
         // Get pipeline
         std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+
+        if (!pipeline.has_value())
+        {
+            logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+            return 1;
+        }
+
         parameters["baseband_format"] = "f32";
         parameters["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
         std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
 
         ctpl::thread_pool ui_thread_pool(8);
-        source_ptr->start();
-        live_pipeline->start(source_ptr->output_stream, ui_thread_pool);
+
+        try
+        {
+            source_ptr->start();
+            live_pipeline->start(source_ptr->output_stream, ui_thread_pool);
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Fatal error running pipeline/device : " + std::string(e.what()));
+            return 1;
+        }
 
         uint64_t start_time = time(0);
 

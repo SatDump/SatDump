@@ -31,6 +31,13 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                         continue;
                     }
 
+                    // Is this a boolean?
+                    if (value == "false" || value == "true")
+                    {
+                        parameters[flag] = (value == "true");
+                        continue;
+                    }
+
                     try // Attempt to parse it as a number
                     {
                         double val = std::stod(argv[i + 1]);
