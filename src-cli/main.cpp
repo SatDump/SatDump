@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                 uint64_t elapsed_time = time(0) - start_time;
                 if (elapsed_time >= timeout)
                 {
-                    logger->warn("Timeout is over! Stopping.");
+                    logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
                     break;
                 }
             }
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
         // Stop cleanly
