@@ -8,6 +8,9 @@
 #include "main_ui.h"
 #include "common/opencl.h"
 
+#include "init.h"
+#include "common/tracking/tle.h"
+
 namespace satdump
 {
     namespace settings
@@ -95,6 +98,14 @@ namespace satdump
 
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
                         p.second.draw();
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Update TLEs Now");
+                    ImGui::TableSetColumnIndex(1);
+                    if (ImGui::Button("Update###updateTLEs"))
+                        updateTLEFile(satdump::user_path);
+
                     ImGui::EndTable();
                 }
             }

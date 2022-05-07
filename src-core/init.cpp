@@ -12,6 +12,8 @@
 
 namespace satdump
 {
+    std::string user_path;
+
     void initSatdump()
     {
         logger->info("   _____       __  ____                      ");
@@ -24,9 +26,9 @@ namespace satdump
         logger->info("");
 
 #ifdef _WIN32
-        std::string user_path = ".";
+        user_path = ".";
 #else
-        std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+        user_path = std::string(getenv("HOME")) + "/.config/satdump";
 #endif
 
         config::loadConfig("satdump_cfg.json", user_path);
