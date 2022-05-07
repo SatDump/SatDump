@@ -40,6 +40,10 @@ int main(int argc, char *argv[])
         uint64_t timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
         std::string handler_id = parameters["source"].get<std::string>();
 
+        // Create output dir
+        if (!std::filesystem::exists(output_file))
+            std::filesystem::create_directories(output_file);
+
         dsp::registerAllSources();
 
         std::vector<dsp::SourceDescriptor> source_tr = dsp::getAllAvailableSources();
