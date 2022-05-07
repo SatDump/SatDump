@@ -116,6 +116,11 @@ if(PLUGIN_RTLSDR_SDR_SUPPORT)
 add_subdirectory(sdr_sources/rtlsdr_sdr_support)
 endif()
 
+option(PLUGIN_SPYSERVER_SUPPORT "Enable SpyServer Support plugin" ON)
+if(PLUGIN_SPYSERVER_SUPPORT)
+add_subdirectory(sdr_sources/spyserver_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 if(PLUGIN_SDDC_SDR_SUPPORT)
