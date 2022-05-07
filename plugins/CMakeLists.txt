@@ -2,6 +2,9 @@
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
 
+# We need those to be available for plugins!
+include_directories(../src-core ../src-interface)
+
 option(PLUGINS_ALL "Enable all plugins by default" ON)
 
 option(PLUGIN_SPACEX "Enable the SpaceX support plugin" OFF)
