@@ -168,7 +168,7 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
     for (int i = 0; i < c; i++)
     {
         const char *name = rtlsdr_get_device_name(i);
-        results.push_back({"rtlsdr", std::string(name) + " #" + std::to_string(i), i});
+        results.push_back({"rtlsdr", std::string(name) + " #" + std::to_string(i), uint64_t(i)});
     }
 
     return results;

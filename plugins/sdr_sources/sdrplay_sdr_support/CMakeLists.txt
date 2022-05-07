@@ -11,7 +11,7 @@ if(SDRPLAY_LIBRARY OR MSVC)
     add_library(sdrplay_sdr_support SHARED ${sdrplay_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(sdrplay_sdr_support PUBLIC sdrplay_api.dll)
+        target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core sdrplay_api.dll)
     else()
         target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core ${SDRPLAY_LIBRARY})
     endif()
