@@ -11,7 +11,7 @@ if(LIMESDR_LIBRARY OR MSVC)
     add_library(limesdr_sdr_support SHARED ${limesdr_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(limesdr_sdr_support PUBLIC LimeSuite.dll)
+        target_link_libraries(limesdr_sdr_support PUBLIC satdump_core LimeSuite.dll)
     else()
         target_link_libraries(limesdr_sdr_support PUBLIC satdump_core ${LIMESDR_LIBRARY})
     endif()
