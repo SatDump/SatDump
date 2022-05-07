@@ -56,6 +56,10 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
+
+    if(BUILD_SSE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /d2archSSE42")
+    endif()
 endif()
 
 project (SatDump VERSION "1.0.0")
