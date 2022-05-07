@@ -5,11 +5,17 @@ set(SATDUMP_ROOT "/usr")
 
 find_library(LIMESDR_LIBRARY LimeSuite)
 
-if(LIMESDR_LIBRARY)
+if(LIMESDR_LIBRARY OR MSVC)
     message("Building with LimeSDR support")
     file(GLOB_RECURSE limesdr_sdr_support_CPPS *.cpp)
     add_library(limesdr_sdr_support SHARED ${limesdr_sdr_support_CPPS})
-    target_link_libraries(limesdr_sdr_support PUBLIC satdump_core ${LIMESDR_LIBRARY})
+
+    if(MSVC)
+        target_link_libraries(sdr PUBLIC LimeSuite.dll)
+    else()
+        target_link_libraries(limesdr_sdr_support PUBLIC satdump_core ${LIMESDR_LIBRARY})
+    endif()
+
     target_include_directories(limesdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 else()
     message("LimeSDR Library could not be found! Not building.")
