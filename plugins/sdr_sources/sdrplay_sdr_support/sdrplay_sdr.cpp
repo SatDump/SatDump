@@ -37,19 +37,19 @@ void SDRPlaySource::set_bias()
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_BiasTControl, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
         channel_params->rsp2TunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_BiasTControl, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
         dev_params->devParams->rspDxParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
-        logger->debug("Set SDRPlay bias (linear) to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
     }
 }
 
