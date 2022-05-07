@@ -455,9 +455,9 @@ typedef struct opj_cparameters {
     char infile[OPJ_PATH_LEN];
     /** output file name */
     char outfile[OPJ_PATH_LEN];
-    /** DEPRECATED. Index generation is now handled with the opj_encode_with_info() function. Set to NULL */
+    /** DEPRECATED. Index generation is now handeld with the opj_encode_with_info() function. Set to NULL */
     int index_on;
-    /** DEPRECATED. Index generation is now handled with the opj_encode_with_info() function. Set to NULL */
+    /** DEPRECATED. Index generation is now handeld with the opj_encode_with_info() function. Set to NULL */
     char index[OPJ_PATH_LEN];
     /** subimage encoding: origin image offset in x direction */
     int image_offset_x0;
@@ -1267,10 +1267,7 @@ OPJ_API opj_stream_t* OPJ_CALLCONV opj_stream_create_file_stream(
     OPJ_SIZE_T p_buffer_size,
     OPJ_BOOL p_is_read_stream);
 
-OPJ_API opj_stream_t* OPJ_CALLCONV
-opj_stream_create_buffer_stream(opj_buffer_info_t*, OPJ_BOOL);
-
-
+OPJ_API opj_stream_t* OPJ_CALLCONV opj_stream_create_buffer_stream (opj_buffer_info_t*, OPJ_BOOL);
 /*
 ==========================================================
    event manager functions definitions
@@ -1353,20 +1350,6 @@ OPJ_API void OPJ_CALLCONV opj_set_default_decoder_parameters(
  */
 OPJ_API OPJ_BOOL OPJ_CALLCONV opj_setup_decoder(opj_codec_t *p_codec,
         opj_dparameters_t *parameters);
-
-/**
- * Set strict decoding parameter for this decoder.  If strict decoding is enabled, partial bit
- * streams will fail to decode.  If strict decoding is disabled, the decoder will decode partial
- * bitstreams as much as possible without erroring
- *
- * @param p_codec       decompressor handler
- * @param strict        OPJ_TRUE to enable strict decoding, OPJ_FALSE to disable
- *
- * @return true         if the decoder is correctly set
- */
-
-OPJ_API OPJ_BOOL OPJ_CALLCONV opj_decoder_set_strict_mode(opj_codec_t *p_codec,
-        OPJ_BOOL strict);
 
 /**
  * Allocates worker threads for the compressor/decompressor.
@@ -1476,7 +1459,7 @@ OPJ_API OPJ_BOOL OPJ_CALLCONV opj_decode(opj_codec_t *p_decompressor,
  * Get the decoded tile from the codec
  *
  * @param   p_codec         the jpeg2000 codec.
- * @param   p_stream        input stream
+ * @param   p_stream        input streamm
  * @param   p_image         output image
  * @param   tile_index      index of the tile which will be decode
  *
@@ -1622,12 +1605,9 @@ OPJ_API OPJ_BOOL OPJ_CALLCONV opj_setup_encoder(opj_codec_t *p_codec,
  * <li>PLT=YES/NO. Defaults to NO. If set to YES, PLT marker segments,
  *     indicating the length of each packet in the tile-part header, will be
  *     written. Since 2.4.0</li>
- * <li>TLM=YES/NO. Defaults to NO (except for Cinema and IMF profiles).
- *     If set to YES, TLM marker segments, indicating the length of each
- *     tile-part part will be written. Since 2.4.0</li>
- * <li>GUARD_BITS=value. Number of guard bits in [0,7] range. Default value is 2.
- *     1 may be used sometimes (like in SMPTE DCP Bv2.1 Application Profile for 2K images).
- *     Since 2.5.0</li>
+  * <li>TLM=YES/NO. Defaults to NO (except for Cinema and IMF profiles).
+  *    If set to YES, TLM marker segments, indicating the length of each
+  *    tile-part part will be written. Since 2.4.0</li>
  * </ul>
  *
  * @param p_codec       Compressor handle

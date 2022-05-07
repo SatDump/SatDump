@@ -87,156 +87,6 @@ OPJ_BOOL OPJ_CALLCONV opj_set_error_handler(opj_codec_t * p_codec,
 }
 
 /* ---------------------------------------------------------------------- */
-/* Buffer-based */
-
-static OPJ_SIZE_T
-opj_read_from_buffer(void* pdst, OPJ_SIZE_T len, opj_buffer_info_t* psrc)
-{
-    OPJ_SIZE_T n;
-
-    OPJ_BYTE* pcur = psrc->cur;
-    OPJ_BYTE* pend = psrc->buf + psrc->len;
-
-    assert(pend >= pcur);
-    n = (OPJ_SIZE_T)(pend - pcur);
-
-    if (n) {
-        if (n > len) {
-            n = len;
-        }
-
-        memcpy(pdst, psrc->cur, n);
-        psrc->cur += n;
-    } else {
-        n = (OPJ_SIZE_T) - 1;
-    }
-
-    return n;
-}
-
-static OPJ_SIZE_T
-opj_write_to_buffer(void* p_buffer, OPJ_SIZE_T p_nb_bytes,
-                    opj_buffer_info_t* p_source_buffer)
-{
-    OPJ_SIZE_T len, dist, n;
-
-    void* pbuf = p_source_buffer->buf;
-    void* pcur = p_source_buffer->cur;
-
-    assert(pcur >= pbuf);
-
-    len = p_source_buffer->len;
-
-    if (0 == len) {
-        len = 1;
-    }
-
-    dist = (OPJ_SIZE_T)(pcur - pbuf);
-
-    assert(dist <= len);
-    n = len - dist;
-
-    while (n < p_nb_bytes) {
-        len *= 2;
-        n = len - dist;
-    }
-
-    if (len != p_source_buffer->len) {
-        pbuf = opj_malloc(len);
-
-        if (0 == pbuf) {
-            return (OPJ_SIZE_T) - 1;
-        }
-
-        if (p_source_buffer->buf) {
-            memcpy(pbuf, p_source_buffer->buf, dist);
-            opj_free(p_source_buffer->buf);
-        }
-
-        p_source_buffer->buf = pbuf;
-        p_source_buffer->cur = pbuf + dist;
-        p_source_buffer->len = len;
-    }
-
-    memcpy(p_source_buffer->cur, p_buffer, p_nb_bytes);
-    p_source_buffer->cur += p_nb_bytes;
-
-    return p_nb_bytes;
-}
-
-static OPJ_SIZE_T
-opj_skip_from_buffer(OPJ_SIZE_T len, opj_buffer_info_t* psrc)
-{
-    OPJ_SIZE_T n;
-
-    OPJ_BYTE* pcur = psrc->cur;
-    OPJ_BYTE* pend = psrc->buf + psrc->len;
-
-    assert(pend >= pcur);
-    n = (OPJ_SIZE_T)(pend - pcur);
-
-    if (n) {
-        if (n > len) {
-            n = len;
-        }
-
-        psrc->cur += len;
-    } else {
-        n = (OPJ_SIZE_T) - 1;
-    }
-
-    return n;
-}
-
-static OPJ_BOOL
-opj_seek_from_buffer(OPJ_OFF_T len, opj_buffer_info_t* psrc)
-{
-    OPJ_SIZE_T off = (OPJ_SIZE_T)len;
-
-    if (off > psrc->len) {
-        off = psrc->len;
-    }
-
-    psrc->cur = psrc->buf + off;
-
-    return OPJ_TRUE;
-}
-
-opj_stream_t* OPJ_CALLCONV
-opj_stream_create_buffer_stream(opj_buffer_info_t* psrc, OPJ_BOOL input)
-{
-    opj_stream_t* ps;
-
-    if (!psrc) {
-        return 0;
-    }
-
-    ps = opj_stream_default_create(input);
-
-    if (0 == ps) {
-        return 0;
-    }
-
-    opj_stream_set_user_data(ps, psrc, 0);
-    opj_stream_set_user_data_length(ps, psrc->len);
-
-    if (input)
-        opj_stream_set_read_function(
-            ps, (opj_stream_read_fn)opj_read_from_buffer);
-    else
-        opj_stream_set_write_function(
-            ps, (opj_stream_write_fn)opj_write_to_buffer);
-
-    opj_stream_set_skip_function(
-        ps, (opj_stream_skip_fn)opj_skip_from_buffer);
-
-    opj_stream_set_seek_function(
-        ps, (opj_stream_seek_fn)opj_seek_from_buffer);
-
-    return ps;
-}
-
-/* ---------------------------------------------------------------------- */
 
 static OPJ_SIZE_T opj_read_from_file(void * p_buffer, OPJ_SIZE_T p_nb_bytes,
                                      void * p_user_data)
@@ -369,10 +219,6 @@ opj_codec_t* OPJ_CALLCONV opj_create_decompress(OPJ_CODEC_FORMAT p_format)
         l_codec->m_codec_data.m_decompression.opj_setup_decoder =
             (void (*)(void *, opj_dparameters_t *)) opj_j2k_setup_decoder;
 
-        l_codec->m_codec_data.m_decompression.opj_decoder_set_strict_mode =
-            (void (*)(void *, OPJ_BOOL)) opj_j2k_decoder_set_strict_mode;
-
-
         l_codec->m_codec_data.m_decompression.opj_read_tile_header =
             (OPJ_BOOL(*)(void *,
                          OPJ_UINT32*,
@@ -480,9 +326,6 @@ opj_codec_t* OPJ_CALLCONV opj_create_decompress(OPJ_CODEC_FORMAT p_format)
         l_codec->m_codec_data.m_decompression.opj_setup_decoder =
             (void (*)(void *, opj_dparameters_t *)) opj_jp2_setup_decoder;
 
-        l_codec->m_codec_data.m_decompression.opj_decoder_set_strict_mode =
-            (void (*)(void *, OPJ_BOOL)) opj_jp2_decoder_set_strict_mode;
-
         l_codec->m_codec_data.m_decompression.opj_set_decode_area =
             (OPJ_BOOL(*)(void *,
                          opj_image_t*,
@@ -578,26 +421,6 @@ OPJ_BOOL OPJ_CALLCONV opj_setup_decoder(opj_codec_t *p_codec,
 
         l_codec->m_codec_data.m_decompression.opj_setup_decoder(l_codec->m_codec,
                 parameters);
-        return OPJ_TRUE;
-    }
-    return OPJ_FALSE;
-}
-
-OPJ_API OPJ_BOOL OPJ_CALLCONV opj_decoder_set_strict_mode(opj_codec_t *p_codec,
-        OPJ_BOOL strict)
-{
-    if (p_codec) {
-        opj_codec_private_t * l_codec = (opj_codec_private_t *) p_codec;
-
-        if (! l_codec->is_decompressor) {
-            opj_event_msg(&(l_codec->m_event_mgr), EVT_ERROR,
-                          "Codec provided to the opj_decoder_set_strict_mode function is not a decompressor handler.\n");
-            return OPJ_FALSE;
-        }
-
-        l_codec->m_codec_data.m_decompression.opj_decoder_set_strict_mode(
-            l_codec->m_codec,
-            strict);
         return OPJ_TRUE;
     }
     return OPJ_FALSE;
@@ -1287,3 +1110,151 @@ void OPJ_CALLCONV opj_image_data_free(void* ptr)
     /* printf("opj_image_data_free %p\n", ptr); */
     opj_aligned_free(ptr);
 }
+
+/* ---------------------------------------------------------------------- */
+/* Buffer-based */
+
+static OPJ_SIZE_T opj_read_from_buffer (void* pdst, OPJ_SIZE_T len, opj_buffer_info_t* psrc)
+{
+    OPJ_SIZE_T n = psrc->buf + psrc->len - psrc->cur;
+
+    if (n) {
+        if (n > len)
+            n = len;
+
+        memcpy (pdst, psrc->cur, n);
+        psrc->cur += n;
+    }
+    else
+        n = (OPJ_SIZE_T)-1;
+
+    return n;
+}
+
+static OPJ_SIZE_T opj_write_to_buffer (void* p_buffer, OPJ_SIZE_T p_nb_bytes,
+                     opj_buffer_info_t* p_source_buffer)
+{
+    void* pbuf = p_source_buffer->buf;
+    void* pcur = p_source_buffer->cur;
+
+    OPJ_SIZE_T len = p_source_buffer->len;
+
+    if (0 == len)
+        len = 1;
+
+    OPJ_SIZE_T dist = (unsigned char *)pcur - (unsigned char *)pbuf, n = len - dist;
+    assert (dist <= len);
+
+    while (n < p_nb_bytes) {
+        len *= 2;
+        n = len - dist;
+    }
+
+    if (len != p_source_buffer->len) {
+        pbuf = opj_malloc (len);
+
+        if (0 == pbuf)
+            return (OPJ_SIZE_T)-1;
+
+        if (p_source_buffer->buf) {
+            memcpy (pbuf, p_source_buffer->buf, dist);
+            opj_free (p_source_buffer->buf);
+        }
+
+        p_source_buffer->buf = pbuf;
+        p_source_buffer->cur = (unsigned char *)pbuf + dist;
+        p_source_buffer->len = len;
+    }
+
+    memcpy (p_source_buffer->cur, p_buffer, p_nb_bytes);
+    p_source_buffer->cur += p_nb_bytes;
+
+    return p_nb_bytes;
+}
+
+static OPJ_SIZE_T opj_skip_from_buffer (OPJ_SIZE_T len, opj_buffer_info_t* psrc)
+{
+    OPJ_SIZE_T n = psrc->buf + psrc->len - psrc->cur;
+
+    if (n) {
+        if (n > len)
+            n = len;
+
+        psrc->cur += len;
+    }
+    else
+        n = (OPJ_SIZE_T)-1;
+
+    return n;
+}
+
+static OPJ_BOOL opj_seek_from_buffer (OPJ_OFF_T len, opj_buffer_info_t* psrc)
+{
+    OPJ_SIZE_T n = psrc->len;
+
+    if (n > len)
+        n = len;
+
+    psrc->cur = psrc->buf + n;
+
+    return OPJ_TRUE;
+}
+
+opj_stream_t* OPJ_CALLCONV opj_stream_create_buffer_stream (opj_buffer_info_t* psrc, OPJ_BOOL input)
+{
+    if (!psrc)
+        return 0;
+
+    opj_stream_t* ps = opj_stream_default_create (input);
+
+    if (0 == ps)
+        return 0;
+
+    opj_stream_set_user_data        (ps, psrc, 0);
+    opj_stream_set_user_data_length (ps, psrc->len);
+
+    if (input)
+        opj_stream_set_read_function (
+            ps, (opj_stream_read_fn)opj_read_from_buffer);
+    else
+        opj_stream_set_write_function(
+            ps,(opj_stream_write_fn) opj_write_to_buffer);
+
+    opj_stream_set_skip_function (
+        ps, (opj_stream_skip_fn)opj_skip_from_buffer);
+
+    opj_stream_set_seek_function (
+        ps, (opj_stream_seek_fn)opj_seek_from_buffer);
+
+    return ps;
+}
+
+/* ---------------------------------------------------------------------- */
+
+// Windows lacks posix_memalign 
+#ifdef _WIN32
+static int check_align(size_t align)
+{
+    for (size_t i = sizeof(void *); i != 0; i *= 2)
+    if (align == i)
+        return 0;
+    return EINVAL;
+}
+
+int posix_memalign(void **ptr, size_t align, size_t size)
+{
+    if (check_align(align))
+        return EINVAL;
+
+    int saved_errno = errno;
+    void *p = _aligned_malloc(size, align);
+    if (p == NULL)
+    {
+        errno = saved_errno;
+        return ENOMEM;
+    }
+
+    *ptr = p;
+    return 0;
+}
+#endif

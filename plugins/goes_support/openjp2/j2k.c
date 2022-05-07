@@ -50,7 +50,7 @@
 /*@{*/
 
 /**
- * Sets up the procedures to do on reading header. Developers wanting to extend the library can add their own reading procedures.
+ * Sets up the procedures to do on reading header. Developpers wanting to extend the library can add their own reading procedures.
  */
 static OPJ_BOOL opj_j2k_setup_header_reading(opj_j2k_t *p_j2k,
         opj_event_mgr_t * p_manager);
@@ -89,22 +89,22 @@ static OPJ_BOOL opj_j2k_decoding_validation(opj_j2k_t * p_j2k,
         opj_event_mgr_t * p_manager);
 
 /**
- * Sets up the validation ,i.e. adds the procedures to launch to make sure the codec parameters
- * are valid. Developers wanting to extend the library can add their own validation procedures.
+ * Sets up the validation ,i.e. adds the procedures to lauch to make sure the codec parameters
+ * are valid. Developpers wanting to extend the library can add their own validation procedures.
  */
 static OPJ_BOOL opj_j2k_setup_encoding_validation(opj_j2k_t *p_j2k,
         opj_event_mgr_t * p_manager);
 
 /**
- * Sets up the validation ,i.e. adds the procedures to launch to make sure the codec parameters
- * are valid. Developers wanting to extend the library can add their own validation procedures.
+ * Sets up the validation ,i.e. adds the procedures to lauch to make sure the codec parameters
+ * are valid. Developpers wanting to extend the library can add their own validation procedures.
  */
 static OPJ_BOOL opj_j2k_setup_decoding_validation(opj_j2k_t *p_j2k,
         opj_event_mgr_t * p_manager);
 
 /**
- * Sets up the validation ,i.e. adds the procedures to launch to make sure the codec parameters
- * are valid. Developers wanting to extend the library can add their own validation procedures.
+ * Sets up the validation ,i.e. adds the procedures to lauch to make sure the codec parameters
+ * are valid. Developpers wanting to extend the library can add their own validation procedures.
  */
 static OPJ_BOOL opj_j2k_setup_end_compress(opj_j2k_t *p_j2k,
         opj_event_mgr_t * p_manager);
@@ -147,7 +147,7 @@ static OPJ_BOOL opj_j2k_create_tcd(opj_j2k_t *p_j2k,
                                    opj_event_mgr_t * p_manager);
 
 /**
- * Executes the given procedures on the given codec.
+ * Excutes the given procedures on the given codec.
  *
  * @param       p_procedure_list        the list of procedures to execute
  * @param       p_j2k                           the jpeg2000 codec to execute the procedures on.
@@ -1430,7 +1430,7 @@ static const opj_dec_memory_marker_handler_t j2k_memory_marker_handler_tab [] =
     {J2K_MS_MCC, J2K_STATE_MH | J2K_STATE_TPH, opj_j2k_read_mcc},
     {J2K_MS_MCO, J2K_STATE_MH | J2K_STATE_TPH, opj_j2k_read_mco},
 #ifdef USE_JPWL
-#ifdef TODO_MS /* remove these functions which are not compatible with the v2 API */
+#ifdef TODO_MS /* remove these functions which are not commpatible with the v2 API */
     {J2K_MS_EPC, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_epc},
     {J2K_MS_EPB, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_epb},
     {J2K_MS_ESD, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_esd},
@@ -1677,7 +1677,7 @@ static OPJ_BOOL opj_j2k_check_poc_val(const opj_poc_t *p_pocs,
 
     assert(p_nb_pocs > 0);
 
-    packet_array = (OPJ_UINT32*) opj_calloc((size_t)step_l * p_num_layers,
+    packet_array = (OPJ_UINT32*) opj_calloc(step_l * p_num_layers,
                                             sizeof(OPJ_UINT32));
     if (packet_array == 00) {
         opj_event_msg(p_manager, EVT_ERROR,
@@ -1790,7 +1790,7 @@ static OPJ_UINT32 opj_j2k_get_num_tp(opj_cp_t *cp, OPJ_UINT32 pino,
                 tpnum *= l_current_poc->layE;
                 break;
             }
-            /* would we split here ? */
+            /* whould we split here ? */
             if (cp->m_specific_param.m_enc.m_tp_flag == prog[i]) {
                 cp->m_specific_param.m_enc.m_tp_pos = i;
                 break;
@@ -4964,14 +4964,9 @@ static OPJ_BOOL opj_j2k_read_sod(opj_j2k_t *p_j2k,
         /* Check enough bytes left in stream before allocation */
         if ((OPJ_OFF_T)p_j2k->m_specific_param.m_decoder.m_sot_length >
                 opj_stream_get_number_byte_left(p_stream)) {
-            if (p_j2k->m_cp.strict) {
-                opj_event_msg(p_manager, EVT_ERROR,
-                              "Tile part length size inconsistent with stream length\n");
-                return OPJ_FALSE;
-            } else {
-                opj_event_msg(p_manager, EVT_WARNING,
-                              "Tile part length size inconsistent with stream length\n");
-            }
+            opj_event_msg(p_manager, EVT_ERROR,
+                          "Tile part length size inconsistent with stream length\n");
+            return OPJ_FALSE;
         }
         if (p_j2k->m_specific_param.m_decoder.m_sot_length >
                 UINT_MAX - OPJ_COMMON_CBLK_DATA_EXTRA) {
@@ -6700,13 +6695,6 @@ void opj_j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters)
     }
 }
 
-void opj_j2k_decoder_set_strict_mode(opj_j2k_t *j2k, OPJ_BOOL strict)
-{
-    if (j2k) {
-        j2k->m_cp.strict = strict;
-    }
-}
-
 OPJ_BOOL opj_j2k_set_threads(opj_j2k_t *j2k, OPJ_UINT32 num_threads)
 {
     /* Currently we pass the thread-pool to the tcd, so we cannot re-set it */
@@ -7666,8 +7654,6 @@ OPJ_BOOL opj_j2k_setup_encoder(opj_j2k_t *p_j2k,
         return OPJ_FALSE;
     }
 
-    p_j2k->m_specific_param.m_encoder.m_nb_comps = image->numcomps;
-
     /* keep a link to cp so that we can destroy it later in j2k_destroy_compress */
     cp = &(p_j2k->m_cp);
 
@@ -7967,13 +7953,6 @@ OPJ_BOOL opj_j2k_setup_encoder(opj_j2k_t *p_j2k,
                                              (OPJ_INT32)cp->tdx);
         cp->th = (OPJ_UINT32)opj_int_ceildiv((OPJ_INT32)(image->y1 - cp->ty0),
                                              (OPJ_INT32)cp->tdy);
-        /* Check that the number of tiles is valid */
-        if (cp->tw > 65535 / cp->th) {
-            opj_event_msg(p_manager, EVT_ERROR,
-                          "Invalid number of tiles : %u x %u (maximum fixed by jpeg2000 norm is 65535 tiles)\n",
-                          cp->tw, cp->th);
-            return OPJ_FALSE;
-        }
     } else {
         cp->tdx = image->x1 - cp->tx0;
         cp->tdy = image->y1 - cp->ty0;
@@ -8040,7 +8019,7 @@ OPJ_BOOL opj_j2k_setup_encoder(opj_j2k_t *p_j2k,
     }
 #endif /* USE_JPWL */
 
-    /* initialize the multiple tiles */
+    /* initialize the mutiple tiles */
     /* ---------------------------- */
     cp->tcps = (opj_tcp_t*) opj_calloc(cp->tw * cp->th, sizeof(opj_tcp_t));
     if (!cp->tcps) {
@@ -8850,7 +8829,7 @@ static OPJ_BOOL opj_j2k_read_header_procedure(opj_j2k_t *p_j2k,
         if (l_marker_handler->id == J2K_MS_UNK) {
             if (! opj_j2k_read_unk(p_j2k, p_stream, &l_current_marker, p_manager)) {
                 opj_event_msg(p_manager, EVT_ERROR,
-                              "Unknown marker has been detected and generated error.\n");
+                              "Unknow marker have been detected and generated error.\n");
                 return OPJ_FALSE;
             }
 
@@ -9855,7 +9834,7 @@ OPJ_BOOL opj_j2k_decode_tile(opj_j2k_t * p_j2k,
     /* When using the opj_read_tile_header / opj_decode_tile_data API */
     /* such as in test_tile_decoder, m_output_image is NULL, so fall back */
     /* to the full image dimension. This is a bit surprising that */
-    /* opj_set_decode_area() is only used to determine intersecting tiles, */
+    /* opj_set_decode_area() is only used to determinte intersecting tiles, */
     /* but full tile decoding is done */
     l_image_for_bounds = p_j2k->m_output_image ? p_j2k->m_output_image :
                          p_j2k->m_private_image;
@@ -9901,10 +9880,10 @@ OPJ_BOOL opj_j2k_decode_tile(opj_j2k_t * p_j2k,
 
     if (p_j2k->m_specific_param.m_decoder.m_state != J2K_STATE_EOC) {
         if (opj_stream_read_data(p_stream, l_data, 2, p_manager) != 2) {
-            opj_event_msg(p_manager, p_j2k->m_cp.strict ? EVT_ERROR : EVT_WARNING,
-                          "Stream too short\n");
-            return p_j2k->m_cp.strict ? OPJ_FALSE : OPJ_TRUE;
+            opj_event_msg(p_manager, EVT_ERROR, "Stream too short\n");
+            return OPJ_FALSE;
         }
+
         opj_read_bytes(l_data, &l_current_marker, 2);
 
         if (l_current_marker == J2K_MS_EOC) {
@@ -10420,9 +10399,6 @@ opj_j2k_t* opj_j2k_create_decompress(void)
     /* in the absence of JP2 boxes, consider different bit depth / sign */
     /* per component is allowed */
     l_j2k->m_cp.allow_different_bit_depth_sign = 1;
-
-    /* Default to using strict mode. */
-    l_j2k->m_cp.strict = OPJ_TRUE;
 
 #ifdef OPJ_DISABLE_TPSOT_FIX
     l_j2k->m_specific_param.m_decoder.m_nb_tile_parts_correction_checked = 1;
@@ -11749,7 +11725,7 @@ static OPJ_BOOL opj_j2k_decode_tiles(opj_j2k_t *p_j2k,
 }
 
 /**
- * Sets up the procedures to do on decoding data. Developers wanting to extend the library can add their own reading procedures.
+ * Sets up the procedures to do on decoding data. Developpers wanting to extend the library can add their own reading procedures.
  */
 static OPJ_BOOL opj_j2k_setup_decoding(opj_j2k_t *p_j2k,
                                        opj_event_mgr_t * p_manager)
@@ -11881,7 +11857,7 @@ static OPJ_BOOL opj_j2k_decode_one_tile(opj_j2k_t *p_j2k,
 }
 
 /**
- * Sets up the procedures to do on decoding one tile. Developers wanting to extend the library can add their own reading procedures.
+ * Sets up the procedures to do on decoding one tile. Developpers wanting to extend the library can add their own reading procedures.
  */
 static OPJ_BOOL opj_j2k_setup_decoding_tile(opj_j2k_t *p_j2k,
         opj_event_mgr_t * p_manager)
@@ -12107,7 +12083,7 @@ OPJ_BOOL opj_j2k_get_tile(opj_j2k_t *p_j2k,
         opj_image_destroy(p_j2k->m_output_image);
     }
 
-    /* Create the output image from the information previously computed*/
+    /* Create the ouput image from the information previously computed*/
     p_j2k->m_output_image = opj_image_create0();
     if (!(p_j2k->m_output_image)) {
         return OPJ_FALSE;
@@ -12196,25 +12172,6 @@ OPJ_BOOL opj_j2k_encoder_set_extra_options(
                 opj_event_msg(p_manager, EVT_ERROR,
                               "Invalid value for option: %s.\n", *p_option_iter);
                 return OPJ_FALSE;
-            }
-        } else if (strncmp(*p_option_iter, "GUARD_BITS=", strlen("GUARD_BITS=")) == 0) {
-            OPJ_UINT32 tileno;
-            opj_cp_t *cp = cp = &(p_j2k->m_cp);
-
-            int numgbits = atoi(*p_option_iter + strlen("GUARD_BITS="));
-            if (numgbits < 0 || numgbits > 7) {
-                opj_event_msg(p_manager, EVT_ERROR,
-                              "Invalid value for option: %s. Should be in [0,7]\n", *p_option_iter);
-                return OPJ_FALSE;
-            }
-
-            for (tileno = 0; tileno < cp->tw * cp->th; tileno++) {
-                OPJ_UINT32 i;
-                opj_tcp_t *tcp = &cp->tcps[tileno];
-                for (i = 0; i < p_j2k->m_specific_param.m_encoder.m_nb_comps; i++) {
-                    opj_tccp_t *tccp = &tcp->tccps[i];
-                    tccp->numgbits = (OPJ_UINT32)numgbits;
-                }
             }
         } else {
             opj_event_msg(p_manager, EVT_ERROR,
