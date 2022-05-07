@@ -48,6 +48,8 @@ namespace satdump
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
         std::unique_ptr<satdump::LivePipeline> live_pipeline;
+        std::string pipeline_output_dir;
+        nlohmann::json pipeline_params; 
 
         //#ifdef BUILD_ZIQ
         int ziq_bit_depth;

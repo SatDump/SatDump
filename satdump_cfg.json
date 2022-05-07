@@ -50,6 +50,12 @@
             "name": "DPI Scaling",
             "description": "DPI Scaling defines the overall UI scale. This can be used to make it bigger or smaller depending on your display's pixel density."
         },
+        "finish_processing_after_live": {
+            "type": "bool",
+            "value": true,
+            "name": "Finish processing when stopping live",
+            "description": "Launch an offline processing task when you press \"Stop\",\nto finish processing down to the end of the pipeline."
+        },
         "open_viewer_post_processing": {
             "type": "bool",
             "value": true,

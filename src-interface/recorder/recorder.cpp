@@ -10,6 +10,8 @@
 
 #include "imgui/imgui_internal.h"
 
+#include "processing.h"
+
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
@@ -159,12 +161,10 @@ namespace satdump
                     {
                         if (pipeline_selector.outputdirselect.file_valid || automated_live_output_dir)
                         {
-                            nlohmann::json params2 = pipeline_selector.getParameters();
-                            params2["samplerate"] = source_ptr->get_samplerate();
-                            params2["baseband_format"] = "f32";
-                            params2["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
-
-                            std::string output_dir;
+                            pipeline_params = pipeline_selector.getParameters();
+                            pipeline_params["samplerate"] = source_ptr->get_samplerate();
+                            pipeline_params["baseband_format"] = "f32";
+                            pipeline_params["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
 
                             if (automated_live_output_dir)
                             {
@@ -175,19 +175,19 @@ namespace satdump
                                                         (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
                                                         (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                                         (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                                output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
-                                             timestamp + "_" +
-                                             pipelines[pipeline_selector.pipeline_id].name + "_" +
-                                             std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
-                                std::filesystem::create_directories(output_dir);
-                                logger->info("Generated folder name : " + output_dir);
+                                pipeline_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
+                                                      timestamp + "_" +
+                                                      pipelines[pipeline_selector.pipeline_id].name + "_" +
+                                                      std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
+                                std::filesystem::create_directories(pipeline_output_dir);
+                                logger->info("Generated folder name : " + pipeline_output_dir);
                             }
                             else
                             {
-                                output_dir = pipeline_selector.outputdirselect.getPath();
+                                pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
                             }
 
-                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], params2, output_dir);
+                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
                             splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
                             live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
                             splitter->set_output_3rd(true);
@@ -207,6 +207,17 @@ namespace satdump
                         is_processing = false;
                         splitter->set_output_3rd(false);
                         live_pipeline->stop();
+
+                        if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
+                        {
+                            Pipeline pipeline = pipelines[pipeline_selector.pipeline_id];
+                            std::string input_file = live_pipeline->getOutputFiles()[0];
+                            int start_level = pipeline.live_cfg[pipeline.live_cfg.size() - 1].first;
+                            std::string input_level = pipeline.steps[start_level].level_name;
+                            ui_thread_pool.push([=](int)
+                                                { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, pipeline_params); });
+                        }
+
                         live_pipeline.reset();
                     }
                 }

@@ -50,6 +50,8 @@ namespace satdump
             else
                 logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
 
+            is_processing = false;
+
             logger->info("Done! Goodbye");
 
             if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
@@ -60,8 +62,6 @@ namespace satdump
                     viewer_app->loadDatasetInViewer(output_file + "/dataset.json");
                 }
             }
-
-            is_processing = false;
         }
 
         std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
