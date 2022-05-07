@@ -24,19 +24,23 @@ int main(int argc, char *argv[])
     // Init logger
     initLogger();
 
-    if (argc < 5) // Check overall command
-    {
-        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
-        logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
-        return 1;
-    }
-
-    // Init SatDump
-    satdump::initSatdump();
-
     if (std::string(argv[1]) == "live")
     {
+        if (argc < 5) // Check overall command
+        {
+            logger->error("Usage : " + std::string(argv[0]) + " live [pipeline_id] [output_file_or_directory] [additional options as required]");
+            logger->error("Extra options (examples. Any parameter used in modules or sources can be used here) :");
+            logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+            logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
+            logger->error("As well as --timeout in seconds");
+            logger->error("Sample command :");
+            logger->error("./satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780");
+            return 1;
+        }
+
+        // Init SatDump
+        satdump::initSatdump();
+
         std::string downlink_pipeline = argv[2];
         std::string output_file = argv[3];
 
@@ -157,6 +161,19 @@ int main(int argc, char *argv[])
     }
     else
     {
+        if (argc < 5) // Check overall command
+        {
+            logger->error("Usage : " + std::string(argv[0]) + " [pipeline_id] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
+            logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
+            logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap");
+            logger->error("Sample command :");
+            logger->error("./satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16");
+            return 1;
+        }
+
+        // Init SatDump
+        satdump::initSatdump();
+
         std::string downlink_pipeline = argv[1];
         std::string input_level = argv[2];
         std::string input_file = argv[3];
