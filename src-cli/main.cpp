@@ -11,6 +11,14 @@
 #include "common/dsp_sample_source/dsp_sample_source.h"
 #include "live_pipeline.h"
 
+// Catch CTRL+C to exit live properly!
+bool live_should_exit = false;
+void sig_handler(int signo)
+{
+    if (signo == SIGINT)
+        live_should_exit = true;
+}
+
 int main(int argc, char *argv[])
 {
     // Init logger
@@ -57,14 +65,15 @@ int main(int argc, char *argv[])
         if (!std::filesystem::exists(output_file))
             std::filesystem::create_directories(output_file);
 
+        // Get all sources
         dsp::registerAllSources();
-
         std::vector<dsp::SourceDescriptor> source_tr = dsp::getAllAvailableSources();
         dsp::SourceDescriptor selected_src;
 
         for (dsp::SourceDescriptor src : source_tr)
             logger->debug("Device " + src.name);
 
+        // Try to find it and check it's usable
         bool src_found = false;
         for (dsp::SourceDescriptor src : source_tr)
         {
@@ -81,6 +90,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
+        // Init source
         std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
         source_ptr->open();
         source_ptr->set_frequency(frequency);
@@ -96,16 +106,18 @@ int main(int argc, char *argv[])
             return 1;
         }
 
+        // Init pipeline
         parameters["baseband_format"] = "f32";
         parameters["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
         std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
 
-        ctpl::thread_pool ui_thread_pool(8);
+        ctpl::thread_pool live_thread_pool(8);
 
+        // Attempt to start the source and pipeline
         try
         {
             source_ptr->start();
-            live_pipeline->start(source_ptr->output_stream, ui_thread_pool);
+            live_pipeline->start(source_ptr->output_stream, live_thread_pool);
         }
         catch (std::exception &e)
         {
@@ -113,19 +125,33 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        uint64_t start_time = time(0);
+        // Attach signal
+        signal(SIGINT, sig_handler);
 
+        // Now, we wait
+        uint64_t start_time = time(0);
         while (1)
         {
             if (timeout > 0)
             {
                 uint64_t elapsed_time = time(0) - start_time;
                 if (elapsed_time >= timeout)
+                {
+                    logger->warn("Timeout is over! Stopping.");
                     break;
+                }
             }
+
+            if (live_should_exit)
+            {
+                logger->warn("SIGINT Received. Stopping.");
+                break;
+            }
+
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
+        // Stop cleanly
         source_ptr->stop();
         live_pipeline->stop();
     }
