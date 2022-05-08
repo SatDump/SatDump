@@ -367,7 +367,7 @@ namespace satdump
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     dragging_waterfall = true;
             }
-            else
+            else if (ImGui::GetMouseCursor() != ImGuiMouseCursor_ResizeEW)
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
         }
         ImGui::EndChild();
@@ -392,7 +392,7 @@ namespace satdump
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 dragging_panel = true;
         }
-        else
+        else if (ImGui::GetMouseCursor() != ImGuiMouseCursor_ResizeNS)
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 
         if (is_processing)
