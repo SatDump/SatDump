@@ -26,6 +26,6 @@ namespace widgets
     public:
         WaterfallPlot(float *v, int size, int lines);
         ~WaterfallPlot();
-        void draw(ImVec2 size);
+        void draw(ImVec2 size, bool active = true);
     };
 }

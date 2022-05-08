@@ -342,7 +342,7 @@ namespace satdump
         {
             fft_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * (show_waterfall ? 0.3 : 1.0))});
             if (show_waterfall)
-                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * 0.7) * 4});
+                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * 0.7) * 4}, is_started);
         }
         ImGui::EndChild();
         ImGui::EndGroup();
