@@ -340,9 +340,32 @@ namespace satdump
         ImGui::BeginGroup();
         ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * 0.80), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         {
-            fft_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * (show_waterfall ? 0.3 : 1.0))});
+            float fft_height = wf_size * (show_waterfall ? (1.0 - waterfall_ratio) : 1.0);
+            float wf_height = wf_size * waterfall_ratio;
+            fft_plot->draw({float(recorder_size.x * 0.80 - 4), fft_height});
             if (show_waterfall)
-                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), float(wf_size * 0.7) * 4}, is_started);
+                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), wf_height * 4}, is_started);
+
+            float offset = 35 * ui_scale;
+
+            ImVec2 mouse_pos = ImGui::GetMousePos();
+            if (mouse_pos.y > offset + fft_height - 10 * ui_scale &&
+                mouse_pos.y < offset + fft_height + 10 * ui_scale &&
+                mouse_pos.x > recorder_size.x * 0.20)
+            {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+                if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    float new_y = mouse_pos.y - offset;
+                    float new_ratio = new_y / (fft_height + wf_height);
+                    if (new_ratio > 0.1 && new_ratio < 0.9)
+                        waterfall_ratio = 1.0 - new_ratio;
+                }
+            }
+            else
+            {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            }
         }
         ImGui::EndChild();
         ImGui::EndGroup();

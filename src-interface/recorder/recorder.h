@@ -27,6 +27,7 @@ namespace satdump
         bool is_started = false, is_recording = false, is_processing = false;
 
         int fft_size = 8192; // * 4;
+        float waterfall_ratio = 0.4;
 
         std::string recorder_filename;
         int select_sample_format = 0;
