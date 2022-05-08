@@ -26,7 +26,7 @@
                 "pm_demod": {
                     "symbolrate": 665400,
                     "pll_bw": 0.01,
-                    "rrc_alpha": 0.6
+                    "rrc_alpha": 0.5
                 }
             },
             "cadu": {
