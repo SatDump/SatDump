@@ -67,6 +67,7 @@ namespace satdump
             out["show_waterfall"] = show_waterfall;
             out["waterfall_ratio"] = waterfall_ratio;
             out["panel_ratio"] = panel_ratio;
+            return out;
         }
 
         void deserialize_config(nlohmann::json in)
@@ -82,7 +83,7 @@ namespace satdump
 
         void save_settings()
         {
-            config::main_cfg["recorder_state"] = serialize_config();
+            config::main_cfg["user"]["recorder_state"] = serialize_config();
             config::saveUserConfig();
         }
 

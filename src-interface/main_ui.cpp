@@ -51,7 +51,7 @@ namespace satdump
 
     void exitMainUI()
     {
-        // recorder_app->save_settings();
+        recorder_app->save_settings();
     }
 
     void renderMainUI(int wwidth, int wheight)
