@@ -27,7 +27,12 @@ namespace satdump
         bool is_started = false, is_recording = false, is_processing = false;
 
         int fft_size = 8192; // * 4;
+
+        bool dragging_waterfall = false;
         float waterfall_ratio = 0.4;
+
+        bool dragging_panel = false;
+        float panel_ratio = 0.2;
 
         std::string recorder_filename;
         int select_sample_format = 0;

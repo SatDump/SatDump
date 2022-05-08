@@ -66,7 +66,7 @@ namespace satdump
         ImGui::BeginGroup();
 
         float wf_size = recorder_size.y - (is_processing ? 240 * ui_scale : 0);
-        ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * 0.20), wf_size}, false);
+        ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false);
         {
             if (ImGui::CollapsingHeader("Device"))
             {
@@ -338,20 +338,21 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * 0.80), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * (1.0 - panel_ratio)), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         {
             float fft_height = wf_size * (show_waterfall ? (1.0 - waterfall_ratio) : 1.0);
             float wf_height = wf_size * waterfall_ratio;
-            fft_plot->draw({float(recorder_size.x * 0.80 - 4), fft_height});
+            fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 4), fft_height});
             if (show_waterfall)
-                waterfall_plot->draw({float(recorder_size.x * 0.80 - 4), wf_height * 4}, is_started);
+                waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 4), wf_height * 4}, is_started);
 
             float offset = 35 * ui_scale;
 
             ImVec2 mouse_pos = ImGui::GetMousePos();
             if (mouse_pos.y > offset + fft_height - 10 * ui_scale &&
-                mouse_pos.y < offset + fft_height + 10 * ui_scale &&
-                mouse_pos.x > recorder_size.x * 0.20)
+                    mouse_pos.y < offset + fft_height + 10 * ui_scale &&
+                    mouse_pos.x > recorder_size.x * 0.20 ||
+                dragging_waterfall)
             {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
                 if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
@@ -361,14 +362,38 @@ namespace satdump
                     if (new_ratio > 0.1 && new_ratio < 0.9)
                         waterfall_ratio = 1.0 - new_ratio;
                 }
+                else
+                    dragging_waterfall = false;
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    dragging_waterfall = true;
             }
             else
-            {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            }
         }
         ImGui::EndChild();
         ImGui::EndGroup();
+
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        if (mouse_pos.x > recorder_size.x * panel_ratio + 15 * ui_scale - 10 * ui_scale &&
+                mouse_pos.x < recorder_size.x * panel_ratio + 15 * ui_scale + 10 * ui_scale &&
+                mouse_pos.y > 35 * ui_scale ||
+            dragging_panel)
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+                float new_x = mouse_pos.x;
+                float new_ratio = new_x / recorder_size.x;
+                if (new_ratio > 0.1 && new_ratio < 0.9)
+                    panel_ratio = new_ratio;
+            }
+            else
+                dragging_panel = false;
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                dragging_panel = true;
+        }
+        else
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 
         if (is_processing)
         {
