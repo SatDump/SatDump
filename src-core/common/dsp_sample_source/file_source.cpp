@@ -1,7 +1,7 @@
 #include "file_source.h"
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/wav.h"
+#include "common/detect_header.h"
 
 void FileSource::set_settings(nlohmann::json settings)
 {
@@ -96,34 +96,20 @@ void FileSource::drawControlUI()
 
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
-            if (wav::isValidWav(wav::parseHeaderFromFileWav(file_path)))
+            HeaderInfo hdr = try_parse_header(file_path);
+            if (hdr.valid)
             {
-                logger->debug("File is wav!");
-                current_samplerate = wav::parseHeaderFromFileWav(file_path).samplerate;
-                if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 8)
+                if (hdr.type == "u8")
                     select_sample_format = 3;
-                else if (wav::parseHeaderFromFileWav(file_path).bits_per_sample == 16)
+                else if (hdr.type == "s16")
                     select_sample_format = 1;
+                else if (hdr.type == "ziq")
+                    select_sample_format = 4;
+
+                current_samplerate = hdr.samplerate;
+
                 update_format = true;
             }
-            else if (wav::isValidRF64(wav::parseHeaderFromFileWav(file_path)))
-            {
-                logger->debug("File is RF64!");
-                current_samplerate = wav::parseHeaderFromFileRF64(file_path).samplerate;
-                if (wav::parseHeaderFromFileRF64(file_path).bits_per_sample == 8)
-                    select_sample_format = 2;
-                else if (wav::parseHeaderFromFileRF64(file_path).bits_per_sample == 16)
-                    select_sample_format = 1;
-                update_format = true;
-            }
-#ifdef BUILD_ZIQ
-            else if (ziq::isValidZIQ(file_path))
-            {
-                select_sample_format = 4;
-                update_format = true;
-                current_samplerate = ziq::getCfgFromFile(file_path).samplerate;
-            }
-#endif
         }
     }
 

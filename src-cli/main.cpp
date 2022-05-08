@@ -11,6 +11,8 @@
 #include "common/dsp_sample_source/dsp_sample_source.h"
 #include "live_pipeline.h"
 
+#include "common/detect_header.h"
+
 // Catch CTRL+C to exit live properly!
 bool live_should_exit = false;
 void sig_handler(int signo)
@@ -181,6 +183,16 @@ int main(int argc, char *argv[])
 
         // Parse flags
         nlohmann::json parameters = parse_common_flags(argc - 5, &argv[5]);
+
+        if (std::filesystem::exists(input_file) && !std::filesystem::is_directory(input_file))
+        {
+            HeaderInfo hdr = try_parse_header(input_file);
+            if (hdr.valid)
+            {
+                parameters["samplerate"] = hdr.samplerate;
+                parameters["baseband_format"] = hdr.type;
+            }
+        }
 
         // logger->warn("\n" + parameters.dump(4));
         // exit(0);

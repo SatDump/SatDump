@@ -8,6 +8,7 @@
 #include "core/params.h"
 #include "imgui/pfd/widget.h"
 #include "core/pipeline.h"
+#include "common/detect_header.h"
 
 namespace satdump
 {
@@ -111,6 +112,17 @@ namespace satdump
             }
         }
 
+        void try_set_param(std::string name, nlohmann::json v)
+        {
+            for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui)
+                if (p.first == name)
+                    p.second.setValue(v);
+
+            for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui_pipeline)
+                if (p.first == name)
+                    p.second.setValue(v);
+        }
+
         void drawMainparams()
         {
             ImGui::BeginTable("##pipelinesmainoptions", 2);
@@ -121,7 +133,20 @@ namespace satdump
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Input File");
             ImGui::TableSetColumnIndex(1);
-            inputfileselect.draw();
+            if (inputfileselect.draw())
+            {
+                std::string file_path = inputfileselect.getPath();
+
+                if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
+                {
+                    HeaderInfo hdr = try_parse_header(file_path);
+                    if (hdr.valid)
+                    {
+                        try_set_param("samplerate", hdr.samplerate);
+                        try_set_param("baseband_format", hdr.type);
+                    }
+                }
+            }
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
