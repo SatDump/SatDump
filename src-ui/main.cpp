@@ -138,6 +138,8 @@ int main(int argc, char *argv[])
         glfwSwapBuffers(window);
     }
 
+    satdump::exitMainUI();
+
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

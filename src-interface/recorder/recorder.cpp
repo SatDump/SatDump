@@ -19,6 +19,9 @@ namespace satdump
     {
         dsp::registerAllSources();
 
+        if (config::main_cfg.contains("recorder_state"))
+            deserialize_config(config::main_cfg["recorder_state"]);
+
         automated_live_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_autogen"]["value"].get<bool>();
 
         sources = dsp::getAllAvailableSources();

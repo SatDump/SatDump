@@ -29,7 +29,7 @@ namespace satdump
         int fft_size = 8192; // * 4;
 
         bool dragging_waterfall = false;
-        float waterfall_ratio = 0.4;
+        float waterfall_ratio = 0.7;
 
         bool dragging_panel = false;
         float panel_ratio = 0.2;
@@ -61,9 +61,30 @@ namespace satdump
         int ziq_bit_depth;
         //#endif
 
+        nlohmann::json serialize_config()
+        {
+            nlohmann::json out;
+            out["show_waterfall"] = show_waterfall;
+            out["waterfall_ratio"] = waterfall_ratio;
+            out["panel_ratio"] = panel_ratio;
+        }
+
+        void deserialize_config(nlohmann::json in)
+        {
+            show_waterfall = in["show_waterfall"].get<bool>();
+            waterfall_ratio = in["waterfall_ratio"].get<float>();
+            panel_ratio = in["panel_ratio"].get<float>();
+        }
+
     public:
         RecorderApplication();
         ~RecorderApplication();
+
+        void save_settings()
+        {
+            config::main_cfg["recorder_state"] = serialize_config();
+            config::saveUserConfig();
+        }
 
     public:
         static std::string getID() { return "recorder"; }

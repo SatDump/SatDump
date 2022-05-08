@@ -19,5 +19,6 @@ namespace satdump
     extern std::shared_ptr<ViewerApplication> viewer_app;
 
     void initMainUI();
+    void exitMainUI();
     void renderMainUI(int wwidth, int wheight);
 }

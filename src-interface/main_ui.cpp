@@ -49,6 +49,11 @@ namespace satdump
         viewer_app = std::make_shared<ViewerApplication>();
     }
 
+    void exitMainUI()
+    {
+        // recorder_app->save_settings();
+    }
+
     void renderMainUI(int wwidth, int wheight)
     {
         /*if (in_app)
