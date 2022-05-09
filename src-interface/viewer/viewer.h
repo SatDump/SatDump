@@ -7,6 +7,8 @@
 
 #include "viewer/viewer.h"
 
+#include "imgui/pfd/widget.h"
+
 namespace satdump
 {
     class ViewerHandler
@@ -32,6 +34,9 @@ namespace satdump
     protected:
         const std::string app_id;
         virtual void drawUI();
+
+        FileSelectWidget select_dataset_dialog = FileSelectWidget("Dataset", "Select Dataset");
+        FileSelectWidget select_products_dialog = FileSelectWidget("Products", "Select Products");
 
         struct ProductsHandler
         {

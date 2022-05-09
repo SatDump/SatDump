@@ -148,6 +148,11 @@ namespace satdump
                         renderHandler(products_and_handlers[i], i);
                 ImGui::TreePop();
             }
+
+            if (select_dataset_dialog.draw())
+                loadDatasetInViewer(select_dataset_dialog.getPath());
+            if (select_products_dialog.draw())
+                loadProductsInViewer(select_products_dialog.getPath());
         }
     }
 
