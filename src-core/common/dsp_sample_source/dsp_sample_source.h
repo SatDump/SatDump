@@ -5,19 +5,7 @@
 #include "common/dsp/buffer.h"
 #include <functional>
 #include <memory>
-
-template <typename T>
-T getValueOrDefault(nlohmann::json obj, T v)
-{
-    try
-    {
-        return obj.get<T>();
-    }
-    catch (std::exception &e)
-    {
-        return v;
-    }
-}
+#include "nlohmann/json_utils.h"
 
 namespace dsp
 {

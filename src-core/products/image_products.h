@@ -60,6 +60,23 @@ namespace satdump
                 return ifov_y;
         }
 
+        ///////////////////////// Projection
+
+        void set_proj_cfg(nlohmann::ordered_json cfg)
+        {
+            contents["projection_cfg"] = cfg;
+        }
+
+        nlohmann::ordered_json get_proj_cfg()
+        {
+            return contents["projection_cfg"];
+        }
+
+        bool has_proj_cfg()
+        {
+            return contents.contains("projection_cfg");
+        }
+
         ///////////////////////// Calibration to radiance
         enum Calibration_Type
         {

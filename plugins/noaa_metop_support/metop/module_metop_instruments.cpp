@@ -12,6 +12,7 @@
 #include "products/radiation_products.h"
 #include "products/dataset.h"
 #include "common/tracking/tle.h"
+#include "resources.h"
 
 namespace metop
 {
@@ -193,6 +194,7 @@ namespace metop
                 avhrr_products.bit_depth = 10;
                 avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
+                avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
                 for (int i = 0; i < 5; i++)
                     avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});

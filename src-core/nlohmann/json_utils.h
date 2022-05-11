@@ -10,3 +10,16 @@ nlohmann::ordered_json merge_json_diffs(nlohmann::ordered_json master, nlohmann:
 
 // Get a diff JSON object
 nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann::ordered_json modified);
+
+template <typename T>
+T getValueOrDefault(nlohmann::json obj, T v)
+{
+    try
+    {
+        return obj.get<T>();
+    }
+    catch (std::exception &e)
+    {
+        return v;
+    }
+}
