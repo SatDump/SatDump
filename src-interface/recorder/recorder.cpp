@@ -91,6 +91,13 @@ namespace satdump
                         logger->debug("Device " + src.name);
                         sdr_select_string += src.name + '\0';
                     }
+
+                    while (sdr_select_id >= (int)sources.size())
+                        sdr_select_id--;
+
+                    source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
+                    source_ptr->open();
+                    source_ptr->set_frequency(100e6);
                 }
                 if (is_started)
                     style::endDisabled();
