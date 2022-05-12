@@ -43,6 +43,10 @@ namespace satdump
         std::string rgb_presets_str;
         int select_rgb_presets = -1;
 
+        // Warp/Project
+        int warp_project_width = 2048;
+        int warp_project_height = 1024;
+
         void init();
         void updateImage();
 

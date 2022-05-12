@@ -229,6 +229,7 @@ namespace metop
                 mhs_products.bit_depth = 16;
                 mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 mhs_products.set_timestamps(mhs_reader.timestamps);
+                mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 5; i++)
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});

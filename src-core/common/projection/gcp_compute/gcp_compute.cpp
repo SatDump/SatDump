@@ -22,9 +22,9 @@ namespace satdump
             double timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
             bool invert_scan = getValueOrDefault(cfg["invert_scan"], false);
 
-            float roll_offset = getValueOrDefault(cfg["roll_offset"], 0);
-            float pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0);
-            float yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0);
+            float roll_offset = getValueOrDefault(cfg["roll_offset"], 0.0);
+            float pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0.0);
+            float yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
 
             std::vector<satdump::projection::GCP> gcps;
 

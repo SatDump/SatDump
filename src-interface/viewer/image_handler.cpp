@@ -5,6 +5,12 @@
 
 #include "imgui/imgui_internal.h"
 
+#include "common/projection/gcp_compute/gcp_compute.h"
+#include "common/projection/warp/warp.h"
+#include "common/projection/projs/equirectangular.h"
+#include "common/map/map_drawer.h"
+#include "resources.h"
+
 namespace satdump
 {
     void ImageViewerHandler::init()
@@ -256,6 +262,49 @@ namespace satdump
 
                     select_image_id = 0;
                     asyncUpdate();
+                }
+            }
+        }
+
+        if (ImGui::CollapsingHeader("Warp / Project"))
+        {
+            ImGui::InputInt("Width", &warp_project_width);
+            ImGui::InputInt("Height", &warp_project_height);
+
+            if (ImGui::Button("Warp"))
+            {
+                if (products->has_proj_cfg() && products->has_timestamps && products->has_tle())
+                {
+                    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(products->get_proj_cfg(), products->get_tle(), products->get_timestamps());
+
+                    satdump::warp::WarpOperation operation;
+                    operation.ground_control_points = gcps;
+                    operation.input_image = current_image;
+                    operation.output_width = warp_project_width;
+                    operation.output_height = warp_project_height;
+
+                    satdump::warp::ImageWarper warper;
+                    warper.op = operation;
+                    warper.update();
+
+                    satdump::warp::WarpResult result = warper.warp();
+
+                    geodetic::projection::EquirectangularProjection projector;
+                    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+
+                    unsigned short color[3] = {0, 65535, 0};
+                    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                   result.output_image,
+                                                   color,
+                                                   [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                                   {
+                                                       int x, y;
+                                                       projector.forward(lon, lat, x, y);
+                                                       return {x, y};
+                                                   });
+
+                    current_image = result.output_image;
+                    image_view.update(current_image);
                 }
             }
         }

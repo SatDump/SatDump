@@ -28,87 +28,7 @@
 
 #include "common/utils.h"
 
-class EquirectangularProjector
-{
-private:
-    int image_height;
-    int image_width;
-
-    float top_left_lat;
-    float top_left_lon;
-
-    float bottom_right_lat;
-    float bottom_right_lon;
-
-    float covered_lat;
-    float covered_lon;
-
-    float offset_lat;
-    float offset_lon;
-
-public:
-    void init(int img_width, int img_height, float tl_lon, float tl_lat, float br_lon, float br_lat)
-    {
-        image_height = img_height;
-        image_width = img_width;
-
-        top_left_lat = tl_lat;
-        top_left_lon = tl_lon;
-
-        bottom_right_lat = br_lat;
-        bottom_right_lon = br_lon;
-
-        // Compute how much we cover on the input image
-        covered_lat = abs(top_left_lat - bottom_right_lat);
-        covered_lon = abs(top_left_lon - bottom_right_lon);
-
-        // Compute the offset the top right corner has
-        offset_lat = abs(top_left_lat - 90);
-        offset_lon = abs(top_left_lon + 180);
-    }
-
-    void forward(float lon, float lat, int &x, int &y)
-    {
-        if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
-        {
-            x = y = -1;
-            return;
-        }
-
-        lat = 180.0f - (lat + 90.0f);
-        lon += 180;
-
-        lat -= offset_lat;
-        lon -= offset_lon;
-
-        y = (lat / covered_lat) * image_height;
-        x = (lon / covered_lon) * image_width;
-
-        if (y < 0 || y >= image_height || x < 0 || x >= image_width)
-            x = y = -1;
-    }
-
-    void reverse(int x, int y, float &lon, float &lat)
-    {
-        if (y < 0 || y >= image_height || x < 0 || x >= image_width)
-        {
-            lon = lat = -1;
-            return;
-        }
-
-        lat = (y / (float)image_height) * covered_lat;
-        lon = (x / (float)image_width) * covered_lon;
-
-        lat += offset_lat;
-        lon += offset_lon;
-
-        lat = 180.0f - (lat + 90.0f);
-        lon -= 180;
-
-        if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
-            lon = lat = -1;
-    }
-};
+#include "common/projection/projs/equirectangular.h"
 
 int main(int argc, char *argv[])
 {
@@ -163,7 +83,7 @@ int main(int argc, char *argv[])
 
     logger->info("Drawing map...");
 
-    EquirectangularProjector projector;
+    geodetic::projection::EquirectangularProjection projector;
     projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
 
     unsigned short color[3] = {0, 65535, 0};
