@@ -17,6 +17,8 @@ if(AIRSPY_LIBRARY OR MSVC)
     endif()
 
     target_include_directories(airspy_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    install(TARGETS airspy_sdr_support DESTINATION share/satdump/plugins)
 else()
     message("Airspy Library could not be found! Not building.")
 endif()

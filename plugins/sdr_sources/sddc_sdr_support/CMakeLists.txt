@@ -27,3 +27,5 @@ endif()
 
 target_link_libraries(sddc_sdr_support PUBLIC satdump_core)
 target_include_directories(sddc_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+install(TARGETS sddc_sdr_support DESTINATION share/satdump/plugins)

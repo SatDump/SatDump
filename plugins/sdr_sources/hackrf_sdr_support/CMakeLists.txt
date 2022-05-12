@@ -17,6 +17,8 @@ if(HACKRF_LIBRARY OR MSVC)
     endif()
 
     target_include_directories(hackrf_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    install(TARGETS hackrf_sdr_support DESTINATION share/satdump/plugins)
 else()
     message("HackRF Library could not be found! Not building.")
 endif()

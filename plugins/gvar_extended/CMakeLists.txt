@@ -7,3 +7,5 @@ file(GLOB_RECURSE gvar_extended_CPPS *.cpp)
 add_library(gvar_extended SHARED ${gvar_extended_CPPS})
 target_link_libraries(gvar_extended PUBLIC satdump_core)
 target_include_directories(gvar_extended PUBLIC src ${SATDUMP_ROOT}/include/satdump ../goes_support)
+
+install(TARGETS gvar_extended DESTINATION share/satdump/plugins)

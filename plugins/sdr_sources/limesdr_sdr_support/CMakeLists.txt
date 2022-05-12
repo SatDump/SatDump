@@ -17,6 +17,8 @@ if(LIMESDR_LIBRARY OR MSVC)
     endif()
 
     target_include_directories(limesdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    install(TARGETS limesdr_sdr_support DESTINATION share/satdump/plugins)
 else()
     message("LimeSDR Library could not be found! Not building.")
 endif()

@@ -17,7 +17,7 @@ public:
         sdrplay_api_ErrT error = sdrplay_api_Open();
         if (error != sdrplay_api_Success)
         {
-            logger->error("Couuld not open the SDRPlay API, perhaps the service is not running?");
+            logger->error("Could not open the SDRPlay API, perhaps the service is not running?");
             return;
         }
         logger->info("SDRPlay APi is ready!");

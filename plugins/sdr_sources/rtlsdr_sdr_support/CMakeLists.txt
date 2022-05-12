@@ -17,6 +17,8 @@ if(RTLSDR_LIBRARY OR MSVC)
     endif()
 
     target_include_directories(rtlsdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    install(TARGETS rtlsdr_sdr_support DESTINATION share/satdump/plugins)
 else()
     message("RTL-SDR Library could not be found! Not building.")
 endif()

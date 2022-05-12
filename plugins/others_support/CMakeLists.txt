@@ -7,3 +7,5 @@ file(GLOB_RECURSE others_support_CPPS *.cpp)
 add_library(others_support SHARED ${others_support_CPPS})
 target_link_libraries(others_support PUBLIC satdump_core)
 target_include_directories(others_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+install(TARGETS others_support DESTINATION share/satdump/plugins)

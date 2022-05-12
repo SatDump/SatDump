@@ -7,3 +7,5 @@ file(GLOB_RECURSE noaa_metop_support_CPPS *.cpp bzlib/*.c instruments/mhs/*.cpp)
 add_library(noaa_metop_support SHARED ${noaa_metop_support_CPPS})
 target_link_libraries(noaa_metop_support PUBLIC satdump_core)
 target_include_directories(noaa_metop_support PUBLIC src ${SATDUMP_ROOT}/include/satdump .)
+
+install(TARGETS noaa_metop_support DESTINATION share/satdump/plugins)

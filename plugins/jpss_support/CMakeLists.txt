@@ -7,3 +7,5 @@ file(GLOB_RECURSE jpss_support_CPPS *.cpp)
 add_library(jpss_support SHARED ${jpss_support_CPPS})
 target_link_libraries(jpss_support PUBLIC satdump_core)
 target_include_directories(jpss_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+install(TARGETS jpss_support DESTINATION share/satdump/plugins)

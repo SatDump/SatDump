@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+project(SatDump)
+
 option(NOGUI                "Disable building the GUI"                                  OFF)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 #option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
@@ -16,6 +18,13 @@ option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"               
 option(BUILD_OPENMP         "Build with OpenMP Optimizations"               ON)
 
 option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
+
+# Set default install prefix to /usr
+if(UNIX)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX /usr CACHE PATH "Set CMAKE Default to /usr" FORCE)
+    endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+endif()
 
 if(APPLE)
     include_directories(/usr/local/include)
