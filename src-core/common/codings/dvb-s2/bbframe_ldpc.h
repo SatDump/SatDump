@@ -46,5 +46,10 @@ namespace dvbs2
         }
 
         int work(int8_t *frame, int max_trials);
+
+        LDPCInterface *get_instance()
+        {
+            return ldpc;
+        }
     };
 }
