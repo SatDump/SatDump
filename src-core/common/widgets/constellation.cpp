@@ -4,7 +4,7 @@
 
 namespace widgets
 {
-    ConstellationViewer::ConstellationViewer(float hscale, float vscale, int constellation_size) : d_hscale(hscale), d_vscale(vscale), d_constellation_size(constellation_size)
+    ConstellationViewer::ConstellationViewer(float hscale, float vscale, int constellation_size) : d_constellation_size(constellation_size), d_hscale(hscale), d_vscale(vscale)
     {
     }
 

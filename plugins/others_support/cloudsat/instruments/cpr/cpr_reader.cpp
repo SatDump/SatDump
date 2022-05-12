@@ -20,13 +20,12 @@ namespace cloudsat
 
         void CPReader::work(uint8_t *buffer)
         {
-
-            int out = repackBytesTo20bits(&buffer[83], 402 - 83, buffer20);
+            repackBytesTo20bits(&buffer[83], 402 - 83, buffer20);
 
             for (int i = 0; i < 126; i++)
             {
-                //logger->info(buffer20[i]);
-                //uint16_t pixel = buffer[pos + channel + i * 5];
+                // logger->info(buffer20[i]);
+                // uint16_t pixel = buffer[pos + channel + i * 5];
                 image[lines * 126 + i] = buffer20[i] >> 4;
             }
 
@@ -34,7 +33,7 @@ namespace cloudsat
             lines++;
         }
 
-        image::Image<uint16_t> CPReader::getChannel(int channel)
+        image::Image<uint16_t> CPReader::getChannel()
         {
             return image::Image<uint16_t>(image, 126, lines, 1);
         }

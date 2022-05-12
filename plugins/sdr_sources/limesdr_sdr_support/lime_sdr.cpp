@@ -135,7 +135,7 @@ void LimeSDRSource::drawControlUI()
 
 void LimeSDRSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < available_samplerates.size(); i++)
+    for (int i = 0; i < (int)available_samplerates.size(); i++)
     {
         if (samplerate == available_samplerates[i])
         {

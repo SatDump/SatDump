@@ -68,7 +68,7 @@ namespace satdump
 
                     // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
 
-                    if (y % gcp_spacing_y == 0 || y + 1 == timestamps.size() || last_was_invalid)
+                    if (y % gcp_spacing_y == 0 || y + 1 == (int)timestamps.size() || last_was_invalid)
                         gcps.push_back({(double)x, (double)y, (double)ground_position.lon, (double)ground_position.lat});
 
                     last_was_invalid = false;
@@ -84,6 +84,8 @@ namespace satdump
         {
             if (cfg["type"].get<std::string>() == "normal_single_line")
                 return compute_gcps_normal_line(cfg, tle, timestamps);
+            else
+                return std::vector<satdump::projection::GCP>();
         }
     }
 }

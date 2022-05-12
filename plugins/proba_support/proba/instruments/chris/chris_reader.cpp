@@ -65,53 +65,17 @@ namespace proba
 
             //  logger->critical(packet.payload.size());
 
-            for (int i = 0; i < packet.payload.size(); i++)
+            for (int i = 0; i < (int)packet.payload.size(); i++)
                 packet.payload[i] = reverseBits(packet.payload[i]);
 
             chris_out.write((char *)packet.payload.data(), 11538);
 
-            int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
+            // int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
 
             // logger->info("CH " << channel_marker );
             // logger->info("CNT {:d}", count_marker);
             // logger->info("MODE " << mode_marker );
             // logger->info("TMD " << tx_mode );
-
-            int posb = 16;
-
-            if (mode_marker == ALL_MODE)
-            {
-                if (tx_mode == 8)
-                    posb = 15;
-                if (tx_mode == 0)
-                    posb = 15;
-                if (tx_mode == 200)
-                    posb = 16;
-                if (tx_mode == 72)
-                    posb = 16;
-                if (tx_mode == 200)
-                    posb = 16;
-                if (tx_mode == 136)
-                    posb = 16;
-                if (tx_mode == 192)
-                    posb = 16;
-
-                if (tx_mode == 128)
-                    posb = 15;
-                if (tx_mode == 64)
-                    posb = 15;
-            }
-            else if (mode_marker == LAND_MODE)
-            {
-                if (tx_mode == 72)
-                    posb = 16;
-                if (tx_mode == 64)
-                    posb = 16;
-                if (tx_mode == 8)
-                    posb = 16;
-                if (tx_mode == 0)
-                    posb = 16;
-            }
 
             uint16_t out[100000];
 

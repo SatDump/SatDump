@@ -11,7 +11,7 @@ namespace image
     void Image<T>::draw_pixel(int x, int y, T color[])
     {
         // Check we're not out of bounds
-        if (x < 0 || y < 0 || x >= d_width || y >= d_height)
+        if (x < 0 || y < 0 || x >= (int)d_width || y >= (int)d_height)
             return;
 
         for (int c = 0; c < d_channels; c++)
@@ -173,9 +173,9 @@ namespace image
 
             Image<uint8_t> &img = font[character - 31];
 
-            for (int x = 0; x < img.width(); x++)
+            for (int x = 0; x < (int)img.width(); x++)
             {
-                for (int y = 0; y < img.height(); y++)
+                for (int y = 0; y < (int)img.height(); y++)
                 {
                     float value = img[y * img.width() + x] / 255.0f;
 
@@ -196,9 +196,10 @@ namespace image
     }
 
     template <typename T>
-    Image<T> generate_text_image(std::string text, T color[], int height, int padX, int padY){
-        std::vector<Image<uint8_t>> font = make_font(height-2*padY, false);
-        int width = font[0].width()*text.length() + 2*padX;
+    Image<T> generate_text_image(std::string text, T color[], int height, int padX, int padY)
+    {
+        std::vector<Image<uint8_t>> font = make_font(height - 2 * padY, false);
+        int width = font[0].width() * text.length() + 2 * padX;
         Image<T> out(width, height, 1);
         out.fill(0);
         out.draw_text(padX, 0, color, font, text);

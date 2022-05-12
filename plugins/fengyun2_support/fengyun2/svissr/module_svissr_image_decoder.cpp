@@ -68,13 +68,13 @@ namespace fengyun_svissr
         {
             logger->trace("Scale Ch1 to 8-bits...");
             image::Image<uint16_t> channel1(image5.width(), image5.height(), 1);
-            for (int i = 0; i < channel1.width() * channel1.height(); i++)
+            for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
                 channel1[i] = image5[i] / 255;
             image5.clear(); // We're done with Ch1. Free up memory
 
             logger->trace("Scale Ch4 to 8-bits...");
             image::Image<uint16_t> channel5(image4.width(), image4.height(), 1);
-            for (int i = 0; i < channel5.width() * channel5.height(); i++)
+            for (size_t i = 0; i < channel5.width() * channel5.height(); i++)
                 channel5[i] = image4[i] / 255;
             image4.clear(); // We're done with Ch4. Free up memory
 
@@ -89,7 +89,7 @@ namespace fengyun_svissr
             image::Image<uint16_t> compoImage = image::Image<uint16_t>(channel1.width(), channel1.height(), 3);
 
             logger->trace("Applying LUT...");
-            for (int i = 0; i < channel1.width() * channel1.height(); i++)
+            for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
             {
                 uint8_t x = 255 - channel1[i];
                 uint8_t y = channel5[i];
@@ -201,7 +201,7 @@ namespace fengyun_svissr
 
                 backwardScan = false;
 
-                //std::cout << counter << std::endl;
+                // std::cout << counter << std::endl;
 
                 // Try to detect a new scan
                 // This is not the best way, but it works...

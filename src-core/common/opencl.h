@@ -68,12 +68,12 @@ namespace opencl
         std::vector<cl::Platform> all_platforms;
         cl::Platform::get(&all_platforms);
 
-        for (int p = 0; p < all_platforms.size(); p++)
+        for (int p = 0; p < (int)all_platforms.size(); p++)
         {
             std::vector<cl::Device> all_devices;
             all_platforms[p].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
 
-            for (int d = 0; d < all_devices.size(); d++)
+            for (int d = 0; d < (int)all_devices.size(); d++)
                 devs.push_back({all_devices[d].getInfo<CL_DEVICE_NAME>(), p, d});
         }
 

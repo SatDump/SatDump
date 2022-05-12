@@ -28,7 +28,7 @@ public:
     ImageViewWidget();
     ~ImageViewWidget();
 
-    std::function<void(int x, int y)> mouseCallback = [](int x, int y) {}; // Function that can be used to handle mouse events
+    std::function<void(int x, int y)> mouseCallback = [](int, int) {}; // Function that can be used to handle mouse events
 
     void update(image::Image<uint16_t> image);
     void draw(ImVec2 win_size);

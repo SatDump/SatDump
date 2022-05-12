@@ -13,7 +13,7 @@ namespace satdump
             std::string filename;
             std::string channel_name;
             image::Image<uint16_t> image;
-            std::vector<double> timestamps;
+            std::vector<double> timestamps = std::vector<double>();
             int ifov_y = -1;
             int ifov_x = -1;
         };

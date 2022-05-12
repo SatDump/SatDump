@@ -89,7 +89,7 @@ namespace satdump
                 ImGui::SetNextItemWidth(width);
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
-                for (int n = 0; n < pipelines.size(); n++)
+                for (int n = 0; n < (int)pipelines.size(); n++)
                 {
                     bool show = true;
                     if (pipeline_search_in.size() != 0)

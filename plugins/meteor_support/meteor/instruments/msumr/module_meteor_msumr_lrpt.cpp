@@ -101,7 +101,7 @@ namespace meteor
 
             // TODO : Add detection system!!!!!!!!
             // Currently not *that* mandatory as only M2 is active on VHF
-            int norad = 40069;
+            // int norad = 40069;
         }
 
         void METEORMSUMRLRPTDecoderModule::drawUI(bool window)

@@ -24,7 +24,7 @@ namespace satdump
 
         select_image_str += std::string("Composite") + '\0';
 
-        for (int i = 0; i < products->images.size(); i++)
+        for (int i = 0; i < (int)products->images.size(); i++)
         {
             auto img = products->images[i];
             select_image_str += "Channel " + img.channel_name + '\0';
@@ -193,7 +193,7 @@ namespace satdump
             {
                 std::string default_name = products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
-                auto result = pfd::save_file("Save Image", default_name, {"*.png"}, true);
+                auto result = pfd::save_file("Save Image", default_name, {"*.png"});
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -296,7 +296,7 @@ namespace satdump
                     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                    result.output_image,
                                                    color,
-                                                   [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                                   [&projector](float lat, float lon, int, int) -> std::pair<int, int>
                                                    {
                                                        int x, y;
                                                        projector.forward(lon, lat, x, y);

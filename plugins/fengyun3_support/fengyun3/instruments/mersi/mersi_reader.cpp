@@ -23,7 +23,7 @@ namespace fengyun3
 
         void MERSIReader::process_head()
         {
-            int out = repackBytesTo12bits(&current_frame[calib_byte_offset], current_frame.size() - (calib_byte_offset + 6), repacked_calib);
+            repackBytesTo12bits(&current_frame[calib_byte_offset], current_frame.size() - (calib_byte_offset + 6), repacked_calib);
 
             for (int i = 0; i < calib_length; i++)
                 calibration[(segments + 1) * calib_length + i] = repacked_calib[i] << 4;

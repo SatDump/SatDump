@@ -9,11 +9,11 @@ namespace sdrplay_settings
         sdrplay_api_AGC_100HZ};
 };
 
-void SDRPlaySource::event_callback(sdrplay_api_EventT id, sdrplay_api_TunerSelectT tuner, sdrplay_api_EventParamsT *params, void *ctx)
+void SDRPlaySource::event_callback(sdrplay_api_EventT, sdrplay_api_TunerSelectT, sdrplay_api_EventParamsT *, void *)
 {
 }
 
-void SDRPlaySource::stream_callback(short *real, short *imag, sdrplay_api_StreamCbParamsT *params, unsigned int cnt, unsigned int reset, void *ctx)
+void SDRPlaySource::stream_callback(short *real, short *imag, sdrplay_api_StreamCbParamsT *, unsigned int cnt, unsigned int, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
     for (unsigned int i = 0; i < cnt; i++)
@@ -348,7 +348,7 @@ void SDRPlaySource::drawControlUI()
 
 void SDRPlaySource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < available_samplerates.size(); i++)
+    for (int i = 0; i < (int)available_samplerates.size(); i++)
     {
         if (samplerate == available_samplerates[i])
         {

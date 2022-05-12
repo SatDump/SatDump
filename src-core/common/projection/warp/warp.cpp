@@ -143,7 +143,7 @@ namespace satdump
                     if (xx < 0 || yy < 0)
                         continue;
 
-                    if ((int)xx > op.input_image.width() - 1 || (int)yy > op.input_image.height() - 1)
+                    if ((int)xx > (int)op.input_image.width() - 1 || (int)yy > (int)op.input_image.height() - 1)
                         continue;
 
                     for (int c = 0; c < op.input_image.channels(); c++)

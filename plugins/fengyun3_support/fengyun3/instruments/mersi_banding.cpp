@@ -17,17 +17,17 @@ namespace fengyun3
                 memset(averages, 0, rowSize * sizeof(int64_t));
 
                 std::vector<std::vector<int>> calibValues;
-                for (int i = 0; i < imageo.height(); i += rowSize)
+                for (int i = 0; i < (int)imageo.height(); i += rowSize)
                 {
                     std::vector<int> coefs;
                     for (int y = 0; y < rowSize; y++)
                     {
 
                         std::vector<int> histogram;
-                        for (int z = 0; z < imageo.width(); z++)
+                        for (int z = 0; z < (int)imageo.width(); z++)
                             histogram.push_back(image[(i + y) * imageo.width() + z]);
                         std::sort(histogram.begin(), histogram.end());
-                        //histogram.erase(std::unique(histogram.begin(), histogram.end()), histogram.end());
+                        // histogram.erase(std::unique(histogram.begin(), histogram.end()), histogram.end());
 
                         int value = histogram[int(histogram.size() * percent)];
                         coefs.push_back(value);
@@ -48,14 +48,14 @@ namespace fengyun3
                 for (int z = 0; z < rowSize; z++)
                 {
                     averages[z] -= offset;
-                    //logger->info(averages[z]);
+                    // logger->info(averages[z]);
                 }
 
-                for (int i = 0; i < imageo.height(); i += rowSize)
+                for (int i = 0; i < (int)imageo.height(); i += rowSize)
                 {
                     for (int y = 0; y < rowSize; y++)
                     {
-                        for (int z = 0; z < imageo.width(); z++)
+                        for (int z = 0; z < (int)imageo.width(); z++)
                         {
                             image[(i + y) * imageo.width() + z] = std::min<int>(65535, std::max<int>(0, image[(i + y) * imageo.width() + z] - averages[y]));
                         }

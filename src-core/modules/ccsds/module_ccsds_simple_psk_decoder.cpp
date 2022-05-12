@@ -48,7 +48,7 @@ namespace ccsds
             throw std::runtime_error("CCSDS Simple PSK Decoder : invalid constellation type!");
 
         // Parse RS
-        reedsolomon::RS_TYPE rstype;
+        reedsolomon::RS_TYPE rstype = reedsolomon::RS223;
         if (d_rs_interleaving_depth != 0)
         {
             if (d_rs_type == "rs223")

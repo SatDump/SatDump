@@ -15,7 +15,7 @@ namespace noaa_metop
 {
     namespace mhs
     {
-        MHSReader::MHSReader() : calib({0})
+        MHSReader::MHSReader()
         {
             std::memset(MIU_data, 0, 80 * 50);
         }
@@ -197,11 +197,13 @@ namespace noaa_metop
                     {-1.5, 10, 39, 48, 20},
                     {0.1, 66, 205, 70, 67}};
             else if (id == 1)
-                return {0}; ///Metop A
+                return MHS_calibration_Values(); /// Metop A
             else if (id == 2)
-                return {0}; //metop B
+                return MHS_calibration_Values(); // metop B
             else if (id == 3)
-                return {0}; //metop C
+                return MHS_calibration_Values(); // metop C
+            else
+                return MHS_calibration_Values(); // Shouldn't ever happen
         }
 
         // NOAA specific functions

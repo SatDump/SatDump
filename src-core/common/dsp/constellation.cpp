@@ -227,7 +227,8 @@ namespace dsp
 
         float min_dist = std::numeric_limits<float>::max();
         complex_t closest = 0;
-        int c_i = 0;
+        // int c_i = 0;
+
         for (int i = 0; i < const_states; i++)
         {
             // Calculate the distance between the sample and the current
@@ -238,7 +239,7 @@ namespace dsp
             {
                 min_dist = dist;
                 closest = constellation[i];
-                c_i = i;
+                // c_i = i;
             }
 
             // Calculate the probability factor from the distance and

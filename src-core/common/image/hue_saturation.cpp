@@ -81,7 +81,7 @@ namespace image
 
         float overlap = config.overlap / 2.0;
 
-        for (int pixel = 0; pixel < image.width() * image.height(); pixel++)
+        for (size_t pixel = 0; pixel < image.width() * image.height(); pixel++)
         {
             rgb_r = image[image.width() * image.height() * 0 + pixel] / scale;
             rgb_g = image[image.width() * image.height() * 1 + pixel] / scale;

@@ -98,7 +98,7 @@ namespace proba
 
                 if (masks_found)
                 {
-                    for (int i = 0; i < img.height() * img.width(); i++)
+                    for (size_t i = 0; i < img.height() * img.width(); i++)
                     {
                         // This was checked against official Proba-2 data
                         img[i] = std::max<float>(0, img[i] - adc_mask[i] * 2.8); // ADC Bias correction

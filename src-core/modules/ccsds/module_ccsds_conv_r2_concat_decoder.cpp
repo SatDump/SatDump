@@ -63,7 +63,7 @@ namespace ccsds
             d_phases = {PHASE_0, PHASE_90};
 
         // Parse RS
-        reedsolomon::RS_TYPE rstype;
+        reedsolomon::RS_TYPE rstype = reedsolomon::RS223;
         if (d_rs_interleaving_depth != 0)
         {
             if (d_rs_type == "rs223")

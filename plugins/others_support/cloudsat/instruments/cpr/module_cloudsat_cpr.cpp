@@ -60,7 +60,7 @@ namespace cloudsat
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            image::Image<uint16_t> image = reader.getChannel(0);
+            image::Image<uint16_t> image = reader.getChannel();
 
             logger->info("Image...");
             WRITE_IMAGE(image, directory + "/CPR.png");

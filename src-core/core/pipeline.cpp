@@ -206,7 +206,7 @@ namespace satdump
         return final_parameters;
     }
 
-    void loadPipeline(std::string filepath, std::string category)
+    void loadPipeline(std::string filepath)
     {
         logger->info("Loading pipelines from file " + filepath);
 
@@ -346,7 +346,7 @@ namespace satdump
         }
 
         for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
-            loadPipeline(pipeline.first, pipeline.second);
+            loadPipeline(pipeline.first);
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

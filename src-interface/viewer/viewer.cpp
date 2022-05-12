@@ -65,7 +65,7 @@ namespace satdump
             {
                 bool dataset_exists = false;
                 for (std::string dataset_name2 : opened_datasets)
-                    dataset_exists = dataset_exists | dataset_name2 == dataset_name;
+                    dataset_exists = dataset_exists | (dataset_name2 == dataset_name);
 
                 if (!dataset_exists)
                     opened_datasets.push_back(dataset_name);
@@ -122,7 +122,7 @@ namespace satdump
                     verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
                     ImVec2 verticalLineEnd = verticalLineStart;
 
-                    for (int i = 0; i < products_and_handlers.size(); i++)
+                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
                         if (products_and_handlers[i].dataset_name == dataset_name)
                         {
                             const float HorizontalTreeLineSize = 8.0f;                           // chosen arbitrarily
@@ -143,7 +143,7 @@ namespace satdump
             {
                 ImGui::TreeNodeEx("Others", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                 ImGui::TreePush();
-                for (int i = 0; i < products_and_handlers.size(); i++)
+                for (int i = 0; i < (int)products_and_handlers.size(); i++)
                     if (products_and_handlers[i].dataset_name == "")
                         renderHandler(products_and_handlers[i], i);
                 ImGui::TreePop();

@@ -62,8 +62,8 @@ namespace goes
             images.image4.resize(images.image4.width(), images.image4.height() * 1.75);
             images.image5.resize(images.image5.width(), images.image5.height() * 1.75);
 
-            //logger->trace("VIS 1 size before " + std::to_string(images.image5.width()) + "x" + std::to_string(images.image5.height()));
-            //logger->trace("IR size before " + std::to_string(images.image1.width()) + "x" + std::to_string(images.image1.height()));
+            // logger->trace("VIS 1 size before " + std::to_string(images.image5.width()) + "x" + std::to_string(images.image5.height()));
+            // logger->trace("IR size before " + std::to_string(images.image1.width()) + "x" + std::to_string(images.image1.height()));
 
             // VIS-1 height
             int vis_height = images.image5.height();
@@ -124,13 +124,13 @@ namespace goes
             {
                 logger->trace("Scale Ch1 to 8-bits...");
                 image::Image<uint8_t> channel1(images.image5.width(), images.image5.height(), 1);
-                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
                     channel1[i] = images.image5[i] / 255;
                 images.image5.clear(); // We're done with Ch1. Free up memory
 
                 logger->trace("Scale Ch4 to 8-bits...");
                 image::Image<uint8_t> channel4(images.image3.width(), images.image3.height(), 1);
-                for (int i = 0; i < channel4.width() * channel4.height(); i++)
+                for (size_t i = 0; i < channel4.width() * channel4.height(); i++)
                     channel4[i] = images.image3[i] / 255;
                 images.image3.clear(); // We're done with Ch4. Free up memory
 
@@ -149,7 +149,7 @@ namespace goes
                 image::Image<uint8_t> compoImage = image::Image<uint8_t>(channel1.width(), channel1.height(), 3);
 
                 logger->trace("Applying LUT...");
-                for (int i = 0; i < channel1.width() * channel1.height(); i++)
+                for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
                 {
                     uint8_t x = 255 - curveImage[channel1[i]] / 1.5;
                     uint8_t y = channel4[i];

@@ -15,8 +15,8 @@ namespace noaa
 #include "gac_pn.h"
 
     NOAAGACDecoderModule::NOAAGACDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                  constellation(1.0, 0.15, demod_constellation_size),
-                                                                                                                                  backward(parameters["backward"].get<bool>())
+                                                                                                                                  backward(parameters["backward"].get<bool>()),
+                                                                                                                                  constellation(1.0, 0.15, demod_constellation_size)
     {
         // Buffers
         soft_buffer = new int8_t[BUFSIZE];

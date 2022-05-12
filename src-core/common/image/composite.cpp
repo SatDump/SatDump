@@ -43,10 +43,10 @@ namespace image
         int maxWidth = 0, maxHeight = 0;
         for (int i = 0; i < (int)inputChannels.size(); i++)
         {
-            if (inputChannels[i].width() > maxWidth)
+            if ((int)inputChannels[i].width() > maxWidth)
                 maxWidth = inputChannels[i].width();
 
-            if (inputChannels[i].height() > maxHeight)
+            if ((int)inputChannels[i].height() > maxHeight)
                 maxHeight = inputChannels[i].height();
         }
 
@@ -72,9 +72,9 @@ namespace image
         double B = 0;
 
         // Run though the entire image
-        for (size_t line = 0; line < img_height; line++)
+        for (size_t line = 0; line < (size_t)img_height; line++)
         {
-            for (size_t pixel = 0; pixel < img_width; pixel++)
+            for (size_t pixel = 0; pixel < (size_t)img_width; pixel++)
             {
                 // Set variables and scale to 1.0
                 for (int i = 0; i < (int)inputChannels.size(); i++)
@@ -94,7 +94,7 @@ namespace image
                                 channelValues[i] = 0;
                                 continue;
                             }
-                            else if (currentPx >= inputChannels[i].width())
+                            else if (currentPx >= (int)inputChannels[i].width())
                             {
                                 channelValues[i] = 0;
                                 continue;

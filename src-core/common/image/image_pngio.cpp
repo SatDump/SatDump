@@ -53,20 +53,20 @@ namespace image
 
             if (d_depth == 8)
             {
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
                     for (int c = 0; c < d_channels; c++)
-                        for (int i = 0; i < d_width; i++)
+                        for (size_t i = 0; i < d_width; i++)
                             image_row[i * d_channels + c] = channel(c)[row * d_width + i];
                     png_write_row(png, image_row);
                 }
             }
             else if (d_depth == 16)
             {
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
                     for (int c = 0; c < d_channels; c++)
-                        for (int i = 0; i < d_width; i++)
+                        for (size_t i = 0; i < d_width; i++)
                             ((uint16_t *)image_row)[i * d_channels + c] = INVERT_ENDIAN_16(channel(c)[row * d_width + i]);
                     png_write_row(png, image_row);
                 }
@@ -124,11 +124,11 @@ namespace image
                 if (d_depth == 16)
                     shift = 8;
 
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
                     png_read_row(png, NULL, image_row);
                     for (int c = 0; c < d_channels; c++)
-                        for (int i = 0; i < d_width; i++)
+                        for (size_t i = 0; i < d_width; i++)
                             channel(c)[row * d_width + i] = image_row[i * d_channels + c] << shift;
                 }
             }
@@ -139,11 +139,11 @@ namespace image
                 if (d_depth == 8)
                     shift = 8;
 
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
                     png_read_row(png, NULL, image_row);
                     for (int c = 0; c < d_channels; c++)
-                        for (int i = 0; i < d_width; i++)
+                        for (size_t i = 0; i < d_width; i++)
                             channel(c)[row * d_width + i] = INVERT_ENDIAN_16(((uint16_t *)image_row)[i * d_channels + c]) >> shift;
                 }
             }

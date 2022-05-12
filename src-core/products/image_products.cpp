@@ -109,7 +109,7 @@ namespace satdump
         std::vector<std::string> channel_numbers;
         std::vector<image::Image<uint16_t>> images_obj;
 
-        for (int i = 0; i < product.images.size(); i++)
+        for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
@@ -131,7 +131,7 @@ namespace satdump
                 for (double time1 : product.get_timestamps(channel_indexes[0]))
                 {
                     bool is_present_everywhere = true;
-                    for (int i = 1; i < channel_indexes.size(); i++)
+                    for (int i = 1; i < (int)channel_indexes.size(); i++)
                     {
                         bool contains = false;
                         for (double time2 : product.get_timestamps(channel_indexes[i]))
@@ -156,7 +156,7 @@ namespace satdump
 
                 // Now we know all timestamps that *are* common, so we can create new images and copy over
                 std::vector<image::Image<uint16_t>> images_obj_new;
-                for (int i = 0; i < channel_indexes.size(); i++)
+                for (int i = 0; i < (int)channel_indexes.size(); i++)
                     images_obj_new.push_back(image::Image<uint16_t>(product.images[channel_indexes[i]].image.width(),
                                                                     product.get_ifov_y_size(channel_indexes[i]) * common_timestamps.size(), 1));
 
@@ -164,10 +164,10 @@ namespace satdump
                 int y_index = 0;
                 for (double time1 : common_timestamps)
                 {
-                    for (int i = 0; i < channel_indexes.size(); i++)
+                    for (int i = 0; i < (int)channel_indexes.size(); i++)
                     {
                         int index = channel_indexes[i];
-                        for (int t = 0; t < product.get_timestamps(index).size(); t++)
+                        for (int t = 0; t < (int)product.get_timestamps(index).size(); t++)
                         {
                             double time2 = product.get_timestamps(index)[t];
 

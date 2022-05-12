@@ -52,7 +52,7 @@ namespace dvbs2
 
     void S2PLSyncBlock::work2()
     {
-        int got = ring_buffer.read(correlation_buffer, raw_frame_size);
+        /*int got =*/ring_buffer.read(correlation_buffer, raw_frame_size);
 
         // Correlate the PLHeader
         int best_pos = 0;

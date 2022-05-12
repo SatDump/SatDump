@@ -56,7 +56,7 @@ namespace satdump
         int products_cnt_in_dataset(std::string dataset_name)
         {
             int cnt = 0;
-            for (int i = 0; i < products_and_handlers.size(); i++)
+            for (int i = 0; i < (int)products_and_handlers.size(); i++)
                 if (products_and_handlers[i].dataset_name == dataset_name)
                     cnt++;
             return cnt;

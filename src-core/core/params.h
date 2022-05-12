@@ -168,7 +168,7 @@ namespace satdump
                     p_bool = v.get<bool>();
                 else if (d_type == PARAM_OPTIONS)
                 {
-                    for (int i = 0; i < d_options.size(); i++)
+                    for (int i = 0; i < (int)d_options.size(); i++)
                     {
                         if (d_options[i] == v.get<std::string>())
                             d_option = i;

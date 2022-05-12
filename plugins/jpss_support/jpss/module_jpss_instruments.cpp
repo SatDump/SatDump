@@ -53,9 +53,10 @@ namespace jpss
 
                 if (vcdu.spacecraft_id == SNPP_SCID ||
                     vcdu.spacecraft_id == JPSS1_SCID ||
-                    vcdu.spacecraft_id == JPSS2_SCID ||
+                    vcdu.spacecraft_id == JPSS2_SCID /*||
                     vcdu.spacecraft_id == JPSS3_SCID ||
-                    vcdu.spacecraft_id == JPSS4_SCID)
+                    vcdu.spacecraft_id == JPSS4_SCID*/
+                )
                     jpss_scids.push_back(vcdu.spacecraft_id);
 
                 if (vcdu.vcid == 1) // ATMS

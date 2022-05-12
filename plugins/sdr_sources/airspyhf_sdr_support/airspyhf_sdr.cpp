@@ -3,7 +3,7 @@
 int AirspyHFSource::_rx_callback(airspyhf_transfer_t *t)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->ctx);
-    memcpy(stream->writeBuf, t->samples, t->sample_count * sizeof(complex_t));
+    memcpy(stream->writeBuf, (complex_t *)t->samples, t->sample_count * sizeof(complex_t));
     stream->swap(t->sample_count);
     return 0;
 }
@@ -140,7 +140,7 @@ void AirspyHFSource::drawControlUI()
 
 void AirspyHFSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < available_samplerates.size(); i++)
+    for (int i = 0; i < (int)available_samplerates.size(); i++)
     {
         if (samplerate == available_samplerates[i])
         {

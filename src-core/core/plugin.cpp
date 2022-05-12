@@ -35,8 +35,7 @@ namespace satdump
     SATDUMP_DLL std::shared_ptr<dp::event_bus> eventBus = std::make_shared<dp::event_bus>();
 };
 
-void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins,
-                 std::shared_ptr<dp::event_bus> &eventBus)
+void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)
 {
     std::string plugins_path = satdump::RESPATH + "plugins";
 

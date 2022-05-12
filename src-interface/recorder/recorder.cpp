@@ -352,9 +352,9 @@ namespace satdump
             float offset = 35 * ui_scale;
 
             ImVec2 mouse_pos = ImGui::GetMousePos();
-            if (mouse_pos.y > offset + fft_height - 10 * ui_scale &&
-                    mouse_pos.y < offset + fft_height + 10 * ui_scale &&
-                    mouse_pos.x > recorder_size.x * 0.20 ||
+            if ((mouse_pos.y > offset + fft_height - 10 * ui_scale &&
+                 mouse_pos.y < offset + fft_height + 10 * ui_scale &&
+                 mouse_pos.x > recorder_size.x * 0.20) ||
                 dragging_waterfall)
             {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
@@ -377,9 +377,9 @@ namespace satdump
         ImGui::EndGroup();
 
         ImVec2 mouse_pos = ImGui::GetMousePos();
-        if (mouse_pos.x > recorder_size.x * panel_ratio + 15 * ui_scale - 10 * ui_scale &&
-                mouse_pos.x < recorder_size.x * panel_ratio + 15 * ui_scale + 10 * ui_scale &&
-                mouse_pos.y > 35 * ui_scale ||
+        if ((mouse_pos.x > recorder_size.x * panel_ratio + 15 * ui_scale - 10 * ui_scale &&
+             mouse_pos.x < recorder_size.x * panel_ratio + 15 * ui_scale + 10 * ui_scale &&
+             mouse_pos.y > 35 * ui_scale) ||
             dragging_panel)
         {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);

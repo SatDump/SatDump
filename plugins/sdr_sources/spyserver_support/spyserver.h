@@ -45,7 +45,7 @@ protected:
 
         // Get available samplerates
         available_samplerates.clear();
-        for (int dec_stage = client->devInfo.MinimumIQDecimation; dec_stage < client->devInfo.DecimationStageCount; dec_stage++)
+        for (int dec_stage = client->devInfo.MinimumIQDecimation; dec_stage < (int)client->devInfo.DecimationStageCount; dec_stage++)
         {
             uint64_t rate = client->devInfo.MaximumSampleRate / (1 << dec_stage);
             logger->trace("SpyServer has samplerate {:d} SPS", rate);

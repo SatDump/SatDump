@@ -34,7 +34,7 @@ namespace goes
 
             falsecolor = image::Image<uint8_t>(ch2.width(), ch2.height(), 3); // Init image
 
-            for (int i = 0; i < ch2.width() * ch2.height(); i++)
+            for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
             {
                 uint8_t x = ch2_curve[ch2[i]];
                 uint8_t y = (ch13[i]);

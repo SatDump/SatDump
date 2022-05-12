@@ -72,7 +72,7 @@ namespace fengyun3
         // Tests
         int shift = 0;
         bool iq_invert = true;
-        int noSyncRuns = 0, viterbiNoSyncRun = 0;
+        int /*noSyncRuns = 0,*/ viterbiNoSyncRun = 0;
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {

@@ -64,7 +64,7 @@ namespace demod
     {
         BaseDemodModule::init();
 
-        float g1, g2;
+        float g1 = 0, g2 = 0;
 
         // Parse modcod number
         if (d_modcod <= 0)

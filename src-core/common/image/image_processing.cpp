@@ -12,7 +12,7 @@ namespace image
     void Image<T>::fill_color(T color[])
     {
         for (int c = 0; c < d_channels; c++)
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
                 channel(c)[i] = color[c];
     }
 
@@ -20,7 +20,7 @@ namespace image
     void Image<T>::fill(T val)
     {
         for (int c = 0; c < d_channels; c++)
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
                 channel(c)[i] = val;
     }
 
@@ -33,12 +33,12 @@ namespace image
 
             for (int c = 0; c < d_channels; c++)
             {
-                for (int col = 0; col < d_width; col++)
+                for (size_t col = 0; col < d_width; col++)
                 {
-                    for (int i = 0; i < d_height; i++) // Buffer column
+                    for (size_t i = 0; i < d_height; i++) // Buffer column
                         tmp_col[i] = channel(c)[i * d_width + col];
 
-                    for (int i = 0; i < d_height; i++) // Restore and mirror
+                    for (size_t i = 0; i < d_height; i++) // Restore and mirror
                         channel(c)[i * d_width + col] = tmp_col[(d_height - 1) - i];
                 }
             }
@@ -52,12 +52,12 @@ namespace image
 
             for (int c = 0; c < d_channels; c++)
             {
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
-                    for (int i = 0; i < d_width; i++) // Buffer column
+                    for (size_t i = 0; i < d_width; i++) // Buffer column
                         tmp_row[i] = channel(c)[row * d_width + i];
 
-                    for (int i = 0; i < d_width; i++) // Restore and mirror
+                    for (size_t i = 0; i < d_width; i++) // Restore and mirror
                         channel(c)[row * d_width + i] = tmp_row[(d_width - 1) - i];
                 }
             }
@@ -181,9 +181,9 @@ namespace image
 
         for (int c = 0; c < d_channels; c++)
         {
-            for (int x = 0; x < d_width; x++)
+            for (size_t x = 0; x < d_width; x++)
             {
-                for (int y = 0; y < d_height; y++)
+                for (size_t y = 0; y < d_height; y++)
                 {
                     int xx = floor(double(x) * x_scale);
                     int yy = floor(double(y) * y_scale);
@@ -269,7 +269,7 @@ namespace image
             int percentile1 = percentile(sorted_array, d_width * d_height, percentileValue);
             int percentile2 = percentile(sorted_array, d_width * d_height, 100.0f - percentileValue);
 
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
             {
                 long balanced = (channel(c)[i] - percentile1) * maxVal / (percentile2 - percentile1);
                 if (balanced < 0)

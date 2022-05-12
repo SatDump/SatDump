@@ -81,7 +81,6 @@ namespace dvbs2
     {
         int crc = 0;
         int b;
-        int i = 0;
 
         for (int n = 0; n < length; n++)
         {
@@ -98,8 +97,6 @@ namespace dvbs2
 
     int BBFrameTSParser::work(uint8_t *bbframe, int cnt, uint8_t *tsframes)
     {
-        int output_ts_frames = 0;
-
         int in_p = 0;
         int out_p = 0;
         int tei_p = 0;

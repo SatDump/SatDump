@@ -31,7 +31,7 @@ namespace satdump
 
         SatelliteTracker tracker(products.tle);
 
-        for (int samplec = 0; samplec < products.channel_counts[channel].size(); samplec++)
+        for (int samplec = 0; samplec < (int)products.channel_counts[channel].size(); samplec++)
         {
             int value = (double(products.channel_counts[channel][samplec] - min) / max) * lut_size;
 
