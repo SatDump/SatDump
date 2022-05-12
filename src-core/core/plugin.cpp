@@ -38,7 +38,7 @@ namespace satdump
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins,
                  std::shared_ptr<dp::event_bus> &eventBus)
 {
-    std::string plugins_path = (std::string)RESOURCES_PATH + "plugins";
+    std::string plugins_path = satdump::RESPATH + "plugins";
 
     if (std::filesystem::exists("plugins"))
         plugins_path = "./plugins";

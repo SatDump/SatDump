@@ -37,9 +37,9 @@ namespace satdump
         else
         {
             if (light_theme)
-                style::setLightStyle((std::string)RESOURCES_PATH);
+                style::setLightStyle(satdump::RESPATH);
             else
-                style::setDarkStyle((std::string)RESOURCES_PATH);
+                style::setDarkStyle(satdump::RESPATH);
         }
 
         registerApplications();

@@ -31,7 +31,10 @@ namespace satdump
         user_path = std::string(getenv("HOME")) + "/.config/satdump";
 #endif
 
-        config::loadConfig("satdump_cfg.json", user_path);
+        if (std::filesystem::exists("satdump_cfg.json"))
+            config::loadConfig("satdump_cfg.json", user_path);
+        else
+            config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
 
         loadPlugins();
 
@@ -41,7 +44,7 @@ namespace satdump
         if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
             loadPipelines("pipelines");
         else
-            loadPipelines((std::string)RESOURCES_PATH + "pipelines");
+            loadPipelines(satdump::RESPATH + "pipelines");
 
         // List them
         logger->debug("Registered pipelines :");
