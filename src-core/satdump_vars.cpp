@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "satdump_vars.h"
 
 namespace satdump

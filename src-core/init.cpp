@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "init.h"
 #include "logger.h"
 #include "core/module.h"
@@ -12,7 +13,7 @@
 
 namespace satdump
 {
-    std::string user_path;
+    SATDUMP_DLL std::string user_path;
 
     void initSatdump()
     {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "dll_export.h"
 
 #ifndef RESOURCES_PATH
 #define RESOURCES_PATH "./"
@@ -12,5 +13,5 @@
 
 namespace satdump
 {
-    extern std::string RESPATH;
+   SATDUMP_DLL extern std::string RESPATH;
 }
