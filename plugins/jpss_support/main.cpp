@@ -9,7 +9,7 @@ class JPSSSupport : public satdump::Plugin
 public:
     std::string getID()
     {
-        return "spacex_support";
+        return "jpss_support";
     }
 
     void init()

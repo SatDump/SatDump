@@ -56,12 +56,15 @@ bool isStringPresent(std::string searched, std::string keyword)
     return found_it != std::string::npos;
 }
 
+#ifndef __ANDROID__
 #include <nng/nng.h>
 #include <nng/supplemental/http/http.h>
+#endif
 #include "logger.h"
 
 int perform_http_request(std::string url_str, std::string &result)
 {
+#ifndef __ANDROID__
     nng_http_client *client;
     nng_http_conn *conn;
     nng_url *url;
@@ -150,6 +153,7 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_http_res_free(res);
     nng_http_req_free(req);
     free(data);
+#endif
 
     return 0;
 }

@@ -80,6 +80,7 @@ elseif(ANDROID)
 
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
+    target_include_directories(satdump_core PUBLIC ../volk_includes)
 
     # LibPNG
     target_link_libraries(satdump_core PUBLIC png zlib)

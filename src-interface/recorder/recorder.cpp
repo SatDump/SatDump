@@ -158,7 +158,7 @@ namespace satdump
                     style::beginDisabled();
                 if (is_processing)
                     style::beginDisabled();
-                pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvailWidth());
+                pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvail().x);
                 if (!automated_live_output_dir)
                     pipeline_selector.drawMainparamsLive();
                 pipeline_selector.renderParamTable();
@@ -233,7 +233,7 @@ namespace satdump
                 }
 
                 ImGui::SameLine();
-                ImGui::TextColored(ImColor(255, 0, 0), error.c_str());
+                ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
 
                 if (!is_started)
                     style::endDisabled();

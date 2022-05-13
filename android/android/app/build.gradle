@@ -1,0 +1,85 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "30.0.3"
+    ndkVersion "24.0.8215888"
+    defaultConfig {
+        applicationId "imgui.example.android"
+        minSdkVersion 23
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "../../CMakeLists.txt"
+        }
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += ['assets']
+        }
+    }
+}
+
+task deleteTempAssets (type: Delete) {
+    delete 'assets'
+}
+
+task copyResources(type: Copy) {
+    description = 'Copy resources...'
+    from '../../../resources'
+    into 'assets/resources'
+    include('**/*')
+}
+
+task copyPipelines(type: Copy) {
+    description = 'Copy pipelines...'
+    from '../../../pipelines'
+    into 'assets/pipelines'
+    include('**/*')
+}
+
+task copyFonts(type: Copy) {
+    description = 'Copy fonts...'
+    from '../../../Roboto-Medium.ttf'
+    into 'assets/'
+    include('*')
+}
+
+task copyCfg(type: Copy) {
+    description = 'Copy config...'
+    from '../../../satdump_cfg.json'
+    into 'assets/'
+    include('*')
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+}
+
+//copyResources.dependsOn deleteTempAssets
+//copyPipelines.dependsOn deleteTempAssets
+//copyFonts.dependsOn deleteTempAssets
+//copyCfg.dependsOn deleteTempAssets
+
+//preBuild.dependsOn copyResources
+//preBuild.dependsOn copyPipelines
+//preBuild.dependsOn copyFonts
+//preBuild.dependsOn copyCfg

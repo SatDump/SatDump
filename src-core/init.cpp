@@ -28,6 +28,8 @@ namespace satdump
 
 #ifdef _WIN32
         user_path = ".";
+#elif __ANDROID__
+        user_path = ".";
 #else
         user_path = std::string(getenv("HOME")) + "/.config/satdump";
 #endif

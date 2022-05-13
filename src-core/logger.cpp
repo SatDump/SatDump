@@ -27,15 +27,27 @@ void initLogger()
 #else
         console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 #endif
+
+#ifndef __ANDROID__
         file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("satdump.logs", true);
+#endif
+
+#ifndef __ANDROID__
         logger = std::shared_ptr<spdlog::logger>(new spdlog::logger("SatDump", {console_sink, file_sink}));
+#else
+        logger = std::shared_ptr<spdlog::logger>(new spdlog::logger("SatDump", {console_sink}));
+#endif
 
         // Use a custom, nicer log pattern. No color in the file
         console_sink->set_pattern("[%D - %T] %^(%L) %v%$");
+#ifndef __ANDROID__
         file_sink->set_pattern("[%D - %T] (%L) %v");
+#endif
 
-        // Default log level
+// Default log level
+#ifndef __ANDROID__
         file_sink->set_level(spdlog::level::trace);
+#endif
         console_sink->set_level(spdlog::level::trace);
         logger->set_level(spdlog::level::trace);
     }
