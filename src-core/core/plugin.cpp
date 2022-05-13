@@ -32,7 +32,7 @@ std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 namespace satdump
 {
     SATDUMP_DLL std::map<std::string, std::shared_ptr<satdump::Plugin>> loaded_plugins;
-    SATDUMP_DLL std::shared_ptr<dp::event_bus> eventBus = std::make_shared<dp::event_bus>();
+    SATDUMP_DLL std::shared_ptr<EventBus> eventBus = std::make_shared<EventBus>();
 };
 
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)

@@ -3,7 +3,7 @@
 #include "dll_export.h"
 #include <memory>
 #include <map>
-#include "libs/eventbus/event_bus.hpp"
+#include "common/event_bus.h"
 
 #define PLUGIN_LOADER(constructor)                       \
     extern "C"                                           \
@@ -30,7 +30,7 @@ namespace satdump
     };
 
     SATDUMP_DLL extern std::map<std::string, std::shared_ptr<satdump::Plugin>> loaded_plugins;
-    SATDUMP_DLL extern std::shared_ptr<dp::event_bus> eventBus;
+    SATDUMP_DLL extern std::shared_ptr<EventBus> eventBus;
 }; // namespace satdump
 
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins = satdump::loaded_plugins);
