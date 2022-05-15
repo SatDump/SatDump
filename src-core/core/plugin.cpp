@@ -37,17 +37,25 @@ namespace satdump
 
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)
 {
+#ifdef __ANDROID__
+    std::string plugins_path = satdump::RESPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
+#else
     std::string plugins_path = satdump::RESPATH + "plugins";
+#endif
 
     if (std::filesystem::exists("plugins"))
-        plugins_path = "./plugins";
+#ifdef __ANDROID__
+        std::string plugins_path = satdump::RESPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
+#else
+        plugins_path = "./plugins/" + (std::string)ANDROID_ABI_LIB;
+#endif
 
 #if defined(_WIN32)
     std::string extension = ".dll";
 #elif defined(__APPLE__)
     std::string extension = ".dylib";
 #else
-    std::string extension = ".so";
+        std::string extension = ".so";
 #endif
 
     logger->info("Loading plugins from " + plugins_path);

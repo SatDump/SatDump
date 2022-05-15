@@ -9,14 +9,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-# Build in release mode so it isn't unusably slow
-set(CMAKE_CXX_FLAGS_RELEASE         "-O3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG           "-O3")
-set(CMAKE_C_FLAGS_RELEASE           "-O3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3")
-set(CMAKE_C_FLAGS_DEBUG             "-O3")
-
 ###########################################################################################################################################
 # LIBVOLK
 add_library(volk STATIC IMPORTED)
@@ -49,41 +41,26 @@ add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
 include_directories(deps/jpeg/jni)
 
-
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
 ###########################################################################################################################################
 
-#set(PLUGINS_ALL 0)
-
-add_subdirectory(../src-core ${CMAKE_BINARY_DIR}/src-core)
-add_subdirectory(../src-interface ${CMAKE_BINARY_DIR}/src-interface)
-add_subdirectory(../plugins ${CMAKE_BINARY_DIR}/plugins)
+add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 
 add_library(android_imgui SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_image.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../imgui.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../imgui_demo.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../imgui_draw.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../imgui_tables.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../imgui_widgets.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_android.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
   ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
 )
 
-set(CMAKE_SHARED_LINKER_FLAGS
-  "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate"
-)
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
-target_compile_definitions(android_imgui PRIVATE
-  IMGUI_IMPL_OPENGL_ES3
-)
+target_compile_definitions(android_imgui PRIVATE IMGUI_IMPL_OPENGL_ES3)
 
 target_include_directories(android_imgui PRIVATE
-  # ${CMAKE_CURRENT_SOURCE_DIR}/../..
   ${CMAKE_CURRENT_SOURCE_DIR}/backends
   ${ANDROID_NDK}/sources/android/native_app_glue
   ${CMAKE_CURRENT_SOURCE_DIR}/../src-core/
@@ -94,7 +71,6 @@ target_link_libraries(android_imgui PRIVATE
   EGL
   GLESv3
   log
-
   satdump_core
   satdump_interface
 )

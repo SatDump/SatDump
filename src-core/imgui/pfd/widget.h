@@ -54,7 +54,7 @@ struct FileSelectWidget
             else
             {
 #ifdef __ANDROID__
-                path = show_select_directory_dialog();
+                show_select_directory_dialog();
 #else
                 auto dirselect = pfd::select_folder(selection_text.c_str(), ".");
 

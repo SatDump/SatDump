@@ -5,6 +5,10 @@ namespace satdump
 {
     std::string init_res_path()
     {
+#ifdef __ANDROID__
+        return "./";
+#endif
+
 #ifdef _WIN32
         return std::string(RESOURCES_PATH) + "/";
 #else

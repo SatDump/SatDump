@@ -12,12 +12,17 @@ option(NOGUI                "Disable building the GUI"                          
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
 #option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
-option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           ON)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
-option(BUILD_OPENMP         "Build with OpenMP Optimizations"               ON)
+option(BUILD_OPENMP         "Build with OpenMP Optimizations"                           ON)
 
 option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
+
+if(ANDROID)
+    # Build settings
+    set(BUILD_OPENCL OFF)
+    set(BUILD_OPENMP OFF)
+endif()
 
 # Set default install prefix to /usr
 if(UNIX)
@@ -73,6 +78,10 @@ endif()
 
 project (SatDump VERSION "1.0.0")
 
+if(ANDROID)
+add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
+endif()
+
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
 # Check we have OpenCL
@@ -99,16 +108,20 @@ add_subdirectory(src-cli)
 
 if(NOT NOGUI)
     add_subdirectory(src-interface)
-    add_subdirectory(src-ui)
+    if(NOT ANDROID)
+        add_subdirectory(src-ui)
+    endif()
 endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
 endif()
 
-if(BUILD_PLUGINS)
-    add_subdirectory(plugins)
-endif()
+
+add_subdirectory(plugins)
+
+# Install configuration
+if(NOT ANDROID)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
@@ -147,3 +160,5 @@ set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 
 include(CPack)
+
+endif()
