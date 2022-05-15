@@ -45,9 +45,9 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 
     if (std::filesystem::exists("plugins"))
 #ifdef __ANDROID__
-        std::string plugins_path = satdump::RESPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
+        plugins_path = "plugins/" + (std::string)ANDROID_ABI_LIB;
 #else
-        plugins_path = "./plugins/" + (std::string)ANDROID_ABI_LIB;
+        plugins_path = "./plugins";
 #endif
 
 #if defined(_WIN32)

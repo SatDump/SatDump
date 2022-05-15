@@ -1,4 +1,6 @@
 #include "android_dialogs.h"
+
+#ifdef __ANDROID__
 #include <android/log.h>
 #include <android_native_app_glue.h>
 #include <android/asset_manager.h>
@@ -6,7 +8,6 @@
 
 struct android_app *android_app_ptr;
 
-#ifdef __ANDROID__
 void show_select_file_dialog()
 {
     JavaVM *java_vm = android_app_ptr->activity->vm;
