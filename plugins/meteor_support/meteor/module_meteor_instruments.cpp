@@ -9,6 +9,7 @@
 #include "common/simple_deframer.h"
 #include "common/tracking/tle.h"
 #include "products/dataset.h"
+#include "resources.h"
 
 namespace meteor
 {
@@ -140,6 +141,7 @@ namespace meteor
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 msumr_products.set_timestamps(msumr_timestamps);
+                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), msumr_reader.getChannel(i)});
