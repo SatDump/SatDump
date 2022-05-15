@@ -409,7 +409,7 @@ namespace satdump
         {
             float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
             float live_width = recorder_size.x + 16 * ui_scale;
-            float live_height = 250;
+            float live_height = 250 * ui_scale;
             float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
             float currentPos = 0;
             for (std::shared_ptr<ProcessingModule> module : live_pipeline->modules)
