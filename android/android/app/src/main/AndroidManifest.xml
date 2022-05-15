@@ -6,7 +6,8 @@
         android:label="ImGuiExample"
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:hasCode="true">
+        android:hasCode="true"
+        android:requestLegacyExternalStorage="true">
 
         <activity
             android:name="imgui.example.android.MainActivity"

@@ -9,11 +9,35 @@ import java.util.concurrent.LinkedBlockingQueue
 import android.util.Log
 import android.content.res.AssetManager
 import java.io.*
+import java.util.concurrent.atomic.AtomicBoolean
+
+import android.content.Intent;
+import android.app.Activity;
+import android.net.Uri;
+
+import RealPathUtil;
+
+import kotlinx.coroutines.sync.Mutex;
 
 import android.Manifest;
 import androidx.core.content.PermissionChecker;
 import androidx.core.app.ActivityCompat;
 import android.content.pm.PackageManager;
+import android.provider.DocumentsContract;
+
+// Extension on intent
+fun Intent?.getFilePath(context: Context): String {
+    return this?.data?.let { data -> RealPathUtil.getRealPath(context, data) ?: "" } ?: ""
+}
+
+// Extension on intent
+fun Intent?.getFilePathDir(context: Context): String {
+    return this?.data?.let { data -> RealPathUtil.getRealPath(context, DocumentsContract.buildDocumentUriUsingTree(data, DocumentsContract.getTreeDocumentId(data))) ?: "" } ?: ""
+}
+
+fun Uri?.getFilePath(context: Context): String {
+    return this?.let { uri -> RealPathUtil.getRealPath(context, uri) ?: "" } ?: ""
+}
 
 class MainActivity : NativeActivity() {
     private val TAG : String = "SatDump";
@@ -136,6 +160,66 @@ class MainActivity : NativeActivity() {
         }
         if (!success) {
             Log.e(TAG, "Could not create folder with path " + path);
+        }
+    }
+
+
+    var selectFile_Input_done : AtomicBoolean = AtomicBoolean(false);
+    var selectFile_Input_resu : String = "";
+    public fun selectFile_Input() : String {
+        var file_intent = Intent(Intent.ACTION_GET_CONTENT);
+        file_intent.setType("*/*");
+        file_intent.addCategory(Intent.CATEGORY_OPENABLE);
+        val final_intent = Intent.createChooser(file_intent, "Select stuff");
+        selectFile_Input_done.set(false);
+        startActivityForResult(final_intent, 1);
+        //while(!selectFile_Input_done.get());
+        return selectFile_Input_resu;
+    }
+
+    public fun selectFile_Input_get() : String {
+        var tmp = selectFile_Input_resu;
+        selectFile_Input_resu = "";
+        return tmp;
+    }
+
+    var selectFile_Output_done : AtomicBoolean = AtomicBoolean(false);
+    var selectFile_Output_resu : String = "";
+    public fun selectFile_Output() : String {
+        var file_intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        //file_intent.setType("*/*");
+        file_intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        file_intent.addCategory(Intent.CATEGORY_DEFAULT);
+        val final_intent = Intent.createChooser(file_intent, "Select stuff");
+        selectFile_Output_done.set(false);
+        startActivityForResult(final_intent, 2);
+        //while(!selectFile_Input_done.get());
+        return selectFile_Output_resu;
+    }
+
+    public fun selectFile_Output_get() : String {
+        var tmp = selectFile_Output_resu;
+        selectFile_Output_resu = "";
+        return tmp;
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == 1) {
+            Log.e(TAG, "spdlog Got URI " + data);
+            val fpath = data.getFilePath(getApplicationContext()); //RealPathUtil.getRealPath(getApplicationContext(), Uri.parse(data?.data?.path)); //?.data?.path;
+            Log.e(TAG, "spdlog Got URI " + fpath);
+            selectFile_Input_resu = fpath;
+            selectFile_Input_done.set(true);
+        }
+
+        if (resultCode == RESULT_OK && requestCode == 2) {
+            Log.e(TAG, "spdlog Got URI " + data);
+            val fpath = data.getFilePathDir(getApplicationContext()); //RealPathUtil.getRealPath(getApplicationContext(), Uri.parse(data?.data?.path)); //?.data?.path;
+            Log.e(TAG, "spdlog Got URI " + fpath);
+            selectFile_Output_resu = fpath;
+            selectFile_Output_done.set(true);
         }
     }
 }

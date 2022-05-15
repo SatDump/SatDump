@@ -4,20 +4,20 @@ project(ImGuiExample)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-#set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_EXTENSIONS OFF)
 
-# Build in release mod so it isn't unusably slow
-# We have to disable fortify... Or some stuff doesn't build
-#set(CMAKE_CXX_FLAGS_RELEASE         "-O3 -D_FORTIFY_SOURCE=0")
-#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3 -D_FORTIFY_SOURCE=0")
-#set(CMAKE_CXX_FLAGS_DEBUG           "-O3 -D_FORTIFY_SOURCE=0")
-#set(CMAKE_C_FLAGS_RELEASE           "-O3 -D_FORTIFY_SOURCE=0")
-#set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3 -D_FORTIFY_SOURCE=0")
-#set(CMAKE_C_FLAGS_DEBUG             "-O3 -D_FORTIFY_SOURCE=0")
+# Build in release mode so it isn't unusably slow
+set(CMAKE_CXX_FLAGS_RELEASE         "-O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG           "-O3")
+set(CMAKE_C_FLAGS_RELEASE           "-O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3")
+set(CMAKE_C_FLAGS_DEBUG             "-O3")
 
+###########################################################################################################################################
 # LIBVOLK
 add_library(volk STATIC IMPORTED)
 set_target_properties(volk PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/volk/${ANDROID_ABI}/libvolk.a)
@@ -49,6 +49,11 @@ add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
 include_directories(deps/jpeg/jni)
 
+
+include_directories(android_imgui PRIVATE
+  ${ANDROID_NDK}/sources/android/native_app_glue
+)
+###########################################################################################################################################
 
 #set(PLUGINS_ALL 0)
 

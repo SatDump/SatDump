@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "portable-file-dialogs.h"
 #include "imgui/imgui_stdlib.h"
+#include "android_dialogs.h"
 
 struct FileSelectWidget
 {
@@ -16,6 +17,10 @@ struct FileSelectWidget
     bool file_valid;
 
     bool directory;
+
+#ifdef __ANDROID__
+    bool waiting_for_res = false;
+#endif
 
     bool draw()
     {
@@ -34,6 +39,9 @@ struct FileSelectWidget
         {
             if (!directory)
             {
+#ifdef __ANDROID__
+                show_select_file_dialog();
+#else
                 auto fileselect = pfd::open_file(selection_text.c_str(), ".", {});
 
                 while (!fileselect.ready(1000))
@@ -41,9 +49,13 @@ struct FileSelectWidget
 
                 if (fileselect.result().size() > 0)
                     path = fileselect.result()[0];
+#endif
             }
             else
             {
+#ifdef __ANDROID__
+                path = show_select_directory_dialog();
+#else
                 auto dirselect = pfd::select_folder(selection_text.c_str(), ".");
 
                 while (!dirselect.ready(1000))
@@ -51,11 +63,33 @@ struct FileSelectWidget
 
                 if (dirselect.result().size() > 0)
                     path = dirselect.result();
+#endif
             }
 
             changed = true;
+#ifdef __ANDROID__
+            waiting_for_res = true;
+#endif
             file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
         }
+
+#ifdef __ANDROID__
+        if (waiting_for_res)
+        {
+            std::string get;
+            if (!directory)
+                get = get_select_file_dialog_result();
+            else
+                get = get_select_directory_dialog_result();
+            if (get != "")
+            {
+                path = get;
+                changed = true;
+                file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
+                waiting_for_res = false;
+            }
+        }
+#endif
 
         return file_valid && changed;
     }
