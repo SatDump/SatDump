@@ -51,8 +51,8 @@ add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 add_library(android_imgui SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_image.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_android.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_android.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_opengl3.cpp
   ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
 )
 
@@ -61,7 +61,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_o
 target_compile_definitions(android_imgui PRIVATE IMGUI_IMPL_OPENGL_ES3)
 
 target_include_directories(android_imgui PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/backends
+  ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends
   ${ANDROID_NDK}/sources/android/native_app_glue
   ${CMAKE_CURRENT_SOURCE_DIR}/../src-core/
 )

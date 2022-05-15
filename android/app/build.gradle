@@ -23,7 +23,7 @@ android {
     externalNativeBuild {
         cmake {
             version "3.18.1"
-            path "../../CMakeLists.txt"
+            path "../CMakeLists.txt"
         }
     }
 
@@ -40,28 +40,28 @@ task deleteTempAssets (type: Delete) {
 
 task copyResources(type: Copy) {
     description = 'Copy resources...'
-    from '../../../resources'
+    from '../../resources'
     into 'assets/resources'
     include('**/*')
 }
 
 task copyPipelines(type: Copy) {
     description = 'Copy pipelines...'
-    from '../../../pipelines'
+    from '../../pipelines'
     into 'assets/pipelines'
     include('**/*')
 }
 
 task copyFonts(type: Copy) {
     description = 'Copy fonts...'
-    from '../../../Roboto-Medium.ttf'
+    from '../../Roboto-Medium.ttf'
     into 'assets/'
     include('*')
 }
 
 task copyCfg(type: Copy) {
     description = 'Copy config...'
-    from '../../../satdump_cfg.json'
+    from '../../satdump_cfg.json'
     into 'assets/'
     include('*')
 }
