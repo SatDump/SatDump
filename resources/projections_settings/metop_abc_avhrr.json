@@ -2,7 +2,7 @@
     "type": "normal_single_line",
     "scan_angle": 110.6,
     "roll_offset": -0.13,
-    "time_offset": -0.1,
+    "timestamp_offset": -0.1,
     "image_width": 2048,
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100

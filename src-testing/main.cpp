@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
     std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = false;
+    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equalize = true;
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;

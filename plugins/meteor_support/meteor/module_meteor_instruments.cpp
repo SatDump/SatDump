@@ -140,7 +140,34 @@ namespace meteor
                 msumr_products.has_timestamps = true;
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-                msumr_products.set_timestamps(msumr_timestamps);
+
+                std::vector<double> filter_timestamps = msumr_timestamps;
+                double avg = avg_overflowless(filter_timestamps);
+                double last = 0;
+                for (double &v : filter_timestamps)
+                {
+                    if (abs(avg - v) > 10000)
+                    {
+                        last = v;
+                        v = -1;
+                        continue;
+                    }
+
+                    if (last >= v || abs(last - v) > 1.0)
+                    {
+                        last = v;
+                        v = -1;
+                        continue;
+                    }
+                    last = v;
+
+                    // logger->info(v);
+                }
+
+                for (double &v : filter_timestamps)
+                    logger->info(v);
+
+                msumr_products.set_timestamps(filter_timestamps);
                 msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
