@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="imgui.example.android">
+    package="com.altillimity.satdump">
 
     <application
-        android:label="ImGuiExample"
+        android:label="SatDump"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:hasCode="true"
         android:requestLegacyExternalStorage="true">
 
         <activity
-            android:name="imgui.example.android.MainActivity"
+            android:name="com.altillimity.satdump.MainActivity"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <meta-data android:name="android.app.lib_name"

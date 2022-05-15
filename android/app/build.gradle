@@ -6,7 +6,7 @@ android {
     buildToolsVersion "30.0.3"
     ndkVersion "24.0.8215888"
     defaultConfig {
-        applicationId "imgui.example.android"
+        applicationId "com.altillimity.satdump"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 1

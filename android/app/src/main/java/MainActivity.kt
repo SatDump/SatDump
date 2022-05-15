@@ -1,4 +1,4 @@
-package imgui.example.android
+package com.altillimity.satdump
 
 import android.app.NativeActivity
 import android.os.Bundle
