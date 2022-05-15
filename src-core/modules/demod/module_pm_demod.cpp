@@ -43,7 +43,7 @@ namespace demod
             d_clock_omega_relative_limit = parameters["clock_omega_relative_limit"].get<float>();
 
         name = "PM Demodulator";
-        MAX_SPS = 20; // Here we do NOT want to resample unless really necessary
+        MAX_SPS = 4; // Here we do NOT want to resample unless really necessary
 
         show_freq = true;
     }
