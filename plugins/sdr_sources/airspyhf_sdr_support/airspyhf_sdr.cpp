@@ -1,5 +1,16 @@
 #include "airspyhf_sdr.h"
 
+#ifdef __ANDROID__
+#include "common/dsp_sample_source/android_usb_backend.h"
+
+#define AIRSPYHF_USB_VID_PID \
+    {                        \
+        {                    \
+            0x03EB, 0x800C   \
+        }                    \
+    }
+#endif
+
 int AirspyHFSource::_rx_callback(airspyhf_transfer_t *t)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->ctx);
@@ -54,9 +65,17 @@ nlohmann::json AirspyHFSource::get_settings(nlohmann::json)
 
 void AirspyHFSource::open()
 {
+#ifndef __ANDROID__
     if (!is_open)
         if (airspyhf_open_sn(&airspyhf_dev_obj, d_sdr_id) != AIRSPYHF_SUCCESS)
             throw std::runtime_error("Could not open AirspyHF device!");
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
+    if (airspyhf_open2(&airspyhf_dev_obj, fd, path.c_str()) != AIRSPYHF_SUCCESS)
+        throw std::runtime_error("Could not open AirspyHF device!");
+#endif
     is_open = true;
 
     // Get available samplerates
@@ -162,6 +181,7 @@ std::vector<dsp::SourceDescriptor> AirspyHFSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
+#ifndef __ANDROID__
     uint64_t serials[100];
     int c = airspyhf_list_devices(serials, 100);
 
@@ -171,6 +191,12 @@ std::vector<dsp::SourceDescriptor> AirspyHFSource::getAvailableSources()
         ss << std::hex << serials[i];
         results.push_back({"airspyhf", "AirSpyHF " + ss.str(), serials[i]});
     }
+#else
+    int vid, pid;
+    std::string path;
+    if (getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path) != -1)
+        results.push_back({"airspyhf", "AirSpyHF USB", 0});
+#endif
 
     return results;
 }

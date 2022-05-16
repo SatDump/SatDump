@@ -1,7 +1,11 @@
 #pragma once
 
 #include "common/dsp_sample_source/dsp_sample_source.h"
+#ifdef __ANDROID__
+#include "airspyhf.h"
+#else
 #include <libairspyhf/airspyhf.h>
+#endif
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"

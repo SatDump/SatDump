@@ -25,6 +25,13 @@ import androidx.core.app.ActivityCompat;
 import android.content.pm.PackageManager;
 import android.provider.DocumentsContract;
 
+import android.content.BroadcastReceiver;
+import android.hardware.usb.*;
+import android.app.PendingIntent;
+import android.content.IntentFilter;
+
+
+
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
     return this?.data?.let { data -> RealPathUtil.getRealPath(context, data) ?: "" } ?: ""
@@ -35,8 +42,49 @@ fun Intent?.getFilePathDir(context: Context): String {
     return this?.data?.let { data -> RealPathUtil.getRealPath(context, DocumentsContract.buildDocumentUriUsingTree(data, DocumentsContract.getTreeDocumentId(data))) ?: "" } ?: ""
 }
 
+
+
+
+private const val ACTION_USB_PERMISSION = "org.sdrpp.sdrpp.USB_PERMISSION";
+
+private val usbReceiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (ACTION_USB_PERMISSION == intent.action) {
+            synchronized(this) {
+                var _this = context as MainActivity;
+                _this.SDR_device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                    _this.SDR_conn = _this.usbManager!!.openDevice(_this.SDR_device);
+                    
+                    // Save SDR info
+                    _this.SDR_VID = _this.SDR_device!!.getVendorId();
+                    _this.SDR_PID = _this.SDR_device!!.getProductId()
+                    _this.SDR_FD = _this.SDR_conn!!.getFileDescriptor();
+                    _this.SDR_PATH = _this.SDR_device!!.getDeviceName();
+                }
+                
+                // Whatever the hell this does
+                context.unregisterReceiver(this);
+
+                // Hide again the system bars
+                //_this.hideSystemBars();
+            }
+        }
+    }
+}
+
+
+
 class MainActivity : NativeActivity() {
     private val TAG : String = "SatDump";
+
+    public var usbManager : UsbManager? = null;
+    public var SDR_device : UsbDevice? = null;
+    public var SDR_conn : UsbDeviceConnection? = null;
+    public var SDR_VID : Int = -1;
+    public var SDR_PID : Int = -1;
+    public var SDR_FD : Int = -1;
+    public var SDR_PATH : String = "";
 
     fun checkAndAsk(permission: String) {
         if (PermissionChecker.checkSelfPermission(this, permission) != PermissionChecker.PERMISSION_GRANTED) {
@@ -51,6 +99,18 @@ class MainActivity : NativeActivity() {
         checkAndAsk(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         checkAndAsk(Manifest.permission.READ_EXTERNAL_STORAGE);
         checkAndAsk(Manifest.permission.INTERNET);
+
+        // Register events
+        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager;
+        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
+        val filter = IntentFilter(ACTION_USB_PERMISSION)
+        registerReceiver(usbReceiver, filter)
+
+        // Get permission for all USB devices
+        val devList = usbManager!!.getDeviceList();
+        for ((name, dev) in devList) {
+            usbManager!!.requestPermission(dev, permissionIntent);
+        }
     }
 
 

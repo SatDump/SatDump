@@ -46,6 +46,25 @@ include_directories(android_imgui PRIVATE
 )
 ###########################################################################################################################################
 
+# LibUSB
+file(GLOB_RECURSE libusb_cpps deps/libusb/*.c)
+add_library(usb STATIC ${libusb_cpps})
+target_include_directories(usb PRIVATE deps/libusb/)
+
+# LibAirspy
+add_library(airspy STATIC deps/libairspy/airspy.c deps/libairspy/iqconverter_float.c deps/libairspy/iqconverter_int16.c)
+target_include_directories(airspy PRIVATE deps/libairspy/ deps/libusb)
+target_link_libraries(airspy PRIVATE usb)
+
+# LibAirspyHF
+add_library(airspyhf STATIC deps/libairspyhf/airspyhf.c deps/libairspyhf/iqbalancer.c)
+target_include_directories(airspyhf PRIVATE deps/libairspyhf/ deps/libusb)
+target_link_libraries(airspyhf PRIVATE usb)
+
+###########################################################################################################################################
+
+
+
 add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 
 add_library(android_imgui SHARED
