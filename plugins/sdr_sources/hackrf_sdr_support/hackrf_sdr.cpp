@@ -1,5 +1,14 @@
 #include "hackrf_sdr.h"
 
+#ifdef __ANDROID__
+#include "common/dsp_sample_source/android_usb_backend.h"
+
+#define HACKRF_USB_VID_PID                                     \
+    {                                                          \
+        {0x1d50, 0x604b}, {0x1d50, 0x6089}, { 0x1d50, 0xcc15 } \
+    }
+#endif
+
 int HackRFSource::_rx_callback(hackrf_transfer *t)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->rx_ctx);
@@ -55,11 +64,19 @@ nlohmann::json HackRFSource::get_settings(nlohmann::json)
 
 void HackRFSource::open()
 {
+#ifndef __ANDROID__
     std::stringstream ss;
     ss << std::hex << d_sdr_id;
     if (!is_open)
         if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
             throw std::runtime_error("Could not open HackRF device!");
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
+    if (hackrf_open2(&hackrf_dev_obj, fd, path.c_str()) != 0)
+        throw std::runtime_error("Could not open HackRF device!");
+#endif
     is_open = true;
 
     // hackrf_reset(hackrf_dev_obj);
@@ -160,6 +177,7 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
+#ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
 
     for (int i = 0; i < devlist->devicecount; i++)
@@ -171,6 +189,12 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
         ss << devlist->serial_numbers[i];
         results.push_back({"hackrf", "HackRF One " + ss.str(), id});
     }
+#else
+    int vid, pid;
+    std::string path;
+    if (getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path) != -1)
+        results.push_back({"hackrf", "HackRF One USB", 0});
+#endif
 
     return results;
 }

@@ -69,6 +69,11 @@ add_library(airspyhf STATIC deps/libairspyhf/airspyhf.c deps/libairspyhf/iqbalan
 target_include_directories(airspyhf PRIVATE deps/libairspyhf/ deps/libusb)
 target_link_libraries(airspyhf PRIVATE usb)
 
+# LibHackRF
+add_library(hackrf STATIC deps/libhackrf/hackrf.c)
+target_include_directories(hackrf PRIVATE deps/libhackrf/ deps/libusb)
+target_link_libraries(hackrf PRIVATE usb)
+
 ###########################################################################################################################################
 
 
