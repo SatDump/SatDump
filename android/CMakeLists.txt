@@ -9,6 +9,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# Build in release mod so it isn't unusably slow
+set(CMAKE_CXX_FLAGS_RELEASE         "-O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG           "-O3")
+set(CMAKE_C_FLAGS_RELEASE           "-O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3")
+set(CMAKE_C_FLAGS_DEBUG             "-O3")
+
 ###########################################################################################################################################
 # LIBVOLK
 add_library(volk STATIC IMPORTED)
