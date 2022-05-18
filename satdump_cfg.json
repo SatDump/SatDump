@@ -80,6 +80,12 @@
             "value": false,
             "name": "Update TLEs on Startup",
             "description": "If this is enabled, TLEs will be updated each time SatDump is started"
+        },
+        "auto_process_products": {
+            "type": "bool",
+            "value": false,
+            "name": "Automatically Process Products",
+            "description": "Process products once the pipeline is done."
         }
     },
     // Output directories

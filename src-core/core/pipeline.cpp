@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <thread>
+#include "core/config.h"
 
 namespace satdump
 {
@@ -187,6 +188,41 @@ namespace satdump
 
             lastFiles = files;
             stepC++;
+        }
+
+        // We are done. Does this have a dataset?
+        if (std::filesystem::exists(output_directory + "/dataset.json") &&
+            config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+        {
+            logger->debug("Products processing is enabled! Starting processing module.");
+
+            // It does, fire up the processing module.
+            std::shared_ptr<ProcessingModule> module = modules_registry["products_processor"](output_directory + "/dataset.json",
+                                                                                              output_directory + "/" + name,
+                                                                                              "");
+
+            module->setInputType(DATA_FILE);
+            module->setOutputType(DATA_FILE);
+
+            module->init();
+
+            if (ui)
+            {
+                uiCallListMutex->lock();
+                uiCallList->push_back(module);
+                uiCallListMutex->unlock();
+            }
+
+            module->process();
+
+            if (ui)
+            {
+                uiCallListMutex->lock();
+                uiCallList->clear();
+                uiCallListMutex->unlock();
+            }
+
+            module.reset();
         }
     }
 
