@@ -149,6 +149,14 @@
                     "543": {
                         "equation": "ch5, ch4, ch3",
                         "equalize": true
+                    },
+                    "124": {
+                        "equation": "ch1, ch2, ch4",
+                        "equalize": true
+                    },
+                    "4 Equalized": {
+                        "equation": "ch4",
+                        "equalize": true
                     }
                 }
             },
@@ -162,8 +170,25 @@
                     "321": {
                         "equation": "ch3, ch2, ch1"
                     },
-                    "321/221 Mix": {
-                        "equation": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15"
+                    "321 Equalized": {
+                        "equation": "ch3, ch2, ch1",
+                        "equalize": true
+                    },
+                    "4 Equalized": {
+                        "equation": "1 - ch4",
+                        "equalize": true
+                    },
+                    "5 Equalized": {
+                        "equation": "1 - ch5",
+                        "equalize": true
+                    },
+                    "6 Equalized": {
+                        "equation": "1 - ch6",
+                        "equalize": true
+                    },
+                    "654": {
+                        "equation": "1 - ch6, 1 - ch5, 1 - ch4",
+                        "equalize": true
                     }
                 }
             },

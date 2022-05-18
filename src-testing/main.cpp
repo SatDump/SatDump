@@ -30,6 +30,10 @@
 
 #include "common/projection/projs/equirectangular.h"
 
+#include "core/config.h"
+#include "products/dataset.h"
+#include "products/processor/processor.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -37,6 +41,11 @@ int main(int argc, char *argv[])
     std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
     satdump::config::loadConfig("satdump_cfg.json", user_path);
 
+    // satdump::process_dataset("metop_ahrpt_new/dataset.json");
+    // satdump::process_dataset("jpss_bb_test/dataset.json");
+    satdump::process_dataset("m22_proj_test1/dataset.json");
+
+    /*
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
 
@@ -101,4 +110,5 @@ int main(int argc, char *argv[])
     logger->info("Saving...");
 
     result.output_image.save_png("test.png");
+    */
 }

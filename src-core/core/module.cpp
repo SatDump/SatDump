@@ -68,6 +68,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
 #include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 
+#include "modules/products/module_products_processor.h"
+
 void registerModules()
 {
     // Register modules
@@ -86,6 +88,9 @@ void registerModules()
     // CCSDS
     REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
+
+    // Products Processor. This one is a bit different!
+    REGISTER_MODULE(products::ProductsProcessorModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});
