@@ -49,6 +49,11 @@ add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
 include_directories(deps/jpeg/jni)
 
+# NNG
+add_library(nng STATIC IMPORTED)
+set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/nng/${ANDROID_ABI}/libnng.a)
+include_directories(deps/nng/jni/)
+
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
