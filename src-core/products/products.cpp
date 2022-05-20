@@ -4,6 +4,8 @@
 #include <filesystem>
 #include "image_products.h"
 #include "radiation_products.h"
+#include "core/plugin.h"
+#include "processor/image_processor.h"
 
 namespace satdump
 {
@@ -56,14 +58,24 @@ namespace satdump
 
         raw_products.load(path);
 
-        if (raw_products.type == "image")
-            final_products = std::make_shared<ImageProducts>();
-        else if (raw_products.type == "radiation")
-            final_products = std::make_shared<RadiationProducts>();
+        if (products_loaders.count(raw_products.type) > 0)
+            return products_loaders[raw_products.type].loadFromFile(path);
         else
+        {
             final_products = std::make_shared<Products>();
+            final_products->load(path);
+            return final_products;
+        }
+    }
 
-        final_products->load(path);
-        return final_products;
+    std::map<std::string, RegisteredProducts> products_loaders;
+
+    void registerProducts()
+    {
+        products_loaders.clear();
+        products_loaders.emplace("image", RegisteredProducts{PRODUCTS_LOADER_FUN(ImageProducts), process_image_products});
+
+        // Plugins!
+        eventBus->fire_event<RegisterProductsEvent>({products_loaders});
     }
 }

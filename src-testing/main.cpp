@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
     std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
     satdump::config::loadConfig("satdump_cfg.json", user_path);
 
+    satdump::registerProducts();
+
     // satdump::process_dataset("metop_ahrpt_new/dataset.json");
     // satdump::process_dataset("jpss_bb_test/dataset.json");
     satdump::process_dataset("m22_proj_test1/dataset.json");

@@ -4,13 +4,10 @@
 #include "common/image/image.h"
 #include "common/tracking/tle.h"
 
+#define PRODUCTS_LOADER_FUN(TYPE) [](std::string file) -> std::shared_ptr<Products> { std::shared_ptr<TYPE> products = std::make_shared<TYPE>(); products->load(file); return products; }
+
 namespace satdump
 {
-    enum InstrumentType
-    {
-
-    };
-
     class Products
     {
     public: // protected:
@@ -47,4 +44,20 @@ namespace satdump
     };
 
     std::shared_ptr<Products> loadProducts(std::string path);
+
+    // Registry stuff
+    struct RegisteredProducts
+    {
+        std::function<std::shared_ptr<Products>(std::string)> loadFromFile;
+        std::function<void(Products *, std::string)> processProducts;
+    };
+
+    extern std::map<std::string, RegisteredProducts> products_loaders;
+
+    struct RegisterProductsEvent
+    {
+        std::map<std::string, RegisteredProducts> &products_loaders;
+    };
+
+    void registerProducts();
 }

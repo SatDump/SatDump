@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <functional>
+#include <map>
+#include "../products.h"
 
 namespace satdump
 {
