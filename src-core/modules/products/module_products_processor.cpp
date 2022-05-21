@@ -8,6 +8,9 @@ namespace products
 {
     ProductsProcessorModule::ProductsProcessorModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
+        logger_sink = std::make_shared<widgets::LoggerSinkWidget<std::mutex>>();
+        logger_sink->set_pattern("[%D - %T] %^(%L) %v%$");
+        logger_sink->max_lines = 500;
     }
 
     std::vector<ModuleDataType> ProductsProcessorModule::getInputTypes()
@@ -26,13 +29,19 @@ namespace products
 
     void ProductsProcessorModule::process()
     {
+        std::vector<spdlog::sink_ptr> to_insert = {logger_sink};
+        auto it = logger->sinks().insert(logger->sinks().end(), to_insert.begin(), to_insert.end());
+
         satdump::process_dataset(d_input_file);
+
+        logger->sinks().erase(it);
     }
 
     void ProductsProcessorModule::drawUI(bool window)
     {
-        ImGui::Begin("Products Processor", NULL, window ? NULL : NOWINDOW_FLAGS);
-
+        ImGui::Begin("Products Processor", NULL, (window ? NULL : NOWINDOW_FLAGS) | ImGuiWindowFlags_NoScrollbar);
+        logger_sink->draw();
+        ImGui::SetScrollY(ImGui::GetScrollMaxY());
         ImGui::End();
     }
 

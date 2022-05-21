@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include <complex>
 #include <fstream>
+#include "common/widgets/logger_sink.h"
 
 namespace products
 {
@@ -18,6 +19,8 @@ namespace products
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();
         std::vector<ModuleDataType> getOutputTypes();
+
+        std::shared_ptr<widgets::LoggerSinkWidget<std::mutex>> logger_sink;
 
     public:
         static std::string getID();
