@@ -1,6 +1,7 @@
 #include "radiation_products.h"
 #include "logger.h"
 #include "common/tracking/tracking.h"
+#include "resources.h"
 
 namespace satdump
 {
@@ -21,10 +22,15 @@ namespace satdump
         channel_counts = contents["counts"].get<std::vector<std::vector<int>>>();
     }
 
-    void make_radiation_map(RadiationProducts &products, int channel, image::Image<uint16_t> &initial_map, int radius, image::Image<uint16_t> color_lut, int min, int max)
+    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, float *progress)
     {
-        int img_x = initial_map.width();
-        int img_y = initial_map.height();
+        image::Image<uint16_t> map;
+        map.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
+        image::Image<uint16_t> color_lut = image::LUT_jet<uint16_t>();
+
+        int img_x = map.width();
+        int img_y = map.height();
+        int channel = cfg.channel - 1;
 
         int lut_size = color_lut.width();
         std::vector<double> timestamps = products.get_timestamps(channel);
@@ -33,7 +39,7 @@ namespace satdump
 
         for (int samplec = 0; samplec < (int)products.channel_counts[channel].size(); samplec++)
         {
-            int value = (double(products.channel_counts[channel][samplec] - min) / max) * lut_size;
+            int value = (double(products.channel_counts[channel][samplec] - cfg.min) / cfg.max) * lut_size;
 
             // logger->info("{:d} {:d}", products.channel_counts[channel][samplec], value);
 
@@ -50,7 +56,12 @@ namespace satdump
 
             uint16_t color[] = {color_lut.channel(0)[value], color_lut.channel(1)[value], color_lut.channel(2)[value]};
 
-            initial_map.draw_circle(image_x, image_y, radius, color, true);
+            map.draw_circle(image_x, image_y, cfg.radius, color, true);
+
+            if (progress != nullptr)
+                *progress = float(samplec) / float(products.channel_counts[channel].size());
         }
+
+        return map;
     }
 }

@@ -43,9 +43,9 @@ int main(int argc, char *argv[])
 
     satdump::registerProducts();
 
-    // satdump::process_dataset("metop_ahrpt_new/dataset.json");
+    satdump::process_dataset("metop_ahrpt_new/dataset.json");
     // satdump::process_dataset("jpss_bb_test/dataset.json");
-    satdump::process_dataset("m22_proj_test1/dataset.json");
+    // satdump::process_dataset("m22_proj_test1/dataset.json");
 
     /*
     satdump::ImageProducts img_pro;

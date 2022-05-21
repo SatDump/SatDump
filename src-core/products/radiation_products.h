@@ -54,5 +54,30 @@ namespace satdump
         virtual void load(std::string file);
     };
 
-    void make_radiation_map(RadiationProducts &products, int channel, image::Image<uint16_t> &map, int radius, image::Image<uint16_t> color_lut, int min, int max);
+    // Map handling
+    struct RadiationMapCfg
+    {
+        int channel;
+        int radius;
+        int min;
+        int max;
+    };
+
+    inline void to_json(nlohmann::json &j, const RadiationMapCfg &v)
+    {
+        j["channel"] = v.channel;
+        j["radius"] = v.radius;
+        j["min"] = v.min;
+        j["max"] = v.max;
+    }
+
+    inline void from_json(const nlohmann::json &j, RadiationMapCfg &v)
+    {
+        v.channel = j["channel"].get<int>();
+        v.radius = j["radius"].get<int>();
+        v.min = j["min"].get<int>();
+        v.max = j["max"].get<int>();
+    }
+
+    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, float *progress = nullptr);
 }

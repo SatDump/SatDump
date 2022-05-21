@@ -292,7 +292,15 @@
             },
             "sem": {
                 "handler": "radiation_handler",
-                "name": "SEM"
+                "name": "SEM",
+                "radiation_maps": {
+                    "ch1": {
+                        "channel": 1,
+                        "radius": 5,
+                        "min": 0,
+                        "max": 255
+                    }
+                }
             },
             "ocm_oc2": {
                 "handler": "image_handler",

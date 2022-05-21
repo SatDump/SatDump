@@ -20,9 +20,13 @@ namespace satdump
     {
         if (selected_visualization_id == 0)
         {
-            image::Image<uint16_t> map;
-            map.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
-            make_radiation_map(*products, select_channel_image_id, map, 5, image::LUT_jet<uint16_t>(), map_min, map_max);
+
+            RadiationMapCfg cfg;
+            cfg.channel = select_channel_image_id + 1;
+            cfg.radius = 5;
+            cfg.min = map_min;
+            cfg.max = map_max;
+            image::Image<uint16_t> map = make_radiation_map(*products, cfg);
             image_view.update(map);
         }
         else if (selected_visualization_id == 1)
