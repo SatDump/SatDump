@@ -1,41 +1,40 @@
 #include "live.h"
 #include "common/dsp_sample_source/dsp_sample_source.h"
-#include "live_pipeline.h"
 #include <signal.h>
 #include "logger.h"
-#include "init.h"
 #include "common/cli_utils.h"
+#include "common/dsp/file_sink.h"
+#include "init.h"
 
 // Catch CTRL+C to exit live properly!
-bool live_should_exit = false;
-void sig_handler_live(int signo)
+bool rec_should_exit = false;
+void sig_handler_rec(int signo)
 {
     if (signo == SIGINT)
-        live_should_exit = true;
+        rec_should_exit = true;
 }
 
-int main_live(int argc, char *argv[])
+int main_record(int argc, char *argv[])
 {
     if (argc < 5) // Check overall command
     {
-        logger->error("Usage : " + std::string(argv[0]) + " live [pipeline_id] [output_file_or_directory] [additional options as required]");
-        logger->error("Extra options (examples. Any parameter used in modules or sources can be used here) :");
+        logger->error("Usage : " + std::string(argv[0]) + " record [output_baseband (without extension!)] [additional options as required]");
+        logger->error("Extra options (examples. Any parameter used in sources can be used here) :");
         logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
         logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
         logger->error("As well as --timeout in seconds");
         logger->error("Sample command :");
-        logger->error("./satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780");
+        logger->error("./satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780");
         return 1;
     }
 
     // Init SatDump
     satdump::initSatdump();
 
-    std::string downlink_pipeline = argv[2];
-    std::string output_file = argv[3];
+    std::string output_file = argv[2];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4]);
+    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3]);
 
     uint64_t samplerate;
     uint64_t frequency;
@@ -91,44 +90,51 @@ int main_live(int argc, char *argv[])
     source_ptr->set_samplerate(samplerate);
     source_ptr->set_settings(parameters);
 
-    // Get pipeline
-    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
-
-    if (!pipeline.has_value())
-    {
-        logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-        return 1;
-    }
-
-    // Init pipeline
-    parameters["baseband_format"] = "f32";
-    parameters["buffer_size"] = STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
-    std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
-
-    ctpl::thread_pool live_thread_pool(8);
-
-    // Attempt to start the source and pipeline
+    // Attempt to start the source
     try
     {
         source_ptr->start();
-        live_pipeline->start(source_ptr->output_stream, live_thread_pool);
     }
     catch (std::exception &e)
     {
-        logger->error("Fatal error running pipeline/device : " + std::string(e.what()));
+        logger->error("Fatal error starting device : " + std::string(e.what()));
         return 1;
     }
 
+    // Setup file sink
+    std::shared_ptr<dsp::FileSinkBlock> file_sink = std::make_shared<dsp::FileSinkBlock>(source_ptr->output_stream);
+
+    int ziq_bit_depth = 8;
+    if (parameters.contains("ziq_depth"))
+        ziq_bit_depth = parameters["ziq_depth"].get<int>();
+
+    if (parameters["baseband_format"].get<std::string>() == "ziq")
+        logger->info("Using ZIQ Depth {:d}", ziq_bit_depth);
+
+    if (parameters.contains("baseband_format"))
+    {
+        file_sink->set_output_sample_type(dsp::basebandTypeFromString(parameters["baseband_format"].get<std::string>()));
+    }
+    else
+    {
+        logger->error("baseband_format flag is required!");
+        return 1;
+    }
+
+    file_sink->start();
+    file_sink->start_recording(output_file, samplerate, ziq_bit_depth);
+
     // Attach signal
-    signal(SIGINT, sig_handler_live);
+    signal(SIGINT, sig_handler_rec);
 
     // Now, we wait
     uint64_t start_time = time(0);
     while (1)
     {
+        uint64_t elapsed_time = time(0) - start_time;
+
         if (timeout > 0)
         {
-            uint64_t elapsed_time = time(0) - start_time;
             if (elapsed_time >= timeout)
             {
                 logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
@@ -136,18 +142,29 @@ int main_live(int argc, char *argv[])
             }
         }
 
-        if (live_should_exit)
+        if (rec_should_exit)
         {
             logger->warn("SIGINT Received. Stopping.");
             break;
         }
 
+        if (int(elapsed_time) % 2 == 0)
+        {
+            if (parameters["baseband_format"].get<std::string>() == "ziq")
+                logger->info("Wrote {:d} MB, raw {:d} MB", int(file_sink->get_written() / 1e6), int(file_sink->get_written_raw() / 1e6));
+            else
+                logger->info("Wrote {:d} MB", int(file_sink->get_written() / 1e6));
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    // Stop recording
+    file_sink->stop_recording();
+
     // Stop cleanly
     source_ptr->stop();
-    live_pipeline->stop();
+    file_sink->stop();
 
     return 0;
 }

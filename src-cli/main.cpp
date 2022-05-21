@@ -1,6 +1,8 @@
 #include "logger.h"
+
 #include "live.h"
 #include "offline.h"
+#include "record.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +18,12 @@ int main(int argc, char *argv[])
     if (std::string(argv[1]) == "live")
     {
         int ret = main_live(argc, argv);
+        if (ret != 0)
+            return ret;
+    }
+    else if (std::string(argv[1]) == "record")
+    {
+        int ret = main_record(argc, argv);
         if (ret != 0)
             return ret;
     }
