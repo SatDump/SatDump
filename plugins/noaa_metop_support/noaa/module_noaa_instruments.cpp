@@ -6,6 +6,7 @@
 #include "common/utils.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
+#include "resources.h"
 
 namespace noaa
 {
@@ -36,6 +37,10 @@ namespace noaa
                     {
                         data_in.read((char *)&buffer[0], 11090 * 2);
                         avhrr_reader.work(buffer); // avhrr
+
+                        // Propagate timestamps!
+                        hirs_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
+                        amsu_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
 
                         { // getting the TIP/AIP out
                             int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
@@ -69,6 +74,10 @@ namespace noaa
                         repackBytesTo10bits(rawWords, 4159, buffer);
 
                         avhrr_reader.work(buffer); // avhrr
+
+                        // Propagate timestamps!
+                        hirs_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
+                        amsu_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
 
                         { // getting the TIP/AIP out
                             uint8_t frameBuffer[104];
@@ -142,7 +151,14 @@ namespace noaa
                     avhrr_products.bit_depth = 10;
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    avhrr_products.set_timestamps(avhrr_reader.timestamps);
+                    avhrr_products.set_timestamps(filter_timestamps_simple(avhrr_reader.timestamps, 1e4, 1.0)); // Has to be filtered!
+
+                    if (scid == 7) // NOAA-15
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json")));
+                    if (scid == 13) // NOAA-18
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr.json")));
+                    if (scid == 15) // NOAA-19
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json")));
 
                     for (int i = 0; i < 5; i++)
                         avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
@@ -166,11 +182,12 @@ namespace noaa
 
                     satdump::ImageProducts hirs_products;
                     hirs_products.instrument_name = "hirs";
-                    hirs_products.has_timestamps = false;
                     hirs_products.bit_depth = 13;
                     hirs_products.set_tle(satellite_tle);
-                    // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    // hirs_products.set_timestamps(hirs_reader.timestamps);
+                    hirs_products.has_timestamps = true;
+                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    hirs_products.set_timestamps(filter_timestamps_simple(hirs_reader.timestamps, 1e4, 10));
+                    hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
                         hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
@@ -198,15 +215,15 @@ namespace noaa
                     mhs_products.bit_depth = 16;
                     mhs_products.set_tle(satellite_tle);
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    mhs_products.set_timestamps(mhs_reader.timestamps);
+                    mhs_products.set_timestamps(filter_timestamps_simple(mhs_reader.timestamps, 1e4, 5));
+                    mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_mhs.json")));
+
                     for (int i = 0; i < 5; i++)
                     {
                         mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
                         mhs_products.set_wavenumber(i, noaa_metop::mhs::calibration::wavenumber[i]);
-                    }
-
-                    for (int i = 0; i < 5; i++)
                         mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+                    }
 
                     mhs_products.save(directory);
                     dataset.products_list.push_back("MHS");
@@ -231,11 +248,12 @@ namespace noaa
                     amsu_products.has_timestamps = false;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
-                    // amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     // amsu_products.set_timestamps(amsu_reader.timestamps);
+                    amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i)});
+                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), filter_timestamps_simple(i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1, 1e4, 10)});
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");

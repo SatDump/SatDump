@@ -56,7 +56,6 @@ bool isStringPresent(std::string searched, std::string keyword)
     return found_it != std::string::npos;
 }
 
-
 #include <nng/nng.h>
 #include <nng/supplemental/http/http.h>
 #include "logger.h"
@@ -165,4 +164,43 @@ std::string timestamp_to_string(double timestamp)
            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+}
+
+double get_median(std::vector<double> values)
+{
+    std::sort(values.begin(), values.end());
+    size_t middle = values.size() / 2;
+    return values[middle];
+}
+
+std::vector<double> filter_timestamps_simple(std::vector<double> timestamps, double max_toleralte, int max_diff)
+{
+    std::vector<double> filter_timestamps = timestamps;
+    double avg = get_median(filter_timestamps);
+    double last = 0;
+    for (double &v : filter_timestamps)
+    {
+        // logger->critical(abs(avg - v));
+        if (abs(avg - v) > max_toleralte)
+        {
+            last = v;
+            v = -1;
+            continue;
+        }
+
+        if (last >= v || abs(last - v) > max_diff)
+        {
+            last = v;
+            v = -1;
+            continue;
+        }
+        last = v;
+
+        // logger->info(v);
+    }
+
+    // for (double &v : filter_timestamps)
+    //    logger->info(v);
+
+    return filter_timestamps;
 }

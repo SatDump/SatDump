@@ -24,6 +24,10 @@ namespace noaa
             int linesA2 = 0;
             void work(uint8_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
+
+            double last_avhrr_timestamp;
+            std::vector<double> timestamps1;
+            std::vector<double> timestamps2;
         };
     } // namespace amsu
 } // namespace noaa

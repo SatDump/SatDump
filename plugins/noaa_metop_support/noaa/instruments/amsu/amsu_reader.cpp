@@ -48,6 +48,7 @@ namespace noaa
                 }
 
                 linesA2++;
+                timestamps2.push_back(last_avhrr_timestamp);
             }
 
             for (std::vector<uint8_t> frame : amsuA1Data)
@@ -61,6 +62,7 @@ namespace noaa
                 }
 
                 linesA1++;
+                timestamps1.push_back(last_avhrr_timestamp);
             }
         }
 

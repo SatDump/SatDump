@@ -80,12 +80,12 @@ int main(int argc, char *argv[])
     rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
 
-    img_pro.images[7900].image.equalize();
-    img_pro.images[7900].image.to_rgb();
+    img_pro.images[0].image.equalize();
+    img_pro.images[0].image.to_rgb();
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
-    operation.input_image = img_pro.images[7900].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
+    operation.input_image = img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
     operation.output_width = 2048 * 8;
     operation.output_height = 1024 * 8;
 

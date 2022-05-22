@@ -104,7 +104,7 @@ namespace satdump
                     ImGui::Text("Update TLEs Now");
                     ImGui::TableSetColumnIndex(1);
                     if (ImGui::Button("Update###updateTLEs"))
-                        updateTLEFile(satdump::user_path);
+                        updateTLEFile(satdump::user_path + "/satdump_tles.txt");
 
                     ImGui::EndTable();
                 }

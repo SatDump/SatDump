@@ -13,6 +13,9 @@ namespace satdump
     {
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
 
+        if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
+            std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+
         std::ofstream outfile(path);
 
         for (int norad : norads_to_fetch)
