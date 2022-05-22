@@ -193,6 +193,7 @@ namespace satdump
             {
                 std::string default_name = products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
+#ifndef __ANDROID__
                 auto result = pfd::save_file("Save Image", default_name, {"*.png"});
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -203,6 +204,11 @@ namespace satdump
                     logger->info("Saving current image at {:s}", path.c_str());
                     current_image.save_png(path);
                 }
+#else
+                std::string path = "/storage/emulated/0/" + default_name;
+                logger->info("Saving current image at {:s}", path.c_str());
+                current_image.save_png("" + path);
+#endif
             }
         }
 

@@ -292,8 +292,8 @@ namespace metop
                     iasi_img_products.bit_depth = 16;
                     iasi_img_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                     iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
-                    // iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
-                    iasi_img_products.images.push_back({"IASI-IMG.png", "0", iasi_imaging});
+                    iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
+                    iasi_img_products.images.push_back({"IASI-IMG.png", "1", iasi_imaging});
 
                     iasi_img_products.save(directory);
                     dataset.products_list.push_back("IASI");

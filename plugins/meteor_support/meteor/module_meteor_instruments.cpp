@@ -164,8 +164,8 @@ namespace meteor
                     // logger->info(v);
                 }
 
-                for (double &v : filter_timestamps)
-                    logger->info(v);
+                //for (double &v : filter_timestamps)
+                //    logger->info(v);
 
                 msumr_products.set_timestamps(filter_timestamps);
                 msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
