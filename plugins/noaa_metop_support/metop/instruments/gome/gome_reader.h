@@ -17,6 +17,7 @@ namespace metop
             GOMEReader();
             ~GOMEReader();
             void work(ccsds::CCSDSPacket &packet);
+            std::vector<double> timestamps;
             image::Image<uint16_t> getChannel(int channel);
         };
     } // namespace gome

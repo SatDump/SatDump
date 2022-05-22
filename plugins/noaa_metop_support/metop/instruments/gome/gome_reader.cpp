@@ -1,5 +1,6 @@
 #include "gome_reader.h"
 #include <cstring>
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -71,7 +72,10 @@ namespace metop
             }
 
             if (counter == 15)
+            {
                 lines++;
+                timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+            }
 
             for (int channel = 0; channel < 6144; channel++)
                 channels[channel].resize((lines + 1) * 16);

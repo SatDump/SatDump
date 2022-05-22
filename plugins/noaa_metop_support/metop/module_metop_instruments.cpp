@@ -216,12 +216,6 @@ namespace metop
                 logger->info("----------- MHS");
                 logger->info("Lines : " + std::to_string(mhs_reader.line));
 
-                /*for (int i = 0; i < 5; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(mhs_reader.getChannel(i), directory + "/MHS-" + std::to_string(i + 1) + ".png");
-                }*/
-
                 satdump::ImageProducts mhs_products;
                 mhs_products.instrument_name = "mhs";
                 mhs_products.has_timestamps = true;
@@ -356,12 +350,18 @@ namespace metop
                 logger->info("----------- GOME");
                 logger->info("Lines : " + std::to_string(gome_reader.lines));
 
-                // Output a few nice composites as well
-                logger->info("Global Composite...");
-                image::Image<uint16_t> imageAll = image::make_manyimg_composite<uint16_t>(130, 48, 6144, [this](int c)
-                                                                                          { return gome_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll, directory + "/GOME-ALL.png");
-                imageAll.clear();
+                satdump::ImageProducts gome_products;
+                gome_products.instrument_name = "gome";
+                gome_products.has_timestamps = true;
+                gome_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                gome_products.set_timestamps(gome_reader.timestamps);
+                gome_products.save_as_matrix = true;
+
+                for (int i = 0; i < 6144; i++)
+                    gome_products.images.push_back({"GOME-ALL.png", std::to_string(i + 1), gome_reader.getChannel(i)});
+
+                gome_products.save(directory);
+                dataset.products_list.push_back("GOME");
                 gome_status = DONE;
             }
 
