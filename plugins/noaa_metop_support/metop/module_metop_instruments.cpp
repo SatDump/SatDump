@@ -277,16 +277,30 @@ namespace metop
                 const float beta = 0.58343;
                 const long scanHeight = 64;
 
-                if (iasi_reader.lines > 0)
+                if (iasi_reader_img.lines > 0)
                 {
                     logger->info("Channel IR imaging...");
                     image::Image<uint16_t> iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
                     iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
-                    image::Image<uint16_t> iasi_imaging_equ = iasi_imaging;
-                    image::Image<uint16_t> iasi_imaging_equ_inv = iasi_imaging;
-                    WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
+                    // Test! TODO : Cleanup!!
+                    satdump::ImageProducts iasi_img_products;
+                    iasi_img_products.instrument_name = "iasi_img";
+                    iasi_img_products.has_timestamps = true;
+                    iasi_img_products.set_tle(satellite_tle);
+                    iasi_img_products.bit_depth = 16;
+                    iasi_img_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                    iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
+                    // iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
+                    iasi_img_products.images.push_back({"IASI-IMG.png", "0", iasi_imaging});
+
+                    iasi_img_products.save(directory);
+                    dataset.products_list.push_back("IASI");
+
+                    // image::Image<uint16_t> iasi_imaging_equ = iasi_imaging;
+                    // image::Image<uint16_t> iasi_imaging_equ_inv = iasi_imaging;
+                    // WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
                 }
                 iasi_img_status = DONE;
 

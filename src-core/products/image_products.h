@@ -27,6 +27,8 @@ namespace satdump
 
         int bit_depth = 16;
 
+        ///////////////////////// Timestamps
+
         enum Timestamp_Type
         {
             TIMESTAMP_LINE,
@@ -58,6 +60,14 @@ namespace satdump
                 return images[image_index].ifov_y;
             else
                 return ifov_y;
+        }
+
+        int get_ifov_x_size(int image_index = -1)
+        {
+            if (images[image_index].ifov_x != -1)
+                return images[image_index].ifov_x;
+            else
+                return ifov_x;
         }
 
         ///////////////////////// Projection

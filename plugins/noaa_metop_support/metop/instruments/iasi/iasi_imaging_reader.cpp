@@ -10,7 +10,7 @@ namespace metop
         {
             ir_channel.resize(64 * 64 * 36);
             lines = 0;
-            timestamps_ifov.push_back(std::vector<double>(30, -1));
+            timestamps_ifov.resize(30, -1);
         }
 
         IASIIMGReader::~IASIIMGReader()
@@ -35,14 +35,14 @@ namespace metop
                         ir_channel[(lines * 64 + i) * (36 * 64) + (36 * 64 - 1) - ((counter - 1) * 64 + y)] = iasi_buffer[y * 64 + i] << 4;
 
                 if (counter <= 30)
-                    timestamps_ifov[lines][counter - 1] = ccsds::parseCCSDSTimeFull(packet, 10957);
+                    timestamps_ifov[lines * 30 + (counter - 1)] = ccsds::parseCCSDSTimeFull(packet, 10957);
             }
 
             // Frame counter
             if (counter == 36)
             {
                 lines++;
-                timestamps_ifov.push_back(std::vector<double>(30, -1));
+                timestamps_ifov.resize(lines * 30 + 30, -1);
             }
 
             ir_channel.resize((lines * 64 + 64) * 64 * 36);

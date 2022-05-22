@@ -15,7 +15,7 @@ namespace metop
         public:
             int lines;
             std::vector<uint16_t> ir_channel;
-            std::vector<std::vector<double>> timestamps_ifov;
+            std::vector<double> timestamps_ifov;
 
         public:
             IASIIMGReader();
