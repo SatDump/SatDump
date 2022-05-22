@@ -8,7 +8,6 @@ namespace satdump
 {
     namespace gcp_compute
     {
-
         std::vector<satdump::projection::GCP> compute_gcps_normal_line(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
         {
             std::vector<double> timestamps = timestamps_raw.get<std::vector<double>>();
