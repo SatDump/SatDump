@@ -325,17 +325,24 @@ namespace metop
                 logger->info("Lines (AMSU A1) : " + std::to_string(amsu_a1_reader.lines));
                 logger->info("Lines (AMSU A2) : " + std::to_string(amsu_a2_reader.lines));
 
+                satdump::ImageProducts amsu_products;
+                amsu_products.instrument_name = "amsu_a";
+                amsu_products.has_timestamps = true;
+                amsu_products.set_tle(satellite_tle);
+                amsu_products.bit_depth = 16;
+                amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                amsu_products.set_timestamps(mhs_reader.timestamps);
+                amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
+
                 for (int i = 0; i < 2; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(amsu_a2_reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
-                }
+                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
 
                 for (int i = 0; i < 13; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 3) + "...");
-                    WRITE_IMAGE(amsu_a1_reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
-                }
+                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1) + ".png", std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
+
+                amsu_products.save(directory);
+                dataset.products_list.push_back("AMSU");
+
                 amsu_status = DONE;
             }
 

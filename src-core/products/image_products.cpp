@@ -164,7 +164,7 @@ namespace satdump
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(img.channel_name);
                 images_obj.push_back(img.image);
-                logger->info("Composite needs channel {:s}", equ_str);
+                logger->debug("Composite needs channel {:s}", equ_str);
             }
         }
 

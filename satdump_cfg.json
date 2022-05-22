@@ -290,6 +290,26 @@
                     }
                 }
             },
+            "iasi": {
+                "handler": "image_handler",
+                "name": "IASI",
+                "rgb_composites": {}
+            },
+            "iasi_img": {
+                "handler": "image_handler",
+                "name": "IASI Imaging",
+                "rgb_composites": {
+                    "Inverted Equalized": {
+                        "equation": "1 - ch1",
+                        "equalize": true
+                    }
+                }
+            },
+            "gome": {
+                "handler": "image_handler",
+                "name": "GOME",
+                "rgb_composites": {}
+            },
             "sem": {
                 "handler": "radiation_handler",
                 "name": "SEM",
