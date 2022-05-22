@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     // logger->trace("\n" + img_pro.contents.dump(4));
 
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
+    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
     rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";

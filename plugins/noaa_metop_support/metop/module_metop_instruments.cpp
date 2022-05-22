@@ -331,7 +331,7 @@ namespace metop
                 amsu_products.set_tle(satellite_tle);
                 amsu_products.bit_depth = 16;
                 amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                amsu_products.set_timestamps(mhs_reader.timestamps);
+                // amsu_products.set_timestamps(mhs_reader.timestamps);
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
                 for (int i = 0; i < 2; i++)
