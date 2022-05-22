@@ -302,6 +302,8 @@ namespace metop
                 iasi_products.has_timestamps = true;
                 iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 iasi_products.set_timestamps(iasi_reader.timestamps);
+                iasi_products.set_tle(satellite_tle);
+                iasi_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json")));
                 iasi_products.save_as_matrix = true;
 
                 for (int i = 0; i < 8461; i++)
