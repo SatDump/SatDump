@@ -171,6 +171,24 @@ namespace image
     }
 
     template <typename T>
+    Image<T> Image<T>::crop_to(int x0, int y0, int x1, int y1)
+    {
+        int new_width = x1 - x0;
+        int new_height = y1 - y0;
+
+        // Create new buffer
+        Image<T> new_data(new_width, new_height, d_channels);
+
+        // Copy cropped area to new region
+        for (int c = 0; c < d_channels; c++)
+            for (int x = 0; x < new_width; x++)
+                for (int y = 0; y < new_height; y++)
+                    new_data[(new_width * new_height * c) + y * new_width + x] = channel(c)[(y0 + y) * d_width + (x + x0)];
+
+        return new_data;
+    }
+
+    template <typename T>
     void Image<T>::resize(int width, int height)
     {
         double x_scale = double(d_width) / double(width);

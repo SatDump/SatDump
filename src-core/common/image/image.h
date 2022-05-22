@@ -58,6 +58,7 @@ namespace image
         void white_balance(float percentileValue = 0.05f);                   // While balance algorithm from Gimp
         void crop(int x0, int y0, int x1, int y1);                           // Crop an image region. Must be with x0 <= x1 and y0 <= y1
         void crop(int x0, int x1);                                           // Crop an image region, x axis only
+        Image<T> crop_to(int x0, int y0, int x1, int y1);                    // Crop an image region. Must be with x0 <= x1 and y0 <= y1, returning the output
         void resize(int width, int height);                                  // Resize image, using a simple pixel scaling attribution (not the best, but fast)
         void resize_bilinear(int width, int height, bool text_mode = false); // Resize image, using a bilinear algorithm
         void brightness_contrast_old(float brightness, float contrast);      // Brightness-Contrast algorithm from old Gimp versions

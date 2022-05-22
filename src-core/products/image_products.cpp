@@ -13,6 +13,9 @@ namespace satdump
         contents["bit_depth"] = bit_depth;
         contents["needs_correlation"] = needs_correlation;
 
+        if (save_as_matrix)
+            contents["save_as_matrix"] = save_as_matrix;
+
         for (size_t c = 0; c < images.size(); c++)
         {
             contents["images"][c]["file"] = images[c].filename;
@@ -25,8 +28,22 @@ namespace satdump
                 contents["images"][c]["ifov_x"] = images[c].ifov_x;
             }
 
-            logger->info("Saving " + images[c].filename);
-            images[c].image.save_png(directory + "/" + images[c].filename);
+            if (!save_as_matrix)
+            {
+                logger->info("Saving " + images[c].filename);
+                images[c].image.save_png(directory + "/" + images[c].filename);
+            }
+        }
+
+        if (save_as_matrix)
+        {
+            int size = ceil(sqrt(images.size()));
+            logger->debug("Using size {:d}", size);
+            image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
+                                                                                       { return images[c].image; });
+            logger->info("Saving " + images[0].filename);
+            image_all.save_png(directory + "/" + images[0].filename);
+            contents["img_matrix_size"] = size;
         }
 
         Products::save(directory);
@@ -46,15 +63,43 @@ namespace satdump
         bit_depth = contents["bit_depth"].get<int>();
         needs_correlation = contents["needs_correlation"].get<bool>();
 
+        if (contents.contains("save_as_matrix"))
+            save_as_matrix = contents["save_as_matrix"].get<bool>();
+
+        image::Image<uint16_t> img_matrix;
+        if (save_as_matrix)
+        {
+            if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
+                img_matrix.load_png(directory + "/" + contents["images"][0]["file"].get<std::string>());
+        }
+
         for (size_t c = 0; c < contents["images"].size(); c++)
         {
             ImageHolder img_holder;
-            logger->info("Loading " + contents["images"][c]["file"].get<std::string>());
+            if (!save_as_matrix)
+                logger->info("Loading " + contents["images"][c]["file"].get<std::string>());
 
             img_holder.filename = contents["images"][c]["file"].get<std::string>();
             img_holder.channel_name = contents["images"][c]["name"].get<std::string>();
-            if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
-                img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
+
+            if (!save_as_matrix)
+            {
+                if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
+                    img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
+            }
+            else
+            {
+                int m_size = contents["img_matrix_size"].get<int>();
+                int img_width = img_matrix.width() / m_size;
+                int img_height = img_matrix.height() / m_size;
+                int pos_x = c % m_size;
+                int pos_y = c / m_size;
+
+                int px_pos_x = pos_x * img_width;
+                int px_pos_y = pos_y * img_height;
+
+                img_holder.image = img_matrix.crop_to(px_pos_x, px_pos_y, px_pos_x + img_width, px_pos_y + img_height);
+            }
 
             if (contents["images"][c].contains("timestamps"))
             {

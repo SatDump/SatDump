@@ -27,6 +27,8 @@ namespace satdump
 
         int bit_depth = 16;
 
+        bool save_as_matrix = false;
+
         ///////////////////////// Timestamps
 
         enum Timestamp_Type

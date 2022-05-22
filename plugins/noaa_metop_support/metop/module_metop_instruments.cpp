@@ -264,10 +264,13 @@ namespace metop
             // IASI
             {
                 iasi_img_status = iasi_status = SAVING;
+                std::string directory_img = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IASI-IMG";
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IASI";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
+                if (!std::filesystem::exists(directory_img))
+                    std::filesystem::create_directory(directory_img);
 
                 logger->info("----------- IASI");
                 logger->info("Lines : " + std::to_string(iasi_reader.lines));
@@ -295,31 +298,24 @@ namespace metop
                     iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
                     iasi_img_products.images.push_back({"IASI-IMG.png", "1", iasi_imaging});
 
-                    iasi_img_products.save(directory);
-                    dataset.products_list.push_back("IASI");
-
-                    // image::Image<uint16_t> iasi_imaging_equ = iasi_imaging;
-                    // image::Image<uint16_t> iasi_imaging_equ_inv = iasi_imaging;
-                    // WRITE_IMAGE(iasi_imaging, directory + "/IASI-IMG.png");
+                    iasi_img_products.save(directory_img);
+                    dataset.products_list.push_back("IASI-IMG");
                 }
                 iasi_img_status = DONE;
 
-                // satdump::ImageProducts iasi_products;
-                // iasi_products.instrument_name = "iasi";
-                //  iasi_products.has_timestamps = true;
-                //  iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                //  iasi_products.set_timestamps(iasi_reader.timestamps);
+                satdump::ImageProducts iasi_products;
+                iasi_products.instrument_name = "iasi";
+                iasi_products.has_timestamps = true;
+                iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                iasi_products.set_timestamps(iasi_reader.timestamps);
+                iasi_products.save_as_matrix = true;
 
-                // for (int i = 0; i < 8461; i++)
-                //     iasi_products.images.push_back({"IASI-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), iasi_reader.getChannel(i)});
+                for (int i = 0; i < 8461; i++)
+                    iasi_products.images.push_back({"IASI-ALL.png", std::to_string(i + 1), iasi_reader.getChannel(i)});
 
-                // iasi_products.save(directory);
+                iasi_products.save(directory);
+                dataset.products_list.push_back("IASI");
 
-                // Output a few nice composites as well
-                logger->info("Global Composite...");
-                image::Image<uint16_t> imageAll = image::make_manyimg_composite<uint16_t>(150, 56, 8461, [this](int c)
-                                                                                          { return iasi_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll, directory + "/IASI-ALL.png");
                 iasi_status = DONE;
             }
 

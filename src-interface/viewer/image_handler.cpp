@@ -134,13 +134,32 @@ namespace satdump
     {
         if (ImGui::CollapsingHeader("Image"))
         {
-            if (ImGui::Combo("##imagechannelcombo", &select_image_id, select_image_str.c_str()))
+            if (products->images.size() < 100)
             {
-                if (select_image_id == 0)
-                    active_channel_id = -1;
-                else
-                    active_channel_id = select_image_id - 1;
-                asyncUpdate();
+                if (ImGui::Combo("##imagechannelcombo", &select_image_id, select_image_str.c_str()))
+                {
+                    if (select_image_id == 0)
+                        active_channel_id = -1;
+                    else
+                        active_channel_id = select_image_id - 1;
+                    asyncUpdate();
+                }
+            }
+            else
+            {
+                if (ImGui::InputInt("##imagechannelint", &select_image_id))
+                {
+                    if (select_image_id > products->images.size())
+                        select_image_id = products->images.size();
+                    else if (select_image_id < 0)
+                        select_image_id = 0;
+
+                    if (select_image_id == 0)
+                        active_channel_id = -1;
+                    else
+                        active_channel_id = select_image_id - 1;
+                    asyncUpdate();
+                }
             }
 
             if (active_channel_id >= 0)

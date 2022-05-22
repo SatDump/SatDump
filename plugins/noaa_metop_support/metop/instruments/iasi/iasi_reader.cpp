@@ -1,5 +1,6 @@
 #include "iasi_reader.h"
 #include "iasi_brd.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -10,6 +11,7 @@ namespace metop
             for (int i = 0; i < 8461; i++)
                 channels[i].resize(60 * 2);
             lines = 0;
+            timestamps.resize(2, -1);
         }
 
         IASIReader::~IASIReader()
@@ -71,11 +73,19 @@ namespace metop
                         channel++;
                     }
                 }
+
+                if (cnt1)
+                    timestamps[lines + 1] = ccsds::parseCCSDSTimeFull(packet, 10957);
+                else
+                    timestamps[lines + 0] = ccsds::parseCCSDSTimeFull(packet, 10957);
             }
 
             // Frame counter
             if (counter == 30 && packet.header.apid == 130)
+            {
                 lines += 2;
+                timestamps.resize(lines + 2, -1);
+            }
 
             for (int channel = 0; channel < 8461; channel++)
                 channels[channel].resize((lines + 2) * 60);
