@@ -398,12 +398,37 @@ namespace fengyun3
                 mersi1_products.bit_depth = 12;
                 mersi1_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
 
+                // Channel offsets relative to Ch1
+                int offset[20] = {
+                    0,
+                    8,
+                    0,
+                    24,
+                    0,
+
+                    16,
+                    0,
+                    -16,
+                    -16,
+                    -8,
+                    16,
+                    24,
+                    8,
+                    -8,
+                    16,
+                    -16,
+                    40,
+                    -32,
+                    32,
+                    -24,
+                };
+
                 for (int i = 0; i < 20; i++)
                 {
                     image::Image<uint16_t> image = mersi1_reader.getChannel(i);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, i * 8});
+                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);
