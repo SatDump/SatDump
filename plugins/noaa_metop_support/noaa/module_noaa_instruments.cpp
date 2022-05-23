@@ -153,12 +153,19 @@ namespace noaa
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(filter_timestamps_simple(avhrr_reader.timestamps, 1e4, 1.0)); // Has to be filtered!
 
+                    nlohmann::ordered_json proj_settings;
+
                     if (scid == 7) // NOAA-15
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json")));
+                        proj_settings = loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json"));
                     if (scid == 13) // NOAA-18
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr.json")));
+                        proj_settings = loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr.json"));
                     if (scid == 15) // NOAA-19
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json")));
+                        proj_settings = loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json"));
+
+                    if (is_gac)
+                        proj_settings["image_width"] = 409;
+
+                    avhrr_products.set_proj_cfg(proj_settings);
 
                     for (int i = 0; i < 5; i++)
                         avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});

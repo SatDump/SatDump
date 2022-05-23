@@ -34,6 +34,8 @@
 #include "products/dataset.h"
 #include "products/processor/processor.h"
 
+#include "common/projection/sat_proj/sat_proj.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -74,6 +76,63 @@ int main(int argc, char *argv[])
 
     // logger->trace("\n" + img_pro.contents.dump(4));
 
+    img_pro.images[3].image.equalize();
+
+    std::shared_ptr<satdump::SatelliteProjection> satellite_proj = satdump::get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
+    geodetic::projection::EquirectangularProjection projector_target;
+    projector_target.init(2048 * 4, 1024 * 4, -180, 90, 180, -90);
+
+    image::Image<uint16_t> final_image(2048 * 4, 1024 * 4, 3);
+
+    int radius = 0;
+
+    for (int img_y = 0; img_y < img_pro.images[0].image.height(); img_y++)
+    {
+        for (int img_x = 0; img_x < img_pro.images[0].image.width(); img_x++)
+        {
+            geodetic::geodetic_coords_t position;
+            geodetic::geodetic_coords_t position2, position3;
+            if (!satellite_proj->get_position(img_x, img_y, position))
+            {
+                int target_x, target_y;
+                projector_target.forward(position.lon, position.lat, target_x, target_y);
+
+                if (!satellite_proj->get_position(img_x + 1, img_y, position2) && !satellite_proj->get_position(img_x, img_y, position3))
+                {
+                    int target_x2, target_y2;
+                    projector_target.forward(position2.lon, position2.lat, target_x2, target_y2);
+
+                    int target_x3, target_y3;
+                    projector_target.forward(position3.lon, position3.lat, target_x3, target_y3);
+
+                    int new_radius1 = abs(target_x2 - target_x);
+                    int new_radius2 = abs(target_y2 - target_y);
+
+                    int new_radius = std::max(new_radius1, new_radius2);
+
+                    int max = img_pro.images[0].image.width() / 16;
+
+                    if (new_radius < max)
+                        radius = new_radius;
+                    else if (new_radius1 < max)
+                        radius = new_radius1;
+                    else if (new_radius2 < max)
+                        radius = new_radius2;
+                }
+
+                uint16_t color[3];
+                color[0] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
+                color[1] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
+                color[2] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
+
+                final_image.draw_circle(target_x, target_y, radius, color, true);
+            }
+        }
+
+        logger->info("{:d} / {:d}", img_y, img_pro.images[0].image.height());
+    }
+
+    /*
     std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
@@ -94,25 +153,42 @@ int main(int argc, char *argv[])
     warper.update();
 
     satdump::warp::WarpResult result = warper.warp();
+*/
 
     logger->info("Drawing map...");
 
-    geodetic::projection::EquirectangularProjection projector;
-    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+    /*
+        geodetic::projection::EquirectangularProjection projector;
+        projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+
+        unsigned short color[3] = {0, 65535, 0};
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       result.output_image,
+                                       color,
+                                       [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                       {
+                                           int x, y;
+                                           projector.forward(lon, lat, x, y);
+                                           return {x, y};
+                                       });
+
+        // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
+        logger->info("Saving...");
+
+        result.output_image.save_png("test.png");
+        */
 
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                   result.output_image,
+                                   final_image,
                                    color,
-                                   [operation, &result, &projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                   [&projector_target](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
                                    {
                                        int x, y;
-                                       projector.forward(lon, lat, x, y);
+                                       projector_target.forward(lon, lat, x, y);
                                        return {x, y};
                                    });
 
-    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");
-
-    result.output_image.save_png("test.png");
+    final_image.save_png("test.png");
 }
