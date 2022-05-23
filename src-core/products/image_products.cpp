@@ -24,9 +24,12 @@ namespace satdump
             if (images[c].timestamps.size() > 0)
             {
                 contents["images"][c]["timestamps"] = images[c].timestamps;
-                contents["images"][c]["ifov_y"] = images[c].ifov_y;
-                contents["images"][c]["ifov_x"] = images[c].ifov_x;
             }
+
+            contents["images"][c]["ifov_y"] = images[c].ifov_y;
+            contents["images"][c]["ifov_x"] = images[c].ifov_x;
+            if (images[c].offset_x != 0)
+                contents["images"][c]["offset_x"] = images[c].offset_x;
 
             if (!save_as_matrix)
             {
@@ -104,9 +107,12 @@ namespace satdump
             if (contents["images"][c].contains("timestamps"))
             {
                 img_holder.timestamps = contents["images"][c]["timestamps"].get<std::vector<double>>();
-                img_holder.ifov_y = contents["images"][c]["ifov_y"].get<int>();
-                img_holder.ifov_x = contents["images"][c]["ifov_x"].get<int>();
             }
+
+            img_holder.ifov_y = contents["images"][c]["ifov_y"].get<int>();
+            img_holder.ifov_x = contents["images"][c]["ifov_x"].get<int>();
+            if (contents["images"][c].contains("offset_x"))
+                img_holder.offset_x = contents["images"][c]["offset_x"].get<int>();
 
             images.push_back(img_holder);
 
@@ -153,19 +159,43 @@ namespace satdump
         std::vector<int> channel_indexes;
         std::vector<std::string> channel_numbers;
         std::vector<image::Image<uint16_t>> images_obj;
+        std::map<std::string, int> offsets;
+
+        int max_width_total = 0;
+        int max_width_used = 0;
+        int min_offset = 100000000;
 
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
 
+            if (max_width_total < img.image.width())
+                max_width_total = img.image.width();
+
             if (cfg.equation.find(equ_str) != std::string::npos)
             {
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(img.channel_name);
                 images_obj.push_back(img.image);
+                offsets.emplace(img.channel_name, img.offset_x);
                 logger->debug("Composite needs channel {:s}", equ_str);
+
+                if (max_width_used < img.image.width())
+                    max_width_used = img.image.width();
+
+                if (min_offset > img.offset_x)
+                    min_offset = img.offset_x;
             }
+        }
+
+        int ratio = max_width_total / max_width_used;
+
+        // Offset... Offsets to 0 and scale if needed
+        for (std::pair<const std::string, int> &img_off : offsets)
+        {
+            img_off.second -= min_offset;
+            img_off.second /= ratio;
         }
 
         if (product.needs_correlation)
@@ -234,7 +264,7 @@ namespace satdump
             }
         }
 
-        image::Image<uint16_t> rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, cfg.offsets, progress);
+        image::Image<uint16_t> rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
         if (cfg.equalize)
             rgb_composite.equalize();

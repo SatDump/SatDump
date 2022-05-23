@@ -16,6 +16,7 @@ namespace satdump
             std::vector<double> timestamps = std::vector<double>();
             int ifov_y = -1;
             int ifov_x = -1;
+            int offset_x = 0;
         };
 
         std::vector<ImageHolder> images;
@@ -162,7 +163,6 @@ namespace satdump
         bool invert = false;
         bool normalize = false;
         bool white_balance = false;
-        nlohmann::json offsets;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -172,7 +172,6 @@ namespace satdump
         j["invert"] = v.invert;
         j["normalize"] = v.normalize;
         j["white_balance"] = v.white_balance;
-        j["offsets"] = v.offsets;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -186,8 +185,6 @@ namespace satdump
             v.normalize = j["normalize"].get<bool>();
         if (j.contains("white_balance"))
             v.white_balance = j["white_balance"].get<bool>();
-        if (j.contains("offsets"))
-            v.offsets = j["offsets"];
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr);

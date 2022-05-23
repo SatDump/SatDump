@@ -403,7 +403,7 @@ namespace fengyun3
                     image::Image<uint16_t> image = mersi1_reader.getChannel(i);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, i * 8});
                 }
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);
@@ -440,12 +440,42 @@ namespace fengyun3
                 mersi2_products.bit_depth = 12;
                 mersi2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
 
+                // Channel offsets relative to Ch1
+                int offset[25] = {
+                    0,
+                    8,
+                    0,
+                    24,
+                    -8,
+                    16,
+
+                    16,
+                    32,
+                    -32,
+                    -24,
+                    32,
+                    0,
+                    8,
+                    -16,
+                    -8,
+                    16,
+                    24,
+                    8,
+                    -8,
+                    16,
+                    -16,
+                    32,
+                    32,
+                    -32,
+                    -24,
+                };
+
                 for (int i = 0; i < 25; i++)
                 {
                     image::Image<uint16_t> image = mersi2_reader.getChannel(i);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                    mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);
@@ -482,12 +512,35 @@ namespace fengyun3
                 mersill_products.bit_depth = 12;
                 mersill_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
 
+                // Channel offsets relative to Ch1
+                int offset[18] = {
+                    0,
+                    16,
+
+                    0,
+                    -16,
+                    32,
+                    8,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                };
+
                 for (int i = 0; i < 18; i++)
                 {
                     image::Image<uint16_t> image = mersill_reader.getChannel(i);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                    mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);

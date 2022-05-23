@@ -100,7 +100,7 @@ namespace image
                                 continue;
                             }
 
-                            pixe_ch += offsets[channelNumbers[i]];
+                            pixe_ch += offsets[channelNumbers[i]] * image_scales[i].second;
                         }
                     }
 

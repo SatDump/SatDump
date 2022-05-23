@@ -38,6 +38,25 @@
 
 int main(int argc, char *argv[])
 {
+    image::Image<uint16_t> mersi_ch1, mersi_ch2;
+    mersi_ch1.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-LL/MERSILL-1.png");
+    mersi_ch2.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-LL/MERSILL-9.png");
+
+    mersi_ch2.resize(mersi_ch2.width() * 4, mersi_ch2.height() * 4);
+
+    mersi_ch1.equalize();
+    mersi_ch2.equalize();
+
+    image::Image<uint16_t> mersi_rgb(mersi_ch1.width(), mersi_ch1.height(), 3);
+
+    mersi_rgb.draw_image(0, mersi_ch1, 0);
+    mersi_rgb.draw_image(1, mersi_ch1, 0);
+    mersi_rgb.draw_image(2, mersi_ch2, 16);
+
+    mersi_rgb.save_png("mersi_test.png");
+
+    return 0; // TMP
+
     initLogger();
 
     std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
