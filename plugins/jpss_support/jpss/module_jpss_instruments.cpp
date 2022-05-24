@@ -141,6 +141,8 @@ namespace jpss
             else if (scid == JPSS4_SCID)
                 norad = JPSS4_NORAD;
 
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
@@ -167,10 +169,11 @@ namespace jpss
                 satdump::ImageProducts atms_products;
                 atms_products.instrument_name = "atms";
                 atms_products.has_timestamps = true;
-                // atms_products.set_tle(satellite_tle);
+                atms_products.set_tle(satellite_tle);
                 atms_products.bit_depth = 16;
                 atms_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 atms_products.set_timestamps(atms_reader.timestamps);
+                atms_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json")));
 
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), atms_reader.getChannel(i)});
@@ -251,10 +254,10 @@ namespace jpss
                 viirs_products.instrument_name = "viirs";
                 viirs_products.has_timestamps = true;
                 viirs_products.needs_correlation = true;
-                // viirs_products.set_tle(satellite_tle);
+                viirs_products.set_tle(satellite_tle);
                 viirs_products.bit_depth = 16;
                 viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-                // viirs_products.set_timestamps(mhs_reader.timestamps);
+                // viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss_viirs.json")));
 
                 for (int i = 0; i < 16; i++)
                 {
