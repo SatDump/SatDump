@@ -9,6 +9,7 @@
 #include "common/utils.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
+#include "resources.h"
 
 namespace eos
 {
@@ -149,6 +150,14 @@ namespace eos
             else if (d_satellite == AURA)
                 dataset.satellite_name = "Aura";
 
+            std::optional<satdump::TLE> satellite_tle;
+            if (d_satellite == AQUA)
+                satellite_tle = satdump::general_tle_registry.get_from_norad(27424);
+            else if (d_satellite == TERRA)
+                satellite_tle = satdump::general_tle_registry.get_from_norad(25994);
+            else if (d_satellite == AURA)
+                satellite_tle = satdump::general_tle_registry.get_from_norad(28376);
+
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
                 dataset.timestamp = avg_overflowless(modis_reader.timestamps_1000);
@@ -173,6 +182,7 @@ namespace eos
                 modis_products.instrument_name = "modis";
                 modis_products.has_timestamps = true;
                 modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                modis_products.set_tle(satellite_tle);
                 // avhrr_products.set_timestamps(modis_reader.timestamps);
 
                 for (int i = 0; i < 2; i++)
@@ -221,44 +231,46 @@ namespace eos
             if (d_satellite == AQUA) // AIRS
             {
                 airs_status = SAVING;
+                std::string directory_hd = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AIRS/HD";
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AIRS";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
+                if (!std::filesystem::exists(directory_hd))
+                    std::filesystem::create_directory(directory_hd);
 
                 logger->info("----------- AIRS");
                 logger->info("Lines : " + std::to_string(airs_reader.lines));
 
-                // for (int i = 0; i < 4; i++)
-                //{
-                //     logger->info("HD Channel " + std::to_string(i + 1) + "...");
-                //     WRITE_IMAGE(airs_reader.getHDChannel(i), directory + "/AIRS-HD-" + std::to_string(i + 1) + ".png");
-                // }
+                satdump::ImageProducts airs_hd_products;
+                airs_hd_products.instrument_name = "airs_hd";
+                airs_hd_products.has_timestamps = true;
+                airs_hd_products.bit_depth = 16;
+                airs_hd_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                airs_hd_products.set_tle(satellite_tle);
+                // airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+
+                for (int i = 0; i < 4; i++)
+                    airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getHDChannel(i)});
+
+                airs_hd_products.save(directory_hd);
+                dataset.products_list.push_back("AIRS/HD");
 
                 satdump::ImageProducts airs_products;
                 airs_products.instrument_name = "airs";
                 airs_products.has_timestamps = true;
+                airs_products.bit_depth = 16;
+                airs_products.save_as_matrix = true;
                 airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                // airs_products.set_timestamps(airs_reader.timestamps);
+                airs_products.set_tle(satellite_tle);
+                // airs_products.set_timestamps(airs_reader.timestamps_ifov);
 
-                for (int i = 0; i < 4; i++)
-                    airs_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getHDChannel(i)});
+                for (int i = 0; i < 2666; i++)
+                    airs_products.images.push_back({"AIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getChannel(i)});
 
                 airs_products.save(directory);
+                dataset.products_list.push_back("AIRS");
 
-                // There nearly 3000 channels... So we write that in a specific folder not to fill up the main one
-                // if (!std::filesystem::exists(directory + "/Channels"))
-                //    std::filesystem::create_directory(directory + "/Channels");
-
-                // for (int i = 0; i < 2666; i++)
-                //{
-                //     logger->info("Channel " + std::to_string(i + 1) + "...");
-                //     WRITE_IMAGE(airs_reader.getChannel(i), directory + "/Channels/AIRS-" + std::to_string(i + 1) + ".png");
-                // }
-
-                image::Image<uint16_t> imageAll = image::make_manyimg_composite<uint16_t>(100, 27, 2666, [this](int c)
-                                                                                          { return airs_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll, directory + "/AIRS-ALL.png");
                 airs_status = DONE;
             }
 
@@ -274,17 +286,24 @@ namespace eos
                 logger->info("Lines (AMSU A1) : " + std::to_string(amsu_a1_reader.lines));
                 logger->info("Lines (AMSU A2) : " + std::to_string(amsu_a2_reader.lines));
 
+                satdump::ImageProducts amsu_products;
+                amsu_products.instrument_name = "amsu_a";
+                amsu_products.has_timestamps = true;
+                amsu_products.set_tle(satellite_tle);
+                amsu_products.bit_depth = 16;
+                amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                // amsu_products.set_timestamps(mhs_reader.timestamps);
+                amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_amsu.json")));
+
                 for (int i = 0; i < 2; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(amsu_a2_reader.getChannel(i), directory + "/AMSU-A2-" + std::to_string(i + 1) + ".png");
-                }
+                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
 
                 for (int i = 0; i < 13; i++)
-                {
-                    logger->info("Channel " + std::to_string(i + 3) + "...");
-                    WRITE_IMAGE(amsu_a1_reader.getChannel(i), directory + "/AMSU-A1-" + std::to_string(i + 3) + ".png");
-                }
+                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1) + ".png", std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
+
+                amsu_products.save(directory);
+                dataset.products_list.push_back("AMSU");
+
                 amsu_status = DONE;
             }
 

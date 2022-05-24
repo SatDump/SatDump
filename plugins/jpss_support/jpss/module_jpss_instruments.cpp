@@ -11,6 +11,7 @@
 #include "products/products.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
+#include "resources.h"
 
 namespace jpss
 {
@@ -381,7 +382,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS M%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", viirs_reader_moderate[i].segments.size());
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_moderate[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_moderate_status[i]);
                 }
@@ -392,7 +393,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS I%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", viirs_reader_imaging[i].segments.size());
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_imaging[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_imaging_status[i]);
                 }
@@ -401,7 +402,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("VIIRS DNB");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", viirs_reader_dnb[0].segments.size());
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_dnb[0].segments.size());
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(viirs_dnb_status);
 
