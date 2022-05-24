@@ -11,6 +11,7 @@
 #include "products/dataset.h"
 #include "common/simple_deframer.h"
 #include "fengyun3.h"
+#include "resources.h"
 
 namespace fengyun3
 {
@@ -317,6 +318,7 @@ namespace fengyun3
                 mwhs1_products.set_tle(satellite_tle);
                 mwhs1_products.bit_depth = 16;
                 mwhs1_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwhs1_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwhs1.json")));
 
                 for (int i = 0; i < 5; i++)
                     mwhs1_products.images.push_back({"MWHS1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwhs1_reader.getChannel(i)});
@@ -346,6 +348,7 @@ namespace fengyun3
                 mwhs2_products.set_tle(satellite_tle);
                 mwhs2_products.bit_depth = 16;
                 mwhs2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwhs2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_cde_mwhs2.json")));
 
                 for (int i = 0; i < 15; i++)
                     mwhs2_products.images.push_back({"MWHS2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwhs2_reader.getChannel(i)});
@@ -375,6 +378,7 @@ namespace fengyun3
                 virr_products.set_tle(satellite_tle);
                 virr_products.bit_depth = 10;
                 virr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                virr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abc_virr.json")));
 
                 for (int i = 0; i < 10; i++)
                     virr_products.images.push_back({"VIRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), virr_reader.getChannel(i)});
@@ -665,6 +669,7 @@ namespace fengyun3
                 erm_products.set_tle(satellite_tle);
                 erm_products.bit_depth = 16;
                 erm_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                erm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abc_erm.json")));
 
                 erm_products.images.push_back({"ERM-1.png", "1", erm_reader.getChannel()});
 
@@ -693,6 +698,7 @@ namespace fengyun3
                 mwts1_products.set_tle(satellite_tle);
                 mwts1_products.bit_depth = 16;
                 mwts1_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwts1_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwts1.json")));
 
                 for (int i = 0; i < 27; i++)
                     mwts1_products.images.push_back({"MWTS1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts1_reader.getChannel(i)});
@@ -722,6 +728,7 @@ namespace fengyun3
                 mwts2_products.set_tle(satellite_tle);
                 mwts2_products.bit_depth = 16;
                 mwts2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwts2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mwts2.json")));
 
                 for (int i = 0; i < 18; i++)
                     mwts2_products.images.push_back({"MWTS2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts2_reader.getChannel(i)});
@@ -751,6 +758,7 @@ namespace fengyun3
                 mwts3_products.set_tle(satellite_tle);
                 mwts3_products.bit_depth = 16;
                 mwts3_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwts3_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_e_mwts3.json")));
 
                 for (int i = 0; i < 18; i++)
                     mwts3_products.images.push_back({"MWTS3-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts3_reader.getChannel(i)});

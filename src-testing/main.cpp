@@ -38,6 +38,7 @@
 
 int main(int argc, char *argv[])
 {
+#if 0
     image::Image<uint16_t> mersi_ch1, mersi_ch2;
     mersi_ch1.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-1/MERSI1-1.png");
     mersi_ch2.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-1/MERSI1-20.png");
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
     mersi_rgb.save_png("mersi_test.png");
 
     return 0; // TMP
+#endif
 
     initLogger();
 
@@ -95,12 +97,13 @@ int main(int argc, char *argv[])
 
     // logger->trace("\n" + img_pro.contents.dump(4));
 
-    img_pro.images[3].image.equalize();
+    // img_pro.images[3].image.equalize();
 
-    std::shared_ptr<satdump::SatelliteProjection> satellite_proj = satdump::get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
-    geodetic::projection::EquirectangularProjection projector_target;
-    projector_target.init(2048 * 4, 1024 * 4, -180, 90, 180, -90);
+    // std::shared_ptr<satdump::SatelliteProjection> satellite_proj = satdump::get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
+    // geodetic::projection::EquirectangularProjection projector_target;
+    // projector_target.init(2048 * 4, 1024 * 4, -180, 90, 180, -90);
 
+#if 0
     image::Image<uint16_t> final_image(2048 * 4, 1024 * 4, 3);
 
     int radius = 0;
@@ -151,11 +154,18 @@ int main(int argc, char *argv[])
         logger->info("{:d} / {:d}", img_y, img_pro.images[0].image.height());
     }
 
-    /*
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
+#endif
+
+    nlohmann::ordered_json fdsfsdf = img_pro.get_proj_cfg();
+    fdsfsdf["yaw_offset"] = 2;
+    fdsfsdf["roll_offset"] = -1.5;
+    fdsfsdf["scan_angle"] = 110;
+    fdsfsdf["timestamp_offset"] = 0;
+
+    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(fdsfsdf, img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch1,ch1,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
 
     img_pro.images[0].image.equalize();
@@ -163,40 +173,38 @@ int main(int argc, char *argv[])
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
-    operation.input_image = img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 8;
-    operation.output_height = 1024 * 8;
+    operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
+    operation.output_width = 2048 * 2;
+    operation.output_height = 1024 * 2;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;
     warper.update();
 
     satdump::warp::WarpResult result = warper.warp();
-*/
 
     logger->info("Drawing map...");
 
-    /*
-        geodetic::projection::EquirectangularProjection projector;
-        projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+    geodetic::projection::EquirectangularProjection projector;
+    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
 
-        unsigned short color[3] = {0, 65535, 0};
-        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                       result.output_image,
-                                       color,
-                                       [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
-                                       {
-                                           int x, y;
-                                           projector.forward(lon, lat, x, y);
-                                           return {x, y};
-                                       });
+    unsigned short color[3] = {0, 65535, 0};
+    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                   result.output_image,
+                                   color,
+                                   [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                   {
+                                       int x, y;
+                                       projector.forward(lon, lat, x, y);
+                                       return {x, y};
+                                   });
 
-        // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
-        logger->info("Saving...");
+    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
+    logger->info("Saving...");
 
-        result.output_image.save_png("test.png");
-        */
+    result.output_image.save_png("test.png");
 
+#if 0
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    final_image,
@@ -210,4 +218,5 @@ int main(int argc, char *argv[])
 
     logger->info("Saving...");
     final_image.save_png("test.png");
+#endif
 }
