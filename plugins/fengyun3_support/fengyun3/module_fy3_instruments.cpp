@@ -80,8 +80,11 @@ namespace fengyun3
             def::SimpleDeframer waai_deframer(0x55aa55aa55aa, 48, 524336, 0);
             def::SimpleDeframer windrad_deframer1(0xfaf355aa, 32, 13160, 0);
             def::SimpleDeframer windrad_deframer2(0xfaf3aabb, 32, 18072, 0);
+            def::SimpleDeframer gas_deframer(0xbb22bb20, 32, 5363264, 0);
 
             std::vector<uint8_t> fy_scids;
+
+            // std::ofstream hiras_test("hiras.frm");
 
             while (!data_in.eof())
             {
@@ -151,9 +154,19 @@ namespace fengyun3
                 }
                 else if (d_satellite == FY_3D)
                 {
-                    if (vcdu.vcid == 3) // MERSI-LL
+                    if (vcdu.vcid == 3) // MERSI-2
                     {
                         mersi2_reader.work(&cadu[14], 882);
+                    }
+                    // else if (vcdu.vcid == 6) // HIRAS-1
+                    //{ // 0x87762226 0x316e4f02
+                    //     hiras_test.write((char *)&cadu[14], 882);
+                    // }
+                    else if (vcdu.vcid == 9) // GAS
+                    {
+                        std::vector<std::vector<uint8_t>> out = gas_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                            gas_reader.work(frameVec);
                     }
                     else if (vcdu.vcid == 5) // WAAI
                     {

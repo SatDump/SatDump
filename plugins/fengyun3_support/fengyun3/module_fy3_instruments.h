@@ -14,6 +14,7 @@
 #include "instruments/mwhs/mwhs_reader.h"
 #include "instruments/erm/erm_reader.h"
 #include "instruments/mersi/mersi_reader.h"
+#include "instruments/gas/gas_reader.h"
 
 namespace fengyun3
 {
@@ -59,6 +60,7 @@ namespace fengyun3
             mersi::MERSI1Reader mersi1_reader;
             mersi::MERSI2Reader mersi2_reader;
             mersi::MERSILLReader mersill_reader;
+            gas::GASReader gas_reader;
 
             // Statuses
             instrument_status_t mersi1_status = DECODING;
