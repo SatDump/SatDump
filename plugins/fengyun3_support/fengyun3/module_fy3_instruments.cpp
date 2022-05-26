@@ -70,6 +70,13 @@ namespace fengyun3
                 windrad_reader1 = std::make_unique<windrad::WindRADReader>(758, "", windrad_directory + "/C-Band");
                 windrad_reader2 = std::make_unique<windrad::WindRADReader>(1065, "", windrad_directory + "/Ku-Band");
             }
+            else if (d_satellite == FY_3D)
+            {
+                std::string wai_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/WAI";
+                if (!std::filesystem::exists(wai_directory))
+                    std::filesystem::create_directory(wai_directory);
+                wai_reader = std::make_unique<wai::WAIReader>(wai_directory);
+            }
 
             // Demuxers
             ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid12(882, true);
@@ -85,11 +92,7 @@ namespace fengyun3
 
             std::vector<uint8_t> fy_scids;
 
-            // std::ofstream hiras_test("hiras.frm");
-            // std::ofstream mwri_test("mwri.frm");
-            // std::ofstream mwhs_test("mwhs.frm");
-            // std::ofstream mersi_test("mersi.frm");
-            // std::ofstream waai_test("waai.frm");
+            // std::ofstream gas_test("gas.frm");
 
             while (!data_in.eof())
             {
@@ -177,7 +180,7 @@ namespace fengyun3
                     {
                         std::vector<std::vector<uint8_t>> out = waai_deframer.work(&cadu[14], 882);
                         for (std::vector<uint8_t> frameVec : out)
-                            waai_reader.work(frameVec);
+                            wai_reader->work(frameVec);
                     }
                     else if (vcdu.vcid == 10) // MWRI
                     {
@@ -630,32 +633,31 @@ namespace fengyun3
                 mwri_status = DONE;
             }
 
-            if (d_satellite == FY_3D) // WAAI
+            if (d_satellite == FY_3D) // WAI
             {
-                waai_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/WAAI";
+                wai_status = SAVING;
+
+                logger->info("----------- WAI");
+                logger->info("Frames : " + std::to_string(wai_reader->images_count));
+
+                wai_status = DONE;
+            }
+
+            if (d_satellite == FY_3D) // GAS
+            {
+                gas_status = SAVING;
+
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/GAS";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
 
-                logger->info("----------- WAAI");
-                logger->info("Lines : " + std::to_string(waai_reader.lines));
+                logger->info("----------- GAS");
+                logger->info("Lines : " + std::to_string(gas_reader.lines));
 
-                satdump::ImageProducts waai_products;
-                waai_products.instrument_name = "waai";
-                // mwri_products.has_timestamps = false;//true;
-                // waai_products.set_tle(satellite_tle);
-                waai_products.bit_depth = 16;
-                waai_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                gas_reader.getChannel().save_png(directory + "/GAS.png");
 
-                waai_products.images.push_back({"WAAI.png", "1", waai_reader.getChannel()});
-
-                // mwri_products.set_timestamps(mwri_reader.timestamps);
-
-                waai_products.save(directory);
-                dataset.products_list.push_back("WAAI");
-
-                waai_status = DONE;
+                gas_status = DONE;
             }
 
             if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == DPT || d_downlink == AHRPT)) // ERM
@@ -894,11 +896,22 @@ namespace fengyun3
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("WAAI");
+                    ImGui::Text("WAI");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", waai_reader.lines);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", wai_reader->images_count);
                     ImGui::TableSetColumnIndex(2);
-                    drawStatus(waai_status);
+                    drawStatus(wai_status);
+                }
+
+                if (d_satellite == FY_3D)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("GAS");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", gas_reader.lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(gas_status);
                 }
 
                 if (d_satellite == FY_3E)

@@ -1,0 +1,58 @@
+#include "wai_reader.h"
+#include "logger.h"
+
+namespace fengyun3
+{
+    namespace wai
+    {
+        WAIReader::WAIReader(std::string directory) : directory(directory)
+        {
+            lines = 0;
+            image = image::Image<uint16_t>(832, 832, 1);
+        }
+
+        WAIReader::~WAIReader()
+        {
+        }
+
+        void WAIReader::writeCurrent()
+        {
+            image.save_png(std::string(directory + "/WAI_" + std::to_string(images_count++ + 1) + ".png").c_str());
+            logger->info("Saving WAI image to" + directory + "/WAI_" + std::to_string(images_count++ + 1) + ".png");
+            image = image::Image<uint16_t>(832, 832, 1);
+
+            lines = 0;
+        }
+
+        void WAIReader::work(std::vector<uint8_t> &packet)
+        {
+            uint8_t marker = packet[10] >> 6;
+
+            if (marker == 2)
+            {
+                if (lines < 832 * 832)
+                    for (int i = 0; i < 3603; i++)
+                        image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
+                lines += 3603;
+            }
+            else if (marker == 1) // Start
+            {
+                // Save old
+                if (lines > 0)
+                    writeCurrent();
+
+                if (lines < 832 * 832)
+                    for (int i = 0; i < 32591; i++)
+                        image[lines + i] = packet[320 + i * 2 + 0] << 8 | packet[320 + i * 2 + 1];
+                lines += 32591;
+            }
+            else
+            {
+                if (lines < 832 * 832)
+                    for (int i = 0; i < 32737; i++)
+                        image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
+                lines += 32737;
+            }
+        }
+    } // namespace virr
+} // namespace fengyun
