@@ -89,7 +89,7 @@ namespace fengyun3
             // std::ofstream mwri_test("mwri.frm");
             // std::ofstream mwhs_test("mwhs.frm");
             // std::ofstream mersi_test("mersi.frm");
-            std::ofstream waai_test("waai.frm");
+            // std::ofstream waai_test("waai.frm");
 
             while (!data_in.eof())
             {
