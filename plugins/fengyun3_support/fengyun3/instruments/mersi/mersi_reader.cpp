@@ -28,6 +28,31 @@ namespace fengyun3
             for (int i = 0; i < calib_length; i++)
                 calibration[(segments + 1) * calib_length + i] = repacked_calib[i] << 4;
             calibration.resize(calib_length * (segments + 3));
+
+            // Recompose and parse timestamp
+            uint8_t timestamp[8];
+
+            timestamp[0] = (current_frame[12] & 0b1111) << 4 | current_frame[13] >> 4;
+            timestamp[1] = (current_frame[13] & 0b1111) << 4 | (current_frame[11] >> 4);
+            timestamp[2] = (current_frame[11] & 0b1111) << 4 | current_frame[12] >> 4;
+
+            timestamp[3] = (current_frame[9] & 0b1111) << 4 | current_frame[10] >> 4;
+            timestamp[4] = (current_frame[10] & 0b1111) << 4 | (current_frame[8] >> 4);
+
+            timestamp[5] = (current_frame[8] & 0b1111) << 4 | current_frame[9] >> 4;
+
+            timestamp[6] = (current_frame[19] & 0b1111) << 4 | current_frame[20] >> 4;
+            timestamp[7] = (current_frame[20] & 0b1111) << 4 | (current_frame[18] >> 4);
+
+            uint16_t days = timestamp[0] << 8 | timestamp[1];
+            uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
+            uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
+
+            double currentTime = double(10957 + days) * 86400.0 +
+                                 double(milliseconds_of_day) / double(1e3) +
+                                 double(subsecond_cnt) / 3950 + 12 * 3600;
+
+            last_timestamp = currentTime;
         }
 
         void MERSIReader::process_scan()
@@ -35,7 +60,10 @@ namespace fengyun3
             int marker = (current_frame[0]) << 2 | current_frame[1] >> 6;
 
             if (marker == 0)
+            {
+                timestamps.push_back(last_timestamp);
                 segments++;
+            }
 
             current_frame.push_back(0);
             shift_array_left(&current_frame[imagery_offset_bytes], current_frame.size() - (imagery_offset_bytes + 1), imagery_offset_bits, current_frame.data());

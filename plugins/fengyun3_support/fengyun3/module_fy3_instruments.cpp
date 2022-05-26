@@ -86,6 +86,9 @@ namespace fengyun3
             std::vector<uint8_t> fy_scids;
 
             // std::ofstream hiras_test("hiras.frm");
+            // std::ofstream mwri_test("mwri.frm");
+            // std::ofstream mwhs_test("mwhs.frm");
+            std::ofstream mersi_test("mersi.frm");
 
             while (!data_in.eof())
             {
@@ -158,6 +161,7 @@ namespace fengyun3
                     if (vcdu.vcid == 3) // MERSI-2
                     {
                         mersi2_reader.work(&cadu[14], 882);
+                        mersi_test.write((char *)&cadu[14], 882);
                     }
                     // else if (vcdu.vcid == 6) // HIRAS-1
                     //{ // 0x87762226 0x316e4f02
@@ -480,7 +484,9 @@ namespace fengyun3
                 mersi2_products.has_timestamps = true;
                 mersi2_products.set_tle(satellite_tle);
                 mersi2_products.bit_depth = 12;
-                mersi2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mersi2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                mersi2_products.set_timestamps(mersi2_reader.timestamps);
+                mersi2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mersi2.json")));
 
                 // Channel offsets relative to Ch1
                 int offset[25] = {
@@ -608,15 +614,15 @@ namespace fengyun3
 
                 satdump::ImageProducts mwri_products;
                 mwri_products.instrument_name = "mwri";
-                // mwri_products.has_timestamps = false;//true;
-                // mwri_products.set_tle(satellite_tle);
-                mwri_products.bit_depth = 16;
+                mwri_products.has_timestamps = true;
+                mwri_products.set_tle(satellite_tle);
+                mwri_products.bit_depth = 12;
                 mwri_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwri_products.set_timestamps(mwri_reader.timestamps);
+                mwri_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abcd_mwri1.json")));
 
                 for (int i = 0; i < 10; i++)
                     mwri_products.images.push_back({"MWRI-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwri_reader.getChannel(i)});
-
-                // mwri_products.set_timestamps(mwri_reader.timestamps);
 
                 mwri_products.save(directory);
                 dataset.products_list.push_back("MWRI");

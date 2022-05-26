@@ -20,6 +20,8 @@ namespace fengyun3
             int lines;
             void work(std::vector<uint8_t> &packet);
             image::Image<uint16_t> getChannel(int channel);
+
+            std::vector<double> timestamps;
         };
     } // namespace virr
 } // namespace fengyun

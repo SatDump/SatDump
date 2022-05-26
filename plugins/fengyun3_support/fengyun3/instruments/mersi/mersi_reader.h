@@ -75,6 +75,9 @@ namespace fengyun3
 
             int current_frame_size = -1;
 
+            // Timestamp
+            double last_timestamp;
+
             void process_curr();
             void process_head();
             void process_scan();

@@ -4,6 +4,8 @@
 #include "common/geodetic/vincentys_calculations.h"
 #include "nlohmann/json_utils.h"
 
+#include "logger.h"
+
 namespace satdump
 {
     namespace gcp_compute
@@ -84,7 +86,7 @@ namespace satdump
             std::vector<double> timestamps = timestamps_raw.get<std::vector<double>>();
 
             int image_width = cfg["image_width"].get<int>();
-            float scan_angle = cfg["scan_angle"].get<float>();
+            float scan_angle = cfg.contains("scan_angle") ? cfg["scan_angle"].get<float>() : (cfg["ifov_x_scan_angle"].get<float>() * cfg["ifov_count"].get<int>());
 
             int gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
             int gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
@@ -113,7 +115,7 @@ namespace satdump
             values.push_back(image_width - 1);
 
             bool last_was_invalid = false;
-            for (int y = 0; y < (timestamps.size() / 30) * 64; y++)
+            for (int y = 0; y < (timestamps.size() / ifov_count) * ifov_y_size; y++)
             {
                 for (int x : values)
                 {
@@ -140,6 +142,8 @@ namespace satdump
                     bool ascending = false;
 
                     double currentIfovOffset = -(((double(currentIfov) - (double(ifov_count) / 2)) / double(ifov_count)) * scan_angle);
+                    if (ifov_count == 1)
+                        currentIfovOffset = 0;
                     double ifov_x = int(final_x) % ifov_x_size;
                     double ifov_y = (ifov_y_size - 1) - (y % ifov_y_size);
 
@@ -151,8 +155,6 @@ namespace satdump
                     geodetic::geodetic_coords_t ground_position;
                     geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
                     ground_position.toDegs();
-
-                    // logger->info("{:d} {:d} {:f} {:s}", x, y, pos_curr.lat, img_pro.get_tle().name);
 
                     if (y % gcp_spacing_y == 0 || y + 1 == (int)timestamps.size() || last_was_invalid)
                         gcps.push_back({(double)x, (double)y, (double)ground_position.lon, (double)ground_position.lat});
