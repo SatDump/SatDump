@@ -162,14 +162,16 @@ int main(int argc, char *argv[])
     fdsfsdf["scan_angle"] = 110;
     fdsfsdf["timestamp_offset"] = 0;
 
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mersi2.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
+    logger->trace("\n" + img_pro.contents.dump(4));
+
+    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/aqua_modis.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch1,ch4,ch3"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
 
-    img_pro.images[0].image.equalize();
-    img_pro.images[0].image.to_rgb();
+    // img_pro.images[0].image.equalize();
+    // img_pro.images[0].image.to_rgb();
 
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;

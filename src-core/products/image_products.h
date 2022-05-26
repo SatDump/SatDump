@@ -48,13 +48,20 @@ namespace satdump
 
         std::vector<double> get_timestamps(int image_index = -1)
         {
-            if (image_index == -1)
-                return contents["timestamps"].get<std::vector<double>>();
+            try
+            {
+                if (image_index == -1)
+                    return contents["timestamps"].get<std::vector<double>>();
 
-            if (images[image_index].timestamps.size() > 0)
-                return images[image_index].timestamps;
-            else
-                return contents["timestamps"].get<std::vector<double>>();
+                if (images[image_index].timestamps.size() > 0)
+                    return images[image_index].timestamps;
+                else
+                    return contents["timestamps"].get<std::vector<double>>();
+            }
+            catch (std::exception &e)
+            {
+                return {};
+            }
         }
 
         int get_ifov_y_size(int image_index = -1)

@@ -183,7 +183,11 @@ namespace eos
                 modis_products.has_timestamps = true;
                 modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 modis_products.set_tle(satellite_tle);
-                // avhrr_products.set_timestamps(modis_reader.timestamps);
+                modis_products.set_timestamps(modis_reader.timestamps_250);
+                if (d_satellite == AQUA)
+                    modis_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_modis.json")));
+                if (d_satellite == TERRA)
+                    modis_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/terra_modis.json")));
 
                 for (int i = 0; i < 2; i++)
                 {
@@ -292,7 +296,7 @@ namespace eos
                 amsu_products.set_tle(satellite_tle);
                 amsu_products.bit_depth = 16;
                 amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                // amsu_products.set_timestamps(mhs_reader.timestamps);
+                // amsu_products.set_timestamps(amsu_reader.timestamps);
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_amsu.json")));
 
                 for (int i = 0; i < 2; i++)
