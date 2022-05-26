@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cstring>
 
-#include "logger.h"
-
 namespace fengyun3
 {
     namespace mwhs2
@@ -26,8 +24,6 @@ namespace fengyun3
             double currentTime = fy3e_mode ? ccsds::parseCCSDSTimeFull(packet, 10957, 10000, 10000) + 12 * 3600 : // What the heck? Why use different values that way... Well, it works anyway
                                      ccsds::parseCCSDSTimeFull(packet, 10957) + 12 * 3600;                        // And of course normal on 3D...
             int marker = (packet.payload[35] >> 2) & 0b11;
-
-            logger->info("MWHS-2 Time : {:f}", currentTime);
 
             if (imageData.count(currentTime) <= 0 && marker == 0)
             {

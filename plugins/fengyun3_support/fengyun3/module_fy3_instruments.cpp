@@ -88,7 +88,8 @@ namespace fengyun3
             // std::ofstream hiras_test("hiras.frm");
             // std::ofstream mwri_test("mwri.frm");
             // std::ofstream mwhs_test("mwhs.frm");
-            std::ofstream mersi_test("mersi.frm");
+            // std::ofstream mersi_test("mersi.frm");
+            std::ofstream waai_test("waai.frm");
 
             while (!data_in.eof())
             {
@@ -161,7 +162,6 @@ namespace fengyun3
                     if (vcdu.vcid == 3) // MERSI-2
                     {
                         mersi2_reader.work(&cadu[14], 882);
-                        mersi_test.write((char *)&cadu[14], 882);
                     }
                     // else if (vcdu.vcid == 6) // HIRAS-1
                     //{ // 0x87762226 0x316e4f02
