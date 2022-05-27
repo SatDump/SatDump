@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 
     logger->trace("\n" + img_pro.contents.dump(4));
 
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/aqua_modis.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
+    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
     rgb_cfg.equation = "ch1,ch4,ch3"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
@@ -176,8 +176,8 @@ int main(int argc, char *argv[])
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 32;
-    operation.output_height = 1024 * 32;
+    operation.output_width = 2048 * 4;
+    operation.output_height = 1024 * 4;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;
