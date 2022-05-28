@@ -162,7 +162,7 @@ namespace satdump
         std::map<std::string, int> offsets;
 
         int max_width_total = 0;
-        int max_width_used = 0;
+        int max_width_used = 1;
         int min_offset = 100000000;
 
         for (int i = 0; i < (int)product.images.size(); i++)
@@ -187,6 +187,12 @@ namespace satdump
                 if (min_offset > img.offset_x)
                     min_offset = img.offset_x;
             }
+        }
+
+        if (channel_indexes.size() == 0)
+        {
+            logger->error("None of the required channels are present!");
+            return image::Image<uint16_t>();
         }
 
         int ratio = max_width_total / max_width_used;
