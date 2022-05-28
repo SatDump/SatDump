@@ -561,7 +561,9 @@ namespace fengyun3
                 mersill_products.has_timestamps = true;
                 mersill_products.set_tle(satellite_tle);
                 mersill_products.bit_depth = 12;
-                mersill_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mersill_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                mersill_products.set_timestamps(mersill_reader.timestamps);
+                mersill_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_e_mersill.json")));
 
                 // Channel offsets relative to Ch1
                 int offset[18] = {

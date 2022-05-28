@@ -30,6 +30,9 @@ namespace fengyun3
             int counter_max;
             int ch1000_width;
 
+            // Timestamp stuff
+            double ms_scale = 1e3;
+
         protected:
             void init()
             {
@@ -160,6 +163,8 @@ namespace fengyun3
 
                 calib_byte_offset = 551;
                 calib_length = 34560;
+
+                ms_scale = 1e4;
 
                 MERSIReader::init();
             }

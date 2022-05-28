@@ -49,7 +49,7 @@ namespace fengyun3
             uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
 
             double currentTime = double(10957 + days) * 86400.0 +
-                                 double(milliseconds_of_day) / double(1e3) +
+                                 double(milliseconds_of_day) / ms_scale +
                                  double(subsecond_cnt) / 3950 + 12 * 3600;
 
             last_timestamp = currentTime;
