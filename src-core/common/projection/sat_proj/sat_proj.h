@@ -3,6 +3,8 @@
 #include <memory>
 #include "common/tracking/tracking.h"
 #include "nlohmann/json.hpp"
+#include "common/geodetic/euler_raytrace.h"
+#include "common/geodetic/vincentys_calculations.h"
 
 namespace satdump
 {
@@ -13,6 +15,13 @@ namespace satdump
         const TLE tle;
         const nlohmann::ordered_json timestamps_raw;
         satdump::SatelliteTracker sat_tracker;
+
+    public:
+        int img_size_x;
+        int img_size_y;
+
+        int gcp_spacing_x;
+        int gcp_spacing_y;
 
     public:
         SatelliteProjection(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
@@ -33,9 +42,6 @@ namespace satdump
 
         int image_width;
         float scan_angle;
-
-        int gcp_spacing_x;
-        int gcp_spacing_y;
 
         double timestamp_offset;
         bool invert_scan;
@@ -62,6 +68,9 @@ namespace satdump
             roll_offset = getValueOrDefault(cfg["roll_offset"], 0.0);
             pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0.0);
             yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
+
+            img_size_x = image_width;
+            img_size_y = timestamps.size();
         }
 
         bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
@@ -110,9 +119,6 @@ namespace satdump
         int image_width;
         float scan_angle;
 
-        int gcp_spacing_x;
-        int gcp_spacing_y;
-
         double timestamp_offset;
         bool invert_scan;
 
@@ -134,7 +140,7 @@ namespace satdump
             timestamps = timestamps_raw.get<std::vector<double>>();
 
             image_width = cfg["image_width"].get<int>();
-            scan_angle = cfg["scan_angle"].get<float>();
+            scan_angle = scan_angle = cfg.contains("scan_angle") ? cfg["scan_angle"].get<float>() : (cfg["ifov_x_scan_angle"].get<float>() * cfg["ifov_count"].get<int>());
 
             gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
             gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
@@ -152,6 +158,9 @@ namespace satdump
 
             ifov_x_scan_angle = cfg["ifov_x_scan_angle"].get<float>();
             ifov_y_scan_angle = cfg["ifov_y_scan_angle"].get<float>();
+
+            img_size_x = image_width;
+            img_size_y = (timestamps.size() / ifov_count) * ifov_y_size;
         }
 
         bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
@@ -181,6 +190,8 @@ namespace satdump
             bool ascending = false;
 
             double currentIfovOffset = -(((double(currentIfov) - (double(ifov_count) / 2)) / double(ifov_count)) * scan_angle);
+            if (ifov_count == 1)
+                currentIfovOffset = 0;
             double ifov_x = int(final_x) % ifov_x_size;
             double ifov_y = (ifov_y_size - 1) - (y % ifov_y_size);
 
