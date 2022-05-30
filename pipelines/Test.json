@@ -1,7 +1,17 @@
 {
     "s2_test": {
-        "name": "GOES-R GRB",
-        "live": false,
+        "name": "S2 test",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [],
         "samplerate": 6e6,
         "baseband_type": "i16",
@@ -19,7 +29,7 @@
             },
             "ts": {
                 "s2_ts2tcp": {
-                    "port": 6669,
+                    "port": 6656,
                     "bb_size": 58192
                 }
             }

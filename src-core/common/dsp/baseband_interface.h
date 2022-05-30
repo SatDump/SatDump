@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <filesystem>
 #include "common/dsp/buffer.h"
 #include "common/utils.h"
 #include "complex.h"
@@ -75,11 +76,21 @@ namespace dsp
         inline void set_file(std::string file_path, BasebandType format)
         {
             main_mtx.lock();
-            filesize = getFilesize(file_path);
-            progress = 0;
+            if (std::filesystem::is_fifo(file_path))
+            {
+                filesize = 1;
+                progress = 0;
+            }
+            else
+            {
+                filesize = getFilesize(file_path);
+                progress = 0;
+
+                is_wav |= wav::isValidWav(wav::parseHeaderFromFileWav(file_path));
+                is_wav |= wav::isValidRF64(wav::parseHeaderFromFileWav(file_path));
+            }
+
             this->format = format;
-            is_wav |= wav::isValidWav(wav::parseHeaderFromFileWav(file_path));
-            is_wav |= wav::isValidRF64(wav::parseHeaderFromFileWav(file_path));
             input_file = std::ifstream(file_path, std::ios::binary);
 
 #ifdef BUILD_ZIQ
@@ -135,9 +146,9 @@ namespace dsp
                 break;
             }
 
-            //if (is_wav)
-            //    for (int i = 0; i < buffer_size; i++)
-            //        output_buffer[i] = complex_t(output_buffer[i].imag, output_buffer[i].real);
+            // if (is_wav)
+            //     for (int i = 0; i < buffer_size; i++)
+            //         output_buffer[i] = complex_t(output_buffer[i].imag, output_buffer[i].real);
 
             progress = input_file.tellg();
 
