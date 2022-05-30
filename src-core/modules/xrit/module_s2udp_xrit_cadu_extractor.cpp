@@ -55,9 +55,9 @@ namespace xrit
         {
             // Read buffer
             if (input_data_type == DATA_FILE)
-                data_in.read((char *)bb_buffer, bbframe_size);
+                data_in.read((char *)bb_buffer, bbframe_size / 8);
             else
-                input_fifo->read((uint8_t *)bb_buffer, bbframe_size);
+                input_fifo->read((uint8_t *)bb_buffer, bbframe_size / 8);
 
             int ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames);
 

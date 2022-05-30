@@ -36,6 +36,8 @@
 
 #include "common/projection/sat_proj/sat_proj.h"
 
+#include "common/projection/projs/stereo.h"
+
 int main(int argc, char *argv[])
 {
 #if 0
@@ -176,8 +178,8 @@ int main(int argc, char *argv[])
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 32;
-    operation.output_height = 1024 * 32;
+    operation.output_width = 2048 * 8;
+    operation.output_height = 1024 * 8;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;
@@ -185,11 +187,64 @@ int main(int argc, char *argv[])
 
     satdump::warp::WarpResult result = warper.warp();
 
+    logger->info("Reproject to stereo...");
+
+    geodetic::projection::EquirectangularProjection projector_equ;
+    projector_equ.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+
+    double stereo_scale = 6400;
+
+    geodetic::projection::StereoProjection projector_stereo;
+    projector_stereo.init(48.7, 1.8);
+
+    image::Image<uint16_t> stereo_image(2048 * 2, 2048 * 2, 3);
+
+    for (int x = 0; x < 2048 * 2; x++)
+    {
+        for (int y = 0; y < 2048 * 2; y++)
+        {
+            double lat, lon;
+
+            double y2 = (double(stereo_image.height() - y) - double(stereo_image.height() / 2)) * (1.0 / stereo_scale);
+            double x2 = (x - double(stereo_image.width() / 2)) * (1.0 / stereo_scale);
+
+            int y3, x3;
+
+            if (!projector_stereo.inverse(x2, y2, lon, lat))
+            {
+                projector_equ.forward(lon, lat, x3, y3);
+
+                if (x3 != -1 && y3 != -1)
+                {
+                    for (int i = 0; i < 3; i++)
+                        stereo_image.channel(i)[y * stereo_image.width() + x] = result.output_image.channel(i)[y3 * result.output_image.width() + x3];
+                }
+            }
+        }
+    }
+
     logger->info("Drawing map...");
 
-    geodetic::projection::EquirectangularProjection projector;
-    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+    unsigned short color[3] = {0, 65535, 0};
+    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                   stereo_image,
+                                   color,
+                                   [&projector_stereo, stereo_scale](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+                                   {
+                                       double x, y;
+                                       if (projector_stereo.forward(lon, lat, x, y))
+                                           return {-1, -1};
+                                       x *= stereo_scale;
+                                       y *= stereo_scale;
+                                       return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                                   });
 
+    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
+    logger->info("Saving...");
+
+    stereo_image.save_png("test.png");
+
+#if 0
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    result.output_image,
@@ -205,6 +260,7 @@ int main(int argc, char *argv[])
     logger->info("Saving...");
 
     result.output_image.save_png("test.png");
+#endif
 
 #if 0
     unsigned short color[3] = {0, 65535, 0};
