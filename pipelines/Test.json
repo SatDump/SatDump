@@ -23,14 +23,8 @@
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.005,
-                    "modcod": 17,
+                    "modcod": 19,
                     "freq_prop_factor": 0.01
-                }
-            },
-            "ts": {
-                "s2_ts2tcp": {
-                    "port": 6656,
-                    "bb_size": 58192
                 }
             }
         }

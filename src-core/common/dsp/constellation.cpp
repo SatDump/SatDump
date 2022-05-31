@@ -67,8 +67,8 @@ namespace dsp
             const_states = 16;
             const_bits = 4;
             const_amp = 100;
-            const_sca = 0.5;
-            const_prescale = 0.5;
+            const_sca = 1;      // 0.5;
+            const_prescale = 0.53; 
 
             constellation = new complex_t[const_states];
 
