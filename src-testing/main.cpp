@@ -11,270 +11,289 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/image.h"
+#include <fstream>
 
-#include "products/image_products.h"
-#include "common/tracking/tracking.h"
-#include "common/geodetic/euler_raytrace.h"
-#include "common/geodetic/vincentys_calculations.h"
-#include "common/map/map_drawer.h"
-#include "resources.h"
+#include "common/codings/dvb-s2/bbframe_descramble.h"
+#include "common/codings/dvb-s2/bbframe_bch.h"
+#include "common/codings/dvb-s2/bbframe_ldpc.h"
+#include "common/codings/dvb-s2/s2_deinterleaver.h"
+#include "common/dsp/constellation.h"
+#include "common/codings/dvb-s2/s2_scrambling.h"
+#include "modules/demod/dvbs2/s2_defs.h"
+#include "common/codings/dvb-s2/modcod_to_cfg.h"
 
-#include <iostream>
-#include "common/projection/warp/warp.h"
-#include "core/config.h"
+#include "common/dsp/rational_resampler.h"
+#include "common/dsp/firdes.h"
+#include "common/dsp/file_sink.h"
 
-#include "common/projection/gcp_compute/gcp_compute.h"
+namespace
+{
+    unsigned char crc_tab[256];
 
-#include "common/utils.h"
+#define CRC_POLY 0xAB
+// Reversed
+#define CRC_POLYR 0xD5
 
-#include "common/projection/projs/equirectangular.h"
+    void build_crc8_table(void)
+    {
+        int r, crc;
 
-#include "core/config.h"
-#include "products/dataset.h"
-#include "products/processor/processor.h"
+        for (int i = 0; i < 256; i++)
+        {
+            r = i;
+            crc = 0;
+            for (int j = 7; j >= 0; j--)
+            {
+                if ((r & (1 << j) ? 1 : 0) ^ ((crc & 0x80) ? 1 : 0))
+                {
+                    crc = (crc << 1) ^ CRC_POLYR;
+                }
+                else
+                {
+                    crc <<= 1;
+                }
+            }
+            crc_tab[i] = crc;
+        }
+    }
 
-#include "common/projection/sat_proj/sat_proj.h"
+    /*
+     * MSB is sent first
+     *
+     * The polynomial has been reversed
+     */
+    int add_crc8_bits(unsigned char *in, int length)
+    {
+        int crc = 0;
+        int b;
 
-#include "common/projection/projs/stereo.h"
+        for (int n = 0; n < length; n++)
+        {
+            b = ((in[n / 8] >> (7 - (n % 8))) & 1) ^ (crc & 0x01);
+            crc >>= 1;
+            if (b)
+            {
+                crc ^= CRC_POLY;
+            }
+        }
+
+        uint8_t crc2 = 0;
+        for (int i = 0; i < 8; i++)
+            crc2 = crc2 << 1 | ((crc >> i) & 1);
+
+        return crc2;
+    }
+}
+
+#include "common/codings/dvb-s2/bbframe_ts_parser.h"
 
 int main(int argc, char *argv[])
 {
-#if 0
-    image::Image<uint16_t> mersi_ch1, mersi_ch2;
-    mersi_ch1.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-1/MERSI1-1.png");
-    mersi_ch2.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-1/MERSI1-20.png");
-
-    mersi_ch2.resize(mersi_ch2.width() * 4, mersi_ch2.height() * 4);
-
-    mersi_ch1.equalize();
-    mersi_ch2.equalize();
-
-    image::Image<uint16_t> mersi_rgb(mersi_ch1.width(), mersi_ch1.height(), 3);
-
-    mersi_rgb.draw_image(0, mersi_ch1, 0);
-    mersi_rgb.draw_image(1, mersi_ch1, 0);
-    mersi_rgb.draw_image(2, mersi_ch2, -24);
-
-    mersi_rgb.save_png("mersi_test.png");
-
-    return 0; // TMP
-#endif
-
     initLogger();
+    build_crc8_table();
 
-    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
-    satdump::config::loadConfig("satdump_cfg.json", user_path);
+    ///////////////
+    int modulator_modcod = 11;
+    bool modulator_shortframes = false;
+    bool modulator_pilots = false;
+    float modulator_rrc_alpha = 0.25;
+    std::string ts_input_path = "/home/alan/Downloads/sk8.ts";
+    std::string baseband_output_path = "./test_fifo";
+    std::string baseband_format = "f32";
+    /////////////
 
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
+    // File stuff
+    std::ofstream bbframes_test("bbframe_test.f32_2");
+    std::ifstream ts_input(ts_input_path);
 
-    nlohmann::json metop_avhrr_cfg;
-    // metop_avhrr_cfg.tles = img_pro.get_tle();
-    // metop_avhrr_cfg.timestamps = img_pro.get_timestamps(0);
-    metop_avhrr_cfg["type"] = "normal_single_line";
-    metop_avhrr_cfg["img_width"] = 2048;
-    metop_avhrr_cfg["timestamp_offset"] = -0.3;
-    metop_avhrr_cfg["scan_angle"] = 110.6;
-    metop_avhrr_cfg["roll_offset"] = -0.13;
-    metop_avhrr_cfg["gcp_spacing_x"] = 100;
-    metop_avhrr_cfg["gcp_spacing_y"] = 100;
+    // Get CFG
+    auto cfg = dvbs2::get_dvbs2_cfg(modulator_modcod, modulator_shortframes, modulator_pilots);
 
-    nlohmann::json metop_iasi_img_cfg;
-    // metop_mhs_cfg.tles = img_pro.get_tle();
-    // metop_mhs_cfg.timestamps = img_pro.get_timestamps(0);
-    // metop_mhs_cfg.image_width = 90;
-    // metop_mhs_cfg.timestamp_offset = -2;
-    // metop_mhs_cfg.scan_angle = 100;
-    // metop_mhs_cfg.roll_offset = -1.1;
-    // metop_mhs_cfg.gcp_spacing_x = 5;
-    // metop_mhs_cfg.gcp_spacing_y = 5;
-    metop_iasi_img_cfg["type"] = "normal_single_line";
-    metop_iasi_img_cfg["img_width"] = 2048;
-    metop_iasi_img_cfg["timestamp_offset"] = -0.3;
-    metop_iasi_img_cfg["scan_angle"] = 100;
-    metop_iasi_img_cfg["roll_offset"] = -1.7;
-    metop_iasi_img_cfg["gcp_spacing_x"] = 100;
-    metop_iasi_img_cfg["gcp_spacing_y"] = 100;
+    dvbs2::BBFrameDescrambler bbframe_scra(cfg.framesize, cfg.coderate);
+    dvbs2::BBFrameBCH bbframe_bch(cfg.framesize, cfg.coderate);
+    dvbs2::BBFrameLDPC bbframe_ldpc(cfg.framesize, cfg.coderate);
+    dvbs2::S2Deinterleaver interleaver(cfg.constellation, cfg.framesize, cfg.coderate);
+    dsp::constellation_t constellation_slots(cfg.constel_obj_type, cfg.g1, cfg.g2);
+    dvbs2::S2Scrambling s2_scrambling;
 
-    // logger->trace("\n" + img_pro.contents.dump(4));
+    // Bunch of variables
+    int plframe_slots = cfg.frame_slot_count;
+    int final_frm_size = cfg.framesize == dvbs2::FECFRAME_NORMAL ? 64800 : 16200;
+    int final_frm_size_bytes = final_frm_size / 8;
+    int bb_size = bbframe_bch.dataSize();
+    int bb_bytes = bb_size / 8;
+    int bb_data_size = bb_size - 10 * 8;
+    int bb_data_size_bytes = bb_data_size / 8;
 
-    // img_pro.images[3].image.equalize();
+    logger->warn("PL Slots : {:d}", plframe_slots);
 
-    // std::shared_ptr<satdump::SatelliteProjection> satellite_proj = satdump::get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps(0));
-    // geodetic::projection::EquirectangularProjection projector_target;
-    // projector_target.init(2048 * 4, 1024 * 4, -180, 90, 180, -90);
+    // Main BB frame buffer
+    uint8_t bbframe_raw[final_frm_size_bytes];
 
-#if 0
-    image::Image<uint16_t> final_image(2048 * 4, 1024 * 4, 3);
+    // Interleaving stuff
+    uint8_t frame_bits_buf[final_frm_size];
+    uint8_t frame_bits_buf_interleaved[final_frm_size];
 
-    int radius = 0;
+    // Modulator stuff
+    int pls_code = modulator_modcod << 2 | modulator_shortframes << 1 | modulator_pilots;
+    dvbs2::s2_sof sof;
+    dvbs2::s2_plscodes pls;
+    // complex_t *modulated_frame; //[(plframe_slots + 1) * 90];
 
-    for (int img_y = 0; img_y < img_pro.images[0].image.height(); img_y++)
+    // TS Stuff
+    int ts_bytes_remaining = 0;
+    int current_ts_offset = 0;
+    uint8_t current_ts[188];
+    uint8_t ts_crc = 0;
+
+    // DSP To do pulse-shaping and saving to disk
+    std::shared_ptr<dsp::stream<complex_t>> input_dsp_stream = std::make_shared<dsp::stream<complex_t>>();
+    // modulated_frame = input_dsp_stream->writeBuf;
+
+    dsp::CCRationalResamplerBlock resampler_blk(input_dsp_stream, 2, 1, dsp::firdes::root_raised_cosine(1, 2, 1, 0.25, 31));
+    std::shared_ptr<dsp::FileSinkBlock> file_sink_blk = std::make_shared<dsp::FileSinkBlock>(resampler_blk.output_stream);
+
+    resampler_blk.start();
+    file_sink_blk->start();
+    file_sink_blk->set_output_sample_type(dsp::basebandTypeFromString(baseband_format));
+    file_sink_blk->start_recording(baseband_output_path, 2e6);
+
+    while (!ts_input.eof())
     {
-        for (int img_x = 0; img_x < img_pro.images[0].image.width(); img_x++)
+        // Reset
+        memset(bbframe_raw, 0, final_frm_size_bytes);
+
+        // Encoder BBFrame
         {
-            geodetic::geodetic_coords_t position;
-            geodetic::geodetic_coords_t position2, position3;
-            if (!satellite_proj->get_position(img_x, img_y, position))
+            // MAPTYPE
+            uint8_t ts_gs = 0b11;
+            uint8_t sis_mis = 0b1;
+            uint8_t ccm_acm = 0b1;
+            uint8_t issyi = 0b0;
+            uint8_t npd = 0b0;
+            uint8_t ro = 0b11;
+
+            if (modulator_rrc_alpha == 0.35)
+                ro = 0b00;
+            else if (modulator_rrc_alpha == 0.25)
+                ro = 0b01;
+            else if (modulator_rrc_alpha == 0.20)
+                ro = 0b10;
+
+            bbframe_raw[0] = ts_gs << 6 | sis_mis << 5 | ccm_acm << 4 | issyi << 3 | npd << 2 | ro;
+            bbframe_raw[1] = 0x00; // RESERVED since ISI not set
+
+            // UPL
+            uint16_t user_pkt_length = 188 * 8; // TS
+
+            bbframe_raw[2] = user_pkt_length >> 8;
+            bbframe_raw[3] = user_pkt_length & 0xFF;
+
+            // DFL
+            uint16_t bb_pkt_length = bb_data_size;
+
+            bbframe_raw[4] = bb_pkt_length >> 8;
+            bbframe_raw[5] = bb_pkt_length & 0xFF;
+
+            // SYNC
+            bbframe_raw[6] = 0x47; // TS
+
+            // Now, we put the TS in and set SYNCD
+            uint8_t b;
+            for (int i = 0; i < bb_data_size_bytes; i++)
             {
-                int target_x, target_y;
-                projector_target.forward(position.lon, position.lat, target_x, target_y);
-
-                if (!satellite_proj->get_position(img_x + 1, img_y, position2) && !satellite_proj->get_position(img_x, img_y, position3))
+                if (ts_bytes_remaining == 0) // Read a new TS if required
                 {
-                    int target_x2, target_y2;
-                    projector_target.forward(position2.lon, position2.lat, target_x2, target_y2);
-
-                    int target_x3, target_y3;
-                    projector_target.forward(position3.lon, position3.lat, target_x3, target_y3);
-
-                    int new_radius1 = abs(target_x2 - target_x);
-                    int new_radius2 = abs(target_y2 - target_y);
-
-                    int new_radius = std::max(new_radius1, new_radius2);
-
-                    int max = img_pro.images[0].image.width() / 16;
-
-                    if (new_radius < max)
-                        radius = new_radius;
-                    else if (new_radius1 < max)
-                        radius = new_radius1;
-                    else if (new_radius2 < max)
-                        radius = new_radius2;
+                    ts_input.read((char *)current_ts, 188);
+                    ts_bytes_remaining = 188;
                 }
 
-                uint16_t color[3];
-                color[0] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
-                color[1] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
-                color[2] = img_pro.images[3].image.channel(0)[img_y * img_pro.images[0].image.width() + img_x];
+                if (ts_bytes_remaining == 188)
+                {
+                    if (current_ts[0] != 0x47)
+                        logger->error("TS Input error, sync not 0x47!");
 
-                final_image.draw_circle(target_x, target_y, radius, color, true);
+                    current_ts[0] = ts_crc;
+
+                    b = ts_crc;
+                    ts_crc = 0;
+                }
+                else
+                {
+                    b = current_ts[188 - ts_bytes_remaining];
+                    ts_crc = crc_tab[b ^ ts_crc];
+                }
+
+                bbframe_raw[10 + i] = current_ts[188 - ts_bytes_remaining--];
+            }
+
+            uint16_t syncd = current_ts_offset * 8;
+            bbframe_raw[7] = syncd >> 8;
+            bbframe_raw[8] = syncd & 0xFF;
+
+            if (ts_bytes_remaining == 0)
+                current_ts_offset = 0;
+            else
+                current_ts_offset = ts_bytes_remaining;
+
+            // Compute CRC
+            bbframe_raw[9] = add_crc8_bits(bbframe_raw, 72);
+        }
+
+        // Scrambling
+        bbframe_scra.work(bbframe_raw);
+
+        // BCH Encoder
+        bbframe_bch.encode(bbframe_raw);
+
+        // LDPC Encoder
+        bbframe_ldpc.encode(bbframe_raw);
+
+        // Convert the frame to bits
+        for (int i = 0; i < final_frm_size; i++)
+            frame_bits_buf[i] = (bbframe_raw[i / 8] >> (7 - (i % 8))) & 1;
+
+        // Interleave
+        interleaver.interleave(frame_bits_buf, frame_bits_buf_interleaved);
+
+        // Insert PL Header stuff
+        for (int i = 0; i < 26; i++)
+            input_dsp_stream->writeBuf[i] = sof.symbols[i];
+
+        for (int i = 26; i < 90; i++)
+            input_dsp_stream->writeBuf[i] = pls.symbols[pls_code][i - 26];
+
+        // Now, time to modulate slots
+        int sym_pos = 0;
+        s2_scrambling.reset();
+        for (int slot = 0; slot < plframe_slots; slot++)
+        {
+            complex_t *slotp = &input_dsp_stream->writeBuf[(slot + 1) * 90];
+
+            for (int i = 0; i < 90; i++)
+            {
+                uint8_t const_bits = 0;
+                for (int i = 0; i < constellation_slots.getBitsCnt(); i++)
+                    const_bits = const_bits << 1 | !frame_bits_buf_interleaved[sym_pos++];
+
+                complex_t symbol = constellation_slots.mod(const_bits);
+
+                if (cfg.constellation == dvbs2::MOD_QPSK)
+                    slotp[i] = s2_scrambling.scramble(symbol) * 1.35;
+                else
+                    slotp[i] = s2_scrambling.scramble(symbol);
             }
         }
 
-        logger->info("{:d} / {:d}", img_y, img_pro.images[0].image.height());
+        // Scale samples down, so they fit in "1"
+        for (int i = 0; i < (plframe_slots + 1) * 90; i++)
+            input_dsp_stream->writeBuf[i] *= 0.7;
+
+        bbframes_test.write((char *)input_dsp_stream->writeBuf, (plframe_slots + 1) * 90 * sizeof(complex_t));
+        input_dsp_stream->swap((plframe_slots + 1) * 90);
     }
 
-#endif
-
-    nlohmann::ordered_json fdsfsdf = img_pro.get_proj_cfg();
-    fdsfsdf["yaw_offset"] = 2;
-    fdsfsdf["roll_offset"] = -1.5;
-    fdsfsdf["scan_angle"] = 110;
-    fdsfsdf["timestamp_offset"] = 0;
-
-    logger->trace("\n" + img_pro.contents.dump(4));
-
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_e_mersill.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
-
-    satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = true;
-
-    // img_pro.images[0].image.equalize();
-    // img_pro.images[0].image.to_rgb();
-
-    satdump::warp::WarpOperation operation;
-    operation.ground_control_points = gcps;
-    operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 8;
-    operation.output_height = 1024 * 8;
-
-    satdump::warp::ImageWarper warper;
-    warper.op = operation;
-    warper.update();
-
-    satdump::warp::WarpResult result = warper.warp();
-
-    logger->info("Reproject to stereo...");
-
-    geodetic::projection::EquirectangularProjection projector_equ;
-    projector_equ.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
-
-    double stereo_scale = 6400;
-
-    geodetic::projection::StereoProjection projector_stereo;
-    projector_stereo.init(48.7, 1.8);
-
-    image::Image<uint16_t> stereo_image(2048 * 2, 2048 * 2, 3);
-
-    for (int x = 0; x < 2048 * 2; x++)
-    {
-        for (int y = 0; y < 2048 * 2; y++)
-        {
-            double lat, lon;
-
-            double y2 = (double(stereo_image.height() - y) - double(stereo_image.height() / 2)) * (1.0 / stereo_scale);
-            double x2 = (x - double(stereo_image.width() / 2)) * (1.0 / stereo_scale);
-
-            int y3, x3;
-
-            if (!projector_stereo.inverse(x2, y2, lon, lat))
-            {
-                projector_equ.forward(lon, lat, x3, y3);
-
-                if (x3 != -1 && y3 != -1)
-                {
-                    for (int i = 0; i < 3; i++)
-                        stereo_image.channel(i)[y * stereo_image.width() + x] = result.output_image.channel(i)[y3 * result.output_image.width() + x3];
-                }
-            }
-        }
-    }
-
-    logger->info("Drawing map...");
-
-    unsigned short color[3] = {0, 65535, 0};
-    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                   stereo_image,
-                                   color,
-                                   [&projector_stereo, stereo_scale](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-                                   {
-                                       double x, y;
-                                       if (projector_stereo.forward(lon, lat, x, y))
-                                           return {-1, -1};
-                                       x *= stereo_scale;
-                                       y *= stereo_scale;
-                                       return {x + (map_width / 2), map_height - (y + (map_height / 2))};
-                                   });
-
-    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
-    logger->info("Saving...");
-
-    stereo_image.save_png("test.png");
-
-#if 0
-    unsigned short color[3] = {0, 65535, 0};
-    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                   result.output_image,
-                                   color,
-                                   [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
-                                   {
-                                       int x, y;
-                                       projector.forward(lon, lat, x, y);
-                                       return {x, y};
-                                   });
-
-    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
-    logger->info("Saving...");
-
-    result.output_image.save_png("test.png");
-#endif
-
-#if 0
-    unsigned short color[3] = {0, 65535, 0};
-    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                   final_image,
-                                   color,
-                                   [&projector_target](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
-                                   {
-                                       int x, y;
-                                       projector_target.forward(lon, lat, x, y);
-                                       return {x, y};
-                                   });
-
-    logger->info("Saving...");
-    final_image.save_png("test.png");
-#endif
+    resampler_blk.stop();
+    file_sink_blk->stop_recording();
+    file_sink_blk->stop();
 }

@@ -11,6 +11,7 @@ typedef int8_t code_type;
 #include "common/codings/ldpc/simd.hh"
 #include "common/codings/ldpc/layered_decoder.hh"
 #include "common/codings/ldpc/algorithms.hh"
+#include "common/codings/ldpc/encoder.hh"
 
 namespace dvbs2
 {
@@ -34,6 +35,7 @@ namespace dvbs2
 
         LDPCInterface *ldpc;
         LDPCDecoder<simd_type, algorithm_type> decoder;
+        LDPCEncoder<int8_t> encoder;
         void init();
 
     public:
@@ -45,7 +47,8 @@ namespace dvbs2
             return ldpc->data_len();
         }
 
-        int work(int8_t *frame, int max_trials);
+        int decode(int8_t *frame, int max_trials);
+        void encode(uint8_t *frame);
 
         LDPCInterface *get_instance()
         {

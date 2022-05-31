@@ -61,12 +61,15 @@ namespace dsp
             output_file = std::ofstream(finalt);
 
 #ifdef BUILD_ZIQ
-            ziqcfg.is_compressed = true;
-            ziqcfg.bits_per_sample = depth;
-            ziqcfg.samplerate = samplerate;
-            ziqcfg.annotation = "";
+            if (d_sample_format == ZIQ)
+            {
+                ziqcfg.is_compressed = true;
+                ziqcfg.bits_per_sample = depth;
+                ziqcfg.samplerate = samplerate;
+                ziqcfg.annotation = "";
 
-            ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
+                ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
+            }
 #endif
 
             should_work = true;

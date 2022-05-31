@@ -38,5 +38,6 @@ namespace dvbs2
 
         void reset();
         complex_t descramble(complex_t &sample);
+        complex_t scramble(complex_t &sample);
     };
 }

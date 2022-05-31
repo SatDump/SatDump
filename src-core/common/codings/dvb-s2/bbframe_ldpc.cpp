@@ -20,6 +20,7 @@
 
 #include "bbframe_ldpc.h"
 #include "common/codings/ldpc/dvb_s2_tables.hh"
+#include <cstring>
 
 namespace dvbs2
 {
@@ -106,6 +107,7 @@ namespace dvbs2
         }
 
         decoder.init(ldpc);
+        encoder.init(ldpc);
 
         aligned_buffer = new simd_type[68400];
     }
@@ -115,7 +117,7 @@ namespace dvbs2
         delete ldpc;
     }
 
-    int BBFrameLDPC::work(int8_t *frame, int max_trials)
+    int BBFrameLDPC::decode(int8_t *frame, int max_trials)
     {
         int trials = decoder((void *)aligned_buffer, (code_type *)frame, max_trials);
 
@@ -123,5 +125,21 @@ namespace dvbs2
             return trials;
         else
             return max_trials - trials;
+    }
+
+    void BBFrameLDPC::encode(uint8_t *frame)
+    {
+        int8_t soft_buffer[ldpc->code_len()];
+
+        // Convert to soft
+        for (int i = 0; i < ldpc->data_len(); i++)
+            soft_buffer[i] = ((frame[i / 8] >> (7 - (i % 8))) & 1) ? 127 : -127;
+
+        encoder(soft_buffer, &soft_buffer[ldpc->data_len()]);
+
+        // Repack to bytes
+        memset(&frame[ldpc->data_len() / 8], 0, (ldpc->code_len() - ldpc->data_len()) / 8);
+        for (int i = 0; i < (ldpc->code_len() - ldpc->data_len()); i++)
+            frame[(ldpc->data_len() / 8) + i / 8] = frame[(ldpc->data_len() / 8) + i / 8] << 1 | (soft_buffer[ldpc->data_len() + i] > 0);
     }
 }

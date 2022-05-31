@@ -63,7 +63,7 @@ namespace dvbs2
         }
 
         // Deinterleave
-        deinterleaver->work(soft_slots_buffer, output_stream->writeBuf);
+        deinterleaver->deinterleave(soft_slots_buffer, output_stream->writeBuf);
 
         input_stream->flush();
         output_stream->swap(frame_slot_count * 90 * constellation->getBitsCnt());

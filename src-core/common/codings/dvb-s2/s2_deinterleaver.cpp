@@ -68,11 +68,11 @@ namespace dvbs2
     {
     }
 
-    void S2Deinterleaver::work(int8_t *input, int8_t *output)
+    void S2Deinterleaver::deinterleave(int8_t *input, int8_t *output)
     {
         /*
         In testing I found doing it this way with branching was faster than a more universal approach,
-        hence the way it is done here.  
+        hence the way it is done here.
         */
         if (mod_bits == 2)
         {
@@ -130,6 +130,72 @@ namespace dvbs2
                 c3[j] = input[i++];
                 c4[j] = input[i++];
                 c5[j] = input[i++];
+            }
+        }
+    }
+
+    void S2Deinterleaver::interleave(uint8_t *input, uint8_t *output)
+    {
+        /*
+        In testing I found doing it this way with branching was faster than a more universal approach,
+        hence the way it is done here.
+        */
+        if (mod_bits == 2)
+        {
+            for (int i = 0; i < frame_length / 2; i++)
+            {
+                output[i * 2 + 0] = input[i * 2 + 1];
+                output[i * 2 + 1] = input[i * 2 + 0];
+            }
+        }
+        else if (mod_bits == 3)
+        {
+            uint8_t *c1 = &input[column0];
+            uint8_t *c2 = &input[column1];
+            uint8_t *c3 = &input[column2];
+
+            int i = 0;
+            for (int j = 0; j < rows; j++)
+            {
+                output[i++] = c1[j];
+                output[i++] = c2[j];
+                output[i++] = c3[j];
+            }
+        }
+        else if (mod_bits == 4)
+        {
+            uint8_t *c1 = &input[column0];
+            uint8_t *c2 = &input[column1];
+            uint8_t *c3 = &input[column2];
+            uint8_t *c4 = &input[column3];
+
+            int i = 0;
+            for (int j = 0; j < rows; j++)
+            {
+                output[i++] = c1[j];
+                output[i++] = c2[j];
+                output[i++] = c3[j];
+                output[i++] = c4[j];
+            }
+        }
+        else if (mod_bits == 5)
+        {
+            column4 = rows * 4;
+
+            uint8_t *c1 = &input[column0];
+            uint8_t *c2 = &input[column1];
+            uint8_t *c3 = &input[column2];
+            uint8_t *c4 = &input[column3];
+            uint8_t *c5 = &input[column4];
+
+            int i = 0;
+            for (int j = 0; j < rows; j++)
+            {
+                output[i++] = c1[j];
+                output[i++] = c2[j];
+                output[i++] = c3[j];
+                output[i++] = c4[j];
+                output[i++] = c5[j];
             }
         }
     }

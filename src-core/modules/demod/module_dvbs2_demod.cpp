@@ -2,6 +2,7 @@
 #include "common/dsp/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "common/codings/dvb-s2/modcod_to_cfg.h"
 
 namespace demod
 {
@@ -67,111 +68,15 @@ namespace demod
         float g1 = 0, g2 = 0;
 
         // Parse modcod number
-        if (d_modcod <= 0)
-            throw std::runtime_error("MODCOD cannot be <= 0!");
-        else if (d_modcod < 12) // QPSK Modcods
-        {
-            frame_slot_count = d_shortframes ? 90 : 360;
-            s2_constellation = dvbs2::MOD_QPSK;
-            s2_constel_obj_type = dsp::QPSK;
+        auto cfg = dvbs2::get_dvbs2_cfg(d_modcod, d_shortframes, d_pilots);
 
-            if (d_modcod == 1)
-                s2_coderate = dvbs2::C1_4;
-            else if (d_modcod == 2)
-                s2_coderate = dvbs2::C1_3;
-            else if (d_modcod == 3)
-                s2_coderate = dvbs2::C2_5;
-            else if (d_modcod == 4)
-                s2_coderate = dvbs2::C1_2;
-            else if (d_modcod == 5)
-                s2_coderate = dvbs2::C3_5;
-            else if (d_modcod == 6)
-                s2_coderate = dvbs2::C2_3;
-            else if (d_modcod == 7)
-                s2_coderate = dvbs2::C3_4;
-            else if (d_modcod == 8)
-                s2_coderate = dvbs2::C4_5;
-            else if (d_modcod == 9)
-                s2_coderate = dvbs2::C5_6;
-            else if (d_modcod == 10)
-                s2_coderate = dvbs2::C8_9;
-            else if (d_modcod == 11)
-                s2_coderate = dvbs2::C9_10;
-        }
-        else if (d_modcod < 18) // 8-PSK Modcods
-        {
-            frame_slot_count = d_shortframes ? 60 : 240;
-            s2_constellation = dvbs2::MOD_8PSK;
-            s2_constel_obj_type = dsp::PSK8;
-
-            if (d_modcod == 12)
-                s2_coderate = dvbs2::C3_5;
-            else if (d_modcod == 13)
-                s2_coderate = dvbs2::C2_3;
-            else if (d_modcod == 14)
-                s2_coderate = dvbs2::C3_4;
-            else if (d_modcod == 15)
-                s2_coderate = dvbs2::C5_6;
-            else if (d_modcod == 16)
-                s2_coderate = dvbs2::C8_9;
-            else if (d_modcod == 17)
-                s2_coderate = dvbs2::C9_10;
-        }
-        else if (d_modcod < 24) // 16-APSK Modcods
-        {
-            frame_slot_count = d_shortframes ? 45 : 180;
-            s2_constellation = dvbs2::MOD_16APSK;
-            s2_constel_obj_type = dsp::APSK16;
-
-            if (d_modcod == 18)
-            {
-                s2_coderate = dvbs2::C2_3;
-                g1 = 3.15;
-            }
-            else if (d_modcod == 19)
-            {
-                s2_coderate = dvbs2::C3_4;
-                g1 = 2.85;
-            }
-            else if (d_modcod == 20)
-            {
-                s2_coderate = dvbs2::C4_5;
-                g1 = 2.75;
-            }
-            else if (d_modcod == 21)
-            {
-                s2_coderate = dvbs2::C5_6;
-                g1 = 2.70;
-            }
-            else if (d_modcod == 22)
-            {
-                s2_coderate = dvbs2::C8_9;
-                g1 = 2.60;
-            }
-            else if (d_modcod == 23)
-            {
-                s2_coderate = dvbs2::C9_10;
-                g1 = 2.57;
-            }
-        }
-        else if (d_modcod < 29) // 32-APSK Modcods
-        {
-            frame_slot_count = d_shortframes ? 36 : 144;
-            s2_constellation = dvbs2::MOD_32APSK;
-            s2_constel_obj_type = dsp::APSK32;
-
-            if (d_modcod == 24)
-            {
-                s2_coderate = dvbs2::C3_4;
-                g1 = 2.84;
-                g2 = 5.27;
-            }
-        }
-        else
-            throw std::runtime_error("MODCOD not (yet?) supported!");
-
-        // Parse framesize
-        s2_framesize = d_shortframes ? dvbs2::FECFRAME_SHORT : dvbs2::FECFRAME_NORMAL;
+        frame_slot_count = cfg.frame_slot_count;
+        s2_constellation = cfg.constellation;
+        s2_constel_obj_type = cfg.constel_obj_type;
+        s2_framesize = cfg.framesize;
+        s2_coderate = cfg.coderate;
+        g1 = cfg.g1;
+        g2 = cfg.g2;
 
         // RRC
         rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
@@ -320,7 +225,7 @@ namespace demod
             if (read <= 0)
                 continue;
 
-            ldpc_trials = ldpc_decoder->work(sym_buffer, d_max_ldpc_trials);
+            ldpc_trials = ldpc_decoder->decode(sym_buffer, d_max_ldpc_trials);
 
             if (ldpc_trials == -1)
                 ldpc_trials = d_max_ldpc_trials;
@@ -334,7 +239,7 @@ namespace demod
                 for (int i = 0; i < ldpc_decoder->dataSize(); i++)
                     repacker_buffer[i / 8] = repacker_buffer[i / 8] << 1 | (buf[i] < 0);
 
-                bch_corrections = bch_decoder->work(repacker_buffer);
+                bch_corrections = bch_decoder->decode(repacker_buffer);
 
                 // if (bch_corrections == -1)
                 //     logger->info("ERROR");

@@ -115,6 +115,7 @@ endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
+    add_subdirectory(tools)
 endif()
 
 

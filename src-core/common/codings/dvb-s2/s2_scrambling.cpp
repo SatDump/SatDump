@@ -63,4 +63,29 @@ namespace dvbs2
 
         return res;
     }
+
+    complex_t S2Scrambling::scramble(complex_t &p)
+    {
+        r = Rn[pos++];
+
+        switch (r)
+        {
+        case 3:
+            res.imag = -p.real;
+            res.real = p.imag;
+            break;
+        case 2:
+            res.real = -p.real;
+            res.imag = -p.imag;
+            break;
+        case 1:
+            res.imag = p.real;
+            res.real = -p.imag;
+            break;
+        default:
+            res = p;
+        }
+
+        return res;
+    }
 }

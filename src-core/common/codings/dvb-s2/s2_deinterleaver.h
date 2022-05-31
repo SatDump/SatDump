@@ -22,6 +22,7 @@ namespace dvbs2
         S2Deinterleaver(dvbs2_constellation_t constellation, dvbs2_framesize_t framesize, dvbs2_code_rate_t rate);
         ~S2Deinterleaver();
 
-        void work(int8_t *input, int8_t *output);
+        void deinterleave(int8_t *input, int8_t *output);
+        void interleave(uint8_t *input, uint8_t *output);
     };
 }

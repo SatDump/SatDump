@@ -28,6 +28,9 @@
 #include "bch/galois_field.hh"
 #include "dvbs2.h"
 #include <cstdint>
+#include <bitset>
+
+#define MAX_BCH_PARITY_BITS 192
 
 namespace dvbs2
 {
@@ -38,6 +41,8 @@ namespace dvbs2
         unsigned int nbch;
         unsigned int bch_code;
         unsigned int frame;
+
+        // Decode
         typedef CODE::GaloisField<16, 0b10000000000101101, uint16_t> GF_NORMAL;
         typedef CODE::GaloisField<15, 0b1000000000101101, uint16_t> GF_MEDIUM;
         typedef CODE::GaloisField<14, 0b100000000101011, uint16_t> GF_SHORT;
@@ -57,6 +62,19 @@ namespace dvbs2
         uint8_t *code;
         uint8_t *parity;
 
+        // Encode
+        uint8_t encode_buffer[64800];
+
+        std::bitset<MAX_BCH_PARITY_BITS> crc_table[256];
+        std::bitset<MAX_BCH_PARITY_BITS> crc_medium_table[16];
+        unsigned int num_parity_bits;
+        std::bitset<MAX_BCH_PARITY_BITS> polynome;
+
+        void calculate_crc_table();
+        void calculate_medium_crc_table();
+        int poly_mult(const int *, int, const int *, int, int *);
+        void bch_poly_build_tables(void);
+
     public:
         BBFrameBCH(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate);
         ~BBFrameBCH();
@@ -66,6 +84,7 @@ namespace dvbs2
             return kbch;
         }
 
-        int work(uint8_t *frame);
+        int decode(uint8_t *frame);
+        int encode(uint8_t *frame);
     };
 }
