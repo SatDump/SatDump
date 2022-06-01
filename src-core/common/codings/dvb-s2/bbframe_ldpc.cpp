@@ -140,6 +140,6 @@ namespace dvbs2
         // Repack to bytes
         memset(&frame[ldpc->data_len() / 8], 0, (ldpc->code_len() - ldpc->data_len()) / 8);
         for (int i = 0; i < (ldpc->code_len() - ldpc->data_len()); i++)
-            frame[(ldpc->data_len() / 8) + i / 8] = frame[(ldpc->data_len() / 8) + i / 8] << 1 | (soft_buffer[ldpc->data_len() + i] > 0);
+            frame[(ldpc->data_len() / 8) + i / 8] = frame[(ldpc->data_len() / 8) + i / 8] << 1 | (soft_buffer[ldpc->data_len() + i] < 0);
     }
 }

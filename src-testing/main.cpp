@@ -26,6 +26,8 @@
 #include "common/dsp/firdes.h"
 #include "common/dsp/file_sink.h"
 
+#include "common/cli_utils.h"
+
 namespace
 {
     unsigned char crc_tab[256];
@@ -92,18 +94,28 @@ int main(int argc, char *argv[])
     initLogger();
     build_crc8_table();
 
+    if (argc < 3)
+    {
+        logger->error(std::string(argv[0]) + " input.ts output.f32 --modcod 11 --baseband_format f32 --rrc_alpha 0.25 [--shortframes] [--pilots]");
+        return 0;
+    }
+
     ///////////////
-    int modulator_modcod = 11;
-    bool modulator_shortframes = false;
-    bool modulator_pilots = false;
-    float modulator_rrc_alpha = 0.25;
-    std::string ts_input_path = "/home/alan/Downloads/sk8.ts";
-    std::string baseband_output_path = "./test_fifo";
-    std::string baseband_format = "f32";
+    std::string ts_input_path = argv[1];
+    std::string baseband_output_path = argv[2];
+
+    // Parse flags
+    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3]);
+
+    int modulator_modcod = parameters["modcod"].get<int>();
+    bool modulator_shortframes = parameters.contains("shortframes") ? parameters["shortframes"].get<bool>() : false;
+    bool modulator_pilots = parameters.contains("pilots") ? parameters["pilots"].get<bool>() : false;
+    float modulator_rrc_alpha = parameters["rrc_alpha"].get<float>();
+    std::string baseband_format = parameters["baseband_format"].get<std::string>();
     /////////////
 
     // File stuff
-    std::ofstream bbframes_test("bbframe_test.f32_2");
+    // std::ofstream bbframes_test("bbframe_test.bin");
     std::ifstream ts_input(ts_input_path);
 
     // Get CFG
@@ -156,7 +168,7 @@ int main(int argc, char *argv[])
     resampler_blk.start();
     file_sink_blk->start();
     file_sink_blk->set_output_sample_type(dsp::basebandTypeFromString(baseband_format));
-    file_sink_blk->start_recording(baseband_output_path, 2e6);
+    file_sink_blk->start_recording(baseband_output_path, 2e6, 0, true);
 
     while (!ts_input.eof())
     {
@@ -289,7 +301,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < (plframe_slots + 1) * 90; i++)
             input_dsp_stream->writeBuf[i] *= 0.7;
 
-        bbframes_test.write((char *)input_dsp_stream->writeBuf, (plframe_slots + 1) * 90 * sizeof(complex_t));
+        // bbframes_test.write((char *)input_dsp_stream->writeBuf, (plframe_slots + 1) * 90 * sizeof(complex_t));
         input_dsp_stream->swap((plframe_slots + 1) * 90);
     }
 

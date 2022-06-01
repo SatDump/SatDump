@@ -40,7 +40,7 @@ namespace dsp
             d_sample_format = sample_format;
         }
 
-        std::string start_recording(std::string path_without_ext, uint64_t samplerate, int depth = 0) // Depth is only for compressed non-raw formats
+        std::string start_recording(std::string path_without_ext, uint64_t samplerate, int depth = 0, bool override_filename = false) // Depth is only for compressed non-raw formats
         {
             rec_mutex.lock();
             std::string finalt;
@@ -54,6 +54,9 @@ namespace dsp
             else if (d_sample_format == ZIQ)
                 finalt = path_without_ext + ".ziq";
 #endif
+
+            if (override_filename)
+                finalt = path_without_ext;
 
             current_size_out = 0;
             current_size_out_raw = 0;
