@@ -67,8 +67,8 @@ namespace dsp
             const_states = 16;
             const_bits = 4;
             const_amp = 100;
-            const_sca = 1;      // 0.5;
-            const_prescale = 0.53; 
+            const_sca = 1; // 0.5;
+            const_prescale = 0.53;
 
             constellation = new complex_t[const_states];
 
@@ -104,8 +104,8 @@ namespace dsp
             const_states = 32;
             const_bits = 5;
             const_amp = 100;
-            const_sca = 0.5;
-            const_prescale = 0.5;
+            const_sca = 1; // 0.5;
+            const_prescale = 0.54;
 
             constellation = new complex_t[const_states];
 
@@ -314,29 +314,36 @@ namespace dsp
 
     void constellation_t::demod_soft_lut(complex_t sample, int8_t *bits, float *phase_error)
     {
-        int x = (sample.real / 1.5) * lut_resolution + lut_resolution / 2;
+        if (const_bits != 5)
+        {
+            int x = (sample.real / 1.5) * lut_resolution + lut_resolution / 2;
 #if 1
-        if (x < 0)
-            x = 0;
-        if (x >= lut_resolution)
-            x = lut_resolution - 1;
+            if (x < 0)
+                x = 0;
+            if (x >= lut_resolution)
+                x = lut_resolution - 1;
 #endif
 
-        int y = (sample.imag / 1.5) * lut_resolution + lut_resolution / 2;
+            int y = (sample.imag / 1.5) * lut_resolution + lut_resolution / 2;
 #if 1
-        if (y < 0)
-            y = 0;
-        if (y >= lut_resolution)
-            y = lut_resolution - 1;
+            if (y < 0)
+                y = 0;
+            if (y >= lut_resolution)
+                y = lut_resolution - 1;
 #endif
 
-        SoftResult &v = lut[x][y];
+            SoftResult &v = lut[x][y];
 
-        if (bits != nullptr)
-            for (int i = 0; i < const_bits; i++)
-                bits[i] = v.bits[i];
+            if (bits != nullptr)
+                for (int i = 0; i < const_bits; i++)
+                    bits[i] = v.bits[i];
 
-        if (phase_error != nullptr)
-            *phase_error = v.phase_error;
+            if (phase_error != nullptr)
+                *phase_error = v.phase_error;
+        }
+        else
+        {
+            demod_soft_calc(sample, bits, phase_error);
+        }
     }
 }

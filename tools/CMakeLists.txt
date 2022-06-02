@@ -1,1 +1,2 @@
 add_subdirectory(proj_test)
+add_subdirectory(dvbs2_mod)

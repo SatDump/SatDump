@@ -121,6 +121,30 @@ namespace dvbs2
                 cfg.g1 = 2.84;
                 cfg.g2 = 5.27;
             }
+            else if (modcod == 25)
+            {
+                cfg.coderate = dvbs2::C4_5;
+                cfg.g1 = 2.72;
+                cfg.g2 = 4.87;
+            }
+            else if (modcod == 26)
+            {
+                cfg.coderate = dvbs2::C5_6;
+                cfg.g1 = 2.64;
+                cfg.g2 = 4.64;
+            }
+            else if (modcod == 27)
+            {
+                cfg.coderate = dvbs2::C8_9;
+                cfg.g1 = 2.54;
+                cfg.g2 = 4.33;
+            }
+            else if (modcod == 28)
+            {
+                cfg.coderate = dvbs2::C9_10;
+                cfg.g1 = 2.53;
+                cfg.g2 = 4.30;
+            }
         }
         else
             throw std::runtime_error("MODCOD not (yet?) supported!");
