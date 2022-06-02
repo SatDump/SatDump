@@ -40,7 +40,7 @@ namespace demod
         float d_loop_bw;
         float freq_propagation_factor = 0.01;
 
-#define REC_ALPHA 1.7e-3
+#define REC_ALPHA 1.7e-4
         float d_clock_gain_omega = pow(REC_ALPHA, 2) / 4.0;
         float d_clock_mu = 0.5f;
         float d_clock_gain_mu = REC_ALPHA;

@@ -7,7 +7,7 @@
 namespace demod
 {
     DVBS2DemodModule::DVBS2DemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters),
-                                                                                                                          constellation_s2(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
+                                                                                                                          constellation_s2(90.0f / 127.0f, 90.0f / 127.0f, demod_constellation_size)
     {
         // Buffers
 

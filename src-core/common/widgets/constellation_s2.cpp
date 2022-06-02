@@ -1,6 +1,7 @@
 #include "constellation_s2.h"
 #include <cstring>
 #include "core/module.h"
+#include "common/dsp/block.h"
 
 namespace widgets
 {
@@ -57,8 +58,8 @@ namespace widgets
         // Draw PLHeader
         for (int i = 0; i < CONST_SIZE / 4; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].real * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
                                        ImColor(255, 0, 0));
         }
@@ -66,8 +67,8 @@ namespace widgets
         // Draw Slots
         for (int i = 0; i < CONST_SIZE; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
                                        ImColor(0, 255, 0));
         }
@@ -77,8 +78,8 @@ namespace widgets
             // Draw Pilots
             for (int i = 0; i < CONST_SIZE; i++)
             {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
-                                                  ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
+                                                  ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                            2 * ui_scale * (d_constellation_size / 200.0f),
                                            ImColor(255, 0, 0));
             }

@@ -1,6 +1,7 @@
 #include "constellation.h"
 #include <cstring>
 #include "core/module.h"
+#include "common/dsp/block.h"
 
 namespace widgets
 {
@@ -68,8 +69,8 @@ namespace widgets
 
         for (int i = 0; i < CONST_SIZE; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].real * (d_constellation_size / 2) * d_hscale * ui_scale) % int(d_constellation_size * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + (int)((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale) % int(d_constellation_size * ui_scale)),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
                                        ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
         }
