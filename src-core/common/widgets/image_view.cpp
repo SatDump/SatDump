@@ -55,8 +55,6 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
     ImGui::Image((void *)(intptr_t)texture_id, {img_width * ui_scale * img_scale, img_height * ui_scale * img_scale});
 
-    handleMouseDrag();
-
     float scale_before = img_scale;
 
     ImGuiContext &g = *ImGui::GetCurrentContext();
@@ -68,6 +66,8 @@ void ImageViewWidget::draw(ImVec2 win_size)
             img_scale *= 1.05;
         else if (ImGui::GetIO().MouseWheel < 0)
             img_scale *= 0.95;
+
+        handleMouseDrag();
     }
 
     /*if (ImGui::GetIO().MouseWheel != 0)
@@ -124,14 +124,10 @@ void ImageViewWidget::draw(ImVec2 win_size)
 void ImageViewWidget::handleMouseDrag()
 {
     ImVec2 delta = ImGui::GetIO().MouseDelta;
-
     ImGuiContext &g = *ImGui::GetCurrentContext();
     ImGuiWindow *window = g.CurrentWindow;
-    bool hovered = false;
-    bool held = false;
-    if (g.HoveredId == 0) // If nothing hovered so far in the frame (not same as IsAnyItemHovered()!)
-        ImGui::ButtonBehavior(window->Rect(), window->GetID("##scrolldraggingoverlay"), &hovered, &held, ImGuiButtonFlags_MouseButtonLeft);
-    if (held)
+
+    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
     {
         window->Scroll.x += -delta.x;
         window->Scroll.y += -delta.y;
