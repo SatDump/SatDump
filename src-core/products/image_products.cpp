@@ -1,6 +1,7 @@
 #include "image_products.h"
 #include "logger.h"
 #include "common/image/composite.h"
+#include "resources.h"
 
 namespace satdump
 {
@@ -165,6 +166,11 @@ namespace satdump
         int max_width_used = 1;
         int min_offset = 100000000;
 
+        std::string str_to_find_channels = cfg.equation;
+
+        if (cfg.lut != "")
+            str_to_find_channels = cfg.lut_channels;
+
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto img = product.images[i];
@@ -173,7 +179,7 @@ namespace satdump
             if (max_width_total < img.image.width())
                 max_width_total = img.image.width();
 
-            if (cfg.equation.find(equ_str) != std::string::npos)
+            if (str_to_find_channels.find(equ_str) != std::string::npos)
             {
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(img.channel_name);
@@ -270,7 +276,12 @@ namespace satdump
             }
         }
 
-        image::Image<uint16_t> rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+        image::Image<uint16_t> rgb_composite;
+
+        if (cfg.lut == "")
+            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+        else
+            rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
 
         if (cfg.equalize)
             rgb_composite.equalize();

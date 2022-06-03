@@ -170,6 +170,9 @@ namespace satdump
         bool invert = false;
         bool normalize = false;
         bool white_balance = false;
+
+        std::string lut = "";
+        std::string lut_channels = "";
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -179,11 +182,23 @@ namespace satdump
         j["invert"] = v.invert;
         j["normalize"] = v.normalize;
         j["white_balance"] = v.white_balance;
+
+        j["lut"] = v.lut;
+        j["lut_channels"] = v.lut_channels;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
     {
-        v.equation = j["equation"].get<std::string>();
+        if (j.contains("equation"))
+        {
+            v.equation = j["equation"].get<std::string>();
+        }
+        else if (j.contains("lut"))
+        {
+            v.lut = j["lut"].get<std::string>();
+            v.lut_channels = j["lut_channels"].get<std::string>();
+        }
+
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
         if (j.contains("invert"))

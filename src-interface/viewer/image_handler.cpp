@@ -116,6 +116,8 @@ namespace satdump
                     logger->info("Generating RGB Composite");
                     satdump::ImageCompositeCfg cfg;
                     cfg.equation = rgb_compo_cfg.equation;
+                    cfg.lut = rgb_compo_cfg.lut;
+                    cfg.lut_channels = rgb_compo_cfg.lut_channels;
 
                     equalize_image = rgb_compo_cfg.equalize;
                     invert_image = rgb_compo_cfg.invert;

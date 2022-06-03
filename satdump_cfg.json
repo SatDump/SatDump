@@ -163,6 +163,10 @@
                     "4 Equalized": {
                         "equation": "ch4",
                         "equalize": true
+                    },
+                    "LUT Test": {
+                        "lut": "goes/abi/wxstar/lut.png",
+                        "lut_channels": "ch1, ch2"
                     }
                 }
             },
