@@ -62,13 +62,13 @@
                     //"modcod": 17,
                     "freq_prop_factor": 0.01
                 }
-            },
+            }/*,
             "ts": {
                 "s2_ts2tcp": {
                     //"port": 6651,
                     //"bb_size": 58192
                 }
-            }
+            }*/
         }
     }
 }
