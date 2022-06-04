@@ -90,7 +90,7 @@ If you really want to build it yourself on Windows, see the dedicated documentat
 
 ### Linux (or MacOS)
 
-On Linux (or MacOS), building from source is recommended and no build are currently provided.
+On Linux (or MacOS), building from source is recommended and no builds are currently provided.
 
 Here are some generic Debian build instructions.
 
@@ -154,19 +154,10 @@ sudo make install
 ./satdump-ui
 ```
 
-### Android (Very, very WIP)
+### Android
 
-SatDump can now be used on Android devices as a simple APK, which will be built alongside normal releases.   
-Keep in mind this port is very much a work-in-progress, and most things have not been tested or may not perform as expected yet. Though, any input is welcome!
+On Android, the preferred source is F-Droid [INSERT LINK WHEN POSSIBLE].   
 
-If you wish to build it for yourself, make sure to have the Android SDK and NDK installed, then just :
+If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
-```
-git clone https://github.com/altillimity/satdump.git --recursive # For SDL2
-
-cd satdump/android
-
-./gradlew assembleDebug # Your .apk will be in android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
-```
-
-Credits for the ImGui port over to Android / SDL2 to https://github.com/sfalexrog/Imgui_Android.
+Do keep in mind that while pretty much all features are perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.
