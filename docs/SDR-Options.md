@@ -1,4 +1,4 @@
-# SDR Option
+# SDR Options
 
 This aims at covering all available SDR Settings for supported devices / sources. The goal is not to explain what every option does (for that, see the manufacturer's documentation for the specific device), but rather allow users to find the right flags in CLI mode.  
 
