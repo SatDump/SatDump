@@ -62,7 +62,7 @@ Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [INSERT].
+You can find a list of all SDR Options [Here](docs/SDR-Options.md).
 
 ### Recording
 
@@ -92,7 +92,7 @@ If you really want to build it yourself on Windows, see the dedicated documentat
 
 On Linux (or MacOS), building from source is recommended and no builds are currently provided.
 
-Here are some generic Debian build instructions.
+Here are some generic (Debian-oriented) build instructions.
 
 ```
 # Linux: Install dependencies
