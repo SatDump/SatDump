@@ -10,7 +10,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
     - 0 is for Sensitive
     - 1 is for Linear
     - 2 is for Manual
-- `general_gain` : Overall gain for sentive and linear mode. Ranges from 0 to 21, in dBs
+- `general_gain` : Overall gain for sensitive and linear mode. Ranges from 0 to 21, in dBs
 - `lna_gain, mixer_gain, vga_gain` : Used for manual gain tuning only
 - `bias` : Enable Bias-Tee power
 - `lna_agc` : Enable the LNA AGC
