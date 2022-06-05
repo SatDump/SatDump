@@ -23,7 +23,7 @@ jobs:
 
       - name: Download SDRPlay API
         shell: powershell
-        run: Invoke-WebRequest -Uri "https://files.altillimity.com/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.zip
+        run: curl https://files.altillimity.com/SDRPlay.zip -OutFile "D:\a\SatDump\sdrplay.zip"
 
       - name: Install SDRPlay API
         shell: powershell
