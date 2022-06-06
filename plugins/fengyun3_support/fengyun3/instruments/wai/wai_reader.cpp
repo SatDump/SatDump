@@ -30,7 +30,7 @@ namespace fengyun3
 
             if (marker == 2)
             {
-                if (lines < 832 * 832)
+                if (lines + 3603 < 832 * 832)
                     for (int i = 0; i < 3603; i++)
                         image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
                 lines += 3603;
@@ -41,14 +41,14 @@ namespace fengyun3
                 if (lines > 0)
                     writeCurrent();
 
-                if (lines < 832 * 832)
+                if (lines + 32591 < 832 * 832)
                     for (int i = 0; i < 32591; i++)
                         image[lines + i] = packet[320 + i * 2 + 0] << 8 | packet[320 + i * 2 + 1];
                 lines += 32591;
             }
             else
             {
-                if (lines < 832 * 832)
+                if (lines + 32737 < 832 * 832)
                     for (int i = 0; i < 32737; i++)
                         image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
                 lines += 32737;

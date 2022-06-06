@@ -36,7 +36,7 @@ namespace fengyun3
                 currentTime = lastTime;
 
             int pos = 50;
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 500 - 32; i++)
             {
                 lineBuf[i] = packet.payload[pos + i * 2 + 0] << 8 | packet.payload[pos + i * 2 + 1];
             }

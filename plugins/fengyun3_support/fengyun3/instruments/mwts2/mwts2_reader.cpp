@@ -37,7 +37,7 @@ namespace fengyun3
 
             int pos = 38;
             int bitpos = 0;
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 500 - 8; i++)
             {
                 uint8_t bitShiftBuffer[2];
                 bitShiftBuffer[0] = packet.payload[pos + i * 2 + 0] << bitpos | packet.payload[pos + i * 2 + 1] >> (8 - bitpos);
@@ -50,9 +50,9 @@ namespace fengyun3
             {
                 for (int ch = 0; ch < 16; ch++)
                 {
-                    //if (marker == 1)
-                    //    imageData[currentTime][ch][i] = lineBuf[i * 16 + ch]; // Packet 1 seems to only contain some calibration or so
-                    // Maybe I am discarding some data there but I could not find any matching pixels to the rest of the data
+                    // if (marker == 1)
+                    //     imageData[currentTime][ch][i] = lineBuf[i * 16 + ch]; // Packet 1 seems to only contain some calibration or so
+                    //  Maybe I am discarding some data there but I could not find any matching pixels to the rest of the data
                     if (marker == 2)
                         imageData[currentTime][ch][i + 30 * 0] = lineBuf[i * 16 + ch];
                     else if (marker == 3)
