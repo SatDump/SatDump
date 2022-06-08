@@ -16,6 +16,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      common/map/maidenhead.c
                                      libs/correct/*.c
                                      libs/openjp2/*.c
+                                     libs/deepspace-turbo/*.c
 )
 
 find_package(PkgConfig)
