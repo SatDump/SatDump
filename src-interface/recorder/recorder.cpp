@@ -154,8 +154,7 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Processing"))
             {
-                if (!is_started)
-                    style::beginDisabled();
+                // Settings & Selection menu
                 if (is_processing)
                     style::beginDisabled();
                 pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvail().x);
@@ -164,6 +163,30 @@ namespace satdump
                 pipeline_selector.renderParamTable();
                 if (is_processing)
                     style::endDisabled();
+
+                // Preset Menu
+                Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
+                if (selected_pipeline.preset.frequencies.size() > 0)
+                {
+                    int item_current_idx = 0;
+                    if (ImGui::BeginCombo("###presetscombo", selected_pipeline.preset.frequencies[item_current_idx].first.c_str()))
+                    {
+                        for (int n = 0; n < selected_pipeline.preset.frequencies.size(); n++)
+                        {
+                            const bool is_selected = (item_current_idx == n);
+                            if (ImGui::Selectable(selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
+                                item_current_idx = n;
+
+                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+
+                if (!is_started)
+                    style::beginDisabled();
 
                 if (!is_processing)
                 {

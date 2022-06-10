@@ -19,7 +19,7 @@
         "frequencies": [
             [
                 "S-VISSR",
-                1687.5
+                1687.5e6
             ]
         ],
         "samplerate": 6e6,

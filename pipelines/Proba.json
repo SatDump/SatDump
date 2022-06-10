@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "Dump",
-                2235
+                2235e6
             ]
         ],
         "parameters": {
@@ -155,7 +155,7 @@
         "frequencies": [
             [
                 "Dump",
-                2235
+                2235e6
             ]
         ],
         "parameters": {
@@ -207,7 +207,7 @@
         "frequencies": [
             [
                 "Dump",
-                2235
+                2235e6
             ]
         ],
         "parameters": {

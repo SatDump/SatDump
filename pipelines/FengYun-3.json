@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "Main",
-                1704.5
+                1704.5e6
             ]
         ],
         "samplerate": 6e6,
@@ -60,7 +60,7 @@
         "frequencies": [
             [
                 "Main",
-                1701.4
+                1701.4e6
             ]
         ],
         "samplerate": 6e6,

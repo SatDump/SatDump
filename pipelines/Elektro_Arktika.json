@@ -77,7 +77,7 @@
         "frequencies": [
             [
                 "xRIT",
-                1691.0
+                1691.0e6
             ]
         ],
         "samplerate": 1e6,
@@ -127,7 +127,7 @@
         "frequencies": [
             [
                 "xRIT",
-                1691.0
+                1691.0e6
             ]
         ],
         "samplerate": 6e6,
@@ -177,7 +177,7 @@
         "frequencies": [
             [
                 "SEM TLM",
-                1693.0
+                1693.0e6
             ]
         ],
         "samplerate": 3e6,
@@ -202,7 +202,7 @@
         "frequencies": [
             [
                 "SEM TLM",
-                1703.0
+                1703.0e6
             ]
         ],
         "samplerate": 3e6,

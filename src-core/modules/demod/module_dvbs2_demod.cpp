@@ -28,6 +28,13 @@ namespace demod
         if (parameters.count("freq_prop_factor") > 0)
             freq_propagation_factor = parameters["freq_prop_factor"].get<float>();
 
+        if (parameters.count("clock_alpha") > 0)
+        {
+            float clock_alpha = parameters["clock_alpha"].get<float>();
+            d_clock_gain_omega = pow(clock_alpha, 2) / 4.0;
+            d_clock_gain_mu = clock_alpha;
+        }
+
         if (parameters.count("clock_gain_omega") > 0)
             d_clock_gain_omega = parameters["clock_gain_omega"].get<float>();
 

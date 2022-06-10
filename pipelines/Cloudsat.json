@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "Backup",
-                2217.5
+                2217.5e6
             ]
         ],
         "parameters": {

@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "Main",
-                1700
+                1700e6
             ]
         ],
         "parameters": {
@@ -56,11 +56,11 @@
         "frequencies": [
             [
                 "Primary",
-                137.1
+                137.1e6
             ],
             [
                 "Backup",
-                137.9
+                137.9e6
             ]
         ],
         "parameters": {
@@ -107,11 +107,11 @@
         "frequencies": [
             [
                 "Primary",
-                137.9
+                137.9e6
             ],
             [
                 "Backup",
-                137.1
+                137.1e6
             ]
         ],
         "parameters": {

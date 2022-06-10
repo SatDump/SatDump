@@ -4,7 +4,7 @@
         "frequencies": [
             [
                 "Main",
-                8300
+                8300e6
             ]
         ],
         "work": {

@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "DB",
-                1698.4
+                1698.4e6
             ]
         ],
         "samplerate": 3e6,
@@ -68,7 +68,7 @@
         "frequencies": [
             [
                 "DB",
-                1698.4
+                1698.4e6
             ]
         ],
         "samplerate": 3e6,
@@ -107,7 +107,7 @@
         "frequencies": [
             [
                 "DB",
-                1704
+                1704e6
             ]
         ],
         "samplerate": 6e6,

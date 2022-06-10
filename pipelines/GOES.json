@@ -19,7 +19,7 @@
         "frequencies": [
             [
                 "GVAR",
-                1685.7
+                1685.7e6
             ]
         ],
         "samplerate": 6e6,
@@ -61,7 +61,7 @@
         "frequencies": [
             [
                 "HRIT",
-                1694.1
+                1694.1e6
             ]
         ],
         "samplerate": 6e6,
@@ -120,7 +120,7 @@
         "frequencies": [
             [
                 "HRIT",
-                1694.1
+                1694.1e6
             ]
         ],
         "samplerate": 6e6,
@@ -168,6 +168,7 @@
                     "symbolrate": 8665938,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.005,
+                    "clock_alpha": 2.5e-3,
                     "modcod": 11
                 }
             },

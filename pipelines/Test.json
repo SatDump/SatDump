@@ -60,9 +60,10 @@
                     //"rrc_alpha": 0.25,
                     //"pll_bw": 0.005,
                     //"modcod": 17,
+                    "clock_alpha": 1.7e-4, // Needs to be tighter for 32-APSK.
                     "freq_prop_factor": 0.01
                 }
-            }/*,
+            } /*,
             "ts": {
                 "s2_ts2tcp": {
                     //"port": 6651,

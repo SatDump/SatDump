@@ -19,7 +19,7 @@
         "frequencies": [
             [
                 "LRIT",
-                1692.14
+                1692.14e6
             ]
         ],
         "samplerate": 1e6,
@@ -73,7 +73,7 @@
         "frequencies": [
             [
                 "LRIT",
-                1692.14
+                1692.14e6
             ]
         ],
         "samplerate": 1e6,
@@ -124,7 +124,7 @@
         "frequencies": [
             [
                 "HRIT",
-                1695.4
+                1695.4e6
             ]
         ],
         "samplerate": 6e6,
