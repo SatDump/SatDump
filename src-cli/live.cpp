@@ -20,7 +20,7 @@ int main_live(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " live [pipeline_id] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules or sources can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap");
         logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
         logger->error("As well as --timeout in seconds");
         logger->error("Sample command :");
