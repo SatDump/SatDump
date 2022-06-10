@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            2235
+            [
+                "Dump",
+                2235
+            ]
         ],
         "parameters": {
             "samplerate": {
@@ -150,7 +153,10 @@
             ]
         ],
         "frequencies": [
-            2235
+            [
+                "Dump",
+                2235
+            ]
         ],
         "parameters": {
             "samplerate": {
@@ -199,7 +205,10 @@
             ]
         ],
         "frequencies": [
-            2235
+            [
+                "Dump",
+                2235
+            ]
         ],
         "parameters": {
             "samplerate": {

@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            2217.5
+            [
+                "Backup",
+                2217.5
+            ]
         ],
         "parameters": {
             "samplerate": {

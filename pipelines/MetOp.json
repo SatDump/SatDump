@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            1701.3
+            [
+                "Main",
+                1701.3
+            ]
         ],
         "parameters": {
             "samplerate": {
@@ -46,7 +49,10 @@
         "live": false,
         "live_cfg": [],
         "frequencies": [
-            7800
+            [
+                "Main",
+                7800
+            ]
         ],
         "parameters": {
             "samplerate": {

@@ -17,10 +17,12 @@
             ]
         ],
         "frequencies": [
-            1692.14
+            [
+                "LRIT",
+                1692.14
+            ]
         ],
         "samplerate": 1e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -69,10 +71,12 @@
             ]
         ],
         "frequencies": [
-            1692.14
+            [
+                "LRIT",
+                1692.14
+            ]
         ],
         "samplerate": 1e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -118,10 +122,12 @@
             ]
         ],
         "frequencies": [
-            1695.4
+            [
+                "HRIT",
+                1695.4
+            ]
         ],
         "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

@@ -1,10 +1,7 @@
 {
     "elektro_rdas": {
         "name": "ELEKTRO-L RDAS",
-        "live": false,
-        "frequencies": [],
         "samplerate": 45e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -33,10 +30,7 @@
     },
     "arktika_rdas": {
         "name": "ARKTIKA-M RDAS",
-        "live": false,
-        "frequencies": [],
         "samplerate": 45e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -81,10 +75,12 @@
             ]
         ],
         "frequencies": [
-            1691.0
+            [
+                "xRIT",
+                1691.0
+            ]
         ],
         "samplerate": 1e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -129,10 +125,12 @@
             ]
         ],
         "frequencies": [
-            1691.0
+            [
+                "xRIT",
+                1691.0
+            ]
         ],
         "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -177,10 +175,12 @@
             ]
         ],
         "frequencies": [
-            1693.0
+            [
+                "SEM TLM",
+                1693.0
+            ]
         ],
         "samplerate": 3e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "cadu": {
@@ -200,10 +200,12 @@
             ]
         ],
         "frequencies": [
-            1703.0
+            [
+                "SEM TLM",
+                1703.0
+            ]
         ],
         "samplerate": 3e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

@@ -13,10 +13,12 @@
             ]
         ],
         "frequencies": [
-            8160.0
+            [
+                "DB",
+                8160.0
+            ]
         ],
         "samplerate": 15e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -47,7 +49,6 @@
         "live": false,
         "frequencies": [],
         "samplerate": 45e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -91,10 +92,12 @@
             ]
         ],
         "frequencies": [
-            8160.0
+            [
+                "DB",
+                8160.0
+            ]
         ],
         "samplerate": 15e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {

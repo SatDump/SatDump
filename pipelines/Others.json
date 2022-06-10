@@ -13,10 +13,12 @@
             ]
         ],
         "frequencies": [
-            1698.4
+            [
+                "DB",
+                1698.4
+            ]
         ],
         "samplerate": 3e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -64,10 +66,12 @@
             ]
         ],
         "frequencies": [
-            1698.4
+            [
+                "DB",
+                1698.4
+            ]
         ],
         "samplerate": 3e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -101,10 +105,12 @@
         "name": "Yunhai AHRPT - Encrypted",
         "live": false,
         "frequencies": [
-            1704
+            [
+                "DB",
+                1704
+            ]
         ],
         "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

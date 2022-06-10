@@ -1,18 +1,12 @@
 {
     "probav_x_dump": {
         "name": "Proba-V X-Band Dump",
-        "live": false,
-        "live_cfg": [
+        "frequencies": [
             [
-                1,
-                0
+                "Main",
+                8300
             ]
         ],
-        "frequencies": [
-            8300
-        ],
-        "samplerate": 4e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -37,10 +31,7 @@
     },
     "gcom_w1": {
         "name": "GCOM-W1 DB",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -78,10 +69,7 @@
     },
     "gcom_c1": {
         "name": "GCOM-C1 DB",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -116,11 +104,7 @@
     },
     "aeolus_dump": {
         "name": "Aeolus Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 10e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -143,11 +127,7 @@
     },
     "smos_dump": {
         "name": "SMOS X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -166,11 +146,7 @@
     },
     "prisma_dump": {
         "name": "PRISMA X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 90e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -197,10 +173,7 @@
     },
     "sentinel6_dump": {
         "name": "Sentinel-6 Dump",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -233,11 +206,7 @@
     },
     "iris_dump": {
         "name": "IRIS X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -259,10 +228,7 @@
     },
     "smap_s_link": {
         "name": "SMAP S-Band Link",
-        "live": false,
-        "frequencies": [],
         "samplerate": 3e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
@@ -289,10 +255,7 @@
     },
     "cheops_link": {
         "name": "CHEOPS S-Band Dump",
-        "live": false,
-        "frequencies": [],
         "samplerate": 3e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -323,10 +286,7 @@
     },
     "timed_dump": {
         "name": "TIMED S-Band Dump",
-        "live": false,
-        "frequencies": [],
         "samplerate": 6e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -353,10 +313,7 @@
     },
     "grace_fo_link": {
         "name": "Grace-FO Dump",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -387,11 +344,7 @@
     },
     "cfosat1_dump": {
         "name": "CFOSAT-1 X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 40e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -424,9 +377,7 @@
                 0
             ]
         ],
-        "frequencies": [],
         "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "bbframe": {
@@ -456,9 +407,7 @@
                 0
             ]
         ],
-        "frequencies": [],
         "samplerate": 6e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {

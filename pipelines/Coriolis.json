@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            2221.5
+            [
+                "Tactial DB",
+                2221.5
+            ]
         ],
         "parameters": {
             "samplerate": {

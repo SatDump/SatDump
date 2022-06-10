@@ -306,14 +306,27 @@ namespace satdump
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
         {
             Pipeline newPipeline;
+
+            // Parse basics
             newPipeline.name = pipelineConfig.key();
             newPipeline.readable_name = pipelineConfig.value()["name"];
             newPipeline.editable_parameters = pipelineConfig.value()["parameters"];
 
-            newPipeline.live = pipelineConfig.value()["live"];
+            // Parse live configuration if preset
+            newPipeline.live = pipelineConfig.value().contains("live") ? pipelineConfig.value()["live"].get<bool>() : false;
             if (newPipeline.live)
                 newPipeline.live_cfg = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
-            newPipeline.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<float>>();
+
+            // Parse and set presets
+            if (newPipeline.editable_parameters.contains("samplerate"))
+            { // We attempt to get a preset samplerate
+                if (newPipeline.editable_parameters["samplerate"].contains("value"))
+                    newPipeline.preset.samplerate = newPipeline.editable_parameters["samplerate"]["value"];
+                else
+                    newPipeline.preset.samplerate = 0;
+            }
+            if (pipelineConfig.value().contains("frequencies"))
+                newPipeline.preset.frequencies = pipelineConfig.value()["frequencies"].get<std::vector<std::pair<std::string, uint64_t>>>();
 
             // logger->info(newPipeline.name);
 

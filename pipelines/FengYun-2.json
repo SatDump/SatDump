@@ -17,10 +17,12 @@
             ]
         ],
         "frequencies": [
-            1687.5
+            [
+                "S-VISSR",
+                1687.5
+            ]
         ],
         "samplerate": 6e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {

@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            1700
+            [
+                "Main",
+                1700
+            ]
         ],
         "parameters": {
             "samplerate": {
@@ -51,8 +54,14 @@
             ]
         ],
         "frequencies": [
-            137.1,
-            137.9
+            [
+                "Primary",
+                137.1
+            ],
+            [
+                "Backup",
+                137.9
+            ]
         ],
         "parameters": {
             "samplerate": {
@@ -96,8 +105,14 @@
             ]
         ],
         "frequencies": [
-            137.1,
-            137.9
+            [
+                "Primary",
+                137.9
+            ],
+            [
+                "Backup",
+                137.1
+            ]
         ],
         "parameters": {
             "samplerate": {

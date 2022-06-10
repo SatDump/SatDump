@@ -23,13 +23,22 @@ namespace satdump
         std::vector<PipelineModule> modules;
     };
 
+    // Basic Baseband-level "proposed / recommended" presets
+    struct PipelinePreset
+    {
+        bool exists = false;
+        uint64_t samplerate;                                       // Samplerate to come close to, preferrably above rather than below
+        std::vector<std::pair<std::string, uint64_t>> frequencies; // Preset frequencies
+    };
+
     struct Pipeline
     {
         std::string name;
         std::string readable_name;
 
+        PipelinePreset preset;
+
         bool live;
-        std::vector<float> frequencies;
         std::vector<std::pair<int, int>> live_cfg;
 
         nlohmann::json editable_parameters;

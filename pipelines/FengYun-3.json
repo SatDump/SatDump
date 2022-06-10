@@ -13,7 +13,10 @@
             ]
         ],
         "frequencies": [
-            1704.5
+            [
+                "Main",
+                1704.5
+            ]
         ],
         "samplerate": 6e6,
         "baseband_type": "i16",
@@ -55,7 +58,10 @@
             ]
         ],
         "frequencies": [
-            1701.4
+            [
+                "Main",
+                1701.4
+            ]
         ],
         "samplerate": 6e6,
         "baseband_type": "i16",
