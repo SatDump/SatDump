@@ -57,6 +57,8 @@ namespace satdump
         std::string pipeline_output_dir;
         nlohmann::json pipeline_params;
 
+        int pipeline_preset_id = 0;
+
         //#ifdef BUILD_ZIQ
         int ziq_bit_depth;
         //#endif

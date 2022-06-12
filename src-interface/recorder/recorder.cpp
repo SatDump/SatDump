@@ -168,16 +168,22 @@ namespace satdump
                 Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
                 if (selected_pipeline.preset.frequencies.size() > 0)
                 {
-                    int item_current_idx = 0;
-                    if (ImGui::BeginCombo("###presetscombo", selected_pipeline.preset.frequencies[item_current_idx].first.c_str()))
+                    if (ImGui::BeginCombo("###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str()))
                     {
                         for (int n = 0; n < selected_pipeline.preset.frequencies.size(); n++)
                         {
-                            const bool is_selected = (item_current_idx == n);
+                            const bool is_selected = (pipeline_preset_id == n);
                             if (ImGui::Selectable(selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
-                                item_current_idx = n;
+                            {
+                                pipeline_preset_id = n;
 
-                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
+                                {
+                                    frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
+                                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                                }
+                            }
+
                             if (is_selected)
                                 ImGui::SetItemDefaultFocus();
                         }
