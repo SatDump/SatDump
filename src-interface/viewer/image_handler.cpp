@@ -292,7 +292,7 @@ namespace satdump
             }
         }
 
-        if (ImGui::CollapsingHeader("Warp / Project"))
+        /*if (ImGui::CollapsingHeader("Warp / Project"))
         {
             ImGui::InputInt("Width", &warp_project_width);
             ImGui::InputInt("Height", &warp_project_height);
@@ -333,7 +333,7 @@ namespace satdump
                     image_view.update(current_image);
                 }
             }
-        }
+        }*/
     }
 
     void ImageViewerHandler::drawContents(ImVec2 win_size)
