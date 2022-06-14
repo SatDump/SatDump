@@ -147,6 +147,9 @@
                     "LOW_RGB-080502": {
                         "equation": "(ch8-0.03)*3, (ch5-0.03)*2.7, (ch2-0.03)*3"
                     },
+                    "LOW_RGB-080502_TUNED": {
+                        "equation": "(ch8-0.10)*5, (ch5-0.05)*4.5, (ch2-0.05)*6"
+                    },
                     "LOW_EVI-(vegetation)": {
                         "equation": "((ch19-ch8)/(ch19+6*ch8-7.5*ch2+1))*2"
                     },
