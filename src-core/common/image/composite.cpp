@@ -31,9 +31,17 @@ namespace image
             rgbParser.DefineVar("ch" + channelNumbers[i], &channelValues[i]);
         }
 
-        // Set expression
-        rgbParser.SetExpr(equation);
-        rgbParser.Eval(outValsCnt); // Eval once for channel output count
+        try
+        {
+            // Set expression
+            rgbParser.SetExpr(equation);
+            rgbParser.Eval(outValsCnt); // Eval once for channel output count
+        }
+        catch (mu::ParserError &e)
+        {
+            logger->error(e.GetMsg());
+            return Image<T>();
+        }
 
         // Get maximum image size, and resize them all to that. Also acts as basic safety
         int maxWidth = 0, maxHeight = 0;
