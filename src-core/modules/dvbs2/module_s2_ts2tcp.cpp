@@ -4,6 +4,7 @@
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "common/utils.h"
 
+#ifndef _WIN32
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <unistd.h>
+#endif
 
 namespace dvbs2
 {
@@ -53,6 +55,7 @@ namespace dvbs2
 
         dvbs2::BBFrameTSParser ts_extractor(bbframe_size);
 
+#ifndef _WIN32
         // Init TCP Server
         int sockfd, clientfd, len;
         struct sockaddr_in servaddr, cli;
@@ -88,7 +91,8 @@ namespace dvbs2
         else
             logger->info("Client accepted!");
 
-        //  std::ofstream file_ts("test_ts.ts");
+//  std::ofstream file_ts("test_ts.ts");
+#endif
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -102,8 +106,10 @@ namespace dvbs2
 
             for (int i = 0; i < ts_cnt; i++)
             {
+#ifndef _WIN32
                 send(clientfd, &ts_frames[i * 188], 188, MSG_NOSIGNAL);
                 // file_ts.write((char *)&ts_frames[i * 188], 188);
+#endif
             }
 
             if (input_data_type == DATA_FILE)
@@ -116,7 +122,9 @@ namespace dvbs2
             }
         }
 
+#ifndef _WIN32
         close(sockfd);
+#endif
 
         delete[] bb_buffer;
 

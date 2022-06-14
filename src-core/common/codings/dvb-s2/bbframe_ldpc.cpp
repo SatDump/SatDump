@@ -129,7 +129,7 @@ namespace dvbs2
 
     void BBFrameLDPC::encode(uint8_t *frame)
     {
-        int8_t soft_buffer[ldpc->code_len()];
+        int8_t *soft_buffer = new int8_t[ldpc->code_len()];
 
         // Convert to soft
         for (int i = 0; i < ldpc->data_len(); i++)
@@ -141,5 +141,7 @@ namespace dvbs2
         memset(&frame[ldpc->data_len() / 8], 0, (ldpc->code_len() - ldpc->data_len()) / 8);
         for (int i = 0; i < (ldpc->code_len() - ldpc->data_len()); i++)
             frame[(ldpc->data_len() / 8) + i / 8] = frame[(ldpc->data_len() / 8) + i / 8] << 1 | (soft_buffer[ldpc->data_len() + i] < 0);
+
+        delete[] soft_buffer;
     }
 }
