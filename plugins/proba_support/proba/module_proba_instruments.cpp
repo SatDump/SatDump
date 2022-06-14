@@ -42,7 +42,7 @@ namespace proba
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
 
-            std::ofstream output("file.ccsds");
+            //  std::ofstream output("file.ccsds");
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -104,7 +104,7 @@ namespace proba
                                     hrc_reader->work(pkt);
                                 else
                                     chris_reader->work(pkt);
-                                output.write((char *)pkt.payload.data(), 1340);
+                                //  output.write((char *)pkt.payload.data(), 1340);
                             }
                         }
                     }
