@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include "nlohmann/json.hpp"
+#include "products/dataset.h"
 
 namespace proba
 {
@@ -22,20 +23,16 @@ namespace proba
             int current_width, current_height, max_value;
             int frame_count;
             std::string output_folder;
+            satdump::ProductDataSet &dataset;
 
         private:
-            void writeHighResCompos(image::Image<uint16_t> &img);
-            void writeAllCompos(image::Image<uint16_t> &img);
             std::string getModeName(int mode);
 
         public:
-            CHRISImageParser(int &count, std::string &outputfolder);
+            CHRISImageParser(int &count, std::string &outputfolder, satdump::ProductDataSet &dataset);
             ~CHRISImageParser();
             void save();
             void work(ccsds::CCSDSPacket &packet, int &ch);
-
-            nlohmann::json composites_all;
-            nlohmann::json composites_low;
         };
 
         class CHRISReader
@@ -43,16 +40,14 @@ namespace proba
         private:
             std::map<int, std::shared_ptr<CHRISImageParser>> imageParsers;
             std::string output_folder;
+            satdump::ProductDataSet &dataset;
 
         public:
-            CHRISReader(std::string &outputfolder);
+            CHRISReader(std::string &outputfolder, satdump::ProductDataSet &dataset);
             void work(ccsds::CCSDSPacket &packet);
             void save();
 
             int count;
-
-            nlohmann::json composites_all;
-            nlohmann::json composites_low;
         };
     } // namespace chris
 } // namespace proba

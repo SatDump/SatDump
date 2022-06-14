@@ -158,7 +158,17 @@
     },
     "goes_grb": {
         "name": "GOES-R GRB",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [],
         "samplerate": 6e6,
         "work": {

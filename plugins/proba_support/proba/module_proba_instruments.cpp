@@ -8,6 +8,7 @@
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_1_0_proba/demuxer.h"
 #include "products/products.h"
+#include "products/dataset.h"
 
 namespace proba
 {
@@ -24,33 +25,6 @@ namespace proba
                 d_satellite = PROBA_V;
             else
                 throw std::runtime_error("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
-
-            // Init readers
-            if (d_satellite == PROBA_1)
-            {
-                std::string chris_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CHRIS";
-                std::string hrc_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HRC";
-
-                if (!std::filesystem::exists(chris_directory))
-                    std::filesystem::create_directory(chris_directory);
-                if (!std::filesystem::exists(hrc_directory))
-                    std::filesystem::create_directory(hrc_directory);
-
-                chris_reader = std::make_unique<chris::CHRISReader>(chris_directory);
-                hrc_reader = std::make_unique<hrc::HRCReader>(hrc_directory);
-
-                chris_reader->composites_all = d_parameters["composites_all"];
-                chris_reader->composites_low = d_parameters["composites_low"];
-            }
-            else if (d_satellite == PROBA_2)
-            {
-                std::string swap_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SWAP";
-
-                if (!std::filesystem::exists(swap_directory))
-                    std::filesystem::create_directory(swap_directory);
-
-                swap_reader = std::make_unique<swap::SWAPReader>(swap_directory);
-            }
         }
 
         void PROBAInstrumentsDecoderModule::process()
@@ -68,7 +42,41 @@ namespace proba
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
 
-            // std::ofstream output("file.ccsds");
+            std::ofstream output("file.ccsds");
+
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            if (d_satellite == PROBA_1)
+                dataset.satellite_name = "PROBA-1";
+            else if (d_satellite == PROBA_2)
+                dataset.satellite_name = "PROBA-2";
+            else if (d_satellite == PROBA_V)
+                dataset.satellite_name = "PROBA-V";
+            dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
+
+            // Init readers
+            if (d_satellite == PROBA_1)
+            {
+                std::string chris_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CHRIS";
+                std::string hrc_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HRC";
+
+                if (!std::filesystem::exists(chris_directory))
+                    std::filesystem::create_directory(chris_directory);
+                if (!std::filesystem::exists(hrc_directory))
+                    std::filesystem::create_directory(hrc_directory);
+
+                chris_reader = std::make_unique<chris::CHRISReader>(chris_directory, dataset);
+                hrc_reader = std::make_unique<hrc::HRCReader>(hrc_directory);
+            }
+            else if (d_satellite == PROBA_2)
+            {
+                std::string swap_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SWAP";
+
+                if (!std::filesystem::exists(swap_directory))
+                    std::filesystem::create_directory(swap_directory);
+
+                swap_reader = std::make_unique<swap::SWAPReader>(swap_directory);
+            }
 
             while (!data_in.eof())
             {
@@ -96,6 +104,7 @@ namespace proba
                                     hrc_reader->work(pkt);
                                 else
                                     chris_reader->work(pkt);
+                                output.write((char *)pkt.payload.data(), 1340);
                             }
                         }
                     }
@@ -173,6 +182,9 @@ namespace proba
 
                 swap_status = DONE;
             }
+
+            if (d_satellite == PROBA_1)
+                dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void PROBAInstrumentsDecoderModule::drawUI(bool window)
