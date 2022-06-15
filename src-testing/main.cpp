@@ -10,46 +10,76 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
+#if 0
 #include "logger.h"
-#include "common/codings/turbo/ccsds_turbo.h"
-#include <fstream>
+#include "products/image_products.h"
+
+#include "common/projection/sat_proj/sat_proj.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    codings::turbo::CCSDSTurbo ccsds_turbo(codings::turbo::BASE_223, codings::turbo::RATE_1_2);
+    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    //satdump::config::loadConfig("satdump_cfg.json", user_path);
 
-    logger->critical("Frame length {:d}", ccsds_turbo.frame_length());
-    logger->critical("Codeword length {:d}", ccsds_turbo.codeword_length());
+    satdump::ImageProducts img_pro;
+    img_pro.load(argv[1]);
 
-    uint8_t turbo_frame[223];
-    uint8_t turbo_codeword[3576 / 8];
-    std::ifstream ts_in("/home/alan/Downloads/sk8.ts");
-    std::ofstream encoded_in("/home/alan/encoded_turbo.ts");
+    std::shared_ptr<satdump::SatelliteProjection> sat_projection = get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
+}
+#else
+#include "logger.h"
+#include <fstream>
+#include "common/codings/dvb-s2/bbframe_bch.h"
+#include "common/codings/dvb-s2/bbframe_ldpc.h"
 
-    float turbo_soft_frame[3576];
+int main(int argc, char *argv[])
+{
+    initLogger();
 
-    while (!ts_in.eof())
+    dvbs2::BBFrameBCH bch_handler;
+    dvbs2::dvbs2_framesize_t s2_framesize = dvbs2::FECFRAME_NORMAL;
+    dvbs2::dvbs2_code_rate_t s2_code_rate = dvbs2::C9_10;
+
+    int frame_size = bch_handler.frame_params(s2_framesize, s2_code_rate).second / 8;
+    uint8_t frame_data[frame_size];
+    size_t total_filesize_bytes = 0;
+
+    std::vector<uint8_t> test_data;
+
+    // Generate test data
+    logger->info("Generating test data...");
     {
-        ts_in.read((char *)turbo_frame, 188);
-
-        ccsds_turbo.encode(turbo_frame, turbo_codeword);
-
-        for (int i = 0; i < 3576; i++)
+        for (int i = 0; i < 1e4; i++)
         {
-            uint8_t bit = (turbo_codeword[i / 8] >> (7 - (i % 8))) & 1;
-            turbo_soft_frame[i] = bit ? 1 : -1;
+            for (int y = 0; y < bch_handler.frame_params(s2_framesize, s2_code_rate).first / 8; y++)
+                frame_data[y] = rand() % 256;
+            bch_handler.encode(frame_data, s2_framesize, s2_code_rate);
+            // output_file.write((char *)frame_data, frame_size);
+            test_data.insert(test_data.end(), &frame_data[0], &frame_data[frame_size]);
+            total_filesize_bytes += frame_size;
+        }
+    }
+
+    logger->info("Decoding... (Test Size {:.1f} MB)", total_filesize_bytes / 1e6);
+
+    {
+        int ff = 0;
+
+        auto bench_start = std::chrono::system_clock::now();
+        while (ff < test_data.size() / frame_size)
+        {
+            // input_file.read((char *)frame_data, frame_size);
+            uint8_t *frame_ptr = &test_data[(ff++) * frame_size];
+            bch_handler.decode(frame_ptr, s2_framesize, s2_code_rate);
         }
 
-        for (int i = 0; i < 100; i++)
-        {
-            int pos = rand() % 3576;
-            turbo_soft_frame[pos] = -turbo_soft_frame[pos];
-        }
+        auto bench_time = (std::chrono::system_clock::now() - bench_start);
+        double time = bench_time.count() / 1e9;
 
-        ccsds_turbo.decode(turbo_soft_frame, turbo_frame, 5);
-
-        encoded_in.write((char *)turbo_frame, 188);
+        logger->debug("Processing Time {:f}, throughput {:f} MB/s", time, double(total_filesize_bytes / 1e6) / time);
     }
 }
+
+#endif

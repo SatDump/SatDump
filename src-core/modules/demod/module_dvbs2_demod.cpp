@@ -117,11 +117,11 @@ namespace demod
 
         // Init the rest
         ldpc_decoder = std::make_unique<dvbs2::BBFrameLDPC>(s2_framesize, s2_coderate);
-        bch_decoder = std::make_unique<dvbs2::BBFrameBCH>(s2_framesize, s2_coderate);
+        bch_decoder = std::make_unique<dvbs2::BBFrameBCH>();
         descramber = std::make_unique<dvbs2::BBFrameDescrambler>(s2_framesize, s2_coderate);
 
         // Info
-        logger->info("Output bbframe bits : {:d}", bch_decoder->dataSize());
+        logger->info("Output bbframe bits : {:d}", bch_decoder->frame_params(s2_framesize, s2_coderate).first);
     }
 
     DVBS2DemodModule::~DVBS2DemodModule()
@@ -246,17 +246,17 @@ namespace demod
                 for (int i = 0; i < ldpc_decoder->dataSize(); i++)
                     repacker_buffer[i / 8] = repacker_buffer[i / 8] << 1 | (buf[i] < 0);
 
-                bch_corrections = bch_decoder->decode(repacker_buffer);
-
+                bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
+      
                 // if (bch_corrections == -1)
                 //     logger->info("ERROR");
 
                 descramber->work(repacker_buffer);
 
                 if (output_data_type == DATA_FILE)
-                    data_out.write((char *)repacker_buffer, bch_decoder->dataSize() / 8);
+                    data_out.write((char *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
                 else
-                    output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->dataSize() / 8);
+                    output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
             }
         }
 

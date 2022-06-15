@@ -19,72 +19,111 @@
  */
 
 /*
- * This file has been adapted from https://github.com/drmpeg/gr-dvbs2rx
+ * This file was originally adapted from https://github.com/drmpeg/gr-dvbs2rx,
+ * but testing revealed LeanDVB's BCH performed significantly better overall.
  */
 
 #pragma once
 
-#include "bch/bose_chaudhuri_hocquenghem_decoder.hh"
-#include "bch/galois_field.hh"
-#include "dvbs2.h"
 #include <cstdint>
-#include <bitset>
-
-#define MAX_BCH_PARITY_BITS 192
+#include "bch/bch.h"
+#include "dvbs2.h"
+#include <utility>
 
 namespace dvbs2
 {
     class BBFrameBCH
     {
     private:
-        unsigned int kbch;
-        unsigned int nbch;
-        unsigned int bch_code;
-        unsigned int frame;
-
-        // Decode
-        typedef CODE::GaloisField<16, 0b10000000000101101, uint16_t> GF_NORMAL;
-        typedef CODE::GaloisField<15, 0b1000000000101101, uint16_t> GF_MEDIUM;
-        typedef CODE::GaloisField<14, 0b100000000101011, uint16_t> GF_SHORT;
-        typedef CODE::BoseChaudhuriHocquenghemDecoder<24, 1, 65343, GF_NORMAL> BCH_NORMAL_12;
-        typedef CODE::BoseChaudhuriHocquenghemDecoder<20, 1, 65375, GF_NORMAL> BCH_NORMAL_10;
-        typedef CODE::BoseChaudhuriHocquenghemDecoder<16, 1, 65407, GF_NORMAL> BCH_NORMAL_8;
-        typedef CODE::BoseChaudhuriHocquenghemDecoder<24, 1, 32587, GF_MEDIUM> BCH_MEDIUM_12;
-        typedef CODE::BoseChaudhuriHocquenghemDecoder<24, 1, 16215, GF_SHORT> BCH_SHORT_12;
-        GF_NORMAL *instance_n;
-        GF_MEDIUM *instance_m;
-        GF_SHORT *instance_s;
-        BCH_NORMAL_12 *decode_n_12;
-        BCH_NORMAL_10 *decode_n_10;
-        BCH_NORMAL_8 *decode_n_8;
-        BCH_MEDIUM_12 *decode_m_12;
-        BCH_SHORT_12 *decode_s_12;
-        uint8_t *code;
-        uint8_t *parity;
-
-        // Encode
-        uint8_t encode_buffer[64800];
-
-        std::bitset<MAX_BCH_PARITY_BITS> crc_table[256];
-        std::bitset<MAX_BCH_PARITY_BITS> crc_medium_table[16];
-        unsigned int num_parity_bits;
-        std::bitset<MAX_BCH_PARITY_BITS> polynome;
-
-        void calculate_crc_table();
-        void calculate_medium_crc_table();
-        int poly_mult(const int *, int, const int *, int, int *);
-        void bch_poly_build_tables(void);
+        leansdr::bch_interface *bchs[2][12];
+        // N=t*m
+        // The generator of GF(2^m) is always g1.
+        // Normal frames with 8, 10 or 12 polynomials.
+        typedef leansdr::bch_engine<uint32_t, 192, 17, 16, uint16_t, 0x002d> s2_bch_engine_nf12;
+        typedef leansdr::bch_engine<uint32_t, 160, 17, 16, uint16_t, 0x002d> s2_bch_engine_nf10;
+        typedef leansdr::bch_engine<uint32_t, 128, 17, 16, uint16_t, 0x002d> s2_bch_engine_nf8;
+        // Short frames with 12 polynomials.
+        typedef leansdr::bch_engine<uint32_t, 168, 17, 14, uint16_t, 0x002b> s2_bch_engine_sf12;
 
     public:
-        BBFrameBCH(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate);
+        BBFrameBCH();
         ~BBFrameBCH();
 
-        int dataSize()
+        std::pair<int, int> frame_params(dvbs2_framesize_t framesize, dvbs2_code_rate_t rate)
         {
-            return kbch;
+            if (framesize == FECFRAME_NORMAL)
+            {
+                switch (rate)
+                {
+                case C1_4:
+                    return {16008, 16200};
+                case C1_3:
+                    return {21408, 21600};
+                case C2_5:
+                    return {25728, 25920};
+                case C1_2:
+                    return {32208, 32400};
+                case C3_5:
+                    return {38688, 38880};
+                case C2_3:
+                    return {43040, 43200};
+                case C3_4:
+                    return {48408, 48600};
+                case C4_5:
+                    return {51648, 51840};
+                case C5_6:
+                    return {53840, 54000};
+                case C8_9:
+                    return {57472, 57600};
+                case C9_10:
+                    return {58192, 58320};
+                default:
+                    return {0, 0};
+                }
+            }
+            else if (framesize == FECFRAME_SHORT)
+            {
+                switch (rate)
+                {
+                case C1_4:
+                    return {3072, 3240};
+                case C1_3:
+                    return {5232, 5400};
+                case C2_5:
+                    return {6312, 6480};
+                case C1_2:
+                    return {7032, 7200};
+                case C3_5:
+                    return {9552, 9720};
+                case C2_3:
+                    return {10632, 10800};
+                case C3_4:
+                    return {11712, 11880};
+                case C4_5:
+                    return {12432, 12600};
+                case C5_6:
+                    return {13152, 13320};
+                case C8_9:
+                    return {14232, 14400};
+                default:
+                    return {0, 0};
+                }
+            }
+            else
+            {
+                return {0, 0};
+            }
         }
 
-        int decode(uint8_t *frame);
-        int encode(uint8_t *frame);
+        inline int decode(uint8_t *frame, dvbs2_framesize_t framesize, dvbs2_code_rate_t rate)
+        {
+            return bchs[framesize == FECFRAME_SHORT][rate]->decode(frame, frame_params(framesize, rate).second / 8);
+        }
+
+        inline void encode(uint8_t *frame, dvbs2_framesize_t framesize, dvbs2_code_rate_t rate)
+        {
+            int data_s = frame_params(framesize, rate).first / 8;
+            bchs[framesize == FECFRAME_SHORT][rate]->encode(frame, data_s, &frame[data_s]);
+        }
     };
 }
