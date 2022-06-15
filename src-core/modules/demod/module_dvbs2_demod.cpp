@@ -247,9 +247,9 @@ namespace demod
                     repacker_buffer[i / 8] = repacker_buffer[i / 8] << 1 | (buf[i] < 0);
 
                 bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
-      
+
                 // if (bch_corrections == -1)
-                //     logger->info("ERROR");
+                //     logger->error("ERROR");
 
                 descramber->work(repacker_buffer);
 

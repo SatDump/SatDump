@@ -13,8 +13,8 @@ namespace goes
         {
         protected:
             uint8_t *bb_buffer, *cadu_buffer;
-            int bb_cor = 0, cadu_cor = 0;
-            bool bb_sync = 0, cadu_sync = 0;
+            int cadu_cor = 0;
+            bool cadu_sync = 0;
 
             std::ifstream data_in;
             std::ofstream data_out;
@@ -22,7 +22,6 @@ namespace goes
             std::atomic<size_t> progress;
 
             // UI Stuff
-            float cor_history_bb[200];
             float cor_history_ca[200];
 
         public:

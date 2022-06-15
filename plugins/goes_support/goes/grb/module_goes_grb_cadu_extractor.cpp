@@ -66,38 +66,7 @@ namespace goes
                 else
                     input_fifo->read((uint8_t *)bb_buffer, BBFRAME_SIZE);
 
-                // Correlate over the entire frame
-                int best_pos = 0;
-                int best_cor = 0;
-                for (int i = 0; i < BBFRAME_SIZE; i++)
-                {
-                    int correlation = 0;
-                    for (int y = 0; y < (int)sizeof(BBFRAME_HEADER); y++)
-                        correlation += (bb_buffer[i + y] == BBFRAME_HEADER[y]);
-
-                    if (correlation > best_cor)
-                    {
-                        best_cor = correlation;
-                        best_pos = i;
-                    }
-
-                    if (correlation == sizeof(BBFRAME_HEADER)) // If we have a perfect match, exit
-                        break;
-                }
-
-                // Feed in more data
-                if (best_pos != 0 && best_pos < BBFRAME_SIZE)
-                {
-                    std::memmove(bb_buffer, &bb_buffer[best_pos], BBFRAME_SIZE - best_pos);
-
-                    if (input_data_type == DATA_FILE)
-                        data_in.read((char *)&bb_buffer[BBFRAME_SIZE - best_pos], best_pos);
-                    else
-                        input_fifo->read((uint8_t *)&bb_buffer[BBFRAME_SIZE - best_pos], best_pos);
-                }
-
-                bb_cor = best_cor;
-                bb_sync = best_pos == 0;
+                // data_out.write((char *)&bb_buffer[10], BBFRAME_SIZE - 10);
 
                 // Buffer it
                 caduVector.insert(caduVector.end(), &bb_buffer[10], &bb_buffer[BBFRAME_SIZE]);
@@ -148,9 +117,8 @@ namespace goes
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    std::string lock_state_bb = bb_sync ? "SYNCED" : "NOSYNC";
                     std::string lock_state_ca = cadu_sync ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, BBFrame : " + lock_state_bb + ", CADU : " + lock_state_ca);
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, CADU : " + lock_state_ca);
                 }
             }
 
@@ -164,20 +132,6 @@ namespace goes
             ImGui::Begin("GOES GRB CADU Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
             ImGui::BeginGroup();
             {
-                ImGui::Button("BBFrame Correlator", {200 * ui_scale, 20 * ui_scale});
-                {
-                    ImGui::Text("Corr  : ");
-                    ImGui::SameLine();
-                    ImGui::TextColored(bb_sync ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(bb_cor));
-
-                    std::memmove(&cor_history_bb[0], &cor_history_bb[1], (200 - 1) * sizeof(float));
-                    cor_history_bb[200 - 1] = bb_cor;
-
-                    ImGui::PlotLines("##bbcor", cor_history_bb, IM_ARRAYSIZE(cor_history_bb), 0, "", 40.0f, 10.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
-                }
-
-                ImGui::Spacing();
-
                 ImGui::Button("CADU Correlator", {200 * ui_scale, 20 * ui_scale});
                 {
                     ImGui::Text("Corr  : ");
