@@ -34,6 +34,7 @@ namespace demod
         std::shared_ptr<dvbs2::S2BBToSoft> s2_bb_to_soft;
 
         dsp::RingBuffer<int8_t> ring_buffer;
+        dsp::RingBuffer<uint8_t> ring_buffer2;
 
         float d_rrc_alpha;
         int d_rrc_taps = 31;
@@ -52,6 +53,7 @@ namespace demod
         bool d_pilots = false;
         float d_sof_thresold = 0.6;
         int d_max_ldpc_trials = 10;
+        bool d_multithread_bch = false;
 
         // Running stuff
         bool should_stop = false;
@@ -85,6 +87,7 @@ namespace demod
         void stop();
         void process();
         void process_s2();
+        void process_s2_bch();
         void drawUI(bool window);
 
     public:

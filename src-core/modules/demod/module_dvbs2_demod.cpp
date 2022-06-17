@@ -64,6 +64,9 @@ namespace demod
         if (parameters.count("ldpc_trials") > 0)
             d_max_ldpc_trials = parameters["ldpc_trials"].get<int>();
 
+        if (parameters.count("mt_bch") > 0)
+            d_multithread_bch = parameters["mt_bch"].get<bool>();
+
         // Window Name in the UI
         name = "DVB-S2 Demodulator";
     }
@@ -158,7 +161,13 @@ namespace demod
         s2_bb_to_soft->start();
 
         ring_buffer.init(1000000);
+        if (d_multithread_bch)
+            ring_buffer2.init(1000000);
+
         std::thread th(&DVBS2DemodModule::process_s2, this);
+        std::thread th2;
+        if (d_multithread_bch)
+            th2 = std::thread(&DVBS2DemodModule::process_s2_bch, this);
 
         int dat_size = 0;
         while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
@@ -218,6 +227,9 @@ namespace demod
 
         if (th.joinable())
             th.join();
+        if (d_multithread_bch)
+            if (th2.joinable())
+                th2.join();
     }
 
     void DVBS2DemodModule::process_s2()
@@ -246,21 +258,59 @@ namespace demod
                 for (int i = 0; i < ldpc_decoder->dataSize(); i++)
                     repacker_buffer[i / 8] = repacker_buffer[i / 8] << 1 | (buf[i] < 0);
 
-                bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
+                if (!d_multithread_bch)
+                {
+                    bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
 
-                // if (bch_corrections == -1)
-                //     logger->error("ERROR");
+                    // if (bch_corrections == -1)
+                    //     logger->error("ERROR");
 
-                descramber->work(repacker_buffer);
+                    descramber->work(repacker_buffer);
 
-                if (output_data_type == DATA_FILE)
-                    data_out.write((char *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                    else
+                        output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                }
                 else
-                    output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                {
+                    ring_buffer2.write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).second / 8);
+                }
             }
         }
 
         delete[] sym_buffer;
+        delete[] repacker_buffer;
+    }
+
+    void DVBS2DemodModule::process_s2_bch()
+    {
+        logger->info("Starting BCH Thead!");
+
+        uint8_t *repacker_buffer = new uint8_t[64800];
+
+        while (!should_stop)
+        {
+            int bch_fsize = bch_decoder->frame_params(s2_framesize, s2_coderate).second / 8;
+            int bch_dsize = bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8;
+            int read = ring_buffer2.read(repacker_buffer, bch_fsize);
+
+            if (read <= 0)
+                continue;
+
+            bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
+
+            // if (bch_corrections == -1)
+            //     logger->error("ERROR");
+
+            descramber->work(repacker_buffer);
+
+            if (output_data_type == DATA_FILE)
+                data_out.write((char *)repacker_buffer, bch_dsize);
+            else
+                output_fifo->write((uint8_t *)repacker_buffer, bch_dsize);
+        }
+
         delete[] repacker_buffer;
     }
 
@@ -278,6 +328,11 @@ namespace demod
         s2_bb_to_soft->output_stream->stopReader();
         ring_buffer.stopWriter();
         ring_buffer.stopReader();
+        if (d_multithread_bch)
+        {
+            ring_buffer2.stopWriter();
+            ring_buffer2.stopReader();
+        }
 
         if (output_data_type == DATA_FILE)
             data_out.close();

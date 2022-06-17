@@ -31,7 +31,7 @@ namespace goes
 
         std::vector<ModuleDataType> GOESGRBCADUextractor::getOutputTypes()
         {
-            return {DATA_FILE};
+            return {DATA_FILE, DATA_STREAM};
         }
 
         GOESGRBCADUextractor::~GOESGRBCADUextractor()
@@ -48,8 +48,11 @@ namespace goes
                 filesize = 0;
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
-            data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".cadu");
+            if (output_data_type == DATA_FILE)
+            {
+                data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
+                d_output_files.push_back(d_output_file_hint + ".cadu");
+            }
 
             logger->info("Using input bbframes " + d_input_file);
             logger->info("Decoding to " + d_output_file_hint + ".cadu");
@@ -108,7 +111,10 @@ namespace goes
                         caduVector.erase(caduVector.begin(), caduVector.begin() + best_pos);
                     }
 
-                    data_out.write((char *)cadu_buffer, CADU_SIZE);
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)cadu_buffer, CADU_SIZE);
+                    else
+                        output_fifo->write((uint8_t *)cadu_buffer, CADU_SIZE);
                 }
 
                 if (input_data_type == DATA_FILE)
@@ -122,8 +128,9 @@ namespace goes
                 }
             }
 
-            data_out.close();
             if (output_data_type == DATA_FILE)
+                data_out.close();
+            if (input_data_type == DATA_FILE)
                 data_in.close();
         }
 

@@ -179,7 +179,8 @@
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.005,
                     "clock_alpha": 2.5e-3,
-                    "modcod": 11
+                    "modcod": 11,
+                    "mt_bch": true // While this does make it easier for live to work, it decreases efficiency of the demod quite a bit.
                 }
             },
             "cadu": {
