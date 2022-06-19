@@ -144,7 +144,7 @@
             "soft": {
                 "pm_demod": {
                     "symbolrate": 156e3,
-                    "pll_bw": 0.01,
+                    "pll_bw": 0.005,
                     "pll_max_offset": 0.5,
                     "rrc_alpha": 0.25,
                     "rrc_taps": 31,
