@@ -83,7 +83,7 @@ namespace goes
                     // Correlate over the entire frame
                     int best_pos = 0;
                     int best_cor = 0;
-                    for (int i = 0; i < CADU_SIZE; i++)
+                    for (int i = 0; i < CADU_SIZE - (int)sizeof(CADU_HEADER); i++)
                     {
                         int correlation = 0;
                         for (int y = 0; y < (int)sizeof(CADU_HEADER); y++)

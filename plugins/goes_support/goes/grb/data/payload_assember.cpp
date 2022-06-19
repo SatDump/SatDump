@@ -17,9 +17,14 @@ namespace goes
             if (pkt.header.packet_length + 1 != (int)pkt.payload.size())
                 return;
 
+            if (current_payloads.count(pkt.header.apid) == 0)
+                current_payloads.insert({pkt.header.apid, GRBFilePayload()});
+
+            GRBFilePayload &current_payload = current_payloads[pkt.header.apid];
+
             if (pkt.header.sequence_flag == 1 || pkt.header.sequence_flag == 3)
             {
-                if (file_in_progress)
+                if (current_payload.in_progress)
                 {
                     // Process
                     if (current_payload.valid)
@@ -44,32 +49,32 @@ namespace goes
                 // Fill in payload, discarding CRC and header
                 current_payload.payload.insert(current_payload.payload.end(), &pkt.payload.data()[8], &pkt.payload.data()[pkt.payload.size() - 4]);
 
-                file_in_progress = true;
+                current_payload.in_progress = true;
             }
             else if (pkt.header.sequence_flag == 0 || pkt.header.sequence_flag == 2)
             {
                 bool crc_ok = crc_valid(pkt);
                 if (!crc_ok)
                 {
-                    file_in_progress = false;
+                    current_payload.in_progress = false;
                     current_payload.valid = false;
                     logger->error("Invalid CRC. Discarding payload.");
                     return;
                 }
 
-                if (file_in_progress &&                     // Make sure a file is in progress
+                if (current_payload.in_progress &&          // Make sure a file is in progress
                     current_payload.apid == pkt.header.apid // ....and that the APID matches
                 )
                 {
                     current_payload.payload.insert(current_payload.payload.end(), &pkt.payload.data()[8], &pkt.payload.data()[pkt.payload.size() - 4]);
                 }
 
-                if (pkt.header.sequence_flag == 2 && file_in_progress) // We're done with this payload
+                if (pkt.header.sequence_flag == 2 && current_payload.in_progress) // We're done with this payload
                 {
                     // Process
                     if (current_payload.valid)
                         processor.processPayload(current_payload);
-                    file_in_progress = false;
+                    current_payload.in_progress = false;
                 }
             }
         }

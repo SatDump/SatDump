@@ -13,6 +13,7 @@ namespace goes
         struct GRBFilePayload
         {
             bool valid = true;
+            bool in_progress = false;
             int apid;
             GRBSecondaryHeader sec_header;
             std::vector<uint8_t> payload;
@@ -22,8 +23,7 @@ namespace goes
         {
         private:
             const std::string directory;
-            bool file_in_progress = false;
-            GRBFilePayload current_payload;
+            std::map<int, GRBFilePayload> current_payloads;
             GRBDataProcessor processor;
             CRC32 crc;
 

@@ -220,10 +220,10 @@
                     "clock_gain_mu": 0.037,
                     "clock_omega_relative_limit": 0.0001
                 }
-            }
-            /*"cadu": {
+            },
+            "cadu": {
                 "iris_dump_decoder": {}
-            }*/
+            }
         }
     },
     "smap_s_link": {
@@ -423,6 +423,31 @@
                     "constellation": "qpsk",
                     "cadu_size": 10112,
                     "rs_i": 0
+                }
+            }
+        }
+    },
+    "eumetcast_africa": {
+        "name": "EUMETCAST Africa",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 9.892e6,
+                    "rrc_alpha": 0.2,
+                    "pll_bw": 0.01,
+                    "modcod": 7,
+                    "shortframes": false,
+                    "pilots": false,
+                    // "sof_thresold": 10, // Disable locking
+                    "freq_prop_factor": 0.01
                 }
             }
         }
