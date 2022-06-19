@@ -47,7 +47,7 @@ namespace goes
             if (payload.sec_header.grb_payload_variant == IMAGE || payload.sec_header.grb_payload_variant == IMAGE_WITH_DQF)
             {
                 GRBImagePayloadHeader image_header(&payload.payload[0]);
-                int size = image_header.byte_offset_dqf;
+                int size = std::min<int>(image_header.byte_offset_dqf, payload.payload.size() - 34);
 
                 if (image_header.compression_algorithm == NO_COMPRESSION)
                     img = image::Image<uint16_t>((uint16_t *)&payload.payload[34], image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block, 1);
