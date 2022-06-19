@@ -4,7 +4,7 @@
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "common/utils.h"
 
-#ifndef _WIN32
+#if !(defined(__APPLE__) || defined(_WIN32))
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@ namespace dvbs2
 
         dvbs2::BBFrameTSParser ts_extractor(bbframe_size);
 
-#ifndef _WIN32
+#if !(defined(__APPLE__) || defined(_WIN32))
         // Init TCP Server
         int sockfd, clientfd, len;
         struct sockaddr_in servaddr, cli;
@@ -106,7 +106,7 @@ namespace dvbs2
 
             for (int i = 0; i < ts_cnt; i++)
             {
-#ifndef _WIN32
+#if !(defined(__APPLE__) || defined(_WIN32))
                 send(clientfd, &ts_frames[i * 188], 188, MSG_NOSIGNAL);
                 // file_ts.write((char *)&ts_frames[i * 188], 188);
 #endif
@@ -122,7 +122,7 @@ namespace dvbs2
             }
         }
 
-#ifndef _WIN32
+#if !(defined(__APPLE__) || defined(_WIN32))
         close(sockfd);
 #endif
 
