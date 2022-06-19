@@ -94,7 +94,7 @@ namespace leansdr
                 rem[j] = divmod(cw, cwbytes, truncpolys[j]);
             }
             // Compute syndromes.
-            TGF S[2 * npolys];
+            TGF *S = new TGF[2 * npolys];
             for (int i = 0; i < 2 * npolys; ++i)
             {
                 // Compute R(alpha^(1+i)), exploiting the fact that
@@ -122,12 +122,10 @@ namespace leansdr
             // TBD More efficient to work with logs of syndromes ?
 
             int NN = 2 * npolys;
-            TGF C[NN] = {
-                1,
-            },
-                B[NN] = {
-                    1,
-                };
+            TGF *C = new TGF[NN];
+            C[0] = 1;
+            TGF *B = new TGF[NN];
+            B[0] = 1;
             int L = 0, m = 1;
             TGF b = 1;
             for (int n = 0; n < NN; ++n)
@@ -142,14 +140,15 @@ namespace leansdr
                     TGF d_div_b = GF.mul(d, GF.inv(b));
                     if (2 * L <= n)
                     {
-                        TGF tmp[NN];
-                        memcpy(tmp, C, sizeof(tmp));
+                        TGF *tmp = new TGF[NN];
+                        memcpy(tmp, C, sizeof(TGF) * NN);
                         for (int i = 0; i < NN - m; ++i)
                             C[m + i] = GF.sub(C[m + i], GF.mul(d_div_b, B[i]));
                         L = n + 1 - L;
-                        memcpy(B, tmp, sizeof(B));
+                        memcpy(B, tmp, sizeof(TGF) * NN);
                         b = d;
                         m = 1;
+                        delete[] tmp;
                     }
                     else
                     {
@@ -187,6 +186,9 @@ namespace leansdr
                     int rloc = cwbytes * 8 - 1 - loc;
                     if (rloc < 0)
                     {
+                        delete[] B;
+                        delete[] C;
+                        delete[] S;
                         // This may happen if the code is used truncated.
                         return -1;
                     }
@@ -196,6 +198,11 @@ namespace leansdr
                         break;
                 }
             }
+
+            delete[] B;
+            delete[] C;
+            delete[] S;
+
             if (roots_found != L)
                 return -1;
             return L;
