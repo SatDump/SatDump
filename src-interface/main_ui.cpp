@@ -8,6 +8,8 @@
 #include "satdump_vars.h"
 #include "core/config.h"
 #include "core/style.h"
+#include "resources.h"
+#include "common/widgets/markdown_helper.h"
 
 namespace satdump
 {
@@ -15,6 +17,8 @@ namespace satdump
     std::shared_ptr<ViewerApplication> viewer_app;
 
     bool in_app = false; // true;
+
+    widgets::MarkdownHelper credits_md;
 
     void initMainUI()
     {
@@ -41,6 +45,12 @@ namespace satdump
             else
                 style::setDarkStyle(satdump::RESPATH);
         }
+
+        // Load credits MD
+        std::ifstream ifs(resources::getResourcePath("credits.md"));
+        std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+        credits_md.set_md(credits_markdown);
+        credits_md.init();
 
         registerApplications();
         registerViewerHandlers();
@@ -147,6 +157,11 @@ namespace satdump
                 if (ImGui::BeginTabItem("Settings"))
                 {
                     settings::render();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Credits"))
+                {
+                    credits_md.render();
                     ImGui::EndTabItem();
                 }
             }
