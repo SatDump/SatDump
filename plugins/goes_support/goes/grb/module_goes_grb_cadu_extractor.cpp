@@ -14,8 +14,6 @@ namespace goes
 {
     namespace grb
     {
-        // This header is static, and while that is NOT the best way, using it as a syncword is very effective
-        const uint8_t BBFRAME_HEADER[] = {0x71, 0x00, 0x00, 0x00, 0xe3, 0x00, 0x00, 0xff, 0xff, 0xb9};
         const uint8_t CADU_HEADER[] = {0x1a, 0xcf, 0xfc, 0x1d};
 
         GOESGRBCADUextractor::GOESGRBCADUextractor(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
