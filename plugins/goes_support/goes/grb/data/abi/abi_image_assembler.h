@@ -4,6 +4,8 @@
 #include "abi_products.h"
 #include "../grb_headers.h"
 #include <string>
+#include "abi_image_composer.h"
+#include <memory>
 
 namespace goes
 {
@@ -25,6 +27,8 @@ namespace goes
             GRBABIImageAssembler(std::string abi_dir, products::ABI::GRBProductABI config);
             ~GRBABIImageAssembler();
             void pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block);
+
+            std::shared_ptr<ABIComposer> image_composer;
         };
     }
 }

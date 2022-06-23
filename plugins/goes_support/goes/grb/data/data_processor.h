@@ -52,6 +52,12 @@ namespace goes
             // GRB Information
             void processGRBInformation(GRBFilePayload &payload);
 
+            // ABI Compositing
+            std::shared_ptr<ABIComposer> image_composer_fulldisk;
+            std::shared_ptr<ABIComposer> image_composer_conus;
+            std::shared_ptr<ABIComposer> image_composer_meso1;
+            std::shared_ptr<ABIComposer> image_composer_meso2;
+
         public:
             GRBDataProcessor(std::string directory);
             ~GRBDataProcessor();

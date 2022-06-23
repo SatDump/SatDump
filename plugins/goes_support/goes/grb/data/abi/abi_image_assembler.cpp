@@ -38,6 +38,8 @@ namespace goes
 
             logger->info("Saving " + directory + filename);
             full_image.save_png(std::string(directory + filename).c_str());
+
+            image_composer->feed_channel(currentTimeStamp, abi_product.channel, full_image);
         }
 
         void GRBABIImageAssembler::reset()

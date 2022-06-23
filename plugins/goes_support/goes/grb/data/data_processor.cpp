@@ -14,9 +14,25 @@ namespace goes
         GRBDataProcessor::GRBDataProcessor(std::string directory)
             : directory(directory)
         {
+            // ABI Compositors
+            image_composer_fulldisk = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::FULL_DISK);
+            image_composer_conus = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::CONUS);
+            image_composer_meso1 = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::MESO_1);
+            image_composer_meso2 = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::MESO_2);
+
             // Setup ABI Image assemblers
             for (std::pair<const int, products::ABI::GRBProductABI> &abi_prod : products::ABI::ABI_IMAGE_PRODUCTS)
+            {
                 abi_image_assemblers.emplace(abi_prod.first, std::make_shared<GRBABIImageAssembler>(directory + "/ABI", abi_prod.second));
+                if (abi_prod.second.type == products::ABI::FULL_DISK)
+                    abi_image_assemblers[abi_prod.first]->image_composer = image_composer_fulldisk;
+                else if (abi_prod.second.type == products::ABI::CONUS)
+                    abi_image_assemblers[abi_prod.first]->image_composer = image_composer_conus;
+                else if (abi_prod.second.type == products::ABI::MESO_1)
+                    abi_image_assemblers[abi_prod.first]->image_composer = image_composer_meso1;
+                else if (abi_prod.second.type == products::ABI::MESO_2)
+                    abi_image_assemblers[abi_prod.first]->image_composer = image_composer_meso2;
+            }
 
             // Setup SUVI Image assemblers
             for (std::pair<const int, products::SUVI::GRBProductSUVI> &suvi_prod : products::SUVI::SUVI_IMAGE_PRODUCTS)
