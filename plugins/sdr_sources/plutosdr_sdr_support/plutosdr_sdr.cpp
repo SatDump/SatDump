@@ -36,6 +36,9 @@ nlohmann::json PlutoSDRSource::get_settings(nlohmann::json)
 
 void PlutoSDRSource::open()
 {
+    if (d_sdr_id != 0)
+        is_usb = true;
+
     if (!is_open) // We do nothing there!
         is_open = true;
 
@@ -54,8 +57,21 @@ void PlutoSDRSource::start()
 {
     DSPSampleSource::start();
 
-    logger->trace("Using PlutoSDR IP Address " + ip_address);
-    ctx = iio_create_context_from_uri(std::string("ip:" + ip_address).c_str());
+    if (is_usb)
+    {
+        uint8_t x1 = (d_sdr_id >> 16) & 0xFF;
+        uint8_t x2 = (d_sdr_id >> 8) & 0xFF;
+        uint8_t x3 = (d_sdr_id >> 0) & 0xFF;
+
+        std::string usbid = std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
+        logger->trace("Using PlutoSDR Device at " + usbid);
+        ctx = iio_create_context_from_uri(std::string("usb:" + usbid).c_str());
+    }
+    else
+    {
+        logger->trace("Using PlutoSDR IP Address " + ip_address);
+        ctx = iio_create_context_from_uri(std::string("ip:" + ip_address).c_str());
+    }
     if (ctx == NULL)
         throw std::runtime_error("Could not open PlutoSDR device!");
     phy = iio_context_find_device(ctx, "ad9361-phy");
@@ -117,7 +133,8 @@ void PlutoSDRSource::drawControlUI()
     ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
 
-    ImGui::InputText("Adress", &ip_address);
+    if (!is_usb)
+        ImGui::InputText("Adress", &ip_address);
 
     if (is_started)
         style::endDisabled();
@@ -156,6 +173,30 @@ uint64_t PlutoSDRSource::get_samplerate()
 std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
-    results.push_back({"plutosdr", "PlutoSDR", 0});
+    results.push_back({"plutosdr", "PlutoSDR IP", 0});
+
+    // Try to find local USB devices
+    iio_scan_context *scan_ctx = iio_create_scan_context("usb", 0);
+    struct iio_context_info **info;
+    ssize_t ret = iio_scan_context_get_info_list(scan_ctx, &info);
+
+    if (ret > 0)
+    {
+        // Get dev info
+        const char *dev_id = iio_context_info_get_uri(info[0]);
+
+        // Parse to something we can store
+        uint8_t x1, x2, x3;
+        sscanf(dev_id, "usb:%d.%d.%d", &x1, &x2, &x3);
+
+        // Repack to uint64_t
+        uint64_t id = x1 << 16 | x2 << 8 | x3;
+        std::string dev_str = "PlutoSDR " + std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
+
+        results.push_back({"plutosdr", dev_str, id});
+    }
+
+    iio_scan_context_destroy(scan_ctx);
+
     return results;
 }

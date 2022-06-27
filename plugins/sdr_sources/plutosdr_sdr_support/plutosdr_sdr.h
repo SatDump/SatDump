@@ -26,6 +26,8 @@ protected:
     std::vector<uint64_t> available_samplerates;
     uint64_t current_samplerate = 0;
 
+    bool is_usb = false;
+
     int gain = 0;
     int gain_mode = 0;
     std::string ip_address = "192.168.2.1";
