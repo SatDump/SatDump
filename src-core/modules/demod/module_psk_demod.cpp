@@ -32,6 +32,13 @@ namespace demod
         if (parameters.count("post_costas_dc") > 0)
             d_post_costas_dc_blocking = parameters["post_costas_dc"].get<bool>();
 
+        if (parameters.count("clock_alpha") > 0)
+        {
+            float clock_alpha = parameters["clock_alpha"].get<float>();
+            d_clock_gain_omega = pow(clock_alpha, 2) / 4.0;
+            d_clock_gain_mu = clock_alpha;
+        }
+
         if (parameters.count("clock_gain_omega") > 0)
             d_clock_gain_omega = parameters["clock_gain_omega"].get<float>();
 
