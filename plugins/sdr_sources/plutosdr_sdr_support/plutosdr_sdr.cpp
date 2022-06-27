@@ -122,7 +122,7 @@ void PlutoSDRSource::drawControlUI()
     if (is_started)
         style::endDisabled();
 
-    if (gain_mode == 1)
+    if (gain_mode == 0)
     {
         // Gain settings
         if (ImGui::SliderInt("Gain", &gain, 0, 76))
