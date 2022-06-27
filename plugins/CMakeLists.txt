@@ -111,6 +111,11 @@ if(PLUGIN_SDRPLAY_SDR_SUPPORT)
 add_subdirectory(sdr_sources/sdrplay_sdr_support)
 endif()
 
+option(PLUGIN_PLUTOSDR_SDR_SUPPORT "Enable PlutoSDR SDR Support plugin" ON)
+if(PLUGIN_PLUTOSDR_SDR_SUPPORT)
+add_subdirectory(sdr_sources/plutosdr_sdr_support)
+endif()
+
 option(PLUGIN_RTLSDR_SDR_SUPPORT "Enable RTL-SDR SDR Support plugin" ON)
 if(PLUGIN_RTLSDR_SDR_SUPPORT)
 add_subdirectory(sdr_sources/rtlsdr_sdr_support)
