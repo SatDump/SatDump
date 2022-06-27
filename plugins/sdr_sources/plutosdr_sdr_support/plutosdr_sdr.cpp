@@ -21,6 +21,7 @@ void PlutoSDRSource::set_settings(nlohmann::json settings)
 
     gain = getValueOrDefault(d_settings["gain"], gain);
     gain_mode = getValueOrDefault(d_settings["gain_mode"], gain_mode);
+    ip_address = getValueOrDefault(d_settings["ip_address"], ip_address);
 
     if (is_open && is_started)
         set_gains();
@@ -30,6 +31,7 @@ nlohmann::json PlutoSDRSource::get_settings(nlohmann::json)
 {
     d_settings["gain"] = gain;
     d_settings["gain_mode"] = gain_mode;
+    d_settings["ip_address"] = ip_address;
 
     return d_settings;
 }
@@ -187,7 +189,7 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 
         // Parse to something we can store
         uint8_t x1, x2, x3;
-        sscanf(dev_id, "usb:%d.%d.%d", &x1, &x2, &x3);
+        sscanf(dev_id, "usb:%hhd.%hhd.%hhd", &x1, &x2, &x3);
 
         // Repack to uint64_t
         uint64_t id = x1 << 16 | x2 << 8 | x3;
