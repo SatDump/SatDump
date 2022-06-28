@@ -3,6 +3,11 @@ project(sdrplay_sdr_support)
 
 set(SATDUMP_ROOT "/usr")
 
+if (APPLE)
+include_directories("/usr/local/include")
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/lib)
+endif()
+
 find_library(SDRPLAY_LIBRARY sdrplay_api)
 
 if(SDRPLAY_LIBRARY OR MSVC)
