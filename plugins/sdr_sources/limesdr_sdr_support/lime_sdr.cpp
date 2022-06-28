@@ -56,6 +56,9 @@ void LimeSDRSource::start()
 {
     DSPSampleSource::start();
 
+    limeDevice->EnableChannel(false, 0, true);
+    limeDevice->SetPath(false, 0, 3);
+
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
     limeDevice->SetRate(current_samplerate, 0);
     limeDevice->SetLPF(false, 0, true, current_samplerate);
