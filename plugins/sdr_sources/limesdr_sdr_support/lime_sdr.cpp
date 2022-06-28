@@ -59,6 +59,13 @@ void LimeSDRSource::start()
     limeDevice->EnableChannel(false, 0, true);
     limeDevice->SetPath(false, 0, 3);
 
+    limeConfig.align = false;
+    limeConfig.isTx = false;
+    limeConfig.performanceLatency = 0.5;
+    limeConfig.bufferLength = 0; // auto
+    limeConfig.format = lime::StreamConfig::FMT_FLOAT32;
+    limeConfig.channelID = 0;
+
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
     limeDevice->SetRate(current_samplerate, 0);
     limeDevice->SetLPF(false, 0, true, current_samplerate);
@@ -66,13 +73,6 @@ void LimeSDRSource::start()
     set_frequency(d_frequency);
 
     set_gains();
-
-    limeConfig.align = false;
-    limeConfig.isTx = false;
-    limeConfig.performanceLatency = 0.5;
-    limeConfig.bufferLength = 0; // auto
-    limeConfig.format = lime::StreamConfig::FMT_FLOAT32;
-    limeConfig.channelID = 0;
 
     limeStreamID = limeDevice->SetupStream(limeConfig);
 
@@ -111,7 +111,7 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
     if (is_open)
     {
         limeDevice->SetFrequency(false, 0, frequency);
-        limeDevice->SetClockFreq(LMS_CLOCK_SXR, frequency, 0);
+        // limeDevice->SetClockFreq(LMS_CLOCK_SXR, frequency, 0);
         logger->debug("Set LimeSDR frequency to {:d}", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
