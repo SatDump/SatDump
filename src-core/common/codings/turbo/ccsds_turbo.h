@@ -83,7 +83,7 @@ namespace codings
             int codeword_length() { return d_encoded_length; }
 
             // Set Sigma for decoding
-            float set_sigma(float sigma) { d_sigma = sigma; }
+            void set_sigma(float sigma) { d_sigma = sigma; }
 
             // Encode a Turbo codeword, takes bytes in, output bytes
             void encode(uint8_t *frame, uint8_t *codeword);

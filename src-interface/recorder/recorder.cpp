@@ -170,7 +170,7 @@ namespace satdump
                 {
                     if (ImGui::BeginCombo("###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str()))
                     {
-                        for (int n = 0; n < selected_pipeline.preset.frequencies.size(); n++)
+                        for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
                         {
                             const bool is_selected = (pipeline_preset_id == n);
                             if (ImGui::Selectable(selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))

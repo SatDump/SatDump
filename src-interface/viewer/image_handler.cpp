@@ -150,8 +150,8 @@ namespace satdump
             {
                 if (ImGui::InputInt("##imagechannelint", &select_image_id))
                 {
-                    if (select_image_id > products->images.size())
-                        select_image_id = products->images.size();
+                    if (select_image_id > (int)products->images.size())
+                        select_image_id = (int)products->images.size();
                     else if (select_image_id < 0)
                         select_image_id = 0;
 

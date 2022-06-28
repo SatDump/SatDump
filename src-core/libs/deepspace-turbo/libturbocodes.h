@@ -16,10 +16,10 @@ typedef struct str_turbocode{
     int encoded_length;
 } t_turbocode;
 
-static int *turbo_interleave(int *packet, t_turbocode code);
-static int *turbo_deinterleave(int *packet, t_turbocode code);
-static void message_interleave(double ***messages, t_turbocode code);
-static void message_deinterleave(double ***messages, t_turbocode code);
+int *turbo_interleave(int *packet, t_turbocode code);
+int *turbo_deinterleave(int *packet, t_turbocode code);
+void message_interleave(double ***messages, t_turbocode code);
+void message_deinterleave(double ***messages, t_turbocode code);
 
 t_turbocode turbo_initialize(t_convcode upper, t_convcode lower, int *interleaver, int packet_length);
 

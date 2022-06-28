@@ -47,7 +47,7 @@ namespace satdump
         {
             if (x >= image_width)
                 return 1;
-            if (y >= timestamps.size())
+            if (y >= (int)timestamps.size())
                 return 1;
 
             double timestamp = timestamps[y];
@@ -110,7 +110,7 @@ namespace satdump
             timestamps = timestamps_raw.get<std::vector<double>>();
 
             image_width = cfg["image_width"].get<int>();
-            scan_angle = scan_angle = cfg.contains("scan_angle") ? cfg["scan_angle"].get<float>() : (cfg["ifov_x_scan_angle"].get<float>() * cfg["ifov_count"].get<int>());
+            scan_angle = cfg.contains("scan_angle") ? cfg["scan_angle"].get<float>() : (cfg["ifov_x_scan_angle"].get<float>() * cfg["ifov_count"].get<int>());
 
             gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
             gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
@@ -137,7 +137,7 @@ namespace satdump
         {
             if (x >= image_width)
                 return 1;
-            if (y >= (timestamps.size() / ifov_count) * ifov_y_size)
+            if (y >= int(timestamps.size() / ifov_count) * ifov_y_size)
                 return 1;
 
             double final_x = !invert_scan ? (image_width - 1) - x : x;

@@ -7,12 +7,12 @@
 #include <math.h>
 #include "libconvcodes.h"
 
-static int get_bit(int num, int position)
+int get_bit(int num, int position)
 {
     return (num >> position) & 1;
 }
 
-static char* state2str(int state, int memory)
+char* state2str(int state, int memory)
 {
     char *str_state = malloc(memory + 1);/*{{{*/
     str_state[memory] = '\0';
@@ -24,7 +24,7 @@ static char* state2str(int state, int memory)
     return str_state;/*}}}*/
 }
 
-static int convcode_stateupdate(int state, int input, t_convcode code)
+int convcode_stateupdate(int state, int input, t_convcode code)
 {
     int memory = code.memory;/*{{{*/
 
@@ -44,7 +44,7 @@ static int convcode_stateupdate(int state, int input, t_convcode code)
     return new_state;/*}}}*/
 }
 
-static int *convcode_output(int state, int input, t_convcode code)
+int *convcode_output(int state, int input, t_convcode code)
 {
     int *output = calloc(code.components, sizeof(int));/*{{{*/
     int new_state = convcode_stateupdate(state, input, code);
@@ -541,7 +541,7 @@ int *convcode_extrinsic(double *received, double length, double ***a_priori, t_c
     /*}}}*/
 }
 
-static double exp_sum(double a, double b)
+double exp_sum(double a, double b)
 {
     double diff = a-b;/*{{{*/
     return (a > b) ? a : b + log(1 + exp(-diff > 0 ? diff : -diff));/*}}}*//*}}}*/

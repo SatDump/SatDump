@@ -8,7 +8,7 @@
 #include <math.h>
 
 
-static int *turbo_interleave(int *packet, t_turbocode code)
+int *turbo_interleave(int *packet, t_turbocode code)
 {
     int *interleaved_packet = malloc(code.packet_length * sizeof(int));// {{{
     for (int j = 0; j < code.packet_length; ++j) {
@@ -18,7 +18,7 @@ static int *turbo_interleave(int *packet, t_turbocode code)
     return interleaved_packet;// }}}
 }
 
-static int *turbo_deinterleave(int *packet, t_turbocode code)
+int *turbo_deinterleave(int *packet, t_turbocode code)
 {
     int *local = malloc(code.packet_length*sizeof(int));// {{{
     for (int i = 0; i < code.packet_length; ++i) {
@@ -28,7 +28,7 @@ static int *turbo_deinterleave(int *packet, t_turbocode code)
     return local;// }}}
 }
 
-static void message_interleave(double ***messages, t_turbocode code)
+void message_interleave(double ***messages, t_turbocode code)
 {
     // local array// {{{
     double **local = malloc(2*sizeof(double*));
@@ -50,7 +50,7 @@ static void message_interleave(double ***messages, t_turbocode code)
     free(local);// }}}
 }
 
-static void message_deinterleave(double ***messages, t_turbocode code)
+void message_deinterleave(double ***messages, t_turbocode code)
 {
      // local array// {{{
     double **local = malloc(2*sizeof(double*));

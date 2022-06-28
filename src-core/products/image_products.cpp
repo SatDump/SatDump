@@ -176,7 +176,7 @@ namespace satdump
             auto img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
 
-            if (max_width_total < img.image.width())
+            if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
             if (str_to_find_channels.find(equ_str) != std::string::npos)
@@ -187,7 +187,7 @@ namespace satdump
                 offsets.emplace(img.channel_name, img.offset_x);
                 logger->debug("Composite needs channel {:s}", equ_str);
 
-                if (max_width_used < img.image.width())
+                if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
 
                 if (min_offset > img.offset_x)
