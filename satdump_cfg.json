@@ -11,7 +11,8 @@
                     "s8",
                     "u8",
                     "s16",
-                    "f32"
+                    "f32",
+                    "ziq"
                 ],
                 "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
                 "no_live": true
