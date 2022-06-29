@@ -68,13 +68,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": 927000,
-                    "agc_rate": 0.00001,
-                    "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.02,
-                    "buffer_size": 8192
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 927e3,
+                    "rrc_alpha": 0.7,
+                    "pll_bw": 0.02
                 }
             },
             "cadu": {
@@ -127,13 +125,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": 927000,
-                    "agc_rate": 0.00001,
-                    "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.02,
-                    "buffer_size": 8192
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 927e3,
+                    "rrc_alpha": 0.7,
+                    "pll_bw": 0.02
                 }
             },
             "cadu": {
