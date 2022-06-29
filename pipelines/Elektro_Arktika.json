@@ -5,13 +5,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": 30720000,
-                    "agc_rate": 0.00001,
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 30.72e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.03,
-                    "buffer_size": 8192
+                    "pll_bw": 0.03
                 }
             },
             "cadu": {
@@ -34,13 +32,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
-                    "symbolrate": 30720000,
-                    "agc_rate": 0.00001,
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 30.72e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.03,
-                    "buffer_size": 8192
+                    "pll_bw": 0.03
                 }
             },
             "cadu": {
@@ -134,19 +130,11 @@
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 1150000,
-                    "agc_rate": 0.00001,
-                    "rrc_alpha": 0.6,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.004,
-                    "clock_gain_omega": 2.5e-7,
-                    "clock_mu": 0.5,
-                    "clock_gain_mu": 0.001,
-                    "clock_omega_relative_limit": 0.005,
-                    "dc_block": false,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 11.5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
                 }
             },
             "cadu": {
