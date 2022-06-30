@@ -33,6 +33,8 @@ namespace goes
         public:
             GRBFilePayloadAssembler(std::string directory);
             void work(ccsds::CCSDSPacket &pkt);
+
+            bool ignore_crc = false;
         };
     }
 }

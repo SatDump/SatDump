@@ -36,7 +36,7 @@ namespace goes
 
                 // Check CRC. We need to recompose the packet for that
                 bool crc_ok = crc_valid(pkt);
-                if (!crc_ok)
+                if (!crc_ok && !ignore_crc)
                 {
                     logger->error("Invalid CRC. Discarding payload.");
                     return;
@@ -54,7 +54,7 @@ namespace goes
             else if (pkt.header.sequence_flag == 0 || pkt.header.sequence_flag == 2)
             {
                 bool crc_ok = crc_valid(pkt);
-                if (!crc_ok)
+                if (!crc_ok && !ignore_crc)
                 {
                     current_payload.in_progress = false;
                     current_payload.valid = false;
@@ -103,6 +103,9 @@ namespace goes
             // Compute out own
             uint32_t checksum = crc.compute(fullPkt.data(), fullPkt.size());
             fullPkt.clear(); // Free memory
+
+            // if (checksum != sent_checksum)
+            //     logger->critical("CRC CHECK {:d} {:d}", sent_checksum, checksum);
 
             return checksum == sent_checksum;
         }

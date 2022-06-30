@@ -65,6 +65,8 @@ namespace goes
             GRBFilePayloadAssembler assember_rhcp(directory);
             GRBFilePayloadAssembler assember_lhcp(directory);
 
+            assember_rhcp.ignore_crc = assember_lhcp.ignore_crc = d_parameters.contains("ignore_crc") ? d_parameters["ignore_crc"].get<bool>() : false;
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer

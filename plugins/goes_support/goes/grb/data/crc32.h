@@ -15,7 +15,6 @@ namespace goes
         public:
             CRC32()
             {
-
                 for (int i = 0; i < 256; i++)
                 {
                     uint32_t c = i;
