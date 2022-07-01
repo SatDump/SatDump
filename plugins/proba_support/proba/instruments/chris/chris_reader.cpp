@@ -41,7 +41,7 @@ namespace proba
             delete[] tempChannelBuffer;
         }
 
-        std::ofstream chris_out("chris_out.bin");
+        // std::ofstream chris_out("chris_out.bin");
 
         uint8_t reverseBits(uint8_t byte)
         {
