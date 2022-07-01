@@ -66,9 +66,9 @@ if(MSVC)
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
 
-    if(BUILD_ZSTD)
+    if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
-        target_compile_definitions(satdump_core PUBLIC ENABLE_DECOMPRESSION="1")
+        target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
     endif()
 
     #target_link_libraries(satdump_core PUBLIC stdc++fs)
