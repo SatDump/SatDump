@@ -88,7 +88,7 @@ namespace leansdr
             bool corrupted = false;
             // Divide by individual polynomials.
             // TBD Maybe do in parallel, scanning cw only once.
-            bitvect<T, DP> rem[npolys];
+            bitvect<T, DP> *rem = new bitvect<T, DP>[npolys];
             for (int j = 0; j < npolys; ++j)
             {
                 rem[j] = divmod(cw, cwbytes, truncpolys[j]);
@@ -105,6 +105,7 @@ namespace leansdr
                 if (S[i])
                     corrupted = true;
             }
+            delete[] rem;
             if (!corrupted)
                 return 0;
 #if 0
