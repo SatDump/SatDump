@@ -69,7 +69,7 @@ namespace proba
             for (int i = 0; i < (int)packet.payload.size(); i++)
                 packet.payload[i] = reverseBits(packet.payload[i]);
 
-            chris_out.write((char *)packet.payload.data(), 11538);
+            // chris_out.write((char *)packet.payload.data(), 11538);
 
             // int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
 
