@@ -12,7 +12,7 @@ if((IIO_LIBRARY AND AD9361_LIBRARY) OR MSVC)
     add_library(plutosdr_sdr_support SHARED ${plutosdr_sdr_support_CPPS})
 
     if(MSVC)
-        target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core iio.dll ad9361.dll)
+        target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core libiio.dll libad9361.dll)
     elseif(ANDROID)
     #    target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core airspy usb)
     #    target_include_directories(plutosdr_sdr_support PUBLIC ../../../android/deps/libairspy)
