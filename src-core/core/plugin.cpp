@@ -15,10 +15,7 @@ std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 
     void *dynlib = dlopen(plugin.c_str(), RTLD_LAZY);
     if (!dynlib)
-    {
-        logger->critical(dlerror());
-        throw std::runtime_error("Error loading " + plugin + "!");
-    }
+        throw std::runtime_error("Error loading " + plugin + "! Error : " + std::string(dlerror()));
 
     void *create = dlsym(dynlib, "loader");
     const char *dlsym_error = dlerror();
@@ -75,8 +72,15 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 
                 if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
                 {
-                    std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                    loaded_plugins.insert({pl->getID(), pl});
+                    try
+                    {
+                        std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
+                        loaded_plugins.insert({pl->getID(), pl});
+                    }
+                    catch (std::runtime_error &e)
+                    {
+                        logger->error(e.what());
+                    }
                 }
                 else
                 {
