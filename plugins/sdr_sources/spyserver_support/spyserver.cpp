@@ -87,14 +87,16 @@ void SpyServerSource::start()
 
 void SpyServerSource::stop()
 {
-    client->stopStream();
+    if (is_started)
+        client->stopStream();
     is_started = false;
 }
 
 void SpyServerSource::close()
 {
-    if (is_open)
+    if (is_open && is_started)
         client->close();
+    is_open = false;
 }
 
 void SpyServerSource::set_frequency(uint64_t frequency)
