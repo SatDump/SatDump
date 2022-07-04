@@ -63,6 +63,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_dvbs2_demod.h"
 
 #include "modules/network/module_network_server.h"
+#include "modules/network/module_network_client.h"
 
 #include "modules/xrit/module_goesrecv_publisher.h"
 #include "modules/xrit/module_s2udp_xrit_cadu_extractor.h"
@@ -86,6 +87,7 @@ void registerModules()
 
     // Network
     REGISTER_MODULE(network::NetworkServerModule);
+    REGISTER_MODULE(network::NetworkClientModule);
 
     // xRIT
     REGISTER_MODULE(xrit::GOESRecvPublisherModule);

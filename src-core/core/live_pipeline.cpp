@@ -109,6 +109,45 @@ namespace satdump
 
     void LivePipeline::start_client(ctpl::thread_pool &tp)
     {
+        // Init modules
+        {
+            if (d_pipeline.live_cfg.client_live.size() == 0)
+                throw std::runtime_error("Pipeline does not support client mode!");
+
+            d_parameters["pkt_size"] = d_pipeline.live_cfg.pkt_size;
+            prepare_module("network_client");
+            prepare_modules(d_pipeline.live_cfg.client_live);
+        }
+
+        // Init the first and whatever's in the middle
+        for (int i = 0; i < (int)modules.size() - 1; i++)
+        {
+            modules[i]->input_fifo = modules[i - 1]->output_fifo;
+            modules[i]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
+            modules[i]->setInputType(DATA_STREAM);
+            modules[i]->setOutputType(DATA_STREAM);
+            modules[i]->init();
+            modules[i]->input_active = true;
+            module_futs.push_back(tp.push([=](int)
+                                          {
+                                            logger->info("Start processing...");
+                                            modules[i]->process(); }));
+        }
+
+        // Init the last module
+        if (modules.size() > 1)
+        {
+            int num = modules.size() - 1;
+            modules[num]->input_fifo = modules[num - 1]->output_fifo;
+            modules[num]->setInputType(DATA_STREAM);
+            modules[num]->setOutputType(DATA_FILE);
+            modules[num]->init();
+            modules[num]->input_active = true;
+            module_futs.push_back(tp.push([=](int)
+                                          {
+                                            logger->info("Start processing...");
+                                            modules[num]->process(); }));
+        }
     }
 
     void LivePipeline::stop()
