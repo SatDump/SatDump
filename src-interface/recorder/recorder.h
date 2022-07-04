@@ -13,7 +13,7 @@
 #include "common/widgets/waterfall_plot.h"
 
 #include "pipeline_selector.h"
-#include "live_pipeline.h"
+#include "core/live_pipeline.h"
 
 namespace satdump
 {

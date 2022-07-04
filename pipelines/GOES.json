@@ -155,16 +155,29 @@
     "goes_grb": {
         "name": "GOES-R GRB",
         "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
+        "live_cfg": {
+            "pkt_size": 2048,
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
             ],
-            [
-                2,
-                0
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
             ]
-        ],
+        },
         "frequencies": [],
         "samplerate": 6e6,
         "work": {

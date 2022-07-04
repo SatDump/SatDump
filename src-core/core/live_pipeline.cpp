@@ -6,35 +6,64 @@ namespace satdump
     LivePipeline::LivePipeline(Pipeline pipeline,
                                nlohmann::json parameters,
                                std::string output_dir)
+        : d_pipeline(pipeline),
+          d_parameters(parameters),
+          d_output_dir(output_dir)
     {
-        logger->info("Starting live pipeline " + pipeline.readable_name);
-
-        for (std::pair<int, int> currentModule : pipeline.live_cfg)
-        {
-            nlohmann::json final_parameters = pipeline.steps[currentModule.first].modules[currentModule.second].parameters;
-            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : parameters.items())
-                if (final_parameters.count(param.key()) > 0)
-                    final_parameters[param.key()] = param.value();
-                else
-                    final_parameters.emplace(param.key(), param.value());
-
-            logger->info("Module " + pipeline.steps[currentModule.first].modules[currentModule.second].module_name);
-            logger->debug("Parameters :");
-            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
-                logger->debug("   - " + param.key() + " : " + param.value().dump());
-
-            modules.push_back(modules_registry[pipeline.steps[currentModule.first]
-                                                   .modules[currentModule.second]
-                                                   .module_name]("", output_dir + "/" + pipeline.name, final_parameters));
-        }
     }
 
     LivePipeline::~LivePipeline()
     {
     }
 
-    void LivePipeline::start(std::shared_ptr<dsp::stream<complex_t>> stream, ctpl::thread_pool &threadPool)
+    void LivePipeline::prepare_modules(std::vector<std::pair<int, int>> mods)
     {
+        for (std::pair<int, int> currentModule : mods)
+        {
+            // Prep parameters
+            nlohmann::json final_parameters = Pipeline::prepareParameters(
+                d_pipeline.steps[currentModule.first].modules[currentModule.second].parameters,
+                d_parameters);
+
+            // Log it all out
+            logger->info("Module " + d_pipeline.steps[currentModule.first].modules[currentModule.second].module_name);
+            logger->debug("Parameters :");
+            for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : final_parameters.items())
+                logger->debug("   - " + param.key() + " : " + param.value().dump());
+
+            modules.push_back(modules_registry[d_pipeline.steps[currentModule.first]
+                                                   .modules[currentModule.second]
+                                                   .module_name]("", d_output_dir + "/" + d_pipeline.name, final_parameters));
+        }
+    }
+
+    void LivePipeline::prepare_module(std::string id)
+    {
+        // Log it all out
+        logger->info("Module " + id);
+        logger->debug("Parameters :");
+        for (const nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> &param : d_parameters.items())
+            logger->debug("   - " + param.key() + " : " + param.value().dump());
+
+        modules.push_back(modules_registry[id]("", d_output_dir + "/" + d_pipeline.name, d_parameters));
+    }
+
+    void LivePipeline::start(std::shared_ptr<dsp::stream<complex_t>> stream, ctpl::thread_pool &tp, bool server)
+    {
+        if (server) // Server mode
+        {
+            if (d_pipeline.live_cfg.server_live.size() == 0)
+                throw std::runtime_error("Pipeline does not support server mode!");
+
+            prepare_modules(d_pipeline.live_cfg.server_live);
+            d_parameters["pkt_size"] = d_pipeline.live_cfg.pkt_size;
+            prepare_module("network_server");
+        }
+        else // Normal mode
+        {
+            prepare_modules(d_pipeline.live_cfg.normal_live);
+        }
+
         // Init first module in the chain, always a demod...
         modules[0]->input_stream = stream;
         modules[0]->setInputType(DATA_DSP_STREAM);
@@ -42,10 +71,10 @@ namespace satdump
         modules[0]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
         modules[0]->init();
         modules[0]->input_active = true;
-        moduleFutures.push_back(threadPool.push([=](int)
-                                                {
-                                                logger->info("Start processing...");
-                                                modules[0]->process(); }));
+        module_futs.push_back(tp.push([=](int)
+                                      {
+                                        logger->info("Start processing...");
+                                        modules[0]->process(); }));
 
         // Init whatever's in the middle
         for (int i = 1; i < (int)modules.size() - 1; i++)
@@ -56,10 +85,10 @@ namespace satdump
             modules[i]->setOutputType(DATA_STREAM);
             modules[i]->init();
             modules[i]->input_active = true;
-            moduleFutures.push_back(threadPool.push([=](int)
-                                                    {
-                                                    logger->info("Start processing...");
-                                                    modules[i]->process(); }));
+            module_futs.push_back(tp.push([=](int)
+                                          {
+                                            logger->info("Start processing...");
+                                            modules[i]->process(); }));
         }
 
         // Init the last module
@@ -71,11 +100,15 @@ namespace satdump
             modules[num]->setOutputType(DATA_FILE);
             modules[num]->init();
             modules[num]->input_active = true;
-            moduleFutures.push_back(threadPool.push([=](int)
-                                                    {
-                                                    logger->info("Start processing...");
-                                                    modules[num]->process(); }));
+            module_futs.push_back(tp.push([=](int)
+                                          {
+                                            logger->info("Start processing...");
+                                            modules[num]->process(); }));
         }
+    }
+
+    void LivePipeline::start_client(ctpl::thread_pool &tp)
+    {
     }
 
     void LivePipeline::stop()
@@ -98,7 +131,7 @@ namespace satdump
                 mod->input_fifo->stopWriter();
             }
             mod->stop();
-            moduleFutures[i].get();
+            module_futs[i].get();
         }
     }
 

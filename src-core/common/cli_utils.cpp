@@ -40,6 +40,13 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
 
                     try // Attempt to parse it as a number
                     {
+                        int points_cnt = 0;
+                        for (char &c : std::string(argv[i + 1]))
+                            if (c == '.')
+                                points_cnt++;
+                        if (points_cnt > 1)
+                            throw std::runtime_error(""); // Numbers should not have more than one dot! If it does, probably an IP address
+
                         double val = std::stod(argv[i + 1]);
                         double integral, fractional = modf(val, &integral); // Split to fractional & integral parts
 

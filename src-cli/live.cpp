@@ -1,6 +1,6 @@
 #include "live.h"
 #include "common/dsp_sample_source/dsp_sample_source.h"
-#include "live_pipeline.h"
+#include "core/live_pipeline.h"
 #include <signal.h>
 #include "logger.h"
 #include "init.h"
@@ -107,11 +107,13 @@ int main_live(int argc, char *argv[])
 
     ctpl::thread_pool live_thread_pool(8);
 
+    bool server_mode = parameters.contains("server_address") || parameters.contains("server_port");
+
     // Attempt to start the source and pipeline
     try
     {
         source_ptr->start();
-        live_pipeline->start(source_ptr->output_stream, live_thread_pool);
+        live_pipeline->start(source_ptr->output_stream, live_thread_pool, server_mode);
     }
     catch (std::exception &e)
     {

@@ -10,19 +10,6 @@
 
 namespace satdump
 {
-    struct PipelineModule
-    {
-        std::string module_name;
-        nlohmann::json parameters;
-        std::string input_override;
-    };
-
-    struct PipelineStep
-    {
-        std::string level_name;
-        std::vector<PipelineModule> modules;
-    };
-
     // Basic Baseband-level "proposed / recommended" presets
     struct PipelinePreset
     {
@@ -31,15 +18,37 @@ namespace satdump
         std::vector<std::pair<std::string, uint64_t>> frequencies; // Preset frequencies
     };
 
+    // Live configurations
+    struct LivePipelineCfg
+    {
+        std::vector<std::pair<int, int>> normal_live; // Normal CFG, all modules run locally
+        std::vector<std::pair<int, int>> server_live; // Server CFG, modules decode down to packets broadcasted on the network
+        std::vector<std::pair<int, int>> client_live; // Client CFG, the first module subscribes to a server running over the network
+        int pkt_size = -1;                            // Network packet size, should usually match the frame size (eg, CADU size)
+    };
+
     struct Pipeline
     {
+        struct PipelineModule
+        {
+            std::string module_name;
+            nlohmann::json parameters;
+            std::string input_override;
+        };
+
+        struct PipelineStep
+        {
+            std::string level_name;
+            std::vector<PipelineModule> modules;
+        };
+
         std::string name;
         std::string readable_name;
 
         PipelinePreset preset;
 
         bool live;
-        std::vector<std::pair<int, int>> live_cfg;
+        LivePipelineCfg live_cfg;
 
         nlohmann::json editable_parameters;
 
@@ -52,7 +61,7 @@ namespace satdump
                  std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr,
                  std::shared_ptr<std::mutex> uiCallListMutex = nullptr);
 
-        nlohmann::json prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params);
+        static nlohmann::json prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params);
     };
 
     SATDUMP_DLL extern std::vector<Pipeline> pipelines;

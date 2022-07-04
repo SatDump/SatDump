@@ -315,7 +315,22 @@ namespace satdump
             // Parse live configuration if preset
             newPipeline.live = pipelineConfig.value().contains("live") ? pipelineConfig.value()["live"].get<bool>() : false;
             if (newPipeline.live)
-                newPipeline.live_cfg = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
+            {
+                try
+                {
+                    newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
+                }
+                catch (std::exception &e)
+                {
+                    newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"]["default"].get<std::vector<std::pair<int, int>>>();
+                    if (pipelineConfig.value()["live_cfg"].contains("server"))
+                        newPipeline.live_cfg.server_live = pipelineConfig.value()["live_cfg"]["server"].get<std::vector<std::pair<int, int>>>();
+                    if (pipelineConfig.value()["live_cfg"].contains("client"))
+                        newPipeline.live_cfg.server_live = pipelineConfig.value()["live_cfg"]["client"].get<std::vector<std::pair<int, int>>>();
+                    if (pipelineConfig.value()["live_cfg"].contains("pkt_size"))
+                        newPipeline.live_cfg.pkt_size = pipelineConfig.value()["live_cfg"]["pkt_size"].get<int>();
+                }
+            }
 
             // Parse and set presets
             if (newPipeline.editable_parameters.contains("samplerate"))
@@ -334,13 +349,13 @@ namespace satdump
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineStep : pipelineConfig.value()["work"].items())
             {
-                PipelineStep newStep;
+                Pipeline::PipelineStep newStep;
                 newStep.level_name = pipelineStep.key();
                 // logger->warn(newStep.level_name);
 
                 for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineModule : pipelineStep.value().items())
                 {
-                    PipelineModule newModule;
+                    Pipeline::PipelineModule newModule;
                     newModule.module_name = pipelineModule.key();
                     newModule.parameters = pipelineModule.value();
 

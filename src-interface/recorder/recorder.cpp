@@ -251,7 +251,7 @@ namespace satdump
                         {
                             Pipeline pipeline = pipelines[pipeline_selector.pipeline_id];
                             std::string input_file = live_pipeline->getOutputFiles()[0];
-                            int start_level = pipeline.live_cfg[pipeline.live_cfg.size() - 1].first;
+                            int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                             std::string input_level = pipeline.steps[start_level].level_name;
                             ui_thread_pool.push([=](int)
                                                 { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, pipeline_params); });
