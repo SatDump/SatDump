@@ -83,12 +83,20 @@ void HackRFSource::open()
 
     // Set available samplerates
     for (int i = 1; i < 21; i++)
+    {
         available_samplerates.push_back(i * 1e6);
+        available_samplerates_exp.push_back(i * 1e6);
+    }
+
+    for (int i = 21; i < 38; i++)
+        available_samplerates_exp.push_back(i * 1e6);
 
     // Init UI stuff
-    samplerate_option_str = "";
+    samplerate_option_str = samplerate_option_str_exp = "";
     for (uint64_t samplerate : available_samplerates)
         samplerate_option_str += std::to_string(samplerate) + '\0';
+    for (uint64_t samplerate : available_samplerates_exp)
+        samplerate_option_str_exp += std::to_string(samplerate) + '\0';
 }
 
 void HackRFSource::start()
@@ -135,8 +143,11 @@ void HackRFSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    ImGui::Combo("Samplerate", &selected_samplerate, enable_experimental_samplerates ? samplerate_option_str_exp.c_str() : samplerate_option_str.c_str());
+    current_samplerate = enable_experimental_samplerates ? available_samplerates_exp[selected_samplerate] : available_samplerates[selected_samplerate];
+    ImGui::Checkbox("Exp. Samplerates", &enable_experimental_samplerates);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Enable unsupported samplerates.\nThe HackRF can (normally) also run at those,\nbut not without sampledrops.\nHence, they are mostly good for experiments.");
     if (is_started)
         style::endDisabled();
 

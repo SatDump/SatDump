@@ -18,8 +18,9 @@ protected:
     static int _rx_callback(hackrf_transfer *t);
 
     int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
+    bool enable_experimental_samplerates = false;
+    std::string samplerate_option_str, samplerate_option_str_exp;
+    std::vector<uint64_t> available_samplerates, available_samplerates_exp;
     uint64_t current_samplerate = 0;
 
     int lna_gain = 0;
