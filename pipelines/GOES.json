@@ -29,7 +29,7 @@
                 "psk_demod": {
                     "constellation": "bpsk",
                     "symbolrate": 2.11e6,
-                    "rrc_alpha": 0.7,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
             },
@@ -71,7 +71,7 @@
                 "psk_demod": {
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
-                    "rrc_alpha": 0.7,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.02
                 }
             },
@@ -128,7 +128,7 @@
                 "psk_demod": {
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
-                    "rrc_alpha": 0.7,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.02
                 }
             },
@@ -204,6 +204,48 @@
             "products": {
                 "goes_grb_data_decoder": {}
             }
+        }
+    },
+    "goesr_cda": {
+        "name": "GOES-R CDA",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "CDA",
+                1693e6
+            ]
+        ],
+        "samplerate": 1e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 40e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.02
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2048,
+                    "nrzm": true,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
         }
     }
 }
