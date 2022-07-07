@@ -8,13 +8,13 @@
 #include <iomanip>
 #include "libs/predict/predict.h"
 #include "goes/gvar/module_gvar_image_decoder.h"
-#include "tle.h"
-#include "common/geodetic/projection/geo_projection.h"
-#include "common/map/map_drawer.h"
+//#include "common/tracking/tle.h"
+//#include "common/geodetic/projection/geo_projection.h"
+//#include "common/map/map_drawer.h"
 
 #define FIXED_FLOAT(x) std::fixed << std::setprecision(3) << (x)
 
-geodetic::projection::GEOSProjection proj_geos;
+// geodetic::projection::GEOSProjection proj_geos;
 
 class GVARExtended : public satdump::Plugin
 {
@@ -25,6 +25,7 @@ private:
 
     static void satdumpStartedHandler(const satdump::SatDumpStartedEvent &)
     {
+        /*
         if (global_cfg.contains("gvar_extended"))
         {
             if (global_cfg["gvar_extended"].contains("preview_misc_text"))
@@ -43,7 +44,7 @@ private:
                     names.push_back(global_cfg["gvar_extended"]["temperature_points"][i]["name"].get<std::string>());
                 }
             }
-        }
+        }*/
     }
 
     static void gvarSaveChannelImagesHandler(const goes::gvar::events::GVARSaveChannelImagesEvent &evt)
@@ -69,9 +70,9 @@ private:
             }
 
             image::Image<uint16_t> buff2 = evt.images.image1,
-                                               buff3 = evt.images.image2,
-                                               buff4 = evt.images.image3,
-                                               buff5 = evt.images.image4;
+                                   buff3 = evt.images.image2,
+                                   buff4 = evt.images.image3,
+                                   buff5 = evt.images.image4;
 
             buff2.resize(260, 237);
             buff3.resize(260, 237);
@@ -85,13 +86,12 @@ private:
                 channel4_8bit[i] = buff4[i] / 256;
                 channel5_8bit[i] = buff5[i] / 256;
             }
-            
+
             channel1_8bit.simple_despeckle();
             channel2_8bit.simple_despeckle();
             channel3_8bit.simple_despeckle();
             channel4_8bit.simple_despeckle();
             channel5_8bit.simple_despeckle();
-            
 
             preview.draw_image(0, channel1_8bit, 0, 0);
             preview.draw_image(0, channel2_8bit, 1040, 0);
@@ -111,19 +111,18 @@ private:
 
             int offsetX, offsetY, bar_height;
 
-            //set ratios for calculating bar size
+            // set ratios for calculating bar size
             float bar_ratio = 0.02;
 
-
             bar_height = preview.width() * bar_ratio;
-            offsetX = 5; //preview.width() * offsetXratio;
-            offsetY = 1; //preview.width() * offsetYratio;
+            offsetX = 5; // preview.width() * offsetXratio;
+            offsetY = 1; // preview.width() * offsetYratio;
 
             unsigned char color = 255;
 
-            image::Image<uint8_t> imgtext = image::generate_text_image(sat_name.c_str(), &color, bar_height, offsetX, offsetY); 
-            image::Image<uint8_t>imgtext1 = image::generate_text_image(date_time.c_str(), &color, bar_height, offsetX, offsetY); 
-            image::Image<uint8_t>imgtext2 = image::generate_text_image(misc_preview_text.c_str(), &color, bar_height, offsetX, offsetY); 
+            image::Image<uint8_t> imgtext = image::generate_text_image(sat_name.c_str(), &color, bar_height, offsetX, offsetY);
+            image::Image<uint8_t> imgtext1 = image::generate_text_image(date_time.c_str(), &color, bar_height, offsetX, offsetY);
+            image::Image<uint8_t> imgtext2 = image::generate_text_image(misc_preview_text.c_str(), &color, bar_height, offsetX, offsetY);
 
             previewImage = image::Image<uint8_t>(preview.width(), preview.height() + 2 * bar_height, 1);
             previewImage.fill(0);
@@ -136,96 +135,98 @@ private:
 
         previewImage.save_png(std::string(evt.directory + "/preview.png").c_str());
 
-        //calibrated temperature measurement based on NOAA LUTs (https://www.ospo.noaa.gov/Operations/GOES/calibration/gvar-conversion.html)
-        if (evt.images.image1.width() == 5206 || evt.images.image1.width() == 5209)
-        {
-            std::string filename = "goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt";
-            if (resources::resourceExists(filename) && points.size() > 0)
-            {
-                std::ifstream input(resources::getResourcePath(filename).c_str());
-                std::array<std::array<float, 1024>, 4> LUTs = readLUTValues(input);
-                input.close();
+        /*
+               // calibrated temperature measurement based on NOAA LUTs (https://www.ospo.noaa.gov/Operations/GOES/calibration/gvar-conversion.html)
+               if (evt.images.image1.width() == 5206 || evt.images.image1.width() == 5209)
+               {
+                   std::string filename = "goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt";
+                   if (resources::resourceExists(filename) && points.size() > 0)
+                   {
+                       std::ifstream input(resources::getResourcePath(filename).c_str());
+                       std::array<std::array<float, 1024>, 4> LUTs = readLUTValues(input);
+                       input.close();
 
-                std::ofstream output(evt.directory + "/temperatures.txt");
-                logger->info("Temperatures... temperatures.txt");
+                       std::ofstream output(evt.directory + "/temperatures.txt");
+                       logger->info("Temperatures... temperatures.txt");
 
-                image::Image<uint16_t> im1 = cropIR(evt.images.image1);
-                image::Image<uint16_t> im2 = cropIR(evt.images.image2);
-                image::Image<uint16_t> im3 = cropIR(evt.images.image3);
-                image::Image<uint16_t> im4 = cropIR(evt.images.image4);
-                std::array<image::Image<uint16_t>, 4> channels = {im1, im2, im3, im4};
+                       image::Image<uint16_t> im1 = cropIR(evt.images.image1);
+                       image::Image<uint16_t> im2 = cropIR(evt.images.image2);
+                       image::Image<uint16_t> im3 = cropIR(evt.images.image3);
+                       image::Image<uint16_t> im4 = cropIR(evt.images.image4);
+                       std::array<image::Image<uint16_t>, 4> channels = {im1, im2, im3, im4};
 
-                geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
+                       geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 
-                for (int j = 0; j < (int)points.size(); j++)
-                {
-                    int x, y;
-                    proj.forward(points[j][1], points[j][0], x, y);
-                    x /= 4;
-                    y /= 4;
+                       for (int j = 0; j < (int)points.size(); j++)
+                       {
+                           int x, y;
+                           proj.forward(points[j][1], points[j][0], x, y);
+                           x /= 4;
+                           y /= 4;
 
-                    output << "Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]) << '\n'
-                           << '\n';
+                           output << "Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]) << '\n'
+                                  << '\n';
 
-                    logger->info("Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]));
-                    for (int i = 0; i < 4; i++)
-                    {
-                        output << "    Channel " + std::to_string(i + 2) + ":     " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6])
-                               << " K    (";
-                        if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 < 10)
-                        {
-                            if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 <= -10)
-                            {
-                                output << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
-                            }
-                            else if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 > 0)
-                            {
-                                output << "  " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
-                            }
-                            else
-                            {
-                                output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
-                            }
-                        }
-                        else
-                        {
-                            output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
-                        }
-                        output << " °C)";
-                        output << '\n';
-                        logger->info("channel " + std::to_string(i + 2) + ":     " +
-                                     std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6]) +
-                                     " K    (" + std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15) + " °C)");
-                    }
-                    output << '\n'
-                           << '\n';
-                }
-                output.close();
-            }
-            else
-            {
-                logger->warn("goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt LUT is missing! Temperature measurement will not be performed.");
-            }
-        }
-        else
-        {
-            logger->info("Image is not a FD, temperature measurement will not be performed.");
-        }
+                           logger->info("Temperature measurements for point [" + std::to_string(x) + ", " + std::to_string(y) + "] (" + names[j] + ") with r = " + std::to_string(points[j][2]));
+                           for (int i = 0; i < 4; i++)
+                           {
+                               output << "    Channel " + std::to_string(i + 2) + ":     " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6])
+                                      << " K    (";
+                               if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 < 10)
+                               {
+                                   if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 <= -10)
+                                   {
+                                       output << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
+                                   }
+                                   else if (LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15 > 0)
+                                   {
+                                       output << "  " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
+                                   }
+                                   else
+                                   {
+                                       output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
+                                   }
+                               }
+                               else
+                               {
+                                   output << " " << FIXED_FLOAT(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15);
+                               }
+                               output << " °C)";
+                               output << '\n';
+                               logger->info("channel " + std::to_string(i + 2) + ":     " +
+                                            std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6]) +
+                                            " K    (" + std::to_string(LUTs[i][getAVG(channels[i], x, y, points[j][2]) >> 6] - 273.15) + " °C)");
+                           }
+                           output << '\n'
+                                  << '\n';
+                       }
+                       output.close();
+                   }
+                   else
+                   {
+                       logger->warn("goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt LUT is missing! Temperature measurement will not be performed.");
+                   }
+               }
+               else
+               {
+                   logger->info("Image is not a FD, temperature measurement will not be performed.");
+               }
 
-        logger->info("Generating mapped crops..");
-        //mapped crops of europe. IR and VIS
-        image::Image<uint16_t> mapProj = cropIR(evt.images.image3);
-        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
-        mapProj.crop(500, 50, 500 + 1560, 50 + 890);
-        logger->info("Europe IR crop.. europe_IR.png");
-        mapProj.to8bits().save_png(std::string(evt.directory + "/europe_IR.png").c_str());
+               logger->info("Generating mapped crops..");
+               // mapped crops of europe. IR and VIS
+               image::Image<uint16_t> mapProj = cropIR(evt.images.image3);
+               drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
+               mapProj.crop(500, 50, 500 + 1560, 50 + 890);
+               logger->info("Europe IR crop.. europe_IR.png");
+               mapProj.to8bits().save_png(std::string(evt.directory + "/europe_IR.png").c_str());
 
-        mapProj = cropVIS(evt.images.image5);
-        drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
-        mapProj.crop(1348, 240, 1348 + 5928, 240 + 4120);
-        logger->info("Europe VIS crop.. europe_VIS.png");
-        mapProj.to8bits().save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
-        mapProj.clear();
+               mapProj = cropVIS(evt.images.image5);
+               drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
+               mapProj.crop(1348, 240, 1348 + 5928, 240 + 4120);
+               logger->info("Europe VIS crop.. europe_VIS.png");
+               mapProj.to8bits().save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
+               mapProj.clear();
+               */
     }
 
     static void gvarSaveFalceColorHandler(const goes::gvar::events::GVARSaveFCImageEvent &evt)
@@ -246,12 +247,12 @@ private:
     {
         std::array<std::array<float, 1024>, 4> values;
         std::string tmp;
-        //skip first 7 lines
+        // skip first 7 lines
         for (int i = 0; i < 7; i++)
         {
             std::getline(LUT, tmp);
         }
-        //read LUTs
+        // read LUTs
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 1024; j++)
@@ -261,7 +262,7 @@ private:
             }
             if (i != 3)
             {
-                //skip det2 for first 3 channels (no det2 for ch6)
+                // skip det2 for first 3 channels (no det2 for ch6)
                 for (int j = 0; j < 1030; j++)
                 {
                     std::getline(LUT, tmp);
@@ -276,12 +277,12 @@ private:
         uint64_t sum = 0;
         for (int i = 0; i < std::pow(r * 2 + 1, 2); i++)
         {
-            sum += image[(y - r + i / (2 * r + 1))*image.width() + (x - r + i % (2 * r + 1))];
+            sum += image[(y - r + i / (2 * r + 1)) * image.width() + (x - r + i % (2 * r + 1))];
         }
         return sum / std::pow(r * 2 + 1, 2);
     }
 
-        static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
+    static image::Image<uint16_t> cropIR(image::Image<uint16_t> input)
     {
         image::Image<uint16_t> output(4749, input.height(), 1);
         if (input.width() == 5206)
@@ -331,18 +332,18 @@ private:
 
     static predict_position getSatellitePosition(int number, time_t time)
     {
-        tle::TLE goes_tle = tle::getTLEfromNORAD(getNORADFromSatNumber(number));
-        predict_orbital_elements_t *goes_object = predict_parse_tle(goes_tle.line1.c_str(), goes_tle.line2.c_str());
+        // tle::TLE goes_tle = tle::getTLEfromNORAD(getNORADFromSatNumber(number));
+        // predict_orbital_elements_t *goes_object = predict_parse_tle(goes_tle.line1.c_str(), goes_tle.line2.c_str());
         predict_position goes_position;
-        predict_orbit(goes_object, &goes_position, predict_to_julian(time));
-        predict_destroy_orbital_elements(goes_object);
+        // predict_orbit(goes_object, &goes_position, predict_to_julian(time));
+        // predict_destroy_orbital_elements(goes_object);
         return goes_position;
     }
 
     // Expect cropped IR
     static void drawMapOverlay(int number, time_t time, image::Image<uint16_t> &image)
     {
-        geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
+        /*geodetic::projection::GEOProjector proj(61.5, 35782.466981, 18990, 18956, 1.1737, 1.1753, 0, -40, 1);
 
         unsigned short color[3] = {65535, 65535, 65535};
 
@@ -364,11 +365,8 @@ private:
                                                {
                                                    return {image_x / 4, image_y / 4};
                                                }
-                                           }
-                                       });
-
+                                           } });*/
     }
-
 
 public:
     std::string getID()
