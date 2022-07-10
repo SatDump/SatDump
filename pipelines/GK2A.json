@@ -146,6 +146,13 @@
                     "rs_i": 4,
                     "rs_type": "rs223"
                 }
+            },
+            "products": {
+                "gk2a_lrit_data_decoder": {
+                    "write_images": true,
+                    "write_additional": true,
+                    "write_unknown": true
+                }
             }
         }
     }

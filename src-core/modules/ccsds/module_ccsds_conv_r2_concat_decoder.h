@@ -48,6 +48,7 @@ namespace ccsds
         const std::string d_constellation_str;     // Constellation type string
         dsp::constellation_type_t d_constellation; // Constellation type
         bool d_bpsk_90;                            // Special case for BPSK shifted by 90 degs + IQ-swapped
+        const bool d_oqpsk_delay;                  // For some OQPSK satellites, the Q branch is delayed by 1 symbol
 
         const int d_cadu_size;   // CADU Size in bits, including ASM
         const int d_cadu_bytes;  // CADU Size in bytes, including ASM

@@ -18,6 +18,7 @@ namespace ccsds
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
+          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
 
           d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
           d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
@@ -130,6 +131,8 @@ namespace ccsds
 
         diff::NRZMDiff diff;
 
+        int8_t last_q_oqpsk = 0; // For delaying OQPSK
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -137,6 +140,17 @@ namespace ccsds
                 data_in.read((char *)soft_buffer, d_buffer_size);
             else
                 input_fifo->read((uint8_t *)soft_buffer, d_buffer_size);
+
+            // OQPSK Delay
+            if (d_oqpsk_delay)
+            {
+                for (int i = 0; i < d_buffer_size / 2; i++)
+                {
+                    int8_t back = soft_buffer[i * 2 + 0];
+                    soft_buffer[i * 2 + 0] = last_q_oqpsk;
+                    last_q_oqpsk = back;
+                }
+            }
 
             if (d_bpsk_90) // Symbols are swapped for some BPSK sats
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);

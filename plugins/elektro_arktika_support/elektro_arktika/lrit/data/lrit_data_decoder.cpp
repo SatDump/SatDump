@@ -109,10 +109,12 @@ namespace elektro
             if (file_in_progress && !header_parsed)
             {
                 PrimaryHeader primary_header(&lrit_data[0]);
-                header_parsed = true;
 
                 if (lrit_data.size() >= primary_header.total_header_length)
+                {
                     parseHeader();
+                    header_parsed = true;
+                }
             }
         }
 
@@ -317,7 +319,7 @@ namespace elektro
                     }
 
                     // Free up memory if necessary
-                    //if (image_ptr != NULL)
+                    // if (image_ptr != NULL)
                     //    delete[] image_ptr;
                 }
 
@@ -328,8 +330,8 @@ namespace elektro
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_');
 
-                    //for (std::string part : header_parts)
-                    //    logger->trace(part);
+                    // for (std::string part : header_parts)
+                    //     logger->trace(part);
 
                     std::string image_id = current_filename.substr(0, 30);
 
