@@ -7,3 +7,4 @@ android/SatDump/build
 android/SatDump/assets
 android/.idea
 **/.DS_Store
+resources/gk2a/EncryptionKeyMessage.bin

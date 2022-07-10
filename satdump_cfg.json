@@ -112,7 +112,7 @@
     },
     // TLE settings
     "tle_settings": {
-        "url_template": "http://www.celestrak.com/NORAD/elements/gp.php?CATNR=%NORAD%",
+        "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
         "tles_to_fetch": [
             29499, // MetOp-A
             38771, // MetOp-B
