@@ -1,5 +1,5 @@
 #include "admin_msg_reader.h"
-#include "bzlib/bzlib.h"
+#include "libs/bzlib/bzlib.h"
 #include "logger.h"
 #include <fstream>
 

@@ -13,48 +13,40 @@
 #include "logger.h"
 #include <fstream>
 #include <vector>
-//#include "common/image/image.h"
-#include "common/repack.h"
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
-#include <iostream>
+#include "common/mpeg_ts/ts_header.h"
+#include "common/mpeg_ts/ts_demux.h"
+#include <map>
+#include "libs/bzlib/bzlib.h"
+#include "common/mpeg_ts/fazzt_processor.h"
+
+#include "common/image/image.h"
+#include <filesystem>
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    uint8_t cadu[256];
-    std::ifstream cadu_file(argv[1]);
+    std::ifstream tmp_file_decomp(argv[1]);
 
-    ccsds::ccsds_1_0_1024::Demuxer demuxer(208);
-
-    std::ofstream output_file("test.ccsds");
-
-    while (!cadu_file.eof())
+    std::vector<uint8_t> data;
+    while (!tmp_file_decomp.eof())
     {
-        cadu_file.read((char *)cadu, 256);
-        ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
-
-        // logger->critical(vcdu.vcid);
-
-        if (vcdu.vcid == 0)
-        {
-            auto ccsds_frames = demuxer.work(cadu);
-
-            for (ccsds::CCSDSPacket pkt : ccsds_frames)
-            {
-                if (pkt.header.apid == 2047)
-                    continue;
-
-                std::cout << "APID " << pkt.header.apid << std::endl;
-
-                if (pkt.header.apid == 905)
-                {
-                    std::cout << "SIZE " << pkt.payload.size() << std::endl;
-                    output_file.write((char *)pkt.header.raw, 6);
-                    output_file.write((char *)pkt.payload.data(), 76);
-                }
-            }
-        }
+        uint8_t b;
+        tmp_file_decomp.read((char *)&b, 1);
+        data.push_back(b);
     }
+
+    unsigned int outsize = 150 * 1e6; // 200MB Buffer
+    uint8_t *out_buffer = new uint8_t[outsize];
+
+    int ret = BZ2_bzBuffToBuffDecompress((char *)out_buffer, &outsize, (char *)&data[0], data.size(), false, 1);
+    if (ret != BZ_OK && ret != BZ_STREAM_END)
+    {
+        logger->error("Failed decomressing Bzip2 data! Error : " + std::to_string(ret));
+        return 1;
+    }
+
+    std::ofstream tmp_file_comp(argv[2]);
+    tmp_file_comp.write((char *)out_buffer, 550 * 1e6);
+    tmp_file_comp.close();
 }

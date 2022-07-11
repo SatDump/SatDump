@@ -17,6 +17,7 @@ file(GLOB_RECURSE SatDump_core_CPPS  *.cpp
                                      libs/correct/*.c
                                      libs/openjp2/*.c
                                      libs/deepspace-turbo/*.c
+                                     libs/bzlib/*.c
 )
 
 find_package(PkgConfig)
