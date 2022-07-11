@@ -17,8 +17,6 @@
 #include "common/mpeg_ts/ts_demux.h"
 #include <map>
 #include "libs/bzlib/bzlib.h"
-#include "common/mpeg_ts/fazzt_processor.h"
-
 #include "common/image/image.h"
 #include <filesystem>
 
@@ -26,27 +24,30 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream tmp_file_decomp(argv[1]);
+    uint8_t mpeg_ts[188];
+    std::ifstream ts_file(argv[1]);
+    std::ofstream cadu_file("test_fy4a.cadu");
 
-    std::vector<uint8_t> data;
-    while (!tmp_file_decomp.eof())
+    // TS Stuff
+    mpeg_ts::TSHeader ts_header;
+    mpeg_ts::TSDemux ts_demux;
+
+    while (!ts_file.eof())
     {
-        uint8_t b;
-        tmp_file_decomp.read((char *)&b, 1);
-        data.push_back(b);
+        ts_file.read((char *)mpeg_ts, 188);
+
+        // ts_header.parse(mpeg_ts);
+        // logger->critical(ts_header.pid);
+
+        std::vector<std::vector<uint8_t>> frames = ts_demux.demux(mpeg_ts, 3004);
+
+        // logger->critical(frames.size());
+
+        for (std::vector<uint8_t> payload : frames)
+        {
+            payload.erase(payload.begin(), payload.begin() + 40); // Extract the Fazzt frame
+            logger->critical(payload.size());
+            cadu_file.write((char *)payload.data(), 1024);
+        }
     }
-
-    unsigned int outsize = 150 * 1e6; // 200MB Buffer
-    uint8_t *out_buffer = new uint8_t[outsize];
-
-    int ret = BZ2_bzBuffToBuffDecompress((char *)out_buffer, &outsize, (char *)&data[0], data.size(), false, 1);
-    if (ret != BZ_OK && ret != BZ_STREAM_END)
-    {
-        logger->error("Failed decomressing Bzip2 data! Error : " + std::to_string(ret));
-        return 1;
-    }
-
-    std::ofstream tmp_file_comp(argv[2]);
-    tmp_file_comp.write((char *)out_buffer, 550 * 1e6);
-    tmp_file_comp.close();
 }

@@ -2,6 +2,8 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
+#include "common/mpeg_ts/ts_header.h"
+#include "common/mpeg_ts/ts_demux.h"
 #include "common/utils.h"
 
 namespace xrit
@@ -42,47 +44,52 @@ namespace xrit
 
         time_t lastTime = 0;
 
-        const int udp_cadu_size = 1104;
+        bool ts_input = d_parameters.contains("ts_input") ? d_parameters["ts_input"].get<bool>() : false;
 
         uint8_t *bb_buffer = new uint8_t[bbframe_size];
         uint8_t ts_frames[188 * 100];
-        int cadu_demuxed_cnt = 0;
-        uint8_t cadu_demuxed[1104];
 
         dvbs2::BBFrameTSParser ts_extractor(bbframe_size);
 
+        // TS Stuff
+        int ts_cnt = 1;
+        mpeg_ts::TSHeader ts_header;
+        mpeg_ts::TSDemux ts_demux;
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            // Read buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)bb_buffer, bbframe_size / 8);
+            if (ts_input)
+            {
+                // Read buffer
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)ts_frames, 188);
+                else
+                    input_fifo->read((uint8_t *)ts_frames, 188);
+                ts_cnt = 1;
+            }
             else
-                input_fifo->read((uint8_t *)bb_buffer, bbframe_size / 8);
-
-            int ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames);
+            {
+                // Read buffer
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)bb_buffer, bbframe_size / 8);
+                else
+                    input_fifo->read((uint8_t *)bb_buffer, bbframe_size / 8);
+                ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames);
+            }
 
             for (int i = 0; i < ts_cnt; i++)
             {
                 uint8_t *ts_frame = &ts_frames[i * 188];
 
-                current_pid = (ts_frames[1] & 0b11111) << 8 | ts_frame[2]; // Extract PID
-                bool is_new_payload = (ts_frame[1] >> 6) & 1;              // Is this a new payload?
+                ts_header.parse(ts_frame);
+                current_pid = ts_header.pid;
 
-                if (current_pid == pid_to_decode) // Select the right PID
+                std::vector<std::vector<uint8_t>> frames = ts_demux.demux(ts_frame, pid_to_decode); // Extract PID
+
+                for (std::vector<uint8_t> payload : frames)
                 {
-                    if (is_new_payload && cadu_demuxed_cnt > 0) // Write payload, if we have one
-                    {
-                        if (cadu_demuxed[41] == 0x1a && cadu_demuxed[42] == 0xcf && cadu_demuxed[43] == 0xfc && cadu_demuxed[44] == 0x1d) // Check this is a CADU and not other IP data
-                            data_out.write((char *)&cadu_demuxed[41], 1024);
-                        cadu_demuxed_cnt = 0;
-                        memset(cadu_demuxed, 0, udp_cadu_size);
-                    }
-
-                    if (cadu_demuxed_cnt >= udp_cadu_size) // Don't go over frame size
-                        continue;
-
-                    memcpy(&cadu_demuxed[cadu_demuxed_cnt], &cadu_demuxed[4], 184); // Feed it in
-                    cadu_demuxed_cnt += 184;
+                    if (payload[40] == 0x1a && payload[41] == 0xcf && payload[42] == 0xfc && payload[43] == 0x1d && payload.size() >= 1024) // Check this is a CADU and not other IP data
+                        data_out.write((char *)&payload[40], 1024);
                 }
             }
 

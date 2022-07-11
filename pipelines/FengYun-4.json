@@ -30,7 +30,7 @@
             "cadu": {
                 "s2_udp_cadu_extractor": {
                     "bb_size": 25728,
-                    "pid": 3002
+                    "pid": 3004
                 }
             }
         }
