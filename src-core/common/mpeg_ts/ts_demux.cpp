@@ -15,6 +15,9 @@ namespace mpeg_ts
         {
             uint8_t ptr = ts[4];
 
+            if (ptr > 188 - 5)
+                return frames_out;
+
             if (in_progress)
             {
                 current_payload.insert(current_payload.end(), &ts[5], &ts[5 + ptr]);
