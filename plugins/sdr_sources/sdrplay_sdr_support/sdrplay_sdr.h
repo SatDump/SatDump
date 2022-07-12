@@ -31,7 +31,6 @@ protected:
     bool fm_notch = false;
     bool dab_notch = false;
     bool am_notch = false;
-    int am_port = 1;
     int antenna_input = 0;
     int agc_mode = 0;
 
@@ -39,6 +38,9 @@ protected:
     void set_bias();
     void set_agcs();
     void set_others();
+
+    void set_duo_tuner();
+    void set_duo_channel();
 
 public:
     SDRPlaySource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}

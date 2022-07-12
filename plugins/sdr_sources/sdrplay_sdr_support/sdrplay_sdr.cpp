@@ -53,6 +53,18 @@ void SDRPlaySource::set_bias()
     }
 }
 
+void SDRPlaySource::set_duo_channel()
+{
+    if (!is_started)
+        channel_params = antenna_input == 2 ? dev_params->rxChannelB : dev_params->rxChannelA;
+}
+
+void SDRPlaySource::set_duo_tuner()
+{
+    if (!is_started)
+        sdrplay_dev.tuner = antenna_input == 2 ? sdrplay_api_Tuner_B : sdrplay_api_Tuner_A;
+}
+
 void SDRPlaySource::set_others()
 {
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
@@ -67,14 +79,28 @@ void SDRPlaySource::set_others()
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
         channel_params->rsp2TunerParams.rfNotchEnable = fm_notch;
-        channel_params->rsp2TunerParams.antennaSel = antenna_input == 1 ? sdrplay_api_Rsp2_ANTENNA_B : sdrplay_api_Rsp2_ANTENNA_A;
-        channel_params->rsp2TunerParams.amPortSel = am_port == 1 ? sdrplay_api_Rsp2_AMPORT_2 : sdrplay_api_Rsp2_AMPORT_1;
+        channel_params->rsp2TunerParams.antennaSel = antenna_input == 2 ? sdrplay_api_Rsp2_ANTENNA_B : sdrplay_api_Rsp2_ANTENNA_A;
+        channel_params->rsp2TunerParams.amPortSel = antenna_input == 0 ? sdrplay_api_Rsp2_AMPORT_2 : sdrplay_api_Rsp2_AMPORT_1;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_RfNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AntennaControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AmPortSelect, sdrplay_api_Update_Ext1_None);
         logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
         logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
-        logger->debug("Set SDRPlay AM Port to {:d}", am_port);
+    }
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPDuo
+    {
+        channel_params->rspDuoTunerParams.rfNotchEnable = fm_notch;
+        channel_params->rspDuoTunerParams.rfDabNotchEnable = dab_notch;
+        channel_params->rspDuoTunerParams.tuner1AmNotchEnable = am_notch;
+        channel_params->rspDuoTunerParams.tuner1AmPortSel = antenna_input == 0 ? sdrplay_api_RspDuo_AMPORT_2 : sdrplay_api_RspDuo_AMPORT_1;
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_RfNotchControl, sdrplay_api_Update_Ext1_None);
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_Tuner1AmNotchControl, sdrplay_api_Update_Ext1_None);
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_RfDabNotchControl, sdrplay_api_Update_Ext1_None);
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_AmPortSelect, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
+        logger->debug("Set SDRPlay AM Notch to {:d}", (int)am_notch);
+        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
+        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
@@ -112,12 +138,14 @@ void SDRPlaySource::set_settings(nlohmann::json settings)
     fm_notch = getValueOrDefault(d_settings["fm_notch"], fm_notch);
     dab_notch = getValueOrDefault(d_settings["dab_notch"], dab_notch);
     am_notch = getValueOrDefault(d_settings["am_notch"], am_notch);
-    am_port = getValueOrDefault(d_settings["am_port"], am_port);
     antenna_input = getValueOrDefault(d_settings["antenna_input"], antenna_input);
     agc_mode = getValueOrDefault(d_settings["agc_mode"], agc_mode);
 
     if (is_open && is_started)
     {
+        if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
+            set_duo_channel();
+
         set_gains();
         set_bias();
         set_agcs();
@@ -133,7 +161,6 @@ nlohmann::json SDRPlaySource::get_settings(nlohmann::json)
     d_settings["fm_notch"] = fm_notch;
     d_settings["dab_notch"] = dab_notch;
     d_settings["am_notch"] = am_notch;
-    d_settings["am_port"] = am_port;
     d_settings["antenna_input"] = antenna_input;
     d_settings["agc_mode"] = agc_mode;
 
@@ -177,6 +204,8 @@ void SDRPlaySource::open()
         max_gain = 10;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
         max_gain = 9;
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPDuo
+        max_gain = 10;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
         max_gain = 28;
 }
@@ -184,6 +213,16 @@ void SDRPlaySource::open()
 void SDRPlaySource::start()
 {
     DSPSampleSource::start();
+
+    if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
+    {
+        if (is_open)
+            sdrplay_api_ReleaseDevice(&sdrplay_dev);
+        set_duo_tuner();
+        if (sdrplay_api_SelectDevice(&sdrplay_dev) != sdrplay_api_Success)
+            logger->critical("Could not re-open RSPDuo device!");
+        logger->info("Re-opened RSPduo device!");
+    }
 
     // Prepare device
     sdrplay_api_UnlockDeviceApi();
@@ -199,6 +238,8 @@ void SDRPlaySource::start()
 
     // Get channel params
     channel_params = dev_params->rxChannelA;
+    if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
+        set_duo_channel();
 
     if (sdrplay_api_Init(sdrplay_dev.dev, &callback_funcs, &output_stream) != sdrplay_api_Success)
         throw std::runtime_error("Error starting SDRPlay device!");
@@ -314,12 +355,34 @@ void SDRPlaySource::drawControlUI()
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID)
     {
         if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                    "Atenna B\0"))
-            set_others();
-        if (ImGui::Combo("AM Port", &antenna_input, "Port 1\0"
-                                                    "Port 2\0"))
+                                                    "Antenna A (Hi-Z)\0"
+                                                    "Antenna B\0"))
             set_others();
         if (ImGui::Checkbox("FM Notch", &fm_notch))
+            set_others();
+        if (ImGui::Checkbox("Bias", &bias))
+            set_bias();
+    }
+    // RSPDuo-specific settings
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
+    {
+        if (is_started)
+            style::beginDisabled();
+        else
+            style::endDisabled();
+        ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                "Antenna A (Hi-Z)\0"
+                                                "Antenna B\0");
+        if (is_started)
+            style::endDisabled();
+        else
+            style::beginDisabled();
+
+        if (ImGui::Checkbox("AM Notch", &am_notch))
+            set_others();
+        if (ImGui::Checkbox("FM Notch", &fm_notch))
+            set_others();
+        if (ImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
         if (ImGui::Checkbox("Bias", &bias))
             set_bias();
