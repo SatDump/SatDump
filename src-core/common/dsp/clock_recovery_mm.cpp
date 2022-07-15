@@ -48,11 +48,11 @@ namespace dsp
         // Copy NTAPS samples in the buffer from input, as that's required for the last samples
         memcpy(&buffer[in_buffer], input_stream->readBuf, NTAPS * sizeof(complex_t));
 
-        int out_c = 0;                                          // Output index
-        int in_c = 0;                                           // Input index
-        int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
-        float phase_error = 0;                                  // Phase Error
-        int output_cnt_max = 2 * omega * nsamples;              // Max output CNT
+        int out_c = 0;                                     // Output index
+        int in_c = 0;                                      // Input index
+        int input_number = (in_buffer + nsamples) - NTAPS; // Number of samples to use
+        float phase_error = 0;                             // Phase Error
+        int output_cnt_max = 2 * omega * nsamples;         // Max output CNT
 
         for (; in_c < input_number && out_c < output_cnt_max;)
         {
@@ -147,12 +147,12 @@ namespace dsp
         // Copy NTAPS samples in the buffer from input, as that's required for the last samples
         memcpy(&buffer[in_buffer], input_stream->readBuf, NTAPS * sizeof(complex_t));
 
-        int out_c = 0;                                          // Output index
-        int in_c = 0;                                           // Input index
-        int input_number = (in_buffer + nsamples) - NTAPS - 16; // Number of samples to use
-        float phase_error = 0;                                  // Phase Error
-        float sample = 0;                                       // Output sample
-        int output_cnt_max = 2 * omega * nsamples;              // Max output CNT
+        int out_c = 0;                                     // Output index
+        int in_c = 0;                                      // Input index
+        int input_number = (in_buffer + nsamples) - NTAPS; // Number of samples to use
+        float phase_error = 0;                             // Phase Error
+        float sample = 0;                                  // Output sample
+        int output_cnt_max = 2 * omega * nsamples;         // Max output CNT
 
         for (; in_c < input_number && out_c < output_cnt_max;)
         {
