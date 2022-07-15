@@ -103,8 +103,8 @@ namespace geodetic
         // passes a pole and essentially crosses a line of latitude twice - once in
         // each direction - the longitude calculation got messed up.  Using Atan2
         // instead of Atan fixes the defect.  The change is in the next 3 lines.
-        //double tanLambda = sinSigma * sinAlpha1 / (cosU1 * cosSigma - sinU1*sinSigma*cosAlpha1);
-        //double lambda = atan(tanLambda);
+        // double tanLambda = sinSigma * sinAlpha1 / (cosU1 * cosSigma - sinU1*sinSigma*cosAlpha1);
+        // double lambda = atan(tanLambda);
         double lambda = atan2(sinSigma * sinAlpha1, cosU1 * cosSigma - sinU1 * sinSigma * cosAlpha1);
 
         // eq. 10
@@ -256,9 +256,9 @@ namespace geodetic
             }
             else
             {
-                //alpha1 = Angle.NaN;
-                //alpha2 = Angle.NaN;
-                //logger->error("Error");
+                // alpha1 = Angle.NaN;
+                // alpha2 = Angle.NaN;
+                // logger->error("Error");
             }
         }
         else
@@ -279,6 +279,6 @@ namespace geodetic
         if (alpha2 >= M_2PI)
             alpha2 = alpha2 - M_2PI;
 
-        return geodetic_curve_t(s / 1000, alpha1, alpha2, true);
+        return geodetic_curve_t(s, alpha1, alpha2, true);
     }
 };

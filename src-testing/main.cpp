@@ -11,48 +11,31 @@
  **********************************************************************/
 
 #include "logger.h"
-#include <fstream>
-#include <vector>
-#include "common/mpeg_ts/ts_header.h"
-#include "common/mpeg_ts/ts_demux.h"
-#include <map>
-#include "libs/bzlib/bzlib.h"
-#include "common/image/image.h"
-#include <filesystem>
+#include "products/image_products.h"
+
+#include "common/projection/sat_proj/sat_proj.h"
+#include "common/geodetic/vincentys_calculations.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    uint8_t mpeg_ts[188];
-    std::ifstream ts_file(argv[1]);
-    std::ofstream cadu_file("stuff.frm");
+    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    // satdump::config::loadConfig("satdump_cfg.json", user_path);
 
-    // TS Stuff
-    mpeg_ts::TSHeader ts_header;
-    mpeg_ts::TSDemux ts_demux;
+    satdump::ImageProducts img_pro;
+    img_pro.load(argv[1]);
 
-    while (!ts_file.eof())
-    {
-        ts_file.read((char *)mpeg_ts, 188);
+    satdump::SatelliteTracker sat_tracker(img_pro.get_tle());
+    std::shared_ptr<satdump::SatelliteProjection> sat_projection = get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
 
-        ts_header.parse(mpeg_ts);
-        // logger->critical(ts_header.pid);
+    geodetic::geodetic_coords_t pos1, pos2, sat_pos;
 
-        std::vector<std::vector<uint8_t>> frames = ts_demux.demux(mpeg_ts, 500);
+    sat_projection->get_position(0, 0, pos1);
+    sat_projection->get_position(img_pro.get_proj_cfg()["image_width"].get<int>() - 1, 0, pos2);
+    sat_pos = sat_tracker.get_sat_position_at(img_pro.get_timestamps()[0]);
 
-        // logger->critical(frames.size());
+    geodetic::geodetic_curve_t res = geodetic::vincentys_inverse(pos1, pos2);
 
-        for (std::vector<uint8_t> payload : frames)
-        {
-            payload.erase(payload.begin(), payload.begin() + 40); // Extract the Fazzt frame
-
-            uint32_t h = payload[0] << 24 | payload[1] << 16 | payload[2] << 8 | payload[3];
-            logger->critical(h);
-            // logger->critical(payload.size());
-            payload.resize(1500);
-            if (h == 16837331)
-                cadu_file.write((char *)payload.data(), 1500);
-        }
-    }
+    //  logger->info("Swath is around {:.0f} Km, Altitude is {:.0f} Km", res.distance, );
 }

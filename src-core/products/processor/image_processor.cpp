@@ -33,10 +33,24 @@ namespace satdump
 
                 std::string name = products->instrument_name +
                                    (rgb_image.channels() == 1 ? "_" : "_rgb_") +
-                                   initial_name + ".png";
+                                   initial_name;
 
-                logger->info("Saving " + product_path + "/" + name);
-                rgb_image.save_png(product_path + "/" + name);
+                logger->info("Saving " + product_path + "/" + name + ".png");
+                rgb_image.save_png(product_path + "/" + name + ".png");
+
+                bool geo_correct = compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false;
+
+                if (geo_correct)
+                {
+                    bool success = false;
+                    rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
+
+                    if (success)
+                    {
+                        logger->info("Saving " + product_path + "/" + name + "_corrected.png");
+                        rgb_image.save_png(product_path + "/" + name + "_corrected.png");
+                    }
+                }
             }
         }
     }

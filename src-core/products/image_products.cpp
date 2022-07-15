@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/image/composite.h"
 #include "resources.h"
+#include "common/image/earth_curvature.h"
 
 namespace satdump
 {
@@ -296,5 +297,25 @@ namespace satdump
             rgb_composite.normalize();
 
         return rgb_composite;
+    }
+
+    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success)
+    {
+        success = false;
+        if (!product.contents.contains("projection_cfg"))
+            return img;
+        if (!product.get_proj_cfg().contains("corr_swath"))
+            return img;
+        if (!product.get_proj_cfg().contains("corr_resol"))
+            return img;
+        if (!product.get_proj_cfg().contains("corr_altit"))
+            return img;
+
+        float swath = product.get_proj_cfg()["corr_swath"].get<float>();
+        float resol = product.get_proj_cfg()["corr_resol"].get<float>();
+        float altit = product.get_proj_cfg()["corr_altit"].get<float>();
+        success = true;
+
+        return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol);
     }
 }
