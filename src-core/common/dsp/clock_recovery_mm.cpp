@@ -66,8 +66,8 @@ namespace dsp
             int imu = (int)rint(mu * NSTEPS);
             if (imu < 0) // If we're out of bounds, clamp
                 imu = 0;
-            if (imu > NSTEPS)
-                imu = NSTEPS;
+            if (imu >= NSTEPS)
+                imu = NSTEPS - 1;
 
             if (in_c < in_buffer)
                 volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[in_c], TAPS[imu], NTAPS);
@@ -160,8 +160,8 @@ namespace dsp
             int imu = (int)rint(mu * NSTEPS);
             if (imu < 0) // If we're out of bounds, clamp
                 imu = 0;
-            if (imu > NSTEPS)
-                imu = NSTEPS;
+            if (imu >= NSTEPS)
+                imu = NSTEPS - 1;
 
             if (in_c < in_buffer)
                 volk_32f_x2_dot_prod_32f(&sample, &buffer[in_c], TAPS[imu], NTAPS);
