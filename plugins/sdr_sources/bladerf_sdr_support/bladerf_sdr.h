@@ -1,45 +1,58 @@
 #pragma once
 
 #include "common/dsp_sample_source/dsp_sample_source.h"
-#include <lime/lms7_device.h>
-#include <lime/Streamer.h>
-#include <lime/ConnectionRegistry.h>
+#include <libbladeRF.h>
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"
+#include <thread>
 
-class LimeSDRSource : public dsp::DSPSampleSource
+class BladeRFSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
-    lime::LMS7_Device *limeDevice;
-    lime::StreamChannel *limeStream;
-    lime::StreamChannel *limeStreamID;
-    lime::StreamConfig limeConfig;
+    bladerf *bladerf_dev_obj;
+    int bladerf_model = 0;
+    int channel_cnt = 1;
+    const bladerf_range *bladerf_range_samplerate;
+    const bladerf_range *bladerf_range_bandwidth;
+    const bladerf_range *bladerf_range_gain;
+
+    int devs_cnt = 0;
+    int selected_dev_id = 0;
+    bladerf_devinfo *devs_list = NULL;
 
     int selected_samplerate = 0;
     std::string samplerate_option_str;
     std::vector<uint64_t> available_samplerates;
     uint64_t current_samplerate = 0;
 
-    int tia_gain = 0;
-    int lna_gain = 0;
-    int pga_gain = 0;
+    int channel_id = 0;
+    int gain_mode = 1;
+    int general_gain = 0;
+
+    bool bias_enabled = false;
 
     void set_gains();
+    void set_bias();
+
+    static const int sample_buffer_size = 8192 * 4;
+    int16_t sample_buffer[sample_buffer_size * 2];
 
     std::thread work_thread;
     bool thread_should_run = false, needs_to_run = false;
     void mainThread()
     {
-        lime::StreamChannel::Metadata md;
+        bladerf_metadata meta;
 
         while (thread_should_run)
         {
             if (needs_to_run)
             {
-                int cnt = limeStream->Read(output_stream->writeBuf, 8192 * 10, &md);
-                output_stream->swap(cnt);
+                if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
+                    continue;
+                volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 32768.0f, sample_buffer_size * 2);
+                output_stream->swap(sample_buffer_size);
             }
             else
             {
@@ -49,13 +62,13 @@ protected:
     }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
         thread_should_run = true;
-        work_thread = std::thread(&LimeSDRSource::mainThread, this);
+        work_thread = std::thread(&BladeRFSource::mainThread, this);
     }
 
-    ~LimeSDRSource()
+    ~BladeRFSource()
     {
         stop();
         close();
@@ -64,6 +77,7 @@ public:
         logger->info("Waiting for the thread...");
         if (is_started)
             output_stream->stopWriter();
+        logger->trace("Joining...");
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
@@ -84,7 +98,7 @@ public:
     void set_samplerate(uint64_t samplerate);
     uint64_t get_samplerate();
 
-    static std::string getID() { return "limesdr"; }
-    static std::shared_ptr<dsp::DSPSampleSource> getInstance(dsp::SourceDescriptor source) { return std::make_shared<LimeSDRSource>(source); }
+    static std::string getID() { return "bladerf"; }
+    static std::shared_ptr<dsp::DSPSampleSource> getInstance(dsp::SourceDescriptor source) { return std::make_shared<BladeRFSource>(source); }
     static std::vector<dsp::SourceDescriptor> getAvailableSources();
 };
