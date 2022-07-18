@@ -70,6 +70,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `lna_gain` : LNA Gain in dBs
 - `if_gain` : IF Gain in dBs
 - `bias` : Enable Bias-Tree power
+- `am_notch` : Enable the AM notch filter
 - `fm_notch` : Enable the FM notch filter
 - `dab_notch` : Enable the DAB notch filter
 - `am_port` : Select the AM antenna port
