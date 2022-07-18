@@ -31,6 +31,17 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `vga_gain` : VGA Gain in dBs
 - `bias` : Enable Bias-Tree power
 
+## BladeRF
+
+- `gain_mode` : 
+    - 0 is device default
+    - 1 is manual
+    - 2 is fast AGC
+    - 3 is slow AGC
+    - 4 is hybrid AGC
+- `gain` : General Gain in dBs
+- `bias` : Bias-Tee power (BladeRF 2.0 only)
+
 ## LimeSDR
 
 - `tia_gain` : TIA Gain in dBs
