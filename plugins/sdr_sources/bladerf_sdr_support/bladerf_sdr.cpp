@@ -146,7 +146,6 @@ void BladeRFSource::stop()
 
 void BladeRFSource::close()
 {
-    // if (is_open)
 }
 
 void BladeRFSource::set_frequency(uint64_t frequency)

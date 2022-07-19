@@ -11,26 +11,41 @@ namespace mpeg_ts
         if (pid != -1 && ts_header.pid != pid)
             return frames_out;
 
+        int offset = 0;
+
+        if (ts_header.afc == 0b10) // Adapation field only, no payload
+            return frames_out;
+        else if (ts_header.afc == 0b11) // Adapation field followed
+            offset = ts[4] + 1;
+
         if (ts_header.pusi)
         {
-            uint8_t ptr = ts[4];
+            if (offset > 188 - 4)
+                return frames_out;
 
-            if (ptr > 188 - 5)
+            uint8_t ptr = ts[4 + offset];
+
+            if (offset + ptr > 188 - 5)
                 return frames_out;
 
             if (in_progress)
             {
-                current_payload.insert(current_payload.end(), &ts[5], &ts[5 + ptr]);
+                current_payload.insert(current_payload.end(), &ts[5 + offset], &ts[5 + offset + ptr]);
                 frames_out.push_back(current_payload);
                 in_progress = false;
             }
 
             current_payload.clear();
-            current_payload.insert(current_payload.end(), &ts[5 + ptr], &ts[188]);
+            current_payload.insert(current_payload.end(), &ts[5 + offset + ptr], &ts[188]);
             in_progress = true;
         }
         else if (in_progress)
-            current_payload.insert(current_payload.end(), &ts[4], &ts[188]);
+        {
+            if (offset > 188 - 4)
+                return frames_out;
+
+            current_payload.insert(current_payload.end(), &ts[4 + offset], &ts[188]);
+        }
 
         return frames_out;
     }

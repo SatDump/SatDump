@@ -77,7 +77,6 @@ public:
         logger->info("Waiting for the thread...");
         if (is_started)
             output_stream->stopWriter();
-        logger->trace("Joining...");
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
