@@ -11,5 +11,9 @@
     "ifov_x_size": 6144,
     "ifov_x_scan_angle": 104.5, //82.5,
     "ifov_y_scan_angle": 1,
-    "timestamp_offset": -0.5
+    "timestamp_offset": -0.5,
+    ///////////////////////
+    "corr_swath": 2100,
+    "corr_resol": 0.25,
+    "corr_altit": 835
 }

@@ -31,7 +31,7 @@ void BladeRFSource::set_settings(nlohmann::json settings)
     general_gain = getValueOrDefault(d_settings["general_gain"], general_gain);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
 
-    if (is_open)
+    if (is_open && is_started)
     {
         set_gains();
         set_bias();

@@ -97,6 +97,21 @@ namespace satdump
             return contents.contains("projection_cfg");
         }
 
+        bool can_geometrically_correct()
+        {
+            if (!has_proj_cfg())
+                return false;
+            if (!contents.contains("projection_cfg"))
+                return false;
+            if (!get_proj_cfg().contains("corr_swath"))
+                return false;
+            if (!get_proj_cfg().contains("corr_resol"))
+                return false;
+            if (!get_proj_cfg().contains("corr_altit"))
+                return false;
+            return true;
+        }
+
         ///////////////////////// Calibration to radiance
         enum Calibration_Type
         {

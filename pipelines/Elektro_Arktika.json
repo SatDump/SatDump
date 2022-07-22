@@ -22,7 +22,9 @@
                 }
             },
             "products": {
-                "elektro_arktika_msugs": {}
+                "elektro_arktika_msugs": {
+                    "msugs_offset": 400
+                }
             }
         }
     },
@@ -49,7 +51,9 @@
                 }
             },
             "products": {
-                "elektro_arktika_msugs": {}
+                "elektro_arktika_msugs": {
+                    "msugs_offset": 0
+                }
             }
         }
     },

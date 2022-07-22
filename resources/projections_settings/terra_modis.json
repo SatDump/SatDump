@@ -7,5 +7,9 @@
     "timestamp_offset": -1.0,
     "image_width": 5416,
     "gcp_spacing_x": 200,
-    "gcp_spacing_y": 200
+    "gcp_spacing_y": 200,
+    ///////////////////////
+    "corr_swath": 2230,
+    "corr_resol": 0.25,
+    "corr_altit": 710
 }

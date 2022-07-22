@@ -15,11 +15,11 @@ namespace elektro_arktika
             delete[] imageBuffer;
         }
 
-        void MSUVISReader::pushFrame(uint8_t *data)
+        void MSUVISReader::pushFrame(uint8_t *data, int offset)
         {
-            uint16_t counter = data[8] << 8 | data[9];
+            int counter = (data[8] << 8 | data[9]) + offset;
 
-            if (counter > 17200)
+            if (counter >= 17200)
                 return;
 
             // Offset to start reading from

@@ -20,22 +20,19 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
-    // satdump::config::loadConfig("satdump_cfg.json", user_path);
+    image::Image<uint8_t> image_1, image_2, image_3, image_rgb;
 
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
+    image_1.load_png(argv[1]);
+    image_2.load_png(argv[2]);
+    image_3.load_png(argv[3]);
 
-    satdump::SatelliteTracker sat_tracker(img_pro.get_tle());
-    std::shared_ptr<satdump::SatelliteProjection> sat_projection = get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
+    logger->info("Processing");
+    image_rgb.init(image_1.width(), image_1.height(), 3);
 
-    geodetic::geodetic_coords_t pos1, pos2, sat_pos;
+    image_rgb.draw_image(0, image_3, -30, 12);
+    image_rgb.draw_image(1, image_2, 0);
+    image_rgb.draw_image(2, image_1, 23, -17);
 
-    sat_projection->get_position(0, 0, pos1);
-    sat_projection->get_position(img_pro.get_proj_cfg()["image_width"].get<int>() - 1, 0, pos2);
-    sat_pos = sat_tracker.get_sat_position_at(img_pro.get_timestamps()[0]);
-
-    geodetic::geodetic_curve_t res = geodetic::vincentys_inverse(pos1, pos2);
-
-    //  logger->info("Swath is around {:.0f} Km, Altitude is {:.0f} Km", res.distance, );
+    logger->info("Saving");
+    image_rgb.save_png("msu_compo.png");
 }

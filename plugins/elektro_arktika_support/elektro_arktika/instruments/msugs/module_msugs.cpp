@@ -39,6 +39,8 @@ namespace elektro_arktika
 
             logger->info("Demultiplexing and deframing...");
 
+            int offset = d_parameters["msugs_offset"].get<int>();
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -50,19 +52,19 @@ namespace elektro_arktika
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis1_reader.pushFrame(&frame[0]);
+                        vis1_reader.pushFrame(&frame[0], offset);
                 }
                 else if (vcid == 3)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis2_reader.pushFrame(&frame[0]);
+                        vis2_reader.pushFrame(&frame[0], offset);
                 }
                 else if (vcid == 5)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis3_reader.pushFrame(&frame[0]);
+                        vis3_reader.pushFrame(&frame[0], offset);
                 }
                 else if (vcid == 4)
                 {

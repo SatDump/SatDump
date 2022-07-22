@@ -63,6 +63,14 @@ namespace satdump
         if (normalize_image)
             current_image.normalize();
 
+        if (correct_image)
+        {
+            bool success = false;
+            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success);
+            if (success)
+                current_image = cor;
+        }
+
         image_view.update(current_image);
         // current_image.clear();
 
@@ -196,6 +204,12 @@ namespace satdump
 
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();
+
+            if (products->can_geometrically_correct())
+            {
+                if (ImGui::Checkbox("Correct", &correct_image))
+                    asyncUpdate();
+            }
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
                 asyncUpdate();

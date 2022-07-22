@@ -19,7 +19,7 @@ namespace elektro_arktika
         public:
             MSUVISReader();
             ~MSUVISReader();
-            void pushFrame(uint8_t *data);
+            void pushFrame(uint8_t *data, int offset);
             image::Image<uint16_t> getImage();
         };
     } // namespace msugs

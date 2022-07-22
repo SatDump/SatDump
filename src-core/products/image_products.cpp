@@ -203,12 +203,15 @@ namespace satdump
         }
 
         int ratio = max_width_total / max_width_used;
+        logger->trace("Max Total Width {:d}", max_width_total);
+        logger->trace("Max Total Used  {:d}", max_width_used);
 
         // Offset... Offsets to 0 and scale if needed
         for (std::pair<const std::string, int> &img_off : offsets)
         {
             img_off.second -= min_offset;
             img_off.second /= ratio;
+            logger->trace("Offset for ch{:s} is {:d}", img_off.first.c_str(), img_off.second);
         }
 
         if (product.needs_correlation)
@@ -315,6 +318,8 @@ namespace satdump
         float resol = product.get_proj_cfg()["corr_resol"].get<float>();
         float altit = product.get_proj_cfg()["corr_altit"].get<float>();
         success = true;
+
+        resol *= float(product.images[0].image.width()) / float(img.width());
 
         return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol);
     }
