@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (sci_obj != "Fe_XII_195.1A_long_exposure")
+            if (sci_obj.find("long_exposure") == std::string::npos)
             {
                 pluginIterator.increment(iteratorError);
                 continue;
