@@ -59,10 +59,12 @@ int main(int argc, char *argv[])
                 //  for (rapidxml::xml_node<> *tle_node = sat_tle_node->first_node("attribute"); tle_node; tle_node = tle_node->next_sibling())
                 if (sat_node->first_attribute("name") != NULL)
                 {
-                    if (std::string(sat_node->first_attribute("name")->value()) == "IMG_MIN")
-                        img_min = std::stof(sat_node->first_node("values")->value());
                     if (std::string(sat_node->first_attribute("name")->value()) == "IMG_MAX")
-                        img_max = std::stof(sat_node->first_node("values")->value());
+                        for (rapidxml::xml_node<> *tle_node = sat_node->first_node("attribute"); tle_node; tle_node = tle_node->next_sibling())
+                            if (tle_node->first_attribute("name") != NULL)
+                                if (std::string(tle_node->first_attribute("name")->value()) == "valid_range")
+                                    sscanf(tle_node->first_attribute("value")->value(), "%f %f", &img_min, &img_max);
+
                     if (std::string(sat_node->first_attribute("name")->value()) == "SCI_OBJ")
                         sci_obj = std::string(sat_node->first_node("values")->value());
                 }
