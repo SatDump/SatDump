@@ -8,7 +8,7 @@ namespace fengyun3
         WindRADReader::WindRADReader(int width, std::string bnd, std::string dir) : width(width), band(bnd), directory(dir)
         {
             for (int i = 0; i < 2; i++)
-                channels[i].create(10000 * width);
+                channels[i].create(1000 * width);
 
             lines = 0;
         }

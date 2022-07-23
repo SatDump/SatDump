@@ -50,9 +50,9 @@ namespace fengyun3
                 repacked_calib = new uint16_t[calib_length * 2];
 
                 for (int i = 0; i < ch_cnt_250; i++)
-                    channels_250m[i].resize(ch250_width * 40);
+                    channels_250m[i].resize(ch250_width * 40 * 2);
                 for (int i = 0; i < ch_cnt_1000; i++)
-                    channels_1000m[i].resize(ch1000_width * 10);
+                    channels_1000m[i].resize(ch1000_width * 10 * 2);
                 calibration.resize(calib_length * 3);
                 segments = 0;
             }
