@@ -7,8 +7,7 @@ namespace fengyun3
     {
         XEUVIReader::XEUVIReader(std::string directory) : directory(directory)
         {
-            lines = 0;
-            image = image::Image<uint16_t>(1073, 1032 * 4, 1);
+            image = image::Image<uint16_t>(1073, 1035, 1);
         }
 
         XEUVIReader::~XEUVIReader()
@@ -17,42 +16,37 @@ namespace fengyun3
 
         void XEUVIReader::writeCurrent()
         {
-            image.crop(1, 0, 1072, lines);
-
-            image.save_png(std::string(directory + "/XEUVI_" + std::to_string(images_count++ + 1) + ".png").c_str());
+            image.save_png(std::string(directory + "/XEUVI_" + std::to_string(images_count + 1) + ".png").c_str());
             logger->info("Saving XEUVI image to" + directory + "/XEUVI_" + std::to_string(images_count++ + 1) + ".png");
-            image = image::Image<uint16_t>(1073, 1032 * 4, 1);
-            lines = 0;
+            image.fill(0);
         }
 
         void XEUVIReader::work(std::vector<uint8_t> &packet)
         {
+            int cnt = (packet[34] << 8 | packet[35]) + 1;
             uint8_t marker = packet[10] >> 6;
 
-            if (marker == 2)
+            if (cnt > 1021 && marker != 1)
+                return; // Make sure we don't go out of bounds due to an invalid counter
+
+            if (marker == 2) // End
             {
                 for (int i = 0; i < 30044 / 2; i++)
-                    image[lines * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
-                lines += 12;
+                    image[cnt * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
             }
             else if (marker == 1) // Start
             {
                 // Save old
-                if (lines > 0)
-                    writeCurrent();
+                writeCurrent();
 
                 for (int i = 0; i < 64380 / 2 - 1073; i++)
-                    image[lines * 1073 + i] = packet[536 + 2146 + i * 2 + 0] << 8 | packet[536 + 2146 + i * 2 + 1];
-                lines += 28;
+                    image[0 * 1073 + i] = packet[536 + 2146 + i * 2 + 0] << 8 | packet[536 + 2146 + i * 2 + 1];
             }
-            else
+            else // Middle
             {
                 for (int i = 0; i < 64380 / 2; i++)
-                    image[lines * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
-                lines += 29;
+                    image[cnt * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
             }
-
-            lines++;
         }
     } // namespace virr
 } // namespace fengyun

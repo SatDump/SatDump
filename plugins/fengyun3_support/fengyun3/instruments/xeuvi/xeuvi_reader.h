@@ -12,7 +12,6 @@ namespace fengyun3
         class XEUVIReader
         {
         private:
-            int lines;
             const std::string directory;
             image::Image<uint16_t> image;
 
