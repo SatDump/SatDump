@@ -1,5 +1,6 @@
 #include "channel_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include "logger.h"
 
 namespace jpss
 {
@@ -78,6 +79,9 @@ namespace jpss
                         if (data_payload_size > 8 && (sync_word == sync_word_pattern || sync_word == 0xC000FFEE))
                         {
                             VIIRS_Segment &current_segment = get_current_seg();
+
+                            if (detector > channelSettings.zoneHeight)
+                                continue;
 
                             // Decompress
                             aec_cfg.next_in = (const unsigned char *)&detector_ptr[4];
