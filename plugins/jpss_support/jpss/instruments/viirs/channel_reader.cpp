@@ -1,6 +1,5 @@
 #include "channel_reader.h"
 #include "common/ccsds/ccsds_time.h"
-#include "logger.h"
 
 namespace jpss
 {
