@@ -11,111 +11,47 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/image.h"
-#include "libs/rapidxml.hpp"
-#include <filesystem>
 #include <fstream>
-
-// XML Parser
-rapidxml::xml_document<> doc;
-rapidxml::xml_node<> *root_node = NULL;
+#include "common/mpeg_ts/ts_header.h"
+#include "common/mpeg_ts/ts_demux.h"
+#include "common/mpeg_ts/dvb_mpe.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::filesystem::recursive_directory_iterator pluginIterator(argv[1]);
-    std::error_code iteratorError;
-    while (pluginIterator != std::filesystem::recursive_directory_iterator())
+    std::ifstream eumetcast_ts("/home/alan/Downloads/0.0E_11262.568_H_32999_(2022-07-11 21.30.11)_dump.ts");
+    std::ofstream eumetcast_ttttt("eumetcast_frm.bin");
+
+    uint8_t ts_frame[188];
+    mpeg_ts::TSHeader tsheader;
+    mpeg_ts::TSDemux tsdemux;
+
+    mpeg_ts::MPEHeader mpeheader;
+    mpeg_ts::IPv4Header ipv4header;
+
+    while (!eumetcast_ts.eof())
     {
-        if (pluginIterator->path().filename().string().find(".png") != std::string::npos)
+        eumetcast_ts.read((char *)ts_frame, 188);
+
+        std::vector<std::vector<uint8_t>> framesss = tsdemux.demux(ts_frame, 500);
+        for (std::vector<uint8_t> &frm : framesss)
         {
-            std::string png_path = pluginIterator->path().string();
-            std::string xml_path = png_path.substr(0, png_path.size() - 4) + ".xml";
+            // uint32_t marker = frm[40] << 24 | frm[41] << 16 | frm[42] << 8 | frm[43];
 
-            std::string png_path2 = png_path.substr(0, png_path.size() - 4) + "_CALIB.png";
+            // logger->info(marker);
 
-            if (!std::filesystem::exists(xml_path))
+            mpeheader.parse(&frm[0]);
+            ipv4header.parse(&frm[12]);
+
+            frm.resize(4000 + 40);
+
+            if (ipv4header.target_ip_1 == 224 && ipv4header.target_ip_2 == 223 && ipv4header.target_ip_3 == 222 && ipv4header.target_ip_4 == 27 /*&& frm[42] == 0xa1 && frm[43] == 0x5a*/)
             {
-                pluginIterator.increment(iteratorError);
-                continue;
+                logger->critical("{:d} {:d} {:d}    TARGET IP {:d}.{:d}.{:d}.{:d}", mpeheader.section_length, frm.size(), ipv4header.ihl, ipv4header.target_ip_1, ipv4header.target_ip_2, ipv4header.target_ip_3, ipv4header.target_ip_4);
+                //  logger->critical(frm.size());
+                eumetcast_ttttt.write((char *)&frm[40], 4000);
             }
-
-            image::Image<uint16_t> suvi_image;
-            suvi_image.load_png(png_path);
-
-            std::ifstream xml_ifs(xml_path);
-            std::string xml_content((std::istreambuf_iterator<char>(xml_ifs)),
-                                    (std::istreambuf_iterator<char>()));
-
-            doc.parse<0>((char *)xml_content.c_str());
-            root_node = doc.first_node("netcdf");
-
-            float img_min, img_max;
-            std::string sci_obj;
-
-            for (rapidxml::xml_node<> *sat_node = root_node->first_node("variable"); sat_node; sat_node = sat_node->next_sibling())
-            {
-                //  for (rapidxml::xml_node<> *tle_node = sat_tle_node->first_node("attribute"); tle_node; tle_node = tle_node->next_sibling())
-                if (sat_node->first_attribute("name") != NULL)
-                {
-                    if (std::string(sat_node->first_attribute("name")->value()) == "IMG_MAX")
-                        for (rapidxml::xml_node<> *tle_node = sat_node->first_node("attribute"); tle_node; tle_node = tle_node->next_sibling())
-                            if (tle_node->first_attribute("name") != NULL)
-                                if (std::string(tle_node->first_attribute("name")->value()) == "valid_range")
-                                    sscanf(tle_node->first_attribute("value")->value(), "%f %f", &img_min, &img_max);
-
-                    if (std::string(sat_node->first_attribute("name")->value()) == "SCI_OBJ")
-                        sci_obj = std::string(sat_node->first_node("values")->value());
-                }
-            }
-
-            if (sci_obj.find("long_exposure") == std::string::npos)
-            {
-                pluginIterator.increment(iteratorError);
-                continue;
-            }
-
-            logger->info("Image Max {:f} Min {:f}, product {:s}", img_max, img_min, sci_obj.c_str());
-
-            for (size_t px = 0; px < suvi_image.width() * suvi_image.height(); px++)
-            {
-                double radiance = img_min + (suvi_image[px] / 65535.0) * (img_max - img_min);
-
-                const double mmm_min = -1;
-                const double mmm_max = 24;
-
-                double calib_v = ((radiance - mmm_min) / (mmm_max - mmm_min)) * 65535.0;
-
-                if (calib_v < 0)
-                    calib_v = 0;
-                if (calib_v > 65535)
-                    calib_v = 65535;
-
-                suvi_image[px] = calib_v;
-            }
-
-            suvi_image.save_png(png_path2);
         }
-
-        pluginIterator.increment(iteratorError);
     }
-
-#if 0
-    image::Image<uint8_t> image_1, image_2, image_3, image_rgb;
-
-    image_1.load_png(argv[1]);
-    image_2.load_png(argv[2]);
-    image_3.load_png(argv[3]);
-
-    logger->info("Processing");
-    image_rgb.init(image_1.width(), image_1.height(), 3);
-
-    image_rgb.draw_image(0, image_3, -30, 12);
-    image_rgb.draw_image(1, image_2, 0);
-    image_rgb.draw_image(2, image_1, 23, -17);
-
-    logger->info("Saving");
-    image_rgb.save_png("msu_compo.png");
-#endif
 }
