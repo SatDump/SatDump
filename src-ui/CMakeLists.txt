@@ -16,6 +16,7 @@ endif()
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 
 # OpenGL
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
 # Tell FindOpengl to use modern GL lib system
 set(OpenGL_GL_PREFERENCE GLVND)

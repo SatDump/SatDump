@@ -96,7 +96,7 @@ namespace goes
             // Check if we can make 2-14, for a composite with LHCP only
             if (has_channels[1] && has_channels[14])
             {
-                logger->debug("Generating False Color 4 & 12 composite...");
+                logger->debug("Generating False Color 2 & 14 composite...");
                 image::Image<uint8_t> compo(channel_images[1].width(), channel_images[1].height(), 3);
 
                 // Resize CH14 to the same res as ch2

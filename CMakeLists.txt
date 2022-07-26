@@ -8,9 +8,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 project(SatDump)
 
-option(NOGUI                "Disable building the GUI"                                  OFF)
+option(BUILD_GUI            "Build the GUI"                                             ON)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
-#option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
@@ -106,7 +105,8 @@ endif()
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
-if(NOT NOGUI)
+if(BUILD_GUI)
+    message("Building the GUI")
     add_subdirectory(src-interface)
     if(NOT ANDROID)
         add_subdirectory(src-ui)
