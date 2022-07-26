@@ -11,47 +11,52 @@
  **********************************************************************/
 
 #include "logger.h"
-#include <fstream>
-#include "common/mpeg_ts/ts_header.h"
-#include "common/mpeg_ts/ts_demux.h"
-#include "common/mpeg_ts/dvb_mpe.h"
+#include "common/image/image.h"
+
+int clamp(int x)
+{
+    if (x > 255)
+        return 255;
+    if (x < 0)
+        return 0;
+    return x;
+}
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream eumetcast_ts("/home/alan/Downloads/0.0E_11262.568_H_32999_(2022-07-11 21.30.11)_dump.ts");
-    std::ofstream eumetcast_ttttt("eumetcast_frm.bin");
+    image::Image<uint16_t> channel1, channel2, channel3;
+    channel1.load_png(argv[1]);
+    channel2.load_png(argv[2]);
+    channel3.load_png(argv[3]);
 
-    uint8_t ts_frame[188];
-    mpeg_ts::TSHeader tsheader;
-    mpeg_ts::TSDemux tsdemux;
+    channel2.resize(channel1.width(), channel1.height());
+    channel3.resize(channel1.width(), channel1.height());
 
-    mpeg_ts::MPEHeader mpeheader;
-    mpeg_ts::IPv4Header ipv4header;
+    image::Image<uint8_t> natural_color;
+    natural_color.init(channel1.width(), channel1.height(), 3);
 
-    while (!eumetcast_ts.eof())
+    // channel1.white_balance();
+    // channel2.white_balance();
+    // channel3.white_balance();
+
+    for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
     {
-        eumetcast_ts.read((char *)ts_frame, 188);
+#if 1
+        natural_color.channel(0)[i] = clamp(sqrt(channel2[i]) * 0.8);
+        natural_color.channel(1)[i] = clamp(sqrt(std::max<int>(0, std::min<int>(65535, 0.45 * channel2[i] + 0.1 * channel3[i] + 0.45 * channel1[1]))));
+        natural_color.channel(2)[i] = clamp(sqrt(channel1[i]) * 0.8);
 
-        std::vector<std::vector<uint8_t>> framesss = tsdemux.demux(ts_frame, 500);
-        for (std::vector<uint8_t> &frm : framesss)
-        {
-            // uint32_t marker = frm[40] << 24 | frm[41] << 16 | frm[42] << 8 | frm[43];
+        for (int y = 0; y < 3; y++)
+            natural_color.channel(y)[i] = clamp((natural_color.channel(y)[i] - 30) * 1.6);
 
-            // logger->info(marker);
-
-            mpeheader.parse(&frm[0]);
-            ipv4header.parse(&frm[12]);
-
-            frm.resize(4000 + 40);
-
-            if (ipv4header.target_ip_1 == 224 && ipv4header.target_ip_2 == 223 && ipv4header.target_ip_3 == 222 && ipv4header.target_ip_4 == 27 /*&& frm[42] == 0xa1 && frm[43] == 0x5a*/)
-            {
-                logger->critical("{:d} {:d} {:d}    TARGET IP {:d}.{:d}.{:d}.{:d}", mpeheader.section_length, frm.size(), ipv4header.ihl, ipv4header.target_ip_1, ipv4header.target_ip_2, ipv4header.target_ip_3, ipv4header.target_ip_4);
-                //  logger->critical(frm.size());
-                eumetcast_ttttt.write((char *)&frm[40], 4000);
-            }
-        }
+#else
+        natural_color.channel(0)[i] = channel2[i] >> 8;
+        natural_color.channel(1)[i] = std::max<int>(0, std::min<int>(65535, 0.45 * channel2[i] + 0.1 * channel3[i] + 0.45 * channel1[1])) >> 8;
+        natural_color.channel(2)[i] = channel1[i] >> 8;
+#endif
     }
+
+    natural_color.save_png(argv[4]);
 }
