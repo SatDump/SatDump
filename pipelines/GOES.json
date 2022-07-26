@@ -44,20 +44,39 @@
     "goes_hrit": {
         "name": "GOES-R HRIT",
         "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
+        "live_cfg": {
+            "pkt_size": 10240, // 1024 * 10
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
             ],
-            [
-                2,
-                0
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
             ],
-            [
-                3,
-                0
+            "client": [
+                [
+                    3,
+                    0
+                ]
             ]
-        ],
+        },
         "frequencies": [
             [
                 "HRIT",
