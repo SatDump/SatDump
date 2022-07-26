@@ -74,8 +74,9 @@ namespace goes
             std::string directory = abi_directory + "/" + zone + "/" + utc_filename + "/";
             std::filesystem::create_directories(directory);
 
-            logger->info("Saving " + directory + filename);
-            img.save_png(std::string(directory + filename).c_str());
+            // logger->info("Saving " + directory + filename);
+            // img.save_png(std::string(directory + filename).c_str());
+            saving_thread->push(img, std::string(directory + filename));
         }
 
         void ABIComposer::save()

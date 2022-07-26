@@ -62,10 +62,13 @@ namespace goes
             ccsds::ccsds_1_0_1024::Demuxer demuxer_rhcp(2034, false);
             ccsds::ccsds_1_0_1024::Demuxer demuxer_lhcp(2034, false);
 
-            GRBFilePayloadAssembler assember_rhcp(directory);
-            GRBFilePayloadAssembler assember_lhcp(directory);
+            image::ImageSavingThread image_saving_th(input_data_type != DATA_FILE);
+
+            GRBFilePayloadAssembler assember_rhcp;
+            GRBFilePayloadAssembler assember_lhcp;
 
             assember_rhcp.ignore_crc = assember_lhcp.ignore_crc = d_parameters.contains("ignore_crc") ? d_parameters["ignore_crc"].get<bool>() : false;
+            assember_rhcp.processor = assember_lhcp.processor = std::make_shared<GRBDataProcessor>(directory, &image_saving_th);
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {

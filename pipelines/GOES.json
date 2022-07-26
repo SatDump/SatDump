@@ -156,7 +156,7 @@
         "name": "GOES-R GRB",
         "live": true,
         "live_cfg": {
-            "pkt_size": 2048,
+            "pkt_size": 22528, //2048 * 11,
             "default": [
                 [
                     1,

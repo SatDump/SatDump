@@ -4,6 +4,7 @@
 #include <memory>
 #include "abi/abi_image_assembler.h"
 #include "suvi/suvi_image_assembler.h"
+#include "common/image/image_saving_thread.h"
 
 /*
 All the information used to fill in products APIDs,
@@ -59,7 +60,7 @@ namespace goes
             std::shared_ptr<ABIComposer> image_composer_meso2;
 
         public:
-            GRBDataProcessor(std::string directory);
+            GRBDataProcessor(std::string directory, image::ImageSavingThread *saving_thread);
             ~GRBDataProcessor();
             void processPayload(GRBFilePayload &payload);
         };

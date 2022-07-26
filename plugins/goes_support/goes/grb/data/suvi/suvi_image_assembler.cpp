@@ -35,8 +35,9 @@ namespace goes
             std::string directory = suvi_directory + "/" + suvi_product.channel + "/";
             std::filesystem::create_directories(directory);
 
-            logger->info("Saving " + directory + filename);
-            full_image.save_png(std::string(directory + filename).c_str());
+            // logger->info("Saving " + directory + filename);
+            // full_image.save_png(std::string(directory + filename).c_str());
+            saving_thread->push(full_image, std::string(directory + filename));
         }
 
         void GRBSUVIImageAssembler::reset()
@@ -63,7 +64,7 @@ namespace goes
             }
 
             // Scale image to full bit depth
-            //block <<= 2;
+            // block <<= 2;
 
             // Fill
             full_image.draw_image(0, block, header.left_x_coord, header.left_y_coord + header.row_offset_image_block);

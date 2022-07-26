@@ -2,6 +2,7 @@
 
 #include "abi_products.h"
 #include "common/image/image.h"
+#include "common/image/image_saving_thread.h"
 
 namespace goes
 {
@@ -14,7 +15,7 @@ namespace goes
             const products::ABI::ABIScanType abi_product_type;
 
             double current_timestamp;
-            image::Image<uint16_t> channel_images[16]; // ABSI has 16 channels
+            image::Image<uint16_t> channel_images[16]; // ABI has 16 channels
             bool has_channels[16];
 
             void reset();
@@ -26,6 +27,8 @@ namespace goes
             ABIComposer(std::string dir, products::ABI::ABIScanType abi_type);
             ~ABIComposer();
             void feed_channel(double timestamp, int ch, image::Image<uint16_t> &img);
+
+            image::ImageSavingThread *saving_thread;
         };
     }
 }

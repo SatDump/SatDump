@@ -36,8 +36,9 @@ namespace goes
             std::string directory = abi_directory + "/" + zone + "/" + utc_filename + "/";
             std::filesystem::create_directories(directory);
 
-            logger->info("Saving " + directory + filename);
-            full_image.save_png(std::string(directory + filename).c_str());
+            // logger->info("Saving " + directory + filename);
+            // full_image.save_png(std::string(directory + filename).c_str());
+            saving_thread->push(full_image, std::string(directory + filename));
 
             image_composer->feed_channel(currentTimeStamp, abi_product.channel, full_image);
         }

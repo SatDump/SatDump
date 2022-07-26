@@ -11,7 +11,7 @@ namespace goes
 {
     namespace grb
     {
-        GRBDataProcessor::GRBDataProcessor(std::string directory)
+        GRBDataProcessor::GRBDataProcessor(std::string directory, image::ImageSavingThread *saving_thread)
             : directory(directory)
         {
             // ABI Compositors
@@ -19,6 +19,11 @@ namespace goes
             image_composer_conus = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::CONUS);
             image_composer_meso1 = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::MESO_1);
             image_composer_meso2 = std::make_shared<ABIComposer>(directory + "/ABI", products::ABI::MESO_2);
+
+            image_composer_fulldisk->saving_thread = saving_thread;
+            image_composer_conus->saving_thread = saving_thread;
+            image_composer_meso1->saving_thread = saving_thread;
+            image_composer_meso2->saving_thread = saving_thread;
 
             // Setup ABI Image assemblers
             for (std::pair<const int, products::ABI::GRBProductABI> &abi_prod : products::ABI::ABI_IMAGE_PRODUCTS)
@@ -32,11 +37,15 @@ namespace goes
                     abi_image_assemblers[abi_prod.first]->image_composer = image_composer_meso1;
                 else if (abi_prod.second.type == products::ABI::MESO_2)
                     abi_image_assemblers[abi_prod.first]->image_composer = image_composer_meso2;
+                abi_image_assemblers[abi_prod.first]->saving_thread = saving_thread;
             }
 
             // Setup SUVI Image assemblers
             for (std::pair<const int, products::SUVI::GRBProductSUVI> &suvi_prod : products::SUVI::SUVI_IMAGE_PRODUCTS)
+            {
                 suvi_image_assemblers.emplace(suvi_prod.first, std::make_shared<GRBSUVIImageAssembler>(directory + "/SUVI", suvi_prod.second));
+                suvi_image_assemblers[suvi_prod.first]->saving_thread = saving_thread;
+            }
         }
 
         GRBDataProcessor::~GRBDataProcessor()

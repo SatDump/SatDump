@@ -122,7 +122,8 @@ namespace satdump
         // Init the first and whatever's in the middle
         for (int i = 0; i < (int)modules.size() - 1; i++)
         {
-            modules[i]->input_fifo = modules[i - 1]->output_fifo;
+            if (i > 0)
+                modules[i]->input_fifo = modules[i - 1]->output_fifo;
             modules[i]->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
             modules[i]->setInputType(DATA_STREAM);
             modules[i]->setOutputType(DATA_STREAM);

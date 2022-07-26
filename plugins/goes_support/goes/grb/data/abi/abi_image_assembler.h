@@ -6,6 +6,7 @@
 #include <string>
 #include "abi_image_composer.h"
 #include <memory>
+#include "common/image/image_saving_thread.h"
 
 namespace goes
 {
@@ -29,6 +30,8 @@ namespace goes
             void pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block);
 
             std::shared_ptr<ABIComposer> image_composer;
+
+            image::ImageSavingThread *saving_thread;
         };
     }
 }

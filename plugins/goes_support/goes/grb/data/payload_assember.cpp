@@ -5,9 +5,7 @@ namespace goes
 {
     namespace grb
     {
-        GRBFilePayloadAssembler::GRBFilePayloadAssembler(std::string directory)
-            : directory(directory),
-              processor(directory)
+        GRBFilePayloadAssembler::GRBFilePayloadAssembler()
         {
         }
 
@@ -28,7 +26,7 @@ namespace goes
                 {
                     // Process
                     if (current_payload.valid)
-                        processor.processPayload(current_payload);
+                        processor->processPayload(current_payload);
                 }
 
                 // Reset
@@ -73,7 +71,7 @@ namespace goes
                 {
                     // Process
                     if (current_payload.valid)
-                        processor.processPayload(current_payload);
+                        processor->processPayload(current_payload);
                     current_payload.in_progress = false;
                 }
             }

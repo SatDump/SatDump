@@ -22,17 +22,17 @@ namespace goes
         class GRBFilePayloadAssembler
         {
         private:
-            const std::string directory;
             std::map<int, GRBFilePayload> current_payloads;
-            GRBDataProcessor processor;
             CRC32 crc;
 
         private:
             bool crc_valid(ccsds::CCSDSPacket &pkt);
 
         public:
-            GRBFilePayloadAssembler(std::string directory);
+            GRBFilePayloadAssembler();
             void work(ccsds::CCSDSPacket &pkt);
+
+            std::shared_ptr<GRBDataProcessor> processor;
 
             bool ignore_crc = false;
         };

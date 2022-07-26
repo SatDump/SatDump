@@ -4,6 +4,7 @@
 #include "suvi_products.h"
 #include "../grb_headers.h"
 #include <string>
+#include "common/image/image_saving_thread.h"
 
 namespace goes
 {
@@ -25,6 +26,8 @@ namespace goes
             GRBSUVIImageAssembler(std::string abi_dir, products::SUVI::GRBProductSUVI config);
             ~GRBSUVIImageAssembler();
             void pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block);
+
+            image::ImageSavingThread *saving_thread;
         };
     }
 }
