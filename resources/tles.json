@@ -1,5 +1,5 @@
 {
-    "url_template": "http://www.celestrak.com/NORAD/elements/gp.php?CATNR=%NORAD%",
+    "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
     "tles_to_fetch": {
         "MetOp-A": 29499,
         "MetOp-B": 38771,
