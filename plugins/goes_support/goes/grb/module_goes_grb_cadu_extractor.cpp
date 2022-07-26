@@ -105,9 +105,12 @@ namespace goes
                     {
                         std::memmove(cadu_buffer, &cadu_buffer[best_pos], CADU_SIZE - best_pos);
 
-                        memcpy(&cadu_buffer[BBFRAME_SIZE - best_pos], &caduVector[0], best_pos);
+                        memcpy(&cadu_buffer[CADU_SIZE - best_pos], &caduVector[0], best_pos);
                         caduVector.erase(caduVector.begin(), caduVector.begin() + best_pos);
                     }
+
+                    module_stats["correlation"] = best_cor;
+                    module_stats["synced"] = cadu_sync;
 
                     if (output_data_type == DATA_FILE)
                         data_out.write((char *)cadu_buffer, CADU_SIZE);

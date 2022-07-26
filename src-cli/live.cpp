@@ -5,6 +5,9 @@
 #include "logger.h"
 #include "init.h"
 #include "common/cli_utils.h"
+#include <nng/nng.h>
+#include <nng/supplemental/http/http.h>
+#include <nng/supplemental/util/platform.h>
 
 // Catch CTRL+C to exit live properly!
 bool live_should_exit = false;
@@ -13,6 +16,52 @@ void sig_handler_live(int signo)
     if (signo == SIGINT)
         live_should_exit = true;
 }
+
+// Webserver for stats
+namespace webserver
+{
+    nng_http_server *http_server;
+    nng_url *url;
+    nng_http_handler *handler;
+
+    satdump::LivePipeline *live_pipeline;
+    bool is_active = false;
+
+    // HTTP Handler for stats
+    void http_handle(nng_aio *aio)
+    {
+        std::string jsonstr = live_pipeline->getModulesStats().dump(4);
+
+        nng_http_res *res;
+        nng_http_res_alloc(&res);
+        nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+        nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
+        nng_aio_set_output(aio, 0, res);
+        nng_aio_finish(aio, 0);
+    }
+
+    void start(std::string http_server_url)
+    {
+        http_server_url = "http://" + http_server_url;
+        nng_url_parse(&url, http_server_url.c_str());
+        nng_http_server_hold(&http_server, url);
+        nng_http_handler_alloc(&handler, url->u_path, http_handle);
+        nng_http_handler_set_method(handler, "GET");
+        nng_http_server_add_handler(http_server, handler);
+        nng_http_server_start(http_server);
+        nng_url_free(url);
+        is_active = true;
+    }
+
+    void stop()
+    {
+        if (is_active)
+        {
+            nng_http_server_stop(http_server);
+            nng_http_server_release(http_server);
+        }
+    }
+};
 
 int main_live(int argc, char *argv[])
 {
@@ -68,6 +117,15 @@ int main_live(int argc, char *argv[])
         {
             logger->error("Fatal error running pipeline/device : " + std::string(e.what()));
             return 1;
+        }
+
+        // If requested, boot up webserver
+        if (parameters.contains("http_server"))
+        {
+            std::string http_addr = parameters["http_server"].get<std::string>();
+            webserver::live_pipeline = live_pipeline.get();
+            logger->info("Start webserver on {:s}", http_addr.c_str());
+            webserver::start(http_addr);
         }
 
         // Attach signal
@@ -174,6 +232,15 @@ int main_live(int argc, char *argv[])
             return 1;
         }
 
+        // If requested, boot up webserver
+        if (parameters.contains("http_server"))
+        {
+            std::string http_addr = parameters["http_server"].get<std::string>();
+            webserver::live_pipeline = live_pipeline.get();
+            logger->info("Start webserver on {:s}", http_addr.c_str());
+            webserver::start(http_addr);
+        }
+
         // Attach signal
         signal(SIGINT, sig_handler_live);
 
@@ -204,6 +271,9 @@ int main_live(int argc, char *argv[])
         source_ptr->stop();
         live_pipeline->stop();
     }
+
+    if (parameters.contains("http_server"))
+        webserver::stop();
 
     return 0;
 }
