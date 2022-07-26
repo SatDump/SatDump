@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(CheckCXXSourceCompiles)
+include(FindSSE)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,8 +16,6 @@ option(BUILD_ZIQ            "Build support for the custom ZIQ format"           
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
 option(BUILD_OPENMP         "Build with OpenMP Optimizations"                           ON)
-
-option(BUILD_SSE            "Temporary fix until we do this better!"                    OFF)
 
 if(ANDROID)
     # Build settings
@@ -54,8 +54,12 @@ if(UNIX)
         endif()
     endif()
     
-    if(BUILD_SSE)
+    FindSSE()
+    if(SSE4_1_FOUND)
+        message("Found SSE features, enabling building SSE code")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    else()
+        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
     endif()
 else()
     #set(CMAKE_CXX_FLAGS "-Wall")
@@ -70,8 +74,12 @@ if(MSVC OR BUILD_MSVC)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
 
-    if(BUILD_SSE)
+    FindSSE()
+    if(SSE4_1_FOUND)
+        message("Found SSE features, enabling building SSE code")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /d2archSSE42")
+    else()
+        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
     endif()
 endif()
 
@@ -93,8 +101,6 @@ else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
 endif()
-
-include(CheckCXXSourceCompiles)
 
 # Check system has <filesystem>
 check_cxx_source_compiles("#include <filesystem>\n int main() { return 0; }" STD_HAS_FILESYSTEM)
