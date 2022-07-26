@@ -88,7 +88,7 @@ namespace goes
                 // Reserved, 8 bytes
                 data_unit_sequence_count = data[16] << 24 | data[17] << 16 | data[18] << 8 | data[19];
 
-                utc_time = ((4383 + 6574) * 3600 * 24) + seconds_since_epoch + double(microsecond_of_second) / 1000.0f;
+                utc_time = ((4383 + 6574) * 3600 * 24) + (12 * 3600) + seconds_since_epoch + double(microsecond_of_second) / 1000.0f;
             }
         };
 
