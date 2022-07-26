@@ -51,7 +51,7 @@ This covers the NOAA GOES weather satellites :
 - GOES-N GVAR
 - GOES-R HRIT
 - GOES-R CDA
-- GOES-R CDA
+- GOES-R GRB
 
 ## Himawari (PLUGIN_HIMAWARI)
 
