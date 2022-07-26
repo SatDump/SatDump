@@ -2,6 +2,7 @@
 #include <ctime>
 #include <filesystem>
 #include "logger.h"
+#include "resources.h"
 
 namespace goes
 {
@@ -84,11 +85,43 @@ namespace goes
             // Check if we can make 1-3-5
             if (has_channels[0] && has_channels[2] && has_channels[4])
             {
+                logger->debug("Generating RGB135 composite...");
                 image::Image<uint16_t> compo(channel_images[0].width(), channel_images[0].height(), 3);
                 compo.draw_image(0, channel_images[4]);
                 compo.draw_image(1, channel_images[2]);
                 compo.draw_image(2, channel_images[0]);
                 saveABICompo(compo, "RGB135");
+            }
+
+            // Check if we can make 2-14, for a composite with LHCP only
+            if (has_channels[1] && has_channels[14])
+            {
+                logger->debug("Generating False Color 4 & 12 composite...");
+                image::Image<uint8_t> compo(channel_images[1].width(), channel_images[1].height(), 3);
+
+                // Resize CH14 to the same res as ch2
+                image::Image<uint8_t> ch14 = channel_images[13].to8bits();
+                ch14.resize(channel_images[1].width(), channel_images[1].height());
+
+                // Convert CH2 to 8-bits
+                image::Image<uint8_t> ch2 = channel_images[1].to8bits();
+
+                image::Image<uint8_t> ch2_curve, fc_lut;
+                ch2_curve.load_png(resources::getResourcePath("goes/abi/wxstar/ch2_curve.png").c_str());
+                fc_lut.load_png(resources::getResourcePath("goes/abi/wxstar/lut.png").c_str());
+
+                for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
+                {
+                    uint8_t x = ch2_curve[ch2[i]];
+                    uint8_t y = std::max(0, (255 - ch14[i]) - 69);
+                    for (int c = 0; c < 3; c++)
+                        compo[c * compo.width() * compo.height() + i] = fc_lut[c * fc_lut.width() * fc_lut.height() + x * fc_lut.width() + y];
+                }
+
+                ch2.clear();
+                ch14.clear();
+
+                saveABICompo(compo.to16bits(), "LUT214");
             }
         }
     }
