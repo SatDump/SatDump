@@ -20,6 +20,8 @@ int HackRFSource::_rx_callback(hackrf_transfer *t)
 
 void HackRFSource::set_gains()
 {
+    if (!is_started)
+        return;
     hackrf_set_amp_enable(hackrf_dev_obj, amp_enabled);
     hackrf_set_lna_gain(hackrf_dev_obj, lna_gain);
     hackrf_set_vga_gain(hackrf_dev_obj, vga_gain);
@@ -30,6 +32,8 @@ void HackRFSource::set_gains()
 
 void HackRFSource::set_bias()
 {
+    if (!is_started)
+        return;
     hackrf_set_antenna_enable(hackrf_dev_obj, bias_enabled);
     logger->debug("Set HackRF bias to {:d}", (int)bias_enabled);
 }
@@ -64,22 +68,7 @@ nlohmann::json HackRFSource::get_settings(nlohmann::json)
 
 void HackRFSource::open()
 {
-#ifndef __ANDROID__
-    std::stringstream ss;
-    ss << std::hex << d_sdr_id;
-    if (!is_open)
-        if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
-            throw std::runtime_error("Could not open HackRF device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
-    if (hackrf_open2(&hackrf_dev_obj, fd, path.c_str()) != 0)
-        throw std::runtime_error("Could not open HackRF device!");
-#endif
     is_open = true;
-
-    // hackrf_reset(hackrf_dev_obj);
 
     // Set available samplerates
     for (int i = 1; i < 21; i++)
@@ -103,9 +92,26 @@ void HackRFSource::start()
 {
     DSPSampleSource::start();
 
+#ifndef __ANDROID__
+    std::stringstream ss;
+    ss << std::hex << d_sdr_id;
+    if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
+        throw std::runtime_error("Could not open HackRF device!");
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
+    if (hackrf_open2(&hackrf_dev_obj, fd, path.c_str()) != 0)
+        throw std::runtime_error("Could not open HackRF device!");
+#endif
+
+    // hackrf_reset(hackrf_dev_obj);
+
     logger->debug("Set HackRF samplerate to " + std::to_string(current_samplerate));
     hackrf_set_sample_rate(hackrf_dev_obj, current_samplerate);
     hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, current_samplerate);
+
+    is_started = true;
 
     set_frequency(d_frequency);
 
@@ -113,25 +119,23 @@ void HackRFSource::start()
     set_bias();
 
     hackrf_start_rx(hackrf_dev_obj, &_rx_callback, &output_stream);
-
-    is_started = true;
 }
 
 void HackRFSource::stop()
 {
     hackrf_stop_rx(hackrf_dev_obj);
+    hackrf_close(hackrf_dev_obj);
     is_started = false;
 }
 
 void HackRFSource::close()
 {
-    if (is_open)
-        hackrf_close(hackrf_dev_obj);
+    // if (is_open)
 }
 
 void HackRFSource::set_frequency(uint64_t frequency)
 {
-    if (is_open)
+    if (is_open && is_started)
     {
         hackrf_set_freq(hackrf_dev_obj, frequency);
         logger->debug("Set HackRF frequency to {:d}", frequency);

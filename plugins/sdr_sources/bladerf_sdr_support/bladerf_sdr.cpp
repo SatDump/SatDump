@@ -95,7 +95,7 @@ void BladeRFSource::open()
     available_samplerates.push_back(bladerf_range_samplerate->min);
     for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
     {
-        logger->trace("BladeRF device has samplerate {:d} SPS", i);
+        // logger->trace("BladeRF device has samplerate {:d} SPS", i);
         available_samplerates.push_back(i);
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);

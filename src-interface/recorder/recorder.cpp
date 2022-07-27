@@ -32,8 +32,21 @@ namespace satdump
             sdr_select_string += src.name + '\0';
         }
 
-        source_ptr = dsp::getSourceFromDescriptor(sources[0]);
-        source_ptr->open();
+        for (int i = 0; i < (int)sources.size(); i++)
+        {
+            try
+            {
+                source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                source_ptr->open();
+                sdr_select_id = i;
+                break;
+            }
+            catch (std::runtime_error &e)
+            {
+                logger->error(e.what());
+            }
+        }
+
         source_ptr->set_frequency(100e6);
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
@@ -78,7 +91,32 @@ namespace satdump
                 if (ImGui::Combo("Source", &sdr_select_id, sdr_select_string.c_str()))
                 {
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
-                    source_ptr->open();
+
+                    // Try to open a device, if it doesn't work, we re-open a device we can
+                    try
+                    {
+                        source_ptr->open();
+                    }
+                    catch (std::runtime_error &e)
+                    {
+                        logger->error(e.what());
+
+                        for (int i = 0; i < (int)sources.size(); i++)
+                        {
+                            try
+                            {
+                                source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                                source_ptr->open();
+                                sdr_select_id = i;
+                                break;
+                            }
+                            catch (std::runtime_error &e)
+                            {
+                                logger->error(e.what());
+                            }
+                        }
+                    }
+
                     source_ptr->set_frequency(100e6);
                 }
                 if (ImGui::Button("Refresh"))
