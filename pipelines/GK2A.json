@@ -137,15 +137,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
-                    "constellation": "qpsk",
-                    "cadu_size": 8192,
-                    "viterbi_ber_thresold": 0.300,
-                    "viterbi_outsync_after": 20,
-                    "derandomize": true,
-                    "rs_i": 4,
-                    "rs_type": "rs223"
-                }
+                "gk2a_hrit_decoder": {}
             },
             "products": {
                 "gk2a_lrit_data_decoder": {

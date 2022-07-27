@@ -3,6 +3,7 @@
 #include "core/module.h"
 
 #include "gk2a/module_gk2a_lrit_data_decoder.h"
+#include "gk2a/module_gk2a_hrit_decoder.h"
 
 class GK2ASupport : public satdump::Plugin
 {
@@ -20,6 +21,7 @@ public:
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, gk2a::lrit::GK2ALRITDataDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, gk2a::GK2AHRITDecoderModule);
     }
 };
 
