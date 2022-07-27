@@ -66,7 +66,7 @@ namespace goes
                 image_block_width = data[26] << 24 | data[27] << 16 | data[28] << 8 | data[29];
                 byte_offset_dqf = data[30] << 24 | data[31] << 16 | data[32] << 8 | data[33];
 
-                utc_time = ((4383 + 6574) * 3600 * 24) + seconds_since_epoch + double(microsecond_of_second) / 1000.0f;
+                utc_time = ((4383 + 6574) * 3600 * 24) + (12 * 3600) + seconds_since_epoch + double(microsecond_of_second) / 1000.0f;
             }
         };
 
