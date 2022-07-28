@@ -82,6 +82,9 @@ namespace gk2a
             if (packet.header.packet_sequence_count == 0 && packet.header.apid == 0 && packet.payload.size() == 0 && packet.header.sequence_flag == 0)
                 return;
 
+            if (packet.payload.size() < 3)
+                return;
+
             if (packet.header.sequence_flag == 1 || packet.header.sequence_flag == 3)
             {
                 if (file_in_progress)
@@ -295,6 +298,8 @@ namespace gk2a
                     {
                         logger->info("Decompressing JPEG...");
                         image::Image<uint8_t> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
+                        if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
+                            img.init(image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
                         lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
                         lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                     }
@@ -317,6 +322,7 @@ namespace gk2a
 
                         imageStatus[channel] = RECEIVING;
 
+                        std::string orig_filename = current_filename;
                         std::string image_id = current_filename.substr(0, current_filename.size() - 8);
 
                         SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
@@ -339,17 +345,13 @@ namespace gk2a
                                                                          image_id);
                         }
 
-                        std::vector<std::string> header_parts = splitString(current_filename, '_');
+                        std::vector<std::string> header_parts = splitString(orig_filename, '_');
 
                         int seg_number = 0;
                         if (header_parts.size() >= 7)
-                        {
                             seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
-                        }
                         else
-                        {
                             logger->critical("Could not parse segment number from filename!");
-                        }
                         segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
 
                         // If the UI is active, update texture
