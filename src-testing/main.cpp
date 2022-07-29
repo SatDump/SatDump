@@ -12,51 +12,31 @@
 
 #include "logger.h"
 #include "common/image/image.h"
+#include "libs/rapidxml.hpp"
+#include <filesystem>
+#include <fstream>
 
-int clamp(int x)
-{
-    if (x > 255)
-        return 255;
-    if (x < 0)
-        return 0;
-    return x;
-}
+// XML Parser
+rapidxml::xml_document<> doc;
+rapidxml::xml_node<> *root_node = NULL;
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint16_t> channel1, channel2, channel3;
-    channel1.load_png(argv[1]);
-    channel2.load_png(argv[2]);
-    channel3.load_png(argv[3]);
+    image::Image<uint8_t> image_1, image_2, image_3, image_rgb;
 
-    channel2.resize(channel1.width(), channel1.height());
-    channel3.resize(channel1.width(), channel1.height());
+    image_1.load_png(argv[1]);
+    image_2.load_png(argv[2]);
+    image_3.load_png(argv[3]);
 
-    image::Image<uint8_t> natural_color;
-    natural_color.init(channel1.width(), channel1.height(), 3);
+    logger->info("Processing");
+    image_rgb.init(image_1.width(), image_1.height(), 3);
 
-    // channel1.white_balance();
-    // channel2.white_balance();
-    // channel3.white_balance();
+    image_rgb.draw_image(0, image_3, -30, 12);
+    image_rgb.draw_image(1, image_2, 0);
+    image_rgb.draw_image(2, image_1, 23, -17);
 
-    for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-    {
-#if 1
-        natural_color.channel(0)[i] = clamp(sqrt(channel2[i]) * 0.8);
-        natural_color.channel(1)[i] = clamp(sqrt(std::max<int>(0, std::min<int>(65535, 0.45 * channel2[i] + 0.1 * channel3[i] + 0.45 * channel1[1]))));
-        natural_color.channel(2)[i] = clamp(sqrt(channel1[i]) * 0.8);
-
-        for (int y = 0; y < 3; y++)
-            natural_color.channel(y)[i] = clamp((natural_color.channel(y)[i] - 30) * 1.6);
-
-#else
-        natural_color.channel(0)[i] = channel2[i] >> 8;
-        natural_color.channel(1)[i] = std::max<int>(0, std::min<int>(65535, 0.45 * channel2[i] + 0.1 * channel3[i] + 0.45 * channel1[1])) >> 8;
-        natural_color.channel(2)[i] = channel1[i] >> 8;
-#endif
-    }
-
-    natural_color.save_png(argv[4]);
+    logger->info("Saving");
+    image_rgb.save_png("msu_compo.png");
 }
