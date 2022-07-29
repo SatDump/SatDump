@@ -27,6 +27,18 @@ namespace dsp
         rec_mutex.lock();
         if (should_work)
         {
+            for (int i = 0; i < nsamples; i++)
+            {
+                if (input_stream->readBuf[i].real > 1.0f)
+                    input_stream->readBuf[i].real = 1.0f;
+                if (input_stream->readBuf[i].real < -1.0f)
+                    input_stream->readBuf[i].real = -1.0f;
+                if (input_stream->readBuf[i].imag > 1.0f)
+                    input_stream->readBuf[i].imag = 1.0f;
+                if (input_stream->readBuf[i].imag < -1.0f)
+                    input_stream->readBuf[i].imag = -1.0f;
+            }
+
             if (d_sample_format == CF_32)
             {
                 output_file.write((char *)input_stream->readBuf, nsamples * sizeof(complex_t));
@@ -40,7 +52,7 @@ namespace dsp
             }
             else if (d_sample_format == IS_8)
             {
-                volk_32f_s32f_convert_8i(buffer_s8, (float *)input_stream->readBuf, 255, nsamples * 2);
+                volk_32f_s32f_convert_8i(buffer_s8, (float *)input_stream->readBuf, 127, nsamples * 2);
                 output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);
                 current_size_out += nsamples * sizeof(int8_t) * 2;
             }
