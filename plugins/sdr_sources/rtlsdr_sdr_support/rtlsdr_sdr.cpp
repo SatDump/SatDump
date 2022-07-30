@@ -108,6 +108,7 @@ void RtlSdrSource::close()
 {
     if (is_open)
         rtlsdr_close(rtlsdr_dev_obj);
+    is_open = false;
 }
 
 void RtlSdrSource::set_frequency(uint64_t frequency)
