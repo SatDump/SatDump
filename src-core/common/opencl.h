@@ -66,7 +66,14 @@ namespace opencl
         std::vector<std::tuple<std::string, int, int>> devs;
 
         std::vector<cl::Platform> all_platforms;
-        cl::Platform::get(&all_platforms);
+        try
+        {
+            cl::Platform::get(&all_platforms);
+        }
+        catch (...)
+        {
+            return devs;
+        }
 
         for (int p = 0; p < (int)all_platforms.size(); p++)
         {
