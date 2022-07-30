@@ -69,6 +69,7 @@ namespace satdump
     {
         source_ptr->stop();
         source_ptr->close();
+        splitter->input_stream = std::make_shared<dsp::stream<complex_t>>();
         splitter->stop();
         fft->stop();
         file_sink->stop();
