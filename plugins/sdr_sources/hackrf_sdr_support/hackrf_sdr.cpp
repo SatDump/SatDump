@@ -123,9 +123,12 @@ void HackRFSource::start()
 
 void HackRFSource::stop()
 {
-    hackrf_stop_rx(hackrf_dev_obj);
-    hackrf_close(hackrf_dev_obj);
-    is_started = false;
+    if (is_started)
+    {
+        hackrf_stop_rx(hackrf_dev_obj);
+        hackrf_close(hackrf_dev_obj);
+        is_started = false;
+    }
 }
 
 void HackRFSource::close()
