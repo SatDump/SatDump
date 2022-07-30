@@ -166,11 +166,12 @@ int main(int argc, char *argv[])
 
     logger->trace("\n" + img_pro.contents.dump(4));
 
-    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_e_mersill.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
+    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mersi2.json")), img_pro.get_tle(), img_pro.get_timestamps(0));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
+    rgb_cfg.white_balance = true;
 
     // img_pro.images[0].image.equalize();
     // img_pro.images[0].image.to_rgb();
@@ -178,8 +179,8 @@ int main(int argc, char *argv[])
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 8;
-    operation.output_height = 1024 * 8;
+    operation.output_width = 2048 * 20;
+    operation.output_height = 1024 * 20;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;
@@ -187,6 +188,7 @@ int main(int argc, char *argv[])
 
     satdump::warp::WarpResult result = warper.warp();
 
+#if 0
     logger->info("Reproject to stereo...");
 
     geodetic::projection::EquirectangularProjection projector_equ;
@@ -241,10 +243,14 @@ int main(int argc, char *argv[])
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");
+#endif
 
-    stereo_image.save_png("test.png");
+   // result.output_image.save_png("test.png");
 
-#if 0
+#if 1
+    geodetic::projection::EquirectangularProjection projector;
+    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
+
     unsigned short color[3] = {0, 65535, 0};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    result.output_image,
