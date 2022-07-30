@@ -23,6 +23,7 @@ namespace satdump
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
 
         automated_live_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_autogen"]["value"].get<bool>();
+        processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
 
         sources = dsp::getAllAvailableSources();
 
@@ -82,7 +83,7 @@ namespace satdump
 
         ImGui::BeginGroup();
 
-        float wf_size = recorder_size.y - (is_processing ? 240 * ui_scale : 0);
+        float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 240 * ui_scale : 0);
         ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false);
         {
             if (ImGui::CollapsingHeader("Device"))
@@ -475,21 +476,29 @@ namespace satdump
 
         if (is_processing)
         {
-            float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
-            float live_width = recorder_size.x + 16 * ui_scale;
-            float live_height = 250 * ui_scale;
-            float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
-            float currentPos = 0;
-            for (std::shared_ptr<ProcessingModule> module : live_pipeline->modules)
+            if (processing_modules_floating_windows)
             {
-                ImGui::SetNextWindowPos({currentPos, y_pos});
-                ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
-                module->drawUI(false);
-                currentPos += winwidth;
+                for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                    module->drawUI(true);
+            }
+            else
+            {
+                float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
+                float live_width = recorder_size.x + 16 * ui_scale;
+                float live_height = 250 * ui_scale;
+                float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
+                float currentPos = 0;
+                for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                {
+                    ImGui::SetNextWindowPos({currentPos, y_pos});
+                    ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
+                    module->drawUI(false);
+                    currentPos += winwidth;
 
-                // if (ImGui::GetCurrentContext()->last_window != NULL)
-                //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
-                //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                    // if (ImGui::GetCurrentContext()->last_window != NULL)
+                    //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
+                    //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                }
             }
         }
     }

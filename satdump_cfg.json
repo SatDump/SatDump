@@ -68,6 +68,12 @@
             "value": true,
             "name": "Demod FFT Waterfall",
             "description": "Enable the FFT Waterfall shown in the small FFT available in demodulators\nThis does increase CPU usage"
+        },
+        "recorder_floating_windows": {
+            "type": "bool",
+            "value": false,
+            "name": "Recorder Floating Windows",
+            "description": "Make module windows in the recorder float.\nThis allows dragging them around at will"
         }
     },
     // More generic SatDump settings
