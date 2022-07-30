@@ -180,7 +180,7 @@ namespace satdump
             if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
-            if (str_to_find_channels.find(equ_str) != std::string::npos)
+            if (str_to_find_channels.find(equ_str) != std::string::npos && img.image.size() > 0)
             {
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(img.channel_name);

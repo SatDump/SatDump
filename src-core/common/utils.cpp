@@ -168,6 +168,8 @@ std::string timestamp_to_string(double timestamp)
 
 double get_median(std::vector<double> values)
 {
+    if (values.size() == 0)
+        return 0;
     std::sort(values.begin(), values.end());
     size_t middle = values.size() / 2;
     return values[middle];
