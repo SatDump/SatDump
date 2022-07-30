@@ -120,11 +120,11 @@ namespace demod
 
         // Init the rest
         ldpc_decoder = std::make_unique<dvbs2::BBFrameLDPC>(s2_framesize, s2_coderate);
-        bch_decoder = std::make_unique<dvbs2::BBFrameBCH>();
+        bch_decoder = std::make_unique<dvbs2::BBFrameBCH>(s2_framesize, s2_coderate);
         descramber = std::make_unique<dvbs2::BBFrameDescrambler>(s2_framesize, s2_coderate);
 
         // Info
-        logger->info("Output bbframe bits : {:d}", bch_decoder->frame_params(s2_framesize, s2_coderate).first);
+        logger->info("Output bbframe bits : {:d}", bch_decoder->dataSize());
     }
 
     DVBS2DemodModule::~DVBS2DemodModule()
@@ -260,7 +260,7 @@ namespace demod
 
                 if (!d_multithread_bch)
                 {
-                    bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
+                    bch_corrections = bch_decoder->decode(repacker_buffer);
 
                     // if (bch_corrections == -1)
                     //     logger->error("ERROR");
@@ -268,13 +268,13 @@ namespace demod
                     descramber->work(repacker_buffer);
 
                     if (output_data_type == DATA_FILE)
-                        data_out.write((char *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                        data_out.write((char *)repacker_buffer, bch_decoder->dataSize() / 8);
                     else
-                        output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8);
+                        output_fifo->write((uint8_t *)repacker_buffer, bch_decoder->dataSize() / 8);
                 }
                 else
                 {
-                    ring_buffer2.write((uint8_t *)repacker_buffer, bch_decoder->frame_params(s2_framesize, s2_coderate).second / 8);
+                    ring_buffer2.write((uint8_t *)repacker_buffer, ldpc_decoder->dataSize() / 8);
                 }
             }
         }
@@ -291,14 +291,14 @@ namespace demod
 
         while (!should_stop)
         {
-            int bch_fsize = bch_decoder->frame_params(s2_framesize, s2_coderate).second / 8;
-            int bch_dsize = bch_decoder->frame_params(s2_framesize, s2_coderate).first / 8;
+            int bch_fsize = ldpc_decoder->dataSize() / 8;
+            int bch_dsize = bch_decoder->dataSize() / 8;
             int read = ring_buffer2.read(repacker_buffer, bch_fsize);
 
             if (read <= 0)
                 continue;
 
-            bch_corrections = bch_decoder->decode(repacker_buffer, s2_framesize, s2_coderate);
+            bch_corrections = bch_decoder->decode(repacker_buffer);
 
             // if (bch_corrections == -1)
             //     logger->error("ERROR");

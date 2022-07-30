@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     auto cfg = dvbs2::get_dvbs2_cfg(modulator_modcod, modulator_shortframes, modulator_pilots);
 
     dvbs2::BBFrameDescrambler bbframe_scra(cfg.framesize, cfg.coderate);
-    dvbs2::BBFrameBCH bbframe_bch;
+    dvbs2::BBFrameBCH bbframe_bch(cfg.framesize, cfg.coderate);
     dvbs2::BBFrameLDPC bbframe_ldpc(cfg.framesize, cfg.coderate);
     dvbs2::S2Deinterleaver interleaver(cfg.constellation, cfg.framesize, cfg.coderate);
     dsp::constellation_t constellation_slots(cfg.constel_obj_type, cfg.g1, cfg.g2);
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     int plframe_slots = cfg.frame_slot_count;
     int final_frm_size = cfg.framesize == dvbs2::FECFRAME_NORMAL ? 64800 : 16200;
     int final_frm_size_bytes = final_frm_size / 8;
-    int bb_size = bbframe_bch.frame_params(cfg.framesize, cfg.coderate).first;
+    int bb_size = bbframe_bch.dataSize();
     int bb_bytes = bb_size / 8;
     int bb_data_size = bb_size - 10 * 8;
     int bb_data_size_bytes = bb_data_size / 8;
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
         bbframe_scra.work(bbframe_raw);
 
         // BCH Encoder
-        bbframe_bch.encode(bbframe_raw, cfg.framesize, cfg.coderate);
+        bbframe_bch.encode(bbframe_raw);
 
         // LDPC Encoder
         bbframe_ldpc.encode(bbframe_raw);
