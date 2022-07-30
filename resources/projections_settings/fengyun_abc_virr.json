@@ -6,5 +6,9 @@
     "yaw_offset": -2.6,
     "image_width": 2048,
     "gcp_spacing_x": 100,
-    "gcp_spacing_y": 100
+    "gcp_spacing_y": 100,
+    ///////////////////////
+    "corr_swath": 2800,
+    "corr_resol": 1.1,
+    "corr_altit": 842
 }
