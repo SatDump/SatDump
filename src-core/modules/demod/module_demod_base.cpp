@@ -48,6 +48,8 @@ namespace demod
 
         if (resample)
             d_buffer_size *= round(decimation_factor);
+        if (d_buffer_size > 8192 * 20)
+            d_buffer_size = 8192 * 20;
 
         final_sps = final_samplerate / (float)d_symbolrate;
 
