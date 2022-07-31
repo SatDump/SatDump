@@ -26,6 +26,9 @@ namespace demod
         if (parameters.count("dc_block") > 0)
             d_dc_block = parameters["dc_block"].get<bool>();
 
+        if (parameters.count("freq_shift") > 0)
+            d_frequency_shift = parameters["freq_shift"].get<long>();
+
         if (parameters.count("iq_swap") > 0)
             d_iq_swap = parameters["iq_swap"].get<bool>();
 
@@ -64,7 +67,10 @@ namespace demod
         // Cleanup things a bit
         std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
-        fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data);
+        if (d_frequency_shift != 0)
+            freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
+
+        fft_splitter = std::make_shared<dsp::SplitterBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
         fft_splitter->set_output_2nd(show_fft);
 
         fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
@@ -101,6 +107,8 @@ namespace demod
             file_source->start();
         if (d_dc_block)
             dc_blocker->start();
+        if (d_frequency_shift != 0)
+            freq_shift->start();
         fft_splitter->start();
         fft_proc->start();
         if (resample)
@@ -115,6 +123,8 @@ namespace demod
             file_source->stop();
         if (d_dc_block)
             dc_blocker->stop();
+        if (d_frequency_shift != 0)
+            freq_shift->stop();
         fft_splitter->stop();
         fft_proc->stop();
         if (resample)

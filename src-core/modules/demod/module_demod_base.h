@@ -11,6 +11,7 @@
 #include "common/dsp/fft.h"
 #include "common/dsp/correct_iq.h"
 #include "common/dsp/rational_resampler.h"
+#include "common/dsp/freq_shift.h"
 #include "common/dsp/snr_estimator.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
@@ -30,6 +31,7 @@ namespace demod
     {
     protected:
         std::shared_ptr<dsp::FileSourceBlock> file_source;
+        std::shared_ptr<dsp::FreqShiftBlock> freq_shift;
         std::shared_ptr<dsp::SplitterBlock> fft_splitter;
         std::shared_ptr<dsp::FFTBlock> fft_proc;
         std::shared_ptr<dsp::CorrectIQBlock> dc_blocker;
@@ -43,7 +45,8 @@ namespace demod
         bool d_iq_swap = false;
         float d_agc_rate = 1e-2;
         bool d_dc_block = false;
-        int d_samplerate = -1;
+        long d_frequency_shift = 0;
+        long d_samplerate = -1;
         int d_symbolrate = 0;
 
         // Computed values
