@@ -195,13 +195,6 @@ namespace dvbs2
         decode_n_8 = new BCH_NORMAL_8();
         decode_m_12 = new BCH_MEDIUM_12();
         decode_s_12 = new BCH_SHORT_12();
-        code = new uint8_t[8192];
-        parity = new uint8_t[24];
-
-        for (int i = 0; i < 8192; i++)
-            code[i] = 0;
-        for (int i = 0; i < 24; i++)
-            parity[i] = 0;
 
         bch_poly_build_tables();
     }
@@ -408,8 +401,6 @@ namespace dvbs2
      */
     BBFrameBCH::~BBFrameBCH()
     {
-        delete[] parity;
-        delete[] code;
         delete decode_s_12;
         delete decode_m_12;
         delete decode_n_8;
@@ -424,11 +415,8 @@ namespace dvbs2
     {
         int corrections = 0;
 
-        for (unsigned int j = 0; j < kbch; j++)
-            code[j / 8] = (~(1 << (7 - j % 8)) & code[j / 8]) | (((frame[j / 8] >> (7 - j % 8)) & 1) << (7 - j % 8));
-
-        for (unsigned int j = kbch; j < nbch; j++)
-            parity[(j - kbch) / 8] = (~(1 << (7 - (j - kbch) % 8)) & parity[(j - kbch) / 8]) | (((frame[j / 8] >> (7 - j % 8)) & 1) << (7 - j % 8));
+        code = &frame[0];
+        parity = &frame[kbch / 8];
 
         switch (bch_code)
         {
@@ -449,9 +437,6 @@ namespace dvbs2
             break;
         }
 
-        for (unsigned int j = 8; j < kbch; j++)
-            frame[j / 8] = (~(1 << (7 - j % 8)) & frame[j / 8]) | (((code[j / 8] >> (7 - j % 8)) & 1) << (7 - (j - 8) % 8));
-
         return corrections;
     }
 
@@ -460,7 +445,7 @@ namespace dvbs2
         int corrections = 0;
 
         // Repack to bits
-        for (int i = 0; i < nbch; i++)
+        for (unsigned int i = 0; i < nbch; i++)
             encode_buffer[i] = (frame[i / 8] >> (7 - (i % 8))) & 1;
 
         std::bitset<MAX_BCH_PARITY_BITS> parity_bits;
@@ -505,7 +490,7 @@ namespace dvbs2
 
         // Repack to bytes
         memset(&frame[kbch / 8], 0, (nbch - kbch) / 8);
-        for (int i = 0; i < (nbch - kbch); i++)
+        for (unsigned int i = 0; i < (nbch - kbch); i++)
             frame[(kbch / 8) + i / 8] = frame[(kbch / 8) + i / 8] << 1 | encode_buffer[kbch + i];
 
         return corrections;
