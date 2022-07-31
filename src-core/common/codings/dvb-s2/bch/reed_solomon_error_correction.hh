@@ -80,16 +80,16 @@ namespace dvbs2
                         {
                             continue;
                         }
-                        assert(xxx.v);
-                        assert(!imap[xxx.v].v);
+                        //    assert(xxx.v);
+                        //    assert(!imap[xxx.v].v);
                         imap[xxx.v] = x;
                     }
                 }
                 ValueType
                 operator()(ValueType a)
                 {
-                    assert(a.v <= a.N);
-                    assert(a.v);
+                    //    assert(a.v <= a.N);
+                    //    assert(a.v);
                     return imap[a.v];
                 }
             };
@@ -289,7 +289,7 @@ namespace dvbs2
                        IndexType *erasures = 0,
                        int erasures_count = 0)
             {
-                assert(0 <= erasures_count && erasures_count <= NR);
+                //    assert(0 <= erasures_count && erasures_count <= NR);
                 ValueType locator[NR + 1];
                 locator[0] = ValueType(1);
                 for (int i = 1; i <= NR; ++i)
@@ -311,9 +311,9 @@ namespace dvbs2
                 }
                 int locator_degree =
                     RS::BerlekampMassey<NR, GF>::algorithm(syndromes, locator, erasures_count);
-                assert(locator_degree);
-                assert(locator_degree <= NR);
-                assert(locator[0] == ValueType(1));
+                //    assert(locator_degree);
+                //    assert(locator_degree <= NR);
+                //    assert(locator[0] == ValueType(1));
                 while (!locator[locator_degree])
                 {
                     if (--locator_degree < 0)

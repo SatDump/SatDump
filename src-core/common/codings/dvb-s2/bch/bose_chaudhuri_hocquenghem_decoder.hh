@@ -61,7 +61,7 @@ namespace dvbs2
                               ValueType *syndromes,
                               int data_len = K)
             {
-                assert(0 < data_len && data_len <= K);
+                //   assert(0 < data_len && data_len <= K);
                 // $syndromes_i = code(pe^{FCR+i})$
                 ValueType coeff(get_be_bit(data, 0));
                 for (int i = 0; i < NR; ++i)
@@ -95,8 +95,8 @@ namespace dvbs2
                        int erasures_count = 0,
                        int data_len = K)
             {
-                assert(0 <= erasures_count && erasures_count <= NR);
-                assert(0 < data_len && data_len <= K);
+                //   assert(0 <= erasures_count && erasures_count <= NR);
+                //   assert(0 < data_len && data_len <= K);
                 if (0)
                 {
                     for (int i = 0; i < erasures_count; ++i)
