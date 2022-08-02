@@ -41,6 +41,7 @@ namespace fengyun3
             fy3_sat_t d_satellite;
             fy3_downlink_t d_downlink;
             bool d_mersi_bowtie;
+            bool d_dump_mersi;
 
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;

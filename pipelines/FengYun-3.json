@@ -93,8 +93,14 @@
         "name": "FengYun-3 A/B/C MPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 30e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -124,8 +130,14 @@
         "name": "FengYun-3 D AHRPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 45e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -155,8 +167,14 @@
         "name": "FengYun-3 E AHRPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 45e6,
-        "baseband_type": "w8",
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -186,8 +204,14 @@
         "name": "FengYun-3 A/B/C DPT",
         "live": false,
         "frequencies": [],
-        "samplerate": 65e6,
-        "baseband_type": "i8",
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {

@@ -40,6 +40,11 @@ namespace fengyun3
                 d_downlink = DPT;
             else
                 d_downlink = AHRPT;
+
+            if (parameters.contains("dump_mersi"))
+                d_dump_mersi = parameters["dump_mersi"].get<bool>();
+            else
+                d_dump_mersi = false;
         }
 
         void FY3InstrumentsDecoderModule::process()
@@ -93,6 +98,13 @@ namespace fengyun3
             std::vector<uint8_t> fy_scids;
 
             // std::ofstream gas_test("gas.frm");
+            std::ofstream mersi_bin;
+
+            if (d_dump_mersi)
+            {
+                std::string mersi_path = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/mersi.bin";
+                mersi_bin.open(mersi_path, std::ios::binary);
+            }
 
             while (!data_in.eof())
             {
@@ -136,6 +148,8 @@ namespace fengyun3
                         if (vcdu.vcid == 3) // MERSI-1
                         {
                             mersi1_reader.work(&cadu[14], 882);
+                            if (d_dump_mersi)
+                                mersi_bin.write((char *)&cadu[14], 882);
                         }
                     }
                 }
@@ -165,6 +179,8 @@ namespace fengyun3
                     if (vcdu.vcid == 3) // MERSI-2
                     {
                         mersi2_reader.work(&cadu[14], 882);
+                        if (d_dump_mersi)
+                            mersi_bin.write((char *)&cadu[14], 882);
                     }
                     // else if (vcdu.vcid == 6) // HIRAS-1
                     //{ // 0x87762226 0x316e4f02
@@ -203,6 +219,8 @@ namespace fengyun3
                     if (vcdu.vcid == 3) // MERSI-LL
                     {
                         mersill_reader.work(&cadu[14], 882);
+                        if (d_dump_mersi)
+                            mersi_bin.write((char *)&cadu[14], 882);
                     }
                     else if (vcdu.vcid == 5) // XEUVI
                     {
@@ -243,6 +261,9 @@ namespace fengyun3
             }
 
             data_in.close();
+
+            if (d_dump_mersi)
+                mersi_bin.close();
 
             int scid = most_common(fy_scids.begin(), fy_scids.end());
             fy_scids.clear();
