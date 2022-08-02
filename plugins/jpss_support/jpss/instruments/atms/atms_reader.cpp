@@ -42,7 +42,7 @@ namespace jpss
             // Safeguard
             if (scan_pos < 96 && scan_pos >= 0)
                 for (int i = 0; i < 22; i++) // Decode all channels
-                    channels[i][(lines * 96) + scan_pos] = (packet.payload[12 + i * 2] << 8 | packet.payload[13 + i * 2]);
+                    channels[i][(lines * 96) + 95 - scan_pos] = (packet.payload[12 + i * 2] << 8 | packet.payload[13 + i * 2]);
 
             scan_pos++;
         }
