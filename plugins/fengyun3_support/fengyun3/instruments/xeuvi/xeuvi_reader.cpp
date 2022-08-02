@@ -7,7 +7,7 @@ namespace fengyun3
     {
         XEUVIReader::XEUVIReader(std::string directory) : directory(directory)
         {
-            image = image::Image<uint16_t>(1073, 1035, 1);
+            image.init(1073, 1035, 1);
         }
 
         XEUVIReader::~XEUVIReader()
@@ -16,8 +16,8 @@ namespace fengyun3
 
         void XEUVIReader::writeCurrent()
         {
-            image.save_png(std::string(directory + "/XEUVI_" + std::to_string(images_count + 1) + ".png").c_str());
             logger->info("Saving XEUVI image to" + directory + "/XEUVI_" + std::to_string(images_count++ + 1) + ".png");
+            image.save_png(std::string(directory + "/XEUVI_" + std::to_string(images_count + 1) + ".png").c_str());
             image.fill(0);
         }
 

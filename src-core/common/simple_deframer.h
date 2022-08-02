@@ -11,7 +11,7 @@ namespace def
     private:
         const uint64_t d_syncword;
         const int d_syncword_length;
-        const long d_sync_modulo;
+        uint64_t d_sync_mask;
         const int d_frame_length;
         const int d_thresold;
         const bool d_byte_aligned;
@@ -37,11 +37,13 @@ namespace def
         SimpleDeframer(uint64_t syncword, int syncword_bit_length, int frame_length_bits, int thresold, bool byte_aligned = false)
             : d_syncword(syncword),
               d_syncword_length(syncword_bit_length),
-              d_sync_modulo(pow(2, syncword_bit_length)),
               d_frame_length(frame_length_bits),
               d_thresold(thresold),
               d_byte_aligned(byte_aligned)
         {
+            d_sync_mask = 0;
+            for(int i = 0; i < syncword_bit_length; i++)
+                d_sync_mask = d_sync_mask << 1 | 1;
         }
 
         void push_bit(uint8_t bit)
@@ -63,7 +65,7 @@ namespace def
             {
                 for (int byten = 0; byten < size; byten++)
                 {
-                    asm_shifter = (asm_shifter << 8 | data[byten]) % d_sync_modulo;
+                    asm_shifter = (asm_shifter << 8 | data[byten]) & d_sync_mask;
 
                     if (in_frame)
                     {
@@ -107,7 +109,7 @@ namespace def
                     for (int i = 7; i >= 0; i--)
                     {
                         uint8_t bit = (data[byten] >> i) & 1;
-                        asm_shifter = (asm_shifter << 1 | bit) % d_sync_modulo;
+                        asm_shifter = (asm_shifter << 1 | bit) & d_sync_mask;//% d_sync_modulo;
 
                         if (in_frame)
                         {
