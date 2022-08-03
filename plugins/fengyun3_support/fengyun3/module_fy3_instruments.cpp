@@ -103,8 +103,11 @@ namespace fengyun3
             if (d_dump_mersi)
             {
                 std::string mersi_path = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/mersi.bin";
+                logger->debug("Dumping mersi to " + mersi_path);
                 mersi_bin.open(mersi_path, std::ios::binary);
             }
+
+            is_init = true;
 
             while (!data_in.eof())
             {
@@ -807,6 +810,9 @@ namespace fengyun3
 
         void FY3InstrumentsDecoderModule::drawUI(bool window)
         {
+            if(!is_init)
+                return;
+
             ImGui::Begin("FengYun-3 Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##fy3instrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))

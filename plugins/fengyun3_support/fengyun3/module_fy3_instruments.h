@@ -38,6 +38,8 @@ namespace fengyun3
                 DPT,
             };
 
+            bool is_init = false;
+
             fy3_sat_t d_satellite;
             fy3_downlink_t d_downlink;
             bool d_mersi_bowtie;
