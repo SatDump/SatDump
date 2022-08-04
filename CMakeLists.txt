@@ -12,6 +12,7 @@ project(SatDump)
 
 option(BUILD_GUI            "Build the GUI"                                             ON)
 option(BUILD_TESTING        "Build the testing program"                                 OFF)
+option(BUILD_TOOLS          "Build the tools programs"                                  OFF)
 option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
 option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL         "Build with OpenCL GPU Accelerations"                       ON)
@@ -121,9 +122,11 @@ endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
-    add_subdirectory(tools)
 endif()
 
+if(BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
 add_subdirectory(plugins)
 
