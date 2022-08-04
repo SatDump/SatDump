@@ -13,6 +13,8 @@
 #include "logger.h"
 #include <fstream>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include "common/codings/dvb-s2/bbframe_descramble.h"
 #include "common/codings/dvb-s2/bbframe_bch.h"
 #include "common/codings/dvb-s2/bbframe_ldpc.h"
@@ -140,11 +142,11 @@ int main(int argc, char *argv[])
     logger->warn("PL Slots : {:d}", plframe_slots);
 
     // Main BB frame buffer
-    uint8_t bbframe_raw[final_frm_size_bytes];
+    uint8_t *bbframe_raw = new uint8_t[final_frm_size_bytes];
 
     // Interleaving stuff
-    uint8_t frame_bits_buf[final_frm_size];
-    uint8_t frame_bits_buf_interleaved[final_frm_size];
+    uint8_t *frame_bits_buf = new uint8_t[final_frm_size];
+    uint8_t *frame_bits_buf_interleaved = new uint8_t[final_frm_size];
 
     // Modulator stuff
     int pls_code = modulator_modcod << 2 | modulator_shortframes << 1 | modulator_pilots;
