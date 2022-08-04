@@ -2,6 +2,9 @@
 
 void LimeSDRSource::set_gains()
 {
+    if (!is_started)
+        return;
+
     limeDevice->SetGain(false, 0, tia_gain, "TIA");
     limeDevice->SetGain(false, 0, lna_gain, "LNA");
     limeDevice->SetGain(false, 0, pga_gain, "PGA");
@@ -38,8 +41,6 @@ void LimeSDRSource::open()
 {
     is_open = true;
 
-    limeDevice->Init();
-
     // Set available samplerates
     for (int i = 1; i < 81; i++)
         available_samplerates.push_back(i * 1e6);
@@ -59,6 +60,7 @@ void LimeSDRSource::start()
         limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[d_sdr_id]);
         if (limeDevice == NULL)
             throw std::runtime_error("Could not open LimeSDR Device!");
+        limeDevice->Init();
     }
 
     limeDevice->EnableChannel(false, 0, true);
@@ -169,7 +171,8 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
     for (int i = 0; i < cnt; i++)
     {
         lms_device_t *device = nullptr;
-        LMS_Open(&device, devices[i], NULL);
+        if (LMS_Open(&device, devices[i], NULL) == -1)
+            continue;
         const lms_dev_info_t *device_info = LMS_GetDeviceInfo(device);
         std::stringstream ss;
         ss << std::hex << device_info->boardSerialNumber;

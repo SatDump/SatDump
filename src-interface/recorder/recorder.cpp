@@ -152,10 +152,17 @@ namespace satdump
                 {
                     if (ImGui::Button("Start"))
                     {
-                        source_ptr->start();
-                        splitter->input_stream = source_ptr->output_stream;
-                        splitter->start();
-                        is_started = true;
+                        try
+                        {
+                            source_ptr->start();
+                            splitter->input_stream = source_ptr->output_stream;
+                            splitter->start();
+                            is_started = true;
+                        }
+                        catch (std::runtime_error &e)
+                        {
+                            sdr_error = e.what();
+                        }
                     }
                 }
                 else
@@ -167,6 +174,8 @@ namespace satdump
                         is_started = false;
                     }
                 }
+                ImGui::SameLine();
+                ImGui::TextColored(ImColor(255, 0, 0), sdr_error.c_str());
             }
 
             if (ImGui::CollapsingHeader("FFT"))

@@ -30,6 +30,8 @@ protected:
     void set_lna();
     void set_agcs();
 
+    void open_sdr();
+
 public:
     AirspyHFSource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
 

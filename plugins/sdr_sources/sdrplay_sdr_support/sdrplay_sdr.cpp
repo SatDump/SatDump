@@ -23,6 +23,9 @@ void SDRPlaySource::stream_callback(short *real, short *imag, sdrplay_api_Stream
 
 void SDRPlaySource::set_gains()
 {
+    if (!is_started)
+        return;
+
     // Gains
     channel_params->tunerParams.gain.LNAstate = (max_gain - 1) - lna_gain;
     channel_params->tunerParams.gain.gRdB = (59 - 1) - if_gain;
@@ -33,6 +36,9 @@ void SDRPlaySource::set_gains()
 
 void SDRPlaySource::set_bias()
 {
+    if (!is_started)
+        return;
+
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
@@ -67,6 +73,9 @@ void SDRPlaySource::set_duo_tuner()
 
 void SDRPlaySource::set_others()
 {
+    if (!is_started)
+        return;
+
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
     {
         dev_params->devParams->rsp1aParams.rfNotchEnable = fm_notch;
@@ -208,6 +217,7 @@ void SDRPlaySource::open()
         max_gain = 10;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
         max_gain = 28;
+    sdrplay_api_ReleaseDevice(&sdrplay_dev);
 }
 
 void SDRPlaySource::start()
@@ -215,14 +225,10 @@ void SDRPlaySource::start()
     DSPSampleSource::start();
 
     if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
-    {
-        if (is_open)
-            sdrplay_api_ReleaseDevice(&sdrplay_dev);
         set_duo_tuner();
-        if (sdrplay_api_SelectDevice(&sdrplay_dev) != sdrplay_api_Success)
-            logger->critical("Could not re-open RSPDuo device!");
-        logger->info("Re-opened RSPduo device!");
-    }
+    if (sdrplay_api_SelectDevice(&sdrplay_dev) != sdrplay_api_Success)
+        logger->critical("Could not open SDRPlay device!");
+    logger->info("Opened SDRPlay device!");
 
     // Prepare device
     sdrplay_api_UnlockDeviceApi();
@@ -296,19 +302,22 @@ void SDRPlaySource::start()
 
 void SDRPlaySource::stop()
 {
-    sdrplay_api_Uninit(sdrplay_dev.dev);
+    if (is_started)
+    {
+        sdrplay_api_Uninit(sdrplay_dev.dev);
+        sdrplay_api_ReleaseDevice(&sdrplay_dev);
+    }
     is_started = false;
 }
 
 void SDRPlaySource::close()
 {
-    if (is_open)
-        sdrplay_api_ReleaseDevice(&sdrplay_dev);
+    is_open = false;
 }
 
 void SDRPlaySource::set_frequency(uint64_t frequency)
 {
-    if (is_open && is_started)
+    if (is_started)
     {
         channel_params->tunerParams.rfFreq.rfHz = frequency;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);

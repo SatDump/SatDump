@@ -10,18 +10,27 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 
 void RtlSdrSource::set_gains()
 {
+    if (!is_started)
+        return;
+
     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain);
     logger->debug("Set RTL-SDR Gain to {:d}", gain);
 }
 
 void RtlSdrSource::set_bias()
 {
+    if (!is_started)
+        return;
+
     rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled);
     logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
 }
 
 void RtlSdrSource::set_agcs()
 {
+    if (!is_started)
+        return;
+
     rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
     logger->debug("Set RTL-SDR AGC to {:d}", (int)!lna_agc_enabled);
 }
@@ -34,7 +43,7 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     lna_agc_enabled = getValueOrDefault(d_settings["agc"], lna_agc_enabled);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
 
-    if (is_open)
+    if (is_started)
     {
         set_gains();
         set_bias();
@@ -53,9 +62,6 @@ nlohmann::json RtlSdrSource::get_settings(nlohmann::json)
 
 void RtlSdrSource::open()
 {
-    if (!is_open)
-        if (rtlsdr_open(&rtlsdr_dev_obj, d_sdr_id) != 0)
-            throw std::runtime_error("Could not open RTL-SDR device!");
     is_open = true;
 
     // Set available samplerate
@@ -81,6 +87,8 @@ void RtlSdrSource::open()
 void RtlSdrSource::start()
 {
     DSPSampleSource::start();
+    if (rtlsdr_open(&rtlsdr_dev_obj, d_sdr_id) != 0)
+        throw std::runtime_error("Could not open RTL-SDR device!");
 
     logger->debug("Set RTL-SDR samplerate to " + std::to_string(current_samplerate));
     rtlsdr_set_sample_rate(rtlsdr_dev_obj, current_samplerate);
@@ -100,20 +108,22 @@ void RtlSdrSource::start()
 void RtlSdrSource::stop()
 {
     needs_to_run = false;
-    rtlsdr_cancel_async(rtlsdr_dev_obj);
+    if (is_started)
+    {
+        rtlsdr_cancel_async(rtlsdr_dev_obj);
+        rtlsdr_close(rtlsdr_dev_obj);
+    }
     is_started = false;
 }
 
 void RtlSdrSource::close()
 {
-    if (is_open)
-        rtlsdr_close(rtlsdr_dev_obj);
     is_open = false;
 }
 
 void RtlSdrSource::set_frequency(uint64_t frequency)
 {
-    if (is_open)
+    if (is_started)
     {
         rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency);
         logger->debug("Set RTL-SDR frequency to {:d}", frequency);

@@ -21,21 +21,44 @@ int AirspyHFSource::_rx_callback(airspyhf_transfer_t *t)
 
 void AirspyHFSource::set_atte()
 {
+    if (!is_started)
+        return;
+
     airspyhf_set_hf_att(airspyhf_dev_obj, attenuation / 6.0f);
     logger->debug("Set AirspyHF HF Attentuation to {:d}", attenuation);
 }
 
 void AirspyHFSource::set_lna()
 {
+    if (!is_started)
+        return;
+
     airspyhf_set_hf_lna(airspyhf_dev_obj, hf_lna_enabled);
     logger->debug("Set AirspyHF HF LNA to {:d}", (int)hf_lna_enabled);
 }
 
 void AirspyHFSource::set_agcs()
 {
+    if (!is_started)
+        return;
+
     airspyhf_set_hf_agc(airspyhf_dev_obj, agc_mode != 0);
     airspyhf_set_hf_agc_threshold(airspyhf_dev_obj, agc_mode - 1);
     logger->debug("Set AirspyHF HF AGC Mode to {:d}", (int)agc_mode);
+}
+
+void AirspyHFSource::open_sdr()
+{
+#ifndef __ANDROID__
+    if (airspyhf_open_sn(&airspyhf_dev_obj, d_sdr_id) != AIRSPYHF_SUCCESS)
+        throw std::runtime_error("Could not open AirspyHF device!");
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
+    if (airspyhf_open2(&airspyhf_dev_obj, fd, path.c_str()) != AIRSPYHF_SUCCESS)
+        throw std::runtime_error("Could not open AirspyHF device!");
+#endif
 }
 
 void AirspyHFSource::set_settings(nlohmann::json settings)
@@ -46,7 +69,7 @@ void AirspyHFSource::set_settings(nlohmann::json settings)
     attenuation = getValueOrDefault(d_settings["attenuation"], attenuation);
     hf_lna_enabled = getValueOrDefault(d_settings["hf_lna"], hf_lna_enabled);
 
-    if (is_open)
+    if (is_started)
     {
         set_atte();
         set_lna();
@@ -65,17 +88,7 @@ nlohmann::json AirspyHFSource::get_settings(nlohmann::json)
 
 void AirspyHFSource::open()
 {
-#ifndef __ANDROID__
-    if (!is_open)
-        if (airspyhf_open_sn(&airspyhf_dev_obj, d_sdr_id) != AIRSPYHF_SUCCESS)
-            throw std::runtime_error("Could not open AirspyHF device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
-    if (airspyhf_open2(&airspyhf_dev_obj, fd, path.c_str()) != AIRSPYHF_SUCCESS)
-        throw std::runtime_error("Could not open AirspyHF device!");
-#endif
+    open_sdr();
     is_open = true;
 
     // Get available samplerates
@@ -94,6 +107,7 @@ void AirspyHFSource::open()
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
         samplerate_option_str += std::to_string(samplerate) + '\0';
+    airspyhf_close(airspyhf_dev_obj);
 }
 
 void AirspyHFSource::start()
@@ -116,19 +130,22 @@ void AirspyHFSource::start()
 
 void AirspyHFSource::stop()
 {
-    airspyhf_stop(airspyhf_dev_obj);
+    if (is_started)
+    {
+        airspyhf_stop(airspyhf_dev_obj);
+        airspyhf_close(airspyhf_dev_obj);
+    }
     is_started = false;
 }
 
 void AirspyHFSource::close()
 {
-    if (is_open)
-        airspyhf_close(airspyhf_dev_obj);
+    is_open = false;
 }
 
 void AirspyHFSource::set_frequency(uint64_t frequency)
 {
-    if (is_open)
+    if (is_started)
     {
         airspyhf_set_freq(airspyhf_dev_obj, frequency);
         logger->debug("Set AirspyHF frequency to {:d}", frequency);

@@ -34,6 +34,8 @@ protected:
     void set_bias();
     void set_agcs();
 
+    void open_sdr();
+
 public:
     AirspySource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
 

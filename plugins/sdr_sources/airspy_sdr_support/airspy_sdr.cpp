@@ -21,6 +21,9 @@ int AirspySource::_rx_callback(airspy_transfer *t)
 
 void AirspySource::set_gains()
 {
+    if (!is_started)
+        return;
+
     if (gain_type == 0)
     {
         airspy_set_sensitivity_gain(airspy_dev_obj, general_gain);
@@ -42,16 +45,36 @@ void AirspySource::set_gains()
 
 void AirspySource::set_bias()
 {
+    if (!is_started)
+        return;
+
     airspy_set_rf_bias(airspy_dev_obj, bias_enabled);
     logger->debug("Set Airspy bias to {:d}", (int)bias_enabled);
 }
 
 void AirspySource::set_agcs()
 {
+    if (!is_started)
+        return;
+
     airspy_set_lna_agc(airspy_dev_obj, lna_agc_enabled);
     airspy_set_mixer_agc(airspy_dev_obj, mixer_agc_enabled);
     logger->debug("Set Airspy LNA AGC to {:d}", (int)lna_agc_enabled);
     logger->debug("Set Airspy Mixer AGC to {:d}", (int)mixer_agc_enabled);
+}
+
+void AirspySource::open_sdr()
+{
+#ifndef __ANDROID__
+    if (airspy_open_sn(&airspy_dev_obj, d_sdr_id) != AIRSPY_SUCCESS)
+        throw std::runtime_error("Could not open Airspy device!");
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, AIRSPY_USB_VID_PID, path);
+    if (airspy_open2(&airspy_dev_obj, fd, path.c_str()) != AIRSPY_SUCCESS)
+        throw std::runtime_error("Could not open Airspy device!");
+#endif
 }
 
 void AirspySource::set_settings(nlohmann::json settings)
@@ -68,7 +91,7 @@ void AirspySource::set_settings(nlohmann::json settings)
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
     mixer_agc_enabled = getValueOrDefault(d_settings["mixer_agc"], mixer_agc_enabled);
 
-    if (is_open)
+    if (is_started)
     {
         set_gains();
         set_bias();
@@ -93,17 +116,7 @@ nlohmann::json AirspySource::get_settings(nlohmann::json)
 
 void AirspySource::open()
 {
-#ifndef __ANDROID__
-    if (!is_open)
-        if (airspy_open_sn(&airspy_dev_obj, d_sdr_id) != AIRSPY_SUCCESS)
-            throw std::runtime_error("Could not open Airspy device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, AIRSPY_USB_VID_PID, path);
-    if (airspy_open2(&airspy_dev_obj, fd, path.c_str()) != AIRSPY_SUCCESS)
-        throw std::runtime_error("Could not open Airspy device!");
-#endif
+    open_sdr();
     is_open = true;
 
     // Get available samplerates
@@ -128,11 +141,14 @@ void AirspySource::open()
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
         samplerate_option_str += std::to_string(samplerate) + '\0';
+    airspy_close(airspy_dev_obj);
 }
 
 void AirspySource::start()
 {
     DSPSampleSource::start();
+    open_sdr();
+
     airspy_set_sample_type(airspy_dev_obj, AIRSPY_SAMPLE_FLOAT32_IQ);
 
     logger->debug("Set Airspy samplerate to " + std::to_string(current_samplerate));
@@ -151,19 +167,21 @@ void AirspySource::start()
 
 void AirspySource::stop()
 {
-    airspy_stop_rx(airspy_dev_obj);
+    if (is_started)
+    {
+        airspy_stop_rx(airspy_dev_obj);
+        airspy_close(airspy_dev_obj);
+    }
     is_started = false;
 }
 
 void AirspySource::close()
 {
-    if (is_open)
-        airspy_close(airspy_dev_obj);
 }
 
 void AirspySource::set_frequency(uint64_t frequency)
 {
-    if (is_open)
+    if (is_started)
     {
         airspy_set_freq(airspy_dev_obj, frequency);
         logger->debug("Set Airspy frequency to {:d}", frequency);
