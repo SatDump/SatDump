@@ -266,10 +266,10 @@ int main(int argc, char *argv[])
     image_3.load_png(argv[3]);
     image_rgb.init(11136, 11136, 3);
 
-    // logger->debug("Denoise...");
-    // image_1.median_blur();
-    // image_2.median_blur();
-    // image_3.median_blur();
+    logger->debug("Denoise...");
+    image_1.median_blur();
+    image_2.median_blur();
+    image_3.median_blur();
 
     logger->debug("Correct 1...");
     image::Image<uint8_t> img1 = correct_msugs_channel(ch1_gcps1, ch1_gcps2, image_1);
