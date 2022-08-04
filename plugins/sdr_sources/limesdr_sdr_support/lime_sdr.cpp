@@ -19,7 +19,7 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
     pga_gain = getValueOrDefault(d_settings["pga_gain"], pga_gain);
 
-    if (is_open)
+    if (is_started)
     {
         set_gains();
     }
@@ -36,8 +36,6 @@ nlohmann::json LimeSDRSource::get_settings(nlohmann::json)
 
 void LimeSDRSource::open()
 {
-    if (!is_open)
-        limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[d_sdr_id]);
     is_open = true;
 
     limeDevice->Init();
@@ -55,6 +53,13 @@ void LimeSDRSource::open()
 void LimeSDRSource::start()
 {
     DSPSampleSource::start();
+
+    if (!is_started)
+    {
+        limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[d_sdr_id]);
+        if (limeDevice == NULL)
+            throw std::runtime_error("Could not open LimeSDR Device!");
+    }
 
     limeDevice->EnableChannel(false, 0, true);
     limeDevice->SetPath(false, 0, 3);
@@ -93,22 +98,20 @@ void LimeSDRSource::stop()
     {
         limeStream->Stop();
         limeDevice->DestroyStream(limeStream);
+        limeDevice->Reset();
+        lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
     }
     is_started = false;
 }
 
 void LimeSDRSource::close()
 {
-    if (is_open)
-    {
-        limeDevice->Reset();
-        lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
-    }
+    is_open = false;
 }
 
 void LimeSDRSource::set_frequency(uint64_t frequency)
 {
-    if (is_open)
+    if (is_started)
     {
         limeDevice->SetFrequency(false, 0, frequency);
         // limeDevice->SetClockFreq(LMS_CLOCK_SXR, frequency, 0);
