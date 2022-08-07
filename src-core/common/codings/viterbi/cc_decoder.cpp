@@ -328,15 +328,15 @@ namespace fec
             /* ADDSHIFT and SUBSHIFT make sure that the thing returned is a byte. */
             unsigned char *d = d_vp.decisions.data();
             /* Make room beyond the end of the encoder register so we can
-     * accumulate a full byte of decoded data
-     */
+             * accumulate a full byte of decoded data
+             */
 
             endstate = (endstate % d_numstates) << d_ADDSHIFT;
 
             /* The store into data[] only needs to be done every 8 bits.
-     * But this avoids a conditional branch, and the writes will
-     * combine in the cache anyway
-     */
+             * But this avoids a conditional branch, and the writes will
+             * combine in the cache anyway
+             */
 
             d += tailsize * d_decision_t_size; /* Look past tail */
             int retval = 0;
@@ -375,10 +375,10 @@ namespace fec
             bool ret = true;
             if (frame_size > d_max_frame_size)
             {
-                //GR_LOG_INFO(
-                //    d_logger,
-                //    boost::format("cc_decoder: tried to set frame to %1%; max possible is %2%") %
-                //        frame_size % d_max_frame_size);
+                // GR_LOG_INFO(
+                //     d_logger,
+                //     boost::format("cc_decoder: tried to set frame to %1%; max possible is %2%") %
+                //         frame_size % d_max_frame_size);
                 frame_size = d_max_frame_size;
                 ret = false;
             }

@@ -84,6 +84,7 @@ namespace image
         // PNG Interface
         void save_png(std::string file, bool fast = true); // Save to a PNG file. Defaults to fast-saving with no filters
         void load_png(std::string file);                   // Load a PNG file
+        void load_png(uint8_t *buffer, int size);          // Load a PNG from memory
 
         // JPEG Interface
         void load_jpeg(std::string file); // Load a JPEG file
