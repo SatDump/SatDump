@@ -110,6 +110,10 @@ namespace image
             d_channels = 3;
         else if (color_type == PNG_COLOR_TYPE_RGBA)
             d_channels = 4;
+        else if (color_type == PNG_COLOR_TYPE_PALETTE){
+            png_set_palette_to_rgb(png);
+            d_channels = 3;
+        }
 
         init(d_width, d_height, d_channels);
 
@@ -126,7 +130,7 @@ namespace image
 
                 for (size_t row = 0; row < d_height; row++)
                 {
-                    png_read_row(png, NULL, image_row);
+                    png_read_row(png, image_row, NULL);
                     for (int c = 0; c < d_channels; c++)
                         for (size_t i = 0; i < d_width; i++)
                             channel(c)[row * d_width + i] = image_row[i * d_channels + c] << shift;

@@ -5,6 +5,7 @@
 #include "app.h"
 #include "viewer/viewer.h"
 #include "recorder/recorder.h"
+#include "map/map.h"
 
 namespace satdump
 {

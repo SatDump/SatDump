@@ -79,6 +79,8 @@ int perform_http_request(std::string url_str, std::string &result)
         ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
         return 1;
 
+    nng_http_req_add_header(req, "User-Agent", "Satdump/development_v1.0.0");
+
     // Start connection process...
     nng_http_client_connect(client, aio);
 

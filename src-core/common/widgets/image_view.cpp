@@ -25,6 +25,19 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
     image_mtx.unlock();
 }
 
+void ImageViewWidget::update(image::Image<uint8_t> image)
+{
+    image_mtx.lock();
+    img_width = image.width();
+    img_height = image.height();
+
+    texture_buffer.resize(img_width * img_height);
+    uchar_to_rgba(image.data(), texture_buffer.data(), img_width * img_height, image.channels());
+    has_to_update = true;
+
+    image_mtx.unlock();
+}
+
 void ImageViewWidget::draw(ImVec2 win_size)
 {
     image_mtx.lock();

@@ -10,6 +10,12 @@
 #include "core/style.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
+#include "common/widgets/image_view.h"
+
+float lat = 0, lon = 0;
+int zoom = 0;
+image::Image<uint8_t> img(256, 256, 3);
+ImageViewWidget ivw;
 
 namespace satdump
 {
@@ -162,6 +168,28 @@ namespace satdump
                 if (ImGui::BeginTabItem("Credits"))
                 {
                     credits_md.render();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Map"))
+                {
+                    tileMap tm("");
+                    ImGui::SetNextItemWidth(120);
+                    ImGui::InputFloat("Latitude", &lat);
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(120);
+                    ImGui::InputFloat("Longitude", &lon);
+                    ImGui::SetNextItemWidth(250);
+                    ImGui::SliderInt("Zoom", &zoom, 0, 19);
+                    if (ImGui::Button("Get tile from server"))
+                    {
+                        std::pair<int, int> tile = tm.coorToTile(lat, lon, zoom);
+                        //ImGui::Text((std::to_string(tile.first) + " " + std::to_string(tile.second)).c_str());
+                        img.load_png("tiles/" + std::to_string(zoom) + "/" + std::to_string(tile.first) + "/" + std::to_string(tile.second) + ".png");
+                        //img.load_png("icon.png");
+                        img.save_png("test.png");
+                    }
+                    ivw.update(img);
+                    ivw.draw(ImVec2(256, 256));
                     ImGui::EndTabItem();
                 }
             }
