@@ -175,7 +175,7 @@ namespace satdump
                     }
                 }
                 ImGui::SameLine();
-                ImGui::TextColored(ImColor(255, 0, 0), sdr_error.c_str());
+                ImGui::TextColored(ImColor(255, 0, 0), "%s", sdr_error.c_str());
             }
 
             if (ImGui::CollapsingHeader("FFT"))

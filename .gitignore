@@ -6,5 +6,6 @@ android/.gradle
 android/SatDump/build
 android/SatDump/assets
 android/.idea
+android/CMakeFiles
 **/.DS_Store
 resources/gk2a/EncryptionKeyMessage.bin
