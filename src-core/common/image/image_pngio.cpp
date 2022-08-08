@@ -208,6 +208,10 @@ namespace image
             d_channels = 3;
         else if (color_type == PNG_COLOR_TYPE_RGBA)
             d_channels = 4;
+        else if (color_type == PNG_COLOR_TYPE_PALETTE){
+            png_set_palette_to_rgb(png);
+            d_channels = 3;
+        }
 
         init(d_width, d_height, d_channels);
 

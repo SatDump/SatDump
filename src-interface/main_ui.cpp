@@ -172,7 +172,7 @@ namespace satdump
                 }
                 if (ImGui::BeginTabItem("Map"))
                 {
-                    tileMap tm("");
+                    tileMap tm;
                     ImGui::SetNextItemWidth(120);
                     ImGui::InputFloat("Latitude", &lat);
                     ImGui::SameLine();
