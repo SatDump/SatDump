@@ -119,9 +119,13 @@ namespace image
 
         // Read row per row, with lower memory usage that reading the whole image!
         {
-            png_byte *const image_row = new png_byte[(bit_depth / 8) * d_channels * d_width];
+            int bd = 1;
+            if (bit_depth == 16)
+                bd = 2;
 
-            if (bit_depth == 8)
+            png_byte *const image_row = new png_byte[bd * d_channels * d_width];
+
+            if (bit_depth == 8 || color_type == PNG_COLOR_TYPE_PALETTE)
             {
                 // if the image is 8-bits and not 16 while we are 16, shift it up to 16
                 int shift = 0;
@@ -217,9 +221,13 @@ namespace image
 
         // Read row per row, with lower memory usage that reading the whole image!
         {
-            png_byte *const image_row = new png_byte[(bit_depth / 8) * d_channels * d_width];
+            int bd = 1;
+            if (bit_depth == 16)
+                bd = 2;
 
-            if (bit_depth == 8)
+            png_byte *const image_row = new png_byte[bd * d_channels * d_width];
+
+            if (bit_depth == 8 || color_type == PNG_COLOR_TYPE_PALETTE)
             {
                 // if the image is 8-bits and not 16 while we are 16, shift it up to 16
                 int shift = 0;
