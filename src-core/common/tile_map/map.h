@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../app.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "common/image/image.h"
+#include "../image/image.h"
 
 #define TILE_SIZE 256
 #define TILE_DL_LIMIT 250

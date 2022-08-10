@@ -5,7 +5,7 @@
 #include "app.h"
 #include "viewer/viewer.h"
 #include "recorder/recorder.h"
-#include "map/map.h"
+#include "common/tile_map/map.h"
 
 namespace satdump
 {
