@@ -165,7 +165,7 @@ mkdir build && cd build
 # If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
 # If you want to build with ZIQ compression, you can add -DBUILD_ZIQ=1
 cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. # Linux
 make -j4
 ln -s ../pipelines . # Symlink pipelines so it can run
 ln -s ../resources . # Symlink pipelines so it can run
