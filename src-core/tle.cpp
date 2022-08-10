@@ -142,7 +142,7 @@ namespace tle
 
         if (nng_http_res_get_status(res) != NNG_HTTP_STATUS_OK)
         {
-            logger->error("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
+            logger->error("HTTP Server Responded: {} {}", nng_http_res_get_status(res), nng_http_res_get_reason(res));
             return 1;
         }
 
