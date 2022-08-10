@@ -4,7 +4,7 @@
 #include "common/utils.h"
 #include <filesystem>
 #include <chrono>
-#include <iostream>
+#include "logger.h"
 
 tileMap::tileMap(std::string url, std::string path, int expiry)
 {
@@ -31,6 +31,11 @@ std::pair<float, float> tileMap::coorToTileF(std::pair<float, float> coor, int z
     return {x, y};
 }
 
+int widthToZoom(float deg, int width)
+{
+    return round(log2(360 * width / (deg * TILE_SIZE)));
+}
+
 mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
 {
     image::Image<uint8_t> img;
@@ -44,15 +49,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
     }
     std::string filename = tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second) + ".png";
     bool old = false;
-    if (std::filesystem::exists(filename))
-    {
-        std::filesystem::file_time_type ftime = std::filesystem::last_write_time(filename);
-        int64_t t1 = std::chrono::duration_cast<std::chrono::hours>(ftime.time_since_epoch()).count();
-        int64_t t2 = std::chrono::duration_cast<std::chrono::hours>(std::chrono::system_clock::now().time_since_epoch()).count();
-        old = (t2 - t1) / 24 > expiryTime;
-    }
-
-    if (!std::filesystem::exists(filename) /*|| old*/)
+    if (!std::filesystem::exists(filename))
     {
         std::string res;
         std::string url = tileServerURL + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second) + ".png";
@@ -89,5 +86,30 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, int zoo
     for (int x = 0; x < xtiles; x++)
         for (int y = 0; y < ytiles; y++)
             img.draw_image(0, downloadTile({ft.first + x, ft.second + y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
+    return img;
+}
+
+image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pair<float, float> coor1, int zoom)
+{
+    std::pair<float, float> cf, cf1;
+    int xtiles, ytiles;
+    do
+    {
+        cf = coorToTileF(coor, zoom);
+        cf1 = coorToTileF(coor1, zoom);
+        xtiles = ceil(abs(cf.first - cf1.first)) + 1;
+        ytiles = ceil(abs(cf.second - cf1.second)) + 1;
+        if (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13){
+            logger->warn("Requested area is over 250 tiles with zoom > 13, lowering zoom level.");
+            zoom--;
+        }
+    } while (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13);
+
+    int offX = TILE_SIZE * (cf.first - (int)cf.first);
+    int offY = TILE_SIZE * (cf.second - (int)cf.second);
+    image::Image<uint8_t> img(abs(cf.first - cf1.first) * TILE_SIZE, abs(cf.second - cf1.second) * TILE_SIZE, 3);
+    for (int x = 0; x < xtiles; x++)
+        for (int y = 0; y < ytiles; y++)
+            img.draw_image(0, downloadTile({std::min(cf.first, cf1.first) + x, std::min(cf.second, cf1.second) + y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
     return img;
 }

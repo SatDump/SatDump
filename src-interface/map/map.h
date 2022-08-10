@@ -6,6 +6,7 @@
 #include "common/image/image.h"
 
 #define TILE_SIZE 256
+#define TILE_DL_LIMIT 250
 
 struct mapTile{
     int x, y;
@@ -25,4 +26,5 @@ struct tileMap{
     mapTile downloadTile(std::pair<int, int> t1, int zoom);
     std::pair<int, int> coorToTile(std::pair<float, float> coor, int zoom);
     std::pair<float, float> coorToTileF(std::pair<float, float> coor, int zoom);
+    int widthToZoom(float deg, int width);
 };

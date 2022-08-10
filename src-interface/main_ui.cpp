@@ -188,7 +188,7 @@ namespace satdump
                     if (ImGui::Button("Get tile from server"))
                     {
                         //mapTile tl(tm.downloadTile(tm.coorToTile({lat, lon}, zoom), zoom));
-                        img = tm.getMapImage({lat, lon}, zoom, {800, 400});
+                        img = tm.getMapImage({lat, lon}, {lat1, lon1}, zoom);
                     }
                     ivw.update(img);
                     ivw.draw(ImVec2(800, 400));
