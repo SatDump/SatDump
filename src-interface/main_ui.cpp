@@ -10,12 +10,15 @@
 #include "core/style.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
-#include "common/widgets/image_view.h"
 
+//#define ENABLE_DEBUG_MAP
+#ifdef ENABLE_DEBUG_MAP
+#include "common/widgets/image_view.h"
 float lat = 0, lon = 0, lat1 = 0, lon1 = 0;
 int zoom = 0;
 image::Image<uint8_t> img(800, 400, 3);
 ImageViewWidget ivw;
+#endif
 
 namespace satdump
 {
@@ -170,6 +173,7 @@ namespace satdump
                     credits_md.render();
                     ImGui::EndTabItem();
                 }
+#ifdef ENABLE_DEBUG_MAP
                 if (ImGui::BeginTabItem("Map"))
                 {
                     tileMap tm;
@@ -187,13 +191,14 @@ namespace satdump
                     ImGui::SliderInt("Zoom", &zoom, 0, 19);
                     if (ImGui::Button("Get tile from server"))
                     {
-                        //mapTile tl(tm.downloadTile(tm.coorToTile({lat, lon}, zoom), zoom));
+                        // mapTile tl(tm.downloadTile(tm.coorToTile({lat, lon}, zoom), zoom));
                         img = tm.getMapImage({lat, lon}, {lat1, lon1}, zoom);
+                        ivw.update(img);
                     }
-                    ivw.update(img);
                     ivw.draw(ImVec2(800, 400));
                     ImGui::EndTabItem();
                 }
+#endif
             }
             ImGui::EndTabBar();
             ImGui::End();
