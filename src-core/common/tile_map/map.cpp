@@ -15,6 +15,7 @@ tileMap::tileMap(std::string url, std::string path, int expiry)
 
 std::pair<int, int> tileMap::coorToTile(std::pair<float, float> coor, int zoom)
 {
+    logger->debug("Calculating tile coordinates!");
     int x, y;
     int n = std::pow(2, zoom);
     x = n * ((coor.second + 180) / 360);
@@ -24,6 +25,7 @@ std::pair<int, int> tileMap::coorToTile(std::pair<float, float> coor, int zoom)
 
 std::pair<float, float> tileMap::coorToTileF(std::pair<float, float> coor, int zoom)
 {
+    logger->debug("Calculating tile coordinates (float)!");
     float x, y;
     float n = std::pow(2, zoom);
     x = n * ((coor.second + 180.0) / 360.0);
@@ -33,24 +35,37 @@ std::pair<float, float> tileMap::coorToTileF(std::pair<float, float> coor, int z
 
 int widthToZoom(float deg, int width)
 {
+    logger->debug("Calculating possible width!");
     return round(log2(360 * width / (deg * TILE_SIZE)));
 }
 
 mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
 {
+    logger->debug("Downloading tile (" + std::to_string(t1.first) + ", " + std::to_string(t1.second) + ")");
     image::Image<uint8_t> img;
     if (t1.first >= pow(2, zoom))
         t1.first -= ((t1.first / (int)pow(2, zoom)) * pow(2, zoom));
     if (t1.second >= pow(2, zoom))
     {
+        logger->debug("Invalid tile, returning blank");
         img = image::Image<uint8_t>(TILE_SIZE, TILE_SIZE, 3);
         img.fill(120);
         return {t1.first, t1.second, img};
     }
     std::string filename = tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second) + ".png";
     bool old = false;
-    if (!std::filesystem::exists(filename))
+
+    if (std::filesystem::exists(filename))
     {
+        std::filesystem::file_time_type file = std::filesystem::last_write_time(filename);
+        std::filesystem::file_time_type system = std::filesystem::file_time_type::clock::now();
+        std::chrono::duration<int64_t, std::nano> dur = system.time_since_epoch() - file.time_since_epoch();
+        old = dur.count()/86400000000000 > expiryTime;
+    }
+
+    if (!std::filesystem::exists(filename) || old)
+    {
+        logger->debug("Tile not found or is outdated, downloading from: " + tileServerURL);
         std::string res;
         std::string url = tileServerURL + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second) + ".png";
         perform_http_request(url, res);
@@ -59,9 +74,11 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
         std::ofstream of(filename);
         of << res;
         of.close();
+        logger->debug("Saving tile to: " + filename);
     }
     else
     {
+        logger->debug("Tile found, loading from disk");
         img.load_png(filename);
     }
     return mapTile(t1.first, t1.second, img);
@@ -76,6 +93,7 @@ mapTile::mapTile(int x1, int y1, image::Image<uint8_t> tileImage)
 
 image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, int zoom, std::pair<int, int> dim)
 {
+    logger->debug("Creating map image");
     image::Image<uint8_t> img(dim.first, dim.second, 3);
     int xtiles = ceill(dim.first / (float)TILE_SIZE) + 1;
     int ytiles = ceill(dim.second / (float)TILE_SIZE) + 1;
@@ -91,6 +109,7 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, int zoo
 
 image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pair<float, float> coor1, int zoom)
 {
+    logger->debug("Creating map image");
     std::pair<float, float> cf, cf1;
     int xtiles, ytiles;
     do
