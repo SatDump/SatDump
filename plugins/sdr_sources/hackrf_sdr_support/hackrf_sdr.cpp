@@ -101,7 +101,7 @@ void HackRFSource::start()
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
-    if (hackrf_open2(&hackrf_dev_obj, fd, path.c_str()) != 0)
+    if ( hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
         throw std::runtime_error("Could not open HackRF device!");
 #endif
 

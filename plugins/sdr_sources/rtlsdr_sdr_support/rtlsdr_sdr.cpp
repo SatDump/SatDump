@@ -73,10 +73,8 @@ void RtlSdrSource::set_bias()
 {
     if (!is_started)
         return;
-#ifndef __ANDROID__
     rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled);
     logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
-#endif
 }
 
 void RtlSdrSource::set_agcs()
@@ -147,12 +145,14 @@ void RtlSdrSource::start()
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path);
-    if (rtlsdr_open2(&rtlsdr_dev_obj, fd, path.c_str()) != 0)
+    if (rtlsdr_open_fd(&rtlsdr_dev_obj, fd) != 0)
         throw std::runtime_error("Could not open RTL-SDR device!");
 #endif
 
     logger->debug("Set RTL-SDR samplerate to " + std::to_string(current_samplerate));
     rtlsdr_set_sample_rate(rtlsdr_dev_obj, current_samplerate);
+
+    is_started = true;
 
     set_frequency(d_frequency);
 
@@ -162,8 +162,6 @@ void RtlSdrSource::start()
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
     needs_to_run = true;
-
-    is_started = true;
 }
 
 void RtlSdrSource::stop()

@@ -56,7 +56,7 @@ void AirspyHFSource::open_sdr()
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
-    if (airspyhf_open2(&airspyhf_dev_obj, fd, path.c_str()) != AIRSPYHF_SUCCESS)
+    if (airspyhf_open_fd(&airspyhf_dev_obj, fd) != AIRSPYHF_SUCCESS)
         throw std::runtime_error("Could not open AirspyHF device!");
 #endif
 }
@@ -113,9 +113,12 @@ void AirspyHFSource::open()
 void AirspyHFSource::start()
 {
     DSPSampleSource::start();
+    open_sdr();
 
     logger->debug("Set AirspyHF samplerate to " + std::to_string(current_samplerate));
     airspyhf_set_samplerate(airspyhf_dev_obj, current_samplerate);
+
+    is_started = true;
 
     set_frequency(d_frequency);
 
@@ -124,8 +127,6 @@ void AirspyHFSource::start()
     set_agcs();
 
     airspyhf_start(airspyhf_dev_obj, &_rx_callback, &output_stream);
-
-    is_started = true;
 }
 
 void AirspyHFSource::stop()

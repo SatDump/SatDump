@@ -87,8 +87,6 @@ target_link_libraries(hackrf PRIVATE usb)
 
 ###########################################################################################################################################
 
-
-
 add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 
 add_library(android_imgui SHARED

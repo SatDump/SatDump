@@ -2,7 +2,7 @@
 
 #include "common/dsp_sample_source/dsp_sample_source.h"
 #ifdef __ANDROID__
-#include "rtl-sdr-android.h"
+#include "rtl-sdr.h"
 #else
 #include <rtl-sdr.h>
 #endif
