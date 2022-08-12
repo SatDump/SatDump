@@ -17,14 +17,19 @@ jobs:
       run: sudo apt update 
     
     - name: Install packages
-      run: sudo apt install cmake ninja-build openjdk-8-jdk wget unzip
+      run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle
 
+    # Setup Android SDK, and auto-accept licenses
     - name: Install Android SDK
-      run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
+      run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
+
+    # Call SDKManager to install the Android NDK
+    - name: Install Android NDK
+      run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;24.0.8215888" --channel=3
 
     - name: Build
       shell: bash
-      run: cd $GITHUB_WORKSPACE/android && git submodule update --init && chmod +x gradlew && ./gradlew assembleDebug
+      run: cd $GITHUB_WORKSPACE/android && gradle build
 
     - name: Upload APK
       uses: actions/upload-artifact@v2
