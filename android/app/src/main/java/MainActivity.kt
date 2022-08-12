@@ -30,7 +30,8 @@ import android.hardware.usb.*;
 import android.app.PendingIntent;
 import android.content.IntentFilter;
 
-
+import android.view.View;
+import android.view.Window;
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -41,39 +42,6 @@ fun Intent?.getFilePath(context: Context): String {
 fun Intent?.getFilePathDir(context: Context): String {
     return this?.data?.let { data -> RealPathUtil.getRealPath(context, DocumentsContract.buildDocumentUriUsingTree(data, DocumentsContract.getTreeDocumentId(data))) ?: "" } ?: ""
 }
-
-
-
-
-private const val ACTION_USB_PERMISSION = "org.sdrpp.sdrpp.USB_PERMISSION";
-
-private val usbReceiver = object : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        if (ACTION_USB_PERMISSION == intent.action) {
-            synchronized(this) {
-                var _this = context as MainActivity;
-                _this.SDR_device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
-                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                    _this.SDR_conn = _this.usbManager!!.openDevice(_this.SDR_device);
-                    
-                    // Save SDR info
-                    _this.SDR_VID = _this.SDR_device!!.getVendorId();
-                    _this.SDR_PID = _this.SDR_device!!.getProductId()
-                    _this.SDR_FD = _this.SDR_conn!!.getFileDescriptor();
-                    _this.SDR_PATH = _this.SDR_device!!.getDeviceName();
-                }
-                
-                // Whatever the hell this does
-                context.unregisterReceiver(this);
-
-                // Hide again the system bars
-                //_this.hideSystemBars();
-            }
-        }
-    }
-}
-
-
 
 class MainActivity : NativeActivity() {
     private val TAG : String = "SatDump";
@@ -89,6 +57,32 @@ class MainActivity : NativeActivity() {
     fun checkAndAsk(permission: String) {
         if (PermissionChecker.checkSelfPermission(this, permission) != PermissionChecker.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), 1);
+        }
+    }
+
+    // Adapted from Ryzerth's implementation, a lot cleaner than my old Java crap!
+    private var ACTION_USB_PERMISSION = "org.altillimity.satdump.USB_PERMISSION";
+
+    private var usbReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (ACTION_USB_PERMISSION == intent.action) {
+                synchronized(this) {
+                    var _this = context as MainActivity;
+                    _this.SDR_device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        _this.SDR_conn = _this.usbManager!!.openDevice(_this.SDR_device);
+                        
+                        _this.SDR_VID = _this.SDR_device!!.getVendorId();
+                        _this.SDR_PID = _this.SDR_device!!.getProductId()
+                        _this.SDR_FD = _this.SDR_conn!!.getFileDescriptor();
+                        _this.SDR_PATH = _this.SDR_device!!.getDeviceName();
+                    }
+                    
+                    context.unregisterReceiver(this);
+
+                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
         }
     }
 
@@ -111,6 +105,9 @@ class MainActivity : NativeActivity() {
         for ((name, dev) in devList) {
             usbManager!!.requestPermission(dev, permissionIntent);
         }
+
+        // Hide system bars
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
 
