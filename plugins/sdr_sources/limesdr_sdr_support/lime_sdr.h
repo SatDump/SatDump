@@ -1,9 +1,15 @@
 #pragma once
 
 #include "common/dsp_sample_source/dsp_sample_source.h"
+#ifdef __ANDROID__
+#include "API/lms7_device.h"
+#include "protocols/Streamer.h"
+#include "ConnectionRegistry/ConnectionRegistry.h"
+#else
 #include <lime/lms7_device.h>
 #include <lime/Streamer.h>
 #include <lime/ConnectionRegistry.h>
+#endif
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"

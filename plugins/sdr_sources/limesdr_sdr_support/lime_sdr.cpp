@@ -1,5 +1,23 @@
 #include "lime_sdr.h"
 
+#ifdef __ANDROID__
+#include "common/dsp_sample_source/android_usb_backend.h"
+
+#define LIMESDR_USB_VID_PID \
+    {                       \
+        {                   \
+            0x0403, 0x601f  \
+        }                   \
+    }
+
+// Closing the connection on Android crashes.
+// So we cache it and never close it, which is
+// not an issue as we should never have 2 Limes
+/// on Android.
+lime::LMS7_Device *limeDevice_android = nullptr;
+lime::StreamChannel *limeStreamID_android = nullptr;
+#endif
+
 void LimeSDRSource::set_gains()
 {
     if (!is_started)
@@ -57,10 +75,25 @@ void LimeSDRSource::start()
 
     if (!is_started)
     {
+        lime::ConnectionHandle handle;
+#ifdef __ANDROID__
+        int vid, pid;
+        std::string path;
+        int fd = getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path);
+        if (limeDevice_android == nullptr)
+        {
+            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd);
+            limeDevice_android->Init();
+        }
+        limeDevice = limeDevice_android;
+#else
         limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[d_sdr_id]);
+#endif
         if (limeDevice == NULL)
             throw std::runtime_error("Could not open LimeSDR Device!");
+#ifndef __ANDROID__
         limeDevice->Init();
+#endif
     }
 
     limeDevice->EnableChannel(false, 0, true);
@@ -77,11 +110,19 @@ void LimeSDRSource::start()
     limeDevice->SetRate(current_samplerate, 0);
     limeDevice->SetLPF(false, 0, true, current_samplerate);
 
+    is_started = true;
+
     set_frequency(d_frequency);
 
     set_gains();
 
+#ifndef __ANDROID__
     limeStreamID = limeDevice->SetupStream(limeConfig);
+#else
+    if (limeStreamID_android == nullptr)
+        limeStreamID_android = limeDevice->SetupStream(limeConfig);
+    limeStreamID = limeStreamID_android;
+#endif
 
     if (limeStreamID == 0)
         throw std::runtime_error("Could not open LimeSDR device stream!");
@@ -89,8 +130,6 @@ void LimeSDRSource::start()
     limeStream = limeStreamID;
     limeStream->Start();
     needs_to_run = true;
-
-    is_started = true;
 }
 
 void LimeSDRSource::stop()
@@ -99,9 +138,11 @@ void LimeSDRSource::stop()
     if (is_started)
     {
         limeStream->Stop();
+#ifndef __ANDROID__
         limeDevice->DestroyStream(limeStream);
         limeDevice->Reset();
         lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
+#endif
     }
     is_started = false;
 }
@@ -165,6 +206,7 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
+#ifndef __ANDROID__
     lms_info_str_t devices[256];
     int cnt = LMS_GetDeviceList(devices);
 
@@ -179,6 +221,12 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
         LMS_Close(device);
         results.push_back({"limesdr", "LimeSDR " + ss.str(), (uint64_t)i});
     }
+#else
+    int vid, pid;
+    std::string path;
+    if (getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path) != -1)
+        results.push_back({"limesdr", "LimeSDR USB", 0});
+#endif
 
     return results;
 }

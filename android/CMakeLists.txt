@@ -85,6 +85,13 @@ add_library(hackrf STATIC deps/libhackrf/hackrf.c)
 target_include_directories(hackrf PRIVATE deps/libhackrf/ deps/libusb)
 target_link_libraries(hackrf PRIVATE usb)
 
+# LibLimeSuite
+file(GLOB_RECURSE liblimesuite_cpps deps/liblimesuite/*.c deps/liblimesuite/*.cpp)
+add_library(limesuite STATIC ${liblimesuite_cpps})
+target_include_directories(limesuite PRIVATE deps/liblimesuite/ deps/liblimesuite/lms7002m deps/liblimesuite/API deps/liblimesuite/lime deps/liblimesuite/ConnectionRegistry deps/liblimesuite/lime deps/liblimesuite/threadHelper deps/liblimesuite/FPGA_common deps/liblimesuite/Si5351C deps/liblimesuite/lms7002m_mcu deps/liblimesuite/ADF4002 deps/liblimesuite/protocols deps/libusb)
+target_link_libraries(limesuite PRIVATE usb)
+#target_compile_definitions(limesuite PUBLIC LIBBLADERF_SEARCH_PREFIX="./")
+
 ###########################################################################################################################################
 
 add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
