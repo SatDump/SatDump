@@ -160,4 +160,10 @@ On Android, the preferred source is F-Droid [INSERT LINK WHEN POSSIBLE].
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
-Do keep in mind that while pretty much all features are perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.
+Do keep in mind that while pretty much all features are perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.  
+Supported SDR devices are :
+- RTL-SDR
+- Airspy
+- AirspyHF
+- LimeSDR Mini
+- HackRF
