@@ -28,7 +28,7 @@ Quick-Start :
 ### Live processing or recording (directly from your SDR)
 
 Quick-Start :
-- Go in the "Recorder" Tabs
+- Go in the "Recorder" Tab
 - Select and start your SDR Devices
 - Chose a pipeline
 - Start it, and done!
