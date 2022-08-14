@@ -12,20 +12,37 @@ namespace demod
         sym_buffer = new int8_t[d_buffer_size * 10];
 
         // Parse params
-        if (parameters.count("lpf_cutoff") > 0)
-            d_lpf_cutoff = parameters["lpf_cutoff"].get<int>();
+        if (parameters.count("rrc_alpha") > 0)
+            d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("LPT Cutoff parameter must be present!");
+            throw std::runtime_error("RRC Alpha parameter must be present!");
 
-        if (parameters.count("lpf_transition_width") > 0)
-            d_lpf_transition_width = parameters["lpf_transition_width"].get<int>();
-        else
-            throw std::runtime_error("LPF Transition Width parameter must be present!");
+        if (parameters.count("rrc_taps") > 0)
+            d_rrc_taps = parameters["rrc_taps"].get<int>();
+
+        if (parameters.count("clock_alpha") > 0)
+        {
+            float clock_alpha = parameters["clock_alpha"].get<float>();
+            d_clock_gain_omega = pow(clock_alpha, 2) / 4.0;
+            d_clock_gain_mu = clock_alpha;
+        }
+
+        if (parameters.count("clock_gain_omega") > 0)
+            d_clock_gain_omega = parameters["clock_gain_omega"].get<float>();
+
+        if (parameters.count("clock_mu") > 0)
+            d_clock_mu = parameters["clock_mu"].get<float>();
+
+        if (parameters.count("clock_gain_mu") > 0)
+            d_clock_gain_mu = parameters["clock_gain_mu"].get<float>();
+
+        if (parameters.count("clock_omega_relative_limit") > 0)
+            d_clock_omega_relative_limit = parameters["clock_omega_relative_limit"].get<float>();
 
         name = "FSK Demodulator";
         show_freq = false;
 
-        constellation.d_hscale = 50.0 / 100.0;
+        constellation.d_hscale = 80.0 / 100.0;
         constellation.d_vscale = 20.0 / 100.0;
     }
 
@@ -34,13 +51,14 @@ namespace demod
         BaseDemodModule::init();
 
         // LPF
-        lpf = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::low_pass(1, d_samplerate, d_lpf_cutoff, d_lpf_transition_width, dsp::fft::window::WIN_KAISER));
+        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf->output_stream, 1.0f);
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(rrc->output_stream, 1.0f);
 
         // Clock recovery
-        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(qua->output_stream, (float)d_samplerate / (float)d_symbolrate, powf(0.01f, 2) / 4.0f, 0.5f, 0.01, 100e-6f);
+        rec = std::make_shared<dsp::FFMMClockRecoveryBlock>(qua->output_stream,
+                                                            final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
     }
 
     FSKDemodModule::~FSKDemodModule()
@@ -66,7 +84,7 @@ namespace demod
 
         // Start
         BaseDemodModule::start();
-        lpf->start();
+        rrc->start();
         qua->start();
         rec->start();
 
@@ -117,7 +135,7 @@ namespace demod
     {
         // Stop
         BaseDemodModule::stop();
-        lpf->stop();
+        rrc->stop();
         qua->stop();
         rec->stop();
         rec->output_stream->stopReader();
@@ -133,7 +151,9 @@ namespace demod
 
     std::vector<std::string> FSKDemodModule::getParameters()
     {
-        return {"lpf_cutoff", "lpf_transition_width"};
+        std::vector<std::string> params = {"rrc_alpha", "rrc_taps", "pll_bw", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit"};
+        params.insert(params.end(), BaseDemodModule::getParameters().begin(), BaseDemodModule::getParameters().end());
+        return params;
     }
 
     std::shared_ptr<ProcessingModule> FSKDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)

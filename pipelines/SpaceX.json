@@ -13,9 +13,7 @@
             "soft": {
                 "fsk_demod": {
                     "symbolrate": 3571400,
-                    "agc_rate": 0.000001,
-                    "lpf_cutoff": 2000000,
-                    "lpf_transition_width": 250000,
+                    "rrc_alpha": 0.35,
                     "buffer_size": 8192
                 }
             },

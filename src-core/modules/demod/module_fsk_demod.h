@@ -11,12 +11,17 @@ namespace demod
     class FSKDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::CCFIRBlock> lpf;
+        std::shared_ptr<dsp::CCFIRBlock> rrc;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
         std::shared_ptr<dsp::FFMMClockRecoveryBlock> rec;
 
-        int d_lpf_cutoff;
-        int d_lpf_transition_width;
+        float d_rrc_alpha;
+        int d_rrc_taps = 31;
+
+        float d_clock_gain_omega = pow(1.7e-2, 2) / 4.0;
+        float d_clock_mu = 0.5f;
+        float d_clock_gain_mu = 1.7e-2;
+        float d_clock_omega_relative_limit = 0.005f;
 
         int8_t *sym_buffer;
 
