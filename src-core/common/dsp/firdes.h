@@ -49,30 +49,33 @@ namespace dsp
 
     namespace firdes
     {
+        // Convolve 2 vectors
+        std::vector<float> convolve(std::vector<float> u, std::vector<float> v);
+
         /*!
-        * \brief design a Root Cosine FIR Filter.
-        *
-        * \param gain            overall gain of filter (typically 1.0)
-        * \param sampling_freq   sampling freq (Hz)
-        * \param symbol_rate     symbol rate, must be a factor of sample rate
-        * \param alpha           excess bandwidth factor
-        * \param ntaps           number of taps
-        */
+         * \brief design a Root Cosine FIR Filter.
+         *
+         * \param gain            overall gain of filter (typically 1.0)
+         * \param sampling_freq   sampling freq (Hz)
+         * \param symbol_rate     symbol rate, must be a factor of sample rate
+         * \param alpha           excess bandwidth factor
+         * \param ntaps           number of taps
+         */
         std::vector<float> root_raised_cosine(double gain, double sampling_freq, double symbol_rate, double alpha, int ntaps);
 
         /*!
-        * \brief Use "window method" to design a low-pass FIR filter.  The
-        * normalized width of the transition band is what sets the number of
-        * taps required.  Narrow --> more taps.  Window type determines maximum
-        * attenuation and passband ripple.
-        *
-        * \param gain                overall gain of filter (typically 1.0)
-        * \param sampling_freq       sampling freq (Hz)
-        * \param cutoff_freq	        center of transition band (Hz)
-        * \param transition_width	width of transition band (Hz)
-        * \param window              one of fft::window::win_type
-        * \param beta                parameter for Kaiser window
-        */
+         * \brief Use "window method" to design a low-pass FIR filter.  The
+         * normalized width of the transition band is what sets the number of
+         * taps required.  Narrow --> more taps.  Window type determines maximum
+         * attenuation and passband ripple.
+         *
+         * \param gain                overall gain of filter (typically 1.0)
+         * \param sampling_freq       sampling freq (Hz)
+         * \param cutoff_freq	        center of transition band (Hz)
+         * \param transition_width	width of transition band (Hz)
+         * \param window              one of fft::window::win_type
+         * \param beta                parameter for Kaiser window
+         */
         std::vector<float> low_pass(double gain, double sampling_freq, double cutoff_freq, double transition_width, fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
 
         /**
@@ -86,5 +89,18 @@ namespace dsp
         * @param fractional_bw fractional bandwidth in (0, 0.5)  0.4 works well. (float)
         */
         std::vector<float> design_resampler_filter_float(const unsigned interpolation, const unsigned decimation, const float fractional_bw);
+
+        /*!
+         * \brief design a Gaussian filter
+         *
+         * \param gain    overall gain of filter (typically 1.0)
+         * \param spb     symbol rate, must be a factor of sample rate
+         * \param bt      bandwidth to bitrate ratio
+         * \param ntaps   number of taps
+         */
+        std::vector<float> gaussian(double gain,
+                                    double spb,
+                                    double bt, // Bandwidth to bitrate ratio
+                                    int ntaps);
     };
 };

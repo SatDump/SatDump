@@ -103,6 +103,6 @@ struct FileSelectWidget
 
     std::string getPath()
     {
-        return std::string(path);
+        return path;
     }
 };

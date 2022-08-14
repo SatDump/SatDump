@@ -54,6 +54,8 @@ void FileSource::open()
 
 void FileSource::start()
 {
+    file_path = file_input.getPath();
+
     DSPSampleSource::start();
     ns_to_wait = (1e9 / current_samplerate) * float(buffer_size);
 

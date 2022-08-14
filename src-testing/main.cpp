@@ -10,77 +10,49 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#if 0
-#include "logger.h"
-#include "products/image_products.h"
-
-#include "common/projection/sat_proj/sat_proj.h"
-
-int main(int argc, char *argv[])
-{
-    initLogger();
-
-    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
-    //satdump::config::loadConfig("satdump_cfg.json", user_path);
-
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
-
-    std::shared_ptr<satdump::SatelliteProjection> sat_projection = get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
-}
-#else
 #include "logger.h"
 #include <fstream>
-#include "common/codings/dvb-s2/bbframe_bch.h"
-#include "common/codings/dvb-s2/bbframe_ldpc.h"
+#include "common/dsp/vco.h"
+#include "common/dsp/firdes.h"
+#include "common/dsp/rational_resampler.h"
+#include "common/dsp/file_sink.h"
+
+#include "common/codings/randomization.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
+    std::ifstream input_frm(argv[1]);
 
-    dvbs2::dvbs2_framesize_t s2_framesize = dvbs2::FECFRAME_NORMAL;
-    dvbs2::dvbs2_code_rate_t s2_code_rate = dvbs2::C9_10;
-    dvbs2::BBFrameBCH bch_handler(s2_framesize, s2_code_rate);
-    dvbs2::BBFrameLDPC ldpc_handler(s2_framesize, s2_code_rate);
+    uint8_t cadu[1024];
 
-    int frame_size = ldpc_handler.dataSize() / 8;
-    uint8_t frame_data[frame_size];
-    size_t total_filesize_bytes = 0;
+    std::shared_ptr<dsp::stream<float>> input_vco = std::make_shared<dsp::stream<float>>();
 
-    std::vector<uint8_t> test_data;
+    dsp::FFRationalResamplerBlock gaussian_fir(input_vco, 2, 1, dsp::firdes::convolve(dsp::firdes::gaussian(1, 2, 0.35, 31), {1, 1}));
+    dsp::VCOBlock vco_block(gaussian_fir.output_stream, 1.0 /*(M_PI / 4.0)*/, 1);
 
-    // Generate test data
-    logger->info("Generating test data...");
+    dsp::FileSinkBlock file_sink_blk(vco_block.output_stream);
+
+    gaussian_fir.start();
+    vco_block.start();
+    file_sink_blk.start();
+    file_sink_blk.set_output_sample_type(dsp::IS_8);
+    file_sink_blk.start_recording("test", 2e6);
+
+    while (!input_frm.eof())
     {
-        for (int i = 0; i < 1e4; i++)
+        input_frm.read((char *)cadu, 1024);
+
+        derand_ccsds(&cadu[4], 1020);
+
+        for (int i = 0; i < 8192; i++)
         {
-            for (int y = 0; y < bch_handler.dataSize() / 8; y++)
-                frame_data[y] = rand() % 256;
-            bch_handler.encode(frame_data);
-            // output_file.write((char *)frame_data, frame_size);
-            test_data.insert(test_data.end(), &frame_data[0], &frame_data[frame_size]);
-            total_filesize_bytes += frame_size;
-        }
-    }
-
-    logger->info("Decoding... (Test Size {:.1f} MB)", total_filesize_bytes / 1e6);
-
-    {
-        int ff = 0;
-
-        auto bench_start = std::chrono::system_clock::now();
-        while (ff < test_data.size() / frame_size)
-        {
-            // input_file.read((char *)frame_data, frame_size);
-            uint8_t *frame_ptr = &test_data[(ff++) * frame_size];
-            bch_handler.decode(frame_ptr);
+            bool bit = (cadu[i / 8] >> (7 - (i % 8))) & 1;
+            input_vco->writeBuf[i] = bit ? 1 : -1;
         }
 
-        auto bench_time = (std::chrono::system_clock::now() - bench_start);
-        double time = bench_time.count() / 1e9;
-
-        logger->debug("Processing Time {:f}, throughput {:f} MB/s", time, double(total_filesize_bytes / 1e6) / time);
+        input_vco->swap(8192);
     }
+
+    logger->critical("DONE!!");
 }
-
-#endif
