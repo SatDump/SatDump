@@ -2,7 +2,7 @@
 
 namespace dsp
 {
-    GFSKMod::GFSKMod(std::shared_ptr<dsp::stream<complex_t>> input, float sensitivity, float alpha, float taps)
+    GFSKMod::GFSKMod(std::shared_ptr<dsp::stream<float>> input, float sensitivity, float alpha, float taps)
         : HierBlock(input)
     {
         fir_shaping = std::make_shared<dsp::FFRationalResamplerBlock>(input_stream, 2, 1, dsp::firdes::convolve(dsp::firdes::gaussian(1, 2, alpha, taps), {1, 1}));

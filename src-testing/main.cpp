@@ -12,9 +12,7 @@
 
 #include "logger.h"
 #include <fstream>
-#include "common/dsp/vco.h"
-#include "common/dsp/firdes.h"
-#include "common/dsp/rational_resampler.h"
+#include "common/dsp/hier/gfsk_mod.h"
 #include "common/dsp/file_sink.h"
 
 #include "common/codings/randomization.h"
@@ -28,15 +26,13 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<dsp::stream<float>> input_vco = std::make_shared<dsp::stream<float>>();
 
-    dsp::FFRationalResamplerBlock gaussian_fir(input_vco, 2, 1, dsp::firdes::convolve(dsp::firdes::gaussian(1, 2, 0.35, 31), {1, 1}));
-    dsp::VCOBlock vco_block(gaussian_fir.output_stream, 1.0 /*(M_PI / 4.0)*/, 1);
+    dsp::GFSKMod gfsk_mod(input_vco, 1.0, 0.35);
 
-    dsp::FileSinkBlock file_sink_blk(vco_block.output_stream);
+    dsp::FileSinkBlock file_sink_blk(gfsk_mod.output_stream);
 
-    gaussian_fir.start();
-    vco_block.start();
+    gfsk_mod.start();
     file_sink_blk.start();
-    file_sink_blk.set_output_sample_type(dsp::IS_8);
+    file_sink_blk.set_output_sample_type(dsp::CF_32);
     file_sink_blk.start_recording("test", 2e6);
 
     while (!input_frm.eof())

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "block.h"
+#include "common/dsp/block.h"
 #include "common/dsp/vco.h"
 #include "common/dsp/firdes.h"
 #include "common/dsp/rational_resampler.h"
@@ -22,7 +22,7 @@ namespace dsp
         std::shared_ptr<dsp::VCOBlock> vco_gen;
 
     public:
-        GFSKMod(std::shared_ptr<dsp::stream<complex_t>> input, float sensitivity, float alpha, float taps = 31);
+        GFSKMod(std::shared_ptr<dsp::stream<float>> input, float sensitivity, float alpha, float taps = 31);
         void start();
         void stop();
     };
