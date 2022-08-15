@@ -27,7 +27,7 @@ namespace viterbi
 
         // BER Testing
         CCDecoder cc_decoder_ber;
-        CCDecoder cc_encoder_ber;
+        CCEncoder cc_encoder_ber;
 
         // Main decoder
         CCDecoder cc_decoder;
