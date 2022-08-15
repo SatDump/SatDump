@@ -1,21 +1,21 @@
-#include "fft.h"
+#include "fft_pan.h"
 #include "logger.h"
 
 namespace dsp
 {
-    FFTBlock::FFTBlock(std::shared_ptr<dsp::stream<complex_t>> input)
+    FFTPanBlock::FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input)
         : Block(input)
     {
         fft_main_buffer = new complex_t[STREAM_BUFFER_SIZE * 4];
     }
 
-    FFTBlock::~FFTBlock()
+    FFTPanBlock::~FFTPanBlock()
     {
         if (fft_taps != nullptr)
             destroy_fft();
     }
 
-    void FFTBlock::set_fft_settings(int size)
+    void FFTPanBlock::set_fft_settings(int size)
     {
         fft_mutex.lock();
 
@@ -39,7 +39,7 @@ namespace dsp
         fft_output_buffer = new float[fft_size];
     }
 
-    void FFTBlock::destroy_fft()
+    void FFTPanBlock::destroy_fft()
     {
         delete[] fft_taps;
         fftwf_free(fftw_in);
@@ -48,7 +48,7 @@ namespace dsp
         delete[] fft_output_buffer;
     }
 
-    void FFTBlock::work()
+    void FFTPanBlock::work()
     {
         int nsamples = input_stream->read();
         if (nsamples <= 0)

@@ -75,7 +75,7 @@ namespace demod
         fft_splitter = std::make_shared<dsp::SplitterBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
         fft_splitter->set_output_2nd(show_fft);
 
-        fft_proc = std::make_shared<dsp::FFTBlock>(fft_splitter->output_stream_2);
+        fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
         fft_proc->set_fft_settings(8192);
         fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);

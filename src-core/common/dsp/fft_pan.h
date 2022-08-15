@@ -5,7 +5,7 @@
 
 namespace dsp
 {
-    class FFTBlock : public Block<complex_t, float>
+    class FFTPanBlock : public Block<complex_t, float>
     {
     private:
         std::mutex fft_mutex;
@@ -25,8 +25,8 @@ namespace dsp
         fftwf_plan fftw_plan;
 
     public:
-        FFTBlock(std::shared_ptr<dsp::stream<complex_t>> input);
-        ~FFTBlock();
+        FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input);
+        ~FFTPanBlock();
         void set_fft_settings(int size);
 
         float avg_rate = 0.01;

@@ -54,7 +54,7 @@ namespace satdump
         splitter->set_output_2nd(false);
         splitter->set_output_3rd(false);
 
-        fft = std::make_shared<dsp::FFTBlock>(splitter->output_stream);
+        fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size);
         fft->start();
 
