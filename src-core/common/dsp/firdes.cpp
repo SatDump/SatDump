@@ -21,9 +21,7 @@ namespace dsp
                 int iter = i;
                 for (int j = 0; j <= i; j++)
                 {
-                    if (u.size() <= j || v.size() <= iter)
-                        sum;
-                    else
+                    if (!((int)u.size() <= j || (int)v.size() <= iter))
                         sum += u.at(j) * v.at(iter);
                     iter--;
                 }

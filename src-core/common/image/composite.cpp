@@ -254,8 +254,8 @@ namespace image
                 {
                     int position = channelValues[0] * lut.width();
 
-                    if (position >= lut.width())
-                        position = lut.width() - 1;
+                    if (position >= (int)lut.width())
+                        position = (int)lut.width() - 1;
 
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
                         rgb_output.channel(c)[line * img_width + pixel] = lut.channel(c)[position];
@@ -265,11 +265,11 @@ namespace image
                     int position_x = channelValues[0] * lut.width();
                     int position_y = channelValues[1] * lut.height();
 
-                    if (position_x >= lut.width())
-                        position_x = lut.width() - 1;
+                    if (position_x >= (int)lut.width())
+                        position_x = (int)lut.width() - 1;
 
-                    if (position_y >= lut.height())
-                        position_y = lut.height() - 1;
+                    if (position_y >= (int)lut.height())
+                        position_y = (int)lut.height() - 1;
 
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
                         rgb_output.channel(c)[line * img_width + pixel] = lut.channel(c)[position_y * lut.width() + position_x];

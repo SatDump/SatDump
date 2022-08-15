@@ -15,10 +15,10 @@ namespace ccsds
 
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
+          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
-          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
 
           d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
           d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
