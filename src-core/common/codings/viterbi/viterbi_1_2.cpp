@@ -60,8 +60,8 @@ namespace viterbi
 
                 for (int shift = 0; shift < 2; shift++) // Test 2 puncturing shifts
                 {
-                    cc_decoder_ber.generic_work(ber_soft_buffer + shift, ber_decoded_buffer); // Decode....
-                    cc_encoder_ber.generic_work(ber_decoded_buffer, ber_encoded_buffer);      // ....then reencode for comparison
+                    cc_decoder_ber.work(ber_soft_buffer + shift, ber_decoded_buffer); // Decode....
+                    cc_encoder_ber.work(ber_decoded_buffer, ber_encoded_buffer);      // ....then reencode for comparison
 
                     d_bers[phase][shift] = get_ber(ber_soft_buffer + shift, ber_encoded_buffer, TEST_BITS_LENGTH); // Compute BER between initial buffer and re-encoded
 
@@ -84,10 +84,10 @@ namespace viterbi
             rotate_soft((int8_t *)input, size, d_phase, false);          // Phase shift
             signed_soft_to_unsigned((int8_t *)input, soft_buffer, size); // Soft convertion
 
-            cc_decoder.generic_work(soft_buffer + d_shift, output); // Decode entire buffer
+            cc_decoder.work(soft_buffer + d_shift, output); // Decode entire buffer
             out_n = size / 2;
 
-            cc_encoder_ber.generic_work(output, ber_encoded_buffer);                      // Re-encoded for a BER check
+            cc_encoder_ber.work(output, ber_encoded_buffer);                              // Re-encoded for a BER check
             d_ber = get_ber(soft_buffer + d_shift, ber_encoded_buffer, TEST_BITS_LENGTH); // Compute BER
 
             if (d_ber > d_ber_thresold) // Check current BER
@@ -124,4 +124,4 @@ namespace viterbi
     {
         return d_state;
     }
-} // namespace npp
+}

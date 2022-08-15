@@ -10,8 +10,8 @@ namespace viterbi
     class Viterbi27
     {
     private:
-        fec::code::cc_decoder_impl cc_decoder_in;
-        fec::code::cc_encoder_impl cc_encoder_in;
+        CCDecoder cc_decoder_in;
+        CCEncoder cc_encoder_in;
         float d_ber;
         const int d_ber_test_size;
         const int d_frame_size;
@@ -31,4 +31,4 @@ namespace viterbi
 
         float ber();
     };
-};
+}

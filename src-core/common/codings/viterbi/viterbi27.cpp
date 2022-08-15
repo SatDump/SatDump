@@ -3,8 +3,8 @@
 
 namespace viterbi
 {
-    Viterbi27::Viterbi27(int frame_size, std::vector<int> polys, int ber_test_size) : cc_decoder_in(frame_size, 7, 2, polys, 0, -1, CC_STREAMING, false),
-                                                                                      cc_encoder_in(ber_test_size / 2, 7, 2, polys, 0, CC_STREAMING, false),
+    Viterbi27::Viterbi27(int frame_size, std::vector<int> polys, int ber_test_size) : cc_decoder_in(frame_size, 7, 2, polys, 0, -1),
+                                                                                      cc_encoder_in(ber_test_size / 2, 7, 2, polys, 0),
                                                                                       d_ber(0),
                                                                                       d_ber_test_size(ber_test_size),
                                                                                       d_frame_size(frame_size)
@@ -31,7 +31,7 @@ namespace viterbi
         char_array_to_uchar(in, hard_buffer, d_frame_size * 2);
 
         // Decode
-        cc_decoder_in.generic_work(hard_buffer, buffer_deco);
+        cc_decoder_in.work(hard_buffer, buffer_deco);
 
         // Repack to bytes
         bitc = 0;
@@ -49,7 +49,7 @@ namespace viterbi
         }
 
         // Compute BER
-        cc_encoder_in.generic_work(buffer_deco, buffer_enco);
+        cc_encoder_in.work(buffer_deco, buffer_enco);
 
         float errors = 0;
         for (int i = 0; i < d_ber_test_size; i++)

@@ -122,8 +122,8 @@ namespace viterbi
                 {
                     depuncture(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
 
-                    cc_decoder_ber.generic_work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
-                    cc_encoder_ber.generic_work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison
+                    cc_decoder_ber.work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
+                    cc_encoder_ber.work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison
 
                     d_bers[phase][shift] = get_ber(ber_depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.5); // Compute BER between initial buffer and re-encoded
 
@@ -147,10 +147,10 @@ namespace viterbi
             signed_soft_to_unsigned((int8_t *)input, soft_buffer, size); // Soft convertion
             depuncture(soft_buffer, depunc_buffer, size, d_shift);       // Depuncturing
 
-            cc_decoder.generic_work(depunc_buffer, output); // Decode entire buffer
+            cc_decoder.work(depunc_buffer, output); // Decode entire buffer
             out_n = (size * 1.5) / 2;
 
-            cc_encoder_ber.generic_work(output, ber_encoded_buffer);                    // Re-encoded for a BER check
+            cc_encoder_ber.work(output, ber_encoded_buffer);                            // Re-encoded for a BER check
             d_ber = get_ber(depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.5); // Compute BER
 
             if (d_ber > d_ber_thresold) // Check current BER
@@ -188,4 +188,4 @@ namespace viterbi
     {
         return d_state;
     }
-} // namespace npp
+}
