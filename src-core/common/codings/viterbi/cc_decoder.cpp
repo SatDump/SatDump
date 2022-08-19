@@ -58,13 +58,18 @@ namespace viterbi
         {
             volk_func_desc k7_r2_desc = volk_8u_x4_conv_k7_r2_8u_get_func_desc(); // Check what kernels are available
 
-            bool has_spiral = false;
+            bool has_spiral = false, has_spiral_neon = false;
 
             for (int i = 0; i < (int)k7_r2_desc.n_impls; i++)
             {
                 if (std::string(k7_r2_desc.impl_names[i]) == "spiral") // Try to find spiral
                 {
                     has_spiral = true;
+                    break;
+                }
+                if (std::string(k7_r2_desc.impl_names[i]) == "neonspiral") // Try to find neonspiral
+                {
+                    has_spiral_neon = true;
                     break;
                 }
             }
@@ -74,9 +79,14 @@ namespace viterbi
                 logger->trace("Volk has the spiral kernel, using it!");
                 k7_r2_kernel = volk_fixed::volk_8u_x4_conv_k7_r2_8u_spiral;
             }
+            else if (has_spiral_neon)
+            { // If spiral is available, use it
+                logger->trace("Volk has the neonspiral kernel, using it!");
+                k7_r2_kernel = volk_fixed::volk_8u_x4_conv_k7_r2_8u_neonspiral;
+            }
             else
             { // Stick to our fixed kernel
-                logger->trace("Volk does not have the spiral kernel, will default to bundled generic.");
+                logger->trace("Volk does not have the spiral/neonspiral kernel, will default to bundled generic.");
             }
         }
 
@@ -286,6 +296,18 @@ namespace viterbi
         update_viterbi_blk((unsigned char *)(&in[0]), d_veclen);
         d_end_state_chaining = find_endstate();
         d_start_state_chaining = chainback_viterbi(&out[0], d_frame_size, *d_end_state, d_veclen - d_frame_size);
+
+        init_viterbi(&d_vp, *d_start_state);
+    }
+
+    void CCDecoder::work(uint8_t *in, uint8_t *out, int size)
+    {
+        int frm_size = size / d_k;
+        int veclen = frm_size + d_k - 1;
+
+        update_viterbi_blk((unsigned char *)(&in[0]), d_veclen);
+        d_end_state_chaining = find_endstate();
+        d_start_state_chaining = chainback_viterbi(&out[0], d_frame_size, *d_end_state, veclen - frm_size);
 
         init_viterbi(&d_vp, *d_start_state);
     }

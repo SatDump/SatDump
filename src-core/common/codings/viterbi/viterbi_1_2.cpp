@@ -52,6 +52,7 @@ namespace viterbi
     {
         if (d_state == ST_IDLE) // Search for a lock
         {
+            d_ber = 10;
             for (phase_t phase : d_phases_to_check)
             {
                 memcpy(ber_test_buffer, input, TEST_BITS_LENGTH);                            // Copy over small buffer

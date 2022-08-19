@@ -97,5 +97,17 @@
                 }
             }
         }
+    },
+    "dvbs_test": {
+        "name": "DVB-S Test",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "dvbs_demod": {
+                    "symbolrate": 1e6,
+                    "pll_bw": 0.003
+                }
+            }
+        }
     }
 }
