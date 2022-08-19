@@ -100,6 +100,13 @@
     },
     "dvbs_test": {
         "name": "DVB-S Test",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

@@ -92,6 +92,18 @@ target_include_directories(limesuite PRIVATE deps/liblimesuite/ deps/liblimesuit
 target_link_libraries(limesuite PRIVATE usb)
 #target_compile_definitions(limesuite PUBLIC LIBBLADERF_SEARCH_PREFIX="./")
 
+# LibIIO
+file(GLOB_RECURSE libiio_cpps deps/libiio/*.c)
+add_library(iio STATIC ${libiio_cpps})
+target_include_directories(iio PRIVATE deps/libiio/ deps/libiio/deps deps/libusb)
+target_link_libraries(iio PRIVATE usb)
+
+# LibAD9361-iio
+file(GLOB_RECURSE libad9361iio_cpps deps/libad9361-iio/*.c)
+add_library(ad9361iio STATIC ${libad9361iio_cpps})
+target_include_directories(ad9361iio PRIVATE deps/libiio/ deps/libiio/deps deps/libad9361-iio)
+target_link_libraries(ad9361iio PRIVATE iio)
+
 ###########################################################################################################################################
 
 add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)

@@ -2,7 +2,8 @@
 
 #include "common/dsp_sample_source/dsp_sample_source.h"
 #ifdef __ANDROID__
-#include "airspy.h"
+#include "iio.h"
+#include "ad9361.h"
 #else
 #include <iio.h>
 #include <ad9361.h>
