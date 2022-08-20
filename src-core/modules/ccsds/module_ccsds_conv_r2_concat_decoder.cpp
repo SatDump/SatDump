@@ -190,7 +190,7 @@ namespace ccsds
             // Update module stats
             module_stats["deframer_lock"] = deframer->getState() == deframer->STATE_SYNCED;
             module_stats["viterbi_ber"] = viterbi->ber();
-            module_stats["viterbi_lock"] = viterbi->getState() * 100;
+            module_stats["viterbi_lock"] = viterbi->getState();
             if (d_rs_interleaving_depth != 0)
                 module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
 

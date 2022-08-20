@@ -137,7 +137,7 @@ namespace demod
 
             rec->output_stream->flush();
 
-            if (in_sym_buffer >= VIT_BUF_SIZE)
+            while (in_sym_buffer >= VIT_BUF_SIZE)
             {
                 int size = viterbi.work(&sym_buffer[0], VIT_BUF_SIZE, post_vit_buffer);
 
@@ -174,17 +174,36 @@ namespace demod
 #endif
             }
 
+            // Get rate
+            std::string rate = "";
+            if (viterbi.rate() == viterbi::RATE_1_2)
+                rate = "1/2";
+            else if (viterbi.rate() == viterbi::RATE_2_3)
+                rate = "2/3";
+            else if (viterbi.rate() == viterbi::RATE_3_4)
+                rate = "3/4";
+            else if (viterbi.rate() == viterbi::RATE_5_6)
+                rate = "5/6";
+            else if (viterbi.rate() == viterbi::RATE_7_8)
+                rate = "7/8";
+
             // Update module stats
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
             module_stats["freq"] = display_freq;
+            module_stats["viterbi_ber"] = viterbi.ber();
+            module_stats["viterbi_lock"] = viterbi.getState();
+            module_stats["viterbi_rate"] = rate;
+            module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3] + errors[4] + errors[5] + errors[6] + errors[7]) / 8;
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+
+                std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
