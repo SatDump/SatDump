@@ -266,5 +266,24 @@
             },
             "products": {}
         }
+    },
+    "goes_mdl": {
+        "name": "GOES-N MDL",
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 200e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.005
+                }
+            },
+            "frm": {
+                "goes_mdl_decoder": {}
+            },
+            "products": {}
+        }
     }
 }
