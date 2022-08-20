@@ -270,6 +270,7 @@
     "goes_mdl": {
         "name": "GOES-N MDL",
         "samplerate": 3e6,
+        "live": true,
         "live_cfg": [
             [
                 1,
