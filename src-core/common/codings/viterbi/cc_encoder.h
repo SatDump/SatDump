@@ -33,6 +33,7 @@ namespace viterbi
         bool set_frame_size(unsigned int frame_size);
         double rate();
         void work(uint8_t *inbuffer, uint8_t *outbuffer);
+        void work(uint8_t *inbuffer, uint8_t *outbuffer, int size);
     };
 
 }

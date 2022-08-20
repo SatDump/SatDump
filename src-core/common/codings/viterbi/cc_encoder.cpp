@@ -102,4 +102,18 @@ namespace viterbi
 
         d_start_state = my_state;
     }
+
+    void CCEncoder::work(uint8_t *in, uint8_t *out, int size)
+    {
+        unsigned int my_state = d_start_state;
+
+        for (unsigned int i = 0; i < size; ++i)
+        {
+            my_state = (my_state << 1) | (in[i] & 1);
+            for (unsigned int j = 0; j < d_rate; ++j)
+                out[i * d_rate + j] = (d_polys[j] < 0) ^ parity(my_state & abs(d_polys[j])) ? 1 : 0;
+        }
+
+        d_start_state = my_state;
+    }
 }
