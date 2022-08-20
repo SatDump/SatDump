@@ -270,6 +270,16 @@
     "goes_mdl": {
         "name": "GOES-N MDL",
         "samplerate": 3e6,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
