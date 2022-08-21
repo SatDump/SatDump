@@ -60,13 +60,13 @@ namespace demod
         BaseDemodModule::init();
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
         // PLL
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
 
         // Clock recovery
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
     }
 
     DVBSDemodModule::~DVBSDemodModule()

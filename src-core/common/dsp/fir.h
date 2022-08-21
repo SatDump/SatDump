@@ -12,10 +12,11 @@ required anywhere.
 */
 namespace dsp
 {
-    class CCFIRBlock : public Block<complex_t, complex_t>
+    template <typename T>
+    class FIRBlock : public Block<T, T>
     {
     private:
-        complex_t *history;
+        T *history;
         float **taps;
         int ntaps;
         int align;
@@ -23,22 +24,7 @@ namespace dsp
         void work();
 
     public:
-        CCFIRBlock(std::shared_ptr<dsp::stream<complex_t>> input, std::vector<float> taps);
-        ~CCFIRBlock();
-    };
-
-    class FFFIRBlock : public Block<float, float>
-    {
-    private:
-        float *history;
-        float **taps;
-        int ntaps;
-        int align;
-        int aligned_tap_count;
-        void work();
-
-    public:
-        FFFIRBlock(std::shared_ptr<dsp::stream<float>> input, std::vector<float> taps);
-        ~FFFIRBlock();
+        FIRBlock(std::shared_ptr<dsp::stream<T>> input, std::vector<float> taps);
+        ~FIRBlock();
     };
 }

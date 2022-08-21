@@ -5,7 +5,8 @@
 
 namespace dsp
 {
-    class CCRationalResamplerBlock : public Block<complex_t, complex_t>
+    template <typename T>
+    class RationalResamplerBlock : public Block<T, T>
     {
     private:
         // Settings
@@ -14,7 +15,7 @@ namespace dsp
         int d_ctr;
 
         // Buffer
-        complex_t *buffer;
+        T *buffer;
         int in_buffer;
 
         // Taps
@@ -25,31 +26,7 @@ namespace dsp
         void work();
 
     public:
-        CCRationalResamplerBlock(std::shared_ptr<dsp::stream<complex_t>> input, unsigned interpolation, unsigned decimation, std::vector<float> custom_taps = std::vector<float>());
-        ~CCRationalResamplerBlock();
-    };
-
-    class FFRationalResamplerBlock : public Block<float, float>
-    {
-    private:
-        // Settings
-        int d_interpolation;
-        int d_decimation;
-        int d_ctr;
-
-        // Buffer
-        float *buffer;
-        int in_buffer;
-
-        // Taps
-        float **taps;
-        int nfilt; // Number of filters (one per phase)
-        int ntaps;
-
-        void work();
-
-    public:
-        FFRationalResamplerBlock(std::shared_ptr<dsp::stream<float>> input, unsigned interpolation, unsigned decimation, std::vector<float> custom_taps = std::vector<float>());
-        ~FFRationalResamplerBlock();
+        RationalResamplerBlock(std::shared_ptr<dsp::stream<T>> input, unsigned interpolation, unsigned decimation, std::vector<float> custom_taps = std::vector<float>());
+        ~RationalResamplerBlock();
     };
 }

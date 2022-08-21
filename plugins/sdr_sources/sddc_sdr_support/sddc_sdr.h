@@ -22,7 +22,7 @@ protected:
     uint64_t current_samplerate = 0;
 
     std::shared_ptr<dsp::stream<complex_t>> sddc_stream;
-    std::shared_ptr<dsp::CCRationalResamplerBlock> resampler; // We need to decimate by 2!
+    std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> resampler; // We need to decimate by 2!
 
     int mode = 0;
     int rf_gain = 0;
@@ -36,7 +36,7 @@ public:
     SDDCSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
         sddc_stream = std::make_shared<dsp::stream<complex_t>>();
-        resampler = std::make_shared<dsp::CCRationalResamplerBlock>(sddc_stream, 1, 2);
+        resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(sddc_stream, 1, 2);
     }
 
     ~SDDCSource()

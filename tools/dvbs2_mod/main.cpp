@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     std::shared_ptr<dsp::stream<complex_t>> input_dsp_stream = std::make_shared<dsp::stream<complex_t>>();
     // modulated_frame = input_dsp_stream->writeBuf;
 
-    dsp::CCRationalResamplerBlock resampler_blk(input_dsp_stream, 2, 1, dsp::firdes::root_raised_cosine(1, 2, 1, 0.25, 31));
+    dsp::RationalResamplerBlock<complex_t> resampler_blk(input_dsp_stream, 2, 1, dsp::firdes::root_raised_cosine(1, 2, 1, 0.25, 31));
     std::shared_ptr<dsp::FileSinkBlock> file_sink_blk = std::make_shared<dsp::FileSinkBlock>(resampler_blk.output_stream);
 
     resampler_blk.start();

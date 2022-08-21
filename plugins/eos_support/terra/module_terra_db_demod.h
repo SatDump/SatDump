@@ -10,9 +10,9 @@ namespace terra
     class TerraDBDemodModule : public demod::BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::CCFIRBlock> rrc;
+        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
-        std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
+        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
         int8_t *sym_buffer;
 

@@ -18,7 +18,7 @@ namespace dsp
     class GFSKMod : public HierBlock<float, complex_t>
     {
     private:
-        std::shared_ptr<dsp::FFRationalResamplerBlock> fir_shaping;
+        std::shared_ptr<dsp::RationalResamplerBlock<float>> fir_shaping;
         std::shared_ptr<dsp::VCOBlock> vco_gen;
 
     public:

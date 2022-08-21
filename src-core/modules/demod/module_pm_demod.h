@@ -14,9 +14,9 @@ namespace demod
     protected:
         std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
         std::shared_ptr<dsp::PMToBPSK> pm_psk;
-        std::shared_ptr<dsp::CCFIRBlock> rrc;
+        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> costas;
-        std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
+        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
         float d_pll_bw;
         float d_pll_max_offset = 0.5;

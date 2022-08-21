@@ -82,7 +82,7 @@ namespace demod
 
         // Init resampler if required
         if (resample)
-            resampler = std::make_shared<dsp::CCRationalResamplerBlock>(fft_splitter->output_stream, final_samplerate, d_samplerate);
+            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(fft_splitter->output_stream, final_samplerate, d_samplerate);
 
         // AGC
         agc = std::make_shared<dsp::AGCBlock>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);

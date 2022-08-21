@@ -103,7 +103,7 @@ void SDDCSource::start()
     set_bias();
 
     sddc_stream = std::make_shared<dsp::stream<complex_t>>();
-    resampler = std::make_shared<dsp::CCRationalResamplerBlock>(sddc_stream, 1, 2);
+    resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(sddc_stream, 1, 2);
     output_stream = resampler->output_stream;
     resampler->start();
 

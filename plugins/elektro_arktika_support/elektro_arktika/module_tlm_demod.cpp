@@ -52,7 +52,7 @@ namespace elektro_arktika
 
         // Init resampler if required
         if (resample)
-            res = std::make_shared<dsp::CCRationalResamplerBlock>(input_data, samplerate, d_samplerate);
+            res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(input_data, samplerate, d_samplerate);
 
         // AGC
         agc = std::make_shared<dsp::AGCBlock>(resample ? res->output_stream : input_data, 0.01f, 1.0f, 1.0f, 65536);
@@ -67,13 +67,13 @@ namespace elektro_arktika
         reco = std::make_shared<QuadratureRecomposer>(dcb->output_stream, samplerate, symbolrate);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(reco->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
+        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(reco->output_stream, dsp::firdes::root_raised_cosine(1, samplerate, symbolrate, 0.5, 31));
 
         // Costas
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.01f, 2);
 
         // Clock recovery
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3f, 0.001f);
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, sps, pow(8.7e-3, 2) / 4.0, 0.5f, 8.7e-3f, 0.001f);
     }
 
     std::vector<ModuleDataType> TLMDemodModule::getInputTypes()

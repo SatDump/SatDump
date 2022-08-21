@@ -91,14 +91,14 @@ namespace elektro_arktika
     {
     protected:
         std::shared_ptr<dsp::FileSourceBlock> file_source;
-        std::shared_ptr<dsp::CCRationalResamplerBlock> res;
+        std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> res;
         std::shared_ptr<dsp::AGCBlock> agc;
         std::shared_ptr<dsp::PLLCarrierTrackingBlock> cpl;
         std::shared_ptr<dsp::CorrectIQBlock> dcb;
         std::shared_ptr<QuadratureRecomposer> reco;
-        std::shared_ptr<dsp::CCFIRBlock> rrc;
+        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
-        std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
+        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
         const int d_samplerate;
         /*const*/ int d_buffer_size;

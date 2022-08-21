@@ -13,9 +13,9 @@ namespace demod
     class DVBSDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::CCFIRBlock> rrc;
+        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
-        std::shared_ptr<dsp::CCMMClockRecoveryBlock> rec;
+        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
         float d_rrc_alpha = 0.35;
         int d_rrc_taps = 31;

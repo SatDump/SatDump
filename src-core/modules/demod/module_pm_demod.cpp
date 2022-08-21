@@ -59,13 +59,13 @@ namespace demod
         pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream, final_samplerate, d_symbolrate);
 
         // RRC
-        rrc = std::make_shared<dsp::CCFIRBlock>(pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
         // Costas
         costas = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
 
         // Clock recovery
-        rec = std::make_shared<dsp::CCMMClockRecoveryBlock>(costas->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(costas->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
     }
 
     PMDemodModule::~PMDemodModule()
