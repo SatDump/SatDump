@@ -296,5 +296,81 @@
             },
             "products": {}
         }
+    },
+    "goes_lrit": {
+        "name": "GOES-N LRIT",
+        "live": true,
+        "live_cfg": {
+            "pkt_size": 10240, // 1024 * 10
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
+            ],
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
+            ],
+            "client": [
+                [
+                    3,
+                    0
+                ]
+            ]
+        },
+        "frequencies": [
+            [
+                "LRIT",
+                1691e6
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 293e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.02
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "goes_lrit_data_decoder": {
+                    "write_images": true,
+                    "write_emwin": true,
+                    "write_messages": true,
+                    "write_dcs": true,
+                    "write_unknown": false
+                }
+            }
+        }
     }
 }

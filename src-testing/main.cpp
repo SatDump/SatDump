@@ -12,43 +12,28 @@
 
 #include "logger.h"
 #include <fstream>
-#include "common/dsp/hier/gfsk_mod.h"
-#include "common/dsp/file_sink.h"
-
-#include "common/codings/randomization.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
     std::ifstream input_frm(argv[1]);
+    std::ofstream output_frm("test_mdl.frm");
 
-    uint8_t cadu[1024];
-
-    std::shared_ptr<dsp::stream<float>> input_vco = std::make_shared<dsp::stream<float>>();
-
-    dsp::GFSKMod gfsk_mod(input_vco, 1.0, 0.35);
-
-    dsp::FileSinkBlock file_sink_blk(gfsk_mod.output_stream);
-
-    gfsk_mod.start();
-    file_sink_blk.start();
-    file_sink_blk.set_output_sample_type(dsp::CF_32);
-    file_sink_blk.start_recording("test", 2e6);
+    uint8_t cadu[4640];
 
     while (!input_frm.eof())
     {
-        input_frm.read((char *)cadu, 1024);
+        input_frm.read((char *)cadu, 464);
 
-        derand_ccsds(&cadu[4], 1020);
+        int marker = (cadu[3] & 0b111) << 3 | (cadu[4] >> 5);
 
-        for (int i = 0; i < 8192; i++)
-        {
-            bool bit = (cadu[i / 8] >> (7 - (i % 8))) & 1;
-            input_vco->writeBuf[i] = bit ? 1 : -1;
-        }
+        logger->critical(marker);
 
-        input_vco->swap(8192);
+        if (marker != 44)
+            continue;
+
+        // logger->info(cadu[marker * 30]);
+        // if (cadu[marker * 30] == 168)
+        output_frm.write((char *)cadu, 464);
     }
-
-    logger->critical("DONE!!");
 }
