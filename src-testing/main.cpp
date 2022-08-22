@@ -60,18 +60,25 @@ int main(int argc, char *argv[])
         {
             uint8_t marker = (mdl_packets[i] >> 24) & 0b11111;
 
-            printf("VCID %d\n", marker);
-            // logger->critical(marker);
+            // printf("VCID %d\n", marker);
+            //  logger->critical(marker);
 
-            // 4 & 7 = 0xb48b6f
-
-            if (marker == 16)
+            // 4 & 7 = PCM 0xb48b6f
+            // 8 =
+            // 11 =
+            // 13 =
+            // 14 =
+            // 16 =
+            // 19 =
+            // 2
+            // 25
+            if (marker == 25)
             {
-                if ((mdl_packets[i] >> 24) & 0b1 == 1)
-                {
-                    printf("SIZE %d\n", (int)test_v.size());
-                    test_v.clear();
-                }
+                // if ((mdl_packets[i] >> 24) & 0b1 == 1)
+                ////// {
+                // printf("SIZE %d\n", (int)test_v.size());
+                //     test_v.clear();
+                // }
 
                 uint8_t buf[4];
                 buf[0] = (mdl_packets[i] >> 24) & 0xFF;
@@ -79,9 +86,9 @@ int main(int argc, char *argv[])
                 buf[1] = (mdl_packets[i] >> 16) & 0xFF;
                 buf[2] = (mdl_packets[i] >> 8) & 0xFF;
                 buf[3] = (mdl_packets[i] >> 0) & 0xFF;
-                test_v.push_back(buf[1]);
-                test_v.push_back(buf[2]);
-                test_v.push_back(buf[3]);
+                //  test_v.push_back(buf[1]);
+                //  test_v.push_back(buf[2]);
+                //  test_v.push_back(buf[3]);
                 output_frm.write((char *)&buf[1], 3);
             }
         }
