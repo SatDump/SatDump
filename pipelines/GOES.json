@@ -401,7 +401,7 @@
                     "buffer_size": 8192
                 }
             },
-            "frames": {
+            "frm": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 4096,
