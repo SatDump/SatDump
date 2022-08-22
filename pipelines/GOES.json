@@ -372,5 +372,46 @@
                 }
             }
         }
+    },
+    "goesn_cda": {
+        "name": "GOES-N CDA",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 4e3,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
+                    "buffer_size": 8192
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 4096,
+                    "nrzm": false,
+                    "derandomize": false,
+                    "rs_i": 0,
+                    "asm": "0xfaf3201c"
+                }
+            },
+            "products": {}
+        }
     }
 }

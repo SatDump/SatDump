@@ -19,26 +19,76 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-#if 0
+#if 1
     std::ifstream input_frm(argv[1]);
     std::ofstream output_frm("test_mdl.frm");
 
     uint8_t cadu[4640];
+    uint32_t mdl_packets[128];
+
+    std::vector<uint8_t> test_v;
 
     while (!input_frm.eof())
     {
         input_frm.read((char *)cadu, 464);
 
-        int marker = (cadu[3] & 0b111) << 3 | (cadu[4] >> 5);
+        memset(mdl_packets, 0, sizeof(uint32_t) * 128);
 
-        logger->critical(marker);
+        // Repack into 29 (WTF NOAA!?) words
+        {
+            int bits_in_word = 0;
+            int curr_word = 0;
+            for (int iby = 0; iby < 464; iby++)
+            {
+                for (int ibi = 0; ibi < 8; ibi++)
+                {
+                    uint8_t bit = (cadu[iby] >> (7 - ibi)) & 1;
 
-        if (marker != 44)
-            continue;
+                    mdl_packets[curr_word] = mdl_packets[curr_word] << 1 | bit;
+                    bits_in_word++;
+
+                    if (bits_in_word == 29)
+                    {
+                        curr_word++;
+                        bits_in_word = 0;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 128; i++)
+        {
+            uint8_t marker = (mdl_packets[i] >> 24) & 0b11111;
+
+            printf("VCID %d\n", marker);
+            // logger->critical(marker);
+
+            // 4 & 7 = 0xb48b6f
+
+            if (marker == 16)
+            {
+                if ((mdl_packets[i] >> 24) & 0b1 == 1)
+                {
+                    printf("SIZE %d\n", (int)test_v.size());
+                    test_v.clear();
+                }
+
+                uint8_t buf[4];
+                buf[0] = (mdl_packets[i] >> 24) & 0xFF;
+                buf[0] <<= 3;
+                buf[1] = (mdl_packets[i] >> 16) & 0xFF;
+                buf[2] = (mdl_packets[i] >> 8) & 0xFF;
+                buf[3] = (mdl_packets[i] >> 0) & 0xFF;
+                test_v.push_back(buf[1]);
+                test_v.push_back(buf[2]);
+                test_v.push_back(buf[3]);
+                output_frm.write((char *)&buf[1], 3);
+            }
+        }
 
         // logger->info(cadu[marker * 30]);
         // if (cadu[marker * 30] == 168)
-        output_frm.write((char *)cadu, 464);
+        //  output_frm.write((char *)cadu, 464);
     }
 #endif
 
