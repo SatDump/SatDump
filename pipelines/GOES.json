@@ -428,12 +428,6 @@
                 0
             ]
         ],
-        "frequencies": [
-            [
-                "CDA",
-                1693e6
-            ]
-        ],
         "samplerate": 1e6,
         "work": {
             "baseband": {},
