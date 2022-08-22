@@ -181,15 +181,11 @@ namespace satdump
         return modules[num]->getOutputs();
     }
 
-    nlohmann::json LivePipeline::getModulesStats()
+    void LivePipeline::updateModuleStats()
     {
-        nlohmann::json stats;
         for (std::shared_ptr<ProcessingModule> mod : modules)
-        {
             if (mod->module_stats.size() > 0)
                 stats[mod->getIDM()] = mod->module_stats;
-        }
-        return stats;
     }
 
     void LivePipeline::drawUIs()

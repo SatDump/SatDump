@@ -30,7 +30,8 @@ namespace webserver
     // HTTP Handler for stats
     void http_handle(nng_aio *aio)
     {
-        std::string jsonstr = live_pipeline->getModulesStats().dump(4);
+        live_pipeline->updateModuleStats();
+        std::string jsonstr = live_pipeline->stats.dump(4);
 
         nng_http_res *res;
         nng_http_res_alloc(&res);
@@ -256,6 +257,8 @@ int main_live(int argc, char *argv[])
                     logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
                     break;
                 }
+
+                live_pipeline->stats["timeout_left"] = timeout - elapsed_time;
             }
 
             if (live_should_exit)

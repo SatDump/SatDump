@@ -32,7 +32,8 @@ namespace satdump
 
         std::vector<std::string> getOutputFiles();
 
-        nlohmann::json getModulesStats();
+        nlohmann::json stats;
+        void updateModuleStats();
 
         void drawUIs();
     };
