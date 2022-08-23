@@ -436,7 +436,7 @@
                     "constellation": "bpsk",
                     "symbolrate": 40e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.005
                 }
             },
             "frm": {
