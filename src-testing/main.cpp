@@ -58,10 +58,12 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i < 128; i++)
         {
-            uint8_t marker = (mdl_packets[i] >> 24) & 0b11111;
+            uint8_t marker = ((mdl_packets[i] >> 24) & 0b11110) >> 1;
 
             // printf("VCID %d\n", marker);
             //  logger->critical(marker);
+
+            // if (marker == 0b1010)
 
             // 4 & 7 = PCM 0xb48b6f
             // 8 =
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
             // 19 =
             // 2
             // 25
-            if (marker == 25)
+            if (marker == 0b1010)
             {
                 // if ((mdl_packets[i] >> 24) & 0b1 == 1)
                 ////// {
@@ -89,7 +91,10 @@ int main(int argc, char *argv[])
                 //  test_v.push_back(buf[1]);
                 //  test_v.push_back(buf[2]);
                 //  test_v.push_back(buf[3]);
+
+               // logger->critical("SXI");
                 output_frm.write((char *)&buf[1], 3);
+                output_frm.flush();
             }
         }
 
