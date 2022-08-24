@@ -3,12 +3,7 @@
 #ifdef __ANDROID__
 #include "common/dsp_sample_source/android_usb_backend.h"
 
-#define AIRSPYHF_USB_VID_PID \
-    {                        \
-        {                    \
-            0x03EB, 0x800C   \
-        }                    \
-    }
+const std::vector<DevVIDPID> AIRSPYHF_USB_VID_PID = {{0x03EB, 0x800C}};
 #endif
 
 int AirspyHFSource::_rx_callback(airspyhf_transfer_t *t)

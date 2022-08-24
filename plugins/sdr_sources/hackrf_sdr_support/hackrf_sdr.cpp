@@ -3,10 +3,7 @@
 #ifdef __ANDROID__
 #include "common/dsp_sample_source/android_usb_backend.h"
 
-#define HACKRF_USB_VID_PID                                     \
-    {                                                          \
-        {0x1d50, 0x604b}, {0x1d50, 0x6089}, { 0x1d50, 0xcc15 } \
-    }
+const std::vector<DevVIDPID> HACKRF_USB_VID_PID = {{0x1d50, 0x604b}, {0x1d50, 0x6089}, {0x1d50, 0xcc15}};
 #endif
 
 int HackRFSource::_rx_callback(hackrf_transfer *t)
@@ -101,7 +98,7 @@ void HackRFSource::start()
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
-    if ( hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
+    if (hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
         throw std::runtime_error("Could not open HackRF device!");
 #endif
 

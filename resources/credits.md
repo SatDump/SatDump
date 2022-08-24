@@ -50,6 +50,7 @@ And additionally, on the UI side :
 - [libhackrf](https://github.com/greatscottgadgets/hackrf)
 - [LimeSuite](https://github.com/MyriadRF/LimeSuite)
 - [librtlsdr](https://osmocom.org/projects/rtl-sdr/wiki)
+- [libmirisdr4](https://github.com/f4exb/libmirisdr-4)
 - [libsddc](https://github.com/ik1xpv/ExtIO_sddc)
 - [libsdrplay](https://www.sdrplay.com/)
 

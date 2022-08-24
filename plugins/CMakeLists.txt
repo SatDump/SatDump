@@ -131,6 +131,11 @@ if(PLUGIN_RTLSDR_SDR_SUPPORT)
 add_subdirectory(sdr_sources/rtlsdr_sdr_support)
 endif()
 
+option(PLUGIN_MIRISDR_SDR_SUPPORT "Enable MiriSDR SDR Support plugin" ON)
+if(PLUGIN_MIRISDR_SDR_SUPPORT)
+add_subdirectory(sdr_sources/mirisdr_sdr_support)
+endif()
+
 option(PLUGIN_SPYSERVER_SUPPORT "Enable SpyServer Support plugin" ON)
 if(PLUGIN_SPYSERVER_SUPPORT)
 add_subdirectory(sdr_sources/spyserver_support)

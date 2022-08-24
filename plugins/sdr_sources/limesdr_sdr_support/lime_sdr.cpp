@@ -3,12 +3,7 @@
 #ifdef __ANDROID__
 #include "common/dsp_sample_source/android_usb_backend.h"
 
-#define LIMESDR_USB_VID_PID \
-    {                       \
-        {                   \
-            0x0403, 0x601f  \
-        }                   \
-    }
+const std::vector<DevVIDPID> LIMESDR_USB_VID_PID = {{0x0403, 0x601f}};
 
 // Closing the connection on Android crashes.
 // So we cache it and never close it, which is

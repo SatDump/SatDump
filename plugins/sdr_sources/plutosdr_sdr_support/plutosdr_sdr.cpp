@@ -4,12 +4,7 @@
 #ifdef __ANDROID__
 #include "common/dsp_sample_source/android_usb_backend.h"
 
-#define PLUTOSDR_USB_VID_PID \
-    {                        \
-        {                    \
-            0x0456, 0xb673   \
-        }                    \
-    }
+const std::vector<DevVIDPID> PLUTOSDR_USB_VID_PID = {{0x0456, 0xb673}};
 
 extern "C"
 {
