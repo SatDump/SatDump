@@ -7,6 +7,7 @@
 #include "image/infrared1_reader.h"
 #include "image/infrared2_reader.h"
 #include "image/visible_reader.h"
+#include "image/sounder_reader.h"
 
 namespace goes
 {
@@ -62,14 +63,17 @@ namespace goes
             InfraredReader1 infraredImageReader1;
             InfraredReader2 infraredImageReader2;
             VisibleReader visibleImageReader;
+            SounderReader sounderReader;
 
             // Async image writing
             std::string directory;
+            std::string directory_snd;
             bool writeImagesAync = false;
             std::thread imageSavingThread;
             std::mutex imageVectorMutex;
             std::vector<GVARImages> imagesVector;
             void writeImages(GVARImages &images, std::string directory);
+            void writeSounder();
             void writeImagesThread();
 
             int nonEndCount, endCount;

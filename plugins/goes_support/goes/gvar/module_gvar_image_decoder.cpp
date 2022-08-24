@@ -34,6 +34,29 @@ namespace goes
             return utc_filename;
         }
 
+        void GVARImageDecoderModule::writeSounder()
+        {
+            const time_t timevalue = time(0);
+            std::tm *timeReadable = gmtime(&timevalue);
+            std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                                    (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+
+            logger->info("New sounder scan starting, saving at " + timestamp + "...");
+
+            std::filesystem::create_directories(directory_snd + "/" + timestamp);
+            std::string directory_d = directory_snd + "/" + timestamp;
+
+            for (int i = 0; i < 19; i++)
+            {
+                logger->info("Saving Sounder_" + std::to_string(i + 1) + ".png");
+                sounderReader.getImage(i).save_png(directory_d + "/Sounder_" + std::to_string(i + 1) + ".png");
+            }
+            sounderReader.clear();
+        }
+
         void GVARImageDecoderModule::writeImages(GVARImages &images, std::string directory)
         {
             const time_t timevalue = time(0);
@@ -253,14 +276,20 @@ namespace goes
             }
 
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";
+            directory_snd = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SOUNDER";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            if (!std::filesystem::exists(directory_snd))
+                std::filesystem::create_directory(directory_snd);
 
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
+
+            int last_val = 0;
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -272,6 +301,24 @@ namespace goes
 
                 // Parse main header
                 PrimaryBlockHeader block_header = *((PrimaryBlockHeader *)&frame[8]);
+
+                if (block_header.block_id == 11)
+                {
+                    uint8_t *sad_header = &frame[8 + 30 * 3];
+                    int dataid = sad_header[2];
+
+                    if (dataid == 35)
+                    {
+                        int x_pos = frame[6120] << 8 | frame[6121];
+                        if (sad_header[3])
+                        {
+                            if (x_pos != last_val)
+                                writeSounder();
+                            last_val = x_pos;
+                        }
+                        sounderReader.pushFrame(frame, 0);
+                    }
+                }
 
                 // Is this imagery? Blocks 1 to 10 are imagery
                 if (block_header.block_id >= 1 && block_header.block_id <= 10)
@@ -405,6 +452,8 @@ namespace goes
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
+
+            writeSounder();
 
             if (writeImagesAync)
             {
