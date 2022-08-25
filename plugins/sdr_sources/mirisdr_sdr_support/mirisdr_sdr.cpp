@@ -174,21 +174,6 @@ void MiriSdrSource::drawControlUI()
         style::beginDisabled();
     ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
-
-    if (ImGui::Combo("Bit Depth", &bit_depth_sel, "8-bits\0"
-                                                  "10-bits\0"
-                                                  "12-bits\0"
-                                                  "14-bits\0"))
-    {
-        if (bit_depth_sel == 0)
-            bit_depth = 8;
-        else if (bit_depth_sel == 1)
-            bit_depth = 10;
-        else if (bit_depth_sel == 2)
-            bit_depth = 12;
-        else if (bit_depth_sel == 3)
-            bit_depth = 14;
-    }
     if (is_started)
         style::endDisabled();
 

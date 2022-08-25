@@ -24,8 +24,6 @@ protected:
     std::vector<uint64_t> available_samplerates;
     uint64_t current_samplerate = 0;
 
-    int bit_depth_sel = 2;
-
     int bit_depth = 12;
     int gain = 0;
     bool bias_enabled = false;
