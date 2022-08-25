@@ -48,7 +48,6 @@ void MiriSdrSource::set_settings(nlohmann::json settings)
 
     gain = getValueOrDefault(d_settings["gain"], gain);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
-    bit_depth = getValueOrDefault(d_settings["bit_depth"], bit_depth);
 
     if (is_started)
     {
@@ -61,7 +60,6 @@ nlohmann::json MiriSdrSource::get_settings(nlohmann::json)
 {
     d_settings["gain"] = gain;
     d_settings["bias"] = bias_enabled;
-    d_settings["bit_depth"] = bit_depth;
 
     return d_settings;
 }
@@ -109,6 +107,18 @@ void MiriSdrSource::start()
     mirisdr_set_if_freq(mirisdr_dev_obj, 0);                    // ZeroIFu
     mirisdr_set_bandwidth(mirisdr_dev_obj, current_samplerate); // Set BW
     mirisdr_set_transfer(mirisdr_dev_obj, (char *)"BULK");      // Bulk USB transfers
+
+    // Automatic bit depth selection
+    if (current_samplerate <= 6e6)
+        bit_depth = 14;
+    else if (current_samplerate <= 8e6)
+        bit_depth = 12;
+    else if (current_samplerate <= 9e6)
+        bit_depth = 10;
+    else
+        bit_depth = 8;
+
+    logger->info("Using MiriSDR bit depth {:d}", bit_depth);
 
     if (bit_depth == 8)
         mirisdr_set_sample_format(mirisdr_dev_obj, (char *)"504_S8");
