@@ -158,10 +158,12 @@ namespace satdump
                             splitter->input_stream = source_ptr->output_stream;
                             splitter->start();
                             is_started = true;
+                            sdr_error = "";
                         }
                         catch (std::runtime_error &e)
                         {
                             sdr_error = e.what();
+                            logger->error(e.what());
                         }
                     }
                 }
