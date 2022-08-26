@@ -38,7 +38,7 @@ namespace dsp
         virtual void set_frequency(uint64_t frequency) { d_frequency = frequency; }
         virtual uint64_t get_frequency() { return d_frequency; }
 
-        virtual void set_samplerate(uint64_t samplerate) = 0; // This should return the current samplerate of the device
+        virtual void set_samplerate(uint64_t samplerate) = 0; // This should set the samplerate of the device
         virtual uint64_t get_samplerate() = 0;                // This should return the current samplerate of the device
 
         DSPSampleSource(SourceDescriptor source)

@@ -1,7 +1,7 @@
 #include "rtlsdr_sdr.h"
 
 #ifdef __ANDROID__
-#include "common/dsp_sample_source/android_usb_backend.h"
+#include "common/dsp_source_sink/android_usb_backend.h"
 
 const std::vector<DevVIDPID> RTLSDR_USB_VID_PID = {{0x0bda, 0x2832},
                                                    {0x0bda, 0x2838},

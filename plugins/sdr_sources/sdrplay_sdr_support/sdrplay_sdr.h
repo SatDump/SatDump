@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/dsp_sample_source/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
 #include <sdrplay_api.h>
 #include "logger.h"
 #include "imgui/imgui.h"

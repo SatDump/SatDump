@@ -1,21 +1,18 @@
-#include "hackrf_sdr.h"
+#include "hackrf_sdr_sink.h"
 
 #ifdef __ANDROID__
-#include "common/dsp_sample_source/android_usb_backend.h"
+#include "common/dsp_source_sink/android_usb_backend.h"
 
 const std::vector<DevVIDPID> HACKRF_USB_VID_PID = {{0x1d50, 0x604b}, {0x1d50, 0x6089}, {0x1d50, 0xcc15}};
 #endif
 
-int HackRFSource::_rx_callback(hackrf_transfer *t)
+int HackRFSink::_tx_callback(hackrf_transfer *t)
 {
-    std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->rx_ctx);
-    for (int i = 0; i < t->buffer_length / 2; i++)
-        stream->writeBuf[i] = complex_t(((int8_t *)t->buffer)[i * 2 + 0] / 128.0f, ((int8_t *)t->buffer)[i * 2 + 1] / 128.0f);
-    stream->swap(t->buffer_length / 2);
+    ((dsp::RingBuffer<uint8_t> *)t->tx_ctx)->read(t->buffer, t->valid_length);
     return 0;
 }
 
-void HackRFSource::set_gains()
+void HackRFSink::set_gains()
 {
     if (!is_started)
         return;
@@ -27,7 +24,7 @@ void HackRFSource::set_gains()
     logger->debug("Set HackRF VGA gain to {:d}", vga_gain);
 }
 
-void HackRFSource::set_bias()
+void HackRFSink::set_bias()
 {
     if (!is_started)
         return;
@@ -35,7 +32,7 @@ void HackRFSource::set_bias()
     logger->debug("Set HackRF bias to {:d}", (int)bias_enabled);
 }
 
-void HackRFSource::set_settings(nlohmann::json settings)
+void HackRFSink::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
@@ -52,7 +49,7 @@ void HackRFSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json HackRFSource::get_settings(nlohmann::json)
+nlohmann::json HackRFSink::get_settings(nlohmann::json)
 {
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;
@@ -63,7 +60,7 @@ nlohmann::json HackRFSource::get_settings(nlohmann::json)
     return d_settings;
 }
 
-void HackRFSource::open()
+void HackRFSink::open()
 {
     is_open = true;
 
@@ -85,9 +82,9 @@ void HackRFSource::open()
         samplerate_option_str_exp += std::to_string(samplerate) + '\0';
 }
 
-void HackRFSource::start()
+void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
 {
-    DSPSampleSource::start();
+    DSPSampleSink::start(stream);
 
 #ifndef __ANDROID__
     std::stringstream ss;
@@ -115,35 +112,38 @@ void HackRFSource::start()
     set_gains();
     set_bias();
 
-    hackrf_start_rx(hackrf_dev_obj, &_rx_callback, &output_stream);
+    hackrf_start_tx(hackrf_dev_obj, &_tx_callback, &fifo_out);
+    should_run = true;
 }
 
-void HackRFSource::stop()
+void HackRFSink::stop()
 {
+    DSPSampleSink::stop();
+    should_run = false;
     if (is_started)
     {
-        hackrf_stop_rx(hackrf_dev_obj);
+        hackrf_stop_tx(hackrf_dev_obj);
         hackrf_close(hackrf_dev_obj);
         is_started = false;
     }
 }
 
-void HackRFSource::close()
+void HackRFSink::close()
 {
     // if (is_open)
 }
 
-void HackRFSource::set_frequency(uint64_t frequency)
+void HackRFSink::set_frequency(uint64_t frequency)
 {
     if (is_open && is_started)
     {
         hackrf_set_freq(hackrf_dev_obj, frequency);
         logger->debug("Set HackRF frequency to {:d}", frequency);
     }
-    DSPSampleSource::set_frequency(frequency);
+    DSPSampleSink::set_frequency(frequency);
 }
 
-void HackRFSource::drawControlUI()
+void HackRFSink::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
@@ -168,7 +168,7 @@ void HackRFSource::drawControlUI()
         set_bias();
 }
 
-void HackRFSource::set_samplerate(uint64_t samplerate)
+void HackRFSink::set_samplerate(uint64_t samplerate)
 {
     for (int i = 0; i < (int)available_samplerates.size(); i++)
     {
@@ -183,14 +183,14 @@ void HackRFSource::set_samplerate(uint64_t samplerate)
     throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t HackRFSource::get_samplerate()
+uint64_t HackRFSink::get_samplerate()
 {
     return current_samplerate;
 }
 
-std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
+std::vector<dsp::SinkDescriptor> HackRFSink::getAvailableSinks()
 {
-    std::vector<dsp::SourceDescriptor> results;
+    std::vector<dsp::SinkDescriptor> results;
 
 #ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
@@ -202,7 +202,7 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
         ss << devlist->serial_numbers[i];
         ss >> std::hex >> id;
         ss << devlist->serial_numbers[i];
-        results.push_back({"hackrf", "HackRF One " + ss.str(), id});
+        results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
     }
 #else
     int vid, pid;

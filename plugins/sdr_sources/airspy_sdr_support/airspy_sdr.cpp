@@ -1,7 +1,7 @@
 #include "airspy_sdr.h"
 
 #ifdef __ANDROID__
-#include "common/dsp_sample_source/android_usb_backend.h"
+#include "common/dsp_source_sink/android_usb_backend.h"
 
 const std::vector<DevVIDPID> AIRSPY_USB_VID_PID = {{0x1d50, 0x60a1}};
 #endif

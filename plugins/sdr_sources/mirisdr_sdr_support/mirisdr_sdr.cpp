@@ -1,7 +1,7 @@
 #include "mirisdr_sdr.h"
 
 #ifdef __ANDROID__
-#include "common/dsp_sample_source/android_usb_backend.h"
+#include "common/dsp_source_sink/android_usb_backend.h"
 
 const std::vector<DevVIDPID> MIRISDR_USB_VID_PID = {{0x1df7, 0x2500},
                                                     {0x2040, 0xd300},

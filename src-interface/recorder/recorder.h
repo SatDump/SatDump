@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
-#include "common/dsp_sample_source/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp/splitter.h"
 #include "common/dsp/fft_pan.h"
 #include "common/dsp/file_sink.h"

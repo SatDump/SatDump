@@ -1,5 +1,5 @@
 #include "live.h"
-#include "common/dsp_sample_source/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
 #include <signal.h>
 #include "logger.h"
 #include "common/cli_utils.h"

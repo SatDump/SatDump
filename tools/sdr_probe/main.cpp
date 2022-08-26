@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "init.h"
-#include "common/dsp_sample_source/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_sink.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,10 +13,16 @@ int main(int argc, char *argv[])
     logger->set_level(spdlog::level::level_enum::trace);
 
     dsp::registerAllSources();
+    dsp::registerAllSinks();
 
     std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources();
+    std::vector<dsp::SinkDescriptor> sinks = dsp::getAllAvailableSinks();
 
-    logger->info("Found devices :");
+    logger->info("Found devices (sources) :");
     for (dsp::SourceDescriptor src : sources)
+        logger->info("- " + src.name);
+
+    logger->info("Found devices (sinks) :");
+    for (dsp::SinkDescriptor src : sinks)
         logger->info("- " + src.name);
 }
