@@ -12,6 +12,8 @@
 #include "common/tracking/tle.h"
 #include "products/products.h"
 
+#include "core/opencl.h"
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
@@ -54,6 +56,11 @@ namespace satdump
         logger->debug("Registered pipelines :");
         for (Pipeline &pipeline : pipelines)
             logger->debug(" - " + pipeline.name);
+
+#ifdef USE_OPENCL
+        // OpenCL
+        opencl::initOpenCL();
+#endif
 
         // TLEs
         if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>())

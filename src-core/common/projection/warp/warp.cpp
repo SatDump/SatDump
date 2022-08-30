@@ -3,7 +3,6 @@
 #include <map>
 #include "common/utils.h"
 #include "resources.h"
-#include "core/config.h"
 
 namespace satdump
 {
@@ -155,10 +154,13 @@ namespace satdump
         }
 
 #ifdef USE_OPENCL
-        void ImageWarper::warpOnGPU_fp64(cl::Context context, cl::Device device, WarpResult &result)
+        void ImageWarper::warpOnGPU_fp64(WarpResult &result)
         {
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
+            cl::Program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
+
+            auto &context = satdump::opencl::ocl_context;
+            auto &device = satdump::opencl::ocl_device;
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -228,10 +230,13 @@ namespace satdump
             logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
         }
 
-        void ImageWarper::warpOnGPU_fp32(cl::Context context, cl::Device device, WarpResult &result)
+        void ImageWarper::warpOnGPU_fp32(WarpResult &result)
         {
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(context, device, resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
+            cl::Program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
+
+            auto &context = satdump::opencl::ocl_context;
+            auto &device = satdump::opencl::ocl_device;
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -329,10 +334,8 @@ namespace satdump
             try
             {
                 logger->debug("Using GPU!");
-                int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
-                int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
-                std::pair<cl::Context, cl::Device> opencl_context = opencl::getDeviceAndContext(p, d);
-                warpOnGPU_fp32(opencl_context.first, opencl_context.second, result);
+                satdump::opencl::setupOCLContext();
+                warpOnGPU_fp32(result);
                 return result;
             }
             catch (std::runtime_error &e)

@@ -3,7 +3,7 @@
 #include "common/image/image.h"
 #include "common/projection/thinplatespline.h"
 #include <memory>
-#include "common/opencl.h"
+#include "core/opencl.h"
 
 namespace satdump
 {
@@ -92,14 +92,14 @@ namespace satdump
 #ifdef USE_OPENCL
             // 64-bits GPU implementation, more accurate and faster than CPU, but not all GPUs
             // have FP64 cores and if they do, usually quite few of them
-            void warpOnGPU_fp64(cl::Context context, cl::Device device, WarpResult &result);
+            void warpOnGPU_fp64(WarpResult &result);
 
             // 32-bits GPU implementation, less accurate than FP64 but really, as long as
             // you are not re-projecting something super high resolution, no difference to
             // FP64. The big plus though is, most GPU especially on the consumer end and older
             // generations pack a LOT more FP32 cores (On recent Pascal GPUs, it's 24x more than
             // FP64!). This is the default, and gives quite impressive performances.
-            void warpOnGPU_fp32(cl::Context context, cl::Device device, WarpResult &result);
+            void warpOnGPU_fp32(WarpResult &result);
 #endif
 
         public:

@@ -37,7 +37,7 @@ namespace dsp
         {
             should_run = false;
 
-            if (d_got_input)
+            if (d_got_input && input_stream.use_count())
                 input_stream->stopReader();
             // output_stream->stopWriter();
 

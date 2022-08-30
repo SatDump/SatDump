@@ -6,7 +6,7 @@
 #include "core/config.h"
 
 #include "main_ui.h"
-#include "common/opencl.h"
+#include "core/opencl.h"
 
 #include "init.h"
 #include "common/tracking/tle.h"
@@ -23,7 +23,7 @@ namespace satdump
         // OpenCL Selection
         int opencl_devices_id = 0;
         std::string opencl_devices_str;
-        std::vector<std::tuple<std::string, int, int>> opencl_devices_enum;
+        std::vector<opencl::OCLDevice> opencl_devices_enum;
 #endif
 
         void setup()
@@ -60,10 +60,10 @@ namespace satdump
             int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
             int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
             int dev_id = 0;
-            for (std::tuple<std::string, int, int> &dev : opencl_devices_enum)
+            for (opencl::OCLDevice &dev : opencl_devices_enum)
             {
-                opencl_devices_str += std::get<0>(dev) + '\0';
-                if (std::get<1>(dev) == p && std::get<2>(dev) == d)
+                opencl_devices_str += dev.name + '\0';
+                if (dev.platform_id == p && dev.device_id == d)
                     opencl_devices_id = dev_id;
                 dev_id++;
             }
@@ -125,8 +125,8 @@ namespace satdump
 #ifdef USE_OPENCL
                 if (opencl_devices_enum.size() > 0)
                 {
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = std::get<1>(opencl_devices_enum[opencl_devices_id]);
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = std::get<2>(opencl_devices_enum[opencl_devices_id]);
+                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
+                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
                 }
 #endif
 
