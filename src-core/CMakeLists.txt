@@ -32,6 +32,11 @@ else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
 endif()
 
+# We have to... For MSVC
+if(BUILD_OPENCL)
+    target_compile_definitions(satdump_core PUBLIC USE_OPENCL=1)
+endif()
+
 # Threads
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)

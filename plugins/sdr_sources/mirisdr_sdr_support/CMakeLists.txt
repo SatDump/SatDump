@@ -12,7 +12,7 @@ if(USB_LIBRARY OR MSVC OR ANDROID)
     add_library(mirisdr_sdr_support SHARED ${mirisdr_sdr_support_CPPS})
 
     if(MSVC)
-    # target_link_libraries(mirisdr_sdr_support PUBLIC satdump_core rtlsdr.dll)
+        target_link_libraries(mirisdr_sdr_support PUBLIC satdump_core libusb-1.0.dll)
     elseif(ANDROID)
         target_link_libraries(mirisdr_sdr_support PUBLIC satdump_core usb)
         target_include_directories(mirisdr_sdr_support PUBLIC ../../../android/deps/libusb)

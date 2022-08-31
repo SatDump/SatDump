@@ -93,11 +93,17 @@ endif()
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
 # Check we have OpenCL
-find_package(OpenCL)
+if(MSVC)
+    set(OPENCL_FOUND 1)
+    set(OpenCL_LIBRARY OpenCL.dll)
+    set(OpenCL_LIBRARIES OpenCL.dll)
+else()
+    find_package(OpenCL)
+endif()
 
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
-    add_compile_definitions(USE_OPENCL="1")
+    add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
