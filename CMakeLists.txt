@@ -103,7 +103,7 @@ endif()
 
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
-    add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
+    # add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
