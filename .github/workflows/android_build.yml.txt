@@ -25,7 +25,7 @@ jobs:
 
     # Call SDKManager to install the Android NDK
     - name: Install Android NDK
-      run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;24.0.8215888" --channel=3
+      run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.1.8937393" --channel=3
 
     - name: Build
       shell: bash
