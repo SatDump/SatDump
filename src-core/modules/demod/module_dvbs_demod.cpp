@@ -229,7 +229,7 @@ namespace demod
 
     void DVBSDemodModule::drawUI(bool window)
     {
-        ImGui::Begin(name.c_str(), NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin(name.c_str(), NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.draw(); // Constellation

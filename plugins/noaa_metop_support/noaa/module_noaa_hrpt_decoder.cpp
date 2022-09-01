@@ -86,7 +86,7 @@ namespace noaa
 
     void NOAAHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA HRPT Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         // Constellation
         ImGui::BeginGroup();

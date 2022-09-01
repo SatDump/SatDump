@@ -127,7 +127,7 @@ namespace metop
 
     void MetOpDumpDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("MetOp X-Band Dump Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("MetOp X-Band Dump Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         //float ber = viterbi.ber();
 

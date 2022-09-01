@@ -189,7 +189,7 @@ namespace proba
 
         void PROBAInstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Proba Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("Proba Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##probainstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

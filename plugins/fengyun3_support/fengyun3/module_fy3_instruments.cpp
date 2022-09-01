@@ -813,7 +813,7 @@ namespace fengyun3
             if(!is_init)
                 return;
 
-            ImGui::Begin("FengYun-3 Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("FengYun-3 Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##fy3instrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

@@ -489,7 +489,7 @@ namespace goes
                 textureBuffer = new uint32_t[1354 * 2 * 5236];
             }
 
-            ImGui::Begin("GVAR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GVAR Image Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             // This is outer crap...
             ImGui::BeginGroup();

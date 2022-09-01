@@ -211,7 +211,7 @@ namespace ccsds
 
     void CCSDSConvR2ConcatDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
         float ber = viterbi->ber();
 
         ImGui::BeginGroup();

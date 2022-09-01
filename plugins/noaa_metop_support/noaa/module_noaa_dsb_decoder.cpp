@@ -90,7 +90,7 @@ namespace noaa
 
     void NOAADSBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA DSB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA DSB Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.pushSofttAndGaussian(soft_buffer, 127, BUFFER_SIZE);

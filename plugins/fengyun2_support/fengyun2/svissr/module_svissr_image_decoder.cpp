@@ -304,7 +304,7 @@ namespace fengyun_svissr
             textureBuffer = new uint32_t[2501 * 2291];
         }
 
-        ImGui::Begin("S-VISSR Image Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("S-VISSR Image Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         // This is outer crap...
         ImGui::BeginGroup();

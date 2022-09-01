@@ -70,7 +70,7 @@ namespace network
 
     void NetworkClientModule::drawUI(bool window)
     {
-        ImGui::Begin("Network Client", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("Network Client", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::Text("Server Address  : ");
         ImGui::SameLine();

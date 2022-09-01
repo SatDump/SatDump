@@ -112,7 +112,7 @@ namespace xrit
 
     void S2UDPxRITCADUextractor::drawUI(bool window)
     {
-        ImGui::Begin("DVB-S2 UDP xRIT CADU Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("DVB-S2 UDP xRIT CADU Extractor", NULL, window ? 0 : NOWINDOW_FLAGS);
         ImGui::BeginGroup();
         {
             ImGui::Button("TS Status", {200 * ui_scale, 20 * ui_scale});

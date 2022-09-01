@@ -93,7 +93,7 @@ namespace meteor
 
     void METEORHRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR HRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("METEOR HRPT Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         // Constellation
         ImGui::BeginGroup();

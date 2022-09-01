@@ -131,7 +131,7 @@ namespace goes
 
         void GVARDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GVAR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GVAR Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::BeginGroup();
             {

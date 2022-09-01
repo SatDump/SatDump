@@ -105,7 +105,7 @@ namespace jason3
 
         void Jason3InstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Jason-3 Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("Jason-3 Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##jason3instrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

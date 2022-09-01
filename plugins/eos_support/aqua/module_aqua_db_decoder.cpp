@@ -123,7 +123,7 @@ namespace aqua
 
     void AquaDBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Aqua DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("Aqua DB Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

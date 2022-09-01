@@ -153,7 +153,7 @@ namespace oceansat
 
     void Oceansat2DBDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("Oceansat-2 DB Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("Oceansat-2 DB Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

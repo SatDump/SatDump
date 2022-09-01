@@ -137,7 +137,7 @@ namespace goes
 
         void GOESGRBCADUextractor::drawUI(bool window)
         {
-            ImGui::Begin("GOES GRB CADU Extractor", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GOES GRB CADU Extractor", NULL, window ? 0 : NOWINDOW_FLAGS);
             ImGui::BeginGroup();
             {
                 ImGui::Button("CADU Correlator", {200 * ui_scale, 20 * ui_scale});

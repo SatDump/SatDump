@@ -178,7 +178,7 @@ namespace oceansat
 
         void OceansatOCMDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Oceansat OCM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("Oceansat OCM Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##oc2instrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

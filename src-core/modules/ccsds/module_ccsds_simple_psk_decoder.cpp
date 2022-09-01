@@ -242,7 +242,7 @@ namespace ccsds
 
     void CCSDSSimplePSKDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> def = deframer;
         if (d_constellation == dsp::QPSK && !d_diff_decode)       // Is we are working with non-NRZM QPSK, check what deframer to use

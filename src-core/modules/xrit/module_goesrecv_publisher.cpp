@@ -83,7 +83,7 @@ namespace xrit
 
     void GOESRecvPublisherModule::drawUI(bool window)
     {
-        ImGui::Begin("xRIT GOESRECV Publisher", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("xRIT GOESRECV Publisher", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();

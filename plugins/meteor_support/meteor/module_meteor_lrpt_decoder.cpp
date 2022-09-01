@@ -141,7 +141,7 @@ namespace meteor
 
     void METEORLRPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("METEOR LRPT Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         float ber = viterbi.ber();
 

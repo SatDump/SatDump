@@ -372,7 +372,7 @@ namespace eos
 
         void EOSInstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("EOS Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("EOS Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##eosinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

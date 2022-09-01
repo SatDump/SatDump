@@ -126,7 +126,7 @@ namespace elektro
 
         void ELEKTROLRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("ELEKTRO-L LRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("ELEKTRO-L LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {

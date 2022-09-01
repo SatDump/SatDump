@@ -200,7 +200,7 @@ namespace elektro_arktika
 
     void TLMDemodModule::drawUI(bool window)
     {
-        ImGui::Begin("ELEKTRO-L / ARKTIKA-M TLM Demodulator", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("ELEKTRO-L / ARKTIKA-M TLM Demodulator", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         constellation.pushComplex(rec->output_stream->readBuf, rec->output_stream->getDataSize());

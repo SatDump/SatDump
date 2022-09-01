@@ -154,7 +154,7 @@ namespace noaa
 
     void NOAAGACDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA GAC Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA GAC Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         // Constellation
         ImGui::BeginGroup();

@@ -135,7 +135,7 @@ namespace gk2a
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {

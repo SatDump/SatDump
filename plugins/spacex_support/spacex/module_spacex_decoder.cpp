@@ -137,7 +137,7 @@ namespace spacex
 
     void SpaceXDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("SpaceX TLM Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("SpaceX TLM Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

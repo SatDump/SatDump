@@ -211,7 +211,7 @@ namespace meteor
 
         void MeteorInstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("METEOR Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("METEOR Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##meteorinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

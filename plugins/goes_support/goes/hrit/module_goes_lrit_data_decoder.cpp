@@ -145,7 +145,7 @@ namespace goes
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {

@@ -81,7 +81,7 @@ namespace coriolis
 
         void CoriolisWindSatDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Coriolis WindSat Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("Coriolis WindSat Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 

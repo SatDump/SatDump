@@ -124,7 +124,7 @@ namespace goes
 
         void GOESGRBDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GOES GRB Data Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GOES GRB Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (!streamingInput)
                 ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));

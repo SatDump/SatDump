@@ -130,7 +130,7 @@ namespace fengyun_svissr
 
     void SVISSRDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("S-VISSR Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("S-VISSR Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {

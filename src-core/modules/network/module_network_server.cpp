@@ -93,7 +93,7 @@ namespace network
 
     void NetworkServerModule::drawUI(bool window)
     {
-        ImGui::Begin("Network Server", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("Network Server", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();

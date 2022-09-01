@@ -308,7 +308,7 @@ namespace noaa
 
         void NOAAInstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("NOAA Instruments Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("NOAA Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##noaainstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {

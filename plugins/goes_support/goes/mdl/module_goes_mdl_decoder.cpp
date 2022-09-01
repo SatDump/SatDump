@@ -117,7 +117,7 @@ namespace goes
 
         void GOESMDLDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GOES MDL Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("GOES MDL Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             // float ber = viterbi.ber();
 

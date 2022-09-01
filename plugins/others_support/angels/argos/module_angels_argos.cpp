@@ -95,7 +95,7 @@ namespace angels
 
         void AngelsArgosDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("Angels ARGOS Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+            ImGui::Begin("Angels ARGOS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
