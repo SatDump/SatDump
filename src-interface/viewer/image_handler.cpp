@@ -355,82 +355,21 @@ namespace satdump
         image_view.draw(win_size);
     }
 
-    // returns the node's rectangle
-    /*ImRect RenderTree(Node *n)
-    {
-        const bool recurse = ImGui::TreeNode(...);
-        const ImRect nodeRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-
-        if (recurse)
-        {
-            const ImColor TreeLineColor = ImGui::GetColorU32(ImGuiCol_Text);
-            const float SmallOffsetX = 11.0f; // for now, a hardcoded value; should take into account tree indent size
-            ImDrawList *drawList = ImGui::GetWindowDrawList();
-
-            ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
-            verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
-            ImVec2 verticalLineEnd = verticalLineStart;
-
-            for (Node *child : *n)
-            {
-                const float HorizontalTreeLineSize = 8.0f; // chosen arbitrarily
-                const ImRect childRect = RenderTree(child);
-                const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-                drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
-                verticalLineEnd.y = midpoint;
-            }
-
-            drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
-        }
-
-        return nodeRect;
-    }*/
-
     float ImageViewerHandler::drawTreeMenu()
     {
-        const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
-        const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
-        ImDrawList *drawList = ImGui::GetWindowDrawList();
+        tree_local.start();
 
-        ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
-        verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
-        ImVec2 verticalLineEnd = verticalLineStart;
-
-        ImGui::TreeNodeEx("Channel 1 equ", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-        if (ImGui::IsItemClicked())
+        for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
         {
-            select_image_id = 1;
-            active_channel_id = 0;
-            equalize_image = true;
-            asyncUpdate();
-        }
-        {
-            const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
-            const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
-            const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-            drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
-            verticalLineEnd.y = midpoint;
+            ImGui::TreeNodeEx(std::string("RGB " + compo.first).c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+            if (ImGui::IsItemClicked())
+            {
+                rgb_compo_cfg = compo.second;
+                updateRGB();
+            }
+            tree_local.node();
         }
 
-        ImGui::TreeNodeEx("Channel 2 White Balance", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-        if (ImGui::IsItemClicked())
-        {
-            select_image_id = 2;
-            active_channel_id = 1;
-            equalize_image = false;
-            white_balance_image = true;
-            asyncUpdate();
-        }
-        {
-            const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
-            const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
-            const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-            drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
-            verticalLineEnd.y = midpoint;
-        }
-
-        drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
-
-        return verticalLineEnd.y - verticalLineStart.y;
+        return tree_local.end();
     }
 }

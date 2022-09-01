@@ -9,10 +9,15 @@
 
 #include "imgui/pfd/widget.h"
 
+#include "tree.h"
+
 namespace satdump
 {
     class ViewerHandler
     {
+    protected:
+        TreeDrawer tree_local;
+
     public:
         Products *products;
         nlohmann::ordered_json instrument_cfg;

@@ -149,8 +149,11 @@ namespace satdump
                 ImGui::TreePop();
             }
 
+            ImGui::Separator();
+            ImGui::Text("Load Dataset :");
             if (select_dataset_dialog.draw())
                 loadDatasetInViewer(select_dataset_dialog.getPath());
+            ImGui::Text("Load Products :");
             if (select_products_dialog.draw())
                 loadProductsInViewer(select_products_dialog.getPath());
         }
