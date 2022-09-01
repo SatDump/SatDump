@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
     buildToolsVersion "30.0.3"
     ndkVersion "24.0.8215888"
     defaultConfig {
         applicationId "com.altillimity.satdump"
-        minSdkVersion 23
-        targetSdkVersion 29
+        minSdkVersion 28
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }

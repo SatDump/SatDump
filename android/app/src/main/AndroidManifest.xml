@@ -6,8 +6,8 @@
         android:label="SatDump"
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:hasCode="true"
-        android:requestLegacyExternalStorage="true">
+        android:hasCode="true">
+        <!--android:requestLegacyExternalStorage="true"-->
 
         <activity
             android:name="com.altillimity.satdump.MainActivity"
