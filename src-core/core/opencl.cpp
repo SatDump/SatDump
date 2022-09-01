@@ -11,25 +11,24 @@ namespace satdump
         std::vector<OCLDevice> getAllDevices()
         {
             std::vector<OCLDevice> devs;
-            std::vector<cl::Platform> all_platforms;
+            cl_platform_id platforms_ids[100];
+            cl_uint platforms_cnt = 0;
+            cl_device_id devices_ids[100];
+            cl_uint devices_cnt = 0;
+            char device_name[200];
+            size_t device_name_len = 0;
 
-            try
-            {
-                cl::Platform::get(&all_platforms);
-            }
-            catch (cl::Error &e)
-            {
-                logger->error("OpenCL Error : {:s}", e.what());
+            if (clGetPlatformIDs(100, platforms_ids, &platforms_cnt) != CL_SUCCESS)
                 return devs;
-            }
 
-            for (int p = 0; p < (int)all_platforms.size(); p++)
+            for (int p = 0; p < (int)platforms_cnt; p++)
             {
-                std::vector<cl::Device> all_devices;
-                all_platforms[p].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+                if (clGetDeviceIDs(platforms_ids[p], CL_DEVICE_TYPE_ALL, 100, devices_ids, &devices_cnt) != CL_SUCCESS)
+                    continue;
 
-                for (int d = 0; d < (int)all_devices.size(); d++)
-                    devs.push_back({p, d, all_devices[d].getInfo<CL_DEVICE_NAME>()});
+                for (int d = 0; d < (int)devices_cnt; d++)
+                    if (clGetDeviceInfo(devices_ids[d], CL_DEVICE_NAME, 200, device_name, &device_name_len) == CL_SUCCESS)
+                        devs.push_back({p, d, std::string(&device_name[0], &device_name[device_name_len])});
             }
 
             return devs;
@@ -44,37 +43,60 @@ namespace satdump
         }
 
         bool context_is_init = false;
-        cl::Context ocl_context;
-        cl::Device ocl_device;
+        cl_context ocl_context;
+        cl_device_id ocl_device;
 
         void setupOCLContext()
         {
             int platform_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
             int device_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
 
+            cl_platform_id platforms_ids[100];
+            cl_uint platforms_cnt = 0;
+            cl_device_id devices_ids[100];
+            cl_uint devices_cnt = 0;
+            char device_platform_name[200];
+            size_t device_platform_name_len = 0;
+            cl_int err = 0;
+
             if (!context_is_init)
             {
                 logger->trace("First OpenCL context request. Initializing...");
 
-                std::vector<cl::Platform> all_platforms;
-                cl::Platform::get(&all_platforms);
+                if (clGetPlatformIDs(100, platforms_ids, &platforms_cnt) != CL_SUCCESS)
+                {
+                    logger->error("Could not get OpenCL platform IDs!");
+                    return;
+                }
 
-                if (all_platforms.size() == 0)
+                if (platforms_cnt == 0)
                     std::runtime_error("No platforms found. Check OpenCL installation!");
 
-                cl::Platform platform = all_platforms[platform_id];
-                logger->info("Using platform: {:s}", platform.getInfo<CL_PLATFORM_NAME>());
+                cl_platform_id platform = platforms_ids[platform_id];
+                if (clGetPlatformInfo(platform, CL_PLATFORM_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
+                    logger->info("Using platform: {:s}", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]));
+                else
+                    logger->error("Could not get platform name!");
 
-                // get default device (CPUs, GPUs) of the default platform
-                std::vector<cl::Device> all_devices;
-                platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-                if (all_devices.size() == 0)
+                if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 100, devices_ids, &devices_cnt) != CL_SUCCESS)
+                {
+                    logger->error("Could not get OpenCL devices IDs!");
+                    return;
+                }
+
+                if (devices_cnt == 0)
                     std::runtime_error("No devices found. Check OpenCL installation!");
 
-                ocl_device = all_devices[device_id];
-                logger->info("Using device: {:s}", ocl_device.getInfo<CL_DEVICE_NAME>());
+                ocl_device = devices_ids[device_id];
+                if (clGetDeviceInfo(ocl_device, CL_DEVICE_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
+                    logger->info("Using device: {:s}", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]));
 
-                ocl_context = cl::Context({ocl_device});
+                ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
+                if (err != CL_SUCCESS)
+                {
+                    logger->error("Could not init OpenCL context!");
+                    return;
+                }
 
                 context_is_init = true;
             }
@@ -82,27 +104,34 @@ namespace satdump
             {
                 logger->trace("OpenCL context already initilized.");
             }
+
+            if (!context_is_init)
+                throw std::runtime_error("OpenCL context not initialized!");
         }
 
-        cl::Program buildCLKernel(std::string path)
+        cl_program buildCLKernel(std::string path)
         {
-            cl::Program::Sources sources;
             std::ifstream isf(path);
             std::string kernel_src(std::istreambuf_iterator<char>{isf}, {});
-            sources.push_back({kernel_src.c_str(), kernel_src.length()});
 
-            cl::Program program(ocl_context, sources);
-            try
+            const char *srcs[1] = {kernel_src.c_str()};
+            const size_t lens[1] = {kernel_src.length()};
+            cl_int err = 0;
+            char error_msg[10000];
+            size_t error_len = 0;
+
+            cl_program prg = clCreateProgramWithSource(ocl_context, 1, srcs, lens, &err);
+            err = clBuildProgram(prg, 1, &ocl_device, NULL, NULL, NULL);
+
+            if (err != CL_SUCCESS)
             {
-                program.build({ocl_device});
-            }
-            catch (cl::BuildError &e)
-            {
-                logger->error("Error building: {:s}", program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(ocl_device).c_str());
-                return program;
+                if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 10000, error_msg, &error_len) == CL_SUCCESS)
+                    throw std::runtime_error("Error building: " + std::string(&error_msg[0], &error_msg[error_len]));
+                else
+                    throw std::runtime_error("Error building, and could not read error log!");
             }
 
-            return program;
+            return prg;
         }
     }
 }

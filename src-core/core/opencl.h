@@ -1,14 +1,10 @@
 #pragma once
 
 #ifdef USE_OPENCL
-#define CL_HPP_MINIMUM_OPENCL_VERSION 110 // Support down to 1.1
-#define __CL_ENABLE_EXCEPTIONS
-#ifdef __APPLE__
-#define CL_HPP_TARGET_OPENCL_VERSION 120
-#include "libs/opencl/opencl.hpp"
-#else
-#include <CL/opencl.hpp>
-#endif
+#define CL_TARGET_OPENCL_VERSION 110
+#include <CL/cl.h>
+#include <string>
+#include <vector>
 
 namespace satdump
 {
@@ -25,12 +21,12 @@ namespace satdump
 
         void initOpenCL();
 
-        extern cl::Context ocl_context;
-        extern cl::Device ocl_device;
+        extern cl_context ocl_context;
+        extern cl_device_id ocl_device;
 
         void setupOCLContext();
 
-        cl::Program buildCLKernel(std::string path);
+        cl_program buildCLKernel(std::string path);
     }
 }
 #endif

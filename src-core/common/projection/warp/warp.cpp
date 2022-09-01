@@ -157,8 +157,9 @@ namespace satdump
         void ImageWarper::warpOnGPU_fp64(WarpResult &result)
         {
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
+            cl_program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp64.cl"));
 
+            cl_int err = 0;
             auto &context = satdump::opencl::ocl_context;
             auto &device = satdump::opencl::ocl_device;
 
@@ -166,17 +167,21 @@ namespace satdump
             auto gpu_start = std::chrono::system_clock::now();
             {
                 // Images
-                cl::Buffer buffer_map(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size());
-                cl::Buffer buffer_img(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size());
+                cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
+                if (err != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't load buffer_map!");
+                cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
+                if (err != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't load buffer_img!");
 
                 // TPS Stuff
-                cl::Buffer buffer_tps_npoints(context, CL_MEM_READ_WRITE, sizeof(int));
-                cl::Buffer buffer_tps_x(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_points);
-                cl::Buffer buffer_tps_y(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_points);
-                cl::Buffer buffer_tps_coefs1(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_eqs);
-                cl::Buffer buffer_tps_coefs2(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_eqs);
-                cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(double));
-                cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(double));
+                cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
+                cl_mem buffer_tps_x = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_points, NULL, &err);
+                cl_mem buffer_tps_y = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_points, NULL, &err);
+                cl_mem buffer_tps_coefs1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_eqs, NULL, &err);
+                cl_mem buffer_tps_coefs2 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double) * tps->_nof_eqs, NULL, &err);
+                cl_mem buffer_tps_xmean = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double), NULL, &err);
+                cl_mem buffer_tps_ymean = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double), NULL, &err);
 
                 int img_settings[] = {op.output_width, op.output_height,
                                       (int)op.input_image.width(), (int)op.input_image.height(),
@@ -184,47 +189,66 @@ namespace satdump
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
 
-                cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 9, NULL, &err);
 
                 // Create an OpenCL queue
-                cl::CommandQueue queue(context, device);
+                cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
                 // Write all of buffers to the GPU
-                queue.enqueueWriteBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
-                queue.enqueueWriteBuffer(buffer_img, CL_TRUE, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data());
-                queue.enqueueWriteBuffer(buffer_tps_npoints, CL_TRUE, 0, sizeof(int), &tps->_nof_points);
-                queue.enqueueWriteBuffer(buffer_tps_x, CL_TRUE, 0, sizeof(double) * tps->_nof_points, tps->x);
-                queue.enqueueWriteBuffer(buffer_tps_y, CL_TRUE, 0, sizeof(double) * tps->_nof_points, tps->y);
-                queue.enqueueWriteBuffer(buffer_tps_coefs1, CL_TRUE, 0, sizeof(double) * tps->_nof_eqs, tps->coef[0]);
-                queue.enqueueWriteBuffer(buffer_tps_coefs2, CL_TRUE, 0, sizeof(double) * tps->_nof_eqs, tps->coef[1]);
-                queue.enqueueWriteBuffer(buffer_tps_xmean, CL_TRUE, 0, sizeof(double), &tps->x_mean);
-                queue.enqueueWriteBuffer(buffer_tps_ymean, CL_TRUE, 0, sizeof(double), &tps->y_mean);
-                queue.enqueueWriteBuffer(buffer_img_settings, CL_TRUE, 0, sizeof(int) * 9, img_settings);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_x, true, 0, sizeof(double) * tps->_nof_points, tps->x, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_y, true, 0, sizeof(double) * tps->_nof_points, tps->y, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_coefs1, true, 0, sizeof(double) * tps->_nof_eqs, tps->coef[0], 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(double) * tps->_nof_eqs, tps->coef[1], 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(double), &tps->x_mean, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(double), &tps->y_mean, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 9, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
-                cl::Kernel warping_kernel(warping_program, "warp_image_thin_plate_spline");
-                warping_kernel.setArg(0, buffer_map);
-                warping_kernel.setArg(1, buffer_img);
-                warping_kernel.setArg(2, buffer_tps_npoints);
-                warping_kernel.setArg(3, buffer_tps_x);
-                warping_kernel.setArg(4, buffer_tps_y);
-                warping_kernel.setArg(5, buffer_tps_coefs1);
-                warping_kernel.setArg(6, buffer_tps_coefs2);
-                warping_kernel.setArg(7, buffer_tps_xmean);
-                warping_kernel.setArg(8, buffer_tps_ymean);
-                warping_kernel.setArg(9, buffer_img_settings);
+                cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
+                clSetKernelArg(warping_kernel, 0, sizeof(cl_mem), &buffer_map);
+                clSetKernelArg(warping_kernel, 1, sizeof(cl_mem), &buffer_img);
+                clSetKernelArg(warping_kernel, 2, sizeof(cl_mem), &buffer_tps_npoints);
+                clSetKernelArg(warping_kernel, 3, sizeof(cl_mem), &buffer_tps_x);
+                clSetKernelArg(warping_kernel, 4, sizeof(cl_mem), &buffer_tps_y);
+                clSetKernelArg(warping_kernel, 5, sizeof(cl_mem), &buffer_tps_coefs1);
+                clSetKernelArg(warping_kernel, 6, sizeof(cl_mem), &buffer_tps_coefs2);
+                clSetKernelArg(warping_kernel, 7, sizeof(cl_mem), &buffer_tps_xmean);
+                clSetKernelArg(warping_kernel, 8, sizeof(cl_mem), &buffer_tps_ymean);
+                clSetKernelArg(warping_kernel, 9, sizeof(cl_mem), &buffer_img_settings);
 
                 // Get proper workload size
-                cl_uint size_wg = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-                cl_uint compute_units = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+                size_t size_wg = 0;
+                size_t compute_units = 0;
+                clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size_wg, NULL);
+                clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &compute_units, NULL);
 
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
                 // Run the kernel!
-                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(int(size_wg) * int(compute_units)), cl::NullRange);
+                size_t total_wg_size = int(size_wg) * int(compute_units);
+                if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
-                queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+
+                // Free up everything
+                clReleaseMemObject(buffer_img);
+                clReleaseMemObject(buffer_map);
+                clReleaseMemObject(buffer_tps_npoints);
+                clReleaseMemObject(buffer_tps_x);
+                clReleaseMemObject(buffer_tps_y);
+                clReleaseMemObject(buffer_tps_coefs1);
+                clReleaseMemObject(buffer_tps_coefs2);
+                clReleaseMemObject(buffer_tps_xmean);
+                clReleaseMemObject(buffer_tps_ymean);
+                clReleaseMemObject(buffer_img_settings);
+                clReleaseKernel(warping_kernel);
+                clReleaseProgram(warping_program);
+                clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
             logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
@@ -233,8 +257,9 @@ namespace satdump
         void ImageWarper::warpOnGPU_fp32(WarpResult &result)
         {
             // Build GPU Kernel
-            cl::Program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
+            cl_program warping_program = opencl::buildCLKernel(resources::getResourcePath("opencl/warp_image_thin_plate_spline_fp32.cl"));
 
+            cl_int err = 0;
             auto &context = satdump::opencl::ocl_context;
             auto &device = satdump::opencl::ocl_device;
 
@@ -242,17 +267,21 @@ namespace satdump
             auto gpu_start = std::chrono::system_clock::now();
             {
                 // Images
-                cl::Buffer buffer_map(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size());
-                cl::Buffer buffer_img(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size());
+                cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
+                if (err != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't load buffer_map!");
+                cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
+                if (err != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't load buffer_img!");
 
                 // TPS Stuff
-                cl::Buffer buffer_tps_npoints(context, CL_MEM_READ_WRITE, sizeof(int));
-                cl::Buffer buffer_tps_x(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points);
-                cl::Buffer buffer_tps_y(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points);
-                cl::Buffer buffer_tps_coefs1(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs);
-                cl::Buffer buffer_tps_coefs2(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs);
-                cl::Buffer buffer_tps_xmean(context, CL_MEM_READ_WRITE, sizeof(float));
-                cl::Buffer buffer_tps_ymean(context, CL_MEM_READ_WRITE, sizeof(float));
+                cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points, NULL, &err);
+                cl_mem buffer_tps_x = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points, NULL, &err);
+                cl_mem buffer_tps_y = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points, NULL, &err);
+                cl_mem buffer_tps_coefs1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs, NULL, &err);
+                cl_mem buffer_tps_coefs2 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_eqs, NULL, &err);
+                cl_mem buffer_tps_xmean = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
+                cl_mem buffer_tps_ymean = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
 
                 int img_settings[] = {op.output_width, op.output_height,
                                       (int)op.input_image.width(), (int)op.input_image.height(),
@@ -260,53 +289,72 @@ namespace satdump
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
 
-                cl::Buffer buffer_img_settings(context, CL_MEM_READ_WRITE, sizeof(int) * 9);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 9, NULL, &err);
 
                 // Create an OpenCL queue
-                cl::CommandQueue queue(context, device);
+                cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
                 // Write all of buffers to the GPU, also converting to FP32
-                queue.enqueueWriteBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
-                queue.enqueueWriteBuffer(buffer_img, CL_TRUE, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data());
-                queue.enqueueWriteBuffer(buffer_tps_npoints, CL_TRUE, 0, sizeof(int), &tps->_nof_points);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
                 std::vector<float> tps_x = double_buffer_to_float(tps->x, tps->_nof_points);
                 std::vector<float> tps_y = double_buffer_to_float(tps->y, tps->_nof_points);
                 std::vector<float> tps_coef1 = double_buffer_to_float(tps->coef[0], tps->_nof_eqs);
                 std::vector<float> tps_coef2 = double_buffer_to_float(tps->coef[1], tps->_nof_eqs);
                 float tps_x_mean = tps->x_mean;
                 float tps_y_mean = tps->y_mean;
-                queue.enqueueWriteBuffer(buffer_tps_x, CL_TRUE, 0, sizeof(float) * tps->_nof_points, tps_x.data());
-                queue.enqueueWriteBuffer(buffer_tps_y, CL_TRUE, 0, sizeof(float) * tps->_nof_points, tps_y.data());
-                queue.enqueueWriteBuffer(buffer_tps_coefs1, CL_TRUE, 0, sizeof(float) * tps->_nof_eqs, tps_coef1.data());
-                queue.enqueueWriteBuffer(buffer_tps_coefs2, CL_TRUE, 0, sizeof(float) * tps->_nof_eqs, tps_coef2.data());
-                queue.enqueueWriteBuffer(buffer_tps_xmean, CL_TRUE, 0, sizeof(float), &tps_x_mean);
-                queue.enqueueWriteBuffer(buffer_tps_ymean, CL_TRUE, 0, sizeof(float), &tps_y_mean);
-                queue.enqueueWriteBuffer(buffer_img_settings, CL_TRUE, 0, sizeof(int) * 9, img_settings);
+                clEnqueueWriteBuffer(queue, buffer_tps_x, true, 0, sizeof(float) * tps->_nof_points, tps_x.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_y, true, 0, sizeof(float) * tps->_nof_points, tps_y.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_coefs1, true, 0, sizeof(float) * tps->_nof_eqs, tps_coef1.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(float) * tps->_nof_eqs, tps_coef2.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(float), &tps_x_mean, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(float), &tps_y_mean, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 9, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
-                cl::Kernel warping_kernel(warping_program, "warp_image_thin_plate_spline");
-                warping_kernel.setArg(0, buffer_map);
-                warping_kernel.setArg(1, buffer_img);
-                warping_kernel.setArg(2, buffer_tps_npoints);
-                warping_kernel.setArg(3, buffer_tps_x);
-                warping_kernel.setArg(4, buffer_tps_y);
-                warping_kernel.setArg(5, buffer_tps_coefs1);
-                warping_kernel.setArg(6, buffer_tps_coefs2);
-                warping_kernel.setArg(7, buffer_tps_xmean);
-                warping_kernel.setArg(8, buffer_tps_ymean);
-                warping_kernel.setArg(9, buffer_img_settings);
+                cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
+                clSetKernelArg(warping_kernel, 0, sizeof(cl_mem), &buffer_map);
+                clSetKernelArg(warping_kernel, 1, sizeof(cl_mem), &buffer_img);
+                clSetKernelArg(warping_kernel, 2, sizeof(cl_mem), &buffer_tps_npoints);
+                clSetKernelArg(warping_kernel, 3, sizeof(cl_mem), &buffer_tps_x);
+                clSetKernelArg(warping_kernel, 4, sizeof(cl_mem), &buffer_tps_y);
+                clSetKernelArg(warping_kernel, 5, sizeof(cl_mem), &buffer_tps_coefs1);
+                clSetKernelArg(warping_kernel, 6, sizeof(cl_mem), &buffer_tps_coefs2);
+                clSetKernelArg(warping_kernel, 7, sizeof(cl_mem), &buffer_tps_xmean);
+                clSetKernelArg(warping_kernel, 8, sizeof(cl_mem), &buffer_tps_ymean);
+                clSetKernelArg(warping_kernel, 9, sizeof(cl_mem), &buffer_img_settings);
 
                 // Get proper workload size
-                cl_uint size_wg = device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-                cl_uint compute_units = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+                size_t size_wg = 0;
+                size_t compute_units = 0;
+                clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size_wg, NULL);
+                clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &compute_units, NULL);
 
                 logger->debug("Workgroup size {:d}", size_wg * compute_units);
 
                 // Run the kernel!
-                queue.enqueueNDRangeKernel(warping_kernel, cl::NullRange, cl::NDRange(int(size_wg) * int(compute_units)), cl::NullRange);
+                size_t total_wg_size = int(size_wg) * int(compute_units);
+                if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
+                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
-                queue.enqueueReadBuffer(buffer_map, CL_TRUE, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data());
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+
+                // Free up everything
+                clReleaseMemObject(buffer_img);
+                clReleaseMemObject(buffer_map);
+                clReleaseMemObject(buffer_tps_npoints);
+                clReleaseMemObject(buffer_tps_x);
+                clReleaseMemObject(buffer_tps_y);
+                clReleaseMemObject(buffer_tps_coefs1);
+                clReleaseMemObject(buffer_tps_coefs2);
+                clReleaseMemObject(buffer_tps_xmean);
+                clReleaseMemObject(buffer_tps_ymean);
+                clReleaseMemObject(buffer_img_settings);
+                clReleaseKernel(warping_kernel);
+                clReleaseProgram(warping_program);
+                clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
             logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
@@ -341,10 +389,6 @@ namespace satdump
             catch (std::runtime_error &e)
             {
                 logger->error("Error warping on GPU : {:s}", e.what());
-            }
-            catch (cl::Error &e)
-            {
-                logger->error("OpenCL error warping on GPU : {:s}", e.what());
             }
 #endif
 
