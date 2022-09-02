@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
+#include "common/image/image.h"
+#include "products/image_products.h"
 
 namespace satdump
 {
@@ -10,6 +12,7 @@ namespace satdump
         // Projection types
         enum ProjectionType
         {
+            PROJ_NONE, // Auto-Detect, should be used on the source
             PROJ_EQUIRECTANGULAR,
             PROJ_GCPS,
             PROJ_STEREO,
@@ -20,13 +23,20 @@ namespace satdump
         // Re-Projection operation
         struct ReprojectionOperation
         {
-            ProjectionType source_projection;
             nlohmann::json source_prj_info;
-
-            ProjectionType target_projection;
             nlohmann::json target_prj_info;
-
-            bool use_fast_algorithm;
+            image::Image<uint16_t> img;
+            bool use_draw_algorithm;
+            TLE img_tle;                 // Only if required
+            std::vector<double> img_tim; // Only if required
         };
+
+        struct ProjectionResult
+        {
+            nlohmann::json settings;
+            image::Image<uint16_t> img;
+        };
+
+        ProjectionResult reproject(ReprojectionOperation &op, float *progress = nullptr);
     }
 }
