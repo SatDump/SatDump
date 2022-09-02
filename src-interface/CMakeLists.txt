@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 include(CheckFunctionExists)
 
 file(GLOB_RECURSE LIBSDR_CPPS *.cpp)
@@ -22,7 +22,5 @@ endif()
 target_link_libraries(satdump_interface PUBLIC satdump_core)
 
 if(MSVC)
-        
 else()
-       
 endif()

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 project(airspyhf_sdr_support)
 
 set(SATDUMP_ROOT "/usr")

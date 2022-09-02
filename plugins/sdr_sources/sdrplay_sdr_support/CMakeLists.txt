@@ -1,11 +1,11 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 project(sdrplay_sdr_support)
 
 set(SATDUMP_ROOT "/usr")
 
-if (APPLE)
-include_directories("/usr/local/include")
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/lib)
+if(APPLE)
+    include_directories("/usr/local/include")
+    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/lib)
 endif()
 
 find_library(SDRPLAY_LIBRARY sdrplay_api)

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 project(spyserver_support)
 
 set(SATDUMP_ROOT "/usr")
@@ -9,7 +9,7 @@ add_library(spyserver_support SHARED ${spyserver_support_CPPS})
 target_link_libraries(spyserver_support PUBLIC satdump_core)
 target_include_directories(spyserver_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
-if (MSVC)
+if(MSVC)
     target_link_libraries(spyserver_support PUBLIC ws2_32)
 endif()
 

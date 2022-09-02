@@ -10,14 +10,14 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 # Build in release mod so it isn't unusably slow
-set(CMAKE_CXX_FLAGS_RELEASE         "-O3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG           "-O3")
-set(CMAKE_C_FLAGS_RELEASE           "-O3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O3")
-set(CMAKE_C_FLAGS_DEBUG             "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+set(CMAKE_C_FLAGS_RELEASE "-O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3")
+set(CMAKE_C_FLAGS_DEBUG "-O3")
 
-###########################################################################################################################################
+# ##########################################################################################################################################
 # LIBVOLK
 add_library(volk STATIC IMPORTED)
 set_target_properties(volk PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/volk/${ANDROID_ABI}/libvolk.a)
@@ -31,7 +31,8 @@ include_directories(deps/fftw3/jni)
 # LIBPNG
 add_library(png STATIC IMPORTED)
 set_target_properties(png PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/libpng/${ANDROID_ABI}/libpng.a)
-#target_link_libraries(png zlib)
+
+# target_link_libraries(png zlib)
 include_directories(deps/libpng/jni/)
 
 # LIBCPPFEATURES
@@ -57,7 +58,8 @@ include_directories(deps/nng/jni/)
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
-###########################################################################################################################################
+
+# ##########################################################################################################################################
 
 # LibUSB
 file(GLOB_RECURSE libusb_cpps deps/libusb/*.c)
@@ -90,7 +92,8 @@ file(GLOB_RECURSE liblimesuite_cpps deps/liblimesuite/*.c deps/liblimesuite/*.cp
 add_library(limesuite STATIC ${liblimesuite_cpps})
 target_include_directories(limesuite PRIVATE deps/liblimesuite/ deps/liblimesuite/lms7002m deps/liblimesuite/API deps/liblimesuite/lime deps/liblimesuite/ConnectionRegistry deps/liblimesuite/lime deps/liblimesuite/threadHelper deps/liblimesuite/FPGA_common deps/liblimesuite/Si5351C deps/liblimesuite/lms7002m_mcu deps/liblimesuite/ADF4002 deps/liblimesuite/protocols deps/libusb)
 target_link_libraries(limesuite PRIVATE usb)
-#target_compile_definitions(limesuite PUBLIC LIBBLADERF_SEARCH_PREFIX="./")
+
+# target_compile_definitions(limesuite PUBLIC LIBBLADERF_SEARCH_PREFIX="./")
 
 # LibIIO
 file(GLOB_RECURSE libiio_cpps deps/libiio/*.c)
@@ -104,8 +107,7 @@ add_library(ad9361iio STATIC ${libad9361iio_cpps})
 target_include_directories(ad9361iio PRIVATE deps/libiio/ deps/libiio/deps deps/libad9361-iio)
 target_link_libraries(ad9361iio PRIVATE iio)
 
-###########################################################################################################################################
-
+# ##########################################################################################################################################
 add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 
 add_library(android_imgui SHARED
@@ -134,4 +136,3 @@ target_link_libraries(android_imgui PRIVATE
   satdump_core
   satdump_interface
 )
-

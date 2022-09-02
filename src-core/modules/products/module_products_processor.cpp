@@ -39,7 +39,7 @@ namespace products
 
     void ProductsProcessorModule::drawUI(bool window)
     {
-        ImGui::Begin("Products Processor", NULL, (window ? NULL : NOWINDOW_FLAGS) | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin("Products Processor", NULL, (window ? 0 : NOWINDOW_FLAGS) | ImGuiWindowFlags_NoScrollbar);
         logger_sink->draw();
         ImGui::SetScrollY(ImGui::GetScrollMaxY());
         ImGui::End();

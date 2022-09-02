@@ -52,12 +52,12 @@ namespace network
 
         nng_sub0_open_raw(&sock);
         nng_dialer_create(&dialer, sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
-        nng_dialer_start(dialer, (int)NULL);
+        nng_dialer_start(dialer, (int)0);
 
         while (input_active.load())
         {
             size_t lpkt_size;
-            nng_recv(sock, buffer, &lpkt_size, (int)NULL);
+            nng_recv(sock, buffer, &lpkt_size, (int)0);
 
             if (pkt_size != (int)lpkt_size)
                 continue;
