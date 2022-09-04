@@ -24,9 +24,10 @@ namespace satdump
             auto &image = op.img;
             auto &projected_image = result_prj.img;
 
-            if (op.use_draw_algorithm)
+            if (op.use_draw_algorithm && !(op.source_prj_info["type"] == "equirectangular") && !(op.source_prj_info["type"] == "geos"))
             // Use old algorithm, less prone to errors on bad data and faster.
             // Mostly a copy-paste of the old implementation
+            // ONLY used on "LEOs"
             {
                 logger->info("Using old algorithm...");
 
@@ -90,13 +91,7 @@ namespace satdump
                 }
 
                 // Reproj
-                if (op.source_prj_info["type"] == "equirectangular")
-                {
-                }
-                else if (op.source_prj_info["type"] == "geos")
-                {
-                }
-                else // ""TPS""" (Mostly LEO)
+                // ""TPS""" (Mostly LEO)
                 {
                     sat_proj_src = get_sat_proj(op.source_prj_info, op.img_tle, op.img_tim);
 
@@ -175,9 +170,14 @@ namespace satdump
                 }
                 else if (op.source_prj_info["type"] == "geos")
                 {
-                    // op.img.resize(21696, 21696);
-                    geodetic::projection::GEOProjector geo_proj(-75, 35786, op.img.width(), op.img.height(), 1.174, 1.174, 4, -4, true);
-                    warped_image.init(8192, 8192 / 2, op.img.channels()); // TODO : CHANGE!!!!!
+                    geodetic::projection::GEOProjector geo_proj(op.source_prj_info["lon"].get<float>(),
+                                                                op.source_prj_info["alt"].get<double>(),
+                                                                op.img.width(), op.img.height(),
+                                                                op.source_prj_info["scale_x"].get<float>(), op.source_prj_info["scale_y"].get<float>(),
+                                                                op.source_prj_info["offset_x"].get<float>(), op.source_prj_info["offset_y"].get<float>(),
+                                                                op.source_prj_info["sweep_x"].get<bool>());
+                    int g_width = op.img.width() * 2;                           // Should be reasonnable for now!
+                    warped_image.init(g_width, g_width / 2, op.img.channels()); // TODO : CHANGE!!!!!
 
                     geodetic::projection::EquirectangularProjection equi_proj;
                     tl_lon = -180;
@@ -186,12 +186,13 @@ namespace satdump
                     br_lat = -90;
                     equi_proj.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
 
-                    float lon, lat;
-                    int x2, y2;
                     for (int x = 0; x < warped_image.width(); x++)
                     {
                         for (int y = 0; y < warped_image.height(); y++)
                         {
+                            float lon, lat;
+                            int x2, y2;
+
                             equi_proj.reverse(x, y, lon, lat);
                             if (lon == -1 || lat == -1)
                                 continue;

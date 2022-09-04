@@ -58,8 +58,9 @@ int main(int argc, char *argv[])
     rgb_cfg.white_balance = true;
 
     satdump::reprojection::ReprojectionOperation op;
-    op.source_prj_info = nlohmann::json::parse("{\"type\":\"geos\"}"); // img_pro.get_proj_cfg();
-    op.img.load_png(argv[1]);                                          //= img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
+    op.source_prj_info = nlohmann::json::parse("{\"type\":\"geos\",\"lon\":-75,\"alt\":35786,\"scale_x\":1.174,\"scale_y\":1.174,\"offset_x\":4,\"offset_y\":-4,\"sweep_x\":true}"); // img_pro.get_proj_cfg();
+    // op.source_prj_info = img_pro.get_proj_cfg();
+    op.img.load_png(argv[1]); //= img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
     // op.img_tle = img_pro.get_tle();
     // op.img_tim = img_pro.get_timestamps();
 
@@ -67,10 +68,10 @@ int main(int argc, char *argv[])
 
     op.use_draw_algorithm = false;
     op.output_width = 2048 * 4;
-    op.output_height = 2048 * 4 / 2; // / 2;
+    op.output_height = 2048 * 4; // / 2;
 
-    op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":20.8,\"center_lat\":48,\"scale\":2}");
+    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+    op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":-70.8,\"center_lat\":48,\"scale\":2}");
     //  op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
 
     satdump::reprojection::ProjectionResult ret = satdump::reprojection::reproject(op);
