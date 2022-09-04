@@ -38,8 +38,150 @@
 
 #include "common/projection/projs/stereo.h"
 
+#include "common/projection/projs/tpers.h"
+
+#include "common/projection/reprojector.h"
+
 int main(int argc, char *argv[])
 {
+    initLogger();
+
+    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    satdump::config::loadConfig("satdump_cfg.json", user_path);
+
+    satdump::ImageProducts img_pro;
+    img_pro.load(argv[1]);
+
+    satdump::ImageCompositeCfg rgb_cfg;
+    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equalize = true;
+    rgb_cfg.white_balance = true;
+
+    satdump::reprojection::ReprojectionOperation op;
+    op.source_prj_info = img_pro.get_proj_cfg();
+    op.img = img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
+    op.img_tle = img_pro.get_tle();
+    op.img_tim = img_pro.get_timestamps();
+
+    op.img.equalize(); // TMP
+
+    op.use_draw_algorithm = false;
+    op.output_width = 2048;
+    op.output_height = 2048; // / 2;
+
+    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+    op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":20.8,\"center_lat\":48,\"scale\":0.7}");
+    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
+
+    satdump::reprojection::ProjectionResult ret = satdump::reprojection::reproject(op);
+
+    logger->info("Drawing map");
+    if (op.target_prj_info["type"] == "equirectangular")
+    {
+        geodetic::projection::EquirectangularProjection projector;
+        projector.init(ret.img.width(), ret.img.height(),
+                       op.target_prj_info["tl_lon"].get<float>(), op.target_prj_info["tl_lat"].get<float>(),
+                       op.target_prj_info["br_lon"].get<float>(), op.target_prj_info["br_lat"].get<float>());
+
+        unsigned short color[3] = {0, 65535, 0};
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       ret.img,
+                                       color,
+                                       [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+                                       {
+                                           int x, y;
+                                           projector.forward(lon, lat, x, y);
+                                           return {x, y};
+                                       });
+        unsigned short color2[3] = {65535, 0, 0};
+        map::drawProjectedCapitalsGeoJson(
+            {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+            ret.img,
+            color2,
+            [&projector](float lat, float lon, int map_height2, int map_width2) -> std::pair<int, int>
+            {
+                int x, y;
+                projector.forward(lon, lat, x, y);
+                return {x, y};
+            },
+            0.5);
+    }
+    else if (op.target_prj_info["type"] == "stereo")
+    {
+        geodetic::projection::StereoProjection stereo_proj;
+        stereo_proj.init(op.target_prj_info["center_lat"].get<float>(), op.target_prj_info["center_lon"].get<float>());
+        float stereo_scale = op.target_prj_info["scale"].get<float>();
+
+        unsigned short color[3] = {0, 65535, 0};
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       ret.img,
+                                       color,
+                                       [&stereo_proj, stereo_scale](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+                                       {
+                                           double x = 0;
+                                           double y = 0;
+                                           stereo_proj.forward(lon, lat, x, y);
+                                           x *= map_width / stereo_scale;
+                                           y *= map_height / stereo_scale;
+                                           return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                                       });
+        unsigned short color2[3] = {65535, 0, 0};
+        map::drawProjectedCapitalsGeoJson(
+            {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+            ret.img,
+            color2,
+            [&stereo_proj, stereo_scale](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+            {
+                double x = 0;
+                double y = 0;
+                stereo_proj.forward(lon, lat, x, y);
+                x *= map_width / stereo_scale;
+                y *= map_height / stereo_scale;
+                return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+            },
+            0.5);
+    }
+    else if (op.target_prj_info["type"] == "tpers")
+    {
+        geodetic::projection::TPERSProjection tpers_proj;
+        tpers_proj.init(op.target_prj_info["alt"].get<float>() * 1000,
+                        op.target_prj_info["lon"].get<float>(),
+                        op.target_prj_info["lat"].get<float>(),
+                        op.target_prj_info["ang"].get<float>(),
+                        op.target_prj_info["azi"].get<float>());
+
+        unsigned short color[3] = {0, 65535, 0};
+        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                       ret.img,
+                                       color,
+                                       [&tpers_proj](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+                                       {
+                                           double x, y;
+                                           tpers_proj.forward(lon, lat, x, y);
+                                           x *= map_width / 2;
+                                           y *= map_height / 2;
+                                           return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                                       });
+        unsigned short color2[3] = {65535, 0, 0};
+        /*map::drawProjectedCapitalsGeoJson(
+            {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+            ret.img,
+            color2,
+            [&tpers_proj](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
+            {
+                double x, y;
+                tpers_proj.forward(lon, lat, x, y);
+                x *= map_width / 2;
+                y *= map_height / 2;
+                return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+            },
+            0.5);*/
+    }
+
+    logger->info("Saving...");
+    ret.img.save_png("test_newproj.png");
+
+#if 0
 #if 0
     image::Image<uint16_t> mersi_ch1, mersi_ch2;
     mersi_ch1.load_png("/home/alan/Documents/SatDump_ReWork/build/fy3_mersi_offset/MERSI-1/MERSI1-1.png");
@@ -282,5 +424,6 @@ int main(int argc, char *argv[])
 
     logger->info("Saving...");
     final_image.save_png("test.png");
+#endif
 #endif
 }

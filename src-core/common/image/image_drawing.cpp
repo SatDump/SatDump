@@ -146,7 +146,7 @@ namespace image
 
         int char_size = 120;
         int char_count = 95;
-        int char_edge_crop = 15;
+        int char_edge_crop = 30;
 
         for (int i = 0; i < char_count; i++)
         {

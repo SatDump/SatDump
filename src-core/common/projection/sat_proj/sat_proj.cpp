@@ -20,6 +20,10 @@ namespace satdump
         float pitch_offset;
         float yaw_offset;
 
+        // Pre-computed stuff
+        std::vector<geodetic::geodetic_coords_t> sat_positions;
+        std::vector<double> az_angles;
+
     public:
         NormalLineSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
             : SatelliteProjection(cfg, tle, timestamps_raw)
@@ -41,6 +45,16 @@ namespace satdump
 
             img_size_x = image_width;
             img_size_y = timestamps.size();
+
+            for (int i = 0; i < timestamps.size(); i++)
+            {
+                double timestamp = timestamps[i] + timestamp_offset;
+                geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
+                geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
+                double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+                sat_positions.push_back(pos_curr);
+                az_angles.push_back(az_angle);
+            }
         }
 
         bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
@@ -55,12 +69,8 @@ namespace satdump
             if (timestamp == -1)
                 return 1;
 
-            timestamp += timestamp_offset;
-
-            geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
-            geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-
-            double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+            geodetic::geodetic_coords_t pos_curr = sat_positions[y];
+            double az_angle = az_angles[y];
 
             double final_x = !invert_scan ? (image_width - 1) - x : x;
             bool ascending = false;
@@ -103,6 +113,10 @@ namespace satdump
         double ifov_x_scan_angle;
         double ifov_y_scan_angle;
 
+        // Pre-computed stuff
+        std::vector<geodetic::geodetic_coords_t> sat_positions;
+        std::vector<double> az_angles;
+
     public:
         NormalPerIFOVProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
             : SatelliteProjection(cfg, tle, timestamps_raw)
@@ -131,6 +145,16 @@ namespace satdump
 
             img_size_x = image_width;
             img_size_y = (timestamps.size() / ifov_count) * ifov_y_size;
+
+            for (int i = 0; i < timestamps.size(); i++)
+            {
+                double timestamp = timestamps[i] + timestamp_offset;
+                geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
+                geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
+                double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+                sat_positions.push_back(pos_curr);
+                az_angles.push_back(az_angle);
+            }
         }
 
         bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
@@ -152,10 +176,8 @@ namespace satdump
 
             timestamp += timestamp_offset;
 
-            geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
-            geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-
-            double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
+            geodetic::geodetic_coords_t pos_curr = sat_positions[currentArrayValue];
+            double az_angle = az_angles[currentArrayValue];
 
             bool ascending = false;
 

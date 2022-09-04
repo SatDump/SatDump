@@ -3,12 +3,12 @@
 #ifdef __ANDROID__
 #include "common/dsp_source_sink/android_usb_backend.h"
 
-const std::vector<DevVIDPID> LIMESDR_USB_VID_PID = {{0x0403, 0x601f}};
+const std::vector<DevVIDPID> LIMESDR_USB_VID_PID = {{0x0403, 0x601f}, {0x0403, 0x6108}};
 
 // Closing the connection on Android crashes.
 // So we cache it and never close it, which is
 // not an issue as we should never have 2 Limes
-/// on Android.
+// on Android.
 lime::LMS7_Device *limeDevice_android = nullptr;
 lime::StreamChannel *limeStreamID_android = nullptr;
 #endif
@@ -77,7 +77,7 @@ void LimeSDRSource::start()
         int fd = getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path);
         if (limeDevice_android == nullptr)
         {
-            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd);
+            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd, pid == 0x6108);
             limeDevice_android->Init();
         }
         limeDevice = limeDevice_android;
