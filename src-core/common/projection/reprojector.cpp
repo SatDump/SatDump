@@ -9,6 +9,8 @@
 #include "projs/stereo.h"
 #include "projs/tpers.h"
 
+#include "sat_proj/geo_projection.h"
+
 namespace satdump
 {
     namespace reprojection
@@ -171,9 +173,44 @@ namespace satdump
                     br_lon = op.source_prj_info["br_lon"].get<float>();
                     br_lat = op.source_prj_info["br_lat"].get<float>();
                 }
-                // else if (op.source_prj_info["type"] == "geos")
-                //{
-                // }
+                else if (op.source_prj_info["type"] == "geos")
+                {
+                    // op.img.resize(21696, 21696);
+                    geodetic::projection::GEOProjector geo_proj(-75, 35786, op.img.width(), op.img.height(), 1.174, 1.174, 4, -4, true);
+                    warped_image.init(8192, 8192 / 2, op.img.channels()); // TODO : CHANGE!!!!!
+
+                    geodetic::projection::EquirectangularProjection equi_proj;
+                    tl_lon = -180;
+                    tl_lat = 90;
+                    br_lon = 180;
+                    br_lat = -90;
+                    equi_proj.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
+
+                    float lon, lat;
+                    int x2, y2;
+                    for (int x = 0; x < warped_image.width(); x++)
+                    {
+                        for (int y = 0; y < warped_image.height(); y++)
+                        {
+                            equi_proj.reverse(x, y, lon, lat);
+                            if (lon == -1 || lat == -1)
+                                continue;
+
+                            geo_proj.forward(lon, lat, x2, y2);
+                            if (x2 == -1 || y2 == -1 ||
+                                x2 >= op.img.width() || x2 < 0 ||
+                                y2 >= op.img.height() || y2 < 0)
+                                continue;
+
+                            if (warped_image.channels() == 3)
+                                for (int c = 0; c < 3; c++)
+                                    warped_image.channel(c)[y * warped_image.width() + x] = op.img.channel(c)[y2 * op.img.width() + x2];
+                            else
+                                for (int c = 0; c < 3; c++)
+                                    warped_image.channel(c)[y * warped_image.width() + x] = op.img.channel(0)[y2 * op.img.width() + x2];
+                        }
+                    }
+                }
                 else // Means it's a TPS-handled warp.
                 {
                     warp::WarpOperation operation;

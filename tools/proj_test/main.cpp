@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
     std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
     satdump::config::loadConfig("satdump_cfg.json", user_path);
 
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
+    // satdump::ImageProducts img_pro;
+    // img_pro.load(argv[1]);
 
     satdump::ImageCompositeCfg rgb_cfg;
     rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
@@ -58,20 +58,20 @@ int main(int argc, char *argv[])
     rgb_cfg.white_balance = true;
 
     satdump::reprojection::ReprojectionOperation op;
-    op.source_prj_info = img_pro.get_proj_cfg();
-    op.img = img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
-    op.img_tle = img_pro.get_tle();
-    op.img_tim = img_pro.get_timestamps();
+    op.source_prj_info = nlohmann::json::parse("{\"type\":\"geos\"}"); // img_pro.get_proj_cfg();
+    op.img.load_png(argv[1]);                                          //= img_pro.images[0].image; // satdump::make_composite_from_product(img_pro, rgb_cfg);
+    // op.img_tle = img_pro.get_tle();
+    // op.img_tim = img_pro.get_timestamps();
 
     op.img.equalize(); // TMP
 
     op.use_draw_algorithm = false;
-    op.output_width = 2048;
-    op.output_height = 2048; // / 2;
+    op.output_width = 2048 * 4;
+    op.output_height = 2048 * 4 / 2; // / 2;
 
-    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-    op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":20.8,\"center_lat\":48,\"scale\":0.7}");
-    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
+    op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":20.8,\"center_lat\":48,\"scale\":2}");
+    //  op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
 
     satdump::reprojection::ProjectionResult ret = satdump::reprojection::reproject(op);
 

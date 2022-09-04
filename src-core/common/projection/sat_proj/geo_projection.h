@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geos.h"
+#include "../projs/geos.h"
 
 /*
 Code to reference a decoded image (or similar data) from a GEO satellite to Lat / Lon coordinates.
