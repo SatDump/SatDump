@@ -217,8 +217,10 @@ namespace satdump
                     warp::WarpOperation operation;
                     operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim);
                     operation.input_image = op.img;
-                    operation.output_width = 2048 * 10; // TODO : CHANGE!!!!!!
-                    operation.output_height = 1024 * 10;
+                    // TODO : CHANGE!!!!!!
+                    int l_width = op.img.width() * 10;
+                    operation.output_width = l_width;
+                    operation.output_height = l_width / 2;
 
                     satdump::warp::ImageWarper warper;
                     warper.op = operation;
