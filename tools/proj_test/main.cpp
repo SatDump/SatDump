@@ -67,13 +67,13 @@ int main(int argc, char *argv[])
 
     op.img.equalize(); // TMP
 
-    op.use_draw_algorithm = false;
-    op.output_width = 2048 * 2;
-    op.output_height = 2048; // / 2;
+    op.use_draw_algorithm = true;
+    op.output_width = 2048;
+    op.output_height = 2048 / 2; // / 2;
 
-    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+    op.target_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
     //  op.target_prj_info = nlohmann::json::parse("{\"type\":\"stereo\",\"center_lon\":-70.8,\"center_lat\":48,\"scale\":2}");
-    op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
+    // op.target_prj_info = nlohmann::json::parse("{\"type\":\"tpers\",\"lon\":45.0,\"lat\":0.0,\"alt\":30000,\"ang\":0,\"azi\":0}");
 
     satdump::reprojection::ProjectionResult ret = satdump::reprojection::reproject(op);
 
@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
                                    proj_func);
     logger->info("Drawing cities");
     unsigned short color2[3] = {65535, 0, 0};
-    map::drawProjectedCapitalsGeoJson(
+    /*map::drawProjectedCapitalsGeoJson(
         {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
         ret.img,
         color2,
         proj_func,
-        0.5);
+        0.5);*/
 
     logger->info("Saving...");
     ret.img.save_png("test_newproj.png");

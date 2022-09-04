@@ -169,9 +169,11 @@ namespace satdump
                     operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim);
                     operation.input_image = op.img;
                     // TODO : CHANGE!!!!!!
-                    int l_width = op.img.width() * 10;
+                    int l_width = std::max<int>(op.img.width(), 512) * 10;
                     operation.output_width = l_width;
                     operation.output_height = l_width / 2;
+
+                    logger->trace("Warping size {:d}x{:d}", l_width, l_width / 2);
 
                     satdump::warp::ImageWarper warper;
                     warper.op = operation;
