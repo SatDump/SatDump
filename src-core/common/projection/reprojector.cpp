@@ -349,7 +349,13 @@ namespace satdump
                     tpers_proj.forward(lon, lat, x, y);
                     x *= map_width / 2;
                     y *= map_height / 2;
-                    return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                    int finalx = x + (map_width / 2);
+                    int finaly = map_height - (y + (map_height / 2));
+                    if (finalx < 0 || finaly < 0)
+                        return {-1, -1};
+                    if (finalx >= map_width || finaly >= map_height)
+                        return {-1, -1};
+                    return {finalx, finaly};
                 };
             }
             else
