@@ -4,6 +4,7 @@
 #include "core/config.h"
 #include "products/dataset.h"
 #include "common/utils.h"
+#include "error.h"
 
 namespace satdump
 {
@@ -152,10 +153,28 @@ namespace satdump
             ImGui::Separator();
             ImGui::Text("Load Dataset :");
             if (select_dataset_dialog.draw())
-                loadDatasetInViewer(select_dataset_dialog.getPath());
+            {
+                try
+                {
+                    loadDatasetInViewer(select_dataset_dialog.getPath());
+                }
+                catch (std::exception &e)
+                {
+                    error::set_error("Error opening dataset!", e.what());
+                }
+            }
             ImGui::Text("Load Products :");
             if (select_products_dialog.draw())
-                loadProductsInViewer(select_products_dialog.getPath());
+            {
+                try
+                {
+                    loadProductsInViewer(select_products_dialog.getPath());
+                }
+                catch (std::exception &e)
+                {
+                    error::set_error("Error opening dataset!", e.what());
+                }
+            }
         }
     }
 
