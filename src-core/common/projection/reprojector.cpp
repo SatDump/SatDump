@@ -20,6 +20,7 @@ namespace satdump
             ProjectionResult result_prj;
 
             result_prj.img.init(op.output_width, op.output_height, 3);
+            result_prj.settings = op.target_prj_info;
 
             auto &image = op.img;
             auto &projected_image = result_prj.img;
@@ -31,64 +32,14 @@ namespace satdump
             {
                 logger->info("Using old algorithm...");
 
-                // Target projs
-                geodetic::projection::EquirectangularProjection equi_proj;
-                geodetic::projection::StereoProjection stereo_proj;
-                geodetic::projection::TPERSProjection tpers_proj;
-
                 // Source projs
                 geodetic::projection::EquirectangularProjection equi_proj_src;
                 std::shared_ptr<SatelliteProjection> sat_proj_src;
 
                 // Init
-                std::function<std::pair<int, int>(float, float, int, int)> projectionFunction;
-
-                if (op.target_prj_info["type"] == "equirectangular")
-                {
-                    equi_proj.init(projected_image.width(), projected_image.height(),
-                                   op.target_prj_info["tl_lon"].get<float>(), op.target_prj_info["tl_lat"].get<float>(),
-                                   op.target_prj_info["br_lon"].get<float>(), op.target_prj_info["br_lat"].get<float>());
-
-                    projectionFunction = [&equi_proj](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-                    {
-                        int imageLat = 0;
-                        int imageLon = 0;
-                        equi_proj.forward(lon, lat, imageLon, imageLat);
-                        return {imageLon, imageLat};
-                    };
-                }
-                else if (op.target_prj_info["type"] == "stereo")
-                {
-                    stereo_proj.init(op.target_prj_info["center_lat"].get<float>(), op.target_prj_info["center_lon"].get<float>());
-                    float stereo_scale = op.target_prj_info["scale"].get<float>();
-
-                    projectionFunction = [&stereo_proj, stereo_scale](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-                    {
-                        double x = 0;
-                        double y = 0;
-                        stereo_proj.forward(lon, lat, x, y);
-                        x *= map_width / stereo_scale;
-                        y *= map_height / stereo_scale;
-                        return {x + (map_width / 2), map_height - (y + (map_height / 2))};
-                    };
-                }
-                else if (op.target_prj_info["type"] == "tpers")
-                {
-                    tpers_proj.init(op.target_prj_info["alt"].get<float>() * 1000,
-                                    op.target_prj_info["lon"].get<float>(),
-                                    op.target_prj_info["lat"].get<float>(),
-                                    op.target_prj_info["ang"].get<float>(),
-                                    op.target_prj_info["azi"].get<float>());
-
-                    projectionFunction = [&tpers_proj](float lat, float lon, int map_height, int map_width) -> std::pair<int, int>
-                    {
-                        double x, y;
-                        tpers_proj.forward(lon, lat, x, y);
-                        x *= map_width / 2;
-                        y *= map_height / 2;
-                        return {x + (map_width / 2), map_height - (y + (map_height / 2))};
-                    };
-                }
+                std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(projected_image.width(),
+                                                                                                                        projected_image.height(),
+                                                                                                                        op.target_prj_info);
 
                 // Reproj
                 // ""TPS""" (Mostly LEO)
@@ -349,6 +300,60 @@ namespace satdump
             }
 
             return result_prj;
+        }
+
+        std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height, nlohmann::json params)
+        {
+            if (params["type"] == "equirectangular")
+            {
+                geodetic::projection::EquirectangularProjection projector;
+                projector.init(width, height,
+                               params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
+                               params["br_lon"].get<float>(), params["br_lat"].get<float>());
+
+                return [projector](float lat, float lon, int map_height2, int map_width2) mutable -> std::pair<int, int>
+                {
+                    int x, y;
+                    projector.forward(lon, lat, x, y);
+                    return {x, y};
+                };
+            }
+            else if (params["type"] == "stereo")
+            {
+                geodetic::projection::StereoProjection stereo_proj;
+                stereo_proj.init(params["center_lat"].get<float>(), params["center_lon"].get<float>());
+                float stereo_scale = params["scale"].get<float>();
+
+                return [stereo_proj, stereo_scale](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    double x = 0;
+                    double y = 0;
+                    stereo_proj.forward(lon, lat, x, y);
+                    x *= map_width / stereo_scale;
+                    y *= map_height / stereo_scale;
+                    return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                };
+            }
+            else if (params["type"] == "tpers")
+            {
+                geodetic::projection::TPERSProjection tpers_proj;
+                tpers_proj.init(params["alt"].get<float>() * 1000,
+                                params["lon"].get<float>(),
+                                params["lat"].get<float>(),
+                                params["ang"].get<float>(),
+                                params["azi"].get<float>());
+
+                return [tpers_proj](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    double x, y;
+                    tpers_proj.forward(lon, lat, x, y);
+                    x *= map_width / 2;
+                    y *= map_height / 2;
+                    return {x + (map_width / 2), map_height - (y + (map_height / 2))};
+                };
+            }
+            else
+                throw std::runtime_error("Invalid projection!!!!");
         }
     }
 }
