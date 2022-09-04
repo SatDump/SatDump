@@ -224,6 +224,17 @@
                         "equalize": true,
                         "geo_correct": true
                     }
+                },
+                "project_channels": {
+                    "channels": "4",
+                    "width": 4096,
+                    "height": 2048,
+                    "equalize": true,
+                    "old_algo": true,
+                    "draw_map": true,
+                    "config": {
+                        "type": "equirectangular"
+                    }
                 }
             },
             "msu_mr": {
@@ -365,6 +376,17 @@
                         "equation": "ch5, ch4, ch3",
                         "equalize": true
                     }
+                },
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    "equalize": true,
+                    "old_algo": true,
+                    "draw_map": true,
+                    "config": {
+                        "type": "equirectangular"
+                    }
                 }
             },
             "atms": {
@@ -374,6 +396,17 @@
                     "16-17-18": {
                         "equation": "ch16, ch17, ch18",
                         "equalize": true
+                    }
+                },
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    "equalize": true,
+                    "old_algo": true,
+                    "draw_map": true,
+                    "config": {
+                        "type": "equirectangular"
                     }
                 }
             },
@@ -389,6 +422,17 @@
                     },
                     "543": {
                         "equation": "ch5, ch4, ch3"
+                    }
+                },
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    "equalize": true,
+                    "old_algo": true,
+                    "draw_map": true,
+                    "config": {
+                        "type": "equirectangular"
                     }
                 }
             },

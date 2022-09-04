@@ -5,6 +5,11 @@
 #include "../image_products.h"
 #include "core/config.h"
 
+#include "resources.h"
+#include "common/projection/reprojector.h"
+#include "common/map/map_drawer.h"
+#include "common/utils.h"
+
 namespace satdump
 {
     void process_image_products(Products *products, std::string product_path)
@@ -18,7 +23,7 @@ namespace satdump
         else
             logger->error("Unknown instrument : {:s}!", products->instrument_name);
 
-        // TMP
+        // Generate composites
         if (instrument_viewer_settings.contains("rgb_composites"))
         {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
@@ -51,6 +56,79 @@ namespace satdump
                         rgb_image.save_png(product_path + "/" + name + "_corrected.png");
                     }
                 }
+            }
+        }
+
+        // Single-channel projections
+        if (instrument_viewer_settings.contains("project_channels") && img_products->has_proj_cfg())
+        {
+            std::vector<int> ch_to_prj;
+            if (instrument_viewer_settings["project_channels"]["channels"] == "all")
+            {
+                for (int i = 0; i < img_products->images.size(); i++)
+                    ch_to_prj.push_back(i);
+            }
+            else
+            {
+                auto chs_str = splitString(instrument_viewer_settings["project_channels"]["channels"].get<std::string>(), ',');
+                for (int i = 0; i < img_products->images.size(); i++)
+                {
+                    bool has_ch = false;
+                    for (std::string str : chs_str)
+                    {
+                        if (img_products->images[i].channel_name == str)
+                            has_ch = true;
+                    }
+                    if (has_ch)
+                        ch_to_prj.push_back(i);
+                }
+            }
+
+            for (int chanid : ch_to_prj)
+            {
+                auto &img = img_products->images[chanid];
+
+                reprojection::ReprojectionOperation op;
+                op.source_prj_info = img_products->get_proj_cfg();
+                op.target_prj_info = instrument_viewer_settings["project_channels"]["config"];
+                if (!op.target_prj_info.contains("tl_lon"))
+                    op.target_prj_info["tl_lon"] = -180;
+                if (!op.target_prj_info.contains("tl_lat"))
+                    op.target_prj_info["tl_lat"] = 90;
+                if (!op.target_prj_info.contains("br_lon"))
+                    op.target_prj_info["br_lon"] = 180;
+                if (!op.target_prj_info.contains("br_lat"))
+                    op.target_prj_info["br_lat"] = -90;
+                op.img = img.image;
+                op.output_width = instrument_viewer_settings["project_channels"]["width"].get<int>();
+                op.output_height = instrument_viewer_settings["project_channels"]["height"].get<int>();
+                op.img_tle = img_products->get_tle();
+                op.img_tim = img_products->get_timestamps(chanid);
+                if (instrument_viewer_settings["project_channels"].contains("old_algo"))
+                    op.use_draw_algorithm = instrument_viewer_settings["project_channels"]["old_algo"];
+
+                if (instrument_viewer_settings["project_channels"].contains("equalize"))
+                    if (instrument_viewer_settings["project_channels"]["equalize"].get<bool>())
+                        op.img.equalize();
+
+                logger->debug("Reprojecting channel {:s}", img.channel_name.c_str());
+                reprojection::ProjectionResult ret = reprojection::reproject(op);
+
+                if (instrument_viewer_settings["project_channels"].contains("draw_map"))
+                {
+                    if (instrument_viewer_settings["project_channels"]["draw_map"].get<bool>())
+                    {
+                        auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
+                        logger->info("Drawing map");
+                        unsigned short color[3] = {0, 65535, 0};
+                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                       ret.img,
+                                                       color,
+                                                       proj_func);
+                    }
+                }
+
+                ret.img.save_png(product_path + "/channel_" + img.channel_name + "_projected.png");
             }
         }
     }

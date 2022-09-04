@@ -45,6 +45,7 @@ namespace satdump
                 // ""TPS""" (Mostly LEO)
                 {
                     sat_proj_src = get_sat_proj(op.source_prj_info, op.img_tle, op.img_tim);
+                    bool direction = false;
 
                     for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
                     {
@@ -57,6 +58,8 @@ namespace satdump
 
                             if (ret1 || ret2)
                                 continue;
+
+                            direction = coords1.lat > coords2.lat;
 
                             std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, projected_image.height(), projected_image.width());
                             std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
@@ -89,7 +92,7 @@ namespace satdump
                                 I guess time will tell how reliable that approximation is.
                                 */
                                 double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
-                                projected_image.draw_circle(map_cc1.first, map_cc1.second /*+ circle_radius * 2.0*/, ceil(circle_radius), color, true); //, 0.4 * opacity);
+                                projected_image.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
                             }
 
                             // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
@@ -97,7 +100,7 @@ namespace satdump
 
                         if (progress != nullptr)
                             *progress = float(currentScan) / float(image.height());
-                        logger->critical("{:d}/{:d}", currentScan, image.height());
+                        // logger->critical("{:d}/{:d}", currentScan, image.height());
                     }
                 }
             }
