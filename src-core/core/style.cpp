@@ -21,12 +21,13 @@ namespace style
             return false;
         }
 
-        ImGui::GetStyle().WindowRounding = 0.0f;
-        ImGui::GetStyle().ChildRounding = 0.0f;
-        ImGui::GetStyle().FrameRounding = 0.0f;
-        ImGui::GetStyle().GrabRounding = 0.0f;
-        ImGui::GetStyle().PopupRounding = 0.0f;
-        ImGui::GetStyle().ScrollbarRounding = 0.0f;
+        float round = 2.0f;
+        ImGui::GetStyle().WindowRounding = round;
+        ImGui::GetStyle().ChildRounding = round;
+        ImGui::GetStyle().FrameRounding = round;
+        ImGui::GetStyle().GrabRounding = round;
+        ImGui::GetStyle().PopupRounding = round;
+        ImGui::GetStyle().ScrollbarRounding = round;
 
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 16.0f);
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 45.0f);
@@ -46,12 +47,13 @@ namespace style
             return false;
         }
 
-        ImGui::GetStyle().WindowRounding = 0.0f;
-        ImGui::GetStyle().ChildRounding = 0.0f;
-        ImGui::GetStyle().FrameRounding = 0.0f;
-        ImGui::GetStyle().GrabRounding = 0.0f;
-        ImGui::GetStyle().PopupRounding = 0.0f;
-        ImGui::GetStyle().ScrollbarRounding = 0.0f;
+        float round = 2.0f;
+        ImGui::GetStyle().WindowRounding = round;
+        ImGui::GetStyle().ChildRounding = round;
+        ImGui::GetStyle().FrameRounding = round;
+        ImGui::GetStyle().GrabRounding = round;
+        ImGui::GetStyle().PopupRounding = round;
+        ImGui::GetStyle().ScrollbarRounding = round;
 
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
@@ -120,12 +122,13 @@ namespace style
             return false;
         }
 
-        ImGui::GetStyle().WindowRounding = 0.0f;
-        ImGui::GetStyle().ChildRounding = 0.0f;
-        ImGui::GetStyle().FrameRounding = 0.0f;
-        ImGui::GetStyle().GrabRounding = 0.0f;
-        ImGui::GetStyle().PopupRounding = 0.0f;
-        ImGui::GetStyle().ScrollbarRounding = 0.0f;
+        float round = 2.0f;
+        ImGui::GetStyle().WindowRounding = round;
+        ImGui::GetStyle().ChildRounding = round;
+        ImGui::GetStyle().FrameRounding = round;
+        ImGui::GetStyle().GrabRounding = round;
+        ImGui::GetStyle().PopupRounding = round;
+        ImGui::GetStyle().ScrollbarRounding = round;
 
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
