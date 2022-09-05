@@ -10,6 +10,7 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/map/map_drawer.h"
 #include "resources.h"
+#include "common/projection/reprojector.h"
 
 namespace satdump
 {
@@ -45,6 +46,9 @@ namespace satdump
         else if (select_image_id - 1 < products->images.size())
             current_image = products->images[select_image_id - 1].image;
 
+        if (select_image_id != 0)
+            current_timestamps = products->get_timestamps(select_image_id - 1);
+
         if (median_blur)
             current_image.median_blur();
 
@@ -62,6 +66,37 @@ namespace satdump
 
         if (normalize_image)
             current_image.normalize();
+
+        if (map_overlay || cities_overlay)
+        {
+            current_image.to_rgb(); // Ensure this is RGB!!
+            auto proj_func = satdump::reprojection::setupProjectionFunction(current_image.width(),
+                                                                            current_image.height(),
+                                                                            products->get_proj_cfg(),
+                                                                            products->get_tle(),
+                                                                            current_timestamps,
+                                                                            rotate_image);
+            if (map_overlay)
+            {
+                logger->info("Drawing map overlay...");
+                unsigned short color[3] = {0, 65535, 0};
+                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                               current_image,
+                                               color,
+                                               proj_func,
+                                               100);
+            }
+            if (cities_overlay)
+            {
+                logger->info("Drawing map overlay...");
+                unsigned short color[3] = {65535, 0, 0};
+                map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+                                                  current_image,
+                                                  color,
+                                                  proj_func,
+                                                  cities_scale);
+            }
+        }
 
         if (correct_image)
         {
@@ -132,7 +167,7 @@ namespace satdump
                     normalize_image = rgb_compo_cfg.normalize;
                     white_balance_image = rgb_compo_cfg.white_balance;
 
-                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -303,6 +338,18 @@ namespace satdump
                     select_image_id = 0;
                     asyncUpdate();
                 }
+            }
+        }
+
+        if (products->has_proj_cfg())
+        {
+            if (ImGui::CollapsingHeader("Map Overlay"))
+            {
+                if (ImGui::Checkbox("Borders", &map_overlay))
+                    asyncUpdate();
+                if (ImGui::Checkbox("Cities", &cities_overlay))
+                    asyncUpdate();
+                ImGui::SliderFloat("Cities Scale", &cities_scale, 0.1, 10);
             }
         }
 

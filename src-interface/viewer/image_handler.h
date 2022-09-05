@@ -35,6 +35,11 @@ namespace satdump
         bool normalize_image = false;
         bool white_balance_image = false;
 
+        bool map_overlay = false;
+        bool cities_overlay = false;
+
+        float cities_scale = 0.5;
+
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;
         std::vector<std::string> channel_numbers;
@@ -43,6 +48,8 @@ namespace satdump
         std::vector<std::pair<std::string, ImageCompositeCfg>> rgb_presets;
         std::string rgb_presets_str;
         int select_rgb_presets = -1;
+
+        std::vector<double> current_timestamps;
 
         // Warp/Project
         int warp_project_width = 2048;

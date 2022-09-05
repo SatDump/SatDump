@@ -312,7 +312,8 @@ namespace satdump
         std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
                                                                                            nlohmann::json params,
                                                                                            TLE tle,
-                                                                                           std::vector<double> timestamps)
+                                                                                           std::vector<double> timestamps,
+                                                                                           bool rotate)
         {
             if (params["type"] == "equirectangular")
             {
@@ -321,7 +322,7 @@ namespace satdump
                                params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
                                params["br_lon"].get<float>(), params["br_lat"].get<float>());
 
-                return [projector](float lat, float lon, int map_height2, int map_width2) mutable -> std::pair<int, int>
+                return [projector, rotate](float lat, float lon, int map_height2, int map_width2) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     projector.forward(lon, lat, x, y);
@@ -334,7 +335,7 @@ namespace satdump
                 stereo_proj.init(params["center_lat"].get<float>(), params["center_lon"].get<float>());
                 float stereo_scale = params["scale"].get<float>();
 
-                return [stereo_proj, stereo_scale](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [stereo_proj, stereo_scale, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x = 0;
                     double y = 0;
@@ -353,7 +354,7 @@ namespace satdump
                                 params["ang"].get<float>(),
                                 params["azi"].get<float>());
 
-                return [tpers_proj](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [tpers_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
                     tpers_proj.forward(lon, lat, x, y);
@@ -376,7 +377,7 @@ namespace satdump
                                                             params["scale_x"].get<float>(), params["scale_y"].get<float>(),
                                                             params["offset_x"].get<float>(), params["offset_y"].get<float>(),
                                                             params["sweep_x"].get<bool>());
-                return [geo_proj](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [geo_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     int x;
                     int y;
@@ -387,6 +388,12 @@ namespace satdump
                     if (y < 0 || y > map_height)
                         return {-1, -1};
 
+                    if (rotate)
+                    {
+                        x = (map_width - 1) - x;
+                        y = (map_height - 1) - y;
+                    }
+
                     return {x, y};
                 };
             }
@@ -395,7 +402,7 @@ namespace satdump
                 auto gcps = gcp_compute::compute_gcps(params, tle, timestamps);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 transform->init(gcps, true, false);
-                return [transform](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
                     transform->forward(lon, lat, x, y);
@@ -404,6 +411,12 @@ namespace satdump
                         return {-1, -1};
                     if (y < 0 || y > map_height)
                         return {-1, -1};
+
+                    if (rotate)
+                    {
+                        x = (map_width - 1) - x;
+                        y = (map_height - 1) - y;
+                    }
 
                     return {x, y};
                 };

@@ -43,6 +43,7 @@ namespace satdump
         std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
                                                                                            nlohmann::json params,
                                                                                            TLE tle = TLE(),
-                                                                                           std::vector<double> timestamps = std::vector<double>());
+                                                                                           std::vector<double> timestamps = std::vector<double>(),
+                                                                                           bool rotate = false);
     }
 }
