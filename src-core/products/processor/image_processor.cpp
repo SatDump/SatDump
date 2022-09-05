@@ -85,6 +85,23 @@ namespace satdump
                                    (rgb_image.channels() == 1 ? "_" : "_rgb_") +
                                    initial_name;
 
+                if (compo.value().contains("map_overlay") ? compo.value()["map_overlay"].get<bool>() : false)
+                {
+                    rgb_image.to_rgb(); // Ensure this is RGB!!
+                    auto proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
+                                                                                    rgb_image.height(),
+                                                                                    img_products->get_proj_cfg(),
+                                                                                    img_products->get_tle(),
+                                                                                    final_timestamps);
+                    logger->info("Drawing map...");
+                    unsigned short color[3] = {0, 65535, 0};
+                    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                   rgb_image,
+                                                   color,
+                                                   proj_func,
+                                                   100);
+                }
+
                 logger->info("Saving " + product_path + "/" + name + ".png");
                 rgb_image.save_png(product_path + "/" + name + ".png");
 

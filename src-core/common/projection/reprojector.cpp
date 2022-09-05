@@ -11,6 +11,8 @@
 
 #include "sat_proj/geo_projection.h"
 
+#include "projs/tps_transform.h"
+
 namespace satdump
 {
     namespace reprojection
@@ -307,7 +309,10 @@ namespace satdump
             return result_prj;
         }
 
-        std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height, nlohmann::json params)
+        std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
+                                                                                           nlohmann::json params,
+                                                                                           TLE tle,
+                                                                                           std::vector<double> timestamps)
         {
             if (params["type"] == "equirectangular")
             {
@@ -363,8 +368,48 @@ namespace satdump
                     return {finalx, finaly};
                 };
             }
+            else if (params["type"] == "geos")
+            {
+                geodetic::projection::GEOProjector geo_proj(params["lon"].get<float>(),
+                                                            params["alt"].get<double>(),
+                                                            width, height,
+                                                            params["scale_x"].get<float>(), params["scale_y"].get<float>(),
+                                                            params["offset_x"].get<float>(), params["offset_y"].get<float>(),
+                                                            params["sweep_x"].get<bool>());
+                return [geo_proj](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    int x;
+                    int y;
+                    geo_proj.forward(lon, lat, x, y);
+
+                    if (x < 0 || x > map_width)
+                        return {-1, -1};
+                    if (y < 0 || y > map_height)
+                        return {-1, -1};
+
+                    return {x, y};
+                };
+            }
             else
-                throw std::runtime_error("Invalid projection!!!!");
+            {
+                auto gcps = gcp_compute::compute_gcps(params, tle, timestamps);
+                std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
+                transform->init(gcps, true, false);
+                return [transform](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    double x, y;
+                    transform->forward(lon, lat, x, y);
+
+                    if (x < 0 || x > map_width)
+                        return {-1, -1};
+                    if (y < 0 || y > map_height)
+                        return {-1, -1};
+
+                    return {x, y};
+                };
+            }
+
+            throw std::runtime_error("Invalid projection!!!!");
         }
     }
 }

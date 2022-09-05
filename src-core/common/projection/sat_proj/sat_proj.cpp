@@ -209,7 +209,6 @@ namespace satdump
             return std::make_shared<NormalLineSatProj>(cfg, tle, timestamps_raw);
         else if (cfg["type"].get<std::string>() == "normal_per_ifov")
             return std::make_shared<NormalPerIFOVProj>(cfg, tle, timestamps_raw);
-        else
-            return std::shared_ptr<SatelliteProjection>();
+        throw std::runtime_error("Invalid satellite projection!");
     }
 }

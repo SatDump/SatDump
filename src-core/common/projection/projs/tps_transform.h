@@ -19,7 +19,7 @@ namespace satdump
             double xy[2] = {0.0, 0.0};
 
         public:
-            int init(std::vector<GCP> gcps);
+            int init(std::vector<GCP> gcps, bool forward = true, bool reverse = true);
             TPSTransform();
             TPSTransform(std::vector<GCP> gcps);
             ~TPSTransform();

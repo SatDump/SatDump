@@ -23,7 +23,7 @@ namespace satdump
             init(gcps);
         }
 
-        int TPSTransform::init(std::vector<GCP> gcps)
+        int TPSTransform::init(std::vector<GCP> gcps, bool forward, bool reverse)
         {
             // Allocate transform info.
             if (has_been_init)
@@ -80,12 +80,16 @@ namespace satdump
 
             // Solve forward and reverse
             logger->info("Solving TPS equations...");
-            std::thread solveFwd([this]()
+            std::thread solveFwd([this, forward]()
                                  {
+                                     if(forward) {
                                      fwd_solved = spline_forward->solve() != 0;
-                                     logger->info("Forward solved"); });
-            rev_solved = spline_reverse->solve() != 0;
-            logger->info("Reverse solved");
+                                     logger->info("Forward solved");} });
+            if (reverse)
+            {
+                rev_solved = spline_reverse->solve() != 0;
+                logger->info("Reverse solved");
+            }
             if (solveFwd.joinable())
                 solveFwd.join();
 
