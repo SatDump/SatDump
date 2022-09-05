@@ -21,7 +21,7 @@ void MiriSdrSource::_rx_callback_16(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
     volk_16i_s32f_convert_32f((float *)stream->writeBuf, (int16_t *)buf, 32768.0f, len / 2);
-    stream->swap(len / 2);
+    stream->swap(len / 4);
 };
 
 void MiriSdrSource::set_gains()
@@ -74,6 +74,7 @@ void MiriSdrSource::open()
     available_samplerates.push_back(3e6);
     available_samplerates.push_back(4e6);
     available_samplerates.push_back(5e6);
+    available_samplerates.push_back(6e6);
     available_samplerates.push_back(7e6);
     available_samplerates.push_back(8e6);
     available_samplerates.push_back(9e6);
