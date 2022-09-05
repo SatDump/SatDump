@@ -156,7 +156,7 @@ namespace satdump
         return radiance;
     }
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress)
+    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps)
     {
         std::vector<int> channel_indexes;
         std::vector<std::string> channel_numbers;
@@ -216,9 +216,9 @@ namespace satdump
 
         if (product.needs_correlation)
         {
+            std::vector<double> common_timestamps; // First, establish common timestamps between all required channels
             if (product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_MULTIPLE_LINES)
             {
-                std::vector<double> common_timestamps; // First, establish common timestamps between all required channels
                 for (double time1 : product.get_timestamps(channel_indexes[0]))
                 {
                     bool is_present_everywhere = true;
@@ -278,6 +278,14 @@ namespace satdump
 
                 images_obj = images_obj_new;
             }
+
+            if (final_timestamps != nullptr)
+                *final_timestamps = common_timestamps;
+        }
+        else
+        {
+            if (final_timestamps != nullptr)
+                *final_timestamps = product.get_timestamps();
         }
 
         image::Image<uint16_t> rgb_composite;

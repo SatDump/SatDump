@@ -12,6 +12,50 @@
 
 namespace satdump
 {
+    reprojection::ProjectionResult projectImg(nlohmann::json proj_settings, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
+    {
+        reprojection::ReprojectionOperation op;
+        op.source_prj_info = img_products.get_proj_cfg();
+        op.target_prj_info = proj_settings["config"];
+        if (!op.target_prj_info.contains("tl_lon"))
+            op.target_prj_info["tl_lon"] = -180;
+        if (!op.target_prj_info.contains("tl_lat"))
+            op.target_prj_info["tl_lat"] = 90;
+        if (!op.target_prj_info.contains("br_lon"))
+            op.target_prj_info["br_lon"] = 180;
+        if (!op.target_prj_info.contains("br_lat"))
+            op.target_prj_info["br_lat"] = -90;
+        op.img = img;
+        op.output_width = proj_settings["width"].get<int>();
+        op.output_height = proj_settings["height"].get<int>();
+        op.img_tle = img_products.get_tle();
+        op.img_tim = timestamps;
+        if (proj_settings.contains("old_algo"))
+            op.use_draw_algorithm = proj_settings["old_algo"];
+
+        if (proj_settings.contains("equalize"))
+            if (proj_settings["equalize"].get<bool>())
+                op.img.equalize();
+
+        reprojection::ProjectionResult ret = reprojection::reproject(op);
+
+        if (proj_settings.contains("draw_map"))
+        {
+            if (proj_settings["draw_map"].get<bool>())
+            {
+                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
+                logger->info("Drawing map");
+                unsigned short color[3] = {0, 65535, 0};
+                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                               ret.img,
+                                               color,
+                                               proj_func);
+            }
+        }
+
+        return ret;
+    }
+
     void process_image_products(Products *products, std::string product_path)
     {
         ImageProducts *img_products = (ImageProducts *)products;
@@ -34,7 +78,8 @@ namespace satdump
                 std::replace(initial_name.begin(), initial_name.end(), '/', '_');
 
                 ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
-                image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg);
+                std::vector<double> final_timestamps;
+                image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps);
 
                 std::string name = products->instrument_name +
                                    (rgb_image.channels() == 1 ? "_" : "_rgb_") +
@@ -43,9 +88,17 @@ namespace satdump
                 logger->info("Saving " + product_path + "/" + name + ".png");
                 rgb_image.save_png(product_path + "/" + name + ".png");
 
-                bool geo_correct = compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false;
+                if (compo.value().contains("project"))
+                {
+                    logger->debug("Reprojecting composite {:s}", name.c_str());
+                    reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
+                                                                    rgb_image,
+                                                                    final_timestamps,
+                                                                    *img_products);
+                    ret.img.save_png(product_path + "/rgb_" + name + "_projected.png");
+                }
 
-                if (geo_correct)
+                if (compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false)
                 {
                     bool success = false;
                     rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
@@ -88,46 +141,11 @@ namespace satdump
             {
                 auto &img = img_products->images[chanid];
 
-                reprojection::ReprojectionOperation op;
-                op.source_prj_info = img_products->get_proj_cfg();
-                op.target_prj_info = instrument_viewer_settings["project_channels"]["config"];
-                if (!op.target_prj_info.contains("tl_lon"))
-                    op.target_prj_info["tl_lon"] = -180;
-                if (!op.target_prj_info.contains("tl_lat"))
-                    op.target_prj_info["tl_lat"] = 90;
-                if (!op.target_prj_info.contains("br_lon"))
-                    op.target_prj_info["br_lon"] = 180;
-                if (!op.target_prj_info.contains("br_lat"))
-                    op.target_prj_info["br_lat"] = -90;
-                op.img = img.image;
-                op.output_width = instrument_viewer_settings["project_channels"]["width"].get<int>();
-                op.output_height = instrument_viewer_settings["project_channels"]["height"].get<int>();
-                op.img_tle = img_products->get_tle();
-                op.img_tim = img_products->get_timestamps(chanid);
-                if (instrument_viewer_settings["project_channels"].contains("old_algo"))
-                    op.use_draw_algorithm = instrument_viewer_settings["project_channels"]["old_algo"];
-
-                if (instrument_viewer_settings["project_channels"].contains("equalize"))
-                    if (instrument_viewer_settings["project_channels"]["equalize"].get<bool>())
-                        op.img.equalize();
-
                 logger->debug("Reprojecting channel {:s}", img.channel_name.c_str());
-                reprojection::ProjectionResult ret = reprojection::reproject(op);
-
-                if (instrument_viewer_settings["project_channels"].contains("draw_map"))
-                {
-                    if (instrument_viewer_settings["project_channels"]["draw_map"].get<bool>())
-                    {
-                        auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
-                        logger->info("Drawing map");
-                        unsigned short color[3] = {0, 65535, 0};
-                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                       ret.img,
-                                                       color,
-                                                       proj_func);
-                    }
-                }
-
+                reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
+                                                                img.image,
+                                                                img_products->get_timestamps(chanid),
+                                                                *img_products);
                 ret.img.save_png(product_path + "/channel_" + img.channel_name + "_projected.png");
             }
         }
