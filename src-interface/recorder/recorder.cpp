@@ -152,6 +152,7 @@ namespace satdump
                 {
                     if (ImGui::Button("Start"))
                     {
+                        source_ptr->set_frequency(frequency_mhz * 1e6);
                         try
                         {
                             source_ptr->start();
