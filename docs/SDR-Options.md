@@ -87,3 +87,8 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `bit_depth` : Bit depth to stream at. Options are 8/16/32
 - `gain` : Device gain in dBs
 - `digital_gain` : Software gain, in dBs
+
+## MiriSDR
+
+- `gain` : Device Gain in dBs
+- `bias` : Enable Bias-Tree power
