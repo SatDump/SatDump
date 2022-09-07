@@ -57,6 +57,10 @@ namespace satdump
         int warp_project_height = 1024;
         */
 
+        // Projections
+        bool projection_ready = false;
+        image::Image<uint16_t> projected_img;
+
         void init();
         void updateImage();
 
@@ -70,7 +74,7 @@ namespace satdump
 
         bool canBeProjected();
         bool hasProjection();
-        void updateProjection(int width, int height, nlohmann::json settings);
+        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
         image::Image<uint16_t> &getProjection();
 
         static std::string getID() { return "image_handler"; }

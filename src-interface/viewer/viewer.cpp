@@ -108,10 +108,10 @@ namespace satdump
     {
         if (ImGui::BeginTabBar("Viewer Prob Tabbar", ImGuiTabBarFlags_None))
         {
-            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x/2);
+            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x / 2);
             if (ImGui::BeginTabItem("Products"))
             {
-                if (ImGui::CollapsingHeader("General"), ImGuiTreeNodeFlags_DefaultOpen)
+                if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     for (std::string dataset_name : opened_datasets)
                     {
@@ -183,7 +183,7 @@ namespace satdump
                 }
                 ImGui::EndTabItem();
             }
-            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x/2);
+            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x / 2);
             if (ImGui::BeginTabItem("Projections"))
             {
                 if (ImGui::CollapsingHeader("Projection"))

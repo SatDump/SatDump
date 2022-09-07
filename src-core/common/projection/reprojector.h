@@ -9,17 +9,6 @@ namespace satdump
     // Reprojection interface. WIP
     namespace reprojection
     {
-        // Projection types
-        enum ProjectionType
-        {
-            PROJ_NONE, // Auto-Detect, should be used on the source
-            PROJ_EQUIRECTANGULAR,
-            PROJ_GCPS,
-            PROJ_STEREO,
-            PROJ_GEOS,
-            PROJ_TPERS,
-        };
-
         // Re-Projection operation
         struct ReprojectionOperation
         {

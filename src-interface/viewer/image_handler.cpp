@@ -431,13 +431,36 @@ namespace satdump
 
     bool ImageViewerHandler::hasProjection()
     {
+        return projection_ready;
     }
 
-    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings)
+    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
     {
+        if (canBeProjected())
+        {
+            reprojection::ReprojectionOperation op;
+            op.source_prj_info = products->get_proj_cfg();
+            op.target_prj_info = settings;
+            op.img = current_image;
+            if (rotate_image)
+                op.img.mirror(true, true);
+            op.output_width = width;
+            op.output_height = height;
+            op.use_draw_algorithm = settings["use_draw_algorithm"].get<bool>();
+            op.img_tle = products->get_tle();
+            op.img_tim = current_timestamps;
+            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
+            projected_img = res.img;
+            projection_ready = true;
+        }
+        else
+        {
+            logger->error("Current image can't be projected!");
+        }
     }
 
     image::Image<uint16_t> &ImageViewerHandler::getProjection()
     {
+        return projected_img;
     }
 }
