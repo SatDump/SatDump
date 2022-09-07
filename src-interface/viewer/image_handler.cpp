@@ -419,4 +419,13 @@ namespace satdump
 
         return tree_local.end();
     }
+
+    bool ImageViewerHandler::canBeProjected()
+    {
+        return products->has_proj_cfg() &&
+               products->has_tle() &&
+               products->has_proj_cfg() &&
+               current_timestamps.size() > 0 &&
+               !correct_image;
+    }
 }

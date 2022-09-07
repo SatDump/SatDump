@@ -51,9 +51,11 @@ namespace satdump
 
         std::vector<double> current_timestamps;
 
+        /*
         // Warp/Project
         int warp_project_width = 2048;
         int warp_project_height = 1024;
+        */
 
         void init();
         void updateImage();
@@ -65,6 +67,11 @@ namespace satdump
         void drawMenu();
         void drawContents(ImVec2 win_size);
         float drawTreeMenu();
+
+        bool canBeProjected();
+        bool hasProjection();
+        bool updateProjection(int width, int height, nlohmann::json settings);
+        image::Image<uint16_t> &getProjection();
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

@@ -217,7 +217,7 @@ namespace satdump
 
                     if (ImGui::BeginListBox("##pipelineslistbox"))
                     {
-                        ImGui::Selectable
+                        // ImGui::Selectable
                         ImGui::EndListBox();
                     }
                 }
