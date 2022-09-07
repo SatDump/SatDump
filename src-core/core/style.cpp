@@ -187,8 +187,8 @@ namespace style
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f);
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 16.0f, &config, icons_ranges);
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
+        //bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
         hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
+        //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
     }
 }
