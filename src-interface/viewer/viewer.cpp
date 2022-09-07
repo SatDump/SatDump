@@ -106,75 +106,124 @@ namespace satdump
 
     void ViewerApplication::drawPanel()
     {
-        if (ImGui::CollapsingHeader("General"))
+        if (ImGui::BeginTabBar("Viewer Prob Tabbar", ImGuiTabBarFlags_None))
         {
-            for (std::string dataset_name : opened_datasets)
+            if (ImGui::BeginTabItem("Products                                              "))
             {
-                if (products_cnt_in_dataset(dataset_name))
+                if (ImGui::CollapsingHeader("General"))
                 {
-                    ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-                    ImGui::TreePush();
-
-                    const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
-                    const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
-                    ImDrawList *drawList = ImGui::GetWindowDrawList();
-
-                    ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
-                    verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
-                    ImVec2 verticalLineEnd = verticalLineStart;
-
-                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                        if (products_and_handlers[i].dataset_name == dataset_name)
+                    for (std::string dataset_name : opened_datasets)
+                    {
+                        if (products_cnt_in_dataset(dataset_name))
                         {
-                            const float HorizontalTreeLineSize = 8.0f;                           // chosen arbitrarily
-                            const ImRect childRect = renderHandler(products_and_handlers[i], i); // RenderTree(child);
-                            const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-                            drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
-                            verticalLineEnd.y = midpoint;
+                            ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+                            ImGui::TreePush();
+
+                            const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
+                            const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
+                            ImDrawList *drawList = ImGui::GetWindowDrawList();
+
+                            ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
+                            verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
+                            ImVec2 verticalLineEnd = verticalLineStart;
+
+                            for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                                if (products_and_handlers[i].dataset_name == dataset_name)
+                                {
+                                    const float HorizontalTreeLineSize = 8.0f;                           // chosen arbitrarily
+                                    const ImRect childRect = renderHandler(products_and_handlers[i], i); // RenderTree(child);
+                                    const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
+                                    drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
+                                    verticalLineEnd.y = midpoint;
+                                }
+
+                            drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
+
+                            ImGui::TreePop();
                         }
+                    }
 
-                    drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
+                    // Render unclassified
+                    if (products_cnt_in_dataset(""))
+                    {
+                        ImGui::TreeNodeEx("Others", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+                        ImGui::TreePush();
+                        for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                            if (products_and_handlers[i].dataset_name == "")
+                                renderHandler(products_and_handlers[i], i);
+                        ImGui::TreePop();
+                    }
 
-                    ImGui::TreePop();
+                    ImGui::Separator();
+                    ImGui::Text("Load Dataset :");
+                    if (select_dataset_dialog.draw())
+                    {
+                        try
+                        {
+                            loadDatasetInViewer(select_dataset_dialog.getPath());
+                        }
+                        catch (std::exception &e)
+                        {
+                            error::set_error("Error opening dataset!", e.what());
+                        }
+                    }
+                    ImGui::Text("Load Products :");
+                    if (select_products_dialog.draw())
+                    {
+                        try
+                        {
+                            loadProductsInViewer(select_products_dialog.getPath());
+                        }
+                        catch (std::exception &e)
+                        {
+                            error::set_error("Error opening dataset!", e.what());
+                        }
+                    }
                 }
+                ImGui::EndTabItem();
             }
-
-            // Render unclassified
-            if (products_cnt_in_dataset(""))
+            if (ImGui::BeginTabItem("Projections                                              "))
             {
-                ImGui::TreeNodeEx("Others", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-                ImGui::TreePush();
-                for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                    if (products_and_handlers[i].dataset_name == "")
-                        renderHandler(products_and_handlers[i], i);
-                ImGui::TreePop();
-            }
+                if (ImGui::CollapsingHeader("Projection"))
+                {
+                    int itm = 0;
+                    float tl_lon = -180;
+                    float tl_lat = 90;
+                    float br_lon = 180;
+                    float br_lat = -90;
+                    ImGui::Combo("##targetproj", &itm, "Equirectangular");
+                    ImGui::Text("Top Left :");
+                    ImGui::InputFloat("Lon##tl", &tl_lon);
+                    // ImGui::SameLine();
+                    ImGui::InputFloat("Lat##tl", &tl_lat);
+                    ImGui::Text("Bottom Right :");
+                    ImGui::InputFloat("Lon##br", &br_lon);
+                    // ImGui::SameLine();
+                    ImGui::InputFloat("Lat##br", &br_lat);
+                }
+                if (ImGui::CollapsingHeader("Layers"))
+                {
+                    int itm_radio = 0;
+                    ImGui::Text("Mode :");
+                    ImGui::RadioButton("Blend", &itm_radio, 0);
+                    ImGui::SameLine();
+                    ImGui::RadioButton("Overlay", &itm_radio, 1);
 
-            ImGui::Separator();
-            ImGui::Text("Load Dataset :");
-            if (select_dataset_dialog.draw())
-            {
-                try
-                {
-                    loadDatasetInViewer(select_dataset_dialog.getPath());
+                    ImGui::Text("Layers :");
+                    float opacity = 100;
+
+                    // ImGui::Text("MetOp AVHRR idk");
+                    // ImGui::InputFloat("Opacity", &opacity);
+
+                    if (ImGui::BeginListBox("##pipelineslistbox"))
+                    {
+                        ImGui::Selectable
+                        ImGui::EndListBox();
+                    }
                 }
-                catch (std::exception &e)
-                {
-                    error::set_error("Error opening dataset!", e.what());
-                }
+                ImGui::EndTabItem();
             }
-            ImGui::Text("Load Products :");
-            if (select_products_dialog.draw())
-            {
-                try
-                {
-                    loadProductsInViewer(select_products_dialog.getPath());
-                }
-                catch (std::exception &e)
-                {
-                    error::set_error("Error opening dataset!", e.what());
-                }
-            }
+            ImGui::EndTabBar();
         }
     }
 
@@ -200,6 +249,12 @@ namespace satdump
         ImGui::BeginGroup();
         if (products_and_handlers.size() > 0)
             products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+        else
+            ImGui::GetWindowDrawList()
+                ->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
+                                       ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
+                                ImColor::HSV(0, 0, 0));
         ImGui::EndGroup();
     }
 
