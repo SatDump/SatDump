@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <filesystem>
 #include "core/module.h"
+#include "resources.h"
 
 namespace style
 {
@@ -13,14 +14,8 @@ namespace style
     ImFont *bigFont;
     ImFont *hugeFont;
 
-    bool setDefaultStyle(std::string resDir)
+    bool setDefaultStyle()
     {
-        if (!std::filesystem::is_directory(resDir))
-        {
-            spdlog::error("Inavlid resource directory: {0}", resDir);
-            return false;
-        }
-
         float round = 2.0f;
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
@@ -29,9 +24,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), 128.0f);
+        setFonts(resources::getResourcePath("fonts/Roboto-Medium.tff"));
 
         ImGui::StyleColorsDark();
         //ImGui::StyleColorsLight();
@@ -39,14 +32,8 @@ namespace style
         return true;
     }
 
-    bool setLightStyle(std::string resDir, float dpi_scaling)
+    bool setLightStyle(float dpi_scaling)
     {
-        if (!std::filesystem::is_directory(resDir))
-        {
-            spdlog::error("Inavlid resource directory: {0}", resDir);
-            return false;
-        }
-
         float round = 2.0f;
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
@@ -55,9 +42,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 128.0f);
+        setFonts(resources::getResourcePath("fonts/Roboto-Medium.ttf"));
 
         ImGui::StyleColorsLight();
 
@@ -114,14 +99,8 @@ namespace style
         return true;
     }
 
-    bool setDarkStyle(std::string resDir, float dpi_scaling)
+    bool setDarkStyle(float dpi_scaling)
     {
-        if (!std::filesystem::is_directory(resDir))
-        {
-            spdlog::error("Inavlid resource directory: {0}", resDir);
-            return false;
-        }
-
         float round = 2.0f;
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
@@ -130,9 +109,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 16.0f);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 45.0f);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(((std::string)(resDir + "/Roboto-Medium.ttf")).c_str(), dpi_scaling * 128.0f);
+        setFonts(resources::getResourcePath("fonts/Roboto-Medium.ttf"));
 
         ImGui::StyleColorsDark();
 
@@ -201,5 +178,17 @@ namespace style
     {
         ImGui::PopItemFlag();
         ImGui::PopStyleColor(3);
+    }
+
+    void setFonts(std::string fontName){
+        static const ImWchar icons_ranges[] = { 0xe000, 0xfd46, 0 };
+        ImFontConfig config;
+        config.MergeMode = true;
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 16.0f, &config, icons_ranges);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
     }
 }

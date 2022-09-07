@@ -9,9 +9,10 @@ namespace style
     extern ImFont *bigFont;
     extern ImFont *hugeFont;
 
-    bool setDefaultStyle(std::string resDir);
-    bool setLightStyle(std::string resDir, float dpi_scaling = 1.0f);
-    bool setDarkStyle(std::string resDir, float dpi_scaling = 1.0f);
+    bool setDefaultStyle();
+    bool setLightStyle(float dpi_scaling = 1.0f);
+    bool setDarkStyle(float dpi_scaling = 1.0f);
     void beginDisabled();
     void endDisabled();
+    void setFonts(std::string fontName);
 }
