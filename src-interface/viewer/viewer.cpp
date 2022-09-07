@@ -108,7 +108,8 @@ namespace satdump
     {
         if (ImGui::BeginTabBar("Viewer Prob Tabbar", ImGuiTabBarFlags_None))
         {
-            if (ImGui::BeginTabItem("Products                                              "))
+            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x/2);
+            if (ImGui::BeginTabItem("Products"))
             {
                 if (ImGui::CollapsingHeader("General"))
                 {
@@ -182,7 +183,8 @@ namespace satdump
                 }
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Projections                                              "))
+            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x/2);
+            if (ImGui::BeginTabItem("Projections"))
             {
                 if (ImGui::CollapsingHeader("Projection"))
                 {

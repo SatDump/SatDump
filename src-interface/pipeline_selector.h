@@ -84,7 +84,7 @@ namespace satdump
         {
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
-            ImGui::InputTextWithHint("##pipelinesearchbox", "Search pipelines...", &pipeline_search_in);
+            ImGui::InputTextWithHint("##pipelinesearchbox", "\uf422   Search pipelines", &pipeline_search_in);
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
             if (ImGui::BeginListBox("##pipelineslistbox"))

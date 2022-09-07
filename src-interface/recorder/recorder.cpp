@@ -87,11 +87,12 @@ namespace satdump
         float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 240 * ui_scale : 0);
         ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false);
         {
-            if (ImGui::CollapsingHeader("Device"))
+            if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
             {
+                ImGui::Spacing();
                 if (is_started)
                     style::beginDisabled();
-                if (ImGui::Combo("Source", &sdr_select_id, sdr_select_string.c_str()))
+                if (ImGui::Combo("##Source", &sdr_select_id, sdr_select_string.c_str()))
                 {
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
 
@@ -122,7 +123,8 @@ namespace satdump
 
                     source_ptr->set_frequency(100e6);
                 }
-                if (ImGui::Button("Refresh"))
+                ImGui::SameLine();
+                if (ImGui::Button(" \uf94f "))
                 {
                     sources = dsp::getAllAvailableSources();
 
@@ -140,8 +142,22 @@ namespace satdump
                     source_ptr->open();
                     source_ptr->set_frequency(100e6);
                 }
+                /*
+                if (ImGui::IsItemHovered())
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                        ImGui::TextUnformatted("Refresh source list");
+                        ImGui::PopTextWrapPos();
+                        ImGui::EndTooltip();
+                    }
+                */
                 if (is_started)
                     style::endDisabled();
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
 
                 if (ImGui::InputDouble("MHz", &frequency_mhz))
                     source_ptr->set_frequency(frequency_mhz * 1e6);
@@ -181,7 +197,7 @@ namespace satdump
                 ImGui::TextColored(ImColor(255, 0, 0), "%s", sdr_error.c_str());
             }
 
-            if (ImGui::CollapsingHeader("FFT"))
+            if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);

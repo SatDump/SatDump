@@ -115,7 +115,7 @@ void FileSource::drawControlUI()
         }
     }
 
-    ImGui::InputInt("Samplerate", &current_samplerate);
+    ImGui::InputInt("Samplerate", &current_samplerate, 0);
     if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "f32\0"
                                                                              "s16\0"
                                                                              "s8\0"

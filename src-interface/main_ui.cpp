@@ -40,20 +40,11 @@ namespace satdump
         ui_scale = manual_dpi_scaling;
 
         // Setup Theme
-        if (std::filesystem::exists("Roboto-Medium.ttf"))
-        {
-            if (light_theme)
-                style::setLightStyle(".", manual_dpi_scaling);
-            else
-                style::setDarkStyle(".", manual_dpi_scaling);
-        }
+
+        if (light_theme)
+            style::setLightStyle(manual_dpi_scaling);
         else
-        {
-            if (light_theme)
-                style::setLightStyle(satdump::RESPATH);
-            else
-                style::setDarkStyle(satdump::RESPATH);
-        }
+            style::setDarkStyle(manual_dpi_scaling);
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
