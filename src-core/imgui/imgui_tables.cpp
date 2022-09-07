@@ -1,4 +1,4 @@
-// dear imgui, v1.88 WIP
+// dear imgui, v1.89 WIP
 // (tables and columns code)
 
 /*
@@ -539,7 +539,7 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
     if (table->RefScale != 0.0f && table->RefScale != new_ref_scale_unit)
     {
         const float scale_factor = new_ref_scale_unit / table->RefScale;
-        //IMGUI_DEBUG_LOG("[table] %08X RefScaleUnit %.3f -> %.3f, scaling width by %.3f\n", table->ID, table->RefScaleUnit, new_ref_scale_unit, scale_factor);
+        //IMGUI_DEBUG_PRINT("[table] %08X RefScaleUnit %.3f -> %.3f, scaling width by %.3f\n", table->ID, table->RefScaleUnit, new_ref_scale_unit, scale_factor);
         for (int n = 0; n < columns_count; n++)
             table->Columns[n].WidthRequest = table->Columns[n].WidthRequest * scale_factor;
     }
@@ -1105,18 +1105,10 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
     table->IsUsingHeaders = false;
 
     // [Part 11] Context menu
-    if (table->IsContextPopupOpen && table->InstanceCurrent == table->InstanceInteracted)
+    if (TableBeginContextMenuPopup(table))
     {
-        const ImGuiID context_menu_id = ImHashStr("##ContextMenu", 0, table->ID);
-        if (BeginPopupEx(context_menu_id, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
-        {
-            TableDrawContextMenu(table);
-            EndPopup();
-        }
-        else
-        {
-            table->IsContextPopupOpen = false;
-        }
+        TableDrawContextMenu(table);
+        EndPopup();
     }
 
     // [Part 13] Sanitize and build sort specs before we have a change to use them for display.
@@ -1725,6 +1717,8 @@ void ImGui::TableBeginRow(ImGuiTable* table)
     table->RowTextBaseline = 0.0f;
     table->RowIndentOffsetX = window->DC.Indent.x - table->HostIndentX; // Lock indent
     window->DC.PrevLineTextBaseOffset = 0.0f;
+    window->DC.CurrLineSize = ImVec2(0.0f, 0.0f);
+    window->DC.IsSameLine = window->DC.IsSetPos = false;
     window->DC.CursorMaxPos.y = next_y1;
 
     // Making the header BG color non-transparent will allow us to overlay it multiple times when handling smooth dragging.
@@ -2006,6 +2000,9 @@ void ImGui::TableEndCell(ImGuiTable* table)
     ImGuiTableColumn* column = &table->Columns[table->CurrentColumn];
     ImGuiWindow* window = table->InnerWindow;
 
+    if (window->DC.IsSetPos)
+        ErrorCheckUsingSetCursorPosToExtendParentBoundaries();
+
     // Report maximum position so we can infer content size per column.
     float* p_max_pos_x;
     if (table->RowFlags & ImGuiTableRowFlags_Headers)
@@ -2100,7 +2097,7 @@ void ImGui::TableSetColumnWidth(int column_n, float width)
     if (column_0->WidthGiven == column_0_width || column_0->WidthRequest == column_0_width)
         return;
 
-    //IMGUI_DEBUG_LOG("TableSetColumnWidth(%d, %.1f->%.1f)\n", column_0_idx, column_0->WidthGiven, column_0_width);
+    //IMGUI_DEBUG_PRINT("TableSetColumnWidth(%d, %.1f->%.1f)\n", column_0_idx, column_0->WidthGiven, column_0_width);
     ImGuiTableColumn* column_1 = (column_0->NextEnabledColumn != -1) ? &table->Columns[column_0->NextEnabledColumn] : NULL;
 
     // In this surprisingly not simple because of how we support mixing Fixed and multiple Stretch columns.
@@ -2370,7 +2367,7 @@ void ImGui::TableMergeDrawChannels(ImGuiTable* table)
 
             // Don't attempt to merge if there are multiple draw calls within the column
             ImDrawChannel* src_channel = &splitter->_Channels[channel_no];
-            if (src_channel->_CmdBuffer.Size > 0 && src_channel->_CmdBuffer.back().ElemCount == 0 && src_channel->_CmdBuffer.back().UserCallback != NULL) // Equivalent of PopUnusedDrawCmd()
+            if (src_channel->_CmdBuffer.Size > 0 && src_channel->_CmdBuffer.back().ElemCount == 0 && src_channel->_CmdBuffer.back().UserCallback == NULL) // Equivalent of PopUnusedDrawCmd()
                 src_channel->_CmdBuffer.pop_back();
             if (src_channel->_CmdBuffer.Size != 1)
                 continue;
@@ -3000,7 +2997,7 @@ void ImGui::TableHeader(const char* label)
     RenderTextEllipsis(window->DrawList, label_pos, ImVec2(ellipsis_max, label_pos.y + label_height + g.Style.FramePadding.y), ellipsis_max, ellipsis_max, label, label_end, &label_size);
 
     const bool text_clipped = label_size.x > (ellipsis_max - label_pos.x);
-    if (text_clipped && hovered && g.HoveredIdNotActiveTimer > g.TooltipSlowDelay)
+    if (text_clipped && hovered && g.ActiveId == 0 && IsItemHovered(ImGuiHoveredFlags_DelayNormal))
         SetTooltip("%.*s", (int)(label_end - label), label);
 
     // We don't use BeginPopupContextItem() because we want the popup to stay up even after the column is hidden
@@ -3033,6 +3030,17 @@ void ImGui::TableOpenContextMenu(int column_n)
         const ImGuiID context_menu_id = ImHashStr("##ContextMenu", 0, table->ID);
         OpenPopupEx(context_menu_id, ImGuiPopupFlags_None);
     }
+}
+
+bool ImGui::TableBeginContextMenuPopup(ImGuiTable* table)
+{
+    if (!table->IsContextPopupOpen || table->InstanceCurrent != table->InstanceInteracted)
+        return false;
+    const ImGuiID context_menu_id = ImHashStr("##ContextMenu", 0, table->ID);
+    if (BeginPopupEx(context_menu_id, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
+        return true;
+    table->IsContextPopupOpen = false;
+    return false;
 }
 
 // Output context menu into current window (generally a popup)
@@ -3464,7 +3472,7 @@ void ImGui::TableSettingsAddSettingsHandler()
 // Remove Table (currently only used by TestEngine)
 void ImGui::TableRemove(ImGuiTable* table)
 {
-    //IMGUI_DEBUG_LOG("TableRemove() id=0x%08X\n", table->ID);
+    //IMGUI_DEBUG_PRINT("TableRemove() id=0x%08X\n", table->ID);
     ImGuiContext& g = *GImGui;
     int table_idx = g.Tables.GetIndex(table);
     //memset(table->RawData.Data, 0, table->RawData.size_in_bytes());
@@ -3476,7 +3484,7 @@ void ImGui::TableRemove(ImGuiTable* table)
 // Free up/compact internal Table buffers for when it gets unused
 void ImGui::TableGcCompactTransientBuffers(ImGuiTable* table)
 {
-    //IMGUI_DEBUG_LOG("TableGcCompactTransientBuffers() id=0x%08X\n", table->ID);
+    //IMGUI_DEBUG_PRINT("TableGcCompactTransientBuffers() id=0x%08X\n", table->ID);
     ImGuiContext& g = *GImGui;
     IM_ASSERT(table->MemoryCompacted == false);
     table->SortSpecs.Specs = NULL;
@@ -3520,7 +3528,7 @@ void ImGui::TableGcCompactSettings()
 // - DebugNodeTable() [Internal]
 //-------------------------------------------------------------------------
 
-#ifndef IMGUI_DISABLE_METRICS_WINDOW
+#ifndef IMGUI_DISABLE_DEBUG_TOOLS
 
 static const char* DebugNodeTableGetSizingPolicyDesc(ImGuiTableFlags sizing_policy)
 {
@@ -3614,7 +3622,7 @@ void ImGui::DebugNodeTableSettings(ImGuiTableSettings* settings)
     TreePop();
 }
 
-#else // #ifndef IMGUI_DISABLE_METRICS_WINDOW
+#else // #ifndef IMGUI_DISABLE_DEBUG_TOOLS
 
 void ImGui::DebugNodeTable(ImGuiTable*) {}
 void ImGui::DebugNodeTableSettings(ImGuiTableSettings*) {}
@@ -3954,6 +3962,7 @@ void ImGui::NextColumn()
     {
         // New row/line: column 0 honor IndentX.
         window->DC.ColumnsOffset.x = ImMax(column_padding - window->WindowPadding.x, 0.0f);
+        window->DC.IsSameLine = false;
         columns->LineMinY = columns->LineMaxY;
     }
     window->DC.CursorPos.x = IM_FLOOR(window->Pos.x + window->DC.Indent.x + window->DC.ColumnsOffset.x);

@@ -428,4 +428,16 @@ namespace satdump
                current_timestamps.size() > 0 &&
                !correct_image;
     }
+
+    bool ImageViewerHandler::hasProjection()
+    {
+    }
+
+    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings)
+    {
+    }
+
+    image::Image<uint16_t> &ImageViewerHandler::getProjection()
+    {
+    }
 }

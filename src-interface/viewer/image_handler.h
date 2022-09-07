@@ -70,7 +70,7 @@ namespace satdump
 
         bool canBeProjected();
         bool hasProjection();
-        bool updateProjection(int width, int height, nlohmann::json settings);
+        void updateProjection(int width, int height, nlohmann::json settings);
         image::Image<uint16_t> &getProjection();
 
         static std::string getID() { return "image_handler"; }
