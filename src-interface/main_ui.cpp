@@ -141,6 +141,7 @@ namespace satdump
                     viewer_app->draw();
                     ImGui::EndTabItem();
                 }
+#if 0
                 if (ImGui::BeginTabItem("Applications"))
                 {
                     // current_app->draw();
@@ -163,6 +164,7 @@ namespace satdump
 
                     ImGui::EndTabItem();
                 }
+#endif
                 if (ImGui::BeginTabItem("Settings"))
                 {
                     settings::render();

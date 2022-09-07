@@ -140,7 +140,12 @@ void ImageViewWidget::handleMouseDrag()
     ImGuiContext &g = *ImGui::GetCurrentContext();
     ImGuiWindow *window = g.CurrentWindow;
 
+#ifdef __ANDROID__ // On Android, the "Mouse" is always down
+    float length = sqrtf(delta.x * delta.x + delta.y * delta.y);
+    if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && length < 100)
+#else
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+#endif
     {
         window->Scroll.x += -delta.x;
         window->Scroll.y += -delta.y;
