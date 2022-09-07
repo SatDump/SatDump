@@ -92,7 +92,7 @@ namespace satdump
                 ImGui::Spacing();
                 if (is_started)
                     style::beginDisabled();
-                if (ImGui::Combo("Source", &sdr_select_id, sdr_select_string.c_str()))
+                if (ImGui::Combo("##Source", &sdr_select_id, sdr_select_string.c_str()))
                 {
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
 
