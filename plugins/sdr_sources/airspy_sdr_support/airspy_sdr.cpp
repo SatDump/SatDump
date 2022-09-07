@@ -29,7 +29,7 @@ void AirspySource::set_gains()
         airspy_set_linearity_gain(airspy_dev_obj, general_gain);
         logger->debug("Set Airspy gain (linear) to {:d}", general_gain);
     }
-    else if (gain_type == 3)
+    else if (gain_type == 2)
     {
         airspy_set_lna_gain(airspy_dev_obj, manual_gains[0]);
         airspy_set_mixer_gain(airspy_dev_obj, manual_gains[1]);
