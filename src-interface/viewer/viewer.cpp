@@ -111,7 +111,7 @@ namespace satdump
             ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x/2);
             if (ImGui::BeginTabItem("Products"))
             {
-                if (ImGui::CollapsingHeader("General"))
+                if (ImGui::CollapsingHeader("General"), ImGuiTreeNodeFlags_DefaultOpen)
                 {
                     for (std::string dataset_name : opened_datasets)
                     {
