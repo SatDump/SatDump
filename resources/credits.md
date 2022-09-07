@@ -55,7 +55,7 @@ And additionally, on the UI side :
 - [libsdrplay](https://www.sdrplay.com/)
 
 **Fonts**
-- [Roboto](https://fonts.google.com/specimen/Roboto), for all text
+- [Roboto](https://fonts.google.com/specimen/Roboto), for all UI
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
 
 # Contributors
@@ -74,3 +74,6 @@ And additionally, on the UI side :
 - Mark Pentier
 - Sam (@sam210723)
 - Jpjonte
+
+**GNU**
+- 
