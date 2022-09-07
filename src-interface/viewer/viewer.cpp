@@ -183,11 +183,7 @@ namespace satdump
                 }
                 ImGui::EndTabItem();
             }
-<<<<<<< HEAD
-            ImGui::SetNextItemWidth(ImGui::GetItemRectMax().x / 2);
-=======
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2);
->>>>>>> 6f5816ade5ed0b08038086d13bae61ec98de5575
             if (ImGui::BeginTabItem("Projections"))
             {
                 if (ImGui::CollapsingHeader("Projection"))
