@@ -6,6 +6,13 @@
 #include "common/utils.h"
 #include "error.h"
 
+void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komówki w tabelii na wybrany kolor w RGBA
+{
+    ImVec2 p_min = ImGui::GetItemRectMin();
+    ImVec2 p_max = ImGui::GetItemRectMax();
+    ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, color);
+}
+
 namespace satdump
 {
     ViewerApplication::ViewerApplication()
@@ -98,7 +105,7 @@ namespace satdump
         if (index == current_handler_id)
         {
             ImGui::TreePush();
-            //products_and_handlers[current_handler_id].handler->drawTreeMenu();
+            // products_and_handlers[current_handler_id].handler->drawTreeMenu();
             ImGui::TreePop();
         }
         // ImGui::InputInt("Current Product", &current_handler_id);
@@ -125,6 +132,13 @@ namespace satdump
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                             ImGui::TreePush();
 
+                            for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                                if (products_and_handlers[i].handler->shouldProject()){
+                                    SelectableColor(IM_COL32(186, 153, 38, 65));
+                                    break;
+                                }
+                            
+
                             const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
                             const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
                             ImDrawList *drawList = ImGui::GetWindowDrawList();
@@ -134,6 +148,7 @@ namespace satdump
                             ImVec2 verticalLineEnd = verticalLineStart;
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                            {
                                 if (products_and_handlers[i].dataset_name == dataset_name)
                                 {
                                     const float HorizontalTreeLineSize = 8.0f;                           // chosen arbitrarily
@@ -142,6 +157,11 @@ namespace satdump
                                     drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
                                     verticalLineEnd.y = midpoint;
                                 }
+                                if (products_and_handlers[i].handler->shouldProject())
+                                {
+                                    SelectableColor(IM_COL32(186, 153, 38, 65));
+                                }
+                            }
 
                             drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
 
