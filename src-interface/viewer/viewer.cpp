@@ -18,6 +18,10 @@ namespace satdump
     ViewerApplication::ViewerApplication()
         : Application("viewer")
     {
+        if (config::main_cfg["user"].contains("viewer_state"))
+            if (config::main_cfg["user"]["viewer_state"].contains("panel_ratio"))
+                panel_ratio = config::main_cfg["user"]["viewer_state"]["panel_ratio"].get<float>();
+
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
@@ -88,6 +92,7 @@ namespace satdump
 
     ViewerApplication::~ViewerApplication()
     {
+        config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
     }
 
     ImRect ViewerApplication::renderHandler(ProductsHandler &ph, int index)
@@ -133,11 +138,11 @@ namespace satdump
                             ImGui::TreePush();
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i].handler->shouldProject()){
+                                if (products_and_handlers[i].handler->shouldProject())
+                                {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
                                 }
-                            
 
                             const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
                             const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
@@ -245,12 +250,34 @@ namespace satdump
     {
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
         ImGui::BeginGroup();
-        ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * 0.20), float(viewer_size.y)}, false);
+        ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y)}, false);
         {
             drawPanel();
         }
         ImGui::EndChild();
         ImGui::EndGroup();
+
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        if ((mouse_pos.x > viewer_size.x * panel_ratio + 15 * ui_scale - 10 * ui_scale &&
+             mouse_pos.x < viewer_size.x * panel_ratio + 15 * ui_scale + 10 * ui_scale &&
+             mouse_pos.y > 35 * ui_scale) ||
+            dragging_panel)
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+                float new_x = mouse_pos.x;
+                float new_ratio = new_x / viewer_size.x;
+                if (new_ratio > 0.1 && new_ratio < 0.9)
+                    panel_ratio = new_ratio;
+            }
+            else
+                dragging_panel = false;
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                dragging_panel = true;
+        }
+        else if (ImGui::GetMouseCursor() != ImGuiMouseCursor_ResizeNS)
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 
         ImGui::SameLine();
 

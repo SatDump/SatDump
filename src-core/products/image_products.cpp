@@ -329,6 +329,15 @@ namespace satdump
 
         resol *= float(product.images[0].image.width()) / float(img.width());
 
+        if (product.get_proj_cfg().contains("corr_width"))
+        {
+            if (img.width() != product.get_proj_cfg()["corr_width"].get<int>())
+            {
+                logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), img.width());
+                resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(img.width());
+            }
+        }
+
         return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol);
     }
 }

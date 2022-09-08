@@ -9,6 +9,7 @@
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,
     ///////////////////////
+    "corr_width": 2048,
     "corr_swath": 2900,
     "corr_resol": 1.1,
     "corr_altit": 865
