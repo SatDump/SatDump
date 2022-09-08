@@ -6,33 +6,7 @@
 #include "resources.h"
 #include "core/style.h"
 #include "main_ui.h"
-
-image::Image<uint16_t> blend_imgs(image::Image<uint16_t> img1, image::Image<uint16_t> img2)
-{
-    image::Image<uint16_t> img_b(img1.width(), img1.height(), img1.channels());
-    for (int c = 0; c < img1.channels(); c++)
-    {
-        for (size_t i = 0; i < img1.height() * img1.width(); i++)
-        {
-            if (img1.channel(c)[i] == 0)
-                img_b.channel(c)[i] = img2.channel(c)[i];
-            else if (img2.channel(c)[i] == 0)
-                img_b.channel(c)[i] = img1.channel(c)[i];
-            else
-                img_b.channel(c)[i] = (size_t(img1.channel(c)[i]) + size_t(img2.channel(c)[i])) / 2;
-        }
-    }
-    return img_b;
-}
-
-image::Image<uint16_t> merge_op_imgs(image::Image<uint16_t> img1, image::Image<uint16_t> img2, float op1, float op2)
-{
-    image::Image<uint16_t> img_b(img1.width(), img1.height(), img1.channels());
-    for (int c = 0; c < img1.channels(); c++)
-        for (size_t i = 0; i < img1.height() * img1.width(); i++)
-            img_b.channel(c)[i] = (size_t(img1.channel(c)[i] * op1) + size_t(img2.channel(c)[i] * op2)) / 2;
-    return img_b;
-}
+#include "common/image/image_utils.h"
 
 namespace satdump
 {
@@ -74,28 +48,29 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
-            // int itm_radio = 0;
-            // ImGui::Text("Mode :");
-            // ImGui::RadioButton("Blend", &itm_radio, 0);
-            // ImGui::SameLine();
-            // ImGui::RadioButton("Overlay", &itm_radio, 1);
+            ImGui::Text("Mode :");
+            ImGui::RadioButton("Blend", &projections_mode_radio, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
 
             ImGui::Text("Layers :");
 
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
+                int i = 0;
                 for (ProjectionLayer &layer : projection_layers)
                 {
+                    i++;
                     ImGui::Selectable(layer.name.c_str(), &select);
-                    ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name).c_str(), &layer.opacity, 1.0, 0, 100);
-                    ImGui::Checkbox(std::string("Show##enablelayer" + layer.name).c_str(), &layer.enabled);
+                    ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
+                    ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::ProgressBar(layer.progress);
                 }
                 ImGui::EndListBox();
             }
 
-            if (projections_are_generating)
+            if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
             if (ImGui::Button("GENERATE"))
             {
@@ -105,7 +80,7 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
-            if (projections_are_generating)
+            if (projections_are_generating || projection_layers.size() == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
@@ -155,12 +130,34 @@ namespace satdump
         for (ProjectionLayer &layer : projection_layers)
         {
             layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
+            layer.viewer_prods->handler->getProjection().to_rgb();
             layers_images.push_back(layer.viewer_prods->handler->getProjection());
         }
 
-        // This sucks but temporary
-        for (auto &img : layers_images)
-            projected_image_result.draw_image(0, img);
+        logger->info("Combining images...");
+        if (projections_mode_radio == 0) // Blend
+        {
+            projected_image_result = layers_images[0];
+            for (int i = 1; i < layers_images.size(); i++)
+                projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
+        }
+        else if (projections_mode_radio == 1)
+        {
+            projected_image_result = layers_images[0];
+            for (int i = 1; i < layers_images.size(); i++)
+                projected_image_result = image::merge_images_opacity(projected_image_result,
+                                                                     layers_images[i],
+                                                                     projection_layers[i].opacity / 100.0f);
+        }
+        else
+        {
+            // This sucks but temporary
+            for (auto &img : layers_images)
+                projected_image_result.draw_image(0, img);
+        }
+
+        // Free up memory
+        layers_images.clear();
 
         // Setup projection to draw stuff on top
         auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg);
