@@ -106,6 +106,8 @@ namespace satdump
                 current_image = cor;
         }
 
+        projection_ready = false;
+
         image_view.update(current_image);
         // current_image.clear();
 
@@ -351,50 +353,35 @@ namespace satdump
                     asyncUpdate();
                 ImGui::SliderFloat("Cities Scale", &cities_scale, 0.1, 10);
             }
-        }
 
-        /*if (ImGui::CollapsingHeader("Warp / Project"))
-        {
-            ImGui::InputInt("Width", &warp_project_width);
-            ImGui::InputInt("Height", &warp_project_height);
-
-            if (ImGui::Button("Warp"))
+            if (ImGui::CollapsingHeader("Projection"))
             {
-                if (products->has_proj_cfg() && products->has_timestamps && products->has_tle())
+                if (!canBeProjected())
+                    style::beginDisabled();
+                ImGui::Checkbox("Project", &should_project);
+                if (!canBeProjected())
+                    style::endDisabled();
+
+                if (!canBeProjected())
                 {
-                    std::vector<satdump::projection::GCP> gcps = satdump::gcp_compute::compute_gcps(products->get_proj_cfg(), products->get_tle(), products->get_timestamps());
-
-                    satdump::warp::WarpOperation operation;
-                    operation.ground_control_points = gcps;
-                    operation.input_image = current_image;
-                    operation.output_width = warp_project_width;
-                    operation.output_height = warp_project_height;
-
-                    satdump::warp::ImageWarper warper;
-                    warper.op = operation;
-                    warper.update();
-
-                    satdump::warp::WarpResult result = warper.warp();
-
-                    geodetic::projection::EquirectangularProjection projector;
-                    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
-
-                    unsigned short color[3] = {0, 65535, 0};
-                    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                   result.output_image,
-                                                   color,
-                                                   [&projector](float lat, float lon, int, int) -> std::pair<int, int>
-                                                   {
-                                                       int x, y;
-                                                       projector.forward(lon, lat, x, y);
-                                                       return {x, y};
-                                                   });
-
-                    current_image = result.output_image;
-                    image_view.update(current_image);
+                    if (current_timestamps.size() == 0)
+                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
+                    else if (correct_image)
+                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
                 }
+
+                ImGui::Checkbox("Old algorithm", &use_draw_proj_algo);
+                ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
+                                                         "deal with bad (noisy) data\n"
+                                                         "better, and is also faster \n"
+                                                         "if you do not have an\n"
+                                                         "OpenCL-compatible Graphics\n"
+                                                         "Card.\n"
+                                                         "The new one is preferred if\n"
+                                                         "possible though, as results\n"
+                                                         "are a lot nicer! :-)");
             }
-        }*/
+        }
     }
 
     void ImageViewerHandler::drawContents(ImVec2 win_size)
@@ -431,7 +418,12 @@ namespace satdump
 
     bool ImageViewerHandler::hasProjection()
     {
-        return projection_ready;
+        return projection_ready && should_project;
+    }
+
+    bool ImageViewerHandler::shouldProject()
+    {
+        return should_project;
     }
 
     void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
@@ -446,7 +438,7 @@ namespace satdump
                 op.img.mirror(true, true);
             op.output_width = width;
             op.output_height = height;
-            op.use_draw_algorithm = settings["use_draw_algorithm"].get<bool>();
+            op.use_draw_algorithm = use_draw_proj_algo;
             op.img_tle = products->get_tle();
             op.img_tim = current_timestamps;
             reprojection::ProjectionResult res = reprojection::reproject(op, progess);

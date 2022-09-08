@@ -51,14 +51,9 @@ namespace satdump
 
         std::vector<double> current_timestamps;
 
-        /*
-        // Warp/Project
-        int warp_project_width = 2048;
-        int warp_project_height = 1024;
-        */
-
         // Projections
-        bool projection_ready = false;
+        bool use_draw_proj_algo = false;
+        bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 
         void init();
@@ -74,6 +69,7 @@ namespace satdump
 
         bool canBeProjected();
         bool hasProjection();
+        bool shouldProject();
         void updateProjection(int width, int height, nlohmann::json settings, float *progess);
         image::Image<uint16_t> &getProjection();
 
