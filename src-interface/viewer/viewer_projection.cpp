@@ -88,6 +88,7 @@ namespace satdump
                     ImGui::Selectable(layer.name.c_str(), &select);
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name).c_str(), &layer.opacity, 1.0, 0, 100);
                     ImGui::Checkbox(std::string("Show##enablelayer" + layer.name).c_str(), &layer.enabled);
+                    ImGui::ProgressBar(std::string("##progressbarlayer" + layer.name).c_str(), &layer.progress);
                 }
                 ImGui::EndListBox();
             }

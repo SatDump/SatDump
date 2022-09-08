@@ -166,6 +166,9 @@ namespace satdump
                                 for (int c = 0; c < 3; c++)
                                     warped_image.channel(c)[y * warped_image.width() + x] = op.img.channel(0)[y2 * op.img.width() + x2];
                         }
+
+                        if (progress != nullptr)
+                            *progress = float(x) / float(warped_image.height());
                     }
                 }
                 else // Means it's a TPS-handled warp.
@@ -225,6 +228,9 @@ namespace satdump
                                 for (int c = 0; c < 3; c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
                         }
+
+                        if (progress != nullptr)
+                            *progress = float(x) / float(projected_image.height());
                     }
                 }
                 else if (op.target_prj_info["type"] == "stereo")
@@ -262,6 +268,9 @@ namespace satdump
                                 for (int c = 0; c < 3; c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
                         }
+
+                        if (progress != nullptr)
+                            *progress = float(x) / float(projected_image.height());
                     }
                 }
                 else if (op.target_prj_info["type"] == "tpers")
@@ -302,6 +311,9 @@ namespace satdump
                                 for (int c = 0; c < 3; c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
                         }
+
+                        if (progress != nullptr)
+                            *progress = float(x) / float(projected_image.height());
                     }
                 }
             }
