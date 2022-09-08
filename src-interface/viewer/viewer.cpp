@@ -16,6 +16,8 @@ namespace satdump
 
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/dataset.json");
 
+        loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
+
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/noaa_mhs_test/AMSU/product.cbor", "NOAA-19 HRPT");
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor", "MetOp-B AHRPT");
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/noaa_mhs_test/MHS/product.cbor", "NOAA-19 HRPT");
@@ -96,7 +98,7 @@ namespace satdump
         if (index == current_handler_id)
         {
             ImGui::TreePush();
-            products_and_handlers[current_handler_id].handler->drawTreeMenu();
+            //products_and_handlers[current_handler_id].handler->drawTreeMenu();
             ImGui::TreePop();
         }
         // ImGui::InputInt("Current Product", &current_handler_id);
