@@ -27,7 +27,7 @@ namespace style
         setFonts(resources::getResourcePath("fonts/Roboto-Medium.tff"));
 
         ImGui::StyleColorsDark();
-        //ImGui::StyleColorsLight();
+        // ImGui::StyleColorsLight();
 
         return true;
     }
@@ -180,15 +180,16 @@ namespace style
         ImGui::PopStyleColor(3);
     }
 
-    void setFonts(std::string fontName){
-        static const ImWchar icons_ranges[] = { 0xe000, 0xfd46, 0 };
+    void setFonts(std::string fontName)
+    {
+        static const ImWchar icons_ranges[] = {0xe000, 0xfd46, 0};
         ImFontConfig config;
         config.MergeMode = true;
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f);
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 16.0f, &config, icons_ranges);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f);
-        //bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f);
-        //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f * ui_scale);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 16.0f * ui_scale, &config, icons_ranges);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f * ui_scale);
+        // bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f * ui_scale);
+        // hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
     }
 }

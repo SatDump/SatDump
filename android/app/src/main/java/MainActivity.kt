@@ -120,7 +120,6 @@ class MainActivity : NativeActivity() {
         extractDir(aman, fdir + "/resources", "resources");
         extractDir(aman, fdir + "/plugins", "plugins");
         extractFile(aman, fdir + "/satdump_cfg.json", "satdump_cfg.json");
-        extractFile(aman, fdir + "/Roboto-Medium.ttf", "Roboto-Medium.ttf");
         //createIfDoesntExist(fdir + "/plugins");
 
         return fdir;
