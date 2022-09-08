@@ -85,7 +85,7 @@ namespace satdump
         {
             std::string name;
             ProductsHandler *viewer_prods;
-            float opacity = true;
+            float opacity = 100;
             bool enabled = true;
             float progress = 0;
         };
@@ -118,6 +118,8 @@ namespace satdump
         // Settings
         int projections_image_width = 2048;
         int projections_image_height = 1024;
+
+        int projections_mode_radio = 0;
 
     public:
         ViewerApplication();
