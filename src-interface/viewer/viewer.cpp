@@ -108,9 +108,12 @@ namespace satdump
     {
         if (ImGui::BeginTabBar("Viewer Prob Tabbar", ImGuiTabBarFlags_None))
         {
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2);
-            if (ImGui::BeginTabItem("Products"))
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
+            if (ImGui::BeginTabItem("Products###productsviewertab"))
             {
+                if (current_selected_tab != 0)
+                    current_selected_tab = 0;
+
                 if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     for (std::string dataset_name : opened_datasets)
@@ -177,52 +180,35 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            error::set_error("Error opening dataset!", e.what());
+                            error::set_error("Error opening products!", e.what());
                         }
                     }
                 }
+
+                if (products_and_handlers.size() > 0)
+                    products_and_handlers[current_handler_id].handler->drawMenu();
+
                 ImGui::EndTabItem();
             }
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2);
-            if (ImGui::BeginTabItem("Projections"))
+
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
+            if (ImGui::BeginTabItem("Projections###projssviewertab"))
             {
-                if (ImGui::CollapsingHeader("Projection"))
+                if (current_selected_tab != 1)
                 {
-                    int itm = 0;
-                    float tl_lon = -180;
-                    float tl_lat = 90;
-                    float br_lon = 180;
-                    float br_lat = -90;
-                    ImGui::Combo("##targetproj", &itm, "Equirectangular");
-                    ImGui::Text("Top Left :");
-                    ImGui::InputFloat("Lon##tl", &tl_lon);
-                    // ImGui::SameLine();
-                    ImGui::InputFloat("Lat##tl", &tl_lat);
-                    ImGui::Text("Bottom Right :");
-                    ImGui::InputFloat("Lon##br", &br_lon);
-                    // ImGui::SameLine();
-                    ImGui::InputFloat("Lat##br", &br_lat);
-                }
-                if (ImGui::CollapsingHeader("Layers"))
-                {
-                    int itm_radio = 0;
-                    ImGui::Text("Mode :");
-                    ImGui::RadioButton("Blend", &itm_radio, 0);
-                    ImGui::SameLine();
-                    ImGui::RadioButton("Overlay", &itm_radio, 1);
+                    current_selected_tab = 1;
+                    projection_layers.clear();
 
-                    ImGui::Text("Layers :");
-                    float opacity = 100;
-
-                    // ImGui::Text("MetOp AVHRR idk");
-                    // ImGui::InputFloat("Opacity", &opacity);
-
-                    if (ImGui::BeginListBox("##pipelineslistbox"))
+                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
                     {
-                        // ImGui::Selectable
-                        ImGui::EndListBox();
+                        if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
+                        {
+                            std::string label = products_and_handlers[i].products->instrument_name;
+                            projection_layers.push_back({label, &products_and_handlers[i]});
+                        }
                     }
                 }
+                drawProjectionPanel();
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -240,8 +226,6 @@ namespace satdump
         ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * 0.20), float(viewer_size.y)}, false);
         {
             drawPanel();
-            if (products_and_handlers.size() > 0)
-                products_and_handlers[current_handler_id].handler->drawMenu();
         }
         ImGui::EndChild();
         ImGui::EndGroup();
@@ -249,14 +233,21 @@ namespace satdump
         ImGui::SameLine();
 
         ImGui::BeginGroup();
-        if (products_and_handlers.size() > 0)
-            products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
-        else
-            ImGui::GetWindowDrawList()
-                ->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
-                                       ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
-                                ImColor::HSV(0, 0, 0));
+        if (current_selected_tab == 0)
+        {
+            if (products_and_handlers.size() > 0)
+                products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+            else
+                ImGui::GetWindowDrawList()
+                    ->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                    ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
+                                           ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
+                                    ImColor::HSV(0, 0, 0));
+        }
+        else if (current_selected_tab == 1)
+        {
+            projection_image_widget.draw({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+        }
         ImGui::EndGroup();
     }
 

@@ -4,12 +4,10 @@
 #include "products/products.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
-
 #include "viewer/viewer.h"
-
 #include "imgui/pfd/widget.h"
-
 #include "tree.h"
+#include "common/widgets/image_view.h"
 
 namespace satdump
 {
@@ -30,6 +28,7 @@ namespace satdump
         // Projection stuff
         virtual bool canBeProjected() { return false; } // Can the current product be projected?
         virtual bool hasProjection() { return false; }  // Does it have a projection ready?
+        virtual bool shouldProject() { return false; }  // Should it be projected?
         virtual void updateProjection(int width, int height, nlohmann::json settings, float *progess) {}
         virtual image::Image<uint16_t> &getProjection() { throw std::runtime_error("Did you check this could be projected!?"); }
 
@@ -74,6 +73,44 @@ namespace satdump
         }
 
         int current_handler_id = 0;
+
+        int current_selected_tab = 0;
+
+    public: // Projection UI stuff
+        image::Image<uint16_t> projected_image_result;
+        ImageViewWidget projection_image_widget;
+        void drawProjectionPanel();
+
+        struct ProjectionLayer
+        {
+            std::string name;
+            ProductsHandler *viewer_prods;
+            float opacity = true;
+            bool enabled = true;
+            float progress = 0;
+        };
+        std::vector<ProjectionLayer> projection_layers;
+
+        bool projections_draw_map_overlay = true;
+        bool projections_draw_cities_overlay = true;
+        float projections_cities_scale = 0.5;
+
+        int projections_current_selected_proj = 0;
+        /////////////
+        float projections_equirectangular_tl_lon = -180;
+        float projections_equirectangular_tl_lat = 90;
+        float projections_equirectangular_br_lon = 180;
+        float projections_equirectangular_br_lat = -90;
+        /////////////
+        float projections_stereo_center_lon = 0;
+        float projections_stereo_center_lat = 0;
+        float projections_stereo_scale = 2;
+
+        void generateProjectionImage();
+
+        // Settings
+        int projections_image_width = 2048;
+        int projections_image_height = 1024;
 
     public:
         ViewerApplication();
