@@ -252,8 +252,20 @@ namespace satdump
 
             if (products->can_geometrically_correct())
             {
+                if (shouldProject())
+                    style::beginDisabled();
                 if (ImGui::Checkbox("Correct", &correct_image))
                     asyncUpdate();
+                if (shouldProject())
+                {
+                    style::endDisabled();
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::TextColored(ImColor(255, 0, 0), "Disable projection!");
+                        ImGui::EndTooltip();
+                    }
+                }
             }
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
@@ -371,30 +383,31 @@ namespace satdump
                 if (!canBeProjected())
                     style::endDisabled();
 
-                if (!canBeProjected())
-                {
-                    if (current_timestamps.size() == 0)
-                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
-                    else if (correct_image)
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
-                }
                 ImGui::SameLine();
-                if(!should_project) {ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true); ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);}
+
+                if (!should_project)
+                    style::beginDisabled();
                 ImGui::Checkbox("Old algorithm", &use_draw_proj_algo);
-                if(!should_project) {ImGui::PopItemFlag(); ImGui::PopStyleVar();}
+                if (!should_project)
+                    style::endDisabled();
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 {
                     ImGui::BeginTooltip();
-                    ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                             "deal with bad (noisy) data\n"
-                                                             "better, and is also faster \n"
-                                                             "if you do not have an\n"
-                                                             "OpenCL-compatible Graphics\n"
-                                                             "Card.\n"
-                                                             "The new one is preferred if\n"
-                                                             "possible though, as results\n"
-                                                             "are a lot nicer! :-)");
+                    if (current_timestamps.size() == 0)
+                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
+                    else if (correct_image)
+                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
+                    else
+                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
+                                                                 "deal with bad (noisy) data\n"
+                                                                 "better, and is also faster \n"
+                                                                 "if you do not have an\n"
+                                                                 "OpenCL-compatible Graphics\n"
+                                                                 "Card.\n"
+                                                                 "The new one is preferred if\n"
+                                                                 "possible though, as results\n"
+                                                                 "are a lot nicer! :-)");
                     ImGui::EndTooltip();
                 }
             }
