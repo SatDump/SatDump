@@ -41,6 +41,9 @@ namespace satdump
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "Stereo\0"
                                                                              "Satellite\0");
+            ImGui::InputInt("Image Width", &projections_image_width);
+            ImGui::InputInt("Image Height", &projections_image_height);
+
             if (projections_current_selected_proj == 0)
             {
                 ImGui::Text("Top Left :");
@@ -57,6 +60,15 @@ namespace satdump
                 ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
                 ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
             }
+            else if (projections_current_selected_proj == 2)
+            {
+                ImGui::Text("Center :");
+                ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
+                ImGui::InputFloat("Alt (kM)##tpers", &projections_tpers_alt);
+                ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
+                ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+            }
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
@@ -67,12 +79,7 @@ namespace satdump
             // ImGui::RadioButton("Overlay", &itm_radio, 1);
 
             ImGui::Text("Layers :");
-            // float opacity = 100;
 
-            // int can_be_proj_n = 0;
-
-            // ImGui::Text("MetOp AVHRR idk");
-            // ImGui::InputFloat("Opacity", &opacity);
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
@@ -100,7 +107,32 @@ namespace satdump
 
     void ViewerApplication::generateProjectionImage()
     {
-        nlohmann::json cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+        nlohmann::json cfg; //= nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+
+        if (projections_current_selected_proj == 0)
+        {
+            cfg["type"] = "equirectangular";
+            cfg["tl_lon"] = projections_equirectangular_tl_lon;
+            cfg["tl_lat"] = projections_equirectangular_tl_lat;
+            cfg["br_lon"] = projections_equirectangular_br_lon;
+            cfg["br_lat"] = projections_equirectangular_br_lat;
+        }
+        else if (projections_current_selected_proj == 1)
+        {
+            cfg["type"] = "stereo";
+            cfg["center_lon"] = projections_stereo_center_lon;
+            cfg["center_lat"] = projections_stereo_center_lat;
+            cfg["scale"] = projections_stereo_scale;
+        }
+        else if (projections_current_selected_proj == 2)
+        {
+            cfg["type"] = "tpers";
+            cfg["lon"] = projections_tpers_lon;
+            cfg["lat"] = projections_tpers_lat;
+            cfg["alt"] = projections_tpers_alt;
+            cfg["ang"] = projections_tpers_ang;
+            cfg["azi"] = projections_tpers_azi;
+        }
 
         // Setup final image
         projected_image_result.init(projections_image_width, projections_image_height, 3);

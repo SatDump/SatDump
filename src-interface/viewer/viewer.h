@@ -105,6 +105,12 @@ namespace satdump
         float projections_stereo_center_lon = 0;
         float projections_stereo_center_lat = 0;
         float projections_stereo_scale = 2;
+        /////////////
+        float projections_tpers_lon = 0;
+        float projections_tpers_lat = 0;
+        float projections_tpers_alt = 30000;
+        float projections_tpers_ang = 0;
+        float projections_tpers_azi = 0;
 
         void generateProjectionImage();
 
