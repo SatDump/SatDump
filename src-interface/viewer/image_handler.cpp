@@ -11,6 +11,7 @@
 #include "common/map/map_drawer.h"
 #include "resources.h"
 #include "common/projection/reprojector.h"
+#include "core/opencl.h"
 
 namespace satdump
 {
@@ -37,6 +38,13 @@ namespace satdump
             rgb_presets_str += compo.first + '\0';
 
         asyncUpdate();
+
+#ifdef USE_OPENCL
+        opencl::initOpenCL();
+        use_draw_proj_algo = opencl::getAllDevices().size() == 0;
+#else
+        use_draw_proj_algo = true;
+#endif
     }
 
     void ImageViewerHandler::updateImage()
