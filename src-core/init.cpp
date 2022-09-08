@@ -66,6 +66,11 @@ namespace satdump
         if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>())
             updateTLEFile(user_path + "/satdump_tles.txt");
         loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
+        if (general_tle_registry.size() == 0) // NO TLEs? Download now.
+        {
+            updateTLEFile(user_path + "/satdump_tles.txt");
+            loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
+        }
 
         // Products
         registerProducts();
