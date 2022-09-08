@@ -112,6 +112,7 @@ namespace satdump
         float projections_tpers_ang = 0;
         float projections_tpers_azi = 0;
 
+        bool projections_are_generating = false;
         void generateProjectionImage();
 
         // Settings
