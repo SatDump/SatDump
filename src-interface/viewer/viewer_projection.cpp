@@ -4,6 +4,8 @@
 #include "common/projection/reprojector.h"
 #include "logger.h"
 #include "resources.h"
+#include "core/style.h"
+#include "main_ui.h"
 
 image::Image<uint16_t> blend_imgs(image::Image<uint16_t> img1, image::Image<uint16_t> img2)
 {
@@ -88,14 +90,23 @@ namespace satdump
                     ImGui::Selectable(layer.name.c_str(), &select);
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name).c_str(), &layer.opacity, 1.0, 0, 100);
                     ImGui::Checkbox(std::string("Show##enablelayer" + layer.name).c_str(), &layer.enabled);
+                    ImGui::ProgressBar(layer.progress);
                 }
                 ImGui::EndListBox();
             }
 
+            if (projections_are_generating)
+                style::beginDisabled();
             if (ImGui::Button("GENERATE"))
             {
-                generateProjectionImage();
+                ui_thread_pool.push([this](int)
+                                    { 
+                    logger->info("Update projection...");
+                    generateProjectionImage();
+                    logger->info("Done"); });
             }
+            if (projections_are_generating)
+                style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
         {
@@ -107,6 +118,8 @@ namespace satdump
 
     void ViewerApplication::generateProjectionImage()
     {
+        projections_are_generating = true;
+
         nlohmann::json cfg; //= nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
 
         if (projections_current_selected_proj == 0)
@@ -177,5 +190,7 @@ namespace satdump
 
         // Update ImageView
         projection_image_widget.update(projected_image_result);
+
+        projections_are_generating = false;
     }
 }
