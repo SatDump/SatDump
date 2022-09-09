@@ -54,9 +54,12 @@ namespace satdump
             {
                 if (ImGui::Combo("###mapchannelcomboid", &select_channel_image_id, select_channel_image_str.c_str()))
                     update();
-                if (ImGui::InputInt("Min", &map_min))
+                ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2);
+                if (ImGui::DragInt("##Min", &map_min, 1.0f, 0, 255, "Min: %d", ImGuiSliderFlags_AlwaysClamp))
                     update();
-                if(ImGui::InputInt("Max", &map_max))
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2);
+                if(ImGui::DragInt("##Max", &map_max, 1.0f, 0, 255, "Max: %d", ImGuiSliderFlags_AlwaysClamp))
                     update();
             }
         }
