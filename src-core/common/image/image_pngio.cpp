@@ -110,7 +110,8 @@ namespace image
             d_channels = 3;
         else if (color_type == PNG_COLOR_TYPE_RGBA)
             d_channels = 4;
-        else if (color_type == PNG_COLOR_TYPE_PALETTE){
+        else if (color_type == PNG_COLOR_TYPE_PALETTE)
+        {
             png_set_palette_to_rgb(png);
             d_channels = 3;
         }
@@ -161,6 +162,9 @@ namespace image
 
         fclose(fp);
         png_destroy_read_struct(&png, &info, NULL);
+
+        if (d_channels == 4)
+            to_rgb();
     }
 
     struct png_src
@@ -212,7 +216,8 @@ namespace image
             d_channels = 3;
         else if (color_type == PNG_COLOR_TYPE_RGBA)
             d_channels = 4;
-        else if (color_type == PNG_COLOR_TYPE_PALETTE){
+        else if (color_type == PNG_COLOR_TYPE_PALETTE)
+        {
             png_set_palette_to_rgb(png);
             d_channels = 3;
         }
