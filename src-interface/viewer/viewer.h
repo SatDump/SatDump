@@ -84,15 +84,31 @@ namespace satdump
         ImageViewWidget projection_image_widget;
         void drawProjectionPanel();
 
+        struct ExternalProjSource
+        {
+            std::string name;
+            nlohmann::json cfg;
+            image::Image<uint16_t> img;
+        };
+        std::vector<ExternalProjSource> projections_external_sources;
+        image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress);
+
         struct ProjectionLayer
         {
             std::string name;
+            int type; // 0 = products, 1 = external;
             ProductsHandler *viewer_prods;
+            ExternalProjSource *external;
             float opacity = 100;
             bool enabled = true;
             float progress = 0;
         };
         std::vector<ProjectionLayer> projection_layers;
+
+        std::string projection_new_layer_name = "Ext Layer";
+        FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Equirectangular Image");
+
+        void refreshProjectionLayers();
 
         bool projections_draw_map_overlay = true;
         bool projections_draw_cities_overlay = true;

@@ -53,6 +53,24 @@ namespace satdump
             ImGui::SameLine();
             ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
 
+            ImGui::Separator();
+
+            ImGui::InputText("Name", &projection_new_layer_name);
+            projection_new_layer_file.draw();
+
+            if (ImGui::Button("Add layer") && projection_new_layer_file.file_valid)
+            {
+                // TMP
+                ExternalProjSource new_layer_cfg;
+                new_layer_cfg.name = projection_new_layer_name;
+                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+                new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+                projections_external_sources.push_back(new_layer_cfg);
+
+                refreshProjectionLayers();
+            }
+            ImGui::Separator();
+
             ImGui::Text("Layers :");
 
             bool select = false;
@@ -129,9 +147,18 @@ namespace satdump
         std::vector<image::Image<uint16_t>> layers_images;
         for (ProjectionLayer &layer : projection_layers)
         {
-            layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
-            layer.viewer_prods->handler->getProjection().to_rgb();
-            layers_images.push_back(layer.viewer_prods->handler->getProjection());
+            if (layer.type == 0)
+            {
+                layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
+                layer.viewer_prods->handler->getProjection().to_rgb();
+                layers_images.push_back(layer.viewer_prods->handler->getProjection());
+            }
+            else
+            {
+                auto img = projectExternal(projections_image_width, projections_image_height, cfg, *layer.external, &layer.progress);
+                img.to_rgb();
+                layers_images.push_back(img);
+            }
         }
 
         logger->info("Combining images...");
@@ -189,5 +216,35 @@ namespace satdump
         projection_image_widget.update(projected_image_result);
 
         projections_are_generating = false;
+    }
+
+    image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress)
+    {
+        reprojection::ReprojectionOperation op;
+        op.source_prj_info = ep.cfg;
+        op.target_prj_info = tcfg;
+        op.img = ep.img;
+        op.output_width = width;
+        op.output_height = height;
+        op.use_draw_algorithm = false;
+        reprojection::ProjectionResult res = reprojection::reproject(op, progress);
+        return res.img;
+    }
+
+    void ViewerApplication::refreshProjectionLayers()
+    {
+        projection_layers.clear();
+
+        for (ExternalProjSource &prjext : projections_external_sources)
+            projection_layers.push_back({prjext.name, 1, nullptr, &prjext});
+
+        for (int i = 0; i < (int)products_and_handlers.size(); i++)
+        {
+            if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
+            {
+                std::string label = products_and_handlers[i].products->instrument_name;
+                projection_layers.push_back({label, 0, &products_and_handlers[i], nullptr});
+            }
+        }
     }
 }

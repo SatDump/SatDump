@@ -222,16 +222,7 @@ namespace satdump
                 if (current_selected_tab != 1)
                 {
                     current_selected_tab = 1;
-                    projection_layers.clear();
-
-                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                    {
-                        if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
-                        {
-                            std::string label = products_and_handlers[i].products->instrument_name;
-                            projection_layers.push_back({label, &products_and_handlers[i]});
-                        }
-                    }
+                    refreshProjectionLayers();
                 }
                 drawProjectionPanel();
                 ImGui::EndTabItem();
