@@ -45,6 +45,28 @@ namespace satdump
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
             }
+
+            if (ImGui::Button("Save"))
+            {
+                std::string default_name = "projection.png";
+
+#ifndef __ANDROID__
+                auto result = pfd::save_file("Save Projection", default_name, {"*.png"});
+                while (!result.ready(1000))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                if (result.result().size() > 0)
+                {
+                    std::string path = result.result();
+                    logger->info("Saving current projection at {:s}", path.c_str());
+                    projected_image_result.save_png(path);
+                }
+#else
+                std::string path = "/storage/emulated/0/" + default_name;
+                logger->info("Saving current projection at {:s}", path.c_str());
+                projected_image_result.save_png("" + path);
+#endif
+            }
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
