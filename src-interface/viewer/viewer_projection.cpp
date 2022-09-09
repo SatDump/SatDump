@@ -98,14 +98,21 @@ namespace satdump
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
-                int i = 0;
-                for (ProjectionLayer &layer : projection_layers)
+                for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
-                    i++;
+                    ProjectionLayer &layer = projection_layers[i];
                     ImGui::Selectable(layer.name.c_str(), &select);
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
                     ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::ProgressBar(layer.progress);
+                    if (layer.type == 1)
+                    {
+                        if (ImGui::Button("Delete"))
+                        {
+                            projection_layers.erase(projection_layers.begin() + i);
+                            break;
+                        }
+                    }
                 }
                 ImGui::EndListBox();
             }
@@ -169,6 +176,9 @@ namespace satdump
         std::vector<image::Image<uint16_t>> layers_images;
         for (ProjectionLayer &layer : projection_layers)
         {
+            if (!layer.enabled)
+                continue;
+
             if (layer.type == 0)
             {
                 layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
