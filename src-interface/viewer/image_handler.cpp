@@ -423,6 +423,7 @@ namespace satdump
     {
         tree_local.start();
 
+#if 0
         for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
         {
             ImGui::TreeNodeEx(std::string("RGB " + compo.first).c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
@@ -433,6 +434,7 @@ namespace satdump
             }
             tree_local.node();
         }
+#endif
 
         return tree_local.end();
     }

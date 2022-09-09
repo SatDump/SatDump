@@ -26,6 +26,7 @@ namespace satdump
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/dataset.json");
+        loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_idk_damnit/dataset.json");
 
         // loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
 
@@ -110,7 +111,7 @@ namespace satdump
         if (index == current_handler_id)
         {
             ImGui::TreePush();
-            // products_and_handlers[current_handler_id].handler->drawTreeMenu();
+            products_and_handlers[current_handler_id].handler->drawTreeMenu();
             ImGui::TreePop();
         }
         // ImGui::InputInt("Current Product", &current_handler_id);
