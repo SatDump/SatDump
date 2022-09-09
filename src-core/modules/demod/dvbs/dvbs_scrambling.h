@@ -10,7 +10,7 @@ namespace dvbs
     class DVBSScrambling
     {
     private:
-        int reg;
+        int reg = 0;
 
         int prbs(int clocks)
         {

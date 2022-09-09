@@ -135,13 +135,13 @@ namespace satdump
             std::vector<int> ch_to_prj;
             if (instrument_viewer_settings["project_channels"]["channels"] == "all")
             {
-                for (int i = 0; i < img_products->images.size(); i++)
+                for (int i = 0; i < (int)img_products->images.size(); i++)
                     ch_to_prj.push_back(i);
             }
             else
             {
                 auto chs_str = splitString(instrument_viewer_settings["project_channels"]["channels"].get<std::string>(), ',');
-                for (int i = 0; i < img_products->images.size(); i++)
+                for (int i = 0; i < (int)img_products->images.size(); i++)
                 {
                     bool has_ch = false;
                     for (std::string str : chs_str)

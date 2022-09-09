@@ -64,7 +64,7 @@ namespace Util
 				if (0 == --m_NumReferences)
 				{
 					delete m_Ptr;
-					delete this;
+					// delete this;
 				}
 			}
 

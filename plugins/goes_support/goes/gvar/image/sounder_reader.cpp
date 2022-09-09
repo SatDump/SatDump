@@ -27,7 +27,7 @@ namespace goes
                 memset(channels[i], 0, HEIGHT * WIDTH * sizeof(uint16_t));
         }
 
-        void SounderReader::pushFrame(uint8_t *data, int counter)
+        void SounderReader::pushFrame(uint8_t *data, int /*counter*/)
         {
             int y_pos[4];
             for (int i = 0; i < 4; i++)

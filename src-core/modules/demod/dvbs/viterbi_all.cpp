@@ -147,7 +147,7 @@ namespace viterbi
                 // Rate 5/6
                 for (int shift = 0; shift < 12; shift++) // Test 3 puncturing shifts
                 {
-                    int sz = depunc_56.depunc_static(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
+                    depunc_56.depunc_static(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
 
                     cc_decoder_ber_56.work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
                     cc_encoder_ber_56.work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison

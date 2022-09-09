@@ -46,7 +46,7 @@ namespace satdump
             img_size_x = image_width;
             img_size_y = timestamps.size();
 
-            for (int i = 0; i < timestamps.size(); i++)
+            for (int i = 0; i < (int)timestamps.size(); i++)
             {
                 double timestamp = timestamps[i] + timestamp_offset;
                 geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
@@ -146,7 +146,7 @@ namespace satdump
             img_size_x = image_width;
             img_size_y = (timestamps.size() / ifov_count) * ifov_y_size;
 
-            for (int i = 0; i < timestamps.size(); i++)
+            for (int i = 0; i < (int)timestamps.size(); i++)
             {
                 double timestamp = timestamps[i] + timestamp_offset;
                 geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position

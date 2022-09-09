@@ -331,7 +331,7 @@ namespace satdump
 
         if (product.get_proj_cfg().contains("corr_width"))
         {
-            if (img.width() != product.get_proj_cfg()["corr_width"].get<int>())
+            if ((int)img.width() != product.get_proj_cfg()["corr_width"].get<int>())
             {
                 logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), img.width());
                 resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(img.width());

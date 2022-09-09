@@ -20,6 +20,12 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
+    if (argc < 3)
+    {
+        logger->error("Not enough arguments");
+        return 1;
+    }
+
     std::string msg_native_file = argv[1]; //"/home/alan/Downloads/MSG4-SEVI-MSG15-0100-NA-20220701121243.901000000Z-NA/MSG4-SEVI-MSG15-0100-NA-20220701121243.901000000Z-NA.nat";
 
     // We will in the future want to decode from memory, so load it all up in RAM
@@ -138,7 +144,7 @@ int main(int argc, char *argv[])
 
             for (int i = 0; i < (channel == 11 ? 3 : 1); i++)
             {
-                uint16_t seq_cnt = (data_ptr + 16)[0] << 8 | (data_ptr + 16)[1];
+                // uint16_t seq_cnt = (data_ptr + 16)[0] << 8 | (data_ptr + 16)[1];
                 uint32_t pkt_len = (data_ptr + 18)[0] << 24 | (data_ptr + 18)[1] << 16 | (data_ptr + 18)[2] << 8 | (data_ptr + 18)[3];
 
                 // logger->info("PKT {:d} CHANNEL {:d} SEQ {:d} LEN {:d}", line, channel, seq_cnt, pkt_len);

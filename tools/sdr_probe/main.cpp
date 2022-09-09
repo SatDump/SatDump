@@ -3,7 +3,7 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp_source_sink/dsp_sample_sink.h"
 
-int main(int argc, char *argv[])
+int main(/*int argc, char *argv[]*/)
 {
     initLogger();
 

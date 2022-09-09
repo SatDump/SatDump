@@ -76,6 +76,12 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
+    if (argc < 5)
+    {
+        logger->error("Not enough arguments");
+        return 1;
+    }
+
     std::vector<satdump::projection::GCP> ch3_gcps1, ch3_gcps2;
     std::vector<satdump::projection::GCP> ch2_gcps1, ch2_gcps2;
     std::vector<satdump::projection::GCP> ch1_gcps1, ch1_gcps2;

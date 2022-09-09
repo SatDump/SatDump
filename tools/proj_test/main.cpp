@@ -44,6 +44,7 @@
 
 int main(int argc, char *argv[])
 {
+    argc = argc;
     initLogger();
 
     std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
                                    color,
                                    proj_func);
     logger->info("Drawing cities");
-    unsigned short color2[3] = {65535, 0, 0};
+    // unsigned short color2[3] = {65535, 0, 0};
     /*map::drawProjectedCapitalsGeoJson(
         {resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
         ret.img,

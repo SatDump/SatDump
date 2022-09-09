@@ -35,7 +35,6 @@ namespace satdump
                 logger->info("Using old algorithm...");
 
                 // Source projs
-                geodetic::projection::EquirectangularProjection equi_proj_src;
                 std::shared_ptr<SatelliteProjection> sat_proj_src;
 
                 // Init
@@ -142,9 +141,9 @@ namespace satdump
                     br_lat = -90;
                     equi_proj.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
 
-                    for (int x = 0; x < warped_image.width(); x++)
+                    for (int x = 0; x < (int)warped_image.width(); x++)
                     {
-                        for (int y = 0; y < warped_image.height(); y++)
+                        for (int y = 0; y < (int)warped_image.height(); y++)
                         {
                             float lon, lat;
                             int x2, y2;
@@ -155,8 +154,8 @@ namespace satdump
 
                             geo_proj.forward(lon, lat, x2, y2);
                             if (x2 == -1 || y2 == -1 ||
-                                x2 >= op.img.width() || x2 < 0 ||
-                                y2 >= op.img.height() || y2 < 0)
+                                x2 >= (int)op.img.width() || x2 < 0 ||
+                                y2 >= (int)op.img.height() || y2 < 0)
                                 continue;
 
                             if (warped_image.channels() == 3)
@@ -210,9 +209,9 @@ namespace satdump
 
                     float lon, lat;
                     int x2, y2;
-                    for (int x = 0; x < projected_image.width(); x++)
+                    for (int x = 0; x < (int)projected_image.width(); x++)
                     {
-                        for (int y = 0; y < projected_image.height(); y++)
+                        for (int y = 0; y < (int)projected_image.height(); y++)
                         {
                             equi_proj.reverse(x, y, lon, lat);
                             if (lon == -1 || lat == -1)
@@ -243,9 +242,9 @@ namespace satdump
 
                     double lon, lat;
                     int x2, y2;
-                    for (int x = 0; x < projected_image.width(); x++)
+                    for (int x = 0; x < (int)projected_image.width(); x++)
                     {
-                        for (int y = 0; y < projected_image.height(); y++)
+                        for (int y = 0; y < (int)projected_image.height(); y++)
                         {
                             double px = (x - double(projected_image.width() / 2));
                             double py = (projected_image.height() - double(y)) - double(projected_image.height() / 2);
@@ -286,9 +285,9 @@ namespace satdump
 
                     double lon, lat;
                     int x2, y2;
-                    for (int x = 0; x < projected_image.width(); x++)
+                    for (int x = 0; x < (int)projected_image.width(); x++)
                     {
-                        for (int y = 0; y < projected_image.height(); y++)
+                        for (int y = 0; y < (int)projected_image.height(); y++)
                         {
                             double px = (x - double(projected_image.width() / 2));
                             double py = (projected_image.height() - double(y)) - double(projected_image.height() / 2);
@@ -334,7 +333,7 @@ namespace satdump
                                params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
                                params["br_lon"].get<float>(), params["br_lat"].get<float>());
 
-                return [projector, rotate](float lat, float lon, int map_height2, int map_width2) mutable -> std::pair<int, int>
+                return [projector, rotate](float lat, float lon, int, int) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     projector.forward(lon, lat, x, y);

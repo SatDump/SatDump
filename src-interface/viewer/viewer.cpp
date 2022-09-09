@@ -163,9 +163,7 @@ namespace satdump
                                     verticalLineEnd.y = midpoint;
                                 }
                                 if (products_and_handlers[i].handler->shouldProject())
-                                {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
-                                }
                             }
 
                             drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);

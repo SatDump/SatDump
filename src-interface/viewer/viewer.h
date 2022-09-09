@@ -29,7 +29,7 @@ namespace satdump
         virtual bool canBeProjected() { return false; } // Can the current product be projected?
         virtual bool hasProjection() { return false; }  // Does it have a projection ready?
         virtual bool shouldProject() { return false; }  // Should it be projected?
-        virtual void updateProjection(int width, int height, nlohmann::json settings, float *progess) {}
+        virtual void updateProjection(int /*width*/, int /*height*/, nlohmann::json /*settings*/, float * /*progess*/) {}
         virtual image::Image<uint16_t> &getProjection() { throw std::runtime_error("Did you check this could be projected!?"); }
 
         static std::string getID();

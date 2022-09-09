@@ -51,7 +51,7 @@ namespace satdump
     {
         if (select_image_id == 0)
             current_image = rgb_image;
-        else if (select_image_id - 1 < products->images.size())
+        else if (select_image_id - 1 < (int)products->images.size())
             current_image = products->images[select_image_id - 1].image;
 
         if (select_image_id != 0)

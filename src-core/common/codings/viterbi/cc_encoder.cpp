@@ -107,7 +107,7 @@ namespace viterbi
     {
         unsigned int my_state = d_start_state;
 
-        for (unsigned int i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
             my_state = (my_state << 1) | (in[i] & 1);
             for (unsigned int j = 0; j < d_rate; ++j)

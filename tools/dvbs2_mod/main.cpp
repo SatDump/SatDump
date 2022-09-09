@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     int final_frm_size = cfg.framesize == dvbs2::FECFRAME_NORMAL ? 64800 : 16200;
     int final_frm_size_bytes = final_frm_size / 8;
     int bb_size = bbframe_bch.dataSize();
-    int bb_bytes = bb_size / 8;
+    // int bb_bytes = bb_size / 8;
     int bb_data_size = bb_size - 10 * 8;
     int bb_data_size_bytes = bb_data_size / 8;
 

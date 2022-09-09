@@ -138,13 +138,13 @@ namespace satdump
         if (projections_mode_radio == 0) // Blend
         {
             projected_image_result = layers_images[0];
-            for (int i = 1; i < layers_images.size(); i++)
+            for (int i = 1; i < (int)layers_images.size(); i++)
                 projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
         }
         else if (projections_mode_radio == 1)
         {
             projected_image_result = layers_images[0];
-            for (int i = 1; i < layers_images.size(); i++)
+            for (int i = 1; i < (int)layers_images.size(); i++)
                 projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                      layers_images[i],
                                                                      projection_layers[i].opacity / 100.0f);
