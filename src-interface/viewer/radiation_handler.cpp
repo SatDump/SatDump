@@ -31,6 +31,7 @@ namespace satdump
         }
         else if (selected_visualization_id == 1)
         {
+            graph_values.clear();
             graph_values.resize(products->channel_counts.size());
             for (int c = 0; c < (int)products->channel_counts.size(); c++)
             {
@@ -44,17 +45,19 @@ namespace satdump
     {
         if (ImGui::CollapsingHeader("Vizualisation"))
         {
-            if (ImGui::RadioButton("Map", &selected_visualization_id, 0))
+            if (ImGui::RadioButton("\uf84c   Map", &selected_visualization_id, 0))
                 update();
-            if (ImGui::RadioButton("Graph", &selected_visualization_id, 1))
+            if (ImGui::RadioButton("\uf437   Graph", &selected_visualization_id, 1))
                 update();
 
             if (selected_visualization_id == 0)
             {
                 if (ImGui::Combo("###mapchannelcomboid", &select_channel_image_id, select_channel_image_str.c_str()))
                     update();
-                ImGui::InputInt("Min", &map_min);
-                ImGui::InputInt("Max", &map_max);
+                if (ImGui::InputInt("Min", &map_min))
+                    update();
+                if(ImGui::InputInt("Max", &map_max))
+                    update();
             }
         }
     }
@@ -68,8 +71,12 @@ namespace satdump
         else if (selected_visualization_id == 1)
         {
             ImGui::BeginChild("RadiationPlotChild");
-            for (int i = 0; i < (int)products->channel_counts.size(); i++)
+            for (int i = 0; i < (int)products->channel_counts.size(); i++){
                 ImGui::PlotLines(std::string("Channel " + std::to_string(i + 1)).c_str(), graph_values[i].data(), graph_values[i].size());
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+            }
             ImGui::EndChild();
         }
     }
