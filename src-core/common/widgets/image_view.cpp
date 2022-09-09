@@ -129,6 +129,17 @@ void ImageViewWidget::draw(ImVec2 win_size)
         window->Scroll.y = scrollY_Percent * window->ScrollMax.y * ratio - win_size.y / 2;
     }
 
+#ifdef __ANDROID__
+    ImGui::SetCursorPos({win_size.x - 130 * ui_scale + ImGui::GetScrollX(), win_size.y - 45 * ui_scale + ImGui::GetScrollY()});
+    if (ImGui::Button("  -  ##smallerimage"))
+        img_scale *= 0.9;
+    ImGui::SameLine();
+    ImGui::Text("%.0f %%", img_scale * 100);
+    ImGui::SameLine();
+    if (ImGui::Button(" + ##biggerimage"))
+        img_scale *= 1.1;
+#endif
+
     ImGui::EndChild();
     image_mtx.unlock();
 }
