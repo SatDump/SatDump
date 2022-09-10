@@ -637,6 +637,22 @@
                     }
                 }
             },
+            "mwts3": {
+                "handler": "image_handler",
+                "name": "MWTS-3",
+                "rgb_composites": {},
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    "equalize": true,
+                    "old_algo": true,
+                    "draw_map": true,
+                    "config": {
+                        "type": "equirectangular"
+                    }
+                }
+            },
             "mwri": {
                 "handler": "image_handler",
                 "name": "MWRI",
