@@ -275,7 +275,7 @@ namespace satdump
         if (current_selected_tab == 0)
         {
             if (products_and_handlers.size() > 0)
-                products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+                products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
             else
                 ImGui::GetWindowDrawList()
                     ->AddRectFilled(ImGui::GetCursorScreenPos(),
@@ -285,7 +285,7 @@ namespace satdump
         }
         else if (current_selected_tab == 1)
         {
-            projection_image_widget.draw({float(viewer_size.x * 0.80 - 4), float(viewer_size.y)});
+            projection_image_widget.draw({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
         }
         ImGui::EndGroup();
     }
