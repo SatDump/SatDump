@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     std::vector<satdump::projection::GCP> gcps =
-        satdump::gcp_compute::compute_gcps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abcd_mwri1.json")),
+        satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
                                            img_pro.get_tle(),
                                            img_pro.get_timestamps(0));
 

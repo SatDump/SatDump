@@ -42,7 +42,7 @@ namespace satdump
 
             timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
             invert_scan = getValueOrDefault(cfg["invert_scan"], false);
-            rotate_yaw = getValueOrDefault(cfg["rotate_yaw"], rotate_yaw);
+            rotate_yaw = getValueOrDefault(cfg["rotate_yaw"], false);
 
             roll_offset = getValueOrDefault(cfg["roll_offset"], 0.0);
             pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0.0);

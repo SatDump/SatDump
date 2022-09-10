@@ -53,14 +53,15 @@ namespace satdump
                         // Now compute each pixel's lat / lon and plot it
                         for (double px = 0; px < image.width() - 1; px += 1)
                         {
-                            geodetic::geodetic_coords_t coords1, coords2;
+                            geodetic::geodetic_coords_t coords1, coords2, coords3;
                             bool ret1 = sat_proj_src->get_position(px, currentScan, coords1);
                             bool ret2 = sat_proj_src->get_position(px + 1, currentScan, coords2);
+                            sat_proj_src->get_position(px, currentScan + 1, coords3);
 
                             if (ret1 || ret2)
                                 continue;
 
-                            direction = coords1.lat > coords2.lat;
+                            direction = coords1.lat > coords3.lat;
 
                             std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, projected_image.height(), projected_image.width());
                             std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
