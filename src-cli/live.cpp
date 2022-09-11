@@ -78,14 +78,15 @@ int main_live(int argc, char *argv[])
         return 1;
     }
 
-    // Init SatDump
-    satdump::initSatdump();
-
     std::string downlink_pipeline = argv[2];
     std::string output_file = argv[3];
 
     // Parse flags
     nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4]);
+
+    // Init SatDump
+    satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";
+    satdump::initSatdump();
 
     if (parameters.contains("client"))
     {
