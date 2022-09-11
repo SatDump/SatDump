@@ -29,7 +29,7 @@
 Those libraries above are included directly as they are either header-only, not already present on most systems or required some modifications for the purpose of this software. For the code included, the licenses of each respective library applies.
 
 **Projects some code was taken from and included in libsatdump_core :**
-- [LeanDVB](https://github.com/pabr/leansdr), mainly the BCH Decoder implementation
+- [LeanDVB](https://github.com/pabr/leansdr), for some definitions
 - [gr-dvbs2rx](https://github.com/igorauad/gr-dvbs2rx), for TS Parsing and a few other bits
 - [GNU Radio](https://github.com/gnuradio/gnuradio), for the convolutional decoding / encoding (quite heavily modified) and a few other bits
 - [SDR++](https://github.com/AlexandreRouma/SDRPlusPlus), for the DSP stream implementation (thanks Ryzerth for the tip back then!) and a few other things, such as the SpyServer client
@@ -54,7 +54,7 @@ And additionally, on the UI side :
 - [libsddc](https://github.com/ik1xpv/ExtIO_sddc)
 - [libsdrplay](https://www.sdrplay.com/)
 
-**Fonts**
+**Fonts :**
 - [Roboto](https://fonts.google.com/specimen/Roboto), for all UI
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
 

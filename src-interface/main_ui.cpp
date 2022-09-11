@@ -163,7 +163,9 @@ namespace satdump
                 }
                 if (ImGui::BeginTabItem("Credits"))
                 {
+                    ImGui::BeginChild("credits_md", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
                     credits_md.render();
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
 #ifdef ENABLE_DEBUG_MAP
