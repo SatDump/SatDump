@@ -90,13 +90,14 @@ namespace satdump
             nlohmann::json cfg;
             image::Image<uint16_t> img;
         };
+        int selected_external_type = 0;
         std::vector<ExternalProjSource> projections_external_sources;
         image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress);
 
         struct ProjectionLayer
         {
             std::string name;
-            int type; // 0 = products, 1 = external;
+            int type; // 0 = products, 1 = external
             ProductsHandler *viewer_prods;
             ExternalProjSource *external;
             float opacity = 100;
@@ -107,6 +108,7 @@ namespace satdump
 
         std::string projection_new_layer_name = "Ext Layer";
         FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Equirectangular Image");
+        FileSelectWidget projection_new_layer_cfg = FileSelectWidget("Config (JSON)", "Select Projection Config");
 
         void refreshProjectionLayers();
 

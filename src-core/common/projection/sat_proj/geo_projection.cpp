@@ -49,6 +49,8 @@ namespace geodetic
 
             if (img_x >= width || img_y >= height)
                 return 1;
+            if (img_x < 0 || img_y < 0)
+                return 1;
 
             return 0;
         }
@@ -56,6 +58,8 @@ namespace geodetic
         int GEOProjector::inverse(int img_x, int img_y, double &lon, double &lat)
         {
             if (img_x >= width || img_y >= height)
+                return 1;
+            if (img_x < 0 || img_y < 0)
                 return 1;
 
             image_y = (height - 1) - img_y;

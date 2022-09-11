@@ -75,23 +75,33 @@ namespace satdump
             ImGui::SameLine();
             ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
 
-            ImGui::Separator();
+            ImGui::Separator(); //////////////////////////////////////////////////////
+
+            ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("Other", &selected_external_type, 1);
 
             ImGui::InputText("Name", &projection_new_layer_name);
             projection_new_layer_file.draw();
+            if (selected_external_type == 1)
+                projection_new_layer_cfg.draw();
 
             if (ImGui::Button("Add layer") && projection_new_layer_file.file_valid)
             {
                 // TMP
                 ExternalProjSource new_layer_cfg;
                 new_layer_cfg.name = projection_new_layer_name;
-                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+                if (selected_external_type == 1)
+                    new_layer_cfg.cfg = loadJsonFile(projection_new_layer_cfg.getPath());
+                else
+                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
                 new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
                 projections_external_sources.push_back(new_layer_cfg);
 
                 refreshProjectionLayers();
             }
-            ImGui::Separator();
+
+            ImGui::Separator(); ///////////////////////////////////////////////////
 
             ImGui::Text("Layers :");
 
