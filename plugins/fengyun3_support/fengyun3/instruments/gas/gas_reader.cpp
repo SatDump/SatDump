@@ -30,7 +30,7 @@ namespace fengyun3
             for (int i = 0; i < 335202; i++)
             {
                 uint16_t value = packet[4 + i * 2 + 0] << 8 | packet[4 + i * 2 + 1];
-                imageBuffer[lines * 335202] = value; // << 3;
+                imageBuffer[lines * 335202 + i] = value; // << 3;
             }
 
             // Frame counter

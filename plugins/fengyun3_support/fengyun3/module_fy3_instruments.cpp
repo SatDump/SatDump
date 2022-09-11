@@ -93,7 +93,7 @@ namespace fengyun3
             def::SimpleDeframer waai_deframer(0x55aa55aa55aa, 48, 524336, 0);
             def::SimpleDeframer windrad_deframer1(0xfaf355aa, 32, 13160, 0);
             def::SimpleDeframer windrad_deframer2(0xfaf3aabb, 32, 18072, 0);
-            def::SimpleDeframer gas_deframer(0xbb22bb20, 32, 5363264, 0);
+            def::SimpleDeframer gas_deframer(0x1acffc7d, 32, 5363264, 0);
 
             std::vector<uint8_t> fy_scids;
 
@@ -106,6 +106,8 @@ namespace fengyun3
                 logger->debug("Dumping mersi to " + mersi_path);
                 mersi_bin.open(mersi_path, std::ios::binary);
             }
+
+            // std::ofstream idk_out("idk_frm.bin");
 
             is_init = true;
 
@@ -186,9 +188,9 @@ namespace fengyun3
                             mersi_bin.write((char *)&cadu[14], 882);
                     }
                     // else if (vcdu.vcid == 6) // HIRAS-1
-                    //{ // 0x87762226 0x316e4f02
-                    //     hiras_test.write((char *)&cadu[14], 882);
-                    // }
+                    //{                        // 0x87762226 0x316e4f02
+                    //      hiras_test.write((char *)&cadu[14], 882);
+                    //}
                     else if (vcdu.vcid == 9) // GAS
                     {
                         std::vector<std::vector<uint8_t>> out = gas_deframer.work(&cadu[14], 882);
@@ -215,7 +217,24 @@ namespace fengyun3
                                 mwhs2_reader.work(pkt, false);
                             else if (pkt.header.apid == 7) // MWTS-2
                                 mwts2_reader.work(pkt);
+                        // else if (pkt.header.apid == 17)
+                        //     continue; // idk_out.write((char *)pkt.payload.data(), 250);
+                        // else if (pkt.header.apid == 3)
+                        //     continue; // idk_out.write((char *)pkt.payload.data(), 506);
+                        // else if (pkt.header.apid == 15)
+                        //     continue; // idk_out.write((char *)pkt.payload.data(), 506);
+                        // else if (pkt.header.apid == 1)
+                        //     continue; // idk_out.write((char *)pkt.payload.data(), 282);
+                        //               // else logger->critical("APID {:d}           {:d}", pkt.header.apid, pkt.payload.size());
                     }
+                    // else
+                    // {
+                    //    // 11 : 0b10100000011000000110000000110000100010100011
+                    //    if (vcdu.vcid == 11)
+                    //        idk_out.write((char *)&cadu[14], 882);
+                    //    else
+                    //        logger->critical("VCID {:d}", vcdu.vcid);
+                    //}
                 }
                 else if (d_satellite == FY_3E)
                 {
@@ -810,7 +829,7 @@ namespace fengyun3
 
         void FY3InstrumentsDecoderModule::drawUI(bool window)
         {
-            if(!is_init)
+            if (!is_init)
                 return;
 
             ImGui::Begin("FengYun-3 Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
