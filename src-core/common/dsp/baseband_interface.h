@@ -159,6 +159,11 @@ namespace dsp
 
         inline void set_progress(size_t progress)
         {
+#ifdef BUILD_ZIQ
+            if (format == ZIQ)
+                return;
+#endif
+
             main_mtx.lock();
             int samplesize = sizeof(complex_t);
 
