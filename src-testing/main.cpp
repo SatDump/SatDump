@@ -13,35 +13,33 @@
 #include "logger.h"
 #include <fstream>
 
-#include "common/dsp/complex.h"
-
 #include "common/image/image.h"
+
+#include "common/map/map_drawer.h"
+#include "common/projection/reprojector.h"
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint16_t> img1, img2, img_b;
-    img1.load_png(argv[1]);
-    img2.load_png(argv[2]);
-    img_b.init(img1.width(), img1.height(), img1.channels());
+    image::Image<uint8_t> img;
+    img.load_png(argv[1]);
+    img.to_rgb();
 
-    // logger->critical(argv[1]);
+    nlohmann::json proj_cfg = loadJsonFile(argv[2]);
 
-    for (int c = 0; c < img1.channels(); c++)
-    {
-        for (size_t i = 0; i < img1.height() * img1.width(); i++)
-        {
-            if (img1.channel(c)[i] == 0)
-                img_b.channel(c)[i] = img2.channel(c)[i];
-            else if (img2.channel(c)[i] == 0)
-                img_b.channel(c)[i] = img1.channel(c)[i];
-            else
-                img_b.channel(c)[i] = (size_t(img1.channel(c)[i]) + size_t(img2.channel(c)[i])) / 2;
-        }
-    }
+    unsigned char color[3] = {0, 255, 0};
+    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                   img,
+                                   color,
+                                   satdump::reprojection::setupProjectionFunction(img.width(), img.height(), proj_cfg));
 
-    img_b.save_png(argv[3]);
+    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
+    logger->info("Saving...");
+
+    img.save_png(argv[3]);
 
 #if 0
     std::ifstream input_frm(argv[1]);

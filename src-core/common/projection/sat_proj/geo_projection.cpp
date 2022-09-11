@@ -35,11 +35,14 @@ namespace geodetic
                 return 1;
             }
 
+            y -= y_offset;
+            x -= x_offset;
+
             image_x = x * hscale * (width / 2.0);
             image_y = y * vscale * (height / 2.0);
 
-            image_x += width / 2.0 + x_offset;
-            image_y += height / 2.0 + y_offset;
+            image_x += width / 2.0;
+            image_y += height / 2.0;
 
             img_x = image_x;
             img_y = (height - 1) - image_y;
@@ -58,11 +61,14 @@ namespace geodetic
             image_y = (height - 1) - img_y;
             image_x = img_x;
 
-            image_y -= height / 2.0 + y_offset;
-            image_x -= width / 2.0 + x_offset;
+            image_y -= height / 2.0;
+            image_x -= width / 2.0;
 
             y = image_y / (vscale * (height / 2.0));
             x = image_x / (hscale * (width / 2.0));
+
+            y += y_offset;
+            x += x_offset;
 
             if (pj.inverse(x, y, lon, lat))
             {
