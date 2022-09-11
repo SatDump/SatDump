@@ -52,6 +52,8 @@ namespace ziq
         const int zst_level = 1;
         const int zst_workers = 8;
         ZSTD_CCtx *zstd_ctx;
+        ZSTD_inBuffer zstd_input;
+        ZSTD_outBuffer zstd_output;
         int zst_outc;
         size_t max_buffer_size;
         uint8_t *output_compressed;

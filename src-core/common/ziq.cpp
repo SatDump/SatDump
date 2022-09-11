@@ -54,9 +54,16 @@ namespace ziq
 
     int ziq_writer::compress_and_write(uint8_t *input, int size)
     {
-        zst_outc = ZSTD_compress2(zstd_ctx, output_compressed, max_buffer_size, input, size);
-        stream.write((char *)output_compressed, zst_outc);
-        return zst_outc;
+        zstd_input = {input, (unsigned long long)size, 0};
+        zstd_output = {output_compressed, max_buffer_size, 0};
+
+        int remainaining = size;
+        while(zstd_input.pos < zstd_input.size)
+            remainaining = ZSTD_compressStream2(zstd_ctx, &zstd_output, &zstd_input, ZSTD_e_continue);
+
+        stream.write((char *)output_compressed, zstd_output.pos);
+        
+        return zstd_output.pos;
     }
 
     int ziq_writer::write(complex_t *input, int size)

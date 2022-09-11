@@ -61,7 +61,7 @@ namespace dsp
             current_size_out = 0;
             current_size_out_raw = 0;
 
-            output_file = std::ofstream(finalt);
+            output_file = std::ofstream(finalt, std::ios::binary);
 
 #ifdef BUILD_ZIQ
             if (d_sample_format == ZIQ)
