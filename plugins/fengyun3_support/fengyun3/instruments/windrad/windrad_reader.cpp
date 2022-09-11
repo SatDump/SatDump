@@ -47,7 +47,21 @@ namespace fengyun3
 
             for (int i = 0; i < width; i++)
             {
-                channels[marker][lines * width + i] = packet[17 + i * 2 + 0] << 8 | packet[17 + i * 2 + 1];
+                // channels[marker][lines * width + i] = packet[17 + i * 2 + 0] << 8 | packet[17 + i * 2 + 1];
+                // float test = packet[17 + i * 2 + 0] << 8 | packet[17 + i * 2 + 1];
+                bool sign = (packet[17 + i * 2 + 0] >> 7) & 1;
+                float exponent = (packet[17 + i * 2 + 0] >> 2) & 0b11111;
+                float significand = (packet[17 + i * 2 + 0] & 0b11) << 8 | packet[17 + i * 2 + 1];
+                float test = (sign ? -1 : 1) * significand * powf(2, exponent - 15);
+
+                test /= 1000;
+
+                // logger->critical("{:f} - S {:d} - E {:f} - S {:f}", test, (int)sign, exponent - 15, significand);
+                if (test < 0)
+                    test = 0;
+                if (test > 65535)
+                    test = 65535;
+                channels[marker][lines * width + i] = test;
             }
 
             // Frame counter
