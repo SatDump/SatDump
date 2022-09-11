@@ -10,7 +10,7 @@ android {
         minSdkVersion 28
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
 
     buildTypes {
@@ -110,9 +110,9 @@ copyFonts.dependsOn deleteTempAssets
 copyCfg.dependsOn deleteTempAssets
 
 copyPlugins_arm64v8a.dependsOn deleteTempAssets
-copyPlugins_arm64v8a.dependsOn deleteTempAssets
-copyPlugins_arm64v8a.dependsOn deleteTempAssets
-copyPlugins_arm64v8a.dependsOn deleteTempAssets
+copyPlugins_armeabiv7a.dependsOn deleteTempAssets
+copyPlugins_x86.dependsOn deleteTempAssets
+copyPlugins_x86_64.dependsOn deleteTempAssets
 
 preBuild.dependsOn copyResources
 preBuild.dependsOn copyPipelines
