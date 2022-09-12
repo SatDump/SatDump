@@ -5,14 +5,16 @@
 #define TILE_SIZE 256
 #define TILE_DL_LIMIT 250
 
-struct mapTile{
+struct mapTile
+{
     int x, y;
     image::Image<uint8_t> data;
 
     mapTile(int x1, int y1, image::Image<uint8_t> tileImage);
 };
 
-struct tileMap{
+struct tileMap
+{
     std::string tileServerURL;
     std::string tileSaveDir;
     int expiryTime;

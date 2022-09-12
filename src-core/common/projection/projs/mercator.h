@@ -28,7 +28,8 @@ namespace geodetic
             // float offset_lat;
             // float offset_lon;
 
-            float scale = 0;
+            float scale_x = 0;
+            float scale_y = 0;
 
         public:
             void init(int img_width, int img_height /*, float tl_lon, float tl_lat, float br_lon, float br_lat*/);

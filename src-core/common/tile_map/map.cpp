@@ -60,7 +60,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
         std::filesystem::file_time_type file = std::filesystem::last_write_time(filename);
         std::filesystem::file_time_type system = std::filesystem::file_time_type::clock::now();
         std::chrono::duration<int64_t, std::nano> dur = system.time_since_epoch() - file.time_since_epoch();
-        old = dur.count()/86400000000000 > expiryTime;
+        old = dur.count() / 86400000000000 > expiryTime;
     }
 
     if (!std::filesystem::exists(filename) || old)
@@ -118,7 +118,8 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pa
         cf1 = coorToTileF(coor1, zoom);
         xtiles = ceil(abs(cf.first - cf1.first)) + 1;
         ytiles = ceil(abs(cf.second - cf1.second)) + 1;
-        if (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13){
+        if (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13)
+        {
             logger->warn("Requested area is over 250 tiles with zoom > 13, lowering zoom level.");
             zoom--;
         }
