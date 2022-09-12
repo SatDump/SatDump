@@ -125,8 +125,8 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pa
         }
     } while (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13);
 
-    int offX = TILE_SIZE * (cf.first - (float)(int)cf.first);
-    int offY = TILE_SIZE - (TILE_SIZE * (cf.second - (float)(int)cf.second));
+    int offX = TILE_SIZE * (std::min(cf.first, cf1.first) - (float)(int)std::min(cf.first, cf1.first));
+    int offY = TILE_SIZE - (TILE_SIZE * (std::min(cf.second, cf1.second) - (float)(int)std::min(cf.second, cf1.second)));
     image::Image<uint8_t> img(std::round(abs(cf.first - cf1.first) * TILE_SIZE), std::round(abs(cf.second - cf1.second) * TILE_SIZE), 3);
     for (int x = 0; x < xtiles; x++)
         for (int y = 0; y < ytiles; y++)

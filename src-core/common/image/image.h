@@ -82,9 +82,9 @@ namespace image
 
     public:
         // PNG Interface
-        void save_png(std::string file, bool fast = true); // Save to a PNG file. Defaults to fast-saving with no filters
-        void load_png(std::string file);                   // Load a PNG file
-        void load_png(uint8_t *buffer, int size);          // Load a PNG from memory
+        void save_png(std::string file, bool fast = true);                               // Save to a PNG file. Defaults to fast-saving with no filters
+        void load_png(std::string file, bool disableIndexing = false);                   // Load a PNG file (disableIndexing only applies to indexed color images)
+        void load_png(uint8_t *buffer, int size, bool disableIndexing = false);          // Load a PNG from memory (disableIndexing only applies to indexed color images)
 
         // JPEG Interface
         void load_jpeg(std::string file); // Load a JPEG file
