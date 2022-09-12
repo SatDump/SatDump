@@ -20,10 +20,23 @@
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 
+#include "common/tile_map/map.h"
+#include "init.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
+    logger->set_level(spdlog::level::level_enum::off);
+    satdump::initSatdump();
+    logger->set_level(spdlog::level::level_enum::trace);
 
+    tileMap tile_map;
+
+    image::Image<uint8_t> img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, 5);
+
+    img.save_png("map_osm.png");
+
+#if 0
     image::Image<uint8_t> img;
     img.load_png(argv[1]);
     img.to_rgb();
@@ -40,6 +53,7 @@ int main(int argc, char *argv[])
     logger->info("Saving...");
 
     img.save_png(argv[3]);
+#endif
 
 #if 0
     std::ifstream input_frm(argv[1]);

@@ -41,5 +41,13 @@ namespace satdump
             float equ_tl_lon, float equ_tl_lat, // Top-Left corner
             float equ_br_lon, float equ_br_lat, // Bottom-Right corner
             float *progress);
+
+        void reproject_merc_to_equ(
+            image::Image<uint16_t> &source_img, // Source image
+                                                // IDK yet
+            image::Image<uint16_t> &target_img, // Target image
+            float equ_tl_lon, float equ_tl_lat, // Top-Left corner
+            float equ_br_lon, float equ_br_lat, // Bottom-Right corner
+            float *progress);
     }
 }
