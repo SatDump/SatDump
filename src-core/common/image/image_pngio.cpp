@@ -81,7 +81,7 @@ namespace image
     }
 
     template <typename T>
-    void Image<T>::load_png(std::string file)
+    void Image<T>::load_png(std::string file, bool disableIndexing)
     {
         FILE *fp = fopen(file.c_str(), "rb");
 
@@ -112,8 +112,13 @@ namespace image
             d_channels = 4;
         else if (color_type == PNG_COLOR_TYPE_PALETTE)
         {
-            png_set_palette_to_rgb(png);
-            d_channels = 3;
+            if (!disableIndexing)
+            {
+                png_set_palette_to_rgb(png);
+                d_channels = 3;
+            }
+            else
+                d_channels = 1;
         }
 
         init(d_width, d_height, d_channels);
@@ -186,7 +191,7 @@ namespace image
     };
 
     template <typename T>
-    void Image<T>::load_png(uint8_t *buffer, int size)
+    void Image<T>::load_png(uint8_t *buffer, int size, bool disableIndexing)
     {
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (!png)
@@ -218,8 +223,13 @@ namespace image
             d_channels = 4;
         else if (color_type == PNG_COLOR_TYPE_PALETTE)
         {
-            png_set_palette_to_rgb(png);
-            d_channels = 3;
+            if (!disableIndexing)
+            {
+                png_set_palette_to_rgb(png);
+                d_channels = 3;
+            }
+            else
+                d_channels = 1;
         }
 
         init(d_width, d_height, d_channels);
