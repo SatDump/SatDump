@@ -125,11 +125,12 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pa
         }
     } while (xtiles * ytiles > TILE_DL_LIMIT && zoom >= 13);
 
-    int offX = TILE_SIZE * (cf.first - (int)cf.first);
-    int offY = TILE_SIZE * (cf.second - (int)cf.second);
-    image::Image<uint8_t> img(abs(cf.first - cf1.first) * TILE_SIZE, abs(cf.second - cf1.second) * TILE_SIZE, 3);
+    int offX = TILE_SIZE * (cf.first - (float)(int)cf.first);
+    int offY = TILE_SIZE - (TILE_SIZE * (cf.second - (float)(int)cf.second));
+    image::Image<uint8_t> img(std::round(abs(cf.first - cf1.first) * TILE_SIZE), std::round(abs(cf.second - cf1.second) * TILE_SIZE), 3);
     for (int x = 0; x < xtiles; x++)
-        for (int y = 0; y < ytiles; y++)
-            img.draw_image(0, downloadTile({std::min(cf.first, cf1.first) + x, std::min(cf.second, cf1.second) + y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
+        for (int y = 0; y < ytiles; y++){
+            img.draw_image(0, downloadTile({std::min(cf.first, cf1.first) + (float) x, std::min(cf.second, cf1.second) + (float) y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
+        }
     return img;
 }
