@@ -37,6 +37,15 @@ namespace geodetic
                          bool sweep_x);
             int forward(double lon, double lat, int &img_x, int &img_y);
             int inverse(int img_x, int img_y, double &lon, double &lat);
+
+            void get_for_gpu_float(float *v) // 17 values
+            {
+                pj.get_for_gpu_float(v);
+                v[13] = hscale;
+                v[14] = vscale;
+                v[15] = x_offset;
+                v[16] = y_offset;
+            }
         };
     };
 };

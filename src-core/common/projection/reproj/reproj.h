@@ -27,5 +27,19 @@ namespace satdump
             float tpe_tilt,                     // TPERS Tilt
             float tpe_azi,                      // TPERS Azi
             float *progress);
+
+        void reproject_geos_to_equ(
+            image::Image<uint16_t> &source_img, // Source image
+            double geos_lon,
+            double geos_height,
+            double geos_hscale,
+            double geos_vscale,
+            double geos_xoff,
+            double geos_yoff,
+            bool geos_sweepx,
+            image::Image<uint16_t> &target_img, // Target image
+            float equ_tl_lon, float equ_tl_lat, // Top-Left corner
+            float equ_br_lon, float equ_br_lat, // Bottom-Right corner
+            float *progress);
     }
 }

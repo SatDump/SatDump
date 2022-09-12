@@ -128,14 +128,32 @@ namespace satdump
                 }
                 else if (op.source_prj_info["type"] == "geos")
                 {
+                    int g_width = op.img.width() * 2;           // Should be reasonnable for now!
+                    warped_image.init(g_width, g_width / 2, 3); // TODO : CHANGE!!!!!
+
+                    tl_lon = -180;
+                    tl_lat = 90;
+                    br_lon = 180;
+                    br_lat = -90;
+
+                    reproj::reproject_geos_to_equ(op.img,
+                                                  op.source_prj_info["lon"].get<float>(),
+                                                  op.source_prj_info["alt"].get<double>(),
+                                                  op.source_prj_info["scale_x"].get<float>(), op.source_prj_info["scale_y"].get<float>(),
+                                                  op.source_prj_info["offset_x"].get<float>(), op.source_prj_info["offset_y"].get<float>(),
+                                                  op.source_prj_info["sweep_x"].get<bool>(),
+                                                  warped_image,
+                                                  tl_lon, tl_lat,
+                                                  br_lon, br_lat,
+                                                  progress);
+#if 0
                     geodetic::projection::GEOProjector geo_proj(op.source_prj_info["lon"].get<float>(),
                                                                 op.source_prj_info["alt"].get<double>(),
                                                                 op.img.width(), op.img.height(),
                                                                 op.source_prj_info["scale_x"].get<float>(), op.source_prj_info["scale_y"].get<float>(),
                                                                 op.source_prj_info["offset_x"].get<float>(), op.source_prj_info["offset_y"].get<float>(),
                                                                 op.source_prj_info["sweep_x"].get<bool>());
-                    int g_width = op.img.width() * 2;                           // Should be reasonnable for now!
-                    warped_image.init(g_width, g_width / 2, op.img.channels()); // TODO : CHANGE!!!!!
+                   
 
                     geodetic::projection::EquirectangularProjection equi_proj;
                     tl_lon = -180;
@@ -172,6 +190,7 @@ namespace satdump
                         if (progress != nullptr)
                             *progress = float(x) / float(warped_image.height());
                     }
+#endif
                 }
                 else // Means it's a TPS-handled warp.
                 {
