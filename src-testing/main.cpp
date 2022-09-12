@@ -26,17 +26,19 @@
 int main(int argc, char *argv[])
 {
     initLogger();
+
+#if 0
     logger->set_level(spdlog::level::level_enum::off);
     satdump::initSatdump();
     logger->set_level(spdlog::level::level_enum::trace);
 
     tileMap tile_map;
 
-    image::Image<uint8_t> img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, 5);
+    image::Image<uint8_t> img = tile_map.getMapImage({/*-85.06, -180*/ 0, 0}, {85.06, 180}, 5);
 
     img.save_png("map_osm.png");
 
-#if 0
+#else
     image::Image<uint8_t> img;
     img.load_png(argv[1]);
     img.to_rgb();

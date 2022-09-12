@@ -16,6 +16,9 @@ namespace geodetic
             int image_height;
             int image_width;
 
+            int actual_image_height;
+            int actual_image_width;
+
             // float top_left_lat;
             // float top_left_lon;
 
@@ -28,8 +31,11 @@ namespace geodetic
             // float offset_lat;
             // float offset_lon;
 
-            float scale_x = 0;
-            float scale_y = 0;
+            double scale_x = 0;
+            double scale_y = 0;
+
+            // int offset_x = 0;
+            // int offset_y = 0;
 
         public:
             void init(int img_width, int img_height /*, float tl_lon, float tl_lat, float br_lon, float br_lat*/);
