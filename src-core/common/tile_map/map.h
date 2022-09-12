@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../image/image.h"
+#include "init.h"
 
 #define TILE_SIZE 256
 #define TILE_DL_LIMIT 250
@@ -19,7 +20,7 @@ struct tileMap
     std::string tileSaveDir;
     int expiryTime;
 
-    tileMap(std::string url = "http://tile.openstreetmap.org/", std::string path = "tiles/", int expiry = 30);
+    tileMap(std::string url = "http://tile.openstreetmap.org/", std::string path = satdump::user_path + "/osm_tiles", int expiry = 30);
     image::Image<uint8_t> getMapImage(std::pair<float, float> coor, int zoom, std::pair<int, int> dim);
     image::Image<uint8_t> getMapImage(std::pair<float, float> coor, std::pair<float, float> coor1, int zoom);
     mapTile downloadTile(std::pair<int, int> t1, int zoom);

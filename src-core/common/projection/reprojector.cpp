@@ -127,6 +127,27 @@ namespace satdump
                     br_lon = op.source_prj_info["br_lon"].get<float>();
                     br_lat = op.source_prj_info["br_lat"].get<float>();
                 }
+                else if (op.source_prj_info["type"] == "mercator")
+                {
+                    int g_width = op.img.width();               // Should be reasonnable for now!
+                    warped_image.init(g_width, g_width / 2, 3); // TODO : CHANGE!!!!!
+
+                    tl_lon = -180;
+                    tl_lat = 85.06;
+                    br_lon = 180;
+                    br_lat = -85.06;
+
+                    reproj::reproject_merc_to_equ(op.img,
+                                                  // op.source_prj_info["lon"].get<float>(),
+                                                  // op.source_prj_info["alt"].get<double>(),
+                                                  // op.source_prj_info["scale_x"].get<float>(), op.source_prj_info["scale_y"].get<float>(),
+                                                  // op.source_prj_info["offset_x"].get<float>(), op.source_prj_info["offset_y"].get<float>(),
+                                                  // op.source_prj_info["sweep_x"].get<bool>(),
+                                                  warped_image,
+                                                  tl_lon, tl_lat,
+                                                  br_lon, br_lat,
+                                                  progress);
+                }
                 else if (op.source_prj_info["type"] == "geos")
                 {
                     int g_width = op.img.width() * 2;           // Should be reasonnable for now!
