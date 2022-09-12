@@ -36,9 +36,9 @@ int geos_forward(struct geos_cfg *cfg, float lon, float lat, float *x,
     lon = lon - 360;
 
   // To radians
-  double phi = lat * 0.01745329, lam = lon * 0.01745329;
+  float phi = lat * 0.01745329, lam = lon * 0.01745329;
 
-  double r, Vx, Vy, Vz, tmp;
+  float r, Vx, Vy, Vz, tmp;
 
   // Calculation of geocentric latitude.
   phi = atan(cfg->radius_p2 * tan(phi));
