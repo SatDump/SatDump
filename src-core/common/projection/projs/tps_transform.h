@@ -12,8 +12,8 @@ namespace satdump
         private:
             VizGeorefSpline2D *spline_forward;
             VizGeorefSpline2D *spline_reverse;
-            bool fwd_solved;
-            bool rev_solved;
+            bool fwd_solved = true;
+            bool rev_solved = true;
 
             bool has_been_init = false;
             double xy[2] = {0.0, 0.0};
