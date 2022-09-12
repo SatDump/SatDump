@@ -7,7 +7,7 @@
 #include "core/style.h"
 #include "main_ui.h"
 #include "common/image/image_utils.h"
-
+#include "common/widgets/switch.h"
 namespace satdump
 {
     void ViewerApplication::drawProjectionPanel()
@@ -74,10 +74,23 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
+            /*
             ImGui::Text("Mode :");
             ImGui::RadioButton("Blend", &projections_mode_radio, 0);
             ImGui::SameLine();
             ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
+            */
+
+            ImGui::Text("Mode :");
+            ImGui::BeginGroup();
+            ImGui::Text("Blend");
+            ImGui::SameLine();
+
+            ImGui::SetNextItemWidth(50);
+            ToggleButton("##projtog", &projections_mode_radio);
+            ImGui::SameLine();
+            ImGui::Text("Overlay");
+            ImGui::EndGroup();
 
             ImGui::Separator(); //////////////////////////////////////////////////////
 
