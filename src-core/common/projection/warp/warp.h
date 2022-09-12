@@ -3,7 +3,6 @@
 #include "common/image/image.h"
 #include "common/projection/thinplatespline.h"
 #include <memory>
-#include "core/opencl.h"
 
 namespace satdump
 {

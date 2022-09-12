@@ -3,6 +3,7 @@
 #include <map>
 #include "common/utils.h"
 #include "resources.h"
+#include "core/opencl.h"
 
 namespace satdump
 {

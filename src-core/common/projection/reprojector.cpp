@@ -13,6 +13,8 @@
 
 #include "projs/tps_transform.h"
 
+#include "reproj/reproj.h"
+
 namespace satdump
 {
     namespace reprojection
@@ -235,6 +237,13 @@ namespace satdump
                 }
                 else if (op.target_prj_info["type"] == "stereo")
                 {
+                    reproj::reproject_equ_to_stereo(warped_image,
+                                                    tl_lon, tl_lat, br_lon, br_lat, projected_image,
+                                                    op.target_prj_info["center_lat"].get<float>(),
+                                                    op.target_prj_info["center_lon"].get<float>(),
+                                                    op.target_prj_info["scale"].get<float>(),
+                                                    progress);
+#if 0
                     geodetic::projection::StereoProjection stereo_proj;
                     stereo_proj.init(op.target_prj_info["center_lat"].get<float>(), op.target_prj_info["center_lon"].get<float>());
                     float stereo_scale = op.target_prj_info["scale"].get<float>();
@@ -272,6 +281,7 @@ namespace satdump
                         if (progress != nullptr)
                             *progress = float(x) / float(projected_image.height());
                     }
+#endif
                 }
                 else if (op.target_prj_info["type"] == "tpers")
                 {
