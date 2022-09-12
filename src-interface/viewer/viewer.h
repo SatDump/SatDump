@@ -88,6 +88,7 @@ namespace satdump
         {
             std::string name;
             nlohmann::json cfg;
+            nlohmann::json path;
             image::Image<uint16_t> img;
         };
         int selected_external_type = 0;

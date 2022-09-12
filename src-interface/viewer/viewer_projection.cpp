@@ -92,7 +92,7 @@ namespace satdump
                 ExternalProjSource new_layer_cfg;
                 new_layer_cfg.name = projection_new_layer_name;
                 if (selected_external_type == 1)
-                    new_layer_cfg.cfg = loadJsonFile(projection_new_layer_cfg.getPath());
+                    new_layer_cfg.path = projection_new_layer_cfg.getPath();
                 else
                     new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
                 new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
@@ -263,7 +263,7 @@ namespace satdump
     image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress)
     {
         reprojection::ReprojectionOperation op;
-        op.source_prj_info = ep.cfg;
+        op.source_prj_info = loadJsonFile(ep.path);
         op.target_prj_info = tcfg;
         op.img = ep.img;
         op.output_width = width;
