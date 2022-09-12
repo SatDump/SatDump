@@ -49,22 +49,22 @@ float powf(float base, float exponent) {
 enum stereo_mode_t { S_POLE = 0, N_POLE = 1, OBLIQ = 2, EQUIT = 3 };
 
 struct stereo_cfg {
-  double phits;
-  double sinX1;
-  double cosX1;
-  double akm1;
+  float phits;
+  float sinX1;
+  float cosX1;
+  float akm1;
   enum stereo_mode_t mode;
 
-  double e;
-  double phi0;
-  double a;
-  double es;
-  double one_es;
+  float e;
+  float phi0;
+  float a;
+  float es;
+  float one_es;
 
-  double k0;
-  double lam0;
+  float k0;
+  float lam0;
 
-  double lon_0;
+  float lon_0;
 };
 
 int stereo_inverse(struct stereo_cfg *cfg, float x, float y, float *lon,

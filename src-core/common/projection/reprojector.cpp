@@ -243,88 +243,17 @@ namespace satdump
                                                     op.target_prj_info["center_lon"].get<float>(),
                                                     op.target_prj_info["scale"].get<float>(),
                                                     progress);
-#if 0
-                    geodetic::projection::StereoProjection stereo_proj;
-                    stereo_proj.init(op.target_prj_info["center_lat"].get<float>(), op.target_prj_info["center_lon"].get<float>());
-                    float stereo_scale = op.target_prj_info["scale"].get<float>();
-                    geodetic::projection::EquirectangularProjection equi_proj_src;
-                    equi_proj_src.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
-
-                    double lon, lat;
-                    int x2, y2;
-                    for (int x = 0; x < (int)projected_image.width(); x++)
-                    {
-                        for (int y = 0; y < (int)projected_image.height(); y++)
-                        {
-                            double px = (x - double(projected_image.width() / 2));
-                            double py = (projected_image.height() - double(y)) - double(projected_image.height() / 2);
-
-                            px /= projected_image.width() / stereo_scale;
-                            py /= projected_image.height() / stereo_scale;
-
-                            stereo_proj.inverse(px, py, lon, lat);
-                            if (lon == -1 || lat == -1)
-                                continue;
-
-                            equi_proj_src.forward(lon, lat, x2, y2);
-                            if (x2 == -1 || y2 == -1)
-                                continue;
-
-                            if (warped_image.channels() == 3)
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
-                            else
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
-                        }
-
-                        if (progress != nullptr)
-                            *progress = float(x) / float(projected_image.height());
-                    }
-#endif
                 }
                 else if (op.target_prj_info["type"] == "tpers")
                 {
-                    geodetic::projection::TPERSProjection tpers_proj;
-                    tpers_proj.init(op.target_prj_info["alt"].get<float>() * 1000,
-                                    op.target_prj_info["lon"].get<float>(),
-                                    op.target_prj_info["lat"].get<float>(),
-                                    op.target_prj_info["ang"].get<float>(),
-                                    op.target_prj_info["azi"].get<float>());
-                    geodetic::projection::EquirectangularProjection equi_proj_src;
-                    equi_proj_src.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
-
-                    double lon, lat;
-                    int x2, y2;
-                    for (int x = 0; x < (int)projected_image.width(); x++)
-                    {
-                        for (int y = 0; y < (int)projected_image.height(); y++)
-                        {
-                            double px = (x - double(projected_image.width() / 2));
-                            double py = (projected_image.height() - double(y)) - double(projected_image.height() / 2);
-
-                            px /= projected_image.width() / 2;
-                            py /= projected_image.height() / 2;
-
-                            tpers_proj.inverse(px, py, lon, lat);
-                            if (lon == -1 || lat == -1)
-                                continue;
-
-                            equi_proj_src.forward(lon, lat, x2, y2);
-                            if (x2 == -1 || y2 == -1)
-                                continue;
-
-                            if (warped_image.channels() == 3)
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
-                            else
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
-                        }
-
-                        if (progress != nullptr)
-                            *progress = float(x) / float(projected_image.height());
-                    }
+                    reproj::reproject_equ_to_tpers(warped_image,
+                                                   tl_lon, tl_lat, br_lon, br_lat, projected_image,
+                                                   op.target_prj_info["alt"].get<float>() * 1000,
+                                                   op.target_prj_info["lon"].get<float>(),
+                                                   op.target_prj_info["lat"].get<float>(),
+                                                   op.target_prj_info["ang"].get<float>(),
+                                                   op.target_prj_info["azi"].get<float>(),
+                                                   progress);
                 }
             }
 

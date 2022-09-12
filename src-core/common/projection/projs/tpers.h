@@ -55,6 +55,28 @@ namespace geodetic
             int init(double altitude, double longitude, double latitude, double tilt, double azi); // return value of 1 => Error
             int forward(double lon, double lat, double &x, double &y);                             // return value of 1 => Error
             int inverse(double x, double y, double &lon, double &lat);                             // return value of 1 => Error
+
+            void get_for_gpu_float(float *v) // 18 values
+            {
+                v[0] = height;
+                v[1] = sinph0;
+                v[2] = cosph0;
+                v[3] = p;
+                v[4] = rp;
+                v[5] = pn1;
+                v[6] = pfact;
+                v[7] = h;
+                v[8] = cg;
+                v[9] = sg;
+                v[10] = sw;
+                v[11] = cw;
+                v[12] = mode;
+                v[13] = tilt;
+                v[14] = phi0;
+                v[15] = a;
+                v[16] = es;
+                v[17] = lon_0;
+            }
         };
     };
 };
