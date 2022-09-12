@@ -6,6 +6,7 @@
 #include "sat_proj/sat_proj.h"
 
 #include "projs/equirectangular.h"
+#include "projs/mercator.h"
 #include "projs/stereo.h"
 #include "projs/tpers.h"
 
@@ -146,51 +147,6 @@ namespace satdump
                                                   tl_lon, tl_lat,
                                                   br_lon, br_lat,
                                                   progress);
-#if 0
-                    geodetic::projection::GEOProjector geo_proj(op.source_prj_info["lon"].get<float>(),
-                                                                op.source_prj_info["alt"].get<double>(),
-                                                                op.img.width(), op.img.height(),
-                                                                op.source_prj_info["scale_x"].get<float>(), op.source_prj_info["scale_y"].get<float>(),
-                                                                op.source_prj_info["offset_x"].get<float>(), op.source_prj_info["offset_y"].get<float>(),
-                                                                op.source_prj_info["sweep_x"].get<bool>());
-                   
-
-                    geodetic::projection::EquirectangularProjection equi_proj;
-                    tl_lon = -180;
-                    tl_lat = 90;
-                    br_lon = 180;
-                    br_lat = -90;
-                    equi_proj.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
-
-                    for (int x = 0; x < (int)warped_image.width(); x++)
-                    {
-                        for (int y = 0; y < (int)warped_image.height(); y++)
-                        {
-                            float lon, lat;
-                            int x2, y2;
-
-                            equi_proj.reverse(x, y, lon, lat);
-                            if (lon == -1 || lat == -1)
-                                continue;
-
-                            geo_proj.forward(lon, lat, x2, y2);
-                            if (x2 == -1 || y2 == -1 ||
-                                x2 >= (int)op.img.width() || x2 < 0 ||
-                                y2 >= (int)op.img.height() || y2 < 0)
-                                continue;
-
-                            if (warped_image.channels() == 3)
-                                for (int c = 0; c < 3; c++)
-                                    warped_image.channel(c)[y * warped_image.width() + x] = op.img.channel(c)[y2 * op.img.width() + x2];
-                            else
-                                for (int c = 0; c < 3; c++)
-                                    warped_image.channel(c)[y * warped_image.width() + x] = op.img.channel(0)[y2 * op.img.width() + x2];
-                        }
-
-                        if (progress != nullptr)
-                            *progress = float(x) / float(warped_image.height());
-                    }
-#endif
                 }
                 else // Means it's a TPS-handled warp.
                 {
@@ -254,6 +210,41 @@ namespace satdump
                             *progress = float(x) / float(projected_image.height());
                     }
                 }
+                else if (op.target_prj_info["type"] == "mercator")
+                {
+                    geodetic::projection::MercatorProjection merc_proj;
+                    merc_proj.init(projected_image.width(), projected_image.height() /*,
+                                    op.target_prj_info["tl_lon"].get<float>(), op.target_prj_info["tl_lat"].get<float>(),
+                                    op.target_prj_info["br_lon"].get<float>(), op.target_prj_info["br_lat"].get<float>()*/
+                    );
+                    geodetic::projection::EquirectangularProjection equi_proj_src;
+                    equi_proj_src.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
+
+                    float lon, lat;
+                    int x2, y2;
+                    for (int x = 0; x < (int)projected_image.width(); x++)
+                    {
+                        for (int y = 0; y < (int)projected_image.height(); y++)
+                        {
+                            merc_proj.reverse(x, y, lon, lat);
+                            if (lon == -1 || lat == -1)
+                                continue;
+                            equi_proj_src.forward(lon, lat, x2, y2);
+                            if (x2 == -1 || y2 == -1)
+                                continue;
+
+                            if (warped_image.channels() == 3)
+                                for (int c = 0; c < 3; c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            else
+                                for (int c = 0; c < 3; c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
+                        }
+
+                        if (progress != nullptr)
+                            *progress = float(x) / float(projected_image.height());
+                    }
+                }
                 else if (op.target_prj_info["type"] == "stereo")
                 {
                     reproj::reproject_equ_to_stereo(warped_image,
@@ -291,6 +282,21 @@ namespace satdump
                 projector.init(width, height,
                                params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
                                params["br_lon"].get<float>(), params["br_lat"].get<float>());
+
+                return [projector, rotate](float lat, float lon, int, int) mutable -> std::pair<int, int>
+                {
+                    int x, y;
+                    projector.forward(lon, lat, x, y);
+                    return {x, y};
+                };
+            }
+            else if (params["type"] == "mercator")
+            {
+                geodetic::projection::MercatorProjection projector;
+                projector.init(width, height /*,
+                                params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
+                                params["br_lon"].get<float>(), params["br_lat"].get<float>()*/
+                );
 
                 return [projector, rotate](float lat, float lon, int, int) mutable -> std::pair<int, int>
                 {

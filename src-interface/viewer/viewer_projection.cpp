@@ -15,6 +15,7 @@ namespace satdump
         if (ImGui::CollapsingHeader("Projection"))
         {
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
+                                                                             "Mercator\0"
                                                                              "Stereo\0"
                                                                              "Satellite\0");
             ImGui::InputInt("Image Width", &projections_image_width);
@@ -31,12 +32,15 @@ namespace satdump
             }
             else if (projections_current_selected_proj == 1)
             {
+            }
+            else if (projections_current_selected_proj == 2)
+            {
                 ImGui::Text("Center :");
                 ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
                 ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
                 ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
             }
-            else if (projections_current_selected_proj == 2)
+            else if (projections_current_selected_proj == 3)
             {
                 ImGui::Text("Center :");
                 ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
@@ -164,12 +168,20 @@ namespace satdump
         }
         else if (projections_current_selected_proj == 1)
         {
+            cfg["type"] = "mercator";
+            //  cfg["tl_lon"] = projections_equirectangular_tl_lon;
+            //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
+            //  cfg["br_lon"] = projections_equirectangular_br_lon;
+            //  cfg["br_lat"] = projections_equirectangular_br_lat;
+        }
+        else if (projections_current_selected_proj == 2)
+        {
             cfg["type"] = "stereo";
             cfg["center_lon"] = projections_stereo_center_lon;
             cfg["center_lat"] = projections_stereo_center_lat;
             cfg["scale"] = projections_stereo_scale;
         }
-        else if (projections_current_selected_proj == 2)
+        else if (projections_current_selected_proj == 3)
         {
             cfg["type"] = "tpers";
             cfg["lon"] = projections_tpers_lon;
@@ -263,7 +275,10 @@ namespace satdump
     image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress)
     {
         reprojection::ReprojectionOperation op;
-        op.source_prj_info = loadJsonFile(ep.path);
+        if (ep.path.size() > 0)
+            op.source_prj_info = loadJsonFile(ep.path);
+        else
+            op.source_prj_info = ep.cfg;
         op.target_prj_info = tcfg;
         op.img = ep.img;
         op.output_width = width;
