@@ -26,7 +26,7 @@ namespace satdump
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/dataset.json");
-        loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_idk_damnit/dataset.json");
+        // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_idk_damnit/dataset.json");
 
         // loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
 
