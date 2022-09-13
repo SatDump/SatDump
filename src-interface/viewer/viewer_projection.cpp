@@ -75,28 +75,11 @@ namespace satdump
         if (ImGui::CollapsingHeader("Layers"))
         {
             /*
-            ImGui::Text("Mode :");
-            ImGui::RadioButton("Blend", &projections_mode_radio, 0);
+            ImGui::Text("Equirectangular");
             ImGui::SameLine();
-            ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
-            */
-
-            ImGui::Text("Mode :");
-            ImGui::BeginGroup();
-            ImGui::Text("Blend");
+            ToggleButton("##projimsel", &selected_external_type);
             ImGui::SameLine();
-
-            ImGui::SetNextItemWidth(50);
-            ToggleButton("##projtog", &projections_mode_radio);
-            ImGui::SameLine();
-            ImGui::Text("Overlay");
-            ImGui::EndGroup();
-
-            ImGui::Separator(); //////////////////////////////////////////////////////
-
-            ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("Other", &selected_external_type, 1);
+            ImGui::Text("Other");
 
             ImGui::InputText("Name", &projection_new_layer_name);
             projection_new_layer_file.draw();
@@ -117,18 +100,26 @@ namespace satdump
 
                 refreshProjectionLayers();
             }
-
-            ImGui::Separator(); ///////////////////////////////////////////////////
-
-            ImGui::Text("Layers :");
+            */
 
             bool select = false;
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
                     ProjectionLayer &layer = projection_layers[i];
+                    if (!layer.enabled)
+                        ImGui::BeginDisabled();
                     ImGui::Selectable(layer.name.c_str(), &select);
+                    if (ImGui::IsItemClicked())
+                    {
+                        layer.enabled = !layer.enabled;
+                        if (!layer.enabled)
+                            ImGui::BeginDisabled();
+                        if (layer.enabled)
+                            ImGui::EndDisabled();
+                    }
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
                     ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::ProgressBar(layer.progress);
@@ -140,6 +131,8 @@ namespace satdump
                             break;
                         }
                     }
+                    if (!layer.enabled)
+                        ImGui::EndDisabled();
                 }
                 ImGui::EndListBox();
             }
@@ -156,6 +149,15 @@ namespace satdump
             }
             if (projections_are_generating || projection_layers.size() == 0)
                 style::endDisabled();
+
+            ImGui::Text("Mode :");
+            ImGui::BeginGroup();
+            ImGui::Text("Blend");
+            ImGui::SameLine();
+            ToggleButton("##projtog", &projections_mode_radio);
+            ImGui::SameLine();
+            ImGui::Text("Overlay");
+            ImGui::EndGroup();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
         {
