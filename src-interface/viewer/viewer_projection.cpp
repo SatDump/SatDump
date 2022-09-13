@@ -155,7 +155,7 @@ namespace satdump
                         ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                        if (ImGui::Button(std::string("\uf00d##dataset" + layer.name + std::to_string(i)).c_str()))
+                        if (ImGui::Button(std::string(u8"\uf00d##dataset" + layer.name + std::to_string(i)).c_str()))
                         {
                             projection_layers.erase(projection_layers.begin() + i);
                             ImGui::EndGroup();
