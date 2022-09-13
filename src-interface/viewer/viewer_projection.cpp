@@ -159,6 +159,8 @@ namespace satdump
                         {
                             projection_layers.erase(projection_layers.begin() + i);
                             ImGui::EndGroup();
+                            ImGui::PopStyleColor();
+                            ImGui::PopStyleColor();
                             break;
                         }
                         ImGui::PopStyleColor();
