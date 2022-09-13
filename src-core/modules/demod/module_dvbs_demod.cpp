@@ -5,20 +5,14 @@
 #include "dvbs/dvbs_interleaving.h"
 #include "dvbs/dvbs_reedsolomon.h"
 #include "dvbs/dvbs_scrambling.h"
+#include "dvbs/dvbs_defines.h"
 
 namespace demod
 {
-#define VIT_BUF_SIZE (8192 * 1)
-
     DVBSDemodModule::DVBSDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : BaseDemodModule(input_file, output_file_hint, parameters),
           viterbi(0.15, 20, VIT_BUF_SIZE, {PHASE_0, PHASE_90})
     {
-        // Buffers
-        sym_buffer = new int8_t[d_buffer_size * 40];
-        post_vit_buffer = new uint8_t[VIT_BUF_SIZE * 2];
-        deframed_ts_frames = new uint8_t[VIT_BUF_SIZE * 2];
-
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
 
@@ -67,13 +61,36 @@ namespace demod
 
         // Clock recovery
         rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+
+        // Samples to soft
+        sts = std::make_shared<dvbs::DVBSymToSoftBlock>(rec->output_stream, d_buffer_size);
+        sts->syms_callback = [this](complex_t *buf, int size)
+        {
+            // Push into constellation
+            constellation.pushComplex(buf, size);
+
+            // Estimate SNR
+            snr_estimator.update(buf, size);
+            snr = snr_estimator.snr();
+
+            if (snr > peak_snr)
+                peak_snr = snr;
+
+            // Update freq
+            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
+        };
+
+        // Viterbi
+        vit = std::make_shared<dvbs::DVBSVitBlock>(sts->output_stream);
+        vit->viterbi = &viterbi;
+
+        // Deframer
+        def = std::make_shared<dvbs::DVBSDefra>(vit->output_stream);
+        def->ts_deframer = &ts_deframer;
     }
 
     DVBSDemodModule::~DVBSDemodModule()
     {
-        delete[] sym_buffer;
-        delete[] post_vit_buffer;
-        delete[] deframed_ts_frames;
     }
 
     void DVBSDemodModule::process()
@@ -100,6 +117,9 @@ namespace demod
         rrc->start();
         pll->start();
         rec->start();
+        sts->start();
+        vit->start();
+        def->start();
 
         uint8_t deinterleaved_frame[204 * 8];
 
@@ -110,70 +130,7 @@ namespace demod
         int dat_size = 0;
         while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
         {
-            dat_size = rec->output_stream->read();
-
-            if (dat_size <= 0)
-                continue;
-
-            // Push into constellation
-            constellation.pushComplex(rec->output_stream->readBuf, dat_size);
-
-            // Estimate SNR
-            snr_estimator.update(rec->output_stream->readBuf, dat_size);
-            snr = snr_estimator.snr();
-
-            if (snr > peak_snr)
-                peak_snr = snr;
-
-            // Update freq
-            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
-
-            for (int i = 0; i < dat_size; i++)
-            {
-                sym_buffer[in_sym_buffer + 0] = clamp(rec->output_stream->readBuf[i].real * 100);
-                sym_buffer[in_sym_buffer + 1] = clamp(rec->output_stream->readBuf[i].imag * 100);
-                in_sym_buffer += 2;
-            }
-
-            rec->output_stream->flush();
-
-            while (in_sym_buffer >= VIT_BUF_SIZE)
-            {
-                int size = viterbi.work(&sym_buffer[0], VIT_BUF_SIZE, post_vit_buffer);
-
-                if (in_sym_buffer - VIT_BUF_SIZE > 0)
-                    memmove(&sym_buffer[0], &sym_buffer[VIT_BUF_SIZE], in_sym_buffer - VIT_BUF_SIZE);
-                in_sym_buffer -= VIT_BUF_SIZE;
-
-#if 1
-                int frm_cnt = ts_deframer.work(post_vit_buffer, size, deframed_ts_frames);
-                for (int i = 0; i < frm_cnt; i++)
-                {
-                    uint8_t *current_frame = &deframed_ts_frames[i * 204 * 8];
-
-                    dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
-
-                    for (int i = 0; i < 8; i++)
-                        errors[i] = reed_solomon.decode(&deinterleaved_frame[204 * i]);
-
-                    scrambler.descramble(deinterleaved_frame);
-
-                    for (int i = 0; i < 8; i++)
-                    {
-                        if (output_data_type == DATA_FILE)
-                            data_out.write((char *)&deinterleaved_frame[204 * i], 188);
-                        else
-                            output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 188);
-                    }
-                }
-#else
-                if (output_data_type == DATA_FILE)
-                    data_out.write((char *)post_vit_buffer, size);
-                else
-                    output_fifo->write((uint8_t *)post_vit_buffer, size);
-#endif
-            }
-
+            // Handle outputs
             // Get rate
             std::string rate = "";
             if (viterbi.rate() == viterbi::RATE_1_2)
@@ -205,6 +162,46 @@ namespace demod
                 std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
+
+            // Read data
+            dat_size = def->output_stream->read();
+
+            if (dat_size <= 0)
+            {
+                def->output_stream->flush();
+                continue;
+            }
+
+#if 1
+            int frm_cnt = dat_size / (204 * 8);
+
+            for (int i = 0; i < frm_cnt; i++)
+            {
+                uint8_t *current_frame = &def->output_stream->readBuf[i * 204 * 8];
+
+                dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
+
+                for (int i = 0; i < 8; i++)
+                    errors[i] = reed_solomon.decode(&deinterleaved_frame[204 * i]);
+
+                scrambler.descramble(deinterleaved_frame);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)&deinterleaved_frame[204 * i], 204); // 188);
+                    else
+                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 204); // 188);
+                }
+            }
+
+#else
+            if (output_data_type == DATA_FILE)
+                data_out.write((char *)def->output_stream->readBuf, dat_size);
+            else
+                output_fifo->write((uint8_t *)def->output_stream->readBuf, dat_size);
+#endif
+            def->output_stream->flush();
         }
 
         logger->info("Demodulation finished");
@@ -221,7 +218,10 @@ namespace demod
         rrc->stop();
         pll->stop();
         rec->stop();
-        rec->output_stream->stopReader();
+        sts->stop();
+        vit->stop();
+        def->stop();
+        def->output_stream->stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();
