@@ -102,6 +102,11 @@ sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev      
 sudo apt install libglew-dev libglfw3-dev                                                               # Only if you want to build the GUI Version (optional)
 sudo apt install libzstd-dev                                                                            # Only if you want to build with ZIQ Recording compression (optional)
 
+# Optional, but recommended as it drastically 
+# increases speed of some operations.
+# Install OpenCL. Not required on MacOS
+sudo apt install ocl-icd-opencl-dev
+
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
 cd nng
