@@ -9,7 +9,7 @@ namespace geodetic
         void MercatorProjection::init(int img_width, int img_height /*, float tl_lon, float tl_lat, float br_lon, float br_lat*/)
         {
             scale_x = 0.5;
-            scale_y = 0.15 * (90.0 / 85.06);
+            scale_y = 0.15 * (90.0 / 85.06) * 1.003;
 
 #if 0
             // Setup Crop
