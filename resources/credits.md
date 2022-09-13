@@ -74,6 +74,7 @@ And additionally, on the UI side :
 - Mark Pentier
 - Sam (@sam210723)
 - Jpjonte
+- Piefadase
 
 **GNU**
 - 
