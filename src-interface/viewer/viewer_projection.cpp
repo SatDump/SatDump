@@ -122,18 +122,19 @@ namespace satdump
             ImGui::Separator(); ///////////////////////////////////////////////////
             
             ImGui::Text("Layers :");
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()-50);
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
                     ProjectionLayer &layer = projection_layers[i];
-                    ImGui::Selectable(layer.name.c_str(), &select, ImGuiSelectableFlags_None, ImVec2(ImGui::GetWindowSize().x-50, 20));
-                    ImGui::SameLine(ImGui::GetWindowWidth()-30);
+                    ImGui::Selectable(layer.name.c_str(), &select, ImGuiSelectableFlags_None, ImVec2(ImGui::GetWindowSize().x-40, 22));
+                    ImGui::SameLine(ImGui::GetWindowWidth()-40);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    ImGui::ProgressBar(layer.progress);
+                    //ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
+                    //ImGui::ProgressBar(layer.progress);
+                    FancySlider("", "Opacity", &layer.opacity, ImGui::GetWindowWidth()-21);
                     if (layer.type == 1)
                     {
                         if (ImGui::Button("Delete"))
