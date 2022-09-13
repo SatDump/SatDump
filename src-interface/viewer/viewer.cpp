@@ -157,12 +157,7 @@ namespace satdump
                             ImGui::TreePush();
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-<<<<<<< HEAD
                                 if (products_and_handlers[i].handler->shouldProject() && products_and_handlers[i].dataset_name == dataset_name)
-=======
-                            {
-                                if (products_and_handlers[i].handler->shouldProject())
->>>>>>> 8ec83e94ef9c525b5c0a3962686cf13dc587f0c3
                                 {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
