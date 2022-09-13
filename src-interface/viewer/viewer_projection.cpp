@@ -130,34 +130,50 @@ namespace satdump
                 {
                     ImGui::BeginGroup();
                     ProjectionLayer &layer = projection_layers[i];
-                    std::string label = layer.viewer_prods->products->instrument_name;
-                    if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
-                        label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
-
+                    std::string label;
+                    if (layer.type == 0)
+                    {
+                        label = layer.viewer_prods->products->instrument_name;
+                        if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
+                            label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
+                    }
+                    else
+                        label = layer.name;
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
                     ImGui::Text(label.c_str());
-                    if(ImGui::IsItemHovered()){
+                    if (ImGui::IsItemHovered() && layer.type == 0)
+                    {
                         ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
                     }
-                    ImGui::SameLine(ImGui::GetWindowWidth() - 40 * ui_scale);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - (layer.type == 1 ? 70 : 40) * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    ImGui::Image((void *)(intptr_t)layer.getPreview(), {50 * ui_scale, 50 * ui_scale});
-                    ImGui::SameLine();
-
-                    ImGui::BeginGroup();
-                    FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
-                    ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
-                    ImGui::EndGroup();
-
                     if (layer.type == 1)
                     {
-                        if (ImGui::Button("Delete"))
+                        // Closing button
+                        ImGui::SameLine();
+                        ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                        if (ImGui::Button(std::string("\uf00d##dataset" + layer.name + std::to_string(i)).c_str()))
                         {
                             projection_layers.erase(projection_layers.begin() + i);
+                            ImGui::EndGroup();
                             break;
                         }
+                        ImGui::PopStyleColor();
+                        ImGui::PopStyleColor();
+                    }
+                    if (layer.enabled)
+                    {
+                        // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
+                        ImGui::Image((void *)(intptr_t)layer.getPreview(), {50 * ui_scale, 50 * ui_scale});
+                        ImGui::SameLine();
+
+                        ImGui::BeginGroup();
+                        FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
+                        ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
+                        ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
                     ImGui::Separator();
