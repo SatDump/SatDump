@@ -182,8 +182,8 @@ namespace style
 
     void setFonts(std::string fontName)
     {
-        const ImWchar ranges[] = {0x20, 0xFFFF, 0};
-        ImFontConfig config;
+        static const ImWchar ranges[] = {0x20, 0xFFFF, 0};
+        static ImFontConfig config;
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f * ui_scale, &config, ranges);
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f * ui_scale, &config, ranges);
         hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f * ui_scale, &config, ranges);
