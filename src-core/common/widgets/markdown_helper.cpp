@@ -8,7 +8,13 @@ namespace widgets
         std::string url(data_.link, data_.linkLength);
         if (!data_.isImage)
         {
+#if defined(_WIN32)
+            system(std::string("explorer \"" + url + "\"").c_str());
+#elif defined(__APPLE__)
+            system(std::string("open " + url).c_str());
+#else
             system(std::string("xdg-open " + url).c_str());
+#endif
         }
     }
 
