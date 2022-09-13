@@ -122,12 +122,12 @@ namespace satdump
             ImGui::Separator(); ///////////////////////////////////////////////////
 
             ImGui::Text("Layers :");
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
 
-            if (ImGui::BeginListBox("##pipelineslistbox"))
+            if (ImGui::BeginListBox("##pipelineslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
+                    ImGui::PushID(i);
                     ImGui::BeginGroup();
                     ProjectionLayer &layer = projection_layers[i];
                     std::string label;
@@ -176,6 +176,29 @@ namespace satdump
                         ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
+
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    {
+                        // Set payload to carry the index of our item (could be anything)
+                        ImGui::SetDragDropPayload("LAYER_PROJECTION", &i, sizeof(int));
+
+                        ImGui::Text(label.c_str());
+                        ImGui::EndDragDropSource();
+                    }
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("LAYER_PROJECTION"))
+                        {
+                            IM_ASSERT(payload->DataSize == sizeof(int));
+                            int payload_n = *(const int *)payload->Data;
+                            ProjectionLayer pr = projection_layers[payload_n];
+                            projection_layers.erase(projection_layers.begin() + payload_n);
+                            auto it = projection_layers.begin();
+                            projection_layers.insert(it + i, pr);
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+                    ImGui::PopID();
                     ImGui::Separator();
                 }
                 ImGui::EndListBox();
@@ -246,8 +269,10 @@ namespace satdump
 
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;
-        for (ProjectionLayer &layer : projection_layers)
+        //for (ProjectionLayer &layer : projection_layers)
+        for (int i = projection_layers.size()-1; i >= 0; i--)
         {
+            ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
 
