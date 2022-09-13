@@ -92,7 +92,7 @@ namespace satdump
             ImGui::SameLine();
             ImGui::Text("Overlay");
             ImGui::EndGroup();
-            
+
             ImGui::Separator(); //////////////////////////////////////////////////////
 
             ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
@@ -120,7 +120,7 @@ namespace satdump
             }
 
             ImGui::Separator(); ///////////////////////////////////////////////////
-            
+
             ImGui::Text("Layers :");
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
             bool select = false;
@@ -128,13 +128,28 @@ namespace satdump
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
+                    ImGui::BeginGroup();
                     ProjectionLayer &layer = projection_layers[i];
-                    ImGui::Selectable(layer.name.c_str(), &select, ImGuiSelectableFlags_None, ImVec2(ImGui::GetWindowSize().x-40, 22));
-                    ImGui::SameLine(ImGui::GetWindowWidth()-40);
+                    std::string label = layer.viewer_prods->products->instrument_name;
+                    if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
+                        label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
+
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x + 4 * ui_scale, ImGui::GetCursorPos().y + 4 * ui_scale));
+                    ImGui::Text(label.c_str());
+                    if(ImGui::IsItemHovered()){
+                        ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
+                    }
+                    ImGui::SameLine(ImGui::GetWindowWidth() - 40 * ui_scale);
+                    ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    //ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    //ImGui::ProgressBar(layer.progress);
-                    FancySlider("", "Opacity", &layer.opacity, ImGui::GetWindowWidth()-21);
+                    // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
+                    
+                    ImGui::SameLine();
+                    ImGui::BeginGroup();
+                    FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 21 * ui_scale);
+                    ImGui::ProgressBar(layer.progress);
+                    ImGui::EndGroup();
+
                     if (layer.type == 1)
                     {
                         if (ImGui::Button("Delete"))
@@ -143,6 +158,7 @@ namespace satdump
                             break;
                         }
                     }
+                    ImGui::EndGroup();
                 }
                 ImGui::EndListBox();
             }

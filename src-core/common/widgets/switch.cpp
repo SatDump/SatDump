@@ -35,8 +35,8 @@ void FancySlider(const char * str_id, const char * label, float* v, int width){
     float height = ImGui::GetFrameHeight() * 0.85f;
 
     ImGui::SetNextItemWidth(width);
-    ImGui::DragFloat("##dragg", v, 100.0f/(float)width, 0, 100, "", ImGuiSliderFlags_AlwaysClamp);
-    draw_list->AddRectFilled(ImVec2(p.x + 2, p.y + ImGui::GetFrameHeight() * 0.15f), ImVec2(p.x + *v * (width - 4) / 100 + 2, p.y + height), IM_COL32(61, 133, 224, 255), 2);
+    ImGui::DragFloat("##str_id", v, 100.0f/(float)width, 0, 100, "", ImGuiSliderFlags_AlwaysClamp);
+    draw_list->AddRectFilled(ImVec2(p.x + 2*ui_scale, p.y + ImGui::GetFrameHeight() * 0.15f), ImVec2(p.x + *v * (width - 4*ui_scale) / 100 + 2*ui_scale, p.y + height), IM_COL32(61, 133, 224, 255), 2);
     draw_list->AddText(ImVec2(p.x + (width-ImGui::CalcTextSize(label).x)/2, p.y + ImGui::GetFrameHeight() * 0.15f), IM_COL32(255, 255, 255, 255), label);
     ImGui::EndGroup();
 }
