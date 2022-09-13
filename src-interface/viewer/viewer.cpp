@@ -28,7 +28,7 @@ namespace satdump
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/dataset.json");
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_idk_damnit/dataset.json");
 
-        // loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
+        loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
 
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/noaa_mhs_test/AMSU/product.cbor", "NOAA-19 HRPT");
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor", "MetOp-B AHRPT");
@@ -161,7 +161,7 @@ namespace satdump
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
                                 }
-                            }
+                            
 
                             { // Closing button
                                 ImGui::SameLine();

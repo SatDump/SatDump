@@ -81,8 +81,9 @@ namespace satdump
             ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
             */
 
-            ImGui::Text("Mode :");
             ImGui::BeginGroup();
+            ImGui::Text("Mode :  ");
+            ImGui::SameLine();
             ImGui::Text("Blend");
             ImGui::SameLine();
 
@@ -91,7 +92,7 @@ namespace satdump
             ImGui::SameLine();
             ImGui::Text("Overlay");
             ImGui::EndGroup();
-
+            
             ImGui::Separator(); //////////////////////////////////////////////////////
 
             ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
@@ -119,18 +120,19 @@ namespace satdump
             }
 
             ImGui::Separator(); ///////////////////////////////////////////////////
-
+            
             ImGui::Text("Layers :");
-
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
                     ProjectionLayer &layer = projection_layers[i];
-                    ImGui::Selectable(layer.name.c_str(), &select);
+                    ImGui::Selectable(layer.name.c_str(), &select, ImGuiSelectableFlags_None, ImVec2(ImGui::GetWindowSize().x-50, 20));
+                    ImGui::SameLine(ImGui::GetWindowWidth()-30);
+                    ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::ProgressBar(layer.progress);
                     if (layer.type == 1)
                     {
