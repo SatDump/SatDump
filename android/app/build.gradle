@@ -52,13 +52,6 @@ task copyPipelines(type: Copy) {
     include('**/*')
 }
 
-task copyFonts(type: Copy) {
-    description = 'Copy fonts...'
-    from '../../Roboto-Medium.ttf'
-    into 'assets/'
-    include('*')
-}
-
 task copyCfg(type: Copy) {
     description = 'Copy config...'
     from '../../satdump_cfg.json'
