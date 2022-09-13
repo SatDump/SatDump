@@ -123,7 +123,7 @@ namespace satdump
 
             ImGui::Text("Layers :");
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
-            bool select = false;
+
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
@@ -134,7 +134,7 @@ namespace satdump
                     if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
                         label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
 
-                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x + 4 * ui_scale, ImGui::GetCursorPos().y + 4 * ui_scale));
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
                     ImGui::Text(label.c_str());
                     if(ImGui::IsItemHovered()){
                         ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
@@ -143,11 +143,12 @@ namespace satdump
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    
+                    ImGui::Image((void *)(intptr_t)layer.getPreview(), {50 * ui_scale, 50 * ui_scale});
                     ImGui::SameLine();
+
                     ImGui::BeginGroup();
-                    FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 21 * ui_scale);
-                    ImGui::ProgressBar(layer.progress);
+                    FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
+                    ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
                     ImGui::EndGroup();
 
                     if (layer.type == 1)
@@ -159,6 +160,7 @@ namespace satdump
                         }
                     }
                     ImGui::EndGroup();
+                    ImGui::Separator();
                 }
                 ImGui::EndListBox();
             }
