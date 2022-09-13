@@ -41,6 +41,16 @@ namespace geodetic
             void init(int img_width, int img_height /*, float tl_lon, float tl_lat, float br_lon, float br_lat*/);
             void forward(float lon, float lat, int &x, int &y);
             void reverse(int x, int y, float &lon, float &lat);
+
+            void get_for_gpu_float(float *v) // 6 values
+            {
+                v[0] = image_height;
+                v[1] = image_width;
+                v[2] = actual_image_height;
+                v[3] = actual_image_width;
+                v[4] = scale_x;
+                v[5] = scale_y;
+            }
         };
     };
 };

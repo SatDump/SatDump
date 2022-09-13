@@ -9,30 +9,24 @@ namespace satdump
 {
     namespace reproj
     {
-#ifdef USE_OPENCL2
-        void reproject_geos_to_equ_GPU(image::Image<uint16_t> &source_img,
-                                       double geos_lon,
-                                       double geos_height,
-                                       double geos_hscale,
-                                       double geos_vscale,
-                                       double geos_xoff,
-                                       double geos_yoff,
-                                       bool geos_sweepx,
+#ifdef USE_OPENCL
+        void reproject_merc_to_equ_GPU(image::Image<uint16_t> &source_img,
+                                       //
                                        image::Image<uint16_t> &target_img,
                                        float equ_tl_lon, float equ_tl_lat,
                                        float equ_br_lon, float equ_br_lat,
                                        float *progress)
         {
             // Build GPU Kernel
-            cl_program proj_program = opencl::buildCLKernel(resources::getResourcePath("opencl/reproj_image_geos_to_equ_fp32.cl"));
+            cl_program proj_program = opencl::buildCLKernel(resources::getResourcePath("opencl/reproj_image_merc_to_equ_fp32.cl"));
 
             cl_int err = 0;
             auto &context = satdump::opencl::ocl_context;
             auto &device = satdump::opencl::ocl_device;
 
             // Projs for later
-            geodetic::projection::GEOProjector geo_proj(geos_lon, geos_height, source_img.width(), source_img.height(),
-                                                        geos_hscale, geos_vscale, geos_xoff, geos_yoff, geos_sweepx);
+            geodetic::projection::MercatorProjection merc_proj;
+            merc_proj.init(source_img.width(), source_img.height());
 
             // Now, run the actual OpenCL Kernel
             auto gpu_start = std::chrono::system_clock::now();
@@ -47,7 +41,7 @@ namespace satdump
 
                 // Settings Stuff
                 cl_mem buffer_img_sizes = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 5, NULL, &err);
-                cl_mem buffer_geos_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 17, NULL, &err);
+                cl_mem buffer_merc_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 6, NULL, &err);
                 cl_mem buffer_equ_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 4, NULL, &err);
 
                 // IMG Sizes
@@ -58,9 +52,9 @@ namespace satdump
                 img_sizes[3] = target_img.height();
                 img_sizes[4] = source_img.channels();
 
-                // GEOS stuff
-                float geo_settings[17];
-                geo_proj.get_for_gpu_float(geo_settings);
+                // Mercator stuff
+                float merc_settings[6];
+                merc_proj.get_for_gpu_float(merc_settings);
 
                 // Equirectangular stuff
                 float equ_settings[4];
@@ -76,15 +70,15 @@ namespace satdump
                 clEnqueueWriteBuffer(queue, buffer_src_img, true, 0, sizeof(uint16_t) * source_img.size(), source_img.data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_trg_img, true, 0, sizeof(uint16_t) * target_img.size(), target_img.data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_img_sizes, true, 0, sizeof(int) * 5, img_sizes, 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_geos_settings, true, 0, sizeof(float) * 17, geo_settings, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_merc_settings, true, 0, sizeof(float) * 6, merc_settings, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_equ_settings, true, 0, sizeof(float) * 4, equ_settings, 0, NULL, NULL);
 
                 // Init the kernel
-                cl_kernel proj_kernel = clCreateKernel(proj_program, "reproj_image_geos_to_equ", &err);
+                cl_kernel proj_kernel = clCreateKernel(proj_program, "reproj_image_merc_to_equ", &err);
                 clSetKernelArg(proj_kernel, 0, sizeof(cl_mem), &buffer_src_img);
                 clSetKernelArg(proj_kernel, 1, sizeof(cl_mem), &buffer_trg_img);
                 clSetKernelArg(proj_kernel, 2, sizeof(cl_mem), &buffer_img_sizes);
-                clSetKernelArg(proj_kernel, 3, sizeof(cl_mem), &buffer_geos_settings);
+                clSetKernelArg(proj_kernel, 3, sizeof(cl_mem), &buffer_merc_settings);
                 clSetKernelArg(proj_kernel, 4, sizeof(cl_mem), &buffer_equ_settings);
 
                 // Get proper workload size
@@ -107,7 +101,7 @@ namespace satdump
                 clReleaseMemObject(buffer_src_img);
                 clReleaseMemObject(buffer_trg_img);
                 clReleaseMemObject(buffer_img_sizes);
-                clReleaseMemObject(buffer_geos_settings);
+                clReleaseMemObject(buffer_merc_settings);
                 clReleaseMemObject(buffer_equ_settings);
                 clReleaseKernel(proj_kernel);
                 clReleaseProgram(proj_program);
@@ -169,19 +163,13 @@ namespace satdump
                                    float equ_br_lon, float equ_br_lat,
                                    float *progress)
         {
-#ifdef USE_OPENCL2
+#ifdef USE_OPENCL
             try
             {
-                logger->info("GEOS to Equ projection on GPU...");
+                logger->info("Mercator to Equ projection on GPU...");
                 satdump::opencl::setupOCLContext();
-                reproject_geos_to_equ_GPU(source_img,
-                                          geos_lon,
-                                          geos_height,
-                                          geos_hscale,
-                                          geos_vscale,
-                                          geos_xoff,
-                                          geos_yoff,
-                                          geos_sweepx,
+                reproject_merc_to_equ_GPU(source_img,
+                                          //
                                           target_img,
                                           equ_tl_lon, equ_tl_lat,
                                           equ_br_lon, equ_br_lat,
