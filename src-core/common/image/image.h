@@ -60,6 +60,7 @@ namespace image
         void crop(int x0, int x1);                                           // Crop an image region, x axis only
         Image<T> crop_to(int x0, int y0, int x1, int y1);                    // Crop an image region. Must be with x0 <= x1 and y0 <= y1, returning the output
         void resize(int width, int height);                                  // Resize image, using a simple pixel scaling attribution (not the best, but fast)
+        Image<T> resize_to(int width, int height);                           // Resize image, to another image
         void resize_bilinear(int width, int height, bool text_mode = false); // Resize image, using a bilinear algorithm
         void brightness_contrast_old(float brightness, float contrast);      // Brightness-Contrast algorithm from old Gimp versions
         void linear_invert();                                                // Invert the entire image
@@ -82,9 +83,9 @@ namespace image
 
     public:
         // PNG Interface
-        void save_png(std::string file, bool fast = true);                               // Save to a PNG file. Defaults to fast-saving with no filters
-        void load_png(std::string file, bool disableIndexing = false);                   // Load a PNG file (disableIndexing only applies to indexed color images)
-        void load_png(uint8_t *buffer, int size, bool disableIndexing = false);          // Load a PNG from memory (disableIndexing only applies to indexed color images)
+        void save_png(std::string file, bool fast = true);                      // Save to a PNG file. Defaults to fast-saving with no filters
+        void load_png(std::string file, bool disableIndexing = false);          // Load a PNG file (disableIndexing only applies to indexed color images)
+        void load_png(uint8_t *buffer, int size, bool disableIndexing = false); // Load a PNG from memory (disableIndexing only applies to indexed color images)
 
         // JPEG Interface
         void load_jpeg(std::string file); // Load a JPEG file

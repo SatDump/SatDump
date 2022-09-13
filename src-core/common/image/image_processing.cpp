@@ -213,6 +213,31 @@ namespace image
     }
 
     template <typename T>
+    Image<T> Image<T>::resize_to(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image<T> ret(width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < width; x++)
+            {
+                for (size_t y = 0; y < height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    ret.channel(c)[y * ret.width() + x] = channel(c)[yy * d_width + xx];
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    template <typename T>
     void Image<T>::resize_bilinear(int width, int height, bool text_mode)
     {
         int a, b, c, d, x, y, index;

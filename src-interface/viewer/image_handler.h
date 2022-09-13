@@ -72,6 +72,7 @@ namespace satdump
         bool shouldProject();
         void updateProjection(int width, int height, nlohmann::json settings, float *progess);
         image::Image<uint16_t> &getProjection();
+        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

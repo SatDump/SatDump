@@ -227,7 +227,7 @@ namespace satdump
                         if (products_and_handlers[i].marked_for_close)
                         {
                             products_and_handlers.erase(products_and_handlers.begin() + i);
-                            if (current_handler_id >= products_and_handlers.size())
+                            if (current_handler_id >= (int)products_and_handlers.size())
                                 current_handler_id = 0;
                             break;
                         }

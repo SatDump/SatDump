@@ -116,6 +116,7 @@ namespace satdump
                 {
                     ProjectionLayer &layer = projection_layers[i];
                     ImGui::Selectable(layer.name.c_str(), &select);
+                    ImGui::Image((void *)(intptr_t)layer.getPreview(), {100 * ui_scale, 100 * ui_scale});
                     ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
                     ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     ImGui::ProgressBar(layer.progress);

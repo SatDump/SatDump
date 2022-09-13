@@ -8,6 +8,7 @@
 #include "imgui/pfd/widget.h"
 #include "tree.h"
 #include "common/widgets/image_view.h"
+#include "imgui/imgui_image.h"
 
 namespace satdump
 {
@@ -31,6 +32,7 @@ namespace satdump
         virtual bool shouldProject() { return false; }  // Should it be projected?
         virtual void updateProjection(int /*width*/, int /*height*/, nlohmann::json /*settings*/, float * /*progess*/) {}
         virtual image::Image<uint16_t> &getProjection() { throw std::runtime_error("Did you check this could be projected!?"); }
+        virtual unsigned int getPreviewImageTexture() { return 0; }
 
         static std::string getID();
         static std::shared_ptr<ViewerHandler> getInstance();
@@ -106,6 +108,32 @@ namespace satdump
             float opacity = 100;
             bool enabled = true;
             float progress = 0;
+
+            unsigned int non_products_texid = 0;
+            unsigned int getPreview()
+            {
+                if (type == 0)
+                {
+                    return viewer_prods->handler->getPreviewImageTexture();
+                }
+                else if (type == 1)
+                {
+                    if (non_products_texid == 0)
+                    {
+                        non_products_texid = makeImageTexture();
+                        auto img = external->img.resize_to(100, 100).to8bits();
+                        uint32_t *tmp_rgba = new uint32_t[img.width() * img.height()];
+                        uchar_to_rgba(img.data(), tmp_rgba, img.width() * img.height(), img.channels());
+                        updateImageTexture(non_products_texid, tmp_rgba, img.width(), img.height());
+                        delete[] tmp_rgba;
+                    }
+                    return non_products_texid;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
         };
         std::vector<ProjectionLayer> projection_layers;
 
