@@ -45,9 +45,9 @@ namespace satdump
     {
         if (ImGui::CollapsingHeader("Vizualisation"))
         {
-            if (ImGui::RadioButton("\uf84c   Map", &selected_visualization_id, 0))
+            if (ImGui::RadioButton(u8"\uf84c   Map", &selected_visualization_id, 0))
                 update();
-            if (ImGui::RadioButton("\uf437   Graph", &selected_visualization_id, 1))
+            if (ImGui::RadioButton(u8"\uf437   Graph", &selected_visualization_id, 1))
                 update();
 
             if (selected_visualization_id == 0)

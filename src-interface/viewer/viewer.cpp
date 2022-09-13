@@ -114,7 +114,7 @@ namespace satdump
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-            if (ImGui::SmallButton(std::string("\uf00d##" + ph.dataset_name + label).c_str()))
+            if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
                 logger->warn("Closing products " + label);
                 ph.marked_for_close = true;
@@ -167,7 +167,7 @@ namespace satdump
 
                                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                                if (ImGui::SmallButton(std::string("\uf00d##dataset" + dataset_name).c_str()))
+                                if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
                                     logger->warn("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)

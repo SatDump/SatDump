@@ -98,7 +98,7 @@ struct FileSelectWidget
         : label(label), selection_text(selection_text), directory(directory)
     {
         id = "##filepathselection" + label;
-        btnid = "\ufc6e   Open##filepathselectionbutton" + label;
+        btnid = u8"\ufc6e   Open##filepathselectionbutton" + label;
     }
 
     std::string getPath()
