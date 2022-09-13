@@ -14,4 +14,5 @@ namespace style
     bool setDarkStyle(float dpi_scaling = 1.0f);
     void beginDisabled();
     void endDisabled();
+    void setFonts(std::string fontName);
 }

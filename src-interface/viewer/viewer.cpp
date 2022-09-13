@@ -28,8 +28,7 @@ namespace satdump
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/dataset.json");
         // loadDatasetInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_idk_damnit/dataset.json");
 
-        loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
-        loadDatasetInViewer("/home/zbyszek/Downloads/gac_test/dataset.json");
+        // loadDatasetInViewer("/home/zbyszek/Downloads/metopC_15-04_1125/dataset.json");
 
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/noaa_mhs_test/AMSU/product.cbor", "NOAA-19 HRPT");
         // loadProductsInViewer("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor", "MetOp-B AHRPT");
@@ -157,7 +156,7 @@ namespace satdump
                             ImGui::TreePush();
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i].handler->shouldProject() && products_and_handlers[i].dataset_name == dataset_name)
+                                if (products_and_handlers[i].handler->shouldProject())
                                 {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
@@ -192,9 +191,6 @@ namespace satdump
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
                             {
-                                //if (products_and_handlers[i].handler->shouldProject())
-                                    //SelectableColor(IM_COL32(186, 153, 38, 65));
-                                    
                                 if (products_and_handlers[i].dataset_name == dataset_name)
                                 {
                                     const float HorizontalTreeLineSize = 8.0f * ui_scale;                // chosen arbitrarily
@@ -202,9 +198,9 @@ namespace satdump
                                     const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
                                     drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
                                     verticalLineEnd.y = midpoint;
-                                    if (products_and_handlers[i].handler->shouldProject())
-                                        SelectableColor(IM_COL32(186, 153, 38, 65));
                                 }
+                                if (products_and_handlers[i].handler->shouldProject())
+                                    SelectableColor(IM_COL32(186, 153, 38, 65));
                             }
 
                             drawList->AddLine(verticalLineStart, verticalLineEnd, TreeLineColor);
