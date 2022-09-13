@@ -122,7 +122,7 @@ namespace satdump
             ImGui::Separator(); ///////////////////////////////////////////////////
             
             ImGui::Text("Layers :");
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()-50);
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
