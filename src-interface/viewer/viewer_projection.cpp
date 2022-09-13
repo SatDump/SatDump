@@ -7,7 +7,7 @@
 #include "core/style.h"
 #include "main_ui.h"
 #include "common/image/image_utils.h"
-
+#include "common/widgets/switch.h"
 namespace satdump
 {
     void ViewerApplication::drawProjectionPanel()
@@ -74,10 +74,24 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
+            /*
             ImGui::Text("Mode :");
             ImGui::RadioButton("Blend", &projections_mode_radio, 0);
             ImGui::SameLine();
             ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
+            */
+
+            ImGui::BeginGroup();
+            ImGui::Text("Mode :  ");
+            ImGui::SameLine();
+            ImGui::Text("Blend");
+            ImGui::SameLine();
+
+            ImGui::SetNextItemWidth(50);
+            ToggleButton("##projtog", &projections_mode_radio);
+            ImGui::SameLine();
+            ImGui::Text("Overlay");
+            ImGui::EndGroup();
 
             ImGui::Separator(); //////////////////////////////////////////////////////
 
@@ -108,18 +122,20 @@ namespace satdump
             ImGui::Separator(); ///////////////////////////////////////////////////
 
             ImGui::Text("Layers :");
-
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth());
             bool select = false;
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
                     ProjectionLayer &layer = projection_layers[i];
-                    ImGui::Selectable(layer.name.c_str(), &select);
+                    ImGui::Selectable(layer.name.c_str(), &select, ImGuiSelectableFlags_None, ImVec2(ImGui::GetWindowSize().x - 40, 22));
                     ImGui::Image((void *)(intptr_t)layer.getPreview(), {100 * ui_scale, 100 * ui_scale});
-                    ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                    ImGui::Checkbox(std::string("Show##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    ImGui::ProgressBar(layer.progress);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - 40);
+                    ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
+                    // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
+                    // ImGui::ProgressBar(layer.progress);
+                    FancySlider("", "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 21);
                     if (layer.type == 1)
                     {
                         if (ImGui::Button("Delete"))
