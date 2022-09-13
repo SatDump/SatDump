@@ -124,7 +124,7 @@ namespace satdump
                     source_ptr->set_frequency(100e6);
                 }
                 ImGui::SameLine();
-                if (ImGui::Button(" \uf94f "))
+                if (ImGui::Button(u8" \uf94f "))
                 {
                     sources = dsp::getAllAvailableSources();
 
