@@ -189,9 +189,9 @@ namespace demod
                 for (int i = 0; i < 8; i++)
                 {
                     if (output_data_type == DATA_FILE)
-                        data_out.write((char *)&deinterleaved_frame[204 * i], 204); // 188);
+                        data_out.write((char *)&deinterleaved_frame[204 * i], 188);
                     else
-                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 204); // 188);
+                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 188);
                 }
             }
 
