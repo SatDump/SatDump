@@ -6,44 +6,10 @@
   This is faster on the GPU :-)
 */
 
-float const E = 2.718281828459f;
-
-float logf(float x) {
-  if (x == 0.0f) {
-    return -INFINITY;
-  }
-
-  float p = 0.0f;
-  while (x < 0.5f) {
-    x *= E;
-    p += 1;
-  }
-
-  x -= 1.0f;
-  float r = 0.0f, c = -1.0f;
-  for (int i = 1; i < 8; ++i) {
-    c *= -x;
-    r += c / i;
-  }
-
-  return r - p;
-}
-
-float expf(float x) {
-  x = -x;
-  float r = 1.0f, c = 1.0f;
-  for (int i = 1; i < 8; ++i) {
-    c *= x / i;
-    r += c;
-  }
-
-  return 1.0f / r;
-}
-
 float powf(float base, float exponent) {
   if (base == 0.0f)
     return 0.0f;
-  return expf(exponent * logf(base));
+  return exp(exponent * log(base));
 }
 
 enum stereo_mode_t { S_POLE = 0, N_POLE = 1, OBLIQ = 2, EQUIT = 3 };

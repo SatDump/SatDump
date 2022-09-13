@@ -56,6 +56,8 @@ namespace satdump
             std::shared_ptr<Products> products;
             std::shared_ptr<ViewerHandler> handler;
             std::string dataset_name = "";
+
+            bool marked_for_close = false;
         };
 
         ImRect renderHandler(ProductsHandler &handler, int index);

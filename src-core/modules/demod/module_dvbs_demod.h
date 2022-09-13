@@ -7,6 +7,9 @@
 #include "common/dsp/delay_one_imag.h"
 #include "dvbs/viterbi_all.h"
 #include "common/codings/deframing/dvbs_ts_deframer.h"
+#include "dvbs/dvbs_syms_to_soft.h"
+#include "dvbs/dvbs_vit.h"
+#include "dvbs/dvbs_defra.h"
 
 namespace demod
 {
@@ -16,6 +19,9 @@ namespace demod
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
         std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
+        std::shared_ptr<dvbs::DVBSymToSoftBlock> sts;
+        std::shared_ptr<dvbs::DVBSVitBlock> vit;
+        std::shared_ptr<dvbs::DVBSDefra> def;
 
         float d_rrc_alpha = 0.35;
         int d_rrc_taps = 31;
@@ -26,14 +32,9 @@ namespace demod
         float d_clock_gain_mu = 8.7e-3;
         float d_clock_omega_relative_limit = 0.005f;
 
-        int in_sym_buffer = 0;
-        int8_t *sym_buffer;
-
         viterbi::Viterbi_DVBS viterbi;
-        uint8_t *post_vit_buffer;
 
         deframing::DVBS_TS_Deframer ts_deframer;
-        uint8_t *deframed_ts_frames;
 
         int errors[8];
 

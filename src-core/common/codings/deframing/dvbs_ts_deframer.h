@@ -19,7 +19,7 @@ namespace deframing
     public:
         const uint8_t TS_ASM = 0x47;
         const uint8_t TS_ASM_INV = 0xB8;
-        const int TS_SIZE = 1632 * 12; // RS-Encoded
+        const int TS_SIZE = 1632 * 8; // RS-Encoded
 
     private:
         // int d_state = STATE_NOSYNC; // Default state

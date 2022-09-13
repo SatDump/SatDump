@@ -107,6 +107,23 @@ namespace satdump
         if (ImGui::IsItemClicked())
             current_handler_id = index;
 
+        if (index == current_handler_id && ph.dataset_name == "")
+        { // Closing button
+            ImGui::SameLine();
+            ImGui::Text("  ");
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            if (ImGui::SmallButton(std::string("\uf00d##" + ph.dataset_name + label).c_str()))
+            {
+                logger->warn("Closing products " + label);
+                ph.marked_for_close = true;
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+        }
+
         ImRect rect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 
         if (index == current_handler_id)
@@ -140,11 +157,35 @@ namespace satdump
                             ImGui::TreePush();
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
+<<<<<<< HEAD
                                 if (products_and_handlers[i].handler->shouldProject() && products_and_handlers[i].dataset_name == dataset_name)
+=======
+                            {
+                                if (products_and_handlers[i].handler->shouldProject())
+>>>>>>> 8ec83e94ef9c525b5c0a3962686cf13dc587f0c3
                                 {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
                                 }
+                            }
+
+                            { // Closing button
+                                ImGui::SameLine();
+                                ImGui::Text("  ");
+                                ImGui::SameLine();
+
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                                if (ImGui::SmallButton(std::string("\uf00d##dataset" + dataset_name).c_str()))
+                                {
+                                    logger->warn("Closing datset " + dataset_name);
+                                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                                        if (products_and_handlers[i].dataset_name == dataset_name)
+                                            products_and_handlers[i].marked_for_close = true;
+                                }
+                                ImGui::PopStyleColor();
+                                ImGui::PopStyleColor();
+                            }
 
                             const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
                             const float SmallOffsetX = 11.0f;                          // for now, a hardcoded value; should take into account tree indent size
@@ -186,6 +227,18 @@ namespace satdump
                             if (products_and_handlers[i].dataset_name == "")
                                 renderHandler(products_and_handlers[i], i);
                         ImGui::TreePop();
+                    }
+
+                    // Handle deletion if required
+                    for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                    {
+                        if (products_and_handlers[i].marked_for_close)
+                        {
+                            products_and_handlers.erase(products_and_handlers.begin() + i);
+                            if (current_handler_id >= products_and_handlers.size())
+                                current_handler_id = 0;
+                            break;
+                        }
                     }
 
                     ImGui::Separator();
