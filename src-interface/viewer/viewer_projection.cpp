@@ -517,7 +517,7 @@ namespace satdump
                 if (prjext.name == lay.name && &prjext == lay.external)
                     contains = true;
 
-                if (prjext.name == "OSM")
+                if (prjext.name == "Tile Map")
                     already_has_osm_layer = true;
             }
 
