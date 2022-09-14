@@ -23,7 +23,7 @@
 #include "common/tile_map/map.h"
 #include "init.h"
 
-int main(int argc, char *argv[])
+int main(/*int argc, char *argv[]*/)
 {
     initLogger();
 

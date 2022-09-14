@@ -9,7 +9,7 @@
 #include "common/projection/gcp_compute/gcp_compute.h"
 #include "common/projection/projs/equirectangular.h"
 
-int main(int argc, char *argv[])
+int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
