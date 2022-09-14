@@ -12,7 +12,7 @@ namespace satdump
 {
     void ViewerApplication::drawProjectionPanel()
     {
-        if (ImGui::CollapsingHeader("Projection"))
+        if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Output image : ");
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.40f);
