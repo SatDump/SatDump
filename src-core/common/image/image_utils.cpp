@@ -11,9 +11,9 @@ namespace image
         {
             for (size_t i = 0; i < height * width; i++)
             {
-                if (img1.channel(c)[i] == 0)
+                if ((img1.channels() == 3 ? (uint64_t)img1.channel(0)[i] + (uint64_t)img1.channel(1)[i] + (uint64_t)img1.channel(2)[i] : img1.channel(c)[i]) == 0)
                     img_b.channel(c)[i] = img2.channel(c)[i];
-                else if (img2.channel(c)[i] == 0)
+                if ((img2.channels() == 3 ? (uint64_t)img2.channel(0)[i] + (uint64_t)img2.channel(1)[i] + (uint64_t)img2.channel(2)[i] : img2.channel(c)[i]) == 0)
                     img_b.channel(c)[i] = img1.channel(c)[i];
                 else
                     img_b.channel(c)[i] = (size_t(img1.channel(c)[i]) + size_t(img2.channel(c)[i])) / 2;

@@ -158,6 +158,10 @@ namespace satdump
                         if (ImGui::Button(std::string(u8"\uf00d##dataset" + layer.name + std::to_string(i)).c_str()))
                         {
                             projection_layers.erase(projection_layers.begin() + i);
+                            for (int f = 0; f < (int)projections_external_sources.size(); f++)
+                                if (projections_external_sources[f].name == projection_layers[i].name &&
+                                    &projections_external_sources[f] == projection_layers[i].external)
+                                    projections_external_sources.erase(projections_external_sources.begin() + f);
                             ImGui::EndGroup();
                             ImGui::PopStyleColor();
                             ImGui::PopStyleColor();
@@ -272,8 +276,8 @@ namespace satdump
 
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;
-        //for (ProjectionLayer &layer : projection_layers)
-        for (int i = projection_layers.size()-1; i >= 0; i--)
+        // for (ProjectionLayer &layer : projection_layers)
+        for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
@@ -368,6 +372,7 @@ namespace satdump
 
     void ViewerApplication::refreshProjectionLayers()
     {
+#if 0
         projection_layers.clear();
 
         for (ExternalProjSource &prjext : projections_external_sources)
@@ -379,6 +384,68 @@ namespace satdump
             {
                 std::string label = products_and_handlers[i].products->instrument_name;
                 projection_layers.push_back({label, 0, &products_and_handlers[i], nullptr});
+            }
+        }
+#endif
+
+        // Check for *new* ext layers
+        for (ExternalProjSource &prjext : projections_external_sources)
+        {
+            bool contains = false;
+            for (ProjectionLayer &lay : projection_layers)
+            {
+                if (lay.type != 1)
+                    continue;
+
+                if (prjext.name == lay.name && &prjext == lay.external)
+                    contains = true;
+            }
+
+            if (!contains)
+                projection_layers.push_back({prjext.name, 1, nullptr, &prjext});
+        }
+
+        // Check for *new* products layers
+        for (int i = 0; i < (int)products_and_handlers.size(); i++)
+        {
+            if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
+            {
+                std::string label = products_and_handlers[i].products->instrument_name;
+
+                bool contains = false;
+                for (ProjectionLayer &lay : projection_layers)
+                {
+                    if (lay.type != 0)
+                        continue;
+
+                    if (label == lay.name && &products_and_handlers[i] == lay.viewer_prods)
+                        contains = true;
+                }
+
+                if (!contains)
+                    projection_layers.push_back({label, 0, &products_and_handlers[i], nullptr});
+            }
+        }
+
+    recheck:
+        // Check for products layers to delete
+        for (int i = 0; i < (int)projection_layers.size(); i++)
+        {
+            ProjectionLayer &lay = projection_layers[i];
+
+            if (lay.type != 0)
+                continue;
+
+            bool contains = false;
+            for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
+                    if (products_and_handlers[i].products->instrument_name == lay.name && &products_and_handlers[i] == lay.viewer_prods)
+                        contains = true;
+
+            if (!contains)
+            {
+                projection_layers.erase(projection_layers.begin() + i);
+                goto recheck;
             }
         }
     }
