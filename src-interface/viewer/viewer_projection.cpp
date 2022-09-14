@@ -66,6 +66,9 @@ namespace satdump
             }
 
             ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
             if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
@@ -76,7 +79,7 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
-            if((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if ((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("No layers loaded!");
             if (projections_are_generating || projection_layers.size() == 0)
                 style::endDisabled();
@@ -128,80 +131,101 @@ namespace satdump
 
             ImGui::Separator(); //////////////////////////////////////////////////////
 
-            if (is_opening_layer)
-                style::beginDisabled();
-
-            ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-            ImGui::RadioButton("Other", &selected_external_type, 1);
-            if (already_has_osm_layer)
-                style::beginDisabled();
-            ImGui::RadioButton("OSM", &selected_external_type, 2);
-            if (already_has_osm_layer)
-                style::endDisabled();
-
-            if (selected_external_type == 2)
-            {
-                ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
-            }
-            else
-            {
-                ImGui::InputText("Name", &projection_new_layer_name);
-                projection_new_layer_file.draw();
-                if (selected_external_type == 1)
-                    projection_new_layer_cfg.draw();
-            }
-
-            if (ImGui::Button("Add layer") && (selected_external_type == 2 || projection_new_layer_file.file_valid))
-            {
-                auto genfun = [this](int)
-                {
-                    is_opening_layer = true;
-
-                    ExternalProjSource new_layer_cfg;
-                    if (selected_external_type == 2)
-                        new_layer_cfg.name = "OSM";
-                    else
-                        new_layer_cfg.name = projection_new_layer_name;
-
-                    if (selected_external_type == 1)
-                        new_layer_cfg.path = projection_new_layer_cfg.getPath();
-                    else if (selected_external_type == 2)
-                        new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
-                    else
-                        new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-
-                    if (selected_external_type == 2)
-                    {
-                        logger->info("Generating OSM map");
-                        tileMap tile_map;
-                        new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
-                    }
-                    else
-                        new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
-
-                    projections_external_sources.push_back(new_layer_cfg);
-
-                    if (selected_external_type == 2)
-                        selected_external_type = 0;
-
-                    projections_should_refresh = true;
-                    is_opening_layer = false;
-                };
-                ui_thread_pool.push(genfun);
-            }
-
-            if (is_opening_layer)
-                style::endDisabled();
-
             if (projections_should_refresh) // Refresh in the UI thread!
             {
                 refreshProjectionLayers();
                 projections_should_refresh = false;
             }
 
-            ImGui::Separator(); ///////////////////////////////////////////////////
-
             ImGui::Text("Layers :");
+
+            ImGui::SameLine(ImGui::GetWindowWidth() - 85 * ui_scale);
+
+            if (is_opening_layer)
+                style::beginDisabled();
+
+            if (ImGui::Button("Add Layer##button"))
+            {
+                ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
+            }
+
+            if (is_opening_layer)
+                style::endDisabled();
+
+            {
+                if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
+                    if (already_has_osm_layer)
+                        style::beginDisabled();
+                    ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
+                    if (already_has_osm_layer)
+                    {
+                        ImGui::SetTooltip("Only one Tile Map layer can be loaded at a time!");
+                        style::endDisabled();
+                    }
+                    ImGui::RadioButton("Other", &selected_external_type, 1);
+
+                    if (selected_external_type == 2)
+                    {
+                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
+                    }
+                    else
+                    {
+                        ImGui::InputText("Name", &projection_new_layer_name);
+                        projection_new_layer_file.draw("Input Image");
+                        if (selected_external_type == 1)
+                            projection_new_layer_cfg.draw("Projection Config File");
+                    }
+
+                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || projection_new_layer_file.file_valid))
+                    {
+                        auto genfun = [this](int)
+                        {
+                            is_opening_layer = true;
+
+                            ExternalProjSource new_layer_cfg;
+                            if (selected_external_type == 2)
+                                new_layer_cfg.name = "Tile Map";
+                            else
+                                new_layer_cfg.name = projection_new_layer_name;
+
+                            if (selected_external_type == 1)
+                                new_layer_cfg.path = projection_new_layer_cfg.getPath();
+                            else if (selected_external_type == 2)
+                                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                            else
+                                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+
+                            if (selected_external_type == 2)
+                            {
+                                logger->info("Generating tile map");
+                                tileMap tile_map(mapurl);
+                                new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
+                            }
+                            else
+                                new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+
+                            projections_external_sources.push_back(new_layer_cfg);
+
+                            if (selected_external_type == 2)
+                                selected_external_type = 0;
+
+                            projections_should_refresh = true;
+                            is_opening_layer = false;
+                        };
+                        ui_thread_pool.push(genfun);
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+
+                    if (ImGui::Button("Cancel"))
+                        ImGui::CloseCurrentPopup();
+
+                    ImGui::EndPopup();
+                }
+            }
 
             if (ImGui::BeginListBox("##pipelineslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
@@ -301,7 +325,7 @@ namespace satdump
 
             if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
-            if (ImGui::Button("Generate Projection"))
+            if (ImGui::Button("Generate Projection##layers"))
             {
                 ui_thread_pool.push([this](int)
                                     { 
@@ -315,7 +339,11 @@ namespace satdump
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
         {
             ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::InputFloat("Cities Scale##Projs", &projections_cities_scale);
         }
     }
@@ -417,7 +445,7 @@ namespace satdump
         if (projections_draw_map_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[3] = {0, 65535, 0};
+            unsigned short color[3] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f)};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            projected_image_result,
                                            color,
@@ -428,7 +456,7 @@ namespace satdump
         if (projections_draw_cities_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[3] = {65535, 0, 0};
+            unsigned short color[3] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f)};
             map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                               projected_image_result,
                                               color,

@@ -153,6 +153,9 @@ namespace satdump
         bool projections_draw_cities_overlay = true;
         float projections_cities_scale = 0.5;
 
+        ImVec4 color_borders = {0, 1, 0, 1};
+        ImVec4 color_cities = {1, 0, 0, 1};
+
         int projections_current_selected_proj = 0;
         /////////////
         float projections_equirectangular_tl_lon = -180;
@@ -172,6 +175,8 @@ namespace satdump
 
         bool projections_are_generating = false;
         void generateProjectionImage();
+
+        std::string mapurl = "http://tile.openstreetmap.org/";
 
         // Settings
         int projections_image_width = 2048;

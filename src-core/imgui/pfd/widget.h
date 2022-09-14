@@ -22,7 +22,7 @@ struct FileSelectWidget
     bool waiting_for_res = false;
 #endif
 
-    bool draw()
+    bool draw(std::string hint = "")
     {
         bool changed = false;
 
@@ -31,7 +31,7 @@ struct FileSelectWidget
 
         if (!file_valid)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-        changed |= ImGui::InputText(id.c_str(), &path);
+        changed |= ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
         if (!file_valid)
             ImGui::PopStyleColor();
         ImGui::SameLine();
