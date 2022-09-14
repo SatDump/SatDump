@@ -155,11 +155,12 @@ namespace satdump
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                             ImGui::TreePush();
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i].dataset_name == dataset_name && products_and_handlers[i].handler->shouldProject()){
+                                if (products_and_handlers[i].dataset_name == dataset_name && products_and_handlers[i].handler->shouldProject())
+                                {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
                                 }
-                            
+
                             { // Closing button
                                 ImGui::SameLine();
                                 ImGui::Text("  ");
