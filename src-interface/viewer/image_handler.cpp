@@ -87,7 +87,7 @@ namespace satdump
             if (map_overlay)
             {
                 logger->info("Drawing map overlay...");
-                unsigned short color[3] = {0, 65535, 0};
+                unsigned short color[3] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f)};
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                current_image,
                                                color,
@@ -97,7 +97,7 @@ namespace satdump
             if (cities_overlay)
             {
                 logger->info("Drawing map overlay...");
-                unsigned short color[3] = {65535, 0, 0};
+                unsigned short color[3] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f)};
                 map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                                   current_image,
                                                   color,
@@ -369,8 +369,12 @@ namespace satdump
             {
                 if (ImGui::Checkbox("Borders", &map_overlay))
                     asyncUpdate();
+                ImGui::SameLine();
+                ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                 if (ImGui::Checkbox("Cities", &cities_overlay))
                     asyncUpdate();
+                ImGui::SameLine();
+                ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                 ImGui::SliderFloat("Cities Scale", &cities_scale, 0.1, 10);
             }
 
