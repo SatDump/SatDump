@@ -49,7 +49,7 @@ namespace satdump
         virtual void drawUI();
 
         bool dragging_panel = false;
-        float panel_ratio = 0.2;
+        float panel_ratio = 0.23;
 
         FileSelectWidget select_dataset_dialog = FileSelectWidget("Dataset", "Select Dataset");
         FileSelectWidget select_products_dialog = FileSelectWidget("Products", "Select Products");

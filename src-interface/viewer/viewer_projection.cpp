@@ -14,45 +14,78 @@ namespace satdump
     {
         if (ImGui::CollapsingHeader("Projection"))
         {
+            ImGui::Text("Output image : ");
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.40f);
+            ImGui::InputInt("##width", &projections_image_width, 0);
+            ImGui::SameLine();
+            ImGui::Text(u8"\uea76");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.40f);
+            ImGui::InputInt("##height", &projections_image_height, 0);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.96f);
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "Mercator\0"
                                                                              "Stereo\0"
-                                                                             "Satellite\0");
-            ImGui::InputInt("Image Width", &projections_image_width);
-            ImGui::InputInt("Image Height", &projections_image_height);
+                                                                             "Satellite (TPERS)\0");
 
             if (projections_current_selected_proj == 0)
             {
-                ImGui::Text("Top Left :");
-                ImGui::InputFloat("Lon##tl", &projections_equirectangular_tl_lon);
+                ImGui::Text("Top Left Coordinates :");
                 ImGui::InputFloat("Lat##tl", &projections_equirectangular_tl_lat);
-                ImGui::Text("Bottom Right :");
-                ImGui::InputFloat("Lon##br", &projections_equirectangular_br_lon);
+                ImGui::InputFloat("Lon##tl", &projections_equirectangular_tl_lon);
+                ImGui::Spacing();
+                ImGui::Text("Bottom Right Coordinates :");
                 ImGui::InputFloat("Lat##br", &projections_equirectangular_br_lat);
+                ImGui::InputFloat("Lon##br", &projections_equirectangular_br_lon);
             }
             else if (projections_current_selected_proj == 1)
             {
             }
             else if (projections_current_selected_proj == 2)
             {
-                ImGui::Text("Center :");
-                ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
+                ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
+                ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
+                ImGui::Spacing();
                 ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
             }
             else if (projections_current_selected_proj == 3)
             {
-                ImGui::Text("Center :");
-                ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
-                ImGui::InputFloat("Alt (kM)##tpers", &projections_tpers_alt);
+                ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                ImGui::Spacing();
+                ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
             }
 
-            if (ImGui::Button("Save"))
+            ImGui::Spacing();
+            if (projections_are_generating || projection_layers.size() == 0)
+                style::beginDisabled();
+            if (ImGui::Button("Generate Projection"))
             {
-                std::string default_name = "projection.png";
+                ui_thread_pool.push([this](int)
+                                    { 
+                    logger->info("Update projection...");
+                    generateProjectionImage();
+                    logger->info("Done"); });
+            }
+            if((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("No layers loaded!");
+            if (projections_are_generating || projection_layers.size() == 0)
+                style::endDisabled();
+
+            ImGui::Spacing();
+
+            if (ImGui::Button("Save Projected Image"))
+            {
+                std::string default_name = ".\\projection.png";
 
 #ifndef __ANDROID__
                 auto result = pfd::save_file("Save Projection", default_name, {"*.png"});
@@ -221,7 +254,7 @@ namespace satdump
 
             if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
-            if (ImGui::Button("GENERATE"))
+            if (ImGui::Button("Generate Projection"))
             {
                 ui_thread_pool.push([this](int)
                                     { 
