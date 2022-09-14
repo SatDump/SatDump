@@ -132,12 +132,6 @@ namespace satdump
 
             ImGui::Separator(); //////////////////////////////////////////////////////
 
-            if (projections_should_refresh) // Refresh in the UI thread!
-            {
-                refreshProjectionLayers();
-                projections_should_refresh = false;
-            }
-
             ImGui::Text("Layers :");
 
             ImGui::SameLine(ImGui::GetWindowWidth() - 85 * ui_scale);
@@ -211,7 +205,10 @@ namespace satdump
                             projections_external_sources.push_back(new_layer_cfg);
 
                             if (selected_external_type == 2)
+                            {
+                                already_has_osm_layer = true;
                                 selected_external_type = 0;
+                            }
 
                             projections_should_refresh = true;
                             is_opening_layer = false;
@@ -346,6 +343,12 @@ namespace satdump
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::InputFloat("Cities Scale##Projs", &projections_cities_scale);
+        }
+
+        if (projections_should_refresh) // Refresh in the UI thread!
+        {
+            refreshProjectionLayers();
+            projections_should_refresh = false;
         }
     }
 
@@ -489,36 +492,23 @@ namespace satdump
 
     void ViewerApplication::refreshProjectionLayers()
     {
-#if 0
-        projection_layers.clear();
-
-        for (ExternalProjSource &prjext : projections_external_sources)
-            projection_layers.push_back({prjext.name, 1, nullptr, &prjext});
-
-        for (int i = 0; i < (int)products_and_handlers.size(); i++)
-        {
-            if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
-            {
-                std::string label = products_and_handlers[i].products->instrument_name;
-                projection_layers.push_back({label, 0, &products_and_handlers[i], nullptr});
-            }
-        }
-#endif
-
         // Check for *new* ext layers
         for (ExternalProjSource &prjext : projections_external_sources)
         {
             bool contains = false;
             for (ProjectionLayer &lay : projection_layers)
             {
+                if (prjext.name == "Tile Map")
+                {
+                    already_has_osm_layer = true;
+                    contains = true;
+                }
+
                 if (lay.type != 1)
                     continue;
 
                 if (prjext.name == lay.name && &prjext == lay.external)
                     contains = true;
-
-                if (prjext.name == "Tile Map")
-                    already_has_osm_layer = true;
             }
 
             if (!contains)
