@@ -161,6 +161,7 @@ namespace satdump
                             ImGui::EndGroup();
                             ImGui::PopStyleColor();
                             ImGui::PopStyleColor();
+                            ImGui::PopID();
                             break;
                         }
                         ImGui::PopStyleColor();
