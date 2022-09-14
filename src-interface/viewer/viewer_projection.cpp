@@ -156,7 +156,8 @@ namespace satdump
                     ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
                     if (already_has_osm_layer)
                     {
-                        ImGui::SetTooltip("Only one Tile Map layer can be loaded at a time!");
+                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                            ImGui::SetTooltip("Only one Tile Map layer can be loaded at a time!");
                         style::endDisabled();
                     }
                     ImGui::RadioButton("Other", &selected_external_type, 1);
