@@ -33,6 +33,7 @@ namespace satdump
         virtual void updateProjection(int /*width*/, int /*height*/, nlohmann::json /*settings*/, float * /*progess*/) {}
         virtual image::Image<uint16_t> &getProjection() { throw std::runtime_error("Did you check this could be projected!?"); }
         virtual unsigned int getPreviewImageTexture() { return 0; }
+        virtual void setShouldProject(bool) {}
 
         static std::string getID();
         static std::shared_ptr<ViewerHandler> getInstance();

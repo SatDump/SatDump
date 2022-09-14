@@ -145,23 +145,31 @@ namespace satdump
                     {
                         ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
                     }
-                    ImGui::SameLine(ImGui::GetWindowWidth() - (layer.type == 1 ? 70 : 40) * ui_scale);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    if (layer.type == 1)
+                    // if (layer.type == 1)
                     {
                         // Closing button
                         ImGui::SameLine();
                         ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                        if (ImGui::Button(std::string(u8"\uf00d##dataset" + layer.name + std::to_string(i)).c_str()))
+                        if (ImGui::Button(std::string(u8"\uf00d##layerdelete" + layer.name + std::to_string(i)).c_str()))
                         {
-                            projection_layers.erase(projection_layers.begin() + i);
-                            for (int f = 0; f < (int)projections_external_sources.size(); f++)
-                                if (projections_external_sources[f].name == projection_layers[i].name &&
-                                    &projections_external_sources[f] == projection_layers[i].external)
-                                    projections_external_sources.erase(projections_external_sources.begin() + f);
+                            if (layer.type == 1)
+                            {
+                                projection_layers.erase(projection_layers.begin() + i);
+                                for (int f = 0; f < (int)projections_external_sources.size(); f++)
+                                    if (projections_external_sources[f].name == projection_layers[i].name &&
+                                        &projections_external_sources[f] == projection_layers[i].external)
+                                        projections_external_sources.erase(projections_external_sources.begin() + f);
+                            }
+                            else if (layer.type == 0)
+                            {
+                                layer.viewer_prods->handler->setShouldProject(false);
+                                refreshProjectionLayers();
+                            }
                             ImGui::EndGroup();
                             ImGui::PopStyleColor();
                             ImGui::PopStyleColor();
