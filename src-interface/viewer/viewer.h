@@ -100,6 +100,11 @@ namespace satdump
         std::vector<ExternalProjSource> projections_external_sources;
         image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress);
 
+        int projection_osm_zoom = 3;
+        bool is_opening_layer = false;
+        bool projections_should_refresh = false;
+        bool already_has_osm_layer = false;
+
         struct ProjectionLayer
         {
             std::string name;
