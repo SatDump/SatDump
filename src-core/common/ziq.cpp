@@ -57,9 +57,8 @@ namespace ziq
         zstd_input = {input, (unsigned long long)size, 0};
         zstd_output = {output_compressed, max_buffer_size, 0};
 
-        int remainaining = size;
         while (zstd_input.pos < zstd_input.size)
-            remainaining = ZSTD_compressStream2(zstd_ctx, &zstd_output, &zstd_input, ZSTD_e_continue);
+            ZSTD_compressStream2(zstd_ctx, &zstd_output, &zstd_input, ZSTD_e_continue);
 
         stream.write((char *)output_compressed, zstd_output.pos);
 

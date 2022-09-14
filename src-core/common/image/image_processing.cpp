@@ -222,9 +222,9 @@ namespace image
 
         for (int c = 0; c < d_channels; c++)
         {
-            for (size_t x = 0; x < width; x++)
+            for (size_t x = 0; x < (size_t)width; x++)
             {
-                for (size_t y = 0; y < height; y++)
+                for (size_t y = 0; y < (size_t)height; y++)
                 {
                     int xx = floor(double(x) * x_scale);
                     int yy = floor(double(y) * y_scale);
