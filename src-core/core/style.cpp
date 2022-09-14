@@ -24,7 +24,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        setFonts(resources::getResourcePath("fonts/Roboto-Medium.tff"));
+        setFonts(resources::getResourcePath("fonts/font.ttf"));
 
         ImGui::StyleColorsDark();
         // ImGui::StyleColorsLight();
@@ -42,7 +42,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        setFonts(resources::getResourcePath("fonts/Roboto-Medium.ttf"));
+        setFonts(resources::getResourcePath("fonts/font.ttf"));
 
         ImGui::StyleColorsLight();
 
@@ -109,7 +109,7 @@ namespace style
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
 
-        setFonts(resources::getResourcePath("fonts/Roboto-Medium.ttf"));
+        setFonts(resources::getResourcePath("fonts/font.ttf"));
 
         ImGui::StyleColorsDark();
 
@@ -182,14 +182,10 @@ namespace style
 
     void setFonts(std::string fontName)
     {
-        static const ImWchar icons_ranges[] = {0xe000, 0xfd46, 0};
+        const ImWchar ranges[] = {0x20, 0xFFFF, 0};
         ImFontConfig config;
-        config.MergeMode = true;
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f * ui_scale);
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 16.0f * ui_scale, &config, icons_ranges);
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f * ui_scale);
-        // bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 45.0f, &config, icons_ranges);
-        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f * ui_scale);
-        // hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/3270-Medium Nerd Font Complete.ttf").c_str(), 128.0f, &config, icons_ranges);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 16.0f * ui_scale, &config, ranges);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 45.0f * ui_scale, &config, ranges);
+        hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str(), 128.0f * ui_scale, &config, ranges);
     }
 }
