@@ -69,6 +69,7 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
+            bool beginGenHide = projections_are_generating;
             if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
@@ -81,7 +82,7 @@ namespace satdump
             }
             if ((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("No layers loaded!");
-            if (projections_are_generating || projection_layers.size() == 0)
+            if ((projections_are_generating && beginGenHide) || projection_layers.size() == 0)
                 style::endDisabled();
 
             ImGui::Spacing();
