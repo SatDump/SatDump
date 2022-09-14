@@ -128,28 +128,75 @@ namespace satdump
 
             ImGui::Separator(); //////////////////////////////////////////////////////
 
+            if (is_opening_layer)
+                style::beginDisabled();
+
             ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-            ImGui::SameLine();
             ImGui::RadioButton("Other", &selected_external_type, 1);
+            if (already_has_osm_layer)
+                style::beginDisabled();
+            ImGui::RadioButton("OSM", &selected_external_type, 2);
+            if (already_has_osm_layer)
+                style::endDisabled();
 
-            ImGui::InputText("Name", &projection_new_layer_name);
-            projection_new_layer_file.draw();
-            if (selected_external_type == 1)
-                projection_new_layer_cfg.draw();
-
-            if (ImGui::Button("Add layer") && projection_new_layer_file.file_valid)
+            if (selected_external_type == 2)
             {
-                // TMP
-                ExternalProjSource new_layer_cfg;
-                new_layer_cfg.name = projection_new_layer_name;
+                ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+            }
+            else
+            {
+                ImGui::InputText("Name", &projection_new_layer_name);
+                projection_new_layer_file.draw();
                 if (selected_external_type == 1)
-                    new_layer_cfg.path = projection_new_layer_cfg.getPath();
-                else
-                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-                new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
-                projections_external_sources.push_back(new_layer_cfg);
+                    projection_new_layer_cfg.draw();
+            }
 
+            if (ImGui::Button("Add layer") && (selected_external_type == 2 || projection_new_layer_file.file_valid))
+            {
+                auto genfun = [this](int)
+                {
+                    is_opening_layer = true;
+
+                    ExternalProjSource new_layer_cfg;
+                    if (selected_external_type == 2)
+                        new_layer_cfg.name = "OSM";
+                    else
+                        new_layer_cfg.name = projection_new_layer_name;
+
+                    if (selected_external_type == 1)
+                        new_layer_cfg.path = projection_new_layer_cfg.getPath();
+                    else if (selected_external_type == 2)
+                        new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                    else
+                        new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+
+                    if (selected_external_type == 2)
+                    {
+                        logger->info("Generating OSM map");
+                        tileMap tile_map;
+                        new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
+                    }
+                    else
+                        new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+
+                    projections_external_sources.push_back(new_layer_cfg);
+
+                    if (selected_external_type == 2)
+                        selected_external_type = 0;
+
+                    projections_should_refresh = true;
+                    is_opening_layer = false;
+                };
+                ui_thread_pool.push(genfun);
+            }
+
+            if (is_opening_layer)
+                style::endDisabled();
+
+            if (projections_should_refresh) // Refresh in the UI thread!
+            {
                 refreshProjectionLayers();
+                projections_should_refresh = false;
             }
 
             ImGui::Separator(); ///////////////////////////////////////////////////
@@ -201,8 +248,8 @@ namespace satdump
                             else if (layer.type == 0)
                             {
                                 layer.viewer_prods->handler->setShouldProject(false);
-                                refreshProjectionLayers();
                             }
+                            refreshProjectionLayers();
                             ImGui::EndGroup();
                             ImGui::PopStyleColor();
                             ImGui::PopStyleColor();
@@ -440,6 +487,9 @@ namespace satdump
 
                 if (prjext.name == lay.name && &prjext == lay.external)
                     contains = true;
+
+                if (prjext.name == "OSM")
+                    already_has_osm_layer = true;
             }
 
             if (!contains)
