@@ -31,7 +31,11 @@ import android.app.PendingIntent;
 import android.content.IntentFilter;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -86,6 +90,9 @@ class MainActivity : NativeActivity() {
         }
     }
 
+    // public var mLayout : ViewGroup? = null;
+    // public var dummyEdit : DummyEdit? = null;
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -108,6 +115,16 @@ class MainActivity : NativeActivity() {
 
         // Hide system bars
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        // Text crap
+        // mLayout = RelativeLayout(this);
+
+        // dummyEdit = DummyEdit(this.applicationContext!!);
+        // dummyEdit!!.setOnKeyListener(this);
+
+        // mLayout!!.addView(dummyEdit, RelativeLayout.LayoutParams(10000, 10000));
+        // dummyEdit!!.setVisibility(View.VISIBLE);
+        // dummyEdit!!.requestFocus();
     }
 
 
@@ -146,6 +163,19 @@ class MainActivity : NativeActivity() {
         }
         return super.dispatchKeyEvent(event)
     }
+
+    // override fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
+    //      if (event.action == KeyEvent.ACTION_DOWN) {
+    //         unicodeCharacterQueue.offer(event.getUnicodeChar(event.metaState))
+    //     }
+    //     return super.dispatchKeyEvent(event)
+    // }
+    // override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    //     if (event.action == KeyEvent.ACTION_DOWN) {
+    //         unicodeCharacterQueue.offer(event.getUnicodeChar(event.metaState))
+    //     }
+    //     return super.onKeyUp(keyCode, event)
+    // }
 
     fun pollUnicodeChar(): Int {
         return unicodeCharacterQueue.poll() ?: 0
@@ -258,5 +288,16 @@ class MainActivity : NativeActivity() {
         if (resultCode == RESULT_OK && requestCode == 2) {
             select_directory_result = data.getFilePathDir(getApplicationContext()); 
         }
+    }
+}
+
+class DummyEdit : View {
+    constructor(context: Context) : super(context) {
+        setFocusableInTouchMode(true);
+        setFocusable(true);
+    }
+
+    public override fun onCheckIsTextEditor() : Boolean {
+        return true;
     }
 }
