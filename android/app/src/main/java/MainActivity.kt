@@ -17,8 +17,6 @@ import android.net.Uri;
 
 import RealPathUtil;
 
-import kotlinx.coroutines.sync.Mutex;
-
 import android.Manifest;
 import androidx.core.content.PermissionChecker;
 import androidx.core.app.ActivityCompat;
@@ -34,12 +32,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import android.widget.TextView;
-import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.EditText
 import android.text.TextWatcher
 import android.text.Editable
+import android.text.InputType
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -125,6 +122,7 @@ class MainActivity : NativeActivity(), TextWatcher {
         editText = EditText(this.applicationContext!!);
         mLayout!!.addView(editText, RelativeLayout.LayoutParams(10000, 10000));
         editText!!.setVisibility(View.VISIBLE);
+        editText!!.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         editText!!.requestFocus();
         editText!!.addTextChangedListener(this);
 
