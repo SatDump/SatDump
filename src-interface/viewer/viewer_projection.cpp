@@ -197,7 +197,7 @@ namespace satdump
                             if (selected_external_type == 2)
                             {
                                 logger->info("Generating tile map");
-                                tileMap tile_map(mapurl);
+                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/");
                                 new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
                             }
                             else
