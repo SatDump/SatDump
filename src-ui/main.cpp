@@ -15,6 +15,8 @@
 
 #include "common/tile_map/map.h"
 
+#include "../src-core/resources.h"
+
 extern bool recorder_running;
 
 static void glfw_error_callback(int error, const char *description)
@@ -96,6 +98,21 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
+
+    image::Image<uint8_t> image(512, 512, 4);
+    image.load_png(resources::getResourcePath("icon.png"));
+    GLFWimage img;
+    uint8_t px[512 * 512 * 4] = {0};
+    img.height = 512;
+    img.width = 512;
+
+    for (int y = 0; y < 512; y++)
+        for (int x = 0; x < 512; x++)
+            for (int c = 0; c < 4; c++)
+                px[512 * 4 * y + x * 4 + c] = image.channel(c)[512 * y + x];
+
+    img.pixels = px;
+    glfwSetWindowIcon(window, 1, &img);
 
     // Init UI
     satdump::initMainUI();
