@@ -151,15 +151,7 @@ namespace satdump
                 if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
                 {
                     ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-                    if (already_has_osm_layer)
-                        style::beginDisabled();
                     ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
-                    if (already_has_osm_layer)
-                    {
-                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                            ImGui::SetTooltip("Only one Tile Map layer can be loaded at a time!");
-                        style::endDisabled();
-                    }
                     ImGui::RadioButton("Other", &selected_external_type, 1);
 
                     if (selected_external_type == 2)
@@ -194,6 +186,19 @@ namespace satdump
                             else
                                 new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
 
+                            int i = -1;
+                            bool contains = false;
+                            do
+                            {
+                                contains = false;
+                                std::string curr_name = ((i + 1) == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i + 1)));
+                                for (int i = 0; i < (int)projection_layers.size(); i++)
+                                    if (projection_layers[i].name == curr_name)
+                                        contains = true;
+                                i++;
+                            } while (contains);
+                            new_layer_cfg.name = (i == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i)));
+
                             if (selected_external_type == 2)
                             {
                                 logger->info("Generating tile map");
@@ -207,7 +212,6 @@ namespace satdump
 
                             if (selected_external_type == 2)
                             {
-                                already_has_osm_layer = true;
                                 selected_external_type = 0;
                             }
 
@@ -511,7 +515,6 @@ namespace satdump
 
                 if (projections_external_sources[i].name == "Tile Map" && lay.name == "Tile Map")
                 {
-                    already_has_osm_layer = true;
                     contains = true;
                 }
             }
