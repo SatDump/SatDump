@@ -8,6 +8,7 @@
 #include "main_ui.h"
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
+#include <regex>
 namespace satdump
 {
     void ViewerApplication::drawProjectionPanel()
@@ -157,7 +158,16 @@ namespace satdump
                     if (selected_external_type == 2)
                     {
                         ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+                        if(!urlgood)
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+
                         ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
+
+                        if(!urlgood){
+                            if (ImGui::IsItemHovered())
+                                ImGui::SetTooltip("Invalid URL! must be http://server/");
+                            ImGui::PopStyleColor();
+                        }
                     }
                     else
                     {
@@ -167,59 +177,75 @@ namespace satdump
                             projection_new_layer_cfg.draw("Projection Config File");
                     }
 
-                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || projection_new_layer_file.file_valid))
+                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.file_valid &&
+                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
                     {
-                        auto genfun = [this](int)
+                        const std::regex e("http:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/");
+                        if (regex_match(mapurl, e))
                         {
-                            is_opening_layer = true;
-
-                            ExternalProjSource new_layer_cfg;
-                            if (selected_external_type == 2)
-                                new_layer_cfg.name = "Tile Map";
-                            else
-                                new_layer_cfg.name = projection_new_layer_name;
-
-                            if (selected_external_type == 1)
-                                new_layer_cfg.path = projection_new_layer_cfg.getPath();
-                            else if (selected_external_type == 2)
-                                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
-                            else
-                                new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-
-                            int i = -1;
-                            bool contains = false;
-                            do
+                            urlgood = true;
+                            auto genfun = [this](int)
                             {
-                                contains = false;
-                                std::string curr_name = ((i + 1) == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i + 1)));
-                                for (int i = 0; i < (int)projection_layers.size(); i++)
-                                    if (projection_layers[i].name == curr_name)
-                                        contains = true;
-                                i++;
-                            } while (contains);
-                            new_layer_cfg.name = (i == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i)));
+                                is_opening_layer = true;
 
-                            if (selected_external_type == 2)
-                            {
-                                logger->info("Generating tile map");
-                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/");
-                                new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
-                            }
-                            else
-                                new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+                                ExternalProjSource new_layer_cfg;
+                                if (selected_external_type == 2)
+                                    new_layer_cfg.name = "Tile Map";
+                                else
+                                    new_layer_cfg.name = projection_new_layer_name;
 
-                            projections_external_sources.push_back(new_layer_cfg);
+                                if (selected_external_type == 1)
+                                    new_layer_cfg.path = projection_new_layer_cfg.getPath();
+                                else if (selected_external_type == 2)
+                                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                                else
+                                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
 
-                            if (selected_external_type == 2)
-                            {
-                                selected_external_type = 0;
-                            }
+                                int i = -1;
+                                bool contains = false;
+                                do
+                                {
+                                    contains = false;
+                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i + 1)));
+                                    for (int i = 0; i < (int)projection_layers.size(); i++)
+                                        if (projection_layers[i].name == curr_name)
+                                            contains = true;
+                                    i++;
+                                } while (contains);
+                                new_layer_cfg.name = (i == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i)));
 
-                            projections_should_refresh = true;
-                            is_opening_layer = false;
-                        };
-                        ui_thread_pool.push(genfun);
-                        ImGui::CloseCurrentPopup();
+                                if (selected_external_type == 2)
+                                {
+                                    std::stringstream test(mapurl);
+                                    std::string segment;
+                                    std::vector<std::string> seglist;
+
+                                    while (std::getline(test, segment, '/'))
+                                    {
+                                        seglist.push_back(segment);
+                                    }
+                                    logger->info("Generating tile map");
+                                    tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                    new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
+                                }
+                                else
+                                    new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+
+                                projections_external_sources.push_back(new_layer_cfg);
+
+                                if (selected_external_type == 2)
+                                {
+                                    selected_external_type = 0;
+                                }
+
+                                projections_should_refresh = true;
+                                is_opening_layer = false;
+                            };
+                            ui_thread_pool.push(genfun);
+                            ImGui::CloseCurrentPopup();
+                        } else {
+                            urlgood = false;
+                        }
                     }
                     ImGui::SameLine();
 
@@ -510,7 +536,6 @@ namespace satdump
             {
                 if (projections_external_sources[i].name == lay.name)
                     contains = true;
-
             }
 
             if (!contains)

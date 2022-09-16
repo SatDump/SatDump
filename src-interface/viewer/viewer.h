@@ -176,6 +176,7 @@ namespace satdump
         void generateProjectionImage();
 
         std::string mapurl = "http://tile.openstreetmap.org/";
+        bool urlgood = true;
 
         // Settings
         int projections_image_width = 2048;
