@@ -99,20 +99,24 @@ int main(int argc, char *argv[])
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
         ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
 
-    image::Image<uint8_t> image(512, 512, 4);
-    image.load_png(resources::getResourcePath("icon.png"));
-    GLFWimage img;
-    uint8_t px[512 * 512 * 4] = {0};
-    img.height = 512;
-    img.width = 512;
+    {
+        image::Image<uint8_t> image;
+        image.load_png(resources::getResourcePath("icon.png"));
+        GLFWimage img;
+        uint8_t *px = new uint8_t[image.width() * image.height() * 4];
+        memset(px, 0, image.width() * image.height() * 4);
+        img.height = image.height();
+        img.width = image.width();
 
-    for (int y = 0; y < 512; y++)
-        for (int x = 0; x < 512; x++)
-            for (int c = 0; c < 4; c++)
-                px[512 * 4 * y + x * 4 + c] = image.channel(c)[512 * y + x];
+        for (int y = 0; y < image.height(); y++)
+            for (int x = 0; x < image.width(); x++)
+                for (int c = 0; c < 3; c++)
+                    px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        image.clear();
 
-    img.pixels = px;
-    glfwSetWindowIcon(window, 1, &img);
+        img.pixels = px;
+        glfwSetWindowIcon(window, 1, &img);
+    }
 
     // Init UI
     satdump::initMainUI();

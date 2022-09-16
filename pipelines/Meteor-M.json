@@ -85,9 +85,7 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {
-                    "composites": "composites/meteor_msumr.json.inc"
-                }
+                "meteor_msumr_lrpt": {}
             }
         }
     },
@@ -135,9 +133,7 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {
-                    "composites": "composites/meteor_msumr.json.inc"
-                }
+                "meteor_msumr_lrpt": {}
             }
         }
     }
