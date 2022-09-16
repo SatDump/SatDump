@@ -61,6 +61,15 @@ namespace satdump
             std::string dataset_name = "";
 
             bool marked_for_close = false;
+
+            ProductsHandler() {}
+
+            ProductsHandler(std::shared_ptr<Products> products,
+                            std::shared_ptr<ViewerHandler> handler,
+                            std::string dataset_name)
+                : products(products),
+                  handler(handler),
+                  dataset_name(dataset_name) {}
         };
 
         ImRect renderHandler(ProductsHandler &handler, int index);
@@ -70,12 +79,12 @@ namespace satdump
 
         std::vector<std::string> opened_datasets;
 
-        std::vector<ProductsHandler> products_and_handlers;
+        std::vector<std::shared_ptr<ProductsHandler>> products_and_handlers;
         int products_cnt_in_dataset(std::string dataset_name)
         {
             int cnt = 0;
             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                if (products_and_handlers[i].dataset_name == dataset_name)
+                if (products_and_handlers[i]->dataset_name == dataset_name)
                     cnt++;
             return cnt;
         }
@@ -108,7 +117,7 @@ namespace satdump
         {
             std::string name;
             int type; // 0 = products, 1 = external
-            ProductsHandler *viewer_prods;
+            std::shared_ptr<ProductsHandler> viewer_prods;
             std::shared_ptr<ExternalProjSource> external;
             float opacity = 100;
             bool enabled = true;

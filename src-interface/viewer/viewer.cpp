@@ -54,7 +54,7 @@ namespace satdump
             contains = false;
             std::string curr_name = ((i + 1) == 0 ? dataset_name : (dataset_name + " #" + std::to_string(i + 1)));
             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                if (products_and_handlers[i].dataset_name == curr_name)
+                if (products_and_handlers[i]->dataset_name == curr_name)
                     contains = true;
             i++;
         } while (contains);
@@ -102,7 +102,7 @@ namespace satdump
             }
 
             // Push products and handler
-            products_and_handlers.push_back({products, handler, dataset_name});
+            products_and_handlers.push_back(std::make_shared<ProductsHandler>(products, handler, dataset_name));
         }
     }
 
@@ -143,7 +143,7 @@ namespace satdump
         if (index == current_handler_id)
         {
             ImGui::TreePush();
-            products_and_handlers[current_handler_id].handler->drawTreeMenu();
+            products_and_handlers[current_handler_id]->handler->drawTreeMenu();
             ImGui::TreePop();
         }
         // ImGui::InputInt("Current Product", &current_handler_id);
@@ -170,7 +170,7 @@ namespace satdump
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                             ImGui::TreePush();
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i].dataset_name == dataset_name && products_and_handlers[i].handler->shouldProject())
+                                if (products_and_handlers[i]->dataset_name == dataset_name && products_and_handlers[i]->handler->shouldProject())
                                 {
                                     SelectableColor(IM_COL32(186, 153, 38, 65));
                                     break;
@@ -187,8 +187,8 @@ namespace satdump
                                 {
                                     logger->warn("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                        if (products_and_handlers[i].dataset_name == dataset_name)
-                                            products_and_handlers[i].marked_for_close = true;
+                                        if (products_and_handlers[i]->dataset_name == dataset_name)
+                                            products_and_handlers[i]->marked_for_close = true;
                                 }
                                 ImGui::PopStyleColor();
                                 ImGui::PopStyleColor();
@@ -204,14 +204,14 @@ namespace satdump
 
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
                             {
-                                if (products_and_handlers[i].dataset_name == dataset_name)
+                                if (products_and_handlers[i]->dataset_name == dataset_name)
                                 {
-                                    const float HorizontalTreeLineSize = 8.0f * ui_scale;                // chosen arbitrarily
-                                    const ImRect childRect = renderHandler(products_and_handlers[i], i); // RenderTree(child);
+                                    const float HorizontalTreeLineSize = 8.0f * ui_scale;                 // chosen arbitrarily
+                                    const ImRect childRect = renderHandler(*products_and_handlers[i], i); // RenderTree(child);
                                     const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
                                     drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
                                     verticalLineEnd.y = midpoint;
-                                    if (products_and_handlers[i].handler->shouldProject())
+                                    if (products_and_handlers[i]->handler->shouldProject())
                                         SelectableColor(IM_COL32(186, 153, 38, 65));
                                 }
                             }
@@ -228,15 +228,15 @@ namespace satdump
                         ImGui::TreeNodeEx("Others", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                         ImGui::TreePush();
                         for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                            if (products_and_handlers[i].dataset_name == "")
-                                renderHandler(products_and_handlers[i], i);
+                            if (products_and_handlers[i]->dataset_name == "")
+                                renderHandler(*products_and_handlers[i], i);
                         ImGui::TreePop();
                     }
 
                     // Handle deletion if required
                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                     {
-                        if (products_and_handlers[i].marked_for_close)
+                        if (products_and_handlers[i]->marked_for_close)
                         {
                             products_and_handlers.erase(products_and_handlers.begin() + i);
                             if (current_handler_id >= (int)products_and_handlers.size())
@@ -273,7 +273,7 @@ namespace satdump
                 }
 
                 if (products_and_handlers.size() > 0)
-                    products_and_handlers[current_handler_id].handler->drawMenu();
+                    products_and_handlers[current_handler_id]->handler->drawMenu();
 
                 ImGui::EndTabItem();
             }
@@ -336,7 +336,7 @@ namespace satdump
         if (current_selected_tab == 0)
         {
             if (products_and_handlers.size() > 0)
-                products_and_handlers[current_handler_id].handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
+                products_and_handlers[current_handler_id]->handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
             else
                 ImGui::GetWindowDrawList()
                     ->AddRectFilled(ImGui::GetCursorScreenPos(),

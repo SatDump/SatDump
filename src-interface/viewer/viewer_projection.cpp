@@ -544,9 +544,9 @@ namespace satdump
         // Check for *new* products layers
         for (int i = 0; i < (int)products_and_handlers.size(); i++)
         {
-            if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
+            if (products_and_handlers[i]->handler->canBeProjected() && products_and_handlers[i]->handler->shouldProject())
             {
-                std::string label = products_and_handlers[i].products->instrument_name;
+                std::string label = products_and_handlers[i]->products->instrument_name;
 
                 bool contains = false;
                 for (ProjectionLayer &lay : projection_layers)
@@ -554,12 +554,12 @@ namespace satdump
                     if (lay.type != 0)
                         continue;
 
-                    if (label == lay.name && &products_and_handlers[i] == lay.viewer_prods)
+                    if (label == lay.name && products_and_handlers[i].get() == lay.viewer_prods.get())
                         contains = true;
                 }
 
                 if (!contains)
-                    projection_layers.push_back({label, 0, &products_and_handlers[i], nullptr});
+                    projection_layers.push_back({label, 0, products_and_handlers[i], nullptr});
             }
         }
 
@@ -574,8 +574,8 @@ namespace satdump
 
             bool contains = false;
             for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                if (products_and_handlers[i].handler->canBeProjected() && products_and_handlers[i].handler->shouldProject())
-                    if (products_and_handlers[i].products->instrument_name == lay.name && &products_and_handlers[i] == lay.viewer_prods)
+                if (products_and_handlers[i]->handler->canBeProjected() && products_and_handlers[i]->handler->shouldProject())
+                    if (products_and_handlers[i]->products->instrument_name == lay.name && products_and_handlers[i].get() == lay.viewer_prods.get())
                         contains = true;
 
             if (!contains)
