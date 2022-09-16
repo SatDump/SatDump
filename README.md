@@ -138,7 +138,6 @@ rm -rf fftw-3.3.9
 git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
-# If you want to build Live-processing (required for the ingestor), add -DBUILD_LIVE=ON to the command
 # If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
 # If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
 # If you want to build with ZIQ compression, you can add -DBUILD_ZIQ=1
