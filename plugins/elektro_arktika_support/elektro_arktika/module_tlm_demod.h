@@ -59,8 +59,12 @@ namespace elektro_arktika
             // Shift the lower sideband by 90 degs in phase
             volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)buffer2, (lv_32fc_t *)buffer2, pshift, nsamples);
 
-            // Add both
+// Add both
+#ifndef volk_32fc_x2_add_32fc
             volk_32f_x2_add_32f((float *)output_stream->writeBuf, (float *)buffer1, (float *)buffer2, nsamples * 2);
+#else
+            volk_32fc_x2_add_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)buffer1, (lv_32fc_t *)buffer2, nsamples);
+#endif
 
             input_stream->flush();
             output_stream->swap(nsamples);
