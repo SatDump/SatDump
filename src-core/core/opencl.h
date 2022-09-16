@@ -2,7 +2,11 @@
 
 #ifdef USE_OPENCL
 #define CL_TARGET_OPENCL_VERSION 110
+#include <OpenCL/opencl.h>
+#if __APPLE__
+#else
 #include <CL/cl.h>
+#endif
 #include <string>
 #include <vector>
 

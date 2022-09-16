@@ -66,11 +66,6 @@ jobs:
         shell: powershell
         run: cp -r ${{runner.workspace}}/build/plugins ${{runner.workspace}}/build/Release;
 
-      - name: Copy Fonts
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp $Env:GITHUB_WORKSPACE/Roboto-Medium.ttf Release
-
       - name: Upload ZIP
         uses: actions/upload-artifact@v2
         with:
