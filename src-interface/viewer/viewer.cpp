@@ -45,9 +45,24 @@ namespace satdump
         ProductDataSet dataset;
         dataset.load(path);
 
+        std::string dataset_name = dataset.satellite_name + " " + timestamp_to_string(dataset.timestamp);
+
+        int i = -1;
+        bool contains = false;
+        do
+        {
+            contains = false;
+            std::string curr_name = ((i + 1) == 0 ? dataset_name : (dataset_name + " #" + std::to_string(i + 1)));
+            for (int i = 0; i < (int)products_and_handlers.size(); i++)
+                if (products_and_handlers[i].dataset_name == curr_name)
+                    contains = true;
+            i++;
+        } while (contains);
+        dataset_name = (i == 0 ? dataset_name : (dataset_name + " #" + std::to_string(i)));
+
         std::string pro_directory = std::filesystem::path(path).parent_path().string();
         for (std::string pro_path : dataset.products_list)
-            loadProductsInViewer(pro_directory + "/" + pro_path, dataset.satellite_name + " " + timestamp_to_string(dataset.timestamp));
+            loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
     }
 
     void ViewerApplication::loadProductsInViewer(std::string path, std::string dataset_name)

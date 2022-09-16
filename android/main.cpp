@@ -353,7 +353,15 @@ static int PollUnicodeChars()
     ImGuiIO &io = ImGui::GetIO();
     jint unicode_character;
     while ((unicode_character = java_env->CallIntMethod(g_App->activity->clazz, method_id)) != 0)
-        io.AddInputCharacter(unicode_character);
+    {
+        if (unicode_character == 0x08) // BackSpace
+        {
+            io.AddKeyEvent(ImGuiKey_Backspace, true);
+            io.AddKeyEvent(ImGuiKey_Backspace, false);
+        }
+        else
+            io.AddInputCharacter(unicode_character);
+    }
 
     jni_return = java_vm->DetachCurrentThread();
     if (jni_return != JNI_OK)

@@ -197,7 +197,7 @@ namespace satdump
                             if (selected_external_type == 2)
                             {
                                 logger->info("Generating tile map");
-                                tileMap tile_map(mapurl);
+                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/");
                                 new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
                             }
                             else
@@ -260,7 +260,7 @@ namespace satdump
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                         if (ImGui::Button(std::string(u8"\uf00d##layerdelete" + layer.name + std::to_string(i)).c_str()))
                         {
-                            if (layer.type == 1)
+                            if (layer.type == 1 || layer.type == 2)
                             {
                                 projection_layers.erase(projection_layers.begin() + i);
                                 for (int f = 0; f < (int)projections_external_sources.size(); f++)
@@ -397,7 +397,7 @@ namespace satdump
 
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;
-        // for (ProjectionLayer &layer : projection_layers)
+
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
             ProjectionLayer &layer = projection_layers[i];
@@ -478,10 +478,15 @@ namespace satdump
     image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress)
     {
         reprojection::ReprojectionOperation op;
+
         if (ep.path.size() > 0)
             op.source_prj_info = loadJsonFile(ep.path);
         else
             op.source_prj_info = ep.cfg;
+
+        if (!op.source_prj_info.contains("type")) // Just in case...
+            return image::Image<uint16_t>(width, height, 3);
+
         op.target_prj_info = tcfg;
         op.img = ep.img;
         op.output_width = width;
@@ -494,26 +499,25 @@ namespace satdump
     void ViewerApplication::refreshProjectionLayers()
     {
         // Check for *new* ext layers
-        for (ExternalProjSource &prjext : projections_external_sources)
+        for (int i = 0; i < (int)projections_external_sources.size(); i++)
         {
             bool contains = false;
+
             for (ProjectionLayer &lay : projection_layers)
             {
-                if (prjext.name == "Tile Map")
+                if (projections_external_sources[i].name == lay.name &&
+                    &projections_external_sources[i] == lay.external)
+                    contains = true;
+
+                if (projections_external_sources[i].name == "Tile Map" && lay.name == "Tile Map")
                 {
                     already_has_osm_layer = true;
                     contains = true;
                 }
-
-                if (lay.type != 1)
-                    continue;
-
-                if (prjext.name == lay.name && &prjext == lay.external)
-                    contains = true;
             }
 
             if (!contains)
-                projection_layers.push_back({prjext.name, 1, nullptr, &prjext});
+                projection_layers.push_back({projections_external_sources[i].name, 1, nullptr, &projections_external_sources[i]});
         }
 
         // Check for *new* products layers

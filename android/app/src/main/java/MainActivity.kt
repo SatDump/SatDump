@@ -17,8 +17,6 @@ import android.net.Uri;
 
 import RealPathUtil;
 
-import kotlinx.coroutines.sync.Mutex;
-
 import android.Manifest;
 import androidx.core.content.PermissionChecker;
 import androidx.core.app.ActivityCompat;
@@ -31,7 +29,14 @@ import android.app.PendingIntent;
 import android.content.IntentFilter;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+
+import android.widget.RelativeLayout
+import android.widget.EditText
+import android.text.TextWatcher
+import android.text.Editable
+import android.text.InputType
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -43,7 +48,7 @@ fun Intent?.getFilePathDir(context: Context): String {
     return this?.data?.let { data -> RealPathUtil.getRealPath(context, DocumentsContract.buildDocumentUriUsingTree(data, DocumentsContract.getTreeDocumentId(data))) ?: "" } ?: ""
 }
 
-class MainActivity : NativeActivity() {
+class MainActivity : NativeActivity(), TextWatcher {
     private val TAG : String = "SatDump";
 
     public var usbManager : UsbManager? = null;
@@ -86,6 +91,9 @@ class MainActivity : NativeActivity() {
         }
     }
 
+    public var mLayout : ViewGroup? = null;
+    public var editText : EditText? = null;
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -108,6 +116,19 @@ class MainActivity : NativeActivity() {
 
         // Hide system bars
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        // Text crap
+        mLayout = RelativeLayout(this);
+        editText = EditText(this.applicationContext!!);
+        mLayout!!.addView(editText, RelativeLayout.LayoutParams(10000, 10000));
+        editText!!.setVisibility(View.VISIBLE);
+        editText!!.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        editText!!.requestFocus();
+        editText!!.addTextChangedListener(this);
+
+        setContentView(mLayout);
+
+        hideSoftInput();
     }
 
 
@@ -127,24 +148,41 @@ class MainActivity : NativeActivity() {
 
     fun showSoftInput() {
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(this.window.decorView, 0)
+        inputMethodManager.showSoftInput(editText, 0)
     }
 
     fun hideSoftInput() {
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(this.window.decorView.windowToken, 0)
+        inputMethodManager.hideSoftInputFromWindow(editText!!.windowToken, 0)
     }
 
     // Queue for the Unicode characters to be polled from native code (via pollUnicodeChar())
     private var unicodeCharacterQueue: LinkedBlockingQueue<Int> = LinkedBlockingQueue()
 
-    // We assume dispatchKeyEvent() of the NativeActivity is actually called for every
-    // KeyEvent and not consumed by any View before it reaches here
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            unicodeCharacterQueue.offer(event.getUnicodeChar(event.metaState))
+    // Not all Android keyboard trigger a KeyEvent
+    // so I had to get around it somehow...
+    // I'm not super proud of this and it has downsides,
+    // but at least it works!
+    // Hecking Android not having a simple function
+    // to get Key events......... WHY!?
+    override fun afterTextChanged(s : Editable) {
+        if(editText!!.getText().toString() != "FILLER")
+            editText!!.setText("FILLER");
+        editText!!.setSelection(6);
+    }
+
+    override fun beforeTextChanged(s : CharSequence, start: Int, count: Int, after: Int) {
+    }
+
+    override fun onTextChanged(s : CharSequence, start: Int, before: Int, count: Int) {
+        if(editText!!.getText().toString() != "FILLER") {
+            if(before < count) {
+                var char2 = s.get(s.length - 1);
+                unicodeCharacterQueue.offer(char2.toInt());
+            } else if(before > count) {
+                unicodeCharacterQueue.offer(8); // BackSpace
+            }
         }
-        return super.dispatchKeyEvent(event)
     }
 
     fun pollUnicodeChar(): Int {

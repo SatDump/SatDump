@@ -106,6 +106,16 @@ namespace satdump
                     if (ImGui::Button("Update###updateTLEs"))
                         updateTLEFile(satdump::user_path + "/satdump_tles.txt");
 
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Clear Tile Map (OSM) Cache");
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Delete all cached tiles (OSM, and other sources).");
+                    ImGui::TableSetColumnIndex(1);
+                    if (ImGui::Button("Clear Cache###deleteosmtiles"))
+                        if (std::filesystem::exists(satdump::user_path + "/osm_tiles/"))
+                            std::filesystem::remove_all(satdump::user_path + "/osm_tiles/");
+
                     ImGui::EndTable();
                 }
             }
