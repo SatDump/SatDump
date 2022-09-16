@@ -1,0 +1,52 @@
+{
+    "cloudsat_link": {
+        "name": "CloudSat S-Band Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Backup",
+                2217.5e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 4e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {
+                "ccsds_simple_psk_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 3216,
+                    "derandomize": false,
+                    "nrzm": true,
+                    "rs_i": 0,
+                    "asm": "0x04b3e375"
+                }
+            },
+            "products": {
+                "cloudsat_cpr": {}
+            }
+        }
+    }
+}

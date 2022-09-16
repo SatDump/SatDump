@@ -1,6 +1,5 @@
 #include "module_ccsds_simple_psk_decoder.h"
 #include "logger.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
@@ -42,16 +41,14 @@ namespace ccsds
 
         // Get constellation
         if (d_constellation_str == "bpsk")
-        {
             d_constellation = dsp::BPSK;
-        }
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
         else
-            logger->critical("CCSDS Simple PSK Decoder : invalid constellation type!");
+            throw std::runtime_error("CCSDS Simple PSK Decoder : invalid constellation type!");
 
         // Parse RS
-        reedsolomon::RS_TYPE rstype;
+        reedsolomon::RS_TYPE rstype = reedsolomon::RS223;
         if (d_rs_interleaving_depth != 0)
         {
             if (d_rs_type == "rs223")
@@ -59,7 +56,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                logger->critical("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
+                throw std::runtime_error("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set
@@ -110,7 +107,8 @@ namespace ccsds
 
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + extension, std::ios::binary);
+        if (output_data_type == DATA_FILE)
+            data_out = std::ofstream(d_output_file_hint + extension, std::ios::binary);
         d_output_files.push_back(d_output_file_hint + extension);
 
         logger->info("Using input symbols " + d_input_file);
@@ -210,11 +208,19 @@ namespace ccsds
                     derand_ccsds(&cadu[d_derand_from], d_cadu_bytes - d_derand_from);
 
                 // Write it out
-                data_out.write((char *)cadu, d_cadu_bytes);
+                if (output_data_type == DATA_STREAM)
+                    output_fifo->write((uint8_t *)cadu, d_cadu_bytes);
+                else
+                    data_out.write((char *)cadu, d_cadu_bytes);
             }
 
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
+
+            // Update module stats
+            module_stats["deframer_lock"] = deframer->getState() == deframer->STATE_SYNCED || deframer_qpsk->getState() == deframer_qpsk->STATE_SYNCED;
+            if (d_rs_interleaving_depth != 0)
+                module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -228,14 +234,15 @@ namespace ccsds
             }
         }
 
-        data_out.close();
+        if (output_data_type == DATA_FILE)
+            data_out.close();
         if (input_data_type == DATA_FILE)
             data_in.close();
     }
 
     void CCSDSSimplePSKDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("CCSDS Simple PSK Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> def = deframer;
         if (d_constellation == dsp::QPSK && !d_diff_decode)       // Is we are working with non-NRZM QPSK, check what deframer to use

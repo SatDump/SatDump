@@ -1,0 +1,56 @@
+{
+    "falcon9_tlm": {
+        "name": "Falcon 9 S-Band TLM",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "fsk_demod": {
+                    "symbolrate": 3571400,
+                    "rrc_alpha": 0.35,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "spacex_tlm_decoder": {
+                    "qpsk": false
+                }
+            },
+            "products": {
+                "falcon_decoder": {}
+            }
+        }
+    },
+    "starship_tlm": {
+        "name": "Starship S-Band TLM",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 3.125e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "spacex_tlm_decoder": {
+                    "qpsk": true
+                }
+            }
+        }
+    }
+}

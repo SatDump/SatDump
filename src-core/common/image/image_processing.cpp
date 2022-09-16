@@ -12,7 +12,7 @@ namespace image
     void Image<T>::fill_color(T color[])
     {
         for (int c = 0; c < d_channels; c++)
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
                 channel(c)[i] = color[c];
     }
 
@@ -20,7 +20,7 @@ namespace image
     void Image<T>::fill(T val)
     {
         for (int c = 0; c < d_channels; c++)
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
                 channel(c)[i] = val;
     }
 
@@ -33,12 +33,12 @@ namespace image
 
             for (int c = 0; c < d_channels; c++)
             {
-                for (int col = 0; col < d_width; col++)
+                for (size_t col = 0; col < d_width; col++)
                 {
-                    for (int i = 0; i < d_height; i++) // Buffer column
+                    for (size_t i = 0; i < d_height; i++) // Buffer column
                         tmp_col[i] = channel(c)[i * d_width + col];
 
-                    for (int i = 0; i < d_height; i++) // Restore and mirror
+                    for (size_t i = 0; i < d_height; i++) // Restore and mirror
                         channel(c)[i * d_width + col] = tmp_col[(d_height - 1) - i];
                 }
             }
@@ -52,12 +52,12 @@ namespace image
 
             for (int c = 0; c < d_channels; c++)
             {
-                for (int row = 0; row < d_height; row++)
+                for (size_t row = 0; row < d_height; row++)
                 {
-                    for (int i = 0; i < d_width; i++) // Buffer column
+                    for (size_t i = 0; i < d_width; i++) // Buffer column
                         tmp_row[i] = channel(c)[row * d_width + i];
 
-                    for (int i = 0; i < d_width; i++) // Restore and mirror
+                    for (size_t i = 0; i < d_width; i++) // Restore and mirror
                         channel(c)[row * d_width + i] = tmp_row[(d_width - 1) - i];
                 }
             }
@@ -171,6 +171,24 @@ namespace image
     }
 
     template <typename T>
+    Image<T> Image<T>::crop_to(int x0, int y0, int x1, int y1)
+    {
+        int new_width = x1 - x0;
+        int new_height = y1 - y0;
+
+        // Create new buffer
+        Image<T> new_data(new_width, new_height, d_channels);
+
+        // Copy cropped area to new region
+        for (int c = 0; c < d_channels; c++)
+            for (int x = 0; x < new_width; x++)
+                for (int y = 0; y < new_height; y++)
+                    new_data[(new_width * new_height * c) + y * new_width + x] = channel(c)[(y0 + y) * d_width + (x + x0)];
+
+        return new_data;
+    }
+
+    template <typename T>
     void Image<T>::resize(int width, int height)
     {
         double x_scale = double(d_width) / double(width);
@@ -181,9 +199,9 @@ namespace image
 
         for (int c = 0; c < d_channels; c++)
         {
-            for (int x = 0; x < d_width; x++)
+            for (size_t x = 0; x < d_width; x++)
             {
-                for (int y = 0; y < d_height; y++)
+                for (size_t y = 0; y < d_height; y++)
                 {
                     int xx = floor(double(x) * x_scale);
                     int yy = floor(double(y) * y_scale);
@@ -192,6 +210,31 @@ namespace image
                 }
             }
         }
+    }
+
+    template <typename T>
+    Image<T> Image<T>::resize_to(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image<T> ret(width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < (size_t)width; x++)
+            {
+                for (size_t y = 0; y < (size_t)height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    ret.channel(c)[y * ret.width() + x] = channel(c)[yy * d_width + xx];
+                }
+            }
+        }
+
+        return ret;
     }
 
     template <typename T>
@@ -269,7 +312,7 @@ namespace image
             int percentile1 = percentile(sorted_array, d_width * d_height, percentileValue);
             int percentile2 = percentile(sorted_array, d_width * d_height, 100.0f - percentileValue);
 
-            for (int i = 0; i < d_width * d_height; i++)
+            for (size_t i = 0; i < d_width * d_height; i++)
             {
                 long balanced = (channel(c)[i] - percentile1) * maxVal / (percentile2 - percentile1);
                 if (balanced < 0)
@@ -337,6 +380,46 @@ namespace image
                     {
                         data_ptr[x * w + y] = (right + left) / 2;
                     }
+                }
+            }
+        }
+    }
+
+    template <typename T>
+    void Image<T>::median_blur()
+    {
+        for (int c = 0; c < d_channels; c++)
+        {
+            T *data_ptr = channel(c);
+
+            int h = d_height;
+            int w = d_width;
+
+            std::vector<T> values(5);
+
+            for (int x = 0; x < h; x++)
+            {
+                for (int y = 0; y < w; y++)
+                {
+                    values[0] =
+                        values[1] =
+                            values[2] =
+                                values[3] =
+                                    values[4] = data_ptr[x * w + y];
+
+                    if (x != 0)
+                        values[1] = data_ptr[(x - 1) * w + y];
+                    if (y != 0)
+                        values[2] = data_ptr[x * w + (y - 1)];
+
+                    if (x != h - 1)
+                        values[3] = data_ptr[(x + 1) * w + y];
+                    if (y != w - 1)
+                        values[4] = data_ptr[x * w + (y + 1)];
+
+                    std::sort(values.begin(), values.end());
+
+                    data_ptr[x * w + y] = values[2];
                 }
             }
         }

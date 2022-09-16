@@ -10,6 +10,27 @@ namespace dsp
 {
     namespace firdes
     {
+        std::vector<float> convolve(std::vector<float> u, std::vector<float> v)
+        {
+            std::vector<float> w;
+            int su = u.size(), sv = v.size();
+            int size = su + sv - 1;
+            double sum = 0;
+            for (int i = 0; i < size; i++)
+            {
+                int iter = i;
+                for (int j = 0; j <= i; j++)
+                {
+                    if (!((int)u.size() <= j || (int)v.size() <= iter))
+                        sum += u.at(j) * v.at(iter);
+                    iter--;
+                }
+                w.push_back(sum);
+                sum = 0;
+            }
+            return w;
+        }
+
         std::vector<float> root_raised_cosine(double gain, double sampling_freq, double symbol_rate, double alpha, int ntaps)
         {
             ntaps |= 1; // ensure that ntaps is odd
@@ -127,6 +148,27 @@ namespace dsp
                             trans_width,         /* transition width */
                             fft::window::WIN_KAISER,
                             beta); /* beta*/
+        }
+
+        std::vector<float> gaussian(double gain, double spb, double bt, int ntaps)
+        {
+            std::vector<float> taps(ntaps);
+            double scale = 0;
+            double dt = 1.0 / spb;
+            double s = 1.0 / (sqrt(log(2.0)) / (2 * M_PI * bt));
+            double t0 = -0.5 * ntaps;
+            double ts;
+            for (int i = 0; i < ntaps; i++)
+            {
+                t0++;
+                ts = s * dt * t0;
+                taps[i] = exp(-0.5 * ts * ts);
+                scale += taps[i];
+            }
+            for (int i = 0; i < ntaps; i++)
+                taps[i] = taps[i] / scale * gain;
+
+            return taps;
         }
     };
 

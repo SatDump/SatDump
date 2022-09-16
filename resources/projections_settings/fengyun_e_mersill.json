@@ -1,0 +1,19 @@
+{
+    "type": "normal_per_ifov",
+    "roll_offset": -2.6, //-0.10,
+    "yaw_offset": 3.0,
+    //"pitch_offset": -0.2,
+    "image_width": 6144,
+    "gcp_spacing_x": 200,
+    "gcp_spacing_y": 200,
+    "ifov_count": 1,
+    "ifov_y_size": 40,
+    "ifov_x_size": 6144,
+    "ifov_x_scan_angle": 104.5, //82.5,
+    "ifov_y_scan_angle": 1,
+    "timestamp_offset": -0.5,
+    ///////////////////////
+    "corr_swath": 2100,
+    "corr_resol": 0.25,
+    "corr_altit": 835
+}

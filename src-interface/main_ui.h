@@ -1,16 +1,25 @@
 #pragma once
 
-enum satdump_ui_status
+#include <string>
+#include "libs/ctpl/ctpl_stl.h"
+#include "app.h"
+#include "viewer/viewer.h"
+#include "recorder/recorder.h"
+#include "common/tile_map/map.h"
+
+namespace satdump
 {
-    OFFLINE_PROCESSING,
-    LIVE_PROCESSING,
-    BASEBAND_RECORDER,
-    PROJECTION,
-    OVERLAY,
-    MAIN_MENU,
-};
+    extern std::string error_message;
+    extern bool isError_UI;
 
-extern satdump_ui_status satdumpUiStatus;
+    extern ctpl::thread_pool ui_thread_pool;
 
-void initMainUI();
-void renderMainUI(int wwidth, int wheight);
+    extern bool light_theme;
+
+    extern std::shared_ptr<RecorderApplication> recorder_app;
+    extern std::shared_ptr<ViewerApplication> viewer_app;
+
+    void initMainUI();
+    void exitMainUI();
+    void renderMainUI(int wwidth, int wheight);
+}

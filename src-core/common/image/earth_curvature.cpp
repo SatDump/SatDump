@@ -37,7 +37,7 @@ namespace image
                 int channel_offset_output = channel * (output_image.width() * output_image.height());
 
                 // Process each row
-                for (int row = 0; row < image.height(); row++)
+                for (int row = 0; row < (int)image.height(); row++)
                 {
                     for (int i = 0; i < corrected_width; i++)
                     {

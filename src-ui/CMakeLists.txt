@@ -1,6 +1,6 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 
-file(GLOB_RECURSE SatDump_ui_CPPS  *.cpp)
+file(GLOB_RECURSE SatDump_ui_CPPS *.cpp)
 
 add_executable(satdump-ui ${SatDump_ui_CPPS})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
@@ -12,16 +12,13 @@ else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
 endif()
 
-if(BUILD_LIVE)
-    add_compile_definitions(BUILD_LIVE="1")
-    target_link_libraries(satdump-ui PUBLIC sdr)
-endif()
-
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 
 # OpenGL
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
+
 # Tell FindOpengl to use modern GL lib system
 set(OpenGL_GL_PREFERENCE GLVND)
 target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})

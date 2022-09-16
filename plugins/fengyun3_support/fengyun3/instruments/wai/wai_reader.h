@@ -1,0 +1,25 @@
+#pragma once
+
+#include <cstdint>
+#include "common/image/image.h"
+
+namespace fengyun3
+{
+    namespace wai
+    {
+        class WAIReader
+        {
+        private:
+            image::Image<uint16_t> image;
+            const std::string directory;
+            void writeCurrent();
+            int lines;
+
+        public:
+            WAIReader(std::string directory);
+            ~WAIReader();
+            int images_count = 0;
+            void work(std::vector<uint8_t> &packet);
+        };
+    } // namespace virr
+} // namespace fengyun

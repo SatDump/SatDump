@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "core/module.h"
 #include <complex>
 #include "common/codings/viterbi/viterbi_1_2.h"
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
@@ -33,8 +33,8 @@ namespace ccsds
     decoder, usually just below the average to ensure it locks as
     soon as possible. 0.300 seems to be good.
 
-    The ASM Marker is left configurable as other satellites use 
-    similar protocols, just with a different syncword. 
+    The ASM Marker is left configurable as other satellites use
+    similar protocols, just with a different syncword.
 
     CCSDS naming is kept mostly because this specific convolutional
     code is from the specification and most satellites will use
@@ -48,10 +48,14 @@ namespace ccsds
         const std::string d_constellation_str;     // Constellation type string
         dsp::constellation_type_t d_constellation; // Constellation type
         bool d_bpsk_90;                            // Special case for BPSK shifted by 90 degs + IQ-swapped
+        const bool d_oqpsk_delay;                  // For some OQPSK satellites, the Q branch is delayed by 1 symbol
 
         const int d_cadu_size;   // CADU Size in bits, including ASM
         const int d_cadu_bytes;  // CADU Size in bytes, including ASM
         const int d_buffer_size; // Processing buffer size, default half of a frame (= d_cadu_size)
+
+        const int d_viterbi_outsync_after;
+        const float d_viterbi_ber_threasold;
 
         const bool d_diff_decode; // If NRZ-M Decoding is required or not
 
@@ -62,9 +66,6 @@ namespace ccsds
         const int d_rs_interleaving_depth; // RS Interleaving depth. If = 0, then RS is disabled
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
-
-        const int d_viterbi_outsync_after;
-        const float d_viterbi_ber_threasold;
 
         uint8_t *viterbi_out;
         int8_t *soft_buffer;

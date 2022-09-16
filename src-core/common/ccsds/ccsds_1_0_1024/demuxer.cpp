@@ -9,8 +9,9 @@ namespace ccsds
 {
     namespace ccsds_1_0_1024
     {
-        Demuxer::Demuxer(int mpdu_data_size, bool hasInsertZone) : MPDU_DATA_SIZE(mpdu_data_size),
-                                                                   HAS_INSERT_ZONE(hasInsertZone)
+        Demuxer::Demuxer(int mpdu_data_size, bool hasInsertZone, int insertZoneSize) : MPDU_DATA_SIZE(mpdu_data_size),
+                                                                                       HAS_INSERT_ZONE(hasInsertZone),
+                                                                                       INSERT_ZONE_SIZE(insertZoneSize)
         {
             // Init variables
             currentCCSDSPacket.header.packet_length = 0;
@@ -66,7 +67,7 @@ namespace ccsds
         {
             ccsdsBuffer.clear(); // Clear buffer from previous run
 
-            MPDU mpdu = parseMPDU(cadu, HAS_INSERT_ZONE); // Parse M-PDU Header
+            MPDU mpdu = parseMPDU(cadu, HAS_INSERT_ZONE, INSERT_ZONE_SIZE); // Parse M-PDU Header
 
             // Sanity check, if the first header point points outside the data payload
             if (mpdu.first_header_pointer < 2047 && mpdu.first_header_pointer >= MPDU_DATA_SIZE)

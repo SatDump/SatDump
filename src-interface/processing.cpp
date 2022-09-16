@@ -1,47 +1,71 @@
-#include "logger.h"
-#include "module.h"
-#include "pipeline.h"
 #include <filesystem>
-#include "nlohmann/json.hpp"
-#include <fstream>
 #include "processing.h"
+#include "logger.h"
+#include "core/pipeline.h"
+#include "error.h"
+
+#include "core/config.h"
 #include "main_ui.h"
 
-namespace processing
+namespace satdump
 {
-    void process(std::string downlink_pipeline,
-                 std::string input_level,
-                 std::string input_file,
-                 std::string output_level,
-                 std::string output_file,
-                 nlohmann::json parameters)
+    // TMP, MOVE TO HEADER
+    extern std::shared_ptr<Application> current_app;
+    extern bool in_app;
+
+    namespace processing
     {
-        satdumpUiStatus = OFFLINE_PROCESSING;
-
-        logger->info("Starting processing pipeline " + downlink_pipeline + "...");
-        logger->debug("Input file (" + input_level + ") : " + input_file);
-        logger->debug("Output file (" + output_level + ") : " + output_file);
-
-        if (!std::filesystem::exists(output_file))
-            std::filesystem::create_directory(output_file);
-
-        std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                          pipelines.end(),
-                                                          [&downlink_pipeline](const Pipeline &e)
-                                                          {
-                                                              return e.name == downlink_pipeline;
-                                                          });
-
-        if (it != pipelines.end())
+        void process(std::string downlink_pipeline,
+                     std::string input_level,
+                     std::string input_file,
+                     std::string output_file,
+                     nlohmann::json parameters)
         {
-            it->run(input_file, output_file, parameters, input_level, true, uiCallList, uiCallListMutex);
-        }
-        else
-        {
-            logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+            is_processing = true;
+
+            logger->info("Starting processing pipeline " + downlink_pipeline + "...");
+            logger->debug("Input file (" + input_level + ") : " + input_file);
+            logger->debug("Output file : " + output_file);
+
+            if (!std::filesystem::exists(output_file))
+                std::filesystem::create_directories(output_file);
+
+            // Get pipeline
+            std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
+
+            if (pipeline.has_value())
+            {
+                try
+                {
+                    pipeline.value().run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex);
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Fatal error running pipeline : " + std::string(e.what()));
+                    error::set_error("Pipeline Error", e.what());
+                    is_processing = false;
+                    return;
+                }
+            }
+            else
+                logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+
+            is_processing = false;
+
+            logger->info("Done! Goodbye");
+
+            if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            {
+                if (std::filesystem::exists(output_file + "/dataset.json"))
+                {
+                    logger->info("Opening viewer!");
+                    viewer_app->loadDatasetInViewer(output_file + "/dataset.json");
+                }
+            }
         }
 
-        logger->info("Done! Goodbye");
-        satdumpUiStatus = MAIN_MENU;
+        std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
+        std::shared_ptr<std::mutex> ui_call_list_mutex = std::make_shared<std::mutex>();
+        bool is_processing = false;
     }
 }

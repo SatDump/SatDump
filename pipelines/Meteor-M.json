@@ -1,0 +1,140 @@
+{
+    "meteor_hrpt": {
+        "name": "METEOR HRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                1700e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 3e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 665400,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5
+                }
+            },
+            "cadu": {
+                "meteor_hrpt_decoder": {}
+            },
+            "products": {
+                "meteor_instruments": {}
+            }
+        }
+    },
+    "meteor_m2_lrpt": {
+        "name": "METEOR M2 LRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.1e6
+            ],
+            [
+                "Backup",
+                137.9e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 72e3,
+                    "rrc_taps": 361,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "meteor_lrpt_decoder": {
+                    "diff_decode": false
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {}
+            }
+        }
+    },
+    "meteor_m2-x_lrpt": {
+        "name": "METEOR M2-x LRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 72e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "meteor_lrpt_decoder": {
+                    "diff_decode": true
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {}
+            }
+        }
+    }
+}

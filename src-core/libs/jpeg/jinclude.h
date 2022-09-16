@@ -14,6 +14,11 @@
  * JPEG library.  Most applications need only include jpeglib.h.
  */
 
+// On Android, fortify does NOT work for <string.h>, etc
+#ifdef __ANDROID__
+#undef _FORTIFY_SOURCE
+#define _FORTIFY_SOURCE 0
+#endif
 
 /* Include auto-config file to find out which system include files we need. */
 

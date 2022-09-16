@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace image
 {
@@ -57,11 +58,14 @@ namespace image
         void white_balance(float percentileValue = 0.05f);                   // While balance algorithm from Gimp
         void crop(int x0, int y0, int x1, int y1);                           // Crop an image region. Must be with x0 <= x1 and y0 <= y1
         void crop(int x0, int x1);                                           // Crop an image region, x axis only
+        Image<T> crop_to(int x0, int y0, int x1, int y1);                    // Crop an image region. Must be with x0 <= x1 and y0 <= y1, returning the output
         void resize(int width, int height);                                  // Resize image, using a simple pixel scaling attribution (not the best, but fast)
+        Image<T> resize_to(int width, int height);                           // Resize image, to another image
         void resize_bilinear(int width, int height, bool text_mode = false); // Resize image, using a bilinear algorithm
         void brightness_contrast_old(float brightness, float contrast);      // Brightness-Contrast algorithm from old Gimp versions
         void linear_invert();                                                // Invert the entire image
         void simple_despeckle(int thresold = 10);                            // Very basic despeckle algorithm
+        void median_blur();                                                  // Median blur algorithm
 
         // Drawing functions
         void draw_pixel(int x, int y, T color[]);                                                      // Set a pixel's color
@@ -79,8 +83,9 @@ namespace image
 
     public:
         // PNG Interface
-        void save_png(std::string file, bool fast = true); // Save to a PNG file. Defaults to fast-saving with no filters
-        void load_png(std::string file);                   // Load a PNG file
+        void save_png(std::string file, bool fast = true);                      // Save to a PNG file. Defaults to fast-saving with no filters
+        void load_png(std::string file, bool disableIndexing = false);          // Load a PNG file (disableIndexing only applies to indexed color images)
+        void load_png(uint8_t *buffer, int size, bool disableIndexing = false); // Load a PNG from memory (disableIndexing only applies to indexed color images)
 
         // JPEG Interface
         void load_jpeg(std::string file); // Load a JPEG file
@@ -89,10 +94,10 @@ namespace image
     // Others
 
     // Font creation
-    std::vector<Image<uint8_t>> make_font(int size, bool text_mode = true);                                          // Generate a font to be used by draw_text. Uses the bundled GNU FreeMono
-    
-    template <typename T>                                      
-    Image<T> generate_text_image(std::string text, T color[], int size, int padX, int padY);  //return text on a transparent background
+    std::vector<Image<uint8_t>> make_font(int size, bool text_mode = true); // Generate a font to be used by draw_text. Uses the bundled GNU FreeMono
+
+    template <typename T>
+    Image<T> generate_text_image(std::string text, T color[], int size, int padX, int padY); // return text on a transparent background
 
     // LUT functions
     template <typename T>
@@ -103,4 +108,36 @@ namespace image
     // LUT presets
     template <typename T>
     Image<T> LUT_jet();
+
+    /*
+    Simple function to make a "matrix" out of many image to save them
+    in a single image.
+
+    You should ensure img_cnt is never 0 and does not exceed what
+    get_img_func can provide.
+    */
+    template <typename T>
+    image::Image<T> make_manyimg_composite(int count_width, int count_height, int img_cnt, std::function<image::Image<T>(int cnt)> get_img_func)
+    {
+        image::Image<T> first_img = get_img_func(0);
+        int img_w = first_img.width();
+        int img_h = first_img.height();
+
+        image::Image<uint16_t> image_all(img_w * count_width, img_h * count_height, first_img.channels());
+
+        first_img.clear();
+
+        for (int row = 0; row < count_height; row++)
+        {
+            for (int column = 0; column < count_width; column++)
+            {
+                if (row * count_width + column >= img_cnt)
+                    return image_all;
+
+                image_all.draw_image(0, get_img_func(row * count_width + column), img_w * column, img_h * row);
+            }
+        }
+
+        return image_all;
+    }
 }

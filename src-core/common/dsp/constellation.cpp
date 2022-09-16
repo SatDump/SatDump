@@ -8,6 +8,8 @@
 #define M_PI 3.14159265358979323846 /* pi */
 #endif
 
+#include "logger.h"
+
 namespace dsp
 {
     complex_t constellation_t::polar(float r, int n, float i)
@@ -65,7 +67,8 @@ namespace dsp
             const_states = 16;
             const_bits = 4;
             const_amp = 100;
-            const_sca = 0.5;
+            const_sca = 1; // 0.5;
+            const_prescale = 0.53;
 
             constellation = new complex_t[const_states];
 
@@ -101,7 +104,8 @@ namespace dsp
             const_states = 32;
             const_bits = 5;
             const_amp = 100;
-            const_sca = 0.5;
+            const_sca = 1; // 0.5;
+            const_prescale = 0.54;
 
             constellation = new complex_t[const_states];
 
@@ -166,7 +170,7 @@ namespace dsp
 
     complex_t constellation_t::mod(uint8_t symbol)
     {
-        return constellation[symbol] / const_amp;
+        return (constellation[symbol] / const_amp) / const_prescale;
     };
 
     uint8_t constellation_t::demod(complex_t sample)
@@ -214,17 +218,18 @@ namespace dsp
     void constellation_t::demod_soft_calc(complex_t sample, int8_t *bits, float *phase_error, float npwr)
     {
         int v;
-        int M = const_states;
-        int k = const_bits;
-        std::vector<float> tmp(2 * k, 0);
+        std::vector<float> tmp(2 * const_bits, 0);
 
         if (const_amp != 1)
             sample = sample * const_amp;
+        if (const_prescale != 1)
+            sample = sample * const_prescale;
 
         float min_dist = std::numeric_limits<float>::max();
         complex_t closest = 0;
+        // int c_i = 0;
 
-        for (int i = 0; i < M; i++)
+        for (int i = 0; i < const_states; i++)
         {
             // Calculate the distance between the sample and the current
             // constellation point.
@@ -234,6 +239,7 @@ namespace dsp
             {
                 min_dist = dist;
                 closest = constellation[i];
+                // c_i = i;
             }
 
             // Calculate the probability factor from the distance and
@@ -242,7 +248,7 @@ namespace dsp
 
             v = i;
 
-            for (int j = 0; j < k; j++)
+            for (int j = 0; j < const_bits; j++)
             {
                 // Get the bit at the jth index
                 int mask = 1 << j;
@@ -257,15 +263,18 @@ namespace dsp
             }
         }
 
+        // logger->info(c_i);
+
         // Calculate the log-likelihood ratio for all bits based on the
         // probability of ones (tmp[2*i+1]) over the probability of a zero
         // (tmp[2*i+0]).
-        for (int i = 0; i < k; i++)
-            bits[k - 1 - i] = clamp((logf(tmp[2 * i + 1]) - logf(tmp[2 * i + 0])) * const_sca);
+        if (bits != nullptr)
+            for (int i = 0; i < const_bits; i++)
+                bits[const_bits - 1 - i] = clamp((logf(tmp[2 * i + 1]) - logf(tmp[2 * i + 0])) * const_sca);
 
         // Calculate phase error
         if (phase_error != nullptr)
-            *phase_error = atan2f(sample.real, sample.imag) - atan2f(closest.real, closest.imag);
+            *phase_error = (sample * closest.conj()).arg();
     }
 
     int8_t constellation_t::clamp(float x)
@@ -277,5 +286,64 @@ namespace dsp
                 return x;
         }
         return x;
+    }
+
+    void constellation_t::make_lut(int resolution)
+    {
+        lut_resolution = resolution;
+        lut.resize(resolution);
+
+        for (int x = 0; x < resolution; x++)
+        {
+            lut[x].resize(resolution);
+
+            for (int y = 0; y < resolution; y++)
+            {
+                float x_v = (float(x - resolution / 2) / float(resolution)) * 1.5f;
+                float y_v = (float(y - resolution / 2) / float(resolution)) * 1.5f;
+
+                std::vector<int8_t> bits(const_bits);
+                float phase_err;
+
+                demod_soft_calc(complex_t(x_v, y_v), bits.data(), &phase_err);
+
+                lut[x][y] = {bits, phase_err};
+            }
+        }
+    }
+
+    void constellation_t::demod_soft_lut(complex_t sample, int8_t *bits, float *phase_error)
+    {
+        if (const_bits != 5)
+        {
+            int x = (sample.real / 1.5) * lut_resolution + lut_resolution / 2;
+#if 1
+            if (x < 0)
+                x = 0;
+            if (x >= lut_resolution)
+                x = lut_resolution - 1;
+#endif
+
+            int y = (sample.imag / 1.5) * lut_resolution + lut_resolution / 2;
+#if 1
+            if (y < 0)
+                y = 0;
+            if (y >= lut_resolution)
+                y = lut_resolution - 1;
+#endif
+
+            SoftResult &v = lut[x][y];
+
+            if (bits != nullptr)
+                for (int i = 0; i < const_bits; i++)
+                    bits[i] = v.bits[i];
+
+            if (phase_error != nullptr)
+                *phase_error = v.phase_error;
+        }
+        else
+        {
+            demod_soft_calc(sample, bits, phase_error);
+        }
     }
 }

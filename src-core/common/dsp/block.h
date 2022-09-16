@@ -39,12 +39,12 @@ namespace dsp
         ~Block()
         {
         }
-        void start()
+        virtual void start()
         {
             should_run = true;
             d_thread = std::thread(&Block::run, this);
         }
-        void stop()
+        virtual void stop()
         {
             should_run = false;
 
@@ -55,6 +55,24 @@ namespace dsp
             if (d_thread.joinable())
                 d_thread.join();
         }
+    };
+
+    template <typename IN_T, typename OUT_T>
+    class HierBlock
+    {
+    public:
+        std::shared_ptr<dsp::stream<IN_T>> input_stream;
+        std::shared_ptr<dsp::stream<OUT_T>> output_stream;
+
+    public:
+        HierBlock(std::shared_ptr<dsp::stream<IN_T>> input) : input_stream(input)
+        {
+        }
+        ~HierBlock()
+        {
+        }
+        virtual void start() = 0;
+        virtual void stop() = 0;
     };
 
     // This is here as many blocks require it

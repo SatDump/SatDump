@@ -26,11 +26,11 @@ namespace viterbi
         float d_ber;        // Main ber in LOCKED state
 
         // BER Testing
-        fec::code::cc_decoder_impl cc_decoder_ber;
-        fec::code::cc_encoder_impl cc_encoder_ber;
+        CCDecoder cc_decoder_ber;
+        CCEncoder cc_encoder_ber;
 
         // Main decoder
-        fec::code::cc_decoder_impl cc_decoder;
+        CCDecoder cc_decoder;
 
         // BER test buffers
         int8_t ber_test_buffer[TEST_BITS_LENGTH];
@@ -56,4 +56,4 @@ namespace viterbi
         float ber();
         int getState();
     };
-} // namespace npp
+}

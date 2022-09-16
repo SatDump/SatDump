@@ -3,31 +3,15 @@
 #include "block.h"
 #include <fstream>
 #include <atomic>
-#ifdef BUILD_ZIQ
-#include "common/ziq.h"
-#endif
+#include "baseband_interface.h"
 
 namespace dsp
 {
-    enum BasebandType
-    {
-        COMPLEX_FLOAT_32,
-        INTEGER_16,
-        INTEGER_8,
-        WAV_8,
-#ifdef BUILD_ZIQ
-        ZIQ,
-#endif
-    };
-
-    BasebandType BasebandTypeFromString(std::string type);
-
     class FileSourceBlock : public Block<uint8_t, complex_t>
     {
     private:
         dsp::stream<uint8_t> dummystream;
 
-        std::ifstream d_input_file;
         const BasebandType d_type;
         std::atomic<uint64_t> d_filesize;
         std::atomic<uint64_t> d_progress;
@@ -35,17 +19,8 @@ namespace dsp
         const bool d_iq_swap;
         std::atomic<bool> d_eof;
         void work();
-        uint64_t getFilesize(std::string filepath);
-        // Int16 buffer
-        int16_t *buffer_i16;
-        // Int8 buffer
-        int8_t *buffer_i8;
-        // Uint8 buffer
-        uint8_t *buffer_u8;
 
-#ifdef BUILD_ZIQ
-        std::shared_ptr<ziq::ziq_reader> ziqReader;
-#endif
+        BasebandReader baseband_reader;
 
     public:
         FileSourceBlock(std::string file, BasebandType type, int buffer_size, bool iq_swap = false);

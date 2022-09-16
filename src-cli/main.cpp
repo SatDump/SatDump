@@ -1,98 +1,37 @@
 #include "logger.h"
-#include "module.h"
-#include "pipeline.h"
-#include <signal.h>
-#include <filesystem>
-#include "nlohmann/json.hpp"
-#include <fstream>
-#include "init.h"
-#include "project.h"
+
+#include "live.h"
+#include "offline.h"
+#include "record.h"
 
 int main(int argc, char *argv[])
 {
-// Ignore SIGPIPE
-#ifndef _WIN32
-    signal(SIGPIPE, SIG_IGN);
-#endif
-
+    // Init logger
     initLogger();
 
-    if (argc > 1)
+    if (argc < 2)
     {
-        if (strcmp(argv[1], "project") == 0)
-        {
-            initSatdump();
-            return project(argc - 1, &argv[1]);
-        }
-    }
-    else if (argc < 6 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
-    {
-        logger->info("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_level] [output_file_or_directory] [additional options as required]");
-        logger->info("Extra options : -samplerate [baseband_samplerate] -baseband_format [f32/i16/i8/w8] -dc_block -iq_swap");
-        exit(1);
+        logger->error("Please specify either live/record or pipeline name!");
+        return 1;
     }
 
-    initSatdump();
-
-    std::string downlink_pipeline = argv[1];
-    std::string input_level = argv[2];
-    std::string input_file = argv[3];
-    std::string output_level = argv[4];
-    std::string output_file = argv[5];
-
-    nlohmann::json parameters;
-
-    if (argc > 6)
+    if (std::string(argv[1]) == "live")
     {
-        for (int i = 6; i < argc; i++)
-        {
-            if (i + 1 != argc)
-            {
-                if (strcmp(argv[i], "-samplerate") == 0) // This is your parameter name
-                {
-                    parameters["samplerate"] = std::stol(argv[i + 1]); // The next value in the array is your value
-                    i++;                                               // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-baseband_format") == 0) // This is your parameter name
-                {
-                    parameters["baseband_format"] = argv[i + 1]; // The next value in the array is your value
-                    i++;                                         // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-dc_block") == 0) // This is your parameter name
-                {
-                    parameters["dc_block"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                    i++;                                                   // Move to the next flag
-                }
-                else if (strcmp(argv[i], "-iq_swap") == 0) // This is your parameter name
-                {
-                    parameters["iq_swap"] = (bool)std::stoi(argv[i + 1]); // The next value in the array is your value
-                    i++;                                                  // Move to the next flag
-                }
-            }
-        }
+        int ret = main_live(argc, argv);
+        if (ret != 0)
+            return ret;
     }
-
-    logger->info("Starting processing pipeline " + downlink_pipeline + "...");
-    logger->debug("Input file (" + input_level + ") : " + input_file);
-    logger->debug("Output file (" + output_level + ") : " + output_file);
-
-    if (!std::filesystem::exists(output_file))
-        std::filesystem::create_directory(output_file);
-
-    std::vector<Pipeline>::iterator it = std::find_if(pipelines.begin(),
-                                                      pipelines.end(),
-                                                      [&downlink_pipeline](const Pipeline &e)
-                                                      {
-                                                          return e.name == downlink_pipeline;
-                                                      });
-
-    if (it != pipelines.end())
+    else if (std::string(argv[1]) == "record")
     {
-        it->run(input_file, output_file, parameters, input_level);
+        int ret = main_record(argc, argv);
+        if (ret != 0)
+            return ret;
     }
     else
     {
-        logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+        int ret = main_offline(argc, argv);
+        if (ret != 0)
+            return ret;
     }
 
     logger->info("Done! Goodbye");

@@ -1,0 +1,29 @@
+{
+    "oceansat2_db": {
+        "name": "OceanSat-2 DB",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 35e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 21.226e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.01
+                }
+            },
+            "frames": {
+                "oceansat2_db_decoder": {}
+            },
+            "products": {
+                "oceansat_ocm": {}
+            }
+        }
+    }
+}

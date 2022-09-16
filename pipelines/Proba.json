@@ -1,0 +1,153 @@
+{
+    "proba1_dump": {
+        "name": "Proba-1 Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Dump",
+                2235e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 4e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_instruments": {
+                    "satellite": "proba1"
+                }
+            }
+        }
+    },
+    "proba2_dump": {
+        "name": "Proba-2 Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Dump",
+                2235e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 4e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_instruments": {
+                    "satellite": "proba2"
+                }
+            }
+        }
+    },
+    "probav_s_dump": {
+        "name": "Proba-V S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Dump",
+                2235e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 4e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1.919e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    }
+}

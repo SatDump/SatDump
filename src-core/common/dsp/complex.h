@@ -2,7 +2,7 @@
 
 #include <complex>
 
-/* 
+/*
 Simple complex numbers implementation.
 While this isn't really required, as std::complex<float>
 usually does very fine, some inconsistencies in performance
@@ -10,7 +10,7 @@ were observed between platforms.
 Hence, seems like providing our own helps a lot more than I
 originally expected / tested on my machine.
 */
-//namespace dsp
+// namespace dsp
 //{
 struct complex_t
 {
@@ -22,10 +22,10 @@ struct complex_t
     complex_t(float real, float imag) : real(real), imag(imag) {}
     complex_t(std::complex<float> v) : real(v.real()), imag(v.imag()) {}
     operator std::complex<float>() const { return std::complex<float>(real, imag); }
-    //operator std::complex<float> *() const { return (std::complex<float> *)this; }
+    // operator std::complex<float> *() const { return (std::complex<float> *)this; }
 
     // Complex conjugate
-    complex_t conj()
+    complex_t conj() const
     {
         return complex_t{real, -imag};
     }
@@ -34,6 +34,12 @@ struct complex_t
     float norm()
     {
         return sqrt(real * real + imag * imag);
+    }
+
+    // Argument
+    float arg()
+    {
+        return atan2f(imag, real);
     }
 
     // Complex / Complex operations

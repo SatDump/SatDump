@@ -6,7 +6,7 @@ extern "C"
 {
 #include "libs/jpeg/jpeglib.h"
 }
-#include "libs/openjp2/openjpeg.h"
+//#include "libs/openjp2/openjpeg.h"
 
 namespace image
 {
@@ -23,7 +23,7 @@ namespace image
 
     static void libjpeg_error_func_ignore(j_common_ptr /*cinfo*/)
     {
-        //longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
+        // longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
     Image<uint8_t> decompress_jpeg(uint8_t *data, int length, bool ignore_errors)
@@ -65,7 +65,7 @@ namespace image
         }
 
         // Cleanup
-        jpeg_finish_decompress(&cinfo);
+        // jpeg_finish_decompress(&cinfo);
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
@@ -81,7 +81,7 @@ namespace image
         return img;
     }
 
-    Image<uint16_t> decompress_j2k_openjp2(uint8_t *data, int length)
+    /*Image<uint16_t> decompress_j2k_openjp2(uint8_t *data, int length)
     {
         Image<uint16_t> img;
 
@@ -146,5 +146,5 @@ namespace image
         opj_image_destroy(image);
 
         return img;
-    }
+    }*/
 }

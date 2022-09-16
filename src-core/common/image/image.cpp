@@ -113,6 +113,14 @@ namespace image
             draw_image(1, tmp);
             draw_image(2, tmp);
         }
+        else if (d_channels == 4)
+        {
+            Image<T> tmp = *this;       // Backup image
+            init(d_width, d_height, 3); // Init new image as RGB
+
+            // Copy over all 3 channels
+            memcpy(d_data, tmp.data(), d_width * d_height * 3 * sizeof(T));
+        }
     }
 
     template <typename T>

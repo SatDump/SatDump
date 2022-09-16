@@ -73,7 +73,7 @@ namespace image
         void applyXFR(XFR &xfr, Image<uint16_t> &r, Image<uint16_t> &g, Image<uint16_t> &b)
         {
             // Apply XFR
-            for (int i = 0; i < r.height() * r.width(); i++)
+            for (size_t i = 0; i < r.height() * r.width(); i++)
             {
                 unsigned short &currentR = r.data()[i];
                 unsigned short &currentG = g.data()[i];
@@ -92,7 +92,7 @@ namespace image
         void applyXFR(XFR &xfr, Image<uint16_t> &image)
         {
             // Apply XFR
-            for (int i = 0; i < image.height() * image.width(); i++)
+            for (size_t i = 0; i < image.height() * image.width(); i++)
             {
                 unsigned short &currentR = image.data()[image.height() * image.width() * 0 + i];
                 unsigned short &currentG = image.data()[image.height() * image.width() * 1 + i];

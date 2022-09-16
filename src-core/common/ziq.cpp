@@ -54,9 +54,15 @@ namespace ziq
 
     int ziq_writer::compress_and_write(uint8_t *input, int size)
     {
-        zst_outc = ZSTD_compress2(zstd_ctx, output_compressed, max_buffer_size, input, size);
-        stream.write((char *)output_compressed, zst_outc);
-        return zst_outc;
+        zstd_input = {input, (unsigned long long)size, 0};
+        zstd_output = {output_compressed, max_buffer_size, 0};
+
+        while (zstd_input.pos < zstd_input.size)
+            ZSTD_compressStream2(zstd_ctx, &zstd_output, &zstd_input, ZSTD_e_continue);
+
+        stream.write((char *)output_compressed, zstd_output.pos);
+
+        return zstd_output.pos;
     }
 
     int ziq_writer::write(complex_t *input, int size)
@@ -250,7 +256,7 @@ namespace ziq
         {
             if (cfg.is_compressed)
             {
-                //return compress_and_write((uint8_t *)input, size * sizeof(complex_t));
+                // return compress_and_write((uint8_t *)input, size * sizeof(complex_t));
                 decompress_at_least(size * sizeof(complex_t));
                 read_decompressed((uint8_t *)output, size * sizeof(complex_t));
             }

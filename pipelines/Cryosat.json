@@ -1,0 +1,36 @@
+{
+    "cryosat_dump": {
+        "name": "Cryosat X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 60e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 50e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0189
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs229"
+                }
+            },
+            "products": {
+                "cryosat_siral": {}
+            }
+        }
+    }
+}

@@ -7,7 +7,7 @@ namespace image
         Image<uint16_t> NDVI(Image<uint16_t> redIm, Image<uint16_t> nirIm)
         {
             Image<uint16_t> out(redIm.width(), redIm.height(), 1);
-            for (int i = 0; i < redIm.size(); i++)
+            for (size_t i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];
@@ -18,7 +18,7 @@ namespace image
         Image<uint16_t> EVI2(Image<uint16_t> redIm, Image<uint16_t> nirIm)
         {
             Image<uint16_t> out(redIm.width(), redIm.height(), 1);
-            for (int i = 0; i < redIm.size(); i++)
+            for (size_t i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];
@@ -29,7 +29,7 @@ namespace image
         Image<uint16_t> EVI(Image<uint16_t> redIm, Image<uint16_t> nirIm, Image<uint16_t> blueIm)
         {
             Image<uint16_t> out(redIm.width(), redIm.height(), 1);
-            for (int i = 0; i < redIm.size(); i++)
+            for (size_t i = 0; i < redIm.size(); i++)
             {
                 float red = redIm[i];
                 float nir = nirIm[i];

@@ -1,0 +1,80 @@
+{
+    "metop_ahrpt": {
+        "name": "MetOp AHRPT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                1701.3e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 2333333,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.003
+                }
+            },
+            "cadu": {
+                "metop_ahrpt_decoder": {
+                    "viterbi_outsync_after": 10,
+                    "viterbi_ber_thresold": 0.280
+                }
+            },
+            "products": {
+                "metop_instruments": {}
+            }
+        }
+    },
+    "metop_dump": {
+        "name": "MetOp X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [
+            [
+                "Main",
+                7800e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 45e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 35e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.03
+                }
+            },
+            "cadu": {
+                "metop_dump_decoder": {}
+            },
+            "products": {
+                "metop_instruments": {}
+            }
+        }
+    }
+}

@@ -172,5 +172,16 @@ namespace volk_fixed
     {
         volk_8u_x4_conv_k7_r2_8u_manual(Y, X, syms, dec, framebits, excess, Branchtab, "spiral");
     }
+
+    static inline void volk_8u_x4_conv_k7_r2_8u_neonspiral(unsigned char *Y,
+                                                           unsigned char *X,
+                                                           unsigned char *syms,
+                                                           unsigned char *dec,
+                                                           unsigned int framebits,
+                                                           unsigned int excess,
+                                                           unsigned char *Branchtab)
+    {
+        volk_8u_x4_conv_k7_r2_8u_manual(Y, X, syms, dec, framebits, excess, Branchtab, "neonspiral");
+    }
 };
 #endif /*INCLUDED_volk_8u_x4_conv_k7_r2_8u_H*/

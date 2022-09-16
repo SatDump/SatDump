@@ -1,6 +1,5 @@
 #include "module_ccsds_conv_r2_concat_decoder.h"
 #include "logger.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
@@ -16,6 +15,7 @@ namespace ccsds
 
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
+          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
@@ -51,7 +51,7 @@ namespace ccsds
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
         else
-            logger->critical("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
+            throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
 
         std::vector<phase_t> d_phases;
 
@@ -64,7 +64,7 @@ namespace ccsds
             d_phases = {PHASE_0, PHASE_90};
 
         // Parse RS
-        reedsolomon::RS_TYPE rstype;
+        reedsolomon::RS_TYPE rstype = reedsolomon::RS223;
         if (d_rs_interleaving_depth != 0)
         {
             if (d_rs_type == "rs223")
@@ -72,7 +72,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                logger->critical("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
+                throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set
@@ -131,6 +131,8 @@ namespace ccsds
 
         diff::NRZMDiff diff;
 
+        int8_t last_q_oqpsk = 0; // For delaying OQPSK
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -138,6 +140,17 @@ namespace ccsds
                 data_in.read((char *)soft_buffer, d_buffer_size);
             else
                 input_fifo->read((uint8_t *)soft_buffer, d_buffer_size);
+
+            // OQPSK Delay
+            if (d_oqpsk_delay)
+            {
+                for (int i = 0; i < d_buffer_size / 2; i++)
+                {
+                    int8_t back = soft_buffer[i * 2 + 0];
+                    soft_buffer[i * 2 + 0] = last_q_oqpsk;
+                    last_q_oqpsk = back;
+                }
+            }
 
             if (d_bpsk_90) // Symbols are swapped for some BPSK sats
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
@@ -174,6 +187,13 @@ namespace ccsds
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            // Update module stats
+            module_stats["deframer_lock"] = deframer->getState() == deframer->STATE_SYNCED;
+            module_stats["viterbi_ber"] = viterbi->ber();
+            module_stats["viterbi_lock"] = viterbi->getState();
+            if (d_rs_interleaving_depth != 0)
+                module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -191,10 +211,11 @@ namespace ccsds
 
     void CCSDSConvR2ConcatDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? NULL : NOWINDOW_FLAGS);
+        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
         float ber = viterbi->ber();
 
         ImGui::BeginGroup();
+        if (!streamingInput)
         {
             // Constellation
             if (d_constellation == dsp::BPSK)

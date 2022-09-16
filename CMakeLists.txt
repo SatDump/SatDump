@@ -1,19 +1,35 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(CheckCXXSourceCompiles)
+include(FindSSE)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(NOGUI                "Disable building the GUI"                                  OFF)
-option(BUILD_TESTING        "Build the testing program"                                 OFF)
-option(USE_VIDEO_ENCODER    "Build the video encoder module, links against libav."      OFF)
-option(BUILD_LIVE           "Build the live processing feature (WIP)"                   ON)
-option(BUILD_ZIQ            "Build support for the custom ZIQ format"                   OFF)
-option(BUILD_PLUGINS        "Build plugins, needs the submodule to be pulled"           OFF)
-option(BUILD_TRACKING       "Build the very WIP Tracking UI"                            OFF)
-option(BUILD_MSVC           "Build for Windows with MSVC"                               OFF) # Seems like "MSVC" as a macro messed up below for some reason...
+project(SatDump)
+
+option(BUILD_GUI "Build the GUI" ON)
+option(BUILD_TESTING "Build the testing program" OFF)
+option(BUILD_TOOLS "Build the tools programs" OFF)
+option(BUILD_ZIQ "Build support for the custom ZIQ format" OFF)
+option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
+option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
+option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
+
+if(ANDROID)
+    # Build settings
+    set(BUILD_OPENCL OFF)
+    set(BUILD_OPENMP OFF)
+endif()
+
+# Set default install prefix to /usr
+if(UNIX)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX /usr CACHE PATH "Set CMAKE Default to /usr" FORCE)
+    endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+endif()
 
 if(APPLE)
     include_directories(/usr/local/include)
@@ -27,9 +43,30 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+    if(BUILD_OPENMP)
+        message("Compiling with OpenMP support!")
+
+        if(APPLE)
+            # set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
+            # set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/usr/local/opt/llvm/include")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+        endif()
+    endif()
+
+    FindSSE()
+
+    if(SSE4_1_FOUND)
+        message("Found SSE features, enabling building SSE code")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    else()
+        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
+    endif()
 else()
-    #set(CMAKE_CXX_FLAGS "-Wall")
-    #set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    # set(CMAKE_CXX_FLAGS "-Wall")
+    # set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 endif()
 
@@ -39,84 +76,108 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
+
+    FindSSE()
+
+    if(SSE4_1_FOUND)
+        message("Found SSE features, enabling building SSE code")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /d2archSSE42")
+    else()
+        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
+    endif()
 endif()
 
-project (SatDump VERSION "0.0.39")
+project(SatDump VERSION "1.0.0")
+
+if(ANDROID)
+    add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
+endif()
 
 add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
-include(CheckCXXSourceCompiles)
+# Check we have OpenCL
+if(MSVC)
+    set(OPENCL_FOUND 1)
+    set(OpenCL_LIBRARY OpenCL.dll)
+    set(OpenCL_LIBRARIES OpenCL.dll)
+else()
+    find_package(OpenCL)
+endif()
+
+if(OPENCL_FOUND AND BUILD_OPENCL)
+    message("OpenCL Found! SatDump will support accelerated GPU computing.")
+
+# add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
+else()
+    message("OpenCL NOT found or disabled!")
+    set(BUILD_OPENCL OFF)
+endif()
 
 # Check system has <filesystem>
 check_cxx_source_compiles("#include <filesystem>\n int main() { return 0; }" STD_HAS_FILESYSTEM)
+
 if(NOT STD_HAS_FILESYSTEM)
-include_directories(std_filesystem)
+    include_directories(std_filesystem)
 endif()
 
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
 
-if(BUILD_LIVE)
-    add_subdirectory(libsdr)
-endif()
-
-if(NOT NOGUI)
+if(BUILD_GUI)
+    message("Building the GUI")
     add_subdirectory(src-interface)
-    add_subdirectory(src-ui)
-endif()
 
-if(BUILD_LIVE)
-    add_subdirectory(src-ingestor)
-    add_subdirectory(src-tools/src-recorder)
+    if(NOT ANDROID)
+        add_subdirectory(src-ui)
+    endif()
 endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
 endif()
 
-if(BUILD_PLUGINS)
-    add_subdirectory(plugins)
+if(BUILD_TOOLS)
+    add_subdirectory(tools)
 endif()
 
-# If GDAL is available, build the georef2geotiff tool
-find_library(GDAL_LIBRARY gdal)
-if(GDAL_LIBRARY)
-    add_subdirectory(src-tools/src-georef2geotiff)
+add_subdirectory(plugins)
+
+# Install configuration
+if(NOT ANDROID)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
+    install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/satdump)
+    install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/satdump)
+    configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop @ONLY)
+
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION /usr/share/applications)
+    endif()
+
+    # Create uninstall target
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake @ONLY)
+    add_custom_target(uninstall ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+    # CPack Configuration
+    set(CPACK_PACKAGE_NAME ${PROJECT_NAME} CACHE STRING "satdump-${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
+    set(CPACK_PACKAGE_VENDOR "SatDump")
+    set(CPACK_PACKAGE_CONTACT "Aang23")
+
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+
+    set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+    set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+    set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+    set(CPACK_GENERATOR DEB)
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+    set(CPACK_DEB_COMPONENT_INSTALL ON)
+
+    include(CPack)
 endif()
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
-install(FILES ${CMAKE_SOURCE_DIR}/Roboto-Medium.ttf DESTINATION share/satdump)
-install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/satdump)
-configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop @ONLY)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION /usr/share/applications)
-endif ()
-
-# Create uninstall target
-configure_file(${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake @ONLY)
-add_custom_target(uninstall ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
-# CPack Configuration
-set(CPACK_PACKAGE_NAME ${PROJECT_NAME} CACHE STRING "satdump-${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
-set(CPACK_PACKAGE_VENDOR "SatDump")
-set(CPACK_PACKAGE_CONTACT "Aang23")
-
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-
-set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
-
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-
-set(CPACK_GENERATOR DEB)
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
-set(CPACK_DEB_COMPONENT_INSTALL ON)
-
-include(CPack)

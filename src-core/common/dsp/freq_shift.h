@@ -16,5 +16,7 @@ namespace dsp
 
     public:
         FreqShiftBlock(std::shared_ptr<dsp::stream<complex_t>> input, float samplerate, float shift);
+
+        void set_freq_raw(float freq); // Allows using this as a manual frequency correction block, eg, as a pre-PLL tool
     };
 }

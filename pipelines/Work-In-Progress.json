@@ -1,29 +1,23 @@
 {
     "probav_x_dump": {
         "name": "Proba-V X-Band Dump",
-        "live": false,
-        "live_cfg": [
+        "frequencies": [
             [
-                1,
-                0
+                "Main",
+                8300e6
             ]
         ],
-        "frequencies": [
-            8300
-        ],
-        "samplerate": 4e6,
-        "baseband_type": "i16",
         "work": {
             "baseband": {},
             "soft": {
-                "bpsk_demod": {
+                /*"bpsk_demod": {
                     "symbolrate": 1919000,
                     "agc_rate": 0.000001,
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
                     "costas_bw": 0.004,
                     "buffer_size": 8192
-                }
+                }*/
             },
             "cadu": {
                 "proba_s_decoder": {
@@ -37,26 +31,15 @@
     },
     "gcom_w1": {
         "name": "GCOM-W1 DB",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 10000000,
-                    "agc_rate": 0.1,
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 10e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.006,
-                    "clock_gain_omega": 0.8,
-                    "clock_mu": 0.9,
-                    "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.001,
-                    "dc_block": true,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
@@ -78,26 +61,15 @@
     },
     "gcom_c1": {
         "name": "GCOM-C1 DB",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 69416000,
-                    "agc_rate": 0.1,
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 69.416e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.006,
-                    "clock_gain_omega": 0.8,
-                    "clock_mu": 0.9,
-                    "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.001,
-                    "dc_block": true,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
@@ -116,38 +88,22 @@
     },
     "aeolus_dump": {
         "name": "Aeolus Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 10e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 5000000,
-                    "agc_rate": 0.1,
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 5e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.006,
-                    "clock_gain_omega": 0.8,
-                    "clock_mu": 0.9,
-                    "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001,
-                    "dc_block": true,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                    "pll_bw": 0.006
                 }
             }
         }
     },
     "smos_dump": {
         "name": "SMOS X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
@@ -166,21 +122,15 @@
     },
     "prisma_dump": {
         "name": "PRISMA X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 90e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "qpsk_demod": {
-                    "symbolrate": 77500000,
-                    "agc_rate": 0.00001,
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 77.5e6,
                     "rrc_alpha": 0.35,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.0189,
-                    "buffer_size": 8192
+                    "pll_bw": 0.0189
                 }
             },
             "cadu": {
@@ -197,26 +147,15 @@
     },
     "sentinel6_dump": {
         "name": "Sentinel-6 Dump",
-        "live": false,
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 75000000,
-                    "agc_rate": 0.1,
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 75e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.006,
-                    "clock_gain_omega": 1.8922499999999997e-05,
-                    "clock_mu": 0.5,
-                    "clock_gain_mu": 8.7e-3,
-                    "clock_omega_relative_limit": 0.005,
-                    "dc_block": true,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
@@ -233,31 +172,203 @@
     },
     "iris_dump": {
         "name": "IRIS X-Band Dump",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "samplerate": 20e6,
-        "baseband_type": "w8",
         "work": {
             "baseband": {},
             "soft": {
-                "oqpsk_demod": {
-                    "symbolrate": 7500000,
-                    "agc_rate": 0.1,
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 7.5e6,
                     "rrc_alpha": 0.5,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.006,
+                    "pll_bw": 0.006,
                     "clock_gain_omega": 0.8,
                     "clock_mu": 0.9,
                     "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001,
-                    "dc_block": true,
-                    "constellation_scale": 100,
-                    "buffer_size": 8192
+                    "clock_omega_relative_limit": 0.0001
                 }
             },
             "cadu": {
                 "iris_dump_decoder": {}
+            }
+        }
+    },
+    "smap_s_link": {
+        "name": "SMAP S-Band Link",
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 590e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.04
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 10232,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    },
+    "cheops_link": {
+        "name": "CHEOPS S-Band Dump",
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 1.142e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "oqpsk_delay": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "timed_dump": {
+        "name": "TIMED S-Band Dump",
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 2.295e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 9872,
+                    "nrzm": true,
+                    "qpsk_swap_iq": true,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "grace_fo_link": {
+        "name": "Grace-FO Dump",
+        "samplerate": 20e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 1.5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    },
+    "cfosat1_dump": {
+        "name": "CFOSAT-1 X-Band Dump",
+        "samplerate": 40e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 30e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0189
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "gk2a_cdas": {
+        "name": "GK-2A CDAS",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 3.096e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10112,
+                    "rs_i": 0
+                }
+            }
+        }
+    },
+    "eumetcast_africa": {
+        "name": "EUMETCAST Africa",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 9.892e6,
+                    "rrc_alpha": 0.2,
+                    "pll_bw": 0.01,
+                    "modcod": 7,
+                    "shortframes": false,
+                    "pilots": false,
+                    // "sof_thresold": 10, // Disable locking
+                    "freq_prop_factor": 0.01
+                }
             }
         }
     }

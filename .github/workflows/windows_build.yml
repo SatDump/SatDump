@@ -23,7 +23,7 @@ jobs:
 
       - name: Download SDRPlay API
         shell: powershell
-        run: Invoke-WebRequest -Uri "https://files.altillimity.com/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.zip
+        run: Invoke-WebRequest -Uri "https://www.satdump.org/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.zip
 
       - name: Install SDRPlay API
         shell: powershell
@@ -59,12 +59,12 @@ jobs:
       - name: Copy Pipelines
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release; cp $Env:GITHUB_WORKSPACE/Roboto-Medium.ttf ${{runner.workspace}}/build/Release
+        run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
 
-      - name: Copy Fonts
+      - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp $Env:GITHUB_WORKSPACE/Roboto-Medium.ttf Release
+        run: cp -r ${{runner.workspace}}/build/plugins ${{runner.workspace}}/build/Release;
 
       - name: Upload ZIP
         uses: actions/upload-artifact@v2

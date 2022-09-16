@@ -2,8 +2,6 @@
 #include <cstring>
 #include "common/utils.h"
 
-//#include <iostream>
-
 #define ST_IDLE 0
 #define ST_SYNCED 1
 
@@ -22,6 +20,10 @@ namespace viterbi
         soft_buffer = new uint8_t[d_buffer_size * 2];
         depunc_buffer = new uint8_t[d_buffer_size * 2];
         output_buffer = new uint8_t[d_buffer_size * 2];
+
+        for (int p = 0; p < 2; p++)
+            for (int o = 0; o < 2; o++)
+                d_bers[p][o] = 10;
     }
 
     Viterbi3_4::~Viterbi3_4()
@@ -84,7 +86,7 @@ namespace viterbi
                 /*
                 ....while MetOp swaps symbols once in a while.
 
-                Keeping them grouped in the below way ensure we always 
+                Keeping them grouped in the below way ensure we always
                 end up with an even symbol output count for the r=1/2 decoder.
                 */
                 if (shift ^ (i % 2 == 0))
@@ -109,6 +111,7 @@ namespace viterbi
     {
         if (d_state == ST_IDLE) // Search for a lock
         {
+            d_ber = 10;
             for (int phase = 0; phase < (d_fymode ? 1 : 2); phase++) // For FengYun, where the second state is swapped, we do NOT need to handle phase shifts
             {
                 memcpy(ber_test_buffer, input, TEST_BITS_LENGTH);                            // Copy over small buffer
@@ -119,8 +122,8 @@ namespace viterbi
                 {
                     depuncture(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
 
-                    cc_decoder_ber.generic_work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
-                    cc_encoder_ber.generic_work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison
+                    cc_decoder_ber.work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
+                    cc_encoder_ber.work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison
 
                     d_bers[phase][shift] = get_ber(ber_depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.5); // Compute BER between initial buffer and re-encoded
 
@@ -144,16 +147,16 @@ namespace viterbi
             signed_soft_to_unsigned((int8_t *)input, soft_buffer, size); // Soft convertion
             depuncture(soft_buffer, depunc_buffer, size, d_shift);       // Depuncturing
 
-            cc_decoder.generic_work(depunc_buffer, output); // Decode entire buffer
+            cc_decoder.work(depunc_buffer, output); // Decode entire buffer
             out_n = (size * 1.5) / 2;
 
-            cc_encoder_ber.generic_work(output, ber_encoded_buffer);                    // Re-encoded for a BER check
+            cc_encoder_ber.work(output, ber_encoded_buffer);                            // Re-encoded for a BER check
             d_ber = get_ber(depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.5); // Compute BER
 
             if (d_ber > d_ber_thresold) // Check current BER
             {
                 d_invalid++;
-                if (d_invalid > d_max_outsync) // If we get over out max unsynced thresold...
+                if (d_invalid > d_max_outsync) // If we get over our max unsynced thresold...
                     d_state = ST_IDLE;         // ...reset the decoder
             }
             else
@@ -173,15 +176,10 @@ namespace viterbi
         {
             float ber = 10;
             for (int p = 0; p < 2; p++)
-            {
                 for (int o = 0; o < 2; o++)
-                {
                     if (ber > d_bers[p][o])
-                    {
                         ber = d_bers[p][o];
-                    }
-                }
-            }
+
             return ber;
         }
     }
@@ -190,4 +188,4 @@ namespace viterbi
     {
         return d_state;
     }
-} // namespace npp
+}
