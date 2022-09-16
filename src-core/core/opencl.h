@@ -2,8 +2,8 @@
 
 #ifdef USE_OPENCL
 #define CL_TARGET_OPENCL_VERSION 110
-#include <OpenCL/opencl.h>
 #ifdef __APPLE__
+#include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif
