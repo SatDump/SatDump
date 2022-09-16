@@ -2,7 +2,7 @@
 #include <numeric>
 
 // Older systems running livolk1 lack this kernel... So provide our own if that's the case
-#ifndef volk_32fc_x2_add_32fc
+#ifdef VOLK_NO_volk_32fc_x2_add_32fc
 void volk_32fc_x2_add_32fc(lv_32fc_t *cVector,
                            const lv_32fc_t *aVector,
                            const lv_32fc_t *bVector,
