@@ -18,6 +18,7 @@
 #include "tlm_deframer.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
+#include <volk/volk.h>
 
 namespace elektro_arktika
 {
@@ -59,7 +60,7 @@ namespace elektro_arktika
             volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)buffer2, (lv_32fc_t *)buffer2, pshift, nsamples);
 
             // Add both
-            volk_32fc_x2_add_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)buffer1, (lv_32fc_t *)buffer2, nsamples);
+            volk_32f_x2_add_32f((float *)output_stream->writeBuf, (float *)buffer1, (float *)buffer2, nsamples * 2);
 
             input_stream->flush();
             output_stream->swap(nsamples);

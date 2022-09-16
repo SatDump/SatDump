@@ -6,7 +6,7 @@
 #include "common/image/composite.h"
 #include "common/utils.h"
 #include "products/image_products.h"
-
+#include <filesystem>
 #include "common/repack.h"
 
 #define ALL_MODE 2

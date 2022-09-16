@@ -4,6 +4,7 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "core/config.h"
+#include <filesystem>
 
 namespace satdump
 {

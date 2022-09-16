@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/tracking/tracking.h"
 #include "resources.h"
+#include <filesystem>
 
 namespace satdump
 {

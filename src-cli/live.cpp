@@ -8,6 +8,7 @@
 #include <nng/nng.h>
 #include <nng/supplemental/http/http.h>
 #include <nng/supplemental/util/platform.h>
+#include <filesystem>
 
 // Catch CTRL+C to exit live properly!
 bool live_should_exit = false;

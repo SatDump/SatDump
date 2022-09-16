@@ -3,6 +3,7 @@
 #include "common/image/composite.h"
 #include "resources.h"
 #include "common/image/earth_curvature.h"
+#include <filesystem>
 
 namespace satdump
 {

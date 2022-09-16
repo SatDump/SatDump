@@ -2,6 +2,7 @@
 #include "config.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"
+#include <filesystem>
 
 namespace satdump
 {
