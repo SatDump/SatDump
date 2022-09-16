@@ -97,8 +97,8 @@ namespace satdump
             image::Image<uint16_t> img;
         };
         int selected_external_type = 0;
-        std::vector<ExternalProjSource> projections_external_sources;
-        image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress);
+        std::vector<std::shared_ptr<ExternalProjSource>> projections_external_sources;
+        image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, std::shared_ptr<ExternalProjSource> ep, float *progress);
 
         int projection_osm_zoom = 3;
         bool is_opening_layer = false;
@@ -109,7 +109,7 @@ namespace satdump
             std::string name;
             int type; // 0 = products, 1 = external
             ProductsHandler *viewer_prods;
-            ExternalProjSource *external;
+            std::shared_ptr<ExternalProjSource> external;
             float opacity = 100;
             bool enabled = true;
             float progress = 0;

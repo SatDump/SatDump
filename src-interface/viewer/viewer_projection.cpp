@@ -158,12 +158,13 @@ namespace satdump
                     if (selected_external_type == 2)
                     {
                         ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
-                        if(!urlgood)
+                        if (!urlgood)
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
 
                         ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
 
-                        if(!urlgood){
+                        if (!urlgood)
+                        {
                             if (ImGui::IsItemHovered())
                                 ImGui::SetTooltip("Invalid URL! must be http://server/");
                             ImGui::PopStyleColor();
@@ -181,38 +182,38 @@ namespace satdump
                                                                                        (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
                     {
                         const std::regex e("http:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/");
-                        if (regex_match(mapurl, e))
+                        if (regex_match(mapurl, e) || selected_external_type != 2)
                         {
                             urlgood = true;
                             auto genfun = [this](int)
                             {
                                 is_opening_layer = true;
 
-                                ExternalProjSource new_layer_cfg;
+                                std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
                                 if (selected_external_type == 2)
-                                    new_layer_cfg.name = "Tile Map";
+                                    new_layer_cfg->name = "Tile Map";
                                 else
-                                    new_layer_cfg.name = projection_new_layer_name;
+                                    new_layer_cfg->name = projection_new_layer_name;
 
                                 if (selected_external_type == 1)
-                                    new_layer_cfg.path = projection_new_layer_cfg.getPath();
+                                    new_layer_cfg->path = projection_new_layer_cfg.getPath();
                                 else if (selected_external_type == 2)
-                                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
                                 else
-                                    new_layer_cfg.cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
 
                                 int i = -1;
                                 bool contains = false;
                                 do
                                 {
                                     contains = false;
-                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i + 1)));
+                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i + 1)));
                                     for (int i = 0; i < (int)projection_layers.size(); i++)
                                         if (projection_layers[i].name == curr_name)
                                             contains = true;
                                     i++;
                                 } while (contains);
-                                new_layer_cfg.name = (i == 0 ? new_layer_cfg.name : (new_layer_cfg.name + " #" + std::to_string(i)));
+                                new_layer_cfg->name = (i == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i)));
 
                                 if (selected_external_type == 2)
                                 {
@@ -226,24 +227,24 @@ namespace satdump
                                     }
                                     logger->info("Generating tile map");
                                     tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                    new_layer_cfg.img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
+                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
                                 }
                                 else
-                                    new_layer_cfg.img.load_png(projection_new_layer_file.getPath());
+                                    new_layer_cfg->img.load_png(projection_new_layer_file.getPath());
 
                                 projections_external_sources.push_back(new_layer_cfg);
 
                                 if (selected_external_type == 2)
-                                {
                                     selected_external_type = 0;
-                                }
 
                                 projections_should_refresh = true;
                                 is_opening_layer = false;
                             };
                             ui_thread_pool.push(genfun);
                             ImGui::CloseCurrentPopup();
-                        } else {
+                        }
+                        else
+                        {
                             urlgood = false;
                         }
                     }
@@ -294,7 +295,7 @@ namespace satdump
                             {
                                 projection_layers.erase(projection_layers.begin() + i);
                                 for (int f = 0; f < (int)projections_external_sources.size(); f++)
-                                    if (projections_external_sources[f].name == projection_layers[i].name)
+                                    if (projections_external_sources[f]->name == projection_layers[i].name)
                                         projections_external_sources.erase(projections_external_sources.begin() + f);
                             }
                             else if (layer.type == 0)
@@ -441,7 +442,7 @@ namespace satdump
             }
             else
             {
-                auto img = projectExternal(projections_image_width, projections_image_height, cfg, *layer.external, &layer.progress);
+                auto img = projectExternal(projections_image_width, projections_image_height, cfg, layer.external, &layer.progress);
                 img.to_rgb();
                 layers_images.push_back(img);
             }
@@ -504,20 +505,20 @@ namespace satdump
         projections_are_generating = false;
     }
 
-    image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, ExternalProjSource &ep, float *progress)
+    image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, std::shared_ptr<ExternalProjSource> ep, float *progress)
     {
         reprojection::ReprojectionOperation op;
 
-        if (ep.path.size() > 0)
-            op.source_prj_info = loadJsonFile(ep.path);
+        if (ep->path.size() > 0)
+            op.source_prj_info = loadJsonFile(ep->path);
         else
-            op.source_prj_info = ep.cfg;
+            op.source_prj_info = ep->cfg;
 
         if (!op.source_prj_info.contains("type")) // Just in case...
             return image::Image<uint16_t>(width, height, 3);
 
         op.target_prj_info = tcfg;
-        op.img = ep.img;
+        op.img = ep->img;
         op.output_width = width;
         op.output_height = height;
         op.use_draw_algorithm = false;
@@ -533,13 +534,11 @@ namespace satdump
             bool contains = false;
 
             for (ProjectionLayer &lay : projection_layers)
-            {
-                if (projections_external_sources[i].name == lay.name)
+                if (projections_external_sources[i]->name == lay.name)
                     contains = true;
-            }
 
             if (!contains)
-                projection_layers.push_back({projections_external_sources[i].name, 1, nullptr, &projections_external_sources[i]});
+                projection_layers.push_back({projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
         }
 
         // Check for *new* products layers
