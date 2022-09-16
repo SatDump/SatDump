@@ -60,8 +60,8 @@ void RtlSdrSource::set_gains()
     if (!is_started)
         return;
 
-    rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain);
-    logger->debug("Set RTL-SDR Gain to {:d}", gain);
+    rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
+    logger->debug("Set RTL-SDR Gain to {:d}", gain * 10);
 }
 
 void RtlSdrSource::set_bias()
