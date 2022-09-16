@@ -268,8 +268,7 @@ namespace satdump
                             {
                                 projection_layers.erase(projection_layers.begin() + i);
                                 for (int f = 0; f < (int)projections_external_sources.size(); f++)
-                                    if (projections_external_sources[f].name == projection_layers[i].name &&
-                                        &projections_external_sources[f] == projection_layers[i].external)
+                                    if (projections_external_sources[f].name == projection_layers[i].name)
                                         projections_external_sources.erase(projections_external_sources.begin() + f);
                             }
                             else if (layer.type == 0)
@@ -509,14 +508,9 @@ namespace satdump
 
             for (ProjectionLayer &lay : projection_layers)
             {
-                if (projections_external_sources[i].name == lay.name &&
-                    &projections_external_sources[i] == lay.external)
+                if (projections_external_sources[i].name == lay.name)
                     contains = true;
 
-                if (projections_external_sources[i].name == "Tile Map" && lay.name == "Tile Map")
-                {
-                    contains = true;
-                }
             }
 
             if (!contains)
