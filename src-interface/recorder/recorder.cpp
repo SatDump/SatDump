@@ -344,6 +344,7 @@ namespace satdump
                 if (ImGui::Combo("Format", &select_sample_format, "f32\0"
                                                                   "s16\0"
                                                                   "s8\0"
+                                                                  "wav16\0"
 #ifdef BUILD_ZIQ
                                                                   "ziq s8\0"
                                                                   "ziq s16\0"
@@ -357,18 +358,20 @@ namespace satdump
                         file_sink->set_output_sample_type(dsp::IS_16);
                     else if (select_sample_format == 2)
                         file_sink->set_output_sample_type(dsp::IS_8);
-#ifdef BUILD_ZIQ
                     else if (select_sample_format == 3)
+                        file_sink->set_output_sample_type(dsp::WAV_16);
+#ifdef BUILD_ZIQ
+                    else if (select_sample_format == 4)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 8;
                     }
-                    else if (select_sample_format == 4)
+                    else if (select_sample_format == 5)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 16;
                     }
-                    else if (select_sample_format == 5)
+                    else if (select_sample_format == 6)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 32;

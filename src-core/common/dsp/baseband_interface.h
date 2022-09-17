@@ -19,6 +19,7 @@ namespace dsp
         IS_16,
         IS_8,
         IU_8,
+        WAV_16,
 #ifdef BUILD_ZIQ
         ZIQ,
 #endif
@@ -116,6 +117,7 @@ namespace dsp
                 input_file.read((char *)output_buffer, buffer_size * sizeof(complex_t));
                 break;
 
+            case WAV_16:
             case IS_16:
                 input_file.read((char *)buffer_i16, buffer_size * sizeof(int16_t) * 2);
                 volk_16i_s32f_convert_32f_u((float *)output_buffer, (const int16_t *)buffer_i16, 65535, buffer_size * 2);
@@ -173,6 +175,7 @@ namespace dsp
                 samplesize = sizeof(complex_t);
                 break;
 
+            case WAV_16:
             case IS_16:
                 samplesize = sizeof(int16_t) * 2;
                 break;
