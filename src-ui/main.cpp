@@ -28,9 +28,9 @@ void bindImageTextureFunctions();
 
 // OpenGL versions to try to start
 // Yes, I did check on SDR++'s way around that
-const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2, 3};
-const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1, 2};
-const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120", "#version 120"};
+const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2};
+const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1};
+const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120"};
 const bool OPENGL_VERSIONS_GLES[] = {false, true, false, false};
 
 int main(int argc, char *argv[])
@@ -91,22 +91,43 @@ int main(int argc, char *argv[])
         exit(1);
     }
 #else
-    for (int i = 0; i < 4; i++)
+    const char *gl_override_rpi = getenv("MESA_GL_VERSION_OVERRIDE");
+    if (std::string(gl_override_rpi) == "OpenGL 4.5 (Core Profile) Mesa 22.0.5")
     {
-        glfwWindowHint(GLFW_CLIENT_API, OPENGL_VERSIONS_GLES[i] ? GLFW_OPENGL_ES_API : GLFW_OPENGL_API);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
-        if (OPENGL_VERSIONS_MAJOR[i] >= 3 && OPENGL_VERSIONS_MINOR[i] >= 2)
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);               // Required on Mac
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
         // Create window with graphics context
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-        final_gl_version = i;
+        final_gl_version = 2;
         if (window == NULL)
-            logger->critical("Could not init GLFW Window with OpenGL {:d}.{:d}", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
-        else
-            break;
+        {
+            logger->critical("Could not init GLFW Window with OpenGL 3.2 with {:s}", gl_override_rpi);
+            exit(1);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            glfwWindowHint(GLFW_CLIENT_API, OPENGL_VERSIONS_GLES[i] ? GLFW_OPENGL_ES_API : GLFW_OPENGL_API);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
+            if (OPENGL_VERSIONS_MAJOR[i] >= 3 && OPENGL_VERSIONS_MINOR[i] >= 2)
+                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);               // Required on Mac
+
+            // Create window with graphics context
+            window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+            final_gl_version = i;
+            if (window == NULL)
+                logger->critical("Could not init GLFW Window with OpenGL {:d}.{:d}", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
+            else
+                break;
+        }
     }
 #endif
 
