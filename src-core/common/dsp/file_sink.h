@@ -68,22 +68,23 @@ namespace dsp
             if (d_sample_format == WAV_16)
             {
                 // write wav header
-                uint8_t subchunk1_size = 16;
-                uint8_t audio_format = 1;
-                uint8_t num_channels = 2;
-                uint8_t bits_per_sample = 16;
-                uint64_t byte_rate = samplerate * num_channels * bits_per_sample / 8;
-                uint8_t block_align = num_channels * bits_per_sample / 8;
+                uint32_t subchunk1_size = 16;
+                uint16_t audio_format = 1;
+                uint16_t num_channels = 2;
+                uint16_t bits_per_sample = 16;
+                uint32_t byte_rate = samplerate * num_channels * bits_per_sample / 8;
+                uint16_t block_align = num_channels * bits_per_sample / 8;
+                uint32_t wav_samplerate = samplerate;
 
                 output_file.write("RIFF----WAVE", 12);
                 output_file.write("fmt ", 4);
-                output_file.write((char*)&subchunk1_size, 4); 
-                output_file.write((char*)&audio_format, 2);
-                output_file.write((char*)&num_channels, 2);
-                output_file.write((char*)&samplerate, 4);
-                output_file.write((char*)&byte_rate, 4);
-                output_file.write((char*)&block_align, 2);
-                output_file.write((char*)&bits_per_sample, 2);
+                output_file.write((char *)&subchunk1_size, 4);
+                output_file.write((char *)&audio_format, 2);
+                output_file.write((char *)&num_channels, 2);
+                output_file.write((char *)&wav_samplerate, 4);
+                output_file.write((char *)&byte_rate, 4);
+                output_file.write((char *)&block_align, 2);
+                output_file.write((char *)&bits_per_sample, 2);
                 output_file.write("data----", 8);
             }
 
@@ -120,13 +121,13 @@ namespace dsp
             if (d_sample_format == WAV_16)
             {
                 // complete wav header
-                uint64_t data_size = get_written();
-                uint64_t chunk_size = data_size + 36;
+                uint32_t data_size = get_written();
+                uint32_t chunk_size = data_size + 36;
 
                 output_file.seekp(4);
-                output_file.write((char*)&chunk_size, 4);
+                output_file.write((char *)&chunk_size, 4);
                 output_file.seekp(40);
-                output_file.write((char*)&data_size, 4);
+                output_file.write((char *)&data_size, 4);
             }
 
             rec_mutex.lock();
