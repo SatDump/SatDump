@@ -25,7 +25,11 @@ static void glfw_error_callback(int error, const char *description)
 }
 
 void bindImageTextureFunctions();
-// void bindFileDialogsFunctions();
+
+// OpenGL versions to try to start
+const int OPENGL_VERSIONS_MAJOR[] = {3, 2};
+const int OPENGL_VERSIONS_MINOR[] = {2, 1};
+const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 120"};
 
 int main(int argc, char *argv[])
 {
@@ -65,18 +69,42 @@ int main(int argc, char *argv[])
 
     // GL STUFF
 
+    // Initialize GLFW
+    GLFWwindow *window = nullptr;
+    int final_gl_version = 0;
+
+#ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
-    // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+    final_gl_version = 0;
+
+    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+
     if (window == NULL)
     {
         logger->critical("Could not init GLFW Window");
         exit(1);
     }
+#else
+    for (int i = 0; i < 3; i++)
+    {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+
+        // Create window with graphics context
+        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+        final_gl_version = i;
+        if (window == NULL)
+            logger->critical("Could not init GLFW Window with OpenGL {:d}.{:d}", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
+        else
+            break;
+    }
+#endif
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
@@ -94,12 +122,11 @@ int main(int argc, char *argv[])
     (void)io;
     io.IniFilename = NULL;
 
-    logger->debug("Starting with OpenGL {:s}", glGetString(GL_VERSION));
+    logger->debug("Starting with OpenGL {:s}", (char *)glGetString(GL_VERSION));
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    if (!ImGui_ImplOpenGL3_Init("#version 150"))
-        ImGui_ImplOpenGL3_Init("#version 120"); // If 1.5 doesn't work go back to 1.2
+    ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
 
     {
         image::Image<uint8_t> image;
@@ -110,8 +137,8 @@ int main(int argc, char *argv[])
         img.height = image.height();
         img.width = image.width();
 
-        for (int y = 0; y < image.height(); y++)
-            for (int x = 0; x < image.width(); x++)
+        for (int y = 0; y < (int)image.height(); y++)
+            for (int x = 0; x < (int)image.width(); x++)
                 for (int c = 0; c < 3; c++)
                     px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
         image.clear();
