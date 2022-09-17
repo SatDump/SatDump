@@ -75,6 +75,18 @@ namespace satdump
         if (normalize_image)
             current_image.normalize();
 
+        std::vector<float> corrected_stuff;
+        if (correct_image)
+        {
+            corrected_stuff.resize(current_image.width());
+            bool success = false;
+            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+            if (success)
+                current_image = cor;
+            if (!success)
+                corrected_stuff.clear();
+        }
+
         if (map_overlay || cities_overlay)
         {
             current_image.to_rgb(); // Ensure this is RGB!!
@@ -84,6 +96,22 @@ namespace satdump
                                                                             products->get_tle(),
                                                                             current_timestamps,
                                                                             rotate_image);
+
+            if (corrected_stuff.size() != 0 && correct_image)
+            {
+                std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                    [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                    if (ret.first != -1 && ret.second != -1 && ret.first < corrected_stuff.size() && ret.first >= 0)
+                        ret.first = corrected_stuff[ret.first];
+                    else
+                        ret.second = ret.first = -1;
+                    return ret;
+                };
+                proj_func = newfun;
+            }
+
             if (map_overlay)
             {
                 logger->info("Drawing map overlay...");
@@ -104,14 +132,6 @@ namespace satdump
                                                   proj_func,
                                                   cities_scale);
             }
-        }
-
-        if (correct_image)
-        {
-            bool success = false;
-            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success);
-            if (success)
-                current_image = cor;
         }
 
         projection_ready = false;

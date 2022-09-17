@@ -311,7 +311,7 @@ namespace satdump
         return rgb_composite;
     }
 
-    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success)
+    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table)
     {
         success = false;
         if (!product.contents.contains("projection_cfg"))
@@ -339,6 +339,6 @@ namespace satdump
             }
         }
 
-        return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol);
+        return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
     }
 }

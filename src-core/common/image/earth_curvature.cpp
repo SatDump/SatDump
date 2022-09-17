@@ -12,7 +12,7 @@ namespace image
         https://web.archive.org/web/20200110090856if_/http://ceeserver.cee.cornell.edu:80/wdp2/cee6150/Monograph/615_04_GeomCorrect_rev01.pdf
         */
         template <typename T>
-        Image<T> correct_earth_curvature(Image<T> &image, float satellite_height, float swath, float resolution_km)
+        Image<T> correct_earth_curvature(Image<T> &image, float satellite_height, float swath, float resolution_km, float *foward_table)
         {
             float satellite_orbit_radius = EARTH_RADIUS + satellite_height;                                                                                        // Compute the satellite's orbit radius
             int corrected_width = round(swath / resolution_km);                                                                                                    // Compute the output image size, or number of samples from the imager
@@ -43,6 +43,8 @@ namespace image
                     {
                         int pixel_to_use = correction_factors[i];                                                                                     // Input pixel to use, will get rounder automatically
                         output_image[channel_offset_output + row * corrected_width + i] = image[channel_offset + row * image.width() + pixel_to_use]; // Copy over that pixel!
+                        if (foward_table != nullptr)
+                            foward_table[pixel_to_use] = i;
                     }
                 }
             }
@@ -55,7 +57,7 @@ namespace image
             return output_image;
         }
 
-        template Image<uint8_t> correct_earth_curvature<uint8_t>(Image<uint8_t> &, float, float, float);
-        template Image<uint16_t> correct_earth_curvature<uint16_t>(Image<uint16_t> &, float, float, float);
+        template Image<uint8_t> correct_earth_curvature<uint8_t>(Image<uint8_t> &, float, float, float, float *);
+        template Image<uint16_t> correct_earth_curvature<uint16_t>(Image<uint16_t> &, float, float, float, float *);
     }
 }
