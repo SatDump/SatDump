@@ -66,6 +66,8 @@ namespace satdump
 
     void renderMainUI(int wwidth, int wheight)
     {
+        // ImGui::ShowDemoWindow();
+
         /*if (in_app)
         {
             ImGui::SetNextWindowPos({0, 0});
