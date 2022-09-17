@@ -44,7 +44,7 @@ namespace dsp
                 output_file.write((char *)input_stream->readBuf, nsamples * sizeof(complex_t));
                 current_size_out += nsamples * sizeof(complex_t);
             }
-            else if (d_sample_format == IS_16)
+            else if (d_sample_format == IS_16 || d_sample_format == WAV_16)
             {
                 volk_32f_s32f_convert_16i(buffer_s16, (float *)input_stream->readBuf, 65535, nsamples * 2);
                 output_file.write((char *)buffer_s16, nsamples * sizeof(int16_t) * 2);

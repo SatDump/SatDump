@@ -12,6 +12,8 @@ namespace dsp
             return CF_32;
         else if (type == "u8")
             return IU_8;
+        else if (type == "w16")
+            return WAV_16;
 #ifdef BUILD_ZIQ
         else if (type == "ziq")
             return ZIQ;

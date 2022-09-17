@@ -69,7 +69,7 @@ You can find a list of all SDR Options [Here](docs/SDR-Options.md).
 ```
 Usage : satdump record [output_baseband (without extension!)] [additional options as required]
 Extra options (examples. Any parameter used in sources can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8/w16] --dc_block --iq_swap
   --source [airspy/rtlsdr/etc] --gain 20 --bias
 As well as --timeout in seconds
 Sample command :
