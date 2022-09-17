@@ -387,7 +387,7 @@ namespace satdump
                     ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
 
 #ifdef BUILD_ZIQ
-                if (select_sample_format == 3 || select_sample_format == 4 || select_sample_format == 5)
+                if (select_sample_format == 4 || select_sample_format == 5 || select_sample_format == 6)
                 {
                     if (file_sink->get_written_raw() < 1e9)
                         ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);
