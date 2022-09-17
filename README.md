@@ -154,6 +154,7 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 sudo make install
 
 # Run (if you want!)
+# On Raspberry PIs, you will need to export MESA_GL_VERSION_OVERRIDE=4.5
 ./satdump-ui
 ```
 

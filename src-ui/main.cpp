@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     const char *gl_override_rpi = getenv("MESA_GL_VERSION_OVERRIDE");
     if (gl_override_rpi != nullptr)
     {
-        if (std::string(gl_override_rpi) == "OpenGL 4.5 (Core Profile) Mesa 22.0.5")
+        if (std::string(gl_override_rpi).find("4.5") != std::string::npos)
         {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
