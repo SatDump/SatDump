@@ -361,17 +361,17 @@ namespace satdump
                     else if (select_sample_format == 3)
                         file_sink->set_output_sample_type(dsp::WAV_16);
 #ifdef BUILD_ZIQ
-                    else if (select_sample_format == 3)
+                    else if (select_sample_format == 4)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 8;
                     }
-                    else if (select_sample_format == 4)
+                    else if (select_sample_format == 5)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 16;
                     }
-                    else if (select_sample_format == 5)
+                    else if (select_sample_format == 6)
                     {
                         file_sink->set_output_sample_type(dsp::ZIQ);
                         ziq_bit_depth = 32;
