@@ -27,9 +27,11 @@ static void glfw_error_callback(int error, const char *description)
 void bindImageTextureFunctions();
 
 // OpenGL versions to try to start
-const int OPENGL_VERSIONS_MAJOR[] = {3, 2};
-const int OPENGL_VERSIONS_MINOR[] = {2, 1};
-const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 120"};
+// Yes, I did check on SDR++'s way around that
+const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2};
+const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1};
+const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120"};
+const bool OPENGL_VERSIONS_GLES[] = {false, true, false};
 
 int main(int argc, char *argv[])
 {
@@ -91,10 +93,12 @@ int main(int argc, char *argv[])
 #else
     for (int i = 0; i < 3; i++)
     {
+        glfwWindowHint(GLFW_CLIENT_API, OPENGL_VERSIONS_GLES[i] ? GLFW_OPENGL_ES_API : GLFW_OPENGL_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+        if (OPENGL_VERSIONS_MAJOR[i] >= 3 && OPENGL_VERSIONS_MINOR[i] >= 2)
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);               // Required on Mac
 
         // Create window with graphics context
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
