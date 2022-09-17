@@ -94,6 +94,8 @@ int main(int argc, char *argv[])
     (void)io;
     io.IniFilename = NULL;
 
+    logger->debug("Starting with OpenGL {:s}", glGetString(GL_VERSION));
+
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     if (!ImGui_ImplOpenGL3_Init("#version 150"))
