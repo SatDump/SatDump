@@ -95,16 +95,27 @@ namespace satdump
                                                                             products->get_proj_cfg(),
                                                                             products->get_tle(),
                                                                             current_timestamps,
-                                                                            rotate_image);
+                                                                            !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
             if (corrected_stuff.size() != 0 && correct_image)
             {
+                int fwidth = current_image.width();
+                int fheight = current_image.height();
+                bool rotate = rotate_image;
+
                 std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                    [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
                     if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                    {
                         ret.first = corrected_stuff[ret.first];
+                        if (rotate)
+                        {
+                            ret.first = (fwidth - 1) - ret.first;
+                            ret.second = (fheight - 1) - ret.second;
+                        }
+                    }
                     else
                         ret.second = ret.first = -1;
                     return ret;
