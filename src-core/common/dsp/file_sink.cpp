@@ -11,8 +11,8 @@ namespace dsp
 
     FileSinkBlock::~FileSinkBlock()
     {
-        delete[] buffer_s8;
-        delete[] buffer_s16;
+        volk_free(buffer_s8);
+        volk_free(buffer_s16);
     }
 
     void FileSinkBlock::work()
