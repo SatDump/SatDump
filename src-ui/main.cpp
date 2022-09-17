@@ -161,12 +161,13 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
 
+    // Setup Icon
+    GLFWimage img;
     {
         image::Image<uint8_t> image;
         image.load_png(resources::getResourcePath("icon.png"));
-        GLFWimage img;
         uint8_t *px = new uint8_t[image.width() * image.height() * 4];
-        memset(px, 0, image.width() * image.height() * 4);
+        memset(px, 255, image.width() * image.height() * 4);
         img.height = image.height();
         img.width = image.width();
 
@@ -177,8 +178,8 @@ int main(int argc, char *argv[])
         image.clear();
 
         img.pixels = px;
-        glfwSetWindowIcon(window, 1, &img);
     }
+    glfwSetWindowIcon(window, 1, &img);
 
     // Init UI
     satdump::initMainUI();
