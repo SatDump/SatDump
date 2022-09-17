@@ -23,11 +23,11 @@
 #include "common/tile_map/map.h"
 #include "init.h"
 
-int main(/*int argc, char *argv[]*/)
+int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-#if 1
+#if 0
     logger->set_level(spdlog::level::level_enum::off);
     satdump::initSatdump();
     logger->set_level(spdlog::level::level_enum::trace);
