@@ -139,7 +139,7 @@ git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
-# If you want to disable some SDRs, you can add -DENABLE_SDR_AIRSPY=OFF or similar
+# If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
 # If you want to build with ZIQ compression, you can add -DBUILD_ZIQ=1
 cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
