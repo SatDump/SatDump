@@ -28,10 +28,10 @@ void bindImageTextureFunctions();
 
 // OpenGL versions to try to start
 // Yes, I did check on SDR++'s way around that
-const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2};
-const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1};
-const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120"};
-const bool OPENGL_VERSIONS_GLES[] = {false, true, false};
+const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2, 3};
+const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1, 2};
+const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120", "#version 120"};
+const bool OPENGL_VERSIONS_GLES[] = {false, true, false, false};
 
 int main(int argc, char *argv[])
 {
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 #else
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
         glfwWindowHint(GLFW_CLIENT_API, OPENGL_VERSIONS_GLES[i] ? GLFW_OPENGL_ES_API : GLFW_OPENGL_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
