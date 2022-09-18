@@ -64,7 +64,12 @@ jobs:
       - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp -r ${{runner.workspace}}/build/plugins ${{runner.workspace}}/build/Release;
+        run: mkdir ${{runner.workspace}}/build/Release/plugins; cp ${{runner.workspace}}/build/plugins/*.dll ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Config
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
 
       - name: Upload ZIP
         uses: actions/upload-artifact@v2
