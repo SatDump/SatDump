@@ -6,6 +6,8 @@
 #include "common/projection/thinplatespline.h"
 #include "logger.h"
 
+#include "common/projection/timestamp_filtering.h"
+
 namespace satdump
 {
     class NormalLineSatProj : public SatelliteProjection
@@ -352,8 +354,11 @@ namespace satdump
         }
     };
 
-    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
+    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw)
     {
+        if (cfg.contains("timefilter"))
+            timestamps_raw = timestamp_filtering::filter_timestamps_width_cfg(timestamps_raw, cfg["timefilter"]);
+
         if (cfg["type"].get<std::string>() == "normal_single_line")
             return std::make_shared<NormalLineSatProj>(cfg, tle, timestamps_raw);
         else if (cfg["type"].get<std::string>() == "normal_per_ifov")

@@ -34,5 +34,5 @@ namespace satdump
         virtual bool get_position(int x, int y, geodetic::geodetic_coords_t &pos) = 0;
     };
 
-    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw);
+    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw);
 }

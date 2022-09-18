@@ -10,5 +10,15 @@
     "ifov_y_size": 64,
     "ifov_x_size": 64,
     "ifov_x_scan_angle": 3,
-    "ifov_y_scan_angle": 3
+    "ifov_y_scan_angle": 3,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.3,
+        "max_diff": 2.0
+    },
+    ///////////////////////
+    "corr_swath": 2130,
+    "corr_resol": 0.75,
+    "corr_altit": 865
 }

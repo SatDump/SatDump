@@ -6,5 +6,11 @@
     "yaw_offset": 0,
     "image_width": 60,
     "gcp_spacing_x": 5,
-    "gcp_spacing_y": 5
+    "gcp_spacing_y": 5,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 16,
+        "max_diff": 30.0
+    }
 }

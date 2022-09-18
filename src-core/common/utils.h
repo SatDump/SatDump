@@ -136,5 +136,3 @@ inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 }
 
 double get_median(std::vector<double> values);
-
-std::vector<double> filter_timestamps_simple(std::vector<double> timestamps, double max_toleralte, int max_diff);

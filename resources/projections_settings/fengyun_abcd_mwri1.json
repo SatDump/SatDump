@@ -8,5 +8,11 @@
     "image_width": 266,
     "gcp_spacing_x": 20,
     "gcp_spacing_y": 20,
-    "timestamp_offset": -1
+    "timestamp_offset": -1,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 1.7,
+        "max_diff": 10.0
+    }
 }

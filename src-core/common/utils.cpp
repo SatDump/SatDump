@@ -176,35 +176,3 @@ double get_median(std::vector<double> values)
     size_t middle = values.size() / 2;
     return values[middle];
 }
-
-std::vector<double> filter_timestamps_simple(std::vector<double> timestamps, double max_toleralte, int max_diff)
-{
-    std::vector<double> filter_timestamps = timestamps;
-    double avg = get_median(filter_timestamps);
-    double last = 0;
-    for (double &v : filter_timestamps)
-    {
-        // logger->critical(abs(avg - v));
-        if (abs(avg - v) > max_toleralte)
-        {
-            last = v;
-            v = -1;
-            continue;
-        }
-
-        if (last >= v || abs(last - v) > max_diff)
-        {
-            last = v;
-            v = -1;
-            continue;
-        }
-        last = v;
-
-        // logger->info(v);
-    }
-
-    // for (double &v : filter_timestamps)
-    //    logger->info(v);
-
-    return filter_timestamps;
-}
