@@ -61,10 +61,15 @@ jobs:
         shell: powershell
         run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
 
+      - name: Create Plugins Dir
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: mkdir Release/plugins;
+
       - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: mkdir ${{runner.workspace}}/build/Release/plugins; cp ${{runner.workspace}}/build/plugins/*.dll ${{runner.workspace}}/build/Release/plugins;
+        run: cp plugins/*.dll Release/plugins;
 
       - name: Copy Config
         working-directory: ${{runner.workspace}}/build
