@@ -64,12 +64,12 @@ jobs:
       - name: Create Plugins Dir
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: mkdir Release/plugins;
+        run: mkdir ${{runner.workspace}}/build/Release/plugins;
 
       - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp plugins/*.dll Release/plugins;
+        run: cp ${{runner.workspace}}/build/plugins/Release/*.dll ${{runner.workspace}}/build/Release/plugins;
 
       - name: Copy Config
         working-directory: ${{runner.workspace}}/build
