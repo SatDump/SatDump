@@ -72,7 +72,8 @@ namespace fengyun3
         // Tests
         int shift = 0;
         bool iq_invert = true;
-        int /*noSyncRuns = 0,*/ viterbiNoSyncRun = 0;
+        bool invert_branches = false;
+        int noSyncRuns = 0, viterbiNoSyncRun = 0;
 
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -116,13 +117,29 @@ namespace fengyun3
             }
 
             // Perform differential decoding
-            diff.work2(viterbi2_out, viterbi1_out, vout, diff_out);
+            diff.work2(invert_branches ? viterbi1_out : viterbi2_out, invert_branches ? viterbi2_out : viterbi1_out, vout, diff_out);
 
             // Reconstruct into bytes and write to output file
             if (v1 > 0 && v2 > 0)
             {
                 // Deframe / derand
                 int frames = deframer.work(diff_out, vout * 2, frame_buffer);
+
+                // Handle potential IQ swaps
+                if (deframer.getState() == deframer.STATE_NOSYNC)
+                {
+                    noSyncRuns++;
+
+                    if (noSyncRuns >= 10)
+                    {
+                        invert_branches = !invert_branches;
+                        noSyncRuns = 0;
+                    }
+                }
+                else
+                {
+                    noSyncRuns = 0;
+                }
 
                 for (int i = 0; i < frames; i++)
                 {

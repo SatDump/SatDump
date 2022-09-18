@@ -136,7 +136,7 @@ namespace fengyun3
                 }
                 else
                 {
-                    viterbiNoSyncRun = 0;
+                    noSyncRuns = 0;
                 }
 
                 for (int i = 0; i < frames; i++)
