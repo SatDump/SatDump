@@ -59,6 +59,11 @@ bool isStringPresent(std::string searched, std::string keyword)
 #include <nng/nng.h>
 #include <nng/supplemental/http/http.h>
 #include "logger.h"
+#include "satdump_vars.h"
+
+#if defined(NNG_OPT_TLS_CONFIG)
+#include <nng/supplemental/tls/tls.h>
+#endif
 
 int perform_http_request(std::string url_str, std::string &result)
 {
@@ -79,7 +84,15 @@ int perform_http_request(std::string url_str, std::string &result)
         ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
         return 1;
 
-    nng_http_req_add_header(req, "User-Agent", "Satdump/development_v1.0.0");
+// HTTPS
+#if defined(NNG_OPT_TLS_CONFIG)
+    nng_tls_config *tls_config;
+    nng_tls_config_alloc(&tls_config, NNG_TLS_MODE_CLIENT);
+    nng_tls_config_auth_mode(tls_config, NNG_TLS_AUTH_MODE_NONE);
+    nng_http_client_set_tls(client, tls_config);
+#endif
+
+    nng_http_req_add_header(req, "User-Agent", std::string("SatDump/v" + (std::string)SATDUMP_VERSION).c_str());
 
     // Start connection process...
     nng_http_client_connect(client, aio);
@@ -152,6 +165,10 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_http_res_free(res);
     nng_http_req_free(req);
     free(data);
+
+#if defined(NNG_OPT_TLS_CONFIG)
+    nng_tls_config_free(tls_config);
+#endif
 
     return 0;
 }

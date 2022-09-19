@@ -88,7 +88,12 @@ namespace image
         void load_png(uint8_t *buffer, int size, bool disableIndexing = false); // Load a PNG from memory (disableIndexing only applies to indexed color images)
 
         // JPEG Interface
-        void load_jpeg(std::string file); // Load a JPEG file
+        void load_jpeg(std::string file);          // Load a JPEG file
+        void load_jpeg(uint8_t *buffer, int size); // Load a JPEG from memory
+
+        // Generic loading interface
+        void load_img(std::string file);          // Load a file, auto-detecting type
+        void load_img(uint8_t *buffer, int size); // Load from memory, auto-detecting type
     };
 
     // Others
