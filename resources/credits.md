@@ -76,6 +76,7 @@ And additionally, on the UI side :
 - Sam (@sam210723)
 - Jpjonte
 - Piefadase
+- Blobtoe
 
 **GNU**
 - 
