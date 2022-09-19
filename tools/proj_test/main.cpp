@@ -23,7 +23,7 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch1,ch1,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch4,ch4,ch4"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 
