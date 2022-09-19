@@ -168,7 +168,7 @@ namespace image
         file_sigature_src.read((char *)signature, 10);
         if (signature[0] == 0xFF && signature[1] == 0xD8)
             load_jpeg(file);
-        else if (signature[0] == '%' && signature[1] == 'P' && signature[2] == 'N' && signature[3] == 'G')
+        else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
             load_png(file);
     }
 
@@ -177,7 +177,7 @@ namespace image
     {
         if (buffer[0] == 0xFF && buffer[1] == 0xD8)
             load_jpeg(buffer, size);
-        else if (buffer[0] == '%' && buffer[1] == 'P' && buffer[2] == 'N' && buffer[3] == 'G')
+        else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
             load_png(buffer, size);
     }
 
