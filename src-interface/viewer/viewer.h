@@ -184,7 +184,7 @@ namespace satdump
         bool projections_are_generating = false;
         void generateProjectionImage();
 
-        std::string mapurl = "http://tile.openstreetmap.org/";
+        std::string mapurl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
         bool urlgood = true;
 
         // Settings
