@@ -20,6 +20,6 @@ namespace satdump
         the underlaying data type, which can vary between instruments
         and modes.
         */
-        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps);
+        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps, int width = -1, int height = -1);
     }
 }

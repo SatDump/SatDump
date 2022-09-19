@@ -49,15 +49,18 @@ namespace satdump
                     sat_proj_src = get_sat_proj(op.source_prj_info, op.img_tle, op.img_tim);
                     bool direction = false;
 
+                    double ratio_x = round((double)sat_proj_src->img_size_x / (double)op.img.width());
+                    double ratio_y = round((double)sat_proj_src->img_size_y / (double)op.img.height());
+
                     for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
                     {
                         // Now compute each pixel's lat / lon and plot it
                         for (double px = 0; px < image.width() - 1; px += 1)
                         {
                             geodetic::geodetic_coords_t coords1, coords2, coords3;
-                            bool ret1 = sat_proj_src->get_position(px, currentScan, coords1);
-                            bool ret2 = sat_proj_src->get_position(px + 1, currentScan, coords2);
-                            sat_proj_src->get_position(px, currentScan + 1, coords3);
+                            bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
+                            bool ret2 = sat_proj_src->get_position((px + 1) * ratio_x, currentScan * ratio_y, coords2);
+                            sat_proj_src->get_position(px * ratio_x, (currentScan + 1) * ratio_y, coords3);
 
                             if (ret1 || ret2)
                                 continue;
@@ -170,7 +173,7 @@ namespace satdump
                 else // Means it's a TPS-handled warp.
                 {
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim);
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim, op.img.width(), op.img.height());
                     operation.input_image = op.img;
                     // TODO : CHANGE!!!!!!
                     int l_width = std::max<int>(op.img.width(), 512) * 10;
@@ -394,7 +397,7 @@ namespace satdump
             }
             else
             {
-                auto gcps = gcp_compute::compute_gcps(params, tle, timestamps);
+                auto gcps = gcp_compute::compute_gcps(params, tle, timestamps, width, height);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 transform->init(gcps, true, false);
                 return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
