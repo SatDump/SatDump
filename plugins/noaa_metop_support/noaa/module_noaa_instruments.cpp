@@ -151,7 +151,7 @@ namespace noaa
                     avhrr_products.bit_depth = 10;
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    avhrr_products.set_timestamps(filter_timestamps_simple(avhrr_reader.timestamps, 1e4, 1.0)); // Has to be filtered!
+                    avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
 
                     nlohmann::ordered_json proj_settings;
 
@@ -193,7 +193,7 @@ namespace noaa
                     hirs_products.set_tle(satellite_tle);
                     hirs_products.has_timestamps = true;
                     hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    hirs_products.set_timestamps(filter_timestamps_simple(hirs_reader.timestamps, 1e4, 10));
+                    hirs_products.set_timestamps(hirs_reader.timestamps);
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
@@ -222,7 +222,7 @@ namespace noaa
                     mhs_products.bit_depth = 16;
                     mhs_products.set_tle(satellite_tle);
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    mhs_products.set_timestamps(filter_timestamps_simple(mhs_reader.timestamps, 1e4, 5));
+                    mhs_products.set_timestamps(mhs_reader.timestamps);
                     mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_mhs.json")));
 
                     for (int i = 0; i < 5; i++)
@@ -260,7 +260,7 @@ namespace noaa
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), filter_timestamps_simple(i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1, 1e4, 10)});
+                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");

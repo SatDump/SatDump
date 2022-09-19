@@ -10,5 +10,11 @@
     ///////////////////////
     "corr_swath": 2800,
     "corr_resol": 1.1,
-    "corr_altit": 842
+    "corr_altit": 842,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.2,
+        "max_diff": 1.0
+    }
 }

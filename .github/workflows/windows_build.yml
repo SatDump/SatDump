@@ -61,10 +61,20 @@ jobs:
         shell: powershell
         run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
 
+      - name: Create Plugins Dir
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: mkdir ${{runner.workspace}}/build/Release/plugins;
+
       - name: Copy Plugins
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp -r ${{runner.workspace}}/build/plugins ${{runner.workspace}}/build/Release;
+        run: cp ${{runner.workspace}}/build/plugins/Release/*.dll ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Config
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
 
       - name: Upload ZIP
         uses: actions/upload-artifact@v2

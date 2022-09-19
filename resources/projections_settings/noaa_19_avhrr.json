@@ -9,6 +9,12 @@
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,
     ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.2,
+        "max_diff": 1.0
+    },
+    ///////////////////////
     "corr_width": 2048,
     "corr_swath": 2900,
     "corr_resol": 1.1,

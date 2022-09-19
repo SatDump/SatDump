@@ -58,6 +58,11 @@ namespace viterbi
 
         bool getshift() { return d_shift; }
 
+        void reset()
+        {
+            d_state = 0;
+        }
+
         float ber();
         int getState();
     };

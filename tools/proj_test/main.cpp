@@ -8,6 +8,7 @@
 #include "common/projection/warp/warp.h"
 #include "common/projection/gcp_compute/gcp_compute.h"
 #include "common/projection/projs/equirectangular.h"
+#include "common/utils.h"
 
 int main(int /*argc*/, char *argv[])
 {
@@ -25,9 +26,10 @@ int main(int /*argc*/, char *argv[])
         satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
                                            img_pro.get_tle(),
                                            img_pro.get_timestamps(0));
+    // filter_timestamps_simple(img_pro.get_timestamps(0), 1e4, 10));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "1-ch10,1-ch10,1-ch10"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 
@@ -37,8 +39,8 @@ int main(int /*argc*/, char *argv[])
     satdump::warp::WarpOperation operation;
     operation.ground_control_points = gcps;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 10;
-    operation.output_height = 1024 * 10;
+    operation.output_width = 2048 * 4;
+    operation.output_height = 1024 * 4;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;

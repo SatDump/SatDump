@@ -5,5 +5,11 @@
     "timestamp_offset": 10,
     "image_width": 30,
     "gcp_spacing_x": 2,
-    "gcp_spacing_y": 2
+    "gcp_spacing_y": 2,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 8,
+        "max_diff": 30.0
+    }
 }

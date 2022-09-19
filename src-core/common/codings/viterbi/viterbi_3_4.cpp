@@ -127,7 +127,8 @@ namespace viterbi
 
                     d_bers[phase][shift] = get_ber(ber_depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.5); // Compute BER between initial buffer and re-encoded
 
-                    if (d_bers[phase][shift] < d_ber_thresold) // Check for a lock
+                    if ((d_ber == 10 && d_bers[phase][shift] < d_ber_thresold) || // Check for a lock initially
+                        (d_ber < 10 && d_bers[phase][shift] < d_ber))             // And if we find a lower BER, prefer it
                     {
                         d_ber = d_bers[phase][shift]; // Set current BER
                         d_state = ST_SYNCED;          // Set the decoder state to SYNCED so we start decoding

@@ -7,5 +7,11 @@
     "image_width": 96,
     "gcp_spacing_x": 5,
     "gcp_spacing_y": 5,
-    "invert_scan": true
+    "invert_scan": true,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 2.66,
+        "max_diff": 10.0
+    }
 }

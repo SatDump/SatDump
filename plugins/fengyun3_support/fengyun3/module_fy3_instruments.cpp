@@ -433,7 +433,7 @@ namespace fengyun3
                 for (int i = 0; i < 10; i++)
                     virr_products.images.push_back({"VIRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), virr_reader.getChannel(i)});
 
-                virr_products.set_timestamps(mwts2_reader.timestamps);
+                virr_products.set_timestamps(virr_reader.timestamps);
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");
@@ -572,8 +572,6 @@ namespace fengyun3
                     mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
-                // virr_products.set_timestamps(mwts2_reader.timestamps);
-
                 // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
 
                 mersi2_products.save(directory);
@@ -638,8 +636,6 @@ namespace fengyun3
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
-
-                // virr_products.set_timestamps(mwts2_reader.timestamps);
 
                 // mersill_reader.getChannel(-1).save_png(directory + "/calib.png");
 

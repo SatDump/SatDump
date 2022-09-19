@@ -11,9 +11,7 @@
 #include "projs/tpers.h"
 
 #include "sat_proj/geo_projection.h"
-
 #include "projs/tps_transform.h"
-
 #include "reproj/reproj.h"
 
 namespace satdump

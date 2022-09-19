@@ -13,6 +13,12 @@
     "ifov_y_scan_angle": 1,
     "timestamp_offset": -0.5,
     ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 1.5,
+        "max_diff": 10.0
+    },
+    ///////////////////////
     "corr_swath": 2100,
     "corr_resol": 0.25,
     "corr_altit": 835

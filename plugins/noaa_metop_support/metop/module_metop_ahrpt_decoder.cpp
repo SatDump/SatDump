@@ -57,6 +57,8 @@ namespace metop
 
         uint8_t frame_buffer[1024 * 10];
 
+        int noSyncsRuns = 0;
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -73,6 +75,24 @@ namespace metop
             {
                 // Deframe / derand
                 int frames = deframer.work(viterbi_out, num_samp, frame_buffer);
+
+                // Rare case where the viterbi might stay locked on
+                // a bad phase at high SNR starting in the middle of a baseband
+                // If it stays that way a bit too long, reset.
+                if (deframer.getState() == deframer.STATE_NOSYNC)
+                {
+                    noSyncsRuns++;
+
+                    if (noSyncsRuns >= 10)
+                    {
+                        viterbi.reset();
+                        noSyncsRuns = 0;
+                    }
+                }
+                else
+                {
+                    noSyncsRuns = 0;
+                }
 
                 for (int i = 0; i < frames; i++)
                 {
