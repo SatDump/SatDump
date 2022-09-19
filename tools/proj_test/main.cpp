@@ -22,25 +22,25 @@ int main(int /*argc*/, char *argv[])
 
     logger->trace("\n" + img_pro.contents.dump(4));
 
-    std::vector<satdump::projection::GCP> gcps =
-        satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
-                                           img_pro.get_tle(),
-                                           img_pro.get_timestamps(0));
-    // filter_timestamps_simple(img_pro.get_timestamps(0), 1e4, 10));
-
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch10,1-ch10,1-ch10"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = true;
+    rgb_cfg.equation = "ch3,ch3,ch8"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equalize = false;
     rgb_cfg.white_balance = true;
 
     // img_pro.images[0].image.equalize();
     // img_pro.images[0].image.to_rgb();
 
+    // filter_timestamps_simple(img_pro.get_timestamps(0), 1e4, 10));
+
     satdump::warp::WarpOperation operation;
-    operation.ground_control_points = gcps;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
-    operation.output_width = 2048 * 4;
-    operation.output_height = 1024 * 4;
+    operation.ground_control_points = satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
+                                                                         img_pro.get_tle(),
+                                                                         img_pro.get_timestamps(0),
+                                                                         operation.input_image.width(),
+                                                                         operation.input_image.height());
+    operation.output_width = 2048 * 10;
+    operation.output_height = 1024 * 10;
 
     satdump::warp::ImageWarper warper;
     warper.op = operation;
@@ -61,6 +61,25 @@ int main(int /*argc*/, char *argv[])
                                        projector.forward(lon, lat, x, y);
                                        return {x, y};
                                    });
+
+    /*
+    for (auto gcp : operation.ground_control_points)
+    {
+        auto projfunc = [&projector](float lat, float lon, int, int) -> std::pair<int, int>
+        {
+            int x, y;
+            projector.forward(lon, lat, x, y);
+            return {x, y};
+        };
+
+        std::pair<int, int> pos = projfunc(gcp.lat, gcp.lon, 0, 0);
+
+        if (pos.first == -1 || pos.second == -1)
+            continue;
+
+        result.output_image.draw_circle(pos.first, pos.second, 10, color, true);
+    }
+    */
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");
