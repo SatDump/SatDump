@@ -177,7 +177,7 @@ namespace image
     {
         if (buffer[0] == 0xFF && buffer[1] == 0xD8)
             load_jpeg(buffer, size);
-        else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
+        else if (buffer[0] == 0x89 && buffer[1] == 0x50 && buffer[2] == 0x4E && buffer[3] == 0x47)
             load_png(buffer, size);
     }
 
