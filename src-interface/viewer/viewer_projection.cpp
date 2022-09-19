@@ -181,7 +181,7 @@ namespace satdump
                     if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.file_valid &&
                                                                                        (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
                     {
-                        const std::regex e("http:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/");
+                        const std::regex e("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/");
                         if (regex_match(mapurl, e) || selected_external_type != 2)
                         {
                             urlgood = true;
