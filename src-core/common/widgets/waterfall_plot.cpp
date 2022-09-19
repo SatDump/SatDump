@@ -29,6 +29,7 @@ namespace widgets
                 texture_id = makeImageTexture();
                 first_run = false;
                 raw_img_buffer = new uint32_t[fft_size * fft_lines];
+                memset(raw_img_buffer, 0, sizeof(uint32_t) * fft_size * fft_lines);
                 palette = colormaps::generatePalette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), resolution);
             }
 
