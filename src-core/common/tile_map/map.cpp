@@ -52,7 +52,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
         img.fill(120);
         return {t1.first, t1.second, img};
     }
-    std::string filename = tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second) + ".png";
+    std::string filename = tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/" + std::to_string(t1.second);
     bool old = false;
 
     if (std::filesystem::exists(filename))
