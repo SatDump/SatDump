@@ -90,7 +90,7 @@
         },
         "auto_process_products": {
             "type": "bool",
-            "value": false,
+            "value": true,
             "name": "Automatically Process Products",
             "description": "Process products once the pipeline is done."
         }
