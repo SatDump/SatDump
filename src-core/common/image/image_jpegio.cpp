@@ -88,6 +88,68 @@ namespace image
         fclose(fp);
     }
 
+    template <typename T>
+    void Image<T>::load_jpeg(uint8_t *buffer, int size)
+    {
+        // Huge thanks to https://gist.github.com/PhirePhly/3080633
+        unsigned char *jpeg_decomp = NULL;
+        jpeg_error_struct_l jerr;
+        jpeg_decompress_struct cinfo;
+
+        // Init
+        cinfo.err = jpeg_std_error(&jerr.pub);
+        jerr.pub.error_exit = libjpeg_error_func_l;
+
+        if (setjmp(jerr.setjmp_buffer))
+        {
+            // Free memory
+            delete[] jpeg_decomp;
+            return;
+        }
+
+        jpeg_create_decompress(&cinfo);
+
+        // Parse and start decompressing
+        jpeg_mem__src(&cinfo, buffer, size);
+        jpeg_read_header(&cinfo, FALSE);
+        jpeg_start_decompress(&cinfo);
+
+        // Init output buffer
+        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height * cinfo.num_components];
+
+        // Decompress
+        while (cinfo.output_scanline < cinfo.output_height)
+        {
+            unsigned char *buffer_array[1];
+            buffer_array[0] = jpeg_decomp + (cinfo.output_scanline) * cinfo.image_width * cinfo.num_components;
+            jpeg_read_scanlines(&cinfo, buffer_array, 1);
+        }
+
+        // Cleanup
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+
+        // Init CImg image
+        init(cinfo.image_width, cinfo.image_height, cinfo.num_components);
+
+        // Copy over
+        if (d_depth == 8)
+        {
+            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c];
+        }
+        else if (d_depth == 16)
+        {
+            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c] << 8; // Scale up to 16 if required
+        }
+
+        // Free memory
+        delete[] jpeg_decomp;
+    }
+
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
     template class Image<uint16_t>;

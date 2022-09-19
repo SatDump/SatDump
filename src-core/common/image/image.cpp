@@ -1,6 +1,7 @@
 #include "image.h"
 #include <cstring>
 #include <limits>
+#include <fstream>
 
 namespace image
 {
@@ -157,6 +158,27 @@ namespace image
         }
 
         return Image<uint16_t>(); // This should never happen
+    }
+
+    template <typename T>
+    void Image<T>::load_img(std::string file)
+    {
+        std::ifstream file_sigature_src(file, std::ios::binary);
+        uint8_t signature[10];
+        file_sigature_src.read((char *)signature, 10);
+        if (signature[0] == 0xFF && signature[1] == 0xD8)
+            load_jpeg(file);
+        else if (signature[0] == '%' && signature[1] == 'P' && signature[2] == 'N' && signature[3] == 'G')
+            load_png(file);
+    }
+
+    template <typename T>
+    void Image<T>::load_img(uint8_t *buffer, int size)
+    {
+        if (buffer[0] == 0xFF && buffer[1] == 0xD8)
+            load_jpeg(buffer, size);
+        else if (buffer[0] == '%' && buffer[1] == 'P' && buffer[2] == 'N' && buffer[3] == 'G')
+            load_png(buffer, size);
     }
 
     // Generate Images for uint16_t and uint8_t

@@ -230,7 +230,7 @@ namespace satdump
                                     new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
                                 }
                                 else
-                                    new_layer_cfg->img.load_png(projection_new_layer_file.getPath());
+                                    new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
 
                                 projections_external_sources.push_back(new_layer_cfg);
 
