@@ -75,7 +75,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
         logger->debug("Tile not found or is outdated, downloading from: " + url);
 
         perform_http_request(url, res);
-        img.load_jpeg((uint8_t *)res.data(), res.size());
+        img.load_img((uint8_t *)res.data(), res.size());
         std::filesystem::create_directories(tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/");
         std::ofstream of(filename);
         of << res;
@@ -85,7 +85,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
     else
     {
         logger->debug("Tile found, loading from disk");
-        img.load_jpeg(filename);
+        img.load_img(filename);
     }
     return mapTile(t1.first, t1.second, img);
 }
