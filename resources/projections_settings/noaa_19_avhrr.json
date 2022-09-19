@@ -2,7 +2,7 @@
     "type": "normal_single_line",
     "scan_angle": 110.6,
     "roll_offset": -0.01,
-    "yaw_offset": -3.45,
+    "yaw_offset": 2.8,
     "pitch_offset": 0,
     "timestamp_offset": -1,
     "image_width": 2048,

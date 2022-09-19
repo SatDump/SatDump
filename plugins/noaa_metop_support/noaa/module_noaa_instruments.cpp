@@ -223,7 +223,11 @@ namespace noaa
                     mhs_products.set_tle(satellite_tle);
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     mhs_products.set_timestamps(mhs_reader.timestamps);
-                    mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_mhs.json")));
+
+                    if (scid == 13) // NOAA-18
+                        mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_mhs.json")));
+                    if (scid == 15) // NOAA-19
+                        mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
 
                     for (int i = 0; i < 5; i++)
                     {
