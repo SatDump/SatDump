@@ -19,7 +19,7 @@ jobs:
       run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle build-essential git
 
     - name: Build CMake 3.18.1
-      run: git clone https://github.com/Kitware/CMake -b v3.18.1 --depth 1 && cd CMake && ./bootstrap && make && sudo make install 
+      run: git clone https://github.com/Kitware/CMake -b v3.18.1 --depth 1 && cd CMake && ./bootstrap && make -j16 && sudo make install 
 
     # Setup Android SDK, and auto-accept licenses
     - name: Install Android SDK
