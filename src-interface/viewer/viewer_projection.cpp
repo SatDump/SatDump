@@ -257,7 +257,7 @@ namespace satdump
                 }
             }
 
-            if (ImGui::BeginListBox("##pipelineslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
+            if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
@@ -274,7 +274,7 @@ namespace satdump
                     else
                         label = layer.name;
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
-                    ImGui::Text(label.c_str());
+                    ImGui::Text("%s", label.c_str());
                     if (ImGui::IsItemHovered() && layer.type == 0)
                     {
                         ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
@@ -330,7 +330,7 @@ namespace satdump
                         // Set payload to carry the index of our item (could be anything)
                         ImGui::SetDragDropPayload("LAYER_PROJECTION", &i, sizeof(int));
 
-                        ImGui::Text(label.c_str());
+                        ImGui::Text("%s", label.c_str());
                         ImGui::EndDragDropSource();
                     }
                     if (ImGui::BeginDragDropTarget())

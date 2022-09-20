@@ -3,8 +3,7 @@ name: Android Build
 on: [push]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  # NOTHING
 
 jobs:
   build:
@@ -13,11 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Add gradle PPA
+      run : sudo add-apt-repository ppa:cwchien/gradle -y
+
     - name: Update repositories
       run: sudo apt update 
     
     - name: Install packages
-      run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle
+      run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle build-essential git
+
+    - name: Build CMake 3.18.1
+      run: git clone https://github.com/Kitware/CMake -b v3.18.1 --depth 1 && cd CMake && ./bootstrap && make && sudo make install 
 
     # Setup Android SDK, and auto-accept licenses
     - name: Install Android SDK
@@ -27,12 +32,24 @@ jobs:
     - name: Install Android NDK
       run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.1.8937393" --channel=3
 
+    - name: Download dependencies
+      shell: bash
+      run: cd $GITHUB_WORKSPACE/android/ && wget https://www.satdump.org/android_deps.zip && unzip android_deps.zip -d deps 
+
+    - name: LS
+      shell: bash
+      run: ls $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/
+
     - name: Build
       shell: bash
-      run: cd $GITHUB_WORKSPACE/android && gradle build
+      run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle build
+
+    - name: Re-Build to include plugins
+      shell: bash
+      run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle build
 
     - name: Upload APK
       uses: actions/upload-artifact@v2
       with:
         name: SatDump-debug.apk
-        path: /home/runner/work/SatDump/SatDump/android/SatDump/build/outputs/apk/debug/SatDump-debug.apk
+        path: $GITHUB_WORKSPACE/android/app/build/outputs/apk/debug/app-debug.apk
