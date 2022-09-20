@@ -2,9 +2,6 @@ name: Android Build
 
 on: [push]
 
-env:
-  # NOTHING
-
 jobs:
   build:
     runs-on: ubuntu-latest
