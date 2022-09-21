@@ -15,6 +15,7 @@
 #include "instruments/erm/erm_reader.h"
 #include "instruments/mersi/mersi_reader.h"
 #include "instruments/gas/gas_reader.h"
+#include "instruments/virr/virr_to_c10.h"
 
 namespace fengyun3
 {
@@ -44,6 +45,7 @@ namespace fengyun3
             fy3_downlink_t d_downlink;
             bool d_mersi_bowtie;
             bool d_dump_mersi;
+            bool d_write_c10;
 
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
@@ -64,6 +66,7 @@ namespace fengyun3
             mersi::MERSI2Reader mersi2_reader;
             mersi::MERSILLReader mersill_reader;
             gas::GASReader gas_reader;
+            virr::VIRRToC10 *virr_to_c10;
 
             // Statuses
             instrument_status_t mersi1_status = DECODING;

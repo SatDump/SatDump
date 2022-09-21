@@ -45,6 +45,11 @@ namespace fengyun3
                 d_dump_mersi = parameters["dump_mersi"].get<bool>();
             else
                 d_dump_mersi = false;
+
+            if (parameters.contains("write_c10"))
+                d_write_c10 = parameters["write_c10"].get<bool>();
+            else
+                d_write_c10 = false;
         }
 
         void FY3InstrumentsDecoderModule::process()
@@ -107,6 +112,12 @@ namespace fengyun3
                 mersi_bin.open(mersi_path, std::ios::binary);
             }
 
+            if (d_write_c10)
+            {
+                virr_to_c10 = new virr::VIRRToC10();
+                virr_to_c10->open(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/tmp.c10");
+            }
+
             // std::ofstream idk_out("idk_frm.bin");
 
             is_init = true;
@@ -134,7 +145,11 @@ namespace fengyun3
                         {
                             std::vector<std::vector<uint8_t>> out = virr_deframer.work(&cadu[14], 882);
                             for (std::vector<uint8_t> frameVec : out)
+                            {
                                 virr_reader.work(frameVec);
+                                if (d_write_c10)
+                                    virr_to_c10->work(frameVec);
+                            }
                         }
                         else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                         {
@@ -166,7 +181,11 @@ namespace fengyun3
                         {
                             std::vector<std::vector<uint8_t>> out = virr_deframer.work(&cadu[14], 882);
                             for (std::vector<uint8_t> frameVec : out)
+                            {
                                 virr_reader.work(frameVec);
+                                if (d_write_c10)
+                                    virr_to_c10->work(frameVec);
+                            }
                         }
                         else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                         {
@@ -432,6 +451,23 @@ namespace fengyun3
 
                 for (int i = 0; i < 10; i++)
                     virr_products.images.push_back({"VIRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), virr_reader.getChannel(i)});
+
+                int timestamp_offset = 0;
+                if (scid == FY3_A_SCID)
+                    timestamp_offset = 14923;
+                else if (scid == FY3_B_SCID)
+                    timestamp_offset = 14923;
+                else if (scid == FY3_C_SCID)
+                    timestamp_offset = 17620;
+
+                for (int i = 0; i < virr_reader.timestamps.size(); i++)
+                    virr_reader.timestamps[i] += timestamp_offset * 86400.0;
+
+                if (d_write_c10)
+                {
+                    virr_to_c10->close(avg_overflowless(virr_reader.timestamps), scid);
+                    delete virr_to_c10;
+                }
 
                 virr_products.set_timestamps(virr_reader.timestamps);
 

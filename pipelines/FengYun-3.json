@@ -18,8 +18,17 @@
                 1704.5e6
             ]
         ],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            },
+            "write_c10": {
+                "type": "bool",
+                "value": false,
+                "name": "Generate .C10",
+                "description": "Generate a .C10 file to load into HRPT Reader for processing."
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -63,8 +72,17 @@
                 1701.4e6
             ]
         ],
-        "samplerate": 6e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            },
+            "write_c10": {
+                "type": "bool",
+                "value": false,
+                "name": "Generate .C10",
+                "description": "Generate a .C10 file to load into HRPT Reader for processing."
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
