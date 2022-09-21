@@ -59,6 +59,10 @@ namespace fengyun3
         data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
         d_output_files.push_back(d_output_file_hint + ".cadu");
 
+        // Configure deframer differently
+        deframer.STATE_SYNCING = 8;
+        deframer.STATE_SYNCED = 16;
+
         logger->info("Using input symbols " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".cadu");
 
