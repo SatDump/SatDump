@@ -33,7 +33,7 @@
             "cadu": {
                 "fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.25,
+                    "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": false
                 }
             },
@@ -78,7 +78,7 @@
             "cadu": {
                 "fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.25,
+                    "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": false
                 }
             },
@@ -151,7 +151,7 @@
             "cadu": {
                 "fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.25,
+                    "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
@@ -188,7 +188,7 @@
             "cadu": {
                 "fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.25,
+                    "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
@@ -225,7 +225,7 @@
             "cadu": {
                 "fengyun_ahrpt_decoder": {
                     "viterbi_outsync_after": 20,
-                    "viterbi_ber_thresold": 0.25,
+                    "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },

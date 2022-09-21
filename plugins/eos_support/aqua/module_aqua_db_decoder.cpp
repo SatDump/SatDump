@@ -15,6 +15,7 @@ namespace aqua
     AquaDBDecoderModule::AquaDBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new uint8_t[BUFFER_SIZE];
+        deframer.STATE_SYNCING = 6;
         deframer.STATE_SYNCED = 10;
     }
 

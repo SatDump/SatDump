@@ -31,8 +31,8 @@ namespace deframing
 
         // There are left writable, so they can be customized if required
         int STATE_NOSYNC = 2;  // NOSYNC state, searching for a sync with very low tolerance (bit-level search)
-        int STATE_SYNCING = 6; // SYNCING state. We found a lock, but can't trust it yet (bit-level search)
-        int STATE_SYNCED = 12; // SYNCED state. We found a lock and confirmed it, skipping bit-level search and with high tolerance.
+        int STATE_SYNCING = 8; // SYNCING state. We found a lock, but can't trust it yet (bit-level search)
+        int STATE_SYNCED = 16; // SYNCED state. We found a lock and confirmed it, skipping bit-level search and with high tolerance.
 
     private:
         int d_state = STATE_NOSYNC; // Default state
