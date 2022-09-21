@@ -21,6 +21,12 @@
         "parameters": {
             "samplerate": {
                 "value": 6e6
+            },
+            "write_hpt": {
+                "type": "bool",
+                "value": false,
+                "name": "Generate .HPT",
+                "description": "Generate a .hpt file to load into HRPT Reader for processing."
             }
         },
         "work": {

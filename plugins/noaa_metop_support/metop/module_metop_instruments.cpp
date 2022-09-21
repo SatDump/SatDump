@@ -21,6 +21,7 @@ namespace metop
         MetOpInstrumentsDecoderModule::MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
         }
 
         void MetOpInstrumentsDecoderModule::process()
@@ -50,6 +51,12 @@ namespace metop
                 admin_msg_reader.directory = directory;
             }
 
+            if (write_hpt)
+            {
+                avhrr_to_hpt = new avhrr::AVHRRToHpt();
+                avhrr_to_hpt->open(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/tmp.hpt");
+            }
+
             std::vector<uint8_t> metop_scids;
 
             while (!data_in.eof())
@@ -70,7 +77,11 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid9.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 103 || pkt.header.apid == 104)
+                        {
                             avhrr_reader.work(pkt);
+                            if (write_hpt)
+                                avhrr_to_hpt->work(pkt);
+                        }
                 }
                 else if (vcdu.vcid == 12) // MHS
                 {
@@ -168,6 +179,12 @@ namespace metop
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = avg_overflowless(avhrr_reader.timestamps);
+
+            if (write_hpt)
+            {
+                avhrr_to_hpt->close(dataset.timestamp, scid);
+                delete avhrr_to_hpt;
+            }
 
             // Satellite ID
             {

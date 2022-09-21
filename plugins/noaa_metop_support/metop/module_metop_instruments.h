@@ -11,6 +11,7 @@
 #include "instruments/gome/gome_reader.h"
 #include "instruments/sem/sem_reader.h"
 #include "instruments/admin_msg/admin_msg_reader.h"
+#include "instruments/avhrr/avhrr_to_hpt.h"
 
 namespace metop
 {
@@ -21,6 +22,8 @@ namespace metop
         protected:
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
+
+            bool write_hpt = false;
 
             // Readers
             avhrr::AVHRRReader avhrr_reader;
@@ -33,6 +36,7 @@ namespace metop
             gome::GOMEReader gome_reader;
             sem::SEMReader sem_reader;
             admin_msg::AdminMsgReader admin_msg_reader;
+            avhrr::AVHRRToHpt *avhrr_to_hpt;
 
             // Statuses
             instrument_status_t avhrr_status = DECODING;
