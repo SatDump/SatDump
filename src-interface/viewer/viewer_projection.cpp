@@ -182,7 +182,11 @@ namespace satdump
                                                                                        (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
                     {
                         const std::regex e("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
-                        if (regex_match(mapurl, e) || selected_external_type != 2)
+                        if (
+#ifndef __llvm__
+                            regex_match(mapurl, e) ||
+#endif
+                            selected_external_type != 2)
                         {
                             urlgood = true;
                             auto genfun = [this](int)
