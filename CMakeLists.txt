@@ -13,7 +13,7 @@ project(SatDump)
 option(BUILD_GUI "Build the GUI" ON)
 option(BUILD_TESTING "Build the testing program" OFF)
 option(BUILD_TOOLS "Build the tools programs" OFF)
-option(BUILD_ZIQ "Build support for the custom ZIQ format" OFF)
+option(BUILD_ZIQ "Build support for the custom ZIQ format" ON)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
@@ -64,6 +64,13 @@ if(UNIX)
     else()
         message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
     endif()
+
+    find_package(ZSTD)
+
+    if((NOT ZSTD_FOUND) AND BUILD_ZIQ)
+        message("ZIQ Was enabled but libzstd was not found!")
+        set(BUILD_ZIQ OFF)
+    endif()
 else()
     # set(CMAKE_CXX_FLAGS "-Wall")
     # set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -111,6 +118,11 @@ if(OPENCL_FOUND AND BUILD_OPENCL)
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
+endif()
+
+# For good measure
+if(BUILD_ZIQ)
+    message("Building with ZIQ Support")
 endif()
 
 # Check system has <filesystem>
