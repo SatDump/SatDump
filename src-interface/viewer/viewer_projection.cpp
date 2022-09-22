@@ -8,9 +8,13 @@
 #include "main_ui.h"
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
-#include <regex>
+#include "libs/tiny-regex-c/re.h"
+
 namespace satdump
 {
+    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
+    int osm_url_regex_len = 0;
+
     void ViewerApplication::drawProjectionPanel()
     {
         if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
@@ -181,12 +185,7 @@ namespace satdump
                     if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.file_valid &&
                                                                                        (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
                     {
-                        const std::regex e("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
-                        if (
-#ifndef __llvm__
-                            regex_match(mapurl, e) ||
-#endif
-                            selected_external_type != 2)
+                        if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
                         {
                             urlgood = true;
                             auto genfun = [this](int)
