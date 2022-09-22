@@ -226,7 +226,7 @@ std::vector<dsp::SourceDescriptor> BladeRFSource::getAvailableSources()
         results.push_back({"bladerf", "BladeRF " + ss.str(), id});
     }
 
-    if (devs_list != NULL)
+    if (devs_list != NULL && devs_cnt > 0)
         bladerf_free_device_list(devs_list);
 
     return results;
