@@ -77,7 +77,7 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
         perform_http_request(url, res);
         img.load_img((uint8_t *)res.data(), res.size());
         std::filesystem::create_directories(tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/");
-        std::ofstream of(filename);
+        std::ofstream of(filename, std::ios::binary);
         of << res;
         of.close();
         logger->debug("Saving tile to: " + filename);
