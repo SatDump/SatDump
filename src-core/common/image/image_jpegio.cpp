@@ -150,6 +150,71 @@ namespace image
         delete[] jpeg_decomp;
     }
 
+    template <typename T>
+    void Image<T>::save_jpeg(std::string file)
+    {
+        FILE *fp = fopen(file.c_str(), "wb");
+        if (!fp)
+            abort();
+
+        unsigned char *jpeg_decomp = NULL;
+        jpeg_error_struct_l jerr;
+        jpeg_compress_struct cinfo;
+
+        // Init
+        cinfo.err = jpeg_std_error(&jerr.pub);
+        jerr.pub.error_exit = libjpeg_error_func_l;
+
+        if (setjmp(jerr.setjmp_buffer))
+        {
+            // Free memory
+            delete[] jpeg_decomp;
+            return;
+        }
+
+        jpeg_create_compress(&cinfo);
+
+        // Parse and start decompressing
+        jpeg_stdio_dest(&cinfo, fp);
+        cinfo.image_width = d_width;
+        cinfo.image_height = d_height;
+        cinfo.input_components = d_channels;
+        cinfo.in_color_space = d_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
+        jpeg_set_defaults(&cinfo);
+        jpeg_start_compress(&cinfo, true);
+
+        // Init output buffer
+        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height * cinfo.num_components];
+
+        // Copy over
+        if (d_depth == 8)
+        {
+            for (int i = 0; i < (int)d_width * (int)d_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i];
+        }
+        else if (d_depth == 16)
+        {
+            for (int i = 0; i < (int)d_width * (int)d_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i] >> 8; // Scale down to 8 if required
+        }
+
+        // Compress
+        while (cinfo.next_scanline < cinfo.image_height)
+        {
+            unsigned char *buffer_array[1];
+            buffer_array[0] = jpeg_decomp + (cinfo.next_scanline) * cinfo.image_width * cinfo.num_components;
+            jpeg_write_scanlines(&cinfo, buffer_array, 1);
+        }
+
+        jpeg_finish_compress(&cinfo);
+
+        // Free memory
+        fclose(fp);
+        delete[] jpeg_decomp;
+    }
+
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
     template class Image<uint16_t>;

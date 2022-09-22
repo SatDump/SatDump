@@ -324,12 +324,12 @@ namespace satdump
                 {
                     std::string path = result.result();
                     logger->info("Saving current image at {:s}", path.c_str());
-                    current_image.save_png(path);
+                    current_image.save_img(path);
                 }
 #else
                 std::string path = "/storage/emulated/0/" + default_name;
                 logger->info("Saving current image at {:s}", path.c_str());
-                current_image.save_png("" + path);
+                current_image.save_img("" + path);
 #endif
             }
         }

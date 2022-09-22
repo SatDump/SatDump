@@ -105,12 +105,12 @@ namespace satdump
                 {
                     std::string path = result.result();
                     logger->info("Saving current projection at {:s}", path.c_str());
-                    projected_image_result.save_png(path);
+                    projected_image_result.save_img(path);
                 }
 #else
                 std::string path = "/storage/emulated/0/" + default_name;
                 logger->info("Saving current projection at {:s}", path.c_str());
-                projected_image_result.save_png("" + path);
+                projected_image_result.save_img("" + path);
 #endif
             }
         }

@@ -181,6 +181,15 @@ namespace image
             load_png(buffer, size);
     }
 
+    template <typename T>
+    void Image<T>::save_img(std::string file)
+    {
+        if (file.find(".png") != std::string::npos)
+            save_png(file);
+        else if (file.find(".jpeg") != std::string::npos || file.find(".jpg") != std::string::npos)
+            save_jpeg(file);
+    }
+
     // Generate Images for uint16_t and uint8_t
     template class Image<uint8_t>;
     template class Image<uint16_t>;
