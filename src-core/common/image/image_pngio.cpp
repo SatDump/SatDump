@@ -167,9 +167,6 @@ namespace image
 
         fclose(fp);
         png_destroy_read_struct(&png, &info, NULL);
-
-        if (d_channels == 4)
-            to_rgb();
     }
 
     struct png_src

@@ -111,7 +111,8 @@ void kernel reproj_image_equ_to_stereo(global ushort *source_img,
   int source_img_height = img_sizes[1];
   int target_img_width = img_sizes[2];
   int target_img_height = img_sizes[3];
-  int imgs_channels = img_sizes[4];
+  int source_channels = img_sizes[4];
+  int target_channels = img_sizes[5];
 
   // Equirectangular settings
   float top_left_lat = img_equ_settings[0];
@@ -179,10 +180,23 @@ void kernel reproj_image_equ_to_stereo(global ushort *source_img,
     if (yy < 0 || yy >= source_img_height || xx < 0 || xx >= source_img_width)
       continue;
 
-    for (int c = 0; c < imgs_channels; c++)
-      target_img[(target_img_width * target_img_height) * c +
-                 y * target_img_width + x] =
-          source_img[(source_img_width * source_img_height) * c +
-                     (int)yy * source_img_width + (int)xx];
+    if (source_channels == 4)
+      for (int c = 0; c < target_channels; c++)
+        target_img[(target_img_width * target_img_height) * c +
+                   y * target_img_width + x] =
+            source_img[(source_img_width * source_img_height) * c +
+                       yy * source_img_width + xx];
+    else if (source_channels == 3)
+      for (int c = 0; c < target_channels; c++)
+        target_img[(target_img_width * target_img_height) * c +
+                   y * target_img_width + x] =
+            c == 3 ? 65535
+                   : source_img[(source_img_width * source_img_height) * c +
+                                yy * source_img_width + xx];
+    else
+      for (int c = 0; c < target_channels; c++)
+        target_img[(target_img_width * target_img_height) * c +
+                   y * target_img_width + x] =
+            source_img[yy * source_img_width + xx];
   }
 }

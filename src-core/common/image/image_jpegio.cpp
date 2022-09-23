@@ -178,8 +178,9 @@ namespace image
         jpeg_stdio_dest(&cinfo, fp);
         cinfo.image_width = d_width;
         cinfo.image_height = d_height;
-        cinfo.input_components = d_channels;
-        cinfo.in_color_space = d_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
+        int jpeg_channels = d_channels == 4 ? 3 : d_channels;
+        cinfo.input_components = jpeg_channels;
+        cinfo.in_color_space = jpeg_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
         jpeg_set_defaults(&cinfo);
         jpeg_start_compress(&cinfo, true);
 

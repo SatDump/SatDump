@@ -146,8 +146,21 @@ namespace satdump
                     if ((int)xx > (int)op.input_image.width() - 1 || (int)yy > (int)op.input_image.height() - 1)
                         continue;
 
-                    for (int c = 0; c < op.input_image.channels(); c++)
-                        result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
+                    if (result.output_image.channels() == 4)
+                    {
+                        if (op.input_image.channels() == 1)
+                            for (int c = 0; c < 3; c++)
+                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image[(int)yy * op.input_image.width() + (int)xx];
+                        else if (op.input_image.channels() == 3)
+                            for (int c = 0; c < 3; c++)
+                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
+                        result.output_image.channel(3)[y * result.output_image.width() + x] = 65535;
+                    }
+                    else
+                    {
+                        for (int c = 0; c < op.input_image.channels(); c++)
+                            result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
+                    }
                 }
             }
             auto cpu_time = (std::chrono::system_clock::now() - cpu_start);
@@ -187,10 +200,11 @@ namespace satdump
                 int img_settings[] = {op.output_width, op.output_height,
                                       (int)op.input_image.width(), (int)op.input_image.height(),
                                       op.input_image.channels(),
+                                      result.output_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
 
-                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 9, NULL, &err);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 10, NULL, &err);
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
@@ -205,7 +219,7 @@ namespace satdump
                 clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(double) * tps->_nof_eqs, tps->coef[1], 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(double), &tps->x_mean, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(double), &tps->y_mean, 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 9, img_settings, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 10, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
                 cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
@@ -287,10 +301,11 @@ namespace satdump
                 int img_settings[] = {op.output_width, op.output_height,
                                       (int)op.input_image.width(), (int)op.input_image.height(),
                                       op.input_image.channels(),
+                                      result.output_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
                                       crop_set.x_min, crop_set.x_max};
 
-                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 9, NULL, &err);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 10, NULL, &err);
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
@@ -311,7 +326,7 @@ namespace satdump
                 clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(float) * tps->_nof_eqs, tps_coef2.data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(float), &tps_x_mean, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(float), &tps_y_mean, 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 9, img_settings, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 10, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
                 cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
@@ -373,7 +388,8 @@ namespace satdump
             WarpResult result;
 
             // Prepare the output
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, op.input_image.channels());
+            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
+                                                         op.output_rgba ? 4 : op.input_image.channels());
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
             result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
             result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1

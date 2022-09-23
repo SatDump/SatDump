@@ -125,6 +125,35 @@ namespace image
     }
 
     template <typename T>
+    void Image<T>::to_rgba()
+    {
+        if (d_channels == 1)
+        {
+            Image<T> tmp = *this;       // Backup image
+            init(d_width, d_height, 4); // Init new image as RGBA
+
+            // Fill in all 3 channels
+            draw_image(0, tmp);
+            draw_image(1, tmp);
+            draw_image(2, tmp);
+            for (size_t i = 0; i < d_width * d_height; i++)
+                channel(3)[i] = std::numeric_limits<T>::max();
+        }
+        else if (d_channels == 3)
+        {
+            Image<T> tmp = *this;       // Backup image
+            init(d_width, d_height, 4); // Init new image as RGBA
+
+            // Copy over all 3 channels
+            memcpy(d_data, tmp.data(), d_width * d_height * 3 * sizeof(T));
+
+            // Fill in RGBA
+            for (size_t i = 0; i < d_width * d_height; i++)
+                channel(3)[i] = std::numeric_limits<T>::max();
+        }
+    }
+
+    template <typename T>
     Image<uint8_t> Image<T>::to8bits()
     {
         if (d_depth == 8)

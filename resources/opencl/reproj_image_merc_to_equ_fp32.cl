@@ -48,7 +48,8 @@ void kernel reproj_image_merc_to_equ(global ushort *source_img,
   int source_img_height = img_sizes[1];
   int target_img_width = img_sizes[2];
   int target_img_height = img_sizes[3];
-  int imgs_channels = img_sizes[4];
+  int source_channels = img_sizes[4];
+  int target_channels = img_sizes[5];
 
   // Merc settings
   struct merc_cfg merc_cfg;
@@ -105,16 +106,23 @@ void kernel reproj_image_merc_to_equ(global ushort *source_img,
         yy >= (int)source_img_height || yy < 0)
       continue;
 
-    if (imgs_channels == 3)
-      for (int c = 0; c < 3; c++)
+    if (source_channels == 4)
+      for (int c = 0; c < target_channels; c++)
         target_img[(target_img_width * target_img_height) * c +
                    y * target_img_width + x] =
             source_img[(source_img_width * source_img_height) * c +
-                       (int)yy * source_img_width + (int)xx];
-    else
-      for (int c = 0; c < 3; c++)
+                       yy * source_img_width + xx];
+    else if (source_channels == 3)
+      for (int c = 0; c < target_channels; c++)
         target_img[(target_img_width * target_img_height) * c +
                    y * target_img_width + x] =
-            source_img[(int)yy * source_img_width + (int)xx];
+            c == 3 ? 65535
+                   : source_img[(source_img_width * source_img_height) * c +
+                                yy * source_img_width + xx];
+    else
+      for (int c = 0; c < target_channels; c++)
+        target_img[(target_img_width * target_img_height) * c +
+                   y * target_img_width + x] =
+            source_img[yy * source_img_width + xx];
   }
 }

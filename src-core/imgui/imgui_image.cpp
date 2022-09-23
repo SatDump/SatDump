@@ -27,6 +27,18 @@ void ushort_to_rgba(uint16_t *input, uint32_t *output, int size, int channels)
             output[i] = ((uint32_t)255 << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
         }
     }
+    else if (channels == 4)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            uint8_t r, g, b, a;
+            r = input[size * 0 + i] >> 8;
+            g = input[size * 1 + i] >> 8;
+            b = input[size * 2 + i] >> 8;
+            a = input[size * 3 + i] >> 8;
+            output[i] = ((uint32_t)a << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+        }
+    }
 }
 
 void uchar_to_rgba(uint8_t *input, uint32_t *output, int size, int channels)
@@ -49,6 +61,18 @@ void uchar_to_rgba(uint8_t *input, uint32_t *output, int size, int channels)
             g = input[size * 1 + i];
             b = input[size * 2 + i];
             output[i] = ((uint32_t)255 << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+        }
+    }
+    else if (channels == 4)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            uint8_t r, g, b, a;
+            r = input[size * 0 + i];
+            g = input[size * 1 + i];
+            b = input[size * 2 + i];
+            a = input[size * 3 + i];
+            output[i] = ((uint32_t)a << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
         }
     }
 }

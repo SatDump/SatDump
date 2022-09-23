@@ -45,7 +45,8 @@ namespace image
         T *data() { return d_data; }                                              // Return the raw image data buffer
         T *channel(int channel) { return &d_data[d_width * d_height * channel]; } // Return a pointer to a specific channel
 
-        void to_rgb();              // Convert this image from B&W to RGB (if it is B&W)
+        void to_rgb();              // Convert this image from B&W to RGB (if it is B&W / RGBA)
+        void to_rgba();             // Convert this image from to RGBA (if it is B&W / RGB)
         Image<uint8_t> to8bits();   // Convert to 8-bits. Returns the current image if it's already 8-bits
         Image<uint16_t> to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
 

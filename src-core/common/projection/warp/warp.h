@@ -20,6 +20,7 @@ namespace satdump
             std::vector<projection::GCP> ground_control_points;
             int output_width;
             int output_height;
+            int output_rgba = false;
         };
 
         /*

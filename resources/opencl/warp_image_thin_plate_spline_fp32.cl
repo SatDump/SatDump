@@ -50,11 +50,12 @@ void kernel warp_image_thin_plate_spline(
 
   int map_img_width = img_settings[0];
   int map_img_height = img_settings[1];
-  int crop_width = img_settings[8] - img_settings[7];
-  int crop_height = img_settings[6] - img_settings[5];
+  int crop_width = img_settings[9] - img_settings[8];
+  int crop_height = img_settings[7] - img_settings[6];
   int img_width = img_settings[2];
   int img_height = img_settings[3];
-  int img_channels = img_settings[4];
+  int source_channels = img_settings[4];
+  int target_channels = img_settings[5];
 
   size_t n = crop_width * crop_height;
 
@@ -79,9 +80,9 @@ void kernel warp_image_thin_plate_spline(
 
     // Scale to the map
     float lat =
-        -((float)(y + img_settings[5]) / (float)map_img_height) * 180 + 90;
+        -((float)(y + img_settings[6]) / (float)map_img_height) * 180 + 90;
     float lon =
-        ((float)(x + img_settings[7]) / (float)map_img_width) * 360 - 180;
+        ((float)(x + img_settings[8]) / (float)map_img_width) * 360 - 180;
 
     // Perform TPS
     {
@@ -115,8 +116,20 @@ void kernel warp_image_thin_plate_spline(
     if ((int)xx > img_width - 1 || (int)yy > img_height - 1)
       continue;
 
-    for (int c = 0; c < img_channels; c++)
-      map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-          img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
+    if (target_channels == 4) {
+      if (source_channels == 1)
+        for (int c = 0; c < 3; c++)
+          map_image[(crop_width * crop_height) * c + y * crop_width + x] =
+              img[(int)yy * img_width + (int)xx];
+      else if (source_channels == 3)
+        for (int c = 0; c < 3; c++)
+          map_image[(crop_width * crop_height) * c + y * crop_width + x] =
+              img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
+      map_image[(crop_width * crop_height) * 3 + y * crop_width + x] = 65535;
+    } else {
+      for (int c = 0; c < source_channels; c++)
+        map_image[(crop_width * crop_height) * c + y * crop_width + x] =
+            img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
+    }
   }
 }

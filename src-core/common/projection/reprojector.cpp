@@ -22,7 +22,7 @@ namespace satdump
         {
             ProjectionResult result_prj;
 
-            result_prj.img.init(op.output_width, op.output_height, 3);
+            result_prj.img.init(op.output_width, op.output_height, 4);
             result_prj.settings = op.target_prj_info;
 
             auto &image = op.img;
@@ -70,22 +70,24 @@ namespace satdump
                             std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, projected_image.height(), projected_image.width());
                             std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
 
-                            uint16_t color[3] = {0, 0, 0};
+                            uint16_t color[4] = {0, 0, 0};
                             if (image.channels() >= 3)
                             {
-                                color[0] = image[image.width() * image.height() * 0 + currentScan * image.width() + int(px)];
-                                color[1] = image[image.width() * image.height() * 1 + currentScan * image.width() + int(px)];
-                                color[2] = image[image.width() * image.height() * 2 + currentScan * image.width() + int(px)];
+                                color[0] = image.channel(0)[currentScan * image.width() + int(px)];
+                                color[1] = image.channel(1)[currentScan * image.width() + int(px)];
+                                color[2] = image.channel(2)[currentScan * image.width() + int(px)];
+                                color[3] = 65535;
                             }
                             else
                             {
-                                color[0] = image[currentScan * image.width() + int(px)];
-                                color[1] = image[currentScan * image.width() + int(px)];
-                                color[2] = image[currentScan * image.width() + int(px)];
+                                color[0] = image[int(px)];
+                                color[1] = image[int(px)];
+                                color[2] = image[int(px)];
+                                color[3] = 65535;
                             }
 
-                            if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
-                                continue;
+                            // if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
+                            //     continue;
 
                             // This seems to glitch out sometimes... Need to check
                             double maxSize = projected_image.width() / 100.0;
@@ -131,7 +133,7 @@ namespace satdump
                 else if (op.source_prj_info["type"] == "mercator")
                 {
                     int g_width = op.img.width();               // Should be reasonnable for now!
-                    warped_image.init(g_width, g_width / 2, 3); // TODO : CHANGE!!!!!
+                    warped_image.init(g_width, g_width / 2, 4); // TODO : CHANGE!!!!!
 
                     tl_lon = -180;
                     tl_lat = 85.06;
@@ -152,7 +154,7 @@ namespace satdump
                 else if (op.source_prj_info["type"] == "geos")
                 {
                     int g_width = op.img.width() * 2;           // Should be reasonnable for now!
-                    warped_image.init(g_width, g_width / 2, 3); // TODO : CHANGE!!!!!
+                    warped_image.init(g_width, g_width / 2, 4); // TODO : CHANGE!!!!!
 
                     tl_lon = -180;
                     tl_lat = 90;
@@ -175,6 +177,7 @@ namespace satdump
                     warp::WarpOperation operation;
                     operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim, op.img.width(), op.img.height());
                     operation.input_image = op.img;
+                    operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
                     int l_width = std::max<int>(op.img.width(), 512) * 10;
                     operation.output_width = l_width;
@@ -220,12 +223,15 @@ namespace satdump
                             if (x2 == -1 || y2 == -1)
                                 continue;
 
-                            if (warped_image.channels() == 3)
-                                for (int c = 0; c < 3; c++)
+                            if (warped_image.channels() == 4)
+                                for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            else if (warped_image.channels() == 3)
+                                for (int c = 0; c < warped_image.channels(); c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(c)[y2 * warped_image.width() + x2];
                             else
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
+                                for (int c = 0; c < warped_image.channels(); c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(0)[y2 * warped_image.width() + x2];
                         }
 
                         if (progress != nullptr)
@@ -255,12 +261,15 @@ namespace satdump
                             if (x2 == -1 || y2 == -1)
                                 continue;
 
-                            if (warped_image.channels() == 3)
-                                for (int c = 0; c < 3; c++)
+                            if (warped_image.channels() == 4)
+                                for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            else if (warped_image.channels() == 3)
+                                for (int c = 0; c < warped_image.channels(); c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(c)[y2 * warped_image.width() + x2];
                             else
-                                for (int c = 0; c < 3; c++)
-                                    projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(0)[y2 * warped_image.width() + x2];
+                                for (int c = 0; c < warped_image.channels(); c++)
+                                    projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(0)[y2 * warped_image.width() + x2];
                         }
 
                         if (progress != nullptr)

@@ -41,7 +41,7 @@ namespace satdump
                     throw std::runtime_error("Couldn't load buffer_img!");
 
                 // Settings Stuff
-                cl_mem buffer_img_sizes = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 5, NULL, &err);
+                cl_mem buffer_img_sizes = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 6, NULL, &err);
                 cl_mem buffer_equ_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 4, NULL, &err);
                 cl_mem buffer_stereo_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 14, NULL, &err);
 
@@ -51,7 +51,8 @@ namespace satdump
                 img_sizes[1] = source_img.height();
                 img_sizes[2] = target_img.width();
                 img_sizes[3] = target_img.height();
-                img_sizes[4] = target_img.channels();
+                img_sizes[4] = source_img.channels();
+                img_sizes[5] = target_img.channels();
 
                 // Equirectangular stuff
                 float equ_settings[4];
@@ -71,7 +72,7 @@ namespace satdump
                 // Load buffers
                 clEnqueueWriteBuffer(queue, buffer_src_img, true, 0, sizeof(uint16_t) * source_img.size(), source_img.data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_trg_img, true, 0, sizeof(uint16_t) * target_img.size(), target_img.data(), 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img_sizes, true, 0, sizeof(int) * 5, img_sizes, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_sizes, true, 0, sizeof(int) * 6, img_sizes, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_equ_settings, true, 0, sizeof(float) * 4, equ_settings, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_stereo_settings, true, 0, sizeof(float) * 14, ste_settings, 0, NULL, NULL);
 
@@ -150,12 +151,15 @@ namespace satdump
                     if (x2 == -1 || y2 == -1)
                         continue;
 
-                    if (source_img.channels() == 3)
-                        for (int c = 0; c < 3; c++)
+                    if (source_img.channels() == 4)
+                        for (int c = 0; c < target_img.channels(); c++)
                             target_img.channel(c)[y * target_img.width() + x] = source_img.channel(c)[y2 * source_img.width() + x2];
+                    else if (source_img.channels() == 3)
+                        for (int c = 0; c < target_img.channels(); c++)
+                            target_img.channel(c)[y * target_img.width() + x] = c == 3 ? 65535 : source_img.channel(c)[y2 * source_img.width() + x2];
                     else
-                        for (int c = 0; c < 3; c++)
-                            target_img.channel(c)[y * target_img.width() + x] = source_img.channel(0)[y2 * source_img.width() + x2];
+                        for (int c = 0; c < target_img.channels(); c++)
+                            target_img.channel(c)[y * target_img.width() + x] = source_img[y2 * source_img.width() + x2];
                 }
 
                 if (progress != nullptr)

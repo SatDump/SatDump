@@ -440,13 +440,12 @@ namespace satdump
             if (layer.type == 0)
             {
                 layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
-                layer.viewer_prods->handler->getProjection().to_rgb();
                 layers_images.push_back(layer.viewer_prods->handler->getProjection());
             }
             else
             {
                 auto img = projectExternal(projections_image_width, projections_image_height, cfg, layer.external, &layer.progress);
-                img.to_rgb();
+                // img.to_rgb();
                 layers_images.push_back(img);
             }
         }
@@ -462,9 +461,11 @@ namespace satdump
         {
             projected_image_result = layers_images[0];
             for (int i = 1; i < (int)layers_images.size(); i++)
+            {
                 projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                      layers_images[i],
                                                                      projection_layers[i].opacity / 100.0f);
+            }
         }
         else
         {
@@ -483,7 +484,7 @@ namespace satdump
         if (projections_draw_map_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[3] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f)};
+            unsigned short color[4] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f), 65535};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            projected_image_result,
                                            color,
@@ -494,7 +495,7 @@ namespace satdump
         if (projections_draw_cities_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[3] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f)};
+            unsigned short color[4] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535};
             map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                               projected_image_result,
                                               color,
@@ -518,7 +519,7 @@ namespace satdump
             op.source_prj_info = ep->cfg;
 
         if (!op.source_prj_info.contains("type")) // Just in case...
-            return image::Image<uint16_t>(width, height, 3);
+            return image::Image<uint16_t>(width, height, 4);
 
         op.target_prj_info = tcfg;
         op.img = ep->img;
