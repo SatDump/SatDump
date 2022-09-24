@@ -46,7 +46,7 @@ namespace satdump
                 cl_mem buffer_stereo_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * 14, NULL, &err);
 
                 // IMG Sizes
-                int img_sizes[5];
+                int img_sizes[6];
                 img_sizes[0] = source_img.width();
                 img_sizes[1] = source_img.height();
                 img_sizes[2] = target_img.width();
@@ -107,7 +107,7 @@ namespace satdump
                 clReleaseMemObject(buffer_equ_settings);
                 clReleaseMemObject(buffer_stereo_settings);
                 clReleaseKernel(proj_kernel);
-                clReleaseProgram(proj_program);
+                // clReleaseProgram(proj_program);
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);

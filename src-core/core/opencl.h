@@ -30,7 +30,8 @@ namespace satdump
 
         void setupOCLContext();
 
-        cl_program buildCLKernel(std::string path);
+        // If the cache is enabled, you should NOT free the kernel
+        cl_program buildCLKernel(std::string path, bool use_cache = true);
     }
 }
 #endif

@@ -262,7 +262,7 @@ namespace satdump
                 clReleaseMemObject(buffer_tps_ymean);
                 clReleaseMemObject(buffer_img_settings);
                 clReleaseKernel(warping_kernel);
-                clReleaseProgram(warping_program);
+                // clReleaseProgram(warping_program);
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
@@ -369,7 +369,7 @@ namespace satdump
                 clReleaseMemObject(buffer_tps_ymean);
                 clReleaseMemObject(buffer_img_settings);
                 clReleaseKernel(warping_kernel);
-                clReleaseProgram(warping_program);
+                // clReleaseProgram(warping_program);
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);

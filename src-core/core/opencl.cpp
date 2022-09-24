@@ -109,8 +109,14 @@ namespace satdump
                 throw std::runtime_error("OpenCL context not initialized!");
         }
 
-        cl_program buildCLKernel(std::string path)
+        std::map<std::string, cl_program> cached_kernels;
+
+        cl_program buildCLKernel(std::string path, bool use_cache)
         {
+            if (use_cache)                          // If cache enabled...
+                if (cached_kernels.count(path) > 0) // ...check if we already have this kernel
+                    return cached_kernels[path];
+
             std::ifstream isf(path);
             std::string kernel_src(std::istreambuf_iterator<char>{isf}, {});
 
@@ -130,6 +136,10 @@ namespace satdump
                 else
                     throw std::runtime_error("Error building, and could not read error log!");
             }
+
+            if (use_cache)                              // If cache enabled...
+                if (cached_kernels.count(path) == 0)    // ...and we don't already have the kernel...
+                    cached_kernels.insert({path, prg}); // ...return it
 
             return prg;
         }
