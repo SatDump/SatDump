@@ -46,7 +46,7 @@ namespace dvbs2
 
         int current_position = -1;
         float thresold = 0.6;
-        float freq = 0;
+        // float freq = 0;
 
     public:
         S2PLSyncBlock(std::shared_ptr<dsp::stream<complex_t>> input, int slot_number, bool pilots);

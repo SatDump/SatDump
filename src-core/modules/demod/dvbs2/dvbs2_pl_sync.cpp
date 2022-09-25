@@ -63,15 +63,21 @@ namespace dvbs2
 
         for (int ss = 0; ss < raw_frame_size - sof.LENGTH - pls.LENGTH; ss++)
         {
+#if 0
             complex_t prev = 0;
             for (int i = 0; i < sof.LENGTH + pls.LENGTH; i++)
             {
                 float phase2 = 0;
-                complex_t vco = complex_t(cosf(phase2), sinf(phase2));
-                plheader_symbols[i] = conjprod(prev, correlation_buffer[ss + i] * vco);
-                prev = correlation_buffer[ss + i] * vco;
-                phase2 += freq;
+                // complex_t vco = complex_t(cosf(phase2), sinf(phase2));
+                plheader_symbols[i] = conjprod(prev, correlation_buffer[ss + i] /* * vco*/);
+                prev = correlation_buffer[ss + i] /* * vco*/;
+                // phase2 += freq;
             }
+#endif
+
+            plheader_symbols[0] = 0;
+            volk_32fc_conjugate_32fc((lv_32fc_t *)&plheader_symbols[1], (lv_32fc_t *)&correlation_buffer[ss], sof.LENGTH + pls.LENGTH);
+            volk_32fc_x2_multiply_32fc((lv_32fc_t *)plheader_symbols, (lv_32fc_t *)plheader_symbols, (lv_32fc_t *)&correlation_buffer[ss], sof.LENGTH + pls.LENGTH);
 
             double difference = 0;
 
