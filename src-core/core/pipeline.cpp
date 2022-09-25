@@ -111,6 +111,8 @@ namespace satdump
 
                 if (module1_thread.joinable())
                     module1_thread.join();
+                while (m2->input_fifo->getReadable() > 0)
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
                 m2->input_active = false;
                 m2->input_fifo->stopReader();
                 m2->input_fifo->stopWriter();
