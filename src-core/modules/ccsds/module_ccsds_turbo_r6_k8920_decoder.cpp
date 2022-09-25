@@ -31,7 +31,7 @@ namespace ccsds
                               1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0,
                               1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1};
         for (int i = 0; i < 192; i++)
-            asm_softs[i] = asm_bits[i] ? 0.5f : -0.5f;
+            asm_softs[i] = asm_bits[i] ? 1.0f : -1.0f;
     }
 
     std::vector<ModuleDataType> CCSDSTurboR6K8920DecoderModule::getInputTypes()
@@ -83,25 +83,21 @@ namespace ccsds
             int best_pos = 0;
             float best_cor = 0;
             bool best_swapped = false;
+            float corr_value = 0;
             for (int pos = 0; pos < ENCODED_FRAME_SIZE - ENCODED_ASM_SIZE; pos++)
             {
-                float corr_nwap = 0, corr_swap = 0;
-                for (int i = 0; i < 192; i++)
-                {
-                    corr_nwap += fabs(buffer_floats[pos + i] + asm_softs[i]);
-                    corr_swap += fabs(buffer_floats[pos + i] - asm_softs[i]);
-                }
+                volk_32f_x2_dot_prod_32f(&corr_value, &buffer_floats[pos], asm_softs, 192);
 
-                if (corr_nwap > best_cor)
+                if (corr_value > best_cor)
                 {
-                    best_cor = corr_nwap;
+                    best_cor = corr_value;
                     best_pos = pos;
                     best_swapped = false;
                 }
 
-                if (corr_swap > best_cor)
+                if (-corr_value > best_cor)
                 {
-                    best_cor = corr_swap;
+                    best_cor = -corr_value;
                     best_pos = pos;
                     best_swapped = true;
                 }
@@ -178,7 +174,7 @@ namespace ccsds
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 100.0f, 230.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 100.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("CRC Check", {200 * ui_scale, 20 * ui_scale});
