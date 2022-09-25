@@ -1,0 +1,40 @@
+{
+    "stereo_lr": {
+        "name": "Stereo-A/B/C Low Rate",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 3800,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
+                    "buffer_size": 8192
+                }
+            },
+            "frames": {
+                "ccsds_turbo_r6_k8920_decoder": {
+                    "turbo_iters": 20
+                }
+            },
+            "products": {}
+        }
+    }
+}
