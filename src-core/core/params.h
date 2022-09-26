@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
+#include "imgui/pfd/widget.h"
 
 namespace satdump
 {
@@ -20,6 +21,7 @@ namespace satdump
             PARAM_FLOAT,
             PARAM_BOOL,
             PARAM_OPTIONS,
+            PARAM_PATH,
         };
 
         class EditableParameter
@@ -43,6 +45,8 @@ namespace satdump
             int d_option;
             std::string d_options_str;
             std::vector<std::string> d_options;
+
+            std::shared_ptr<FileSelectWidget> file_select;
 
         public:
             EditableParameter() {}
@@ -109,6 +113,13 @@ namespace satdump
                     else
                         d_option = 0;
                 }
+                else if (type_str == "path")
+                {
+                    d_type = PARAM_PATH;
+
+                    file_select = std::make_shared<FileSelectWidget>(p_json["name"], p_json["name"], p_json["is_directory"]);
+                    file_select->path = p_json["value"];
+                }
                 else
                 {
                     logger->error("Invalid options on EditableParameter!");
@@ -134,6 +145,8 @@ namespace satdump
                     ImGui::Checkbox(d_id.c_str(), &p_bool);
                 else if (d_type == PARAM_OPTIONS)
                     ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str());
+                else if (d_type == PARAM_PATH)
+                    file_select->draw();
             }
 
             nlohmann::json getValue()
@@ -149,6 +162,8 @@ namespace satdump
                     v = p_bool;
                 else if (d_type == PARAM_OPTIONS)
                     v = d_options[d_option];
+                else if (d_type == PARAM_PATH)
+                    return file_select->getPath();
                 return v;
             }
 
@@ -174,6 +189,8 @@ namespace satdump
                             d_option = i;
                     }
                 }
+                else if (d_type == PARAM_PATH)
+                    file_select->path = v.get<std::string>();
                 return v;
             }
         };

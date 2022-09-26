@@ -98,7 +98,8 @@
     // Output directories
     "satdump_output_directories": {
         "recording_path": {
-            "type": "string",
+            "type": "path",
+            "is_directory": true,
             "value": ".",
             "name": "Baseband Recorder directory",
             "description": "Path to a folder where I/Q recordings will be saved"
@@ -110,7 +111,8 @@
             "description": "Should live processing automatically generate an output folder?"
         },
         "live_processing_path": {
-            "type": "string",
+            "type": "path",
+            "is_directory": true,
             "value": "./live_output",
             "name": "Live Processing Directory",
             "description": "Path to the default folder to use to store live processing\nOnly valid when automatic generation is enabled!"
