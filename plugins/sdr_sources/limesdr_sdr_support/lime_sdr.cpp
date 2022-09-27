@@ -61,7 +61,7 @@ void LimeSDRSource::open()
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += std::to_string(samplerate) + '\0';
+        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
 }
 
 void LimeSDRSource::start()

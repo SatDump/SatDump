@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include "nlohmann/json_utils.h"
+#include "samplerate_to_string.h"
 
 namespace dsp
 {

@@ -80,9 +80,9 @@ void HackRFSource::open()
     // Init UI stuff
     samplerate_option_str = samplerate_option_str_exp = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += std::to_string(samplerate) + '\0';
+        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
     for (uint64_t samplerate : available_samplerates_exp)
-        samplerate_option_str_exp += std::to_string(samplerate) + '\0';
+        samplerate_option_str_exp += formatSamplerateToString(samplerate) + '\0';
 }
 
 void HackRFSource::start()
