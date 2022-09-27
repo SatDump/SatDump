@@ -46,9 +46,9 @@ protected:
                 logger->trace("Starting async reads...");
                 async_running = true;
                 if (bit_depth == 8)
-                    mirisdr_read_async(mirisdr_dev_obj, _rx_callback_8, &output_stream, 0, 16384);
+                    mirisdr_read_async(mirisdr_dev_obj, _rx_callback_8, &output_stream, 15, 2304 * 8 * 2);
                 else
-                    mirisdr_read_async(mirisdr_dev_obj, _rx_callback_16, &output_stream, 0, 16384);
+                    mirisdr_read_async(mirisdr_dev_obj, _rx_callback_16, &output_stream, 15, 2304 * 8 * 2);
                 logger->trace("Stopped async reads...");
                 async_running = false;
             }

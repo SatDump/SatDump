@@ -146,9 +146,12 @@ void MiriSdrSource::stop()
     needs_to_run = false;
     if (is_started)
     {
-        mirisdr_cancel_async(mirisdr_dev_obj);
-        while (async_running)
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Wait
+        do
+        {
+            mirisdr_cancel_async(mirisdr_dev_obj);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait
+            logger->warn("Trying to cancel async...");
+        } while (async_running);
         mirisdr_close(mirisdr_dev_obj);
     }
     is_started = false;
