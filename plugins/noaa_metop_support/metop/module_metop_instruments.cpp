@@ -269,6 +269,37 @@ namespace metop
                     image::Image<uint16_t> img = ascat_reader.getChannel(i);
                     WRITE_IMAGE(img, directory + "/ASCAT-" + std::to_string(i + 1) + ".png");
                 }
+
+                // Output a few nice composites as well
+                logger->info("Global Composite...");
+                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannel(0).height() * 3, 1);
+                {
+                    int height = ascat_reader.getChannel(0).height();
+
+                    auto image1 = ascat_reader.getChannel(0);
+                    auto image2 = ascat_reader.getChannel(1);
+                    auto image3 = ascat_reader.getChannel(2);
+                    image3.mirror(1, 0);
+                    auto image4 = ascat_reader.getChannel(3);
+                    image4.mirror(1, 0);
+                    auto image5 = ascat_reader.getChannel(4);
+                    auto image6 = ascat_reader.getChannel(5);
+                    image5.mirror(1, 0);
+
+                    // Row 1
+                    imageAll.draw_image(0, image6, 256 * 0, 0);
+                    imageAll.draw_image(0, image3, 256 * 1, 0);
+
+                    // Row 2
+                    imageAll.draw_image(0, image5, 256 * 0, height);
+                    imageAll.draw_image(0, image2, 256 * 1, height);
+
+                    // Row 3
+                    imageAll.draw_image(0, image4, 256 * 0, height * 2);
+                    imageAll.draw_image(0, image1, 256 * 1, height * 2);
+                }
+                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL.png");
+
                 ascat_status = DONE;
             }
 

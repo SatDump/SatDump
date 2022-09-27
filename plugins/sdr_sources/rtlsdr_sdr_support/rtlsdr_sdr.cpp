@@ -51,7 +51,7 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
     for (int i = 0; i < (int)len / 2; i++)
-        stream->writeBuf[i] = complex_t((buf[i * 2 + 0] - 127) / 128.0f, (buf[i * 2 + 1] - 127) / 128.0f);
+        stream->writeBuf[i] = complex_t((buf[i * 2 + 0] - 127.0f) / 128.0f, (buf[i * 2 + 1] - 127.0f) / 128.0f);
     stream->swap(len / 2);
 };
 
@@ -60,6 +60,7 @@ void RtlSdrSource::set_gains()
     if (!is_started)
         return;
 
+    rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
     logger->debug("Set RTL-SDR Gain to {:d}", gain * 10);
 }
