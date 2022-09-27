@@ -59,7 +59,7 @@ namespace codings
 
             if (d_input_reflected)
             {
-                for (std::size_t i = 0; i < len; ++i)
+                for (size_t i = 0; i < len; ++i)
                 {
                     uint8_t byte = data[i];
                     uint8_t idx = (rem ^ byte) & 0xff;
@@ -68,7 +68,7 @@ namespace codings
             }
             else
             {
-                for (std::size_t i = 0; i < len; ++i)
+                for (size_t i = 0; i < len; ++i)
                 {
                     uint8_t byte = data[i];
                     uint8_t idx = ((rem >> (d_num_bits - 8)) ^ byte) & 0xff;
