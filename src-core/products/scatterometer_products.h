@@ -2,6 +2,7 @@
 
 #include "products.h"
 #include "common/image/image.h"
+#include "dll_export.h"
 
 namespace satdump
 {
@@ -16,8 +17,8 @@ namespace satdump
 
         // Few scat types... With some only aimed at a single instrument
         // due to how specific they are!
-        static const std::string SCAT_TYPE_ASCAT;   // MetOp-A/B/C ASCAT, with its "unusual" 6 POVs. Theorically a normal pencil-beam, but as it's processed in a different way...
-        static const std::string SCAT_TYPE_FANBEAM; // "Standard" Fanbeam scat, as seen on CFOSAT and others
+        SATDUMP_DLL static const std::string SCAT_TYPE_ASCAT;   // MetOp-A/B/C ASCAT, with its "unusual" 6 POVs. Theorically a normal pencil-beam, but as it's processed in a different way...
+        SATDUMP_DLL static const std::string SCAT_TYPE_FANBEAM; // "Standard" Fanbeam scat, as seen on CFOSAT and others
 
         ///////////////////////// Data
         void set_scatterometer_type(std::string type)

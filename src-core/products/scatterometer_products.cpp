@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "scatterometer_products.h"
 #include "logger.h"
 #include <filesystem>
@@ -8,8 +9,8 @@
 
 namespace satdump
 {
-    const std::string ScatterometerProducts::SCAT_TYPE_ASCAT = "ascat";
-    const std::string ScatterometerProducts::SCAT_TYPE_FANBEAM = "fanbeam";
+    SATDUMP_DLL const std::string ScatterometerProducts::SCAT_TYPE_ASCAT = "ascat";
+    SATDUMP_DLL const std::string ScatterometerProducts::SCAT_TYPE_FANBEAM = "fanbeam";
 
     void ScatterometerProducts::save(std::string directory)
     {
