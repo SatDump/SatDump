@@ -827,6 +827,62 @@
                         }
                     }
                 }
+            },
+            "ascat": {
+                "handler": "scatterometer_handler",
+                "name": "ASCAT",
+                "grayscale_images": {
+                    "ch1": {
+                        "channel": 0,
+                        "min": 0,
+                        "max": 2576687
+                    },
+                    "ch2": {
+                        "channel": 1,
+                        "min": 0,
+                        "max": 2576687
+                    },
+                    "ch3": {
+                        "channel": 2,
+                        "min": 0,
+                        "max": 2576687
+                    },
+                    "ch4": {
+                        "channel": 3,
+                        "min": 0,
+                        "max": 2576687
+                    },
+                    "ch5": {
+                        "channel": 4,
+                        "min": 0,
+                        "max": 2576687
+                    },
+                    "ch6": {
+                        "channel": 5,
+                        "min": 0,
+                        "max": 2576687
+                    }
+                },
+                "grayscale_projs": {
+                    "backward": {
+                        "channel": 0,
+                        "min": 0,
+                        "max": 2576687,
+                        "draw_map": true
+                    },
+                    "downward": {
+                        "channel": 1,
+                        "min": 0,
+                        "max": 2576687,
+                        "draw_map": true
+                    },
+                    "forward": {
+                        "channel": 2,
+                        "min": 0,
+                        "max": 2576687,
+                        "draw_map": true
+                    }
+                }
             }
         }
     }

@@ -12,7 +12,10 @@ namespace satdump
         logger->info(product_path);
         std::shared_ptr<Products> products = loadProducts(product_path);
 
-        products_loaders[products->type].processProducts(products.get(), product_path);
+        if (products_loaders.count(products->type) > 0)
+            products_loaders[products->type].processProducts(products.get(), product_path);
+        else
+            logger->error("No handler for type " + products->type);
     }
 
     void process_dataset(std::string dataset_path)

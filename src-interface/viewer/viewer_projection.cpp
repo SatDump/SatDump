@@ -94,7 +94,7 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
-                std::string default_name = ".\\projection.png";
+                std::string default_name = "./projection.png";
 
 #ifndef __ANDROID__
                 auto result = pfd::save_file("Save Projection", default_name, {"*.png"});
@@ -116,13 +116,6 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
-            /*
-            ImGui::Text("Mode :");
-            ImGui::RadioButton("Blend", &projections_mode_radio, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("Overlay", &projections_mode_radio, 1);
-            */
-
             ImGui::BeginGroup();
             ImGui::Text("Mode :  ");
             ImGui::SameLine();

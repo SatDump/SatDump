@@ -124,10 +124,11 @@ namespace satdump
             // Now, warp the image
             auto cpu_start = std::chrono::system_clock::now();
             {
-                double xx, yy;
-                double xy[2];
+#pragma omp parallel for
                 for (size_t xy_ptr = 0; xy_ptr < result.output_image.size(); xy_ptr++)
                 {
+                    double xx, yy;
+                    double xy[2];
                     int x = (xy_ptr % result.output_image.width());
                     int y = (xy_ptr / result.output_image.width());
 

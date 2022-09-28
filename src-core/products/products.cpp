@@ -4,9 +4,11 @@
 #include <filesystem>
 #include "image_products.h"
 #include "radiation_products.h"
+#include "scatterometer_products.h"
 #include "core/plugin.h"
 #include "processor/image_processor.h"
 #include "processor/radiation_processor.h"
+#include "processor/scatterometer_processor.h"
 
 namespace satdump
 {
@@ -76,6 +78,7 @@ namespace satdump
         products_loaders.clear();
         products_loaders.emplace("image", RegisteredProducts{PRODUCTS_LOADER_FUN(ImageProducts), process_image_products});
         products_loaders.emplace("radiation", RegisteredProducts{PRODUCTS_LOADER_FUN(RadiationProducts), process_radiation_products});
+        products_loaders.emplace("scatterometer", RegisteredProducts{PRODUCTS_LOADER_FUN(ScatterometerProducts), process_scatterometer_products});
 
         // Plugins!
         eventBus->fire_event<RegisterProductsEvent>({products_loaders});

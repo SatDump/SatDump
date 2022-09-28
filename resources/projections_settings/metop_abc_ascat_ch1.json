@@ -1,0 +1,46 @@
+{
+    "type": "manual_single_line",
+    "points": {
+        "0": [
+            -10,
+            0,
+            0
+        ],
+        "30": [
+            -26,
+            0,
+            0
+        ],
+        "80": [
+            -35,
+            0,
+            0
+        ],
+        "130": [
+            -43.0,
+            0,
+            0
+        ],
+        "194": [
+            -50.6,
+            0,
+            0
+        ],
+        "255": [
+            -55.5,
+            0,
+            0
+        ]
+    },
+    "yaw_offset": 135,
+    "timestamp_offset": 0,
+    "image_width": 256,
+    "gcp_spacing_x": 1,
+    "gcp_spacing_y": 10,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 2.33,
+        "max_diff": 10.0
+    }
+}

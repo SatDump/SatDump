@@ -10,6 +10,7 @@
 #include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
+#include "products/scatterometer_products.h"
 #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
@@ -263,27 +264,33 @@ namespace metop
                 for (int i = 0; i < 6; i++)
                     logger->info("Channel " + std::to_string(i + 1) + " lines : " + std::to_string(ascat_reader.lines[i]));
 
+                satdump::ScatterometerProducts ascat_products;
+                ascat_products.instrument_name = "ascat";
+                ascat_products.set_scatterometer_type(ascat_products.SCAT_TYPE_ASCAT);
+                ascat_products.has_timestamps = true;
+                ascat_products.set_tle(satellite_tle);
+
                 for (int i = 0; i < 6; i++)
                 {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    image::Image<uint16_t> img = ascat_reader.getChannel(i);
-                    WRITE_IMAGE(img, directory + "/ASCAT-" + std::to_string(i + 1) + ".png");
+                    ascat_products.set_timestamps(i, ascat_reader.timestamps[i]);
+                    ascat_products.set_proj_cfg(i, loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_ascat_ch" + std::to_string(i + 1) + ".json")));
+                    ascat_products.set_channel(i, ascat_reader.getChannel(i));
                 }
 
                 // Output a few nice composites as well
-                logger->info("Global Composite...");
-                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannel(0).height() * 3, 1);
+                logger->info("ASCAT Composite...");
+                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
                 {
-                    int height = ascat_reader.getChannel(0).height();
+                    int height = ascat_reader.getChannelImg(0).height();
 
-                    auto image1 = ascat_reader.getChannel(0);
-                    auto image2 = ascat_reader.getChannel(1);
-                    auto image3 = ascat_reader.getChannel(2);
+                    auto image1 = ascat_reader.getChannelImg(0);
+                    auto image2 = ascat_reader.getChannelImg(1);
+                    auto image3 = ascat_reader.getChannelImg(2);
                     image3.mirror(1, 0);
-                    auto image4 = ascat_reader.getChannel(3);
+                    auto image4 = ascat_reader.getChannelImg(3);
                     image4.mirror(1, 0);
-                    auto image5 = ascat_reader.getChannel(4);
-                    auto image6 = ascat_reader.getChannel(5);
+                    auto image5 = ascat_reader.getChannelImg(4);
+                    auto image6 = ascat_reader.getChannelImg(5);
                     image5.mirror(1, 0);
 
                     // Row 1
@@ -299,6 +306,9 @@ namespace metop
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
                 WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL.png");
+
+                ascat_products.save(directory);
+                dataset.products_list.push_back("ASCAT");
 
                 ascat_status = DONE;
             }

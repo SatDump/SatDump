@@ -23,6 +23,17 @@ namespace satdump
                 values.push_back(x);
             values.push_back(projection->img_size_x - 1);
 
+            if (cfg["type"] == "manual_single_line")
+            {
+                values.clear();
+
+                for (auto item : cfg["points"].items())
+                {
+                    int px = std::stoi(item.key());
+                    values.push_back(px);
+                }
+            }
+
             geodetic::geodetic_coords_t position;
 
             bool last_was_invalid = false;

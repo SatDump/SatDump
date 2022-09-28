@@ -1,6 +1,7 @@
 #include "viewer.h"
 #include "image_handler.h"
 #include "radiation_handler.h"
+#include "scatterometer_handler.h"
 #include "core/config.h"
 #include "products/dataset.h"
 #include "common/utils.h"
@@ -84,6 +85,10 @@ namespace satdump
                 handler_id = instrument_viewer_settings["handler"].get<std::string>();
             else if (products->contents["type"] == "image")
                 handler_id = "image_handler";
+            else if (products->contents["type"] == "radiation")
+                handler_id = "radiation_handler";
+            else if (products->contents["type"] == "scatterometer")
+                handler_id = "scatterometer_handler";
             logger->debug("Using handler {:s} for instrument {:s}", handler_id, products->instrument_name);
             std::shared_ptr<ViewerHandler> handler = viewer_handlers_registry[handler_id]();
 
@@ -356,5 +361,6 @@ namespace satdump
     {
         viewer_handlers_registry.emplace(ImageViewerHandler::getID(), ImageViewerHandler::getInstance);
         viewer_handlers_registry.emplace(RadiationViewerHandler::getID(), RadiationViewerHandler::getInstance);
+        viewer_handlers_registry.emplace(ScatterometerViewerHandler::getID(), ScatterometerViewerHandler::getInstance);
     }
 };

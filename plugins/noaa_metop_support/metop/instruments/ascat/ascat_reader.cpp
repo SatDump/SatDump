@@ -10,7 +10,7 @@ namespace metop
         {
             for (int i = 0; i < 6; i++)
             {
-                channels[i].resize(256);
+                channels_img[i].resize(256);
                 lines[i] = 0;
             }
         }
@@ -30,6 +30,8 @@ namespace metop
 
             if (channel < 0 || channel >= 6)
                 return;
+
+            channels[channel].push_back(std::vector<float>(256));
 
             for (int i = 0; i < 256; i++)
             {
@@ -58,7 +60,8 @@ namespace metop
                     value = (s ? -1.0 : 1.0) * pow(2.0, double(e - 127)) * ((double)f / 128.0 + 1.0);
                 }
 
-                channels[channel][lines[channel] * 256 + i] = value / 100;
+                channels[channel][lines[channel]][i] = value;
+                channels_img[channel][lines[channel] * 256 + i] = value / 100;
             }
 
             timestamps[channel].push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
@@ -66,12 +69,17 @@ namespace metop
             // Frame counter
             lines[channel]++;
 
-            channels[channel].resize((lines[channel] + 1) * 256);
+            channels_img[channel].resize((lines[channel] + 1) * 256);
         }
 
-        image::Image<uint16_t> ASCATReader::getChannel(int channel)
+        image::Image<uint16_t> ASCATReader::getChannelImg(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 256, lines[channel], 1);
+            return image::Image<uint16_t>(channels_img[channel].data(), 256, lines[channel], 1);
+        }
+
+        std::vector<std::vector<float>> ASCATReader::getChannel(int channel)
+        {
+            return channels[channel];
         }
     } // namespace avhrr
 } // namespace metop

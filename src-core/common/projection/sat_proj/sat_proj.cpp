@@ -231,6 +231,7 @@ namespace satdump
         std::vector<geodetic::geodetic_coords_t> sat_positions;
         std::vector<double> az_angles;
 
+        double yaw_offset;
 #if 0
         projection::VizGeorefSpline2D spline_roll;
         projection::VizGeorefSpline2D spline_pitch;
@@ -252,6 +253,8 @@ namespace satdump
             image_width = cfg["image_width"].get<int>();
             gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
             gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
+
+            yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
 
             timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
 
@@ -288,7 +291,7 @@ namespace satdump
                 double rp_v[2] = {roll, pitch};
                 spline_roll_pitch.add_point(px, px, rp_v);
 
-                logger->critical("{:d} {:f} {:f} {:f} ", px, roll, pitch, yaw);
+                // logger->critical("{:d} {:f} {:f} {:f} ", px, roll, pitch, yaw);
             }
 
             spline_roll_pitch.solve();
@@ -339,7 +342,7 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             satellite_pointing.roll = roll_pitch_v[0];
             satellite_pointing.pitch = roll_pitch_v[1];
-            satellite_pointing.yaw = 90 - az_angle;
+            satellite_pointing.yaw = 90 - az_angle + yaw_offset;
 
             // logger->critical("{:f} {:f} {:f} ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
 
