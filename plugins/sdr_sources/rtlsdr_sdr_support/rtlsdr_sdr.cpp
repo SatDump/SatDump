@@ -92,9 +92,9 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
 
     if (is_started)
     {
-        set_gains();
         set_bias();
         set_agcs();
+        set_gains();
     }
 }
 
@@ -152,9 +152,9 @@ void RtlSdrSource::start()
 
     set_frequency(d_frequency);
 
-    set_gains();
     set_bias();
     set_agcs();
+    set_gains();
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
     needs_to_run = true;
