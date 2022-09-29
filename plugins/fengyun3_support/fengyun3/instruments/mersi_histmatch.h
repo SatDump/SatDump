@@ -6,6 +6,6 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void banding_correct(image::Image<uint16_t> &imageo, int rowSize, float percent = 0.10);
+        void mersi_match_detector_histograms(image::Image<uint16_t> &img, int ndet);
     };
 };

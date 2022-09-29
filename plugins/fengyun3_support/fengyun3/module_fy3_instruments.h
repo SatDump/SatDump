@@ -44,6 +44,7 @@ namespace fengyun3
             fy3_sat_t d_satellite;
             fy3_downlink_t d_downlink;
             bool d_mersi_bowtie;
+            bool d_mersi_histmatch;
             bool d_dump_mersi;
             bool d_write_c10;
 

@@ -139,7 +139,8 @@
                 "fy3_instruments": {
                     "satellite": "fy3ab",
                     "downlink": "mpt",
-                    "mersi_bowtie": true
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
                 }
             }
         }
@@ -176,7 +177,8 @@
             "products": {
                 "fy3_instruments": {
                     "satellite": "fy3d",
-                    "mersi_bowtie": true
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
                 }
             }
         }
@@ -213,7 +215,8 @@
             "products": {
                 "fy3_instruments": {
                     "satellite": "fy3e",
-                    "mersi_bowtie": true
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
                 }
             }
         }
@@ -251,7 +254,8 @@
                 "fy3_instruments": {
                     "satellite": "fy3ab",
                     "downlink": "dpt",
-                    "mersi_bowtie": true
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
                 }
             }
         }

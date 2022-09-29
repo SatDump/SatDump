@@ -12,6 +12,7 @@
 #include "common/simple_deframer.h"
 #include "fengyun3.h"
 #include "resources.h"
+#include "instruments/mersi_histmatch.h"
 
 namespace fengyun3
 {
@@ -19,7 +20,8 @@ namespace fengyun3
     {
         FY3InstrumentsDecoderModule::FY3InstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters),
-              d_mersi_bowtie(d_parameters.contains("mersi_bowtie") ? d_parameters["mersi_bowtie"].get<bool>() : false)
+              d_mersi_bowtie(d_parameters.contains("mersi_bowtie") ? d_parameters["mersi_bowtie"].get<bool>() : false),
+              d_mersi_histmatch(d_parameters.contains("mersi_histmatch") ? d_parameters["mersi_histmatch"].get<bool>() : false)
         {
             if (parameters["satellite"] == "fy3ab")
                 d_satellite = FY_AB;
@@ -460,7 +462,7 @@ namespace fengyun3
                 else if (scid == FY3_C_SCID)
                     timestamp_offset = 17620;
 
-                for (int i = 0; i < virr_reader.timestamps.size(); i++)
+                for (int i = 0; i < (int)virr_reader.timestamps.size(); i++)
                     virr_reader.timestamps[i] += timestamp_offset * 86400.0;
 
                 if (d_write_c10)
@@ -479,7 +481,7 @@ namespace fengyun3
 
             if (d_satellite == FY_AB) // MERSI-1
             {
-                mersi1_status = SAVING;
+                mersi1_status = PROCESSING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-1";
 
                 if (!std::filesystem::exists(directory))
@@ -529,6 +531,9 @@ namespace fengyun3
                 for (int i = 0; i < 20; i++)
                 {
                     image::Image<uint16_t> image = mersi1_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, i < 5 ? 40 : 10);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
@@ -538,6 +543,8 @@ namespace fengyun3
 
                 // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
 
+                mersi1_status = SAVING;
+
                 mersi1_products.save(directory);
                 dataset.products_list.push_back("MERSI-1");
 
@@ -546,7 +553,7 @@ namespace fengyun3
 
             if (d_satellite == FY_3D) // MERSI-2
             {
-                mersi2_status = SAVING;
+                mersi2_status = PROCESSING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-2";
 
                 if (!std::filesystem::exists(directory))
@@ -603,12 +610,17 @@ namespace fengyun3
                 for (int i = 0; i < 25; i++)
                 {
                     image::Image<uint16_t> image = mersi2_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersi2_status = SAVING;
 
                 mersi2_products.save(directory);
                 dataset.products_list.push_back("MERSI-2");
@@ -618,7 +630,7 @@ namespace fengyun3
 
             if (d_satellite == FY_3E) // MERSI-LL
             {
-                mersill_status = SAVING;
+                mersill_status = PROCESSING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-LL";
 
                 if (!std::filesystem::exists(directory))
@@ -668,12 +680,17 @@ namespace fengyun3
                 for (int i = 0; i < 18; i++)
                 {
                     image::Image<uint16_t> image = mersill_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, i < 2 ? 80 : 10);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // mersill_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersill_status = SAVING;
 
                 mersill_products.save(directory);
                 dataset.products_list.push_back("MERSI-LL");
