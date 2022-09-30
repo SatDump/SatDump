@@ -54,13 +54,15 @@ namespace satdump
                 nlohmann::json proj_cfg;
                 image::Image<uint16_t> grayscale = satdump::make_scatterometer_grayscale_projs(*rad_products, cfg, nullptr, &proj_cfg);
 
+                grayscale.to_rgb();
+
                 if (compo.value().contains("draw_map"))
                 {
                     if (compo.value()["draw_map"].get<bool>())
                     {
                         auto proj_func = satdump::reprojection::setupProjectionFunction(grayscale.width(), grayscale.height(), proj_cfg);
                         logger->info("Drawing map");
-                        unsigned short color[4] = {0, 65535, 0, 65535};
+                        unsigned short color[4] = {0, 65535, 0};
                         map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                        grayscale,
                                                        color,

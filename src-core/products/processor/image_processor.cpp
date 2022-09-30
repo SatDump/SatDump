@@ -53,6 +53,8 @@ namespace satdump
             }
         }
 
+        ret.img.to_rgb();
+
         return ret;
     }
 
