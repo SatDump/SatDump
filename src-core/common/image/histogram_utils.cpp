@@ -1,6 +1,8 @@
 #include "histogram_utils.h"
 #include <limits>
 
+#include "logger.h"
+
 namespace image
 {
     namespace histogram
@@ -39,7 +41,26 @@ namespace image
             return pos;
         }
 
-        int find_target_value_hist(std::vector<int> &array, int val)
+        /*int try_find_val_around(std::vector<int> &array, int cent_pos, int val)
+        {
+            int array_size = array.size();
+            for (int i = 0; i < array_size; i++)
+            {
+                int pos_min = cent_pos - i;
+                int pos_max = cent_pos + i;
+
+                // if (pos_min >= 0 && pos_min < array_size)
+                //     if (array[pos_min] == val)
+                //         return pos_min;
+
+                if (pos_max >= 0 && pos_max < array_size)
+                    if (array[pos_max] == val)
+                        return pos_max;
+            }
+            return try_find_val(array, val);
+        }*/
+
+        int find_target_value_hist(std::vector<int> &array, int cent_pos, int val)
         {
             if (val == std::numeric_limits<int>::max())
                 return -1;
@@ -49,9 +70,9 @@ namespace image
             int pos = try_find_val(array, val);
             if (pos == -1)
             {
-                pos = find_target_value_hist(array, val + 1);
+                pos = find_target_value_hist(array, cent_pos, val + 1);
                 if (pos == -1)
-                    pos = find_target_value_hist(array, val - 1);
+                    pos = find_target_value_hist(array, cent_pos, val - 1);
             }
             return pos;
         }
@@ -61,27 +82,11 @@ namespace image
             std::vector<int> table(target_hist.size());
             for (int i = 0; i < (int)target_hist.size(); i++)
             {
-                table[i] = find_target_value_hist(target_hist, input_hist[i]);
-                if (i != 0 && (table[i] == 0 || table[i] == -1)) // Eg, if it starts late due to some unused values!
+                table[i] = find_target_value_hist(target_hist, i, input_hist[i]);
+                if (i != 0 && table[i] == 0)
                     table[i] = i;
             }
-
             table[0] = 0; // To be sure
-
-            // Check continuity for "gaps"
-            for (int i = 1; i < (int)target_hist.size() - 1; i++)
-            {
-                int previous = table[i - 1];
-                int current = table[i];
-                int next = table[i + 1];
-
-                int diff1 = abs(previous - current);
-                int diff2 = abs(next - current);
-
-                if (diff1 > maxdiff && diff2 > maxdiff)
-                    table[i] = (previous + next) / 2;
-            }
-
             return table;
         }
     }

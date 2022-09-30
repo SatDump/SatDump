@@ -32,7 +32,7 @@ namespace fengyun3
             // Scale down to be faster
             for (int i = 0; i < ndet; i++)
                 for (int y = 0; y < 4096; y++)
-                    all_histograms[i][y] /= 10;
+                    all_histograms[i][y] = round(all_histograms[i][y] * (float(4095) / float(img.size())));
             logger->trace("Scaled histograms...");
 
 #pragma omp parallel for
