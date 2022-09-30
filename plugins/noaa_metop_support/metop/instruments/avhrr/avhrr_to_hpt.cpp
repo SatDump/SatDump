@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "logger.h"
 #include "../../metop.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace metop
 {
@@ -61,6 +62,8 @@ namespace metop
             if (pkt.payload.size() < 12960)
                 return;
 
+            time_t timestamp = ccsds::parseCCSDSTimeFull(pkt, 10957);
+
             // Clean it up
             std::fill(hpt_buffer, &hpt_buffer[13864], 0);
 
@@ -80,8 +83,8 @@ namespace metop
                 counter = 0;
 
             // Timestamp
-            uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
-            days -= 502;         // Scale from 1/1/2000 to days since first frame
+            uint16_t days = gmtime(&timestamp)->tm_yday; // pkt.payload[0] << 8 | pkt.payload[1];
+            // days = 273;          //-= 502;         // Scale from 1/1/2000 to days since first frame
             days &= 0b111111111; // Cap to 9-bits
 
             hpt_buffer[10] = days >> 1;
