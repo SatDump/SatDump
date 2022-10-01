@@ -36,6 +36,7 @@ namespace ccsds
         viterbi_out = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
         frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
+        d_bpsk_90 = false;
 
         // Get constellation
         if (d_constellation_str == "bpsk")
