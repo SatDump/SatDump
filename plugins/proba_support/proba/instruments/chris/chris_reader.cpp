@@ -97,7 +97,7 @@ namespace proba
                     // uint16_t px1 = packet.payload[posb + 0] | ((packet.payload[posb + 1] & 0xF) << 8);
                     // uint16_t px2 = (packet.payload[posb + 1] >> 4) | (packet.payload[posb + 2] << 4);
 
-                    tempChannelBuffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = reverse16Bits(out[i]);
+                    tempChannelBuffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = reverse16Bits(out[i]) << 2;
                     // tempChannelBuffer[count_marker * 7680 + (i + 1)] = px2 << 4;
                     // posb += 3;
                 }

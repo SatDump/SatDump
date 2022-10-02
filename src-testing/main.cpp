@@ -36,4 +36,22 @@ image::Image<uint8_t> make_hist_img(std::vector<int> hist)
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
+
+    image::Image<uint16_t> img1, img2, img_final;
+
+    img1.load_img(argv[1]);
+    img2.load_img(argv[2]);
+
+    img_final.init(img1.width() * 2, img1.height(), 1);
+
+    for (int i = 0; i < img_final.width(); i += 2)
+    {
+        for (int y = 0; y < img_final.height(); y++)
+        {
+            img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
+            img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];
+        }
+    }
+
+    img_final.save_img(argv[3]);
 }
