@@ -34,7 +34,8 @@ namespace products
 
         satdump::process_dataset(d_input_file);
 
-        logger->sinks().erase(it);
+        if (std::find(logger->sinks().begin(), logger->sinks().end(), *it) != logger->sinks().end())
+            logger->sinks().erase(it);
     }
 
     void ProductsProcessorModule::drawUI(bool window)
