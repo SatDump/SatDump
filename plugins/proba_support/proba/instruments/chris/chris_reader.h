@@ -23,10 +23,14 @@ namespace proba
         class CHRISImageParser
         {
         private:
-            unsigned short *tempChannelBuffer;
+            std::vector<uint16_t> img_buffer;
             std::vector<int> modeMarkers;
             int mode;
             int current_width, current_height, max_value;
+
+            int absolute_max_cnt = 748 * 10;
+
+            uint16_t words_tmp[100000];
 
         public:
             CHRISImageParser();

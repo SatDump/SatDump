@@ -27,20 +27,18 @@ namespace proba
 
         CHRISImageParser::CHRISImageParser()
         {
-            tempChannelBuffer = new unsigned short[748 * 12096];
+            img_buffer = std::vector<uint16_t>(748 * 7680 * absolute_max_cnt, 0);
             mode = 0;
             current_width = 12096;
             current_height = 748;
-            max_value = 710;
+            max_value = 0; // 710;
             frame_count = 0;
         }
 
         CHRISImageParser::~CHRISImageParser()
         {
-            delete[] tempChannelBuffer;
+            img_buffer.clear();
         }
-
-        // std::ofstream chris_out("chris_out.bin");
 
         uint8_t reverseBits(uint8_t byte)
         {
@@ -63,33 +61,22 @@ namespace proba
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
 
+            // Reverse bits... Recorder thing
             for (int i = 0; i < (int)packet.payload.size(); i++)
                 packet.payload[i] = reverseBits(packet.payload[i]);
 
-            // chris_out.write((char *)packet.payload.data(), 11538);
+            // Check marker is in range
+            if (count_marker > max_value - 1)
+                max_value = count_marker + 1;
 
-            // int tx_mode = (packet.payload[2] & 0b00000011) << 2 | packet.payload[3] >> 6;
-
-            // logger->info("CH " << channel_marker );
-            // logger->info("CNT {:d}", count_marker);
-            // logger->info("MODE " << mode_marker );
-            // logger->info("TMD " << tx_mode );
-
-            uint16_t out[100000];
-
-            // uint32_t v = ((packet.payload[16] & 0b111111) << 3 | packet.payload[17] > 5);
-            //  logger->info(v);
-
+            // Repack to 12-bits
             bool bad = (packet.payload[16] & 0b1111111); //!(packet.payload[2] & 0b01000000);
-
-            // logger->critical("BAD {:d}", bad);
-
-            repackBytesTo12bits(&packet.payload[bad ? 18 : 16], packet.payload.size() - 16, out);
+            repackBytesTo12bits(&packet.payload[bad ? 18 : 16], packet.payload.size() - 16, words_tmp);
 
             // Convert into 12-bits values
             for (int i = 0; i < 7680; i += 1)
-                if (count_marker <= max_value)
-                    tempChannelBuffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = reverse16Bits(out[i]) << 2;
+                if (count_marker < absolute_max_cnt)
+                    img_buffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = std::min<int>(65535, reverse16Bits(words_tmp[i]) << 1);
 
             frame_count++;
 
@@ -109,19 +96,19 @@ namespace proba
                 {
                     current_width = 7296;
                     current_height = 748;
-                    max_value = 710;
+                    // max_value = 710;
                 }
                 else if (mode == ALL_MODE)
                 {
                     current_width = 12096;
                     current_height = 374;
-                    max_value = 588;
+                    // max_value = 588;
                 }
                 else if (mode == LAND_ALL_MODE)
                 {
                     current_width = 7680;
                     current_height = 374;
-                    max_value = 588;
+                    // max_value = 588;
                 }
             }
 
@@ -154,18 +141,24 @@ namespace proba
 
         CHRISImagesT CHRISImageParser::process()
         {
+            int height_detected = (max_value * 7680) / current_width;
+            int final_height = height_detected > current_height ? height_detected : current_height;
+            logger->trace("CHRIS Image size : {:d}x{:d}", current_width, final_height);
+
             CHRISImagesT ret;
             ret.mode = mode;
-            ret.raw = image::Image<uint16_t>(tempChannelBuffer, current_width, current_height, 1);
+            ret.raw = image::Image<uint16_t>(img_buffer.data(), current_width, final_height, 1);
 
             if (mode == ALL_MODE)
                 for (int i = 0; i < 63; i++)
                     ret.channels.push_back(ret.raw.crop_to(4 + i * 192, 4 + i * 192 + 186));
+            else if (mode == LAND_ALL_MODE)
+                for (int i = 0; i < 20; i++)
+                    ret.channels.push_back(ret.raw.crop_to(5 + i * 384, 5 + i * 384 + 375));
             else
                 for (int i = 0; i < 19; i++)
                     ret.channels.push_back(ret.raw.crop_to(5 + i * 384, 5 + i * 384 + 375));
 
-            std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
             return ret;
         }
 
@@ -204,23 +197,11 @@ namespace proba
                     chris_products.bit_depth = 12;
                     chris_products.has_timestamps = false;
 
-                    if (chris_img.mode == ALL_MODE)
+                    for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
-                        for (int i = 0; i < 63; i++)
-                        {
-                            image::Image<uint16_t> ch = chris_img.channels[i];
-                            ch.resize(ch.width() * 2, ch.height());
-                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
-                        }
-                    }
-                    else
-                    {
-                        for (int i = 0; i < 19; i++)
-                        {
-                            image::Image<uint16_t> ch = chris_img.channels[i];
-                            ch.resize(ch.width() * 2, ch.height());
-                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
-                        }
+                        image::Image<uint16_t> ch = chris_img.channels[i];
+                        ch.resize(ch.width() * 2, ch.height());
+                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
                     }
 
                     chris_products.save(dir_path);
@@ -267,12 +248,11 @@ namespace proba
                     chris_products.bit_depth = 12;
                     chris_products.has_timestamps = false;
 
-                    if (chris_img.mode == ALL_MODE)
-                        for (int i = 0; i < 63; i++)
-                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), chris_img.channels[i]});
-                    else
-                        for (int i = 0; i < 19; i++)
-                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), chris_img.channels[i]});
+                    for (int i = 0; i < (int)chris_img.channels.size(); i++)
+                    {
+                        image::Image<uint16_t> ch = chris_img.channels[i];
+                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
+                    }
 
                     chris_products.save(dir_path);
                     dataset.products_list.push_back("CHRIS/CHRIS-" + image_name);
@@ -301,7 +281,7 @@ namespace proba
             CHRISImagesT full;
             full.mode = half1.mode;
             full.raw = interleaveCHRIS(half1.raw, half2.raw);
-            for (int i = 0; i < std::min(half1.channels.size(), half2.channels.size()); i++)
+            for (int i = 0; i < std::min<int>(half1.channels.size(), half2.channels.size()); i++)
                 full.channels.push_back(interleaveCHRIS(half1.channels[i], half2.channels[i]));
             return full;
         }
@@ -309,9 +289,9 @@ namespace proba
         image::Image<uint16_t> CHRISFullFrameT::interleaveCHRIS(image::Image<uint16_t> img1, image::Image<uint16_t> img2)
         {
             image::Image<uint16_t> img_final(img1.width() * 2, img1.height(), 1);
-            for (int i = 0; i < img_final.width(); i += 2)
+            for (int i = 0; i < (int)img_final.width(); i += 2)
             {
-                for (int y = 0; y < img_final.height(); y++)
+                for (int y = 0; y < (int)img_final.height(); y++)
                 {
                     img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
                     img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];
