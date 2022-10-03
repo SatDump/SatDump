@@ -1,5 +1,6 @@
 #include "hrc_reader.h"
 #include "logger.h"
+#include "../crc.h"
 
 namespace proba
 {
@@ -38,6 +39,12 @@ namespace proba
         {
             if (packet.payload.size() < 21458)
                 return;
+
+            if (check_proba_crc(packet))
+            {
+                logger->error("HRC : Bad CRC!");
+                return;
+            }
 
             int count_marker = packet.payload[18 - 6];
 

@@ -189,6 +189,12 @@ namespace image
     }
 
     template <typename T>
+    Image<T> Image<T>::crop_to(int x0, int x1)
+    {
+        return crop_to(x0, 0, x1, d_height);
+    }
+
+    template <typename T>
     void Image<T>::resize(int width, int height)
     {
         double x_scale = double(d_width) / double(width);

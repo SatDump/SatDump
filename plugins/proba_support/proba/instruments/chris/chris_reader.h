@@ -13,32 +13,47 @@ namespace proba
 {
     namespace chris
     {
+        struct CHRISImagesT
+        {
+            int mode;
+            image::Image<uint16_t> raw;
+            std::vector<image::Image<uint16_t>> channels;
+        };
+
         class CHRISImageParser
         {
         private:
             unsigned short *tempChannelBuffer;
             std::vector<int> modeMarkers;
-            int &count_ref;
             int mode;
             int current_width, current_height, max_value;
-            int frame_count;
-            std::string output_folder;
-            satdump::ProductDataSet &dataset;
-
-        private:
-            std::string getModeName(int mode);
 
         public:
-            CHRISImageParser(int &count, std::string &outputfolder, satdump::ProductDataSet &dataset);
+            CHRISImageParser();
             ~CHRISImageParser();
-            void save();
-            void work(ccsds::CCSDSPacket &packet, int &ch);
+            void work(ccsds::CCSDSPacket &packet);
+            CHRISImagesT process();
+
+            int frame_count = 0;
+        };
+
+        std::string getModeName(int mode);
+
+        struct CHRISFullFrameT
+        {
+            bool has_half_1 = false;
+            bool has_half_2 = false;
+            CHRISImagesT half1;
+            CHRISImagesT half2;
+
+            CHRISImagesT recompose();
+            image::Image<uint16_t> interleaveCHRIS(image::Image<uint16_t> img1, image::Image<uint16_t> img2);
         };
 
         class CHRISReader
         {
         private:
-            std::map<int, std::shared_ptr<CHRISImageParser>> imageParsers;
+            std::map<uint32_t, std::shared_ptr<CHRISImageParser>> imageParsers;
             std::string output_folder;
             satdump::ProductDataSet &dataset;
 
@@ -46,8 +61,7 @@ namespace proba
             CHRISReader(std::string &outputfolder, satdump::ProductDataSet &dataset);
             void work(ccsds::CCSDSPacket &packet);
             void save();
-
-            int count;
+            int cnt() { return imageParsers.size(); }
         };
     } // namespace chris
 } // namespace proba

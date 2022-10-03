@@ -8,6 +8,7 @@
 #include "products/image_products.h"
 #include <filesystem>
 #include "common/repack.h"
+#include "../crc.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
@@ -21,11 +22,10 @@ namespace proba
     {
         CHRISReader::CHRISReader(std::string &outputfolder, satdump::ProductDataSet &dataset) : dataset(dataset)
         {
-            count = 0;
             output_folder = outputfolder;
         }
 
-        CHRISImageParser::CHRISImageParser(int &count, std::string &outputfolder, satdump::ProductDataSet &dataset) : count_ref(count), dataset(dataset)
+        CHRISImageParser::CHRISImageParser()
         {
             tempChannelBuffer = new unsigned short[748 * 12096];
             mode = 0;
@@ -33,7 +33,6 @@ namespace proba
             current_height = 748;
             max_value = 710;
             frame_count = 0;
-            output_folder = outputfolder;
         }
 
         CHRISImageParser::~CHRISImageParser()
@@ -59,12 +58,10 @@ namespace proba
             return r;
         }
 
-        void CHRISImageParser::work(ccsds::CCSDSPacket &packet, int & /*ch*/)
+        void CHRISImageParser::work(ccsds::CCSDSPacket &packet)
         {
             uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
             int mode_marker = packet.payload[9] & 0x03;
-
-            //  logger->critical(packet.payload.size());
 
             for (int i = 0; i < (int)packet.payload.size(); i++)
                 packet.payload[i] = reverseBits(packet.payload[i]);
@@ -91,27 +88,18 @@ namespace proba
 
             // Convert into 12-bits values
             for (int i = 0; i < 7680; i += 1)
-            {
                 if (count_marker <= max_value)
-                {
-                    // uint16_t px1 = packet.payload[posb + 0] | ((packet.payload[posb + 1] & 0xF) << 8);
-                    // uint16_t px2 = (packet.payload[posb + 1] >> 4) | (packet.payload[posb + 2] << 4);
-
                     tempChannelBuffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = reverse16Bits(out[i]) << 2;
-                    // tempChannelBuffer[count_marker * 7680 + (i + 1)] = px2 << 4;
-                    // posb += 3;
-                }
-            }
 
             frame_count++;
 
             // Frame counter
-            if (count_marker == max_value)
-            {
-                save();
-                frame_count = 0;
-                modeMarkers.clear();
-            }
+            // if (count_marker == max_value)
+            //{
+            //    save();
+            //    frame_count = 0;
+            //    modeMarkers.clear();
+            //}
 
             if ((count_marker > 50 && count_marker < 70) || (count_marker > 500 && count_marker < 520) || (count_marker > 700 && count_marker < 720))
             {
@@ -145,78 +133,154 @@ namespace proba
             if (packet.payload.size() < 11538)
                 return;
 
-            int channel_marker = (packet.payload[8 - 6] % (int)pow(2, 3)) << 1 | packet.payload[9 - 6] >> 7;
+            if (check_proba_crc(packet))
+            {
+                logger->error("CHRIS : Bad CRC!");
+                return;
+            }
 
-            // logger->info("CH " << channel_marker );
+            uint32_t img_full_id = packet.payload[0] << 24 | packet.payload[1] << 16 | packet.payload[2] << 8 | packet.payload[3];
+            int img_tag = (packet.payload[0] - 1) << 16 | packet.payload[1] << 8 | packet.payload[2];
 
             // Start new image
-            if (imageParsers.find(channel_marker) == imageParsers.end())
+            if (imageParsers.find(img_full_id) == imageParsers.end())
             {
-                logger->info("Found new CHRIS image! Marker " + std::to_string(channel_marker));
-                imageParsers.insert(std::pair<int, std::shared_ptr<CHRISImageParser>>(channel_marker, std::make_shared<CHRISImageParser>(count, output_folder, dataset)));
+                logger->info("Found new CHRIS image! Tag " + std::to_string(img_tag));
+                imageParsers.insert(std::pair<uint32_t, std::shared_ptr<CHRISImageParser>>(img_full_id, std::make_shared<CHRISImageParser>()));
             }
 
-            imageParsers[channel_marker]->work(packet, channel_marker);
+            imageParsers[img_full_id]->work(packet);
         }
 
-        void CHRISImageParser::save()
+        CHRISImagesT CHRISImageParser::process()
         {
-            if (frame_count != 0)
-            {
-                logger->info("Finished CHRIS image! Saving as CHRIS-" + std::to_string(count_ref) + ".png. Mode " + getModeName(mode));
-                image::Image<uint16_t> img = image::Image<uint16_t>(tempChannelBuffer, current_width, current_height, 1);
+            CHRISImagesT ret;
+            ret.mode = mode;
+            ret.raw = image::Image<uint16_t>(tempChannelBuffer, current_width, current_height, 1);
 
-                std::string dir_path = output_folder + "/CHRIS-" + std::to_string(count_ref);
+            if (mode == ALL_MODE)
+                for (int i = 0; i < 63; i++)
+                    ret.channels.push_back(ret.raw.crop_to(4 + i * 192, 4 + i * 192 + 186));
+            else
+                for (int i = 0; i < 19; i++)
+                    ret.channels.push_back(ret.raw.crop_to(5 + i * 384, 5 + i * 384 + 375));
 
-                if (!std::filesystem::exists(dir_path))
-                    std::filesystem::create_directories(dir_path);
-
-                // img.normalize();
-                img.save_png(dir_path + "/RAW.png");
-
-                satdump::ImageProducts chris_products;
-                chris_products.instrument_name = "chris";
-                chris_products.bit_depth = 12;
-                chris_products.has_timestamps = false;
-
-                if (mode == ALL_MODE)
-                {
-                    for (int i = 0; i < 63; i++)
-                    {
-                        image::Image<uint16_t> ch = img;
-                        ch.crop(4 + i * 192, 4 + i * 192 + 186);
-                        ch.resize(ch.width() * 2, ch.height());
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < 19; i++)
-                    {
-                        image::Image<uint16_t> ch = img;
-                        ch.crop(5 + i * 384, 5 + i * 384 + 375);
-                        ch.resize(ch.width() * 2, ch.height());
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
-                    }
-                }
-
-                chris_products.save(dir_path);
-                dataset.products_list.push_back("CHRIS/CHRIS-" + std::to_string(count_ref));
-
-                std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
-                count_ref++;
-            }
-        };
+            std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
+            return ret;
+        }
 
         void CHRISReader::save()
         {
-            logger->info("Saving in-progress CHRIS data! (if any)");
+            logger->info("Saving CHRIS data! (if any)");
 
-            for (std::pair<int, std::shared_ptr<CHRISImageParser>> currentPair : imageParsers)
-                currentPair.second->save();
+            std::map<int, CHRISFullFrameT> full_frames_wip;
+
+            for (std::pair<const uint32_t, std::shared_ptr<CHRISImageParser>> &currentPair : imageParsers)
+            {
+                uint8_t tag[3];
+                tag[0] = (currentPair.first >> 24) & 0xFF;
+                tag[1] = (currentPair.first >> 16) & 0xFF;
+                tag[2] = (currentPair.first >> 8) & 0xFF;
+                int img_tag = (tag[0] - 1) << 16 | tag[1] << 8 | tag[2];
+                bool is_2nd_half = currentPair.first & 0xFF;
+
+                if (currentPair.second->frame_count > 0)
+                {
+                    CHRISImagesT chris_img = currentPair.second->process();
+
+                    // Save Half alone
+                    std::string image_name = std::to_string(img_tag) + "_Half_" + (is_2nd_half ? "2" : "1");
+                    logger->info("Finished CHRIS image! Saving as CHRIS-" + image_name + ".png. Mode " + getModeName(chris_img.mode));
+
+                    std::string dir_path = output_folder + "/CHRIS-" + image_name;
+
+                    if (!std::filesystem::exists(dir_path))
+                        std::filesystem::create_directories(dir_path);
+
+                    chris_img.raw.save_png(dir_path + "/RAW.png");
+
+                    satdump::ImageProducts chris_products;
+                    chris_products.instrument_name = "chris";
+                    chris_products.bit_depth = 12;
+                    chris_products.has_timestamps = false;
+
+                    if (chris_img.mode == ALL_MODE)
+                    {
+                        for (int i = 0; i < 63; i++)
+                        {
+                            image::Image<uint16_t> ch = chris_img.channels[i];
+                            ch.resize(ch.width() * 2, ch.height());
+                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < 19; i++)
+                        {
+                            image::Image<uint16_t> ch = chris_img.channels[i];
+                            ch.resize(ch.width() * 2, ch.height());
+                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
+                        }
+                    }
+
+                    chris_products.save(dir_path);
+                    dataset.products_list.push_back("CHRIS/CHRIS-" + image_name);
+
+                    // Also push the data to attempt recomposing later
+                    if (full_frames_wip.find(img_tag) == full_frames_wip.end())
+                        full_frames_wip.insert(std::pair<uint32_t, CHRISFullFrameT>(img_tag, CHRISFullFrameT()));
+
+                    if (is_2nd_half)
+                    {
+                        full_frames_wip[img_tag].half2 = chris_img;
+                        full_frames_wip[img_tag].has_half_2 = true;
+                    }
+                    else
+                    {
+                        full_frames_wip[img_tag].half1 = chris_img;
+                        full_frames_wip[img_tag].has_half_1 = true;
+                    }
+                }
+            }
+
+            for (std::pair<const int, CHRISFullFrameT> &currentPair : full_frames_wip)
+            {
+                auto &frm = currentPair.second;
+
+                if (frm.has_half_1 && frm.has_half_2)
+                {
+                    CHRISImagesT chris_img = frm.recompose();
+
+                    // Save Full frame
+                    std::string image_name = std::to_string(currentPair.first) + "_Full";
+                    logger->info("Got Full CHRIS image! Saving as CHRIS-" + image_name + ".png. Mode " + getModeName(chris_img.mode));
+
+                    std::string dir_path = output_folder + "/CHRIS-" + image_name;
+
+                    if (!std::filesystem::exists(dir_path))
+                        std::filesystem::create_directories(dir_path);
+
+                    chris_img.raw.save_png(dir_path + "/RAW.png");
+
+                    satdump::ImageProducts chris_products;
+                    chris_products.instrument_name = "chris";
+                    chris_products.bit_depth = 12;
+                    chris_products.has_timestamps = false;
+
+                    if (chris_img.mode == ALL_MODE)
+                        for (int i = 0; i < 63; i++)
+                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), chris_img.channels[i]});
+                    else
+                        for (int i = 0; i < 19; i++)
+                            chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), chris_img.channels[i]});
+
+                    chris_products.save(dir_path);
+                    dataset.products_list.push_back("CHRIS/CHRIS-" + image_name);
+                }
+            }
         }
 
-        std::string CHRISImageParser::getModeName(int mode)
+        std::string getModeName(int mode)
         {
             if (mode == ALL_MODE)
                 return "ALL";
@@ -230,6 +294,30 @@ namespace proba
                 return "ALL-LAND";
 
             return "";
+        }
+
+        CHRISImagesT CHRISFullFrameT::recompose()
+        {
+            CHRISImagesT full;
+            full.mode = half1.mode;
+            full.raw = interleaveCHRIS(half1.raw, half2.raw);
+            for (int i = 0; i < std::min(half1.channels.size(), half2.channels.size()); i++)
+                full.channels.push_back(interleaveCHRIS(half1.channels[i], half2.channels[i]));
+            return full;
+        }
+
+        image::Image<uint16_t> CHRISFullFrameT::interleaveCHRIS(image::Image<uint16_t> img1, image::Image<uint16_t> img2)
+        {
+            image::Image<uint16_t> img_final(img1.width() * 2, img1.height(), 1);
+            for (int i = 0; i < img_final.width(); i += 2)
+            {
+                for (int y = 0; y < img_final.height(); y++)
+                {
+                    img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
+                    img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];
+                }
+            }
+            return img_final;
         }
     } // namespace chris
 } // namespace proba

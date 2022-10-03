@@ -42,7 +42,7 @@ namespace proba
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
 
-            //  std::ofstream output("file.ccsds");
+            // std::ofstream output("file.ccsds");
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -99,12 +99,12 @@ namespace proba
                             if (pkt.header.apid == 0)
                             {
                                 int mode_marker = pkt.payload[9] & 0x03;
-
+                                // pkt.payload.resize(16000);
+                                // output.write((char *)pkt.payload.data(), 16000);
                                 if (mode_marker == 1 || mode_marker == 2)
                                     hrc_reader->work(pkt);
                                 else
                                     chris_reader->work(pkt);
-                                //  output.write((char *)pkt.payload.data(), 1340);
                             }
                         }
                     }
@@ -150,7 +150,7 @@ namespace proba
                 chris_status = SAVING;
 
                 logger->info("----------- CHRIS");
-                logger->info("Images : {:d}", chris_reader->count);
+                logger->info("Images : {:d}", chris_reader->cnt());
 
                 chris_reader->save();
 
@@ -207,7 +207,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CHRIS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", chris_reader->count);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", chris_reader->cnt());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(chris_status);
 

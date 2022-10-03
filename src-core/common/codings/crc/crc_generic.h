@@ -29,7 +29,7 @@ namespace codings
                        bool input_reflected,
                        bool result_reflected);
 
-            uint16_t compute(uint8_t *data, unsigned int len);
+            uint64_t compute(uint8_t *data, unsigned int len);
             uint64_t reflect(uint64_t word) const;
         };
     }

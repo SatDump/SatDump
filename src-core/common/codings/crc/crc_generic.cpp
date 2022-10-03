@@ -53,7 +53,7 @@ namespace codings
             }
         }
 
-        uint16_t GenericCRC::compute(uint8_t *data, unsigned int len)
+        uint64_t GenericCRC::compute(uint8_t *data, unsigned int len)
         {
             uint64_t rem = d_initial_value;
 
