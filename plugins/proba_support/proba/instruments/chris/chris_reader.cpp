@@ -66,7 +66,7 @@ namespace proba
                 packet.payload[i] = reverseBits(packet.payload[i]);
 
             // Check marker is in range
-            if (count_marker > max_value - 1)
+            if (count_marker > max_value - 1 && count_marker < absolute_max_cnt)
                 max_value = count_marker + 1;
 
             // Repack to 12-bits
