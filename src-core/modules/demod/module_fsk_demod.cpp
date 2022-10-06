@@ -118,6 +118,11 @@ namespace demod
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
+
+            // Update module stats
+            module_stats["snr"] = snr;
+            module_stats["peak_snr"] = peak_snr;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
