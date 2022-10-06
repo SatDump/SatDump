@@ -52,5 +52,38 @@
                 }
             }
         }
+    },
+    "crew_dragon_tlm": {
+        "name": "Crew Dragon S-Band TLM",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "fsk_demod": {
+                    "symbolrate": 2.35e6,
+                    "rrc_alpha": 0.35,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2000,
+                    "nrzm": false,
+                    "rs_frm_size": 214,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                // "falcon_decoder": {}
+            }
+        }
     }
 }

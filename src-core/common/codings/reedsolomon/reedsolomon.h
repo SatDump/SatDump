@@ -20,11 +20,13 @@ namespace reedsolomon
     private:
         correct_reed_solomon *rs;
         int d_coded_bits;
+        int d_parity_bits;
         uint8_t buff[255];
         uint8_t odata[255];
+        int frm_size;
 
     public:
-        ReedSolomon(RS_TYPE type);
+        ReedSolomon(RS_TYPE type, int frm_size = -1);
         ~ReedSolomon();
 
         void decode_interlaved(uint8_t *data, bool ccsds, int i, int *errors);
