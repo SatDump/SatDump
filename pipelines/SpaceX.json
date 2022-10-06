@@ -55,7 +55,17 @@
     },
     "crew_dragon_tlm": {
         "name": "Crew Dragon S-Band TLM",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "frequencies": [],
         "parameters": {
             "samplerate": {
