@@ -6,6 +6,7 @@
 #include "../instruments/mhs/mhs_reader.h"
 #include "instruments/hirs/hirs_reader.h"
 #include "instruments/amsu/amsu_reader.h"
+#include "instruments/sem/sem_reader.h"
 
 namespace noaa
 {
@@ -24,12 +25,14 @@ namespace noaa
             noaa_metop::mhs::MHSReader mhs_reader;
             hirs::HIRSReader hirs_reader;
             amsu::AMSUReader amsu_reader;
+            sem::SEMReader sem_reader;
 
             // Statuses
             instrument_status_t avhrr_status = DECODING;
             instrument_status_t mhs_status = DECODING;
             instrument_status_t amsu_status = DECODING;
             instrument_status_t hirs_status = DECODING;
+            instrument_status_t sem_status = DECODING;
 
         public:
             NOAAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
