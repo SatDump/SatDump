@@ -83,10 +83,9 @@ namespace satdump
 
         void try_load_sdr_settings()
         {
-            if (config::main_cfg["user"].contains("recorder_state"))
-                if (config::main_cfg["user"]["recorder_state"].contains("sdr_settings"))
-                    if (config::main_cfg["user"]["recorder_state"]["sdr_settings"].contains(sources[sdr_select_id].name))
-                        source_ptr->set_settings(config::main_cfg["user"]["recorder_state"]["sdr_settings"][sources[sdr_select_id].name]);
+            if (config::main_cfg["user"].contains("recorder_sdr_settings"))
+                if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
+                    source_ptr->set_settings(config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]);
         }
 
     public:
