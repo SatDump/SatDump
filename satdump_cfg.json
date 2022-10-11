@@ -432,6 +432,17 @@
                     },
                     "DNB Night": {
                         "equation": "chdnb * 50 - 0.5"
+                    },
+                    "Night Microphysics": {
+                        "equation": "(1-chi5)-(1-chi4),(1-chi4)-(1-chi3),(1-chi4)",
+                        "geo_correct": true,
+                        "equalize": true,
+                        "white_balance": true
+                    },
+                    "Day Microphysics": {
+                        "equation": "chi1, (1-chi3)^2.5,(1-chi4)",
+                        "geo_correct": true,
+                        "equalize": true
                     }
                 }
             },
