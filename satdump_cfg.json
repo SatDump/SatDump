@@ -142,7 +142,12 @@
             37849, // Suomi-NPP
             43013, // JPSS-1
             41240, // Jason-3
-            43662 // CFOSAT-1
+            43662, // CFOSAT-1
+            27640, // Coriolis
+            26958, // Proba-1
+            36037, // Proba-2
+            39159, // Proba-V
+            29107 // CloudSat
         ]
     },
     // Settings for the Viewer. Those also are default settings when generating viewer-less
