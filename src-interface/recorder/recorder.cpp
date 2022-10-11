@@ -48,7 +48,8 @@ namespace satdump
             }
         }
 
-        source_ptr->set_frequency(100e6);
+        source_ptr->set_frequency(frequency_mhz * 1e6);
+        try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
         splitter->set_output_2nd(false);
@@ -121,7 +122,8 @@ namespace satdump
                         }
                     }
 
-                    source_ptr->set_frequency(100e6);
+                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    try_load_sdr_settings();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button(u8" \uead2 "))
@@ -141,10 +143,7 @@ namespace satdump
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                     source_ptr->open();
                     source_ptr->set_frequency(frequency_mhz * 1e6);
-                    if (config::main_cfg["user"].contains("recorder_state"))
-                        if (config::main_cfg["user"]["recorder_state"].contains("sdr_settings"))
-                            if (config::main_cfg["user"]["recorder_state"]["sdr_settings"].contains(sources[sdr_select_id].name))
-                                source_ptr->set_settings(config::main_cfg["user"]["recorder_state"]["sdr_settings"][sources[sdr_select_id].name]);
+                    try_load_sdr_settings();
                 }
                 /*
                 if (ImGui::IsItemHovered())
