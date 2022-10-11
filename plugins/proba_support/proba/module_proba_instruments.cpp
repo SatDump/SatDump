@@ -163,7 +163,7 @@ namespace proba
                 hrc_status = SAVING;
 
                 logger->info("----------- HRC");
-                logger->info("Images : {:d}", hrc_reader->count);
+                logger->info("Images : {:d}", hrc_reader->getCount());
 
                 hrc_reader->save();
 
@@ -215,7 +215,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("HRC");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", hrc_reader->count);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", hrc_reader->getCount());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(hrc_status);
                 }
