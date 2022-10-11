@@ -13,7 +13,7 @@ void FileSource::set_settings(nlohmann::json settings)
     baseband_type = getValueOrDefault(d_settings["baseband_type"], baseband_type);
 }
 
-nlohmann::json FileSource::get_settings(nlohmann::json)
+nlohmann::json FileSource::get_settings()
 {
     d_settings["iq_swap"] = iq_swap;
     d_settings["buffer_size"] = buffer_size;

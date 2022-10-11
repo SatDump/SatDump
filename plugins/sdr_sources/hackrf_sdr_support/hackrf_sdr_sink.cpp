@@ -49,7 +49,7 @@ void HackRFSink::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json HackRFSink::get_settings(nlohmann::json)
+nlohmann::json HackRFSink::get_settings()
 {
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;

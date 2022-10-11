@@ -83,7 +83,7 @@ public:
     }
 
     void set_settings(nlohmann::json settings);
-    nlohmann::json get_settings(nlohmann::json);
+    nlohmann::json get_settings();
 
     void open();
     void start();

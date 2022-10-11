@@ -140,7 +140,11 @@ namespace satdump
 
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                     source_ptr->open();
-                    source_ptr->set_frequency(100e6);
+                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    if (config::main_cfg["user"].contains("recorder_state"))
+                        if (config::main_cfg["user"]["recorder_state"].contains("sdr_settings"))
+                            if (config::main_cfg["user"]["recorder_state"]["sdr_settings"].contains(sources[sdr_select_id].name))
+                                source_ptr->set_settings(config::main_cfg["user"]["recorder_state"]["sdr_settings"][sources[sdr_select_id].name]);
                 }
                 /*
                 if (ImGui::IsItemHovered())
@@ -191,6 +195,8 @@ namespace satdump
                         splitter->stop_tmp();
                         source_ptr->stop();
                         is_started = false;
+                        config::main_cfg["user"]["recorder_state"]["sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
+                        config::saveUserConfig();
                     }
                 }
                 ImGui::SameLine();

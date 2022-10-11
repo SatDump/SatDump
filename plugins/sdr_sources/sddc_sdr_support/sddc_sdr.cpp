@@ -51,7 +51,7 @@ void SDDCSource::set_settings(nlohmann::json settings)
     bias = getValueOrDefault(d_settings["bias"], bias);
 }
 
-nlohmann::json SDDCSource::get_settings(nlohmann::json)
+nlohmann::json SDDCSource::get_settings()
 {
     d_settings["mode"] = mode;
     d_settings["rf_gain"] = rf_gain;

@@ -72,7 +72,7 @@ void AirspyHFSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json AirspyHFSource::get_settings(nlohmann::json)
+nlohmann::json AirspyHFSource::get_settings()
 {
     d_settings["agc_mode"] = agc_mode;
     d_settings["attenuation"] = attenuation;

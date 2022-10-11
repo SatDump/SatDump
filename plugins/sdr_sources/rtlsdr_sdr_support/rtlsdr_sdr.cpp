@@ -98,7 +98,7 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json RtlSdrSource::get_settings(nlohmann::json)
+nlohmann::json RtlSdrSource::get_settings()
 {
     d_settings["gain"] = gain;
     d_settings["agc"] = lna_agc_enabled;

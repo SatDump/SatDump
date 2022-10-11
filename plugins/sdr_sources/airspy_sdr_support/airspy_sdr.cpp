@@ -94,7 +94,7 @@ void AirspySource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json AirspySource::get_settings(nlohmann::json)
+nlohmann::json AirspySource::get_settings()
 {
     d_settings["gain_type"] = gain_type;
     d_settings["general_gain"] = general_gain;

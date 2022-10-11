@@ -38,7 +38,7 @@ namespace dsp
         virtual void drawControlUI() = 0; // Draw the sink control UI, eg, gain settings etc
 
         virtual void set_settings(nlohmann::json settings) { d_settings = settings; }
-        virtual nlohmann::json get_settings(nlohmann::json) { return d_settings; }
+        virtual nlohmann::json get_settings() { return d_settings; }
 
         virtual void set_frequency(uint64_t frequency) { d_frequency = frequency; }
         virtual uint64_t get_frequency() { return d_frequency; }
