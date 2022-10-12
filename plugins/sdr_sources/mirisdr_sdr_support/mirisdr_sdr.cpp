@@ -56,7 +56,7 @@ void MiriSdrSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json MiriSdrSource::get_settings(nlohmann::json)
+nlohmann::json MiriSdrSource::get_settings()
 {
     d_settings["gain"] = gain;
     d_settings["bias"] = bias_enabled;

@@ -162,7 +162,7 @@ void SDRPlaySource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json SDRPlaySource::get_settings(nlohmann::json)
+nlohmann::json SDRPlaySource::get_settings()
 {
     d_settings["lna_gain"] = lna_gain;
     d_settings["if_gain"] = if_gain;

@@ -28,9 +28,12 @@ namespace webserver
     satdump::LivePipeline *live_pipeline;
     bool is_active = false;
 
+    std::mutex request_mutex;
+
     // HTTP Handler for stats
     void http_handle(nng_aio *aio)
     {
+        request_mutex.lock();
         live_pipeline->updateModuleStats();
         std::string jsonstr = live_pipeline->stats.dump(4);
 
@@ -40,6 +43,7 @@ namespace webserver
         nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
         nng_aio_set_output(aio, 0, res);
         nng_aio_finish(aio, 0);
+        request_mutex.unlock();
     }
 
     void start(std::string http_server_url)

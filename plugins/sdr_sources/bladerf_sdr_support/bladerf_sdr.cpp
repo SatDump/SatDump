@@ -38,7 +38,7 @@ void BladeRFSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json BladeRFSource::get_settings(nlohmann::json)
+nlohmann::json BladeRFSource::get_settings()
 {
     d_settings["gain_mode"] = gain_mode;
     d_settings["general_gain"] = general_gain;

@@ -27,18 +27,22 @@ namespace reedsolomon
                                         0xf3, 0x3f, 0x5f, 0x93, 0xa9, 0x65, 0x05, 0xc9, 0xd0, 0x1c, 0x7c, 0xb0, 0x59, 0x95, 0xf5, 0x39, 0x20, 0xec, 0x8c, 0x40, 0x54, 0x98, 0xf8, 0x34, 0x2d,
                                         0xe1, 0x81, 0x4d, 0xa4, 0x68, 0x08, 0xc4, 0xdd, 0x11, 0x71, 0xbd};
 
-    ReedSolomon::ReedSolomon(RS_TYPE type)
+    ReedSolomon::ReedSolomon(RS_TYPE type, int frm_size)
     {
         if (type == RS223)
         {
             rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 112, 11, 32);
             d_coded_bits = 223;
+            d_parity_bits = 32;
         }
         else if (type == RS239)
         {
             rs = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 120, 11, 16);
             d_coded_bits = 239;
+            d_parity_bits = 16;
         }
+
+        this->frm_size = frm_size;
     }
 
     ReedSolomon::~ReedSolomon()
@@ -58,6 +62,12 @@ namespace reedsolomon
 
     int ReedSolomon::decode(uint8_t *data, bool ccsds)
     {
+        if (frm_size != -1) // Depuncture
+        {
+            memmove(&data[d_coded_bits], &data[frm_size], d_parity_bits); // Move parity to the end
+            memset(&data[frm_size], 0, d_coded_bits - frm_size);          // Set fill to 0
+        }
+
         if (ccsds)
         {
             for (int i = 0; i < 255; i++)
@@ -88,13 +98,16 @@ namespace reedsolomon
             }
         }
 
-        std::memcpy(data, odata, 255);
+        std::memcpy(data, odata, frm_size == -1 ? d_coded_bits : frm_size);
 
         if (ccsds)
         {
             for (int i = 0; i < 255; i++)
                 data[i] = ToDualBasis[data[i]];
         }
+
+        if (frm_size != -1)                                               // Repuncture
+            memmove(&data[frm_size], &data[d_coded_bits], d_parity_bits); // Move back parity
 
         return err;
     }

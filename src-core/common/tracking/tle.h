@@ -56,4 +56,6 @@ namespace satdump
 
     void updateTLEFile(std::string path);
     void loadTLEFileIntoRegistry(std::string path);
+
+    void fetchTLENow(int norad); // Utils, in case you want to fetch & load a TLE into the regristry right now. Should NOT be used in most cases
 }

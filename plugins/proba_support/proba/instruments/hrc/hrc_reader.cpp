@@ -8,15 +8,11 @@ namespace proba
     {
         HRCReader::HRCReader(std::string &outputfolder)
         {
-            tempChannelBuffer = new unsigned short[74800 * 12096];
-            frame_count = 0;
-            count = 0;
             output_folder = outputfolder;
         }
 
         HRCReader::~HRCReader()
         {
-            delete[] tempChannelBuffer;
         }
 
         uint8_t reverseBits(uint8_t byte)
@@ -46,45 +42,45 @@ namespace proba
                 return;
             }
 
+            int img_tag = (packet.payload[0] - 1) << 16 | packet.payload[1] << 8 | packet.payload[2];
             int count_marker = packet.payload[18 - 6];
 
-            int pos = 21;
+            if (hrc_images.count(img_tag) == 0)
+            {
+                logger->info("New HRC image with tag {:d}!", img_tag);
+                hrc_images.insert({img_tag, std::make_shared<HRCImage>()});
+            }
+
+            std::shared_ptr<HRCImage> &curr = hrc_images[img_tag];
+
+            if (count_marker > 65)
+                return;
 
             // Convert into 10-bits values
+            int pos = 21;
             for (int i = 0; i < 17152; i += 4)
             {
                 if (count_marker <= 65)
                 {
-                    tempChannelBuffer[count_marker * 17152 + i + 0] = reverse16Bits((reverseBits(packet.payload[pos + 0]) << 2) | (reverseBits(packet.payload[pos + 1]) >> 6));
-                    tempChannelBuffer[count_marker * 17152 + i + 1] = reverse16Bits(((reverseBits(packet.payload[pos + 1]) % 64) << 4) | (reverseBits(packet.payload[pos + 2]) >> 4));
-                    tempChannelBuffer[count_marker * 17152 + i + 2] = reverse16Bits(((reverseBits(packet.payload[pos + 2]) % 16) << 6) | (reverseBits(packet.payload[pos + 3]) >> 2));
-                    tempChannelBuffer[count_marker * 17152 + i + 3] = reverse16Bits(((reverseBits(packet.payload[pos + 3]) % 4) << 8) | reverseBits(packet.payload[pos + 4]));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 0] = reverse16Bits((reverseBits(packet.payload[pos + 0]) << 2) | (reverseBits(packet.payload[pos + 1]) >> 6));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 1] = reverse16Bits(((reverseBits(packet.payload[pos + 1]) % 64) << 4) | (reverseBits(packet.payload[pos + 2]) >> 4));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 2] = reverse16Bits(((reverseBits(packet.payload[pos + 2]) % 16) << 6) | (reverseBits(packet.payload[pos + 3]) >> 2));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 3] = reverse16Bits(((reverseBits(packet.payload[pos + 3]) % 4) << 8) | reverseBits(packet.payload[pos + 4]));
                     pos += 5;
                 }
-            }
-
-            frame_count++;
-
-            if (count_marker == 65)
-            {
-                save();
-                frame_count = 0;
             }
         }
 
         void HRCReader::save()
         {
-            if (frame_count != 0)
+            for (auto &imgh : hrc_images)
             {
-                logger->info("Finished HRC image! Saving as HRC-" + std::to_string(count) + ".png");
-                image::Image<uint16_t> img = image::Image<uint16_t>(tempChannelBuffer, 1072, 1072, 1);
-                img.save_png(output_folder + "/HRC-" + std::to_string(count) + ".png");
+                logger->info("Finished HRC image! Saving as HRC-" + std::to_string(imgh.first) + ".png");
+                image::Image<uint16_t> img = imgh.second->getImg();
+                img.save_png(output_folder + "/HRC-" + std::to_string(imgh.first) + ".png");
                 img.normalize();
                 img.equalize();
-                img.save_png(output_folder + "/HRC-" + std::to_string(count) + "-EQU.png");
-
-                std::fill(&tempChannelBuffer[0], &tempChannelBuffer[74800 * 12096], 0);
-                count++;
+                img.save_png(output_folder + "/HRC-" + std::to_string(imgh.first) + "-EQU.png");
             }
         }
     } // namespace hrc

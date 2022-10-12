@@ -50,6 +50,7 @@ namespace ccsds
         const int d_derand_from;      // Byte to start derand on
 
         const int d_rs_interleaving_depth; // RS Interleaving depth. If = 0, then RS is disabled
+        const int d_rs_frame_size;         // RS Frame size, if -1, no puncturing
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
 

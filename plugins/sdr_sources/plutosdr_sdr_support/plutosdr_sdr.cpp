@@ -38,7 +38,7 @@ void PlutoSDRSource::set_settings(nlohmann::json settings)
         set_gains();
 }
 
-nlohmann::json PlutoSDRSource::get_settings(nlohmann::json)
+nlohmann::json PlutoSDRSource::get_settings()
 {
     d_settings["gain"] = gain;
     d_settings["gain_mode"] = gain_mode;

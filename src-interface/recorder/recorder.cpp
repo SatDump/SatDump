@@ -19,9 +19,6 @@ namespace satdump
     {
         dsp::registerAllSources();
 
-        if (config::main_cfg["user"].contains("recorder_state"))
-            deserialize_config(config::main_cfg["user"]["recorder_state"]);
-
         automated_live_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
 
@@ -48,7 +45,8 @@ namespace satdump
             }
         }
 
-        source_ptr->set_frequency(100e6);
+        source_ptr->set_frequency(frequency_mhz * 1e6);
+        try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
         splitter->set_output_2nd(false);
@@ -64,6 +62,9 @@ namespace satdump
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 2000);
+
+        if (config::main_cfg["user"].contains("recorder_state"))
+            deserialize_config(config::main_cfg["user"]["recorder_state"]);
     }
 
     RecorderApplication::~RecorderApplication()
@@ -121,7 +122,8 @@ namespace satdump
                         }
                     }
 
-                    source_ptr->set_frequency(100e6);
+                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    try_load_sdr_settings();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button(u8" \uead2 "))
@@ -140,7 +142,8 @@ namespace satdump
 
                     source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                     source_ptr->open();
-                    source_ptr->set_frequency(100e6);
+                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    try_load_sdr_settings();
                 }
                 /*
                 if (ImGui::IsItemHovered())
@@ -191,6 +194,9 @@ namespace satdump
                         splitter->stop_tmp();
                         source_ptr->stop();
                         is_started = false;
+                        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
+                        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
+                        config::saveUserConfig();
                     }
                 }
                 ImGui::SameLine();

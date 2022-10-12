@@ -71,6 +71,12 @@ namespace satdump
             out["show_waterfall"] = show_waterfall;
             out["waterfall_ratio"] = waterfall_ratio;
             out["panel_ratio"] = panel_ratio;
+            if (fft_plot && waterfall_plot && fft)
+            {
+                out["fft_min"] = fft_plot->scale_min;
+                out["fft_max"] = fft_plot->scale_max;
+                out["fft_avg"] = fft->avg_rate;
+            }
             return out;
         }
 
@@ -79,6 +85,29 @@ namespace satdump
             show_waterfall = in["show_waterfall"].get<bool>();
             waterfall_ratio = in["waterfall_ratio"].get<float>();
             panel_ratio = in["panel_ratio"].get<float>();
+            if (fft_plot && waterfall_plot && fft)
+            {
+                if (in.contains("fft_min"))
+                    fft_plot->scale_min = in["fft_min"];
+                if (in.contains("fft_max"))
+                    fft_plot->scale_max = in["fft_max"];
+                if (in.contains("fft_avg"))
+                    fft->avg_rate = in["fft_avg"];
+            }
+        }
+
+        void try_load_sdr_settings()
+        {
+            if (config::main_cfg["user"].contains("recorder_sdr_settings"))
+            {
+                if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
+                {
+                    auto cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
+                    source_ptr->set_settings(cfg);
+                    if (cfg.contains("samplerate"))
+                        source_ptr->set_samplerate(cfg["samplerate"]);
+                }
+            }
         }
 
     public:

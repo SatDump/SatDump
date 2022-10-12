@@ -52,7 +52,7 @@ void HackRFSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json HackRFSource::get_settings(nlohmann::json)
+nlohmann::json HackRFSource::get_settings()
 {
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;

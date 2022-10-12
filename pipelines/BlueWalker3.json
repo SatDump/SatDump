@@ -1,0 +1,18 @@
+{
+    "bluewalker3_link": {
+        "name": "BlueWalker-3 S-Band",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 1.024e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.009
+                }
+            },
+            "frm": {},
+            "products": {}
+        }
+    }
+}

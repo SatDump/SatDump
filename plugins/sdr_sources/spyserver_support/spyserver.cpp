@@ -43,7 +43,7 @@ void SpyServerSource::set_settings(nlohmann::json settings)
     }
 }
 
-nlohmann::json SpyServerSource::get_settings(nlohmann::json)
+nlohmann::json SpyServerSource::get_settings()
 {
 
     d_settings["ip_address"] = ip_address;

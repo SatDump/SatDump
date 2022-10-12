@@ -30,6 +30,7 @@ namespace ccsds
           d_derand_from(parameters.count("derand_start") > 0 ? parameters["derand_start"].get<int>() : 4),
 
           d_rs_interleaving_depth(parameters["rs_i"].get<int>()),
+          d_rs_frame_size(parameters.count("rs_frm_size") > 0 ? parameters["rs_frm_size"].get<int>() : -1),
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
@@ -84,7 +85,7 @@ namespace ccsds
         viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
-            reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype);
+            reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_frame_size);
 
         if (d_cadu_size % 8 != 0) // If this is not a perfect byte length match, pad the frames
         {
