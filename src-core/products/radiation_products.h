@@ -10,7 +10,7 @@ namespace satdump
     {
     public:
         std::vector<std::vector<int>> channel_counts;
-        bool has_timestamps = true;
+        // bool has_timestamps = true;
 
         void set_timestamps(int channel, std::vector<double> timestamps)
         {
@@ -20,6 +20,11 @@ namespace satdump
         void set_timestamps_all(std::vector<double> timestamps)
         {
             contents["timestamps"] = timestamps;
+        }
+
+        bool has_timestamps(int channel)
+        {
+            return get_timestamps(channel).size() == channel_counts[channel].size();
         }
 
         std::vector<double> get_timestamps(int channel)

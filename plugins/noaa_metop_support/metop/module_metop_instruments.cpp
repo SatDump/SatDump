@@ -452,7 +452,7 @@ namespace metop
 
                 satdump::RadiationProducts sem_products;
                 sem_products.instrument_name = "sem";
-                sem_products.has_timestamps = true;
+                // sem_products.has_timestamps = true;
                 sem_products.set_tle(satellite_tle);
                 sem_products.set_timestamps_all(sem_reader.timestamps);
                 sem_products.channel_counts.resize(40);
