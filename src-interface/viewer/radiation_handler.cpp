@@ -76,12 +76,10 @@ namespace satdump
             ImGui::BeginChild("RadiationPlotChild");
             for (int i = 0; i < (int)products->channel_counts.size(); i++)
             {
-                ImGui::BeginChild(std::string(std::to_string(i) + products->instrument_name).c_str());
                 ImGui::PlotLines(std::string("Channel " + std::to_string(i + 1)).c_str(), graph_values[i].data(), graph_values[i].size());
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
-                ImGui::EndChild();
             }
             ImGui::EndChild();
         }
