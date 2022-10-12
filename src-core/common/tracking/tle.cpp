@@ -74,4 +74,34 @@ namespace satdump
             line_count++;
         }
     }
+
+    void fetchTLENow(int norad)
+    {
+        std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+
+        while (url_str.find("%NORAD%") != std::string::npos)
+            url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+
+        logger->info(url_str);
+        std::string result;
+
+        if (perform_http_request(url_str, result) != 1)
+        {
+            std::vector<std::string> lines = splitString(result, '\n');
+            TLE newTLE;
+            newTLE.name = lines[0];
+            newTLE.name.erase(newTLE.name.end() - 1); // Remove newline
+            newTLE.name.erase(std::find_if(newTLE.name.rbegin(), newTLE.name.rend(), [](char &c)
+                                           { return c != ' '; })
+                                  .base(),
+                              newTLE.name.end()); // Remove useless spaces
+            newTLE.line1 = lines[1];
+            newTLE.line2 = lines[2];
+
+            std::string noradstr = newTLE.line2.substr(2, newTLE.line2.substr(2, newTLE.line2.size() - 1).find(' '));
+            newTLE.norad = std::stoi(noradstr);
+
+            general_tle_registry.push_back(newTLE);
+        }
+    }
 }
