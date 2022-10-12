@@ -33,8 +33,13 @@ namespace satdump
         int img_y = map.height();
         int channel = cfg.channel - 1;
 
+        if (!products.has_timestamps(channel))
+            return map;
+
         int lut_size = color_lut.width();
         std::vector<double> timestamps = products.get_timestamps(channel);
+
+        logger->critical(timestamps.size());
 
         SatelliteTracker tracker(products.tle);
 
