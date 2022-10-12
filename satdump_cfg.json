@@ -366,10 +366,12 @@
                 "name": "MSU-MR",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1"
+                        "equation": "ch2, ch2, ch1",
+                        "geo_correct": true
                     },
                     "321": {
                         "equation": "ch3, ch2, ch1",
+                        "geo_correct": true,
                         "project": {
                             "width": 4096,
                             "height": 2048,
@@ -392,6 +394,7 @@
                     "5 Equalized": {
                         "equation": "1 - ch5",
                         "equalize": true,
+                        "geo_correct": true,
                         "project": {
                             "width": 4096,
                             "height": 2048,
@@ -795,6 +798,7 @@
                     "Inverted Equalized": {
                         "equation": "1 - ch1",
                         "equalize": true,
+                        "geo_correct": true,
                         "project": {
                             "width": 4096,
                             "height": 2048,
