@@ -31,6 +31,10 @@ namespace image
 
             Image<T> output_image(corrected_width, image.height(), image.channels()); // Allocate output image
 
+            if (foward_table != nullptr)
+                for (int i = 0; i < image.width(); i++)
+                    foward_table[i] = -1;
+
             for (int channel = 0; channel < image.channels(); channel++)
             {
                 int channel_offset = channel * (image.width() * image.height());
@@ -46,6 +50,17 @@ namespace image
                         if (foward_table != nullptr)
                             foward_table[pixel_to_use] = i;
                     }
+                }
+            }
+
+            if (foward_table != nullptr)
+            {
+                float last_val = 0;
+                for (int i = 0; i < image.width(); i++)
+                {
+                    if (foward_table[i] == -1)
+                        foward_table[i] = last_val;
+                    last_val = foward_table[i];
                 }
             }
 
