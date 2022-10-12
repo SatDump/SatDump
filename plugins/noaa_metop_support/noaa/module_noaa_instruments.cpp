@@ -220,7 +220,6 @@ namespace noaa
 
                     satdump::RadiationProducts sem_products;
                     sem_products.instrument_name = "sem";
-                    sem_products.has_timestamps = false; // for now
                     sem_products.set_tle(satellite_tle);
                     //sem_products.channel_counts.resize(62);
                     for (int i = 0; i < 62; i++)
