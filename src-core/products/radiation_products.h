@@ -2,6 +2,7 @@
 
 #include "products.h"
 #include "common/image/image.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -26,11 +27,18 @@ namespace satdump
             std::vector<double> timestamps;
             try
             {
-                timestamps = contents["timestamps"][channel].get<std::vector<double>>();
+                try
+                {
+                    timestamps = contents["timestamps"][channel].get<std::vector<double>>();
+                }
+                catch (std::exception &e)
+                {
+                    timestamps = contents["timestamps"].get<std::vector<double>>();
+                }
             }
             catch (std::exception &e)
             {
-                timestamps = contents["timestamps"].get<std::vector<double>>();
+                logger->trace("This radiation product has no timestamps!");
             }
 
             return timestamps;
