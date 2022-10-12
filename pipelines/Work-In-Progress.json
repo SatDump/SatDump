@@ -371,5 +371,46 @@
                 }
             }
         }
+    },
+    "hinode_s_dump": {
+        "name": "Hinode S-Band dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 262e3,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005,
+                    "buffer_size": 8192
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
     }
 }
