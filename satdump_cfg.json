@@ -387,6 +387,10 @@
                         "equation": "ch3, ch2, ch1",
                         "equalize": true
                     },
+                    "Natural Color CSWIR+NIR": {
+                        "equation": "(0.5*max(ch4,min(ch2,ch1)) + 0.5*ch2), ch2, ch1",
+                        "geo_correct": true
+                    },
                     "4 Equalized": {
                         "equation": "1 - ch4",
                         "equalize": true
