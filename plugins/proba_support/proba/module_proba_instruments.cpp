@@ -77,6 +77,20 @@ namespace proba
 
                 swap_reader = std::make_unique<swap::SWAPReader>(swap_directory);
             }
+            else if (d_satellite == PROBA_V)
+            {
+                std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
+
+                if (!std::filesystem::exists(vegs_directory))
+                    std::filesystem::create_directory(vegs_directory);
+
+                vegs_reader1 = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                vegs_reader2 = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                vegs_reader3 = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                vegs_reader4 = std::make_unique<vegetation::VegetationS>(1554, 1024);
+                vegs_reader5 = std::make_unique<vegetation::VegetationS>(1554, 1024);
+                vegs_reader6 = std::make_unique<vegetation::VegetationS>(1554, 1024);
+            }
 
             while (!data_in.eof())
             {
@@ -109,20 +123,30 @@ namespace proba
                         }
                     }
                 }
-                /*else if (vcdu.vcid == 2) // IDK VCID
+                else if (vcdu.vcid == 2) // IDK VCID
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        // if (d_satellite == PROBA_2)
-                        //     if (pkt.header.apid == 20)
-                        //         swap_reader->work(pkt);
-                        logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
+                        // if (pkt.header.apid != 2047)
+                        //    logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
 
-                        if(pkt.header.apid == 22)
-                        output.write((char*)pkt.payload.data(), 1340);
+                        // if (pkt.header.apid == 103)
+                        // {
+                        //     pkt.payload.resize(16000);
+                        //     output.write((char *)pkt.payload.data(), 16000);
+                        // }
+
+                        // if (pkt.header.apid != 2047)
+                        //     logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
+
+                        // if (pkt.header.apid == 18)
+                        //{
+                        //     pkt.payload.resize(16000);
+                        //     output.write((char *)pkt.payload.data(), 16000);
+                        // }
                     }
-                }*/
+                }
                 else if (vcdu.vcid == 3) // SWAP VCID
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
@@ -131,6 +155,28 @@ namespace proba
                         if (d_satellite == PROBA_2)
                             if (pkt.header.apid == 20)
                                 swap_reader->work(pkt);
+                    }
+                }
+                else if (vcdu.vcid == 4) // Idk VCID
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    {
+                        if (d_satellite == PROBA_V)
+                        {
+                            if (pkt.header.apid == 290)
+                                vegs_reader1->work(pkt);
+                            else if (pkt.header.apid == 274)
+                                vegs_reader2->work(pkt);
+                            else if (pkt.header.apid == 322)
+                                vegs_reader3->work(pkt);
+                            else if (pkt.header.apid == 282)
+                                vegs_reader4->work(pkt);
+                            else if (pkt.header.apid == 298)
+                                vegs_reader5->work(pkt);
+                            else if (pkt.header.apid == 330)
+                                vegs_reader6->work(pkt);
+                        }
                     }
                 }
 
@@ -170,7 +216,7 @@ namespace proba
                 hrc_status = DONE;
             }
 
-            // HRC
+            // SWAP
             if (d_satellite == PROBA_2)
             {
                 swap_status = SAVING;
@@ -179,6 +225,31 @@ namespace proba
                 logger->info("Images : {:d}", swap_reader->count);
 
                 swap_reader->save();
+
+                swap_status = DONE;
+            }
+
+            // VegS
+            if (d_satellite == PROBA_V)
+            {
+                swap_status = SAVING;
+
+                logger->info("----------- Vegetation");
+                logger->info("Lines (1) : {:d}", vegs_reader1->lines);
+                logger->info("Lines (2) : {:d}", vegs_reader2->lines);
+                logger->info("Lines (3) : {:d}", vegs_reader3->lines);
+                logger->info("Lines (4) : {:d}", vegs_reader4->lines);
+                logger->info("Lines (5) : {:d}", vegs_reader5->lines);
+                logger->info("Lines (6) : {:d}", vegs_reader6->lines);
+
+                std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
+
+                vegs_reader1->getImg().save_img(vegs_directory + "/Vegetation_1.png");
+                vegs_reader2->getImg().save_img(vegs_directory + "/Vegetation_2.png");
+                vegs_reader3->getImg().save_img(vegs_directory + "/Vegetation_3.png");
+                vegs_reader4->getImg().save_img(vegs_directory + "/Vegetation_4.png");
+                vegs_reader5->getImg().save_img(vegs_directory + "/Vegetation_5.png");
+                vegs_reader6->getImg().save_img(vegs_directory + "/Vegetation_6.png");
 
                 swap_status = DONE;
             }

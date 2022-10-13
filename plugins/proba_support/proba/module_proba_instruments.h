@@ -5,6 +5,8 @@
 #include "instruments/hrc/hrc_reader.h"
 #include "instruments/swap/swap_reader.h"
 
+#include "instruments/vegetation/vegs_reader.h"
+
 namespace proba
 {
     namespace instruments
@@ -28,6 +30,12 @@ namespace proba
             std::unique_ptr<chris::CHRISReader> chris_reader;
             std::unique_ptr<hrc::HRCReader> hrc_reader;
             std::unique_ptr<swap::SWAPReader> swap_reader;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader1;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader2;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader3;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader4;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader5;
+            std::unique_ptr<vegetation::VegetationS> vegs_reader6;
 
             // Statuses
             instrument_status_t chris_status = DECODING;

@@ -147,6 +147,11 @@
                     "rs_i": 5,
                     "rs_type": "rs223"
                 }
+            },
+            "products": {
+                "proba_instruments": {
+                    "satellite": "probaV"
+                }
             }
         }
     }
