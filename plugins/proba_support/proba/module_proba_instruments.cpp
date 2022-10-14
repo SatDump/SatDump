@@ -302,11 +302,11 @@ namespace proba
                     drawStatus(swap_status);
                 }
 
-                if (d_satellite == PROBA_2)
+                if (d_satellite == PROBA_V)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 1");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader1->lines);
                     ImGui::TableSetColumnIndex(2);
@@ -314,7 +314,7 @@ namespace proba
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 2");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader2->lines);
                     ImGui::TableSetColumnIndex(2);
@@ -322,7 +322,7 @@ namespace proba
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 3");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader3->lines);
                     ImGui::TableSetColumnIndex(2);
@@ -330,7 +330,7 @@ namespace proba
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 4");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader4->lines);
                     ImGui::TableSetColumnIndex(2);
@@ -338,7 +338,7 @@ namespace proba
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 5");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader5->lines);
                     ImGui::TableSetColumnIndex(2);
@@ -346,7 +346,7 @@ namespace proba
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation");
+                    ImGui::Text("Vegetation 6");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader6->lines);
                     ImGui::TableSetColumnIndex(2);
