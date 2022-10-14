@@ -41,6 +41,12 @@ namespace proba
             instrument_status_t chris_status = DECODING;
             instrument_status_t hrc_status = DECODING;
             instrument_status_t swap_status = DECODING;
+            instrument_status_t vegs_status1 = DECODING;
+            instrument_status_t vegs_status2 = DECODING;
+            instrument_status_t vegs_status3 = DECODING;
+            instrument_status_t vegs_status4 = DECODING;
+            instrument_status_t vegs_status5 = DECODING;
+            instrument_status_t vegs_status6 = DECODING;
 
         public:
             PROBAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -232,7 +232,7 @@ namespace proba
             // VegS
             if (d_satellite == PROBA_V)
             {
-                swap_status = SAVING;
+                vegs_status1 = vegs_status2 = vegs_status3 = vegs_status4 = vegs_status5 = vegs_status6 = SAVING;
 
                 logger->info("----------- Vegetation");
                 logger->info("Lines (1) : {:d}", vegs_reader1->lines);
@@ -251,7 +251,7 @@ namespace proba
                 vegs_reader5->getImg().save_img(vegs_directory + "/Vegetation_5.png");
                 vegs_reader6->getImg().save_img(vegs_directory + "/Vegetation_6.png");
 
-                swap_status = DONE;
+                vegs_status1 = vegs_status2 = vegs_status3 = vegs_status4 = vegs_status5 = vegs_status6 = DONE;
             }
 
             if (d_satellite == PROBA_1)
@@ -300,6 +300,57 @@ namespace proba
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", swap_reader->count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(swap_status);
+                }
+
+                if (d_satellite == PROBA_2)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader1->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status1);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader2->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status2);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader3->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status3);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader4->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status4);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader5->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status5);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Vegetation");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader6->lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(vegs_status6);
                 }
 
                 ImGui::EndTable();
