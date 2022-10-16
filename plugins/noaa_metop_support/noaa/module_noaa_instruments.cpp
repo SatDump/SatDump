@@ -221,9 +221,11 @@ namespace noaa
                     satdump::RadiationProducts sem_products;
                     sem_products.instrument_name = "sem";
                     sem_products.set_tle(satellite_tle);
-                    //sem_products.channel_counts.resize(62);
                     for (int i = 0; i < 62; i++)
+                    {
                         sem_products.channel_counts.push_back(sem_reader.getChannel(i));
+                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                    }
 
                     sem_products.save(directory);
                     dataset.products_list.push_back("SEM");

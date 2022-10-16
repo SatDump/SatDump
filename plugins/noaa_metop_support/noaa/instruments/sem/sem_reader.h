@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cstdint>
+#include "../../tip_time_parser.h"
 
 namespace noaa
 {
@@ -12,6 +13,16 @@ namespace noaa
         private:
             std::vector<int> *channels[62];
             std::vector<double> *timestamps[62];
+            double lastTS = -1;
+            TIPTimeParser ttp;
+            void pushChannelDataAndTS(int ch, uint8_t data, uint16_t frame)
+            {
+                channels[ch]->push_back(data ^ 0xFF);
+                if (lastTS != -1)
+                    timestamps[ch]->push_back(lastTS + ((double)frame / 10.0d));
+                else
+                    timestamps[ch]->push_back(-1);
+            }
 
         public:
             const char *channel_names[62] =
@@ -30,7 +41,8 @@ namespace noaa
             ~SEMReader();
             void work(uint8_t *buffer);
             std::vector<int> getChannel(int channel);
-            //std::vector<uint8_t> getChannelByName(std::string name);
+            std::vector<double> getTimestamps(int channel);
+            // std::vector<uint8_t> getChannelByName(std::string name);
         };
     }
 }

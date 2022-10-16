@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "common/image/image.h"
+#include "../../tip_time_parser.h"
 
 namespace noaa
 {
@@ -12,10 +13,8 @@ namespace noaa
         private:
             const bool gac_mode;
             const int width;
-
             unsigned short *channels[5];
-
-            time_t dayYearValue = 0;
+            TIPTimeParser ttp;
 
         public:
             AVHRRReader(bool gac);
