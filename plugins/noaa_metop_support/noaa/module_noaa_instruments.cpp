@@ -5,6 +5,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "products/image_products.h"
+#include "products/radiation_products.h"
 #include "products/dataset.h"
 #include "resources.h"
 
@@ -57,6 +58,7 @@ namespace noaa
                                     if (frmnum == 1)
                                     {
                                         hirs_reader.work(frameBuffer);
+                                        sem_reader.work(frameBuffer);
                                     }
                                     else
                                     {
@@ -88,6 +90,7 @@ namespace noaa
                                     frameBuffer[j] = buffer[104 * (i + 1) + j - 1] >> 2;
                                 }
                                 hirs_reader.work(frameBuffer);
+                                sem_reader.work(frameBuffer);
                                 for (int j = 0; j < 104; j++)
                                 {
                                     frameBuffer[j] = buffer[104 * (i + 6) + j - 1] >> 2;
@@ -205,6 +208,37 @@ namespace noaa
                     hirs_status = DONE;
                 }
 
+                // SEM
+                {
+                    sem_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    logger->info("----------- SEM");
+                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+
+
+                    satdump::RadiationProducts sem_products;
+                    sem_products.instrument_name = "sem";
+                    sem_products.set_tle(satellite_tle);
+                    for (int i = 0; i < 62; i++)
+                    {
+                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
+                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
+                    }
+
+                    sem_products.save(directory);
+                    dataset.products_list.push_back("SEM");
+                    sem_status = DONE;
+                }
+
                 // MHS
                 {
                     mhs_status = SAVING;
@@ -281,6 +315,7 @@ namespace noaa
                 {
                     data_in.read((char *)&buffer[0], 104);
                     hirs_reader.work(buffer);
+                    sem_reader.work(buffer);
                 }
 
                 hirs_status = SAVING;

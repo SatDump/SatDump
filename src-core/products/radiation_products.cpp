@@ -39,7 +39,7 @@ namespace satdump
         int lut_size = color_lut.width();
         std::vector<double> timestamps = products.get_timestamps(channel);
 
-        logger->critical(timestamps.size());
+        //logger->critical(timestamps.size());
 
         SatelliteTracker tracker(products.tle);
 
@@ -62,7 +62,7 @@ namespace satdump
 
             uint16_t color[] = {color_lut.channel(0)[value], color_lut.channel(1)[value], color_lut.channel(2)[value]};
 
-            map.draw_circle(image_x, image_y, cfg.radius, color, true);
+            map.draw_circle(image_x % img_x, image_y, cfg.radius, color, true);
 
             if (progress != nullptr)
                 *progress = float(samplec) / float(products.channel_counts[channel].size());

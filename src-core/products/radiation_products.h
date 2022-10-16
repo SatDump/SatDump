@@ -62,6 +62,19 @@ namespace satdump
                 return 0;
         }
 
+        void set_channel_name(int channel, std::string name)
+        {
+            contents["name"][channel] = name;
+        }
+
+        std::string get_channel_name(int channel)
+        {
+            if (contents.contains("name"))
+                return contents["name"][channel].get<std::string>();
+            else
+                return "Channel " + std::to_string(channel);
+        }
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
