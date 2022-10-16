@@ -70,7 +70,7 @@ namespace satdump
                             std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, projected_image.height(), projected_image.width());
                             std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
 
-                            uint16_t color[4] = {0, 0, 0};
+                            uint16_t color[4] = {0, 0, 0, 0};
                             if (image.channels() >= 3)
                             {
                                 color[0] = image.channel(0)[currentScan * image.width() + int(px)];
@@ -80,9 +80,9 @@ namespace satdump
                             }
                             else
                             {
-                                color[0] = image[int(px)];
-                                color[1] = image[int(px)];
-                                color[2] = image[int(px)];
+                                color[0] = image[currentScan * image.width() + int(px)];
+                                color[1] = image[currentScan * image.width() + int(px)];
+                                color[2] = image[currentScan * image.width() + int(px)];
                                 color[3] = 65535;
                             }
 

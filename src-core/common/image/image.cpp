@@ -132,10 +132,10 @@ namespace image
             Image<T> tmp = *this;       // Backup image
             init(d_width, d_height, 4); // Init new image as RGBA
 
-            // Fill in all 3 channels
-            draw_image(0, tmp);
-            draw_image(1, tmp);
-            draw_image(2, tmp);
+            // Copy over all 3 channels
+            memcpy(&d_data[d_width * d_height * 0], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy(&d_data[d_width * d_height * 1], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy(&d_data[d_width * d_height * 2], tmp.data(), d_width * d_height * sizeof(T));
             for (size_t i = 0; i < d_width * d_height; i++)
                 channel(3)[i] = std::numeric_limits<T>::max();
         }
