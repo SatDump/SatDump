@@ -216,7 +216,13 @@ namespace noaa
                         std::filesystem::create_directory(directory);
 
                     logger->info("----------- SEM");
-                    logger->info("Samples : well, it depends on the channel...");
+                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+
 
                     satdump::RadiationProducts sem_products;
                     sem_products.instrument_name = "sem";
