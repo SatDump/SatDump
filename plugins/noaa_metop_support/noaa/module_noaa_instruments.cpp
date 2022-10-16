@@ -231,6 +231,7 @@ namespace noaa
                     {
                         sem_products.channel_counts.push_back(sem_reader.getChannel(i));
                         sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
                     }
 
                     sem_products.save(directory);

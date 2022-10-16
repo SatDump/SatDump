@@ -17,7 +17,7 @@ namespace noaa
             TIPTimeParser ttp;
             void pushChannelDataAndTS(int ch, uint8_t data, uint16_t frame)
             {
-                channels[ch]->push_back(data ^ 0xFF);
+                channels[ch]->push_back(data ^ (ch > 45 && ch < 50 ? 0x0F : 0xFF));
                 if (lastTS != -1)
                     timestamps[ch]->push_back(lastTS + ((double)frame / 10.0d));
                 else

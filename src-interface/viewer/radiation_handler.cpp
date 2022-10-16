@@ -11,7 +11,7 @@ namespace satdump
         products = (RadiationProducts *)ViewerHandler::products;
 
         for (int c = 0; c < (int)products->channel_counts.size(); c++)
-            select_channel_image_str += "Channel " + std::to_string(c + 1) + '\0';
+            select_channel_image_str += products->get_channel_name(c) + '\0';
 
         update();
     }
@@ -73,15 +73,18 @@ namespace satdump
         }
         else if (selected_visualization_id == 1)
         {
-            ImGui::BeginChild("RadiationPlotChild");
+            ImGui::BeginChild("RadiationPlot");
             for (int i = 0; i < (int)products->channel_counts.size(); i++)
             {
-                ImGui::PlotLines(std::string("Channel " + std::to_string(i + 1)).c_str(), graph_values[i].data(), graph_values[i].size());
+                ImGui::BeginChild(("RadiationPlotChild##" + std::to_string(i)).c_str(), ImVec2(ImGui::GetWindowWidth(), 50));
+                ImGui::PlotLines(products->get_channel_name(i).c_str(), graph_values[i].data(), graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth()-100, 30));
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
+                ImGui::EndChild();
             }
             ImGui::EndChild();
+            
         }
     }
 
