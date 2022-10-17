@@ -19,7 +19,7 @@ namespace noaa
             {
                 channels[ch]->push_back(data ^ (ch > 45 && ch < 50 ? 0x0F : 0xFF));
                 if (lastTS != -1)
-                    timestamps[ch]->push_back(lastTS + ((double)frame / 10.0d));
+                    timestamps[ch]->push_back(lastTS + ((double)frame / 10.0));
                 else
                     timestamps[ch]->push_back(-1);
             }
