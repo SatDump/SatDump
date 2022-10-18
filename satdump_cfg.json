@@ -736,13 +736,16 @@
                 "name": "AMSU-A",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1"
+                        "equation": "ch2, ch2, ch1",
+                        "equalize": true
                     },
                     "421": {
-                        "equation": "ch4, ch2, ch1"
+                        "equation": "ch4, ch2, ch1",
+                        "equalize": true
                     },
                     "543": {
-                        "equation": "ch5, ch4, ch3"
+                        "equation": "ch5, ch4, ch3",
+                        "equalize": true
                     }
                 },
                 "project_channels": {
@@ -762,13 +765,16 @@
                 "name": "HIRS",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1"
+                        "equation": "ch2, ch2, ch1",
+                        "equalize": true
                     },
                     "421": {
-                        "equation": "ch4, ch2, ch1"
+                        "equation": "ch4, ch2, ch1",
+                        "equalize": true
                     },
                     "543": {
-                        "equation": "ch5, ch4, ch3"
+                        "equation": "ch5, ch4, ch3",
+                        "equalize": true
                     }
                 }
             },
