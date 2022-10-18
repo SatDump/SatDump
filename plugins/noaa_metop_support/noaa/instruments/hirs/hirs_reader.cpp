@@ -22,6 +22,16 @@ namespace noaa
 
         void HIRSReader::work(uint8_t *buffer)
         {
+            // get TIP timestamp
+            uint16_t mf = ((buffer[4] & 1) << 8) | (buffer[5]);
+
+            if (mf == 0)
+            {
+                int days = (buffer[8] << 1) | (buffer[9] >> 7);
+                uint64_t millisec = ((buffer[9] & 0b00000111) << 24) | (buffer[10] << 16) | (buffer[11] << 8) | buffer[12];
+                last_timestamp = ttp.getTimestamp(days, millisec);
+            }
+
             uint8_t HIRS_data[36] = {};
             int pos = 0;
             for (int j : HIRSPositions)
@@ -43,7 +53,9 @@ namespace noaa
                 {
                     // std::cout<<"yoss"<<std::endl;
                     line++;
-                    timestamps.push_back(last_avhrr_timestamp);
+                    if (!contains(timestamps, last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0)))
+                        timestamps.push_back(last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0));
+                    else timestamps.push_back(-1);
                 }
                 // last = enct;
 

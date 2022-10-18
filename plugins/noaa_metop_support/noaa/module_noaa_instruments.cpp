@@ -39,10 +39,6 @@ namespace noaa
                         data_in.read((char *)&buffer[0], 11090 * 2);
                         avhrr_reader.work(buffer); // avhrr
 
-                        // Propagate timestamps!
-                        hirs_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
-                        amsu_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
-
                         { // getting the TIP/AIP out
                             int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
                             uint8_t frameBuffer[104];
@@ -59,6 +55,9 @@ namespace noaa
                                     {
                                         hirs_reader.work(frameBuffer);
                                         sem_reader.work(frameBuffer);
+
+                                        // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
+                                        amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
                                     }
                                     else
                                     {
@@ -77,10 +76,6 @@ namespace noaa
 
                         avhrr_reader.work(buffer); // avhrr
 
-                        // Propagate timestamps!
-                        hirs_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
-                        amsu_reader.last_avhrr_timestamp = avhrr_reader.timestamps[avhrr_reader.timestamps.size() - 1];
-
                         { // getting the TIP/AIP out
                             uint8_t frameBuffer[104];
                             for (int i = 0; i < 5; i++)
@@ -91,6 +86,9 @@ namespace noaa
                                 }
                                 hirs_reader.work(frameBuffer);
                                 sem_reader.work(frameBuffer);
+                                // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
+                                amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
+
                                 for (int j = 0; j < 104; j++)
                                 {
                                     frameBuffer[j] = buffer[104 * (i + 6) + j - 1] >> 2;
@@ -223,7 +221,6 @@ namespace noaa
                     logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
                     logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
 
-
                     satdump::RadiationProducts sem_products;
                     sem_products.instrument_name = "sem";
                     sem_products.set_tle(satellite_tle);
@@ -290,7 +287,7 @@ namespace noaa
 
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu_a";
-                    amsu_products.has_timestamps = false;
+                    amsu_products.has_timestamps = true;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
                     amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
@@ -310,38 +307,109 @@ namespace noaa
             }
             else
             {
+                std::vector<uint8_t> scid_list;
                 uint8_t buffer[104];
                 while (!data_in.eof())
                 {
                     data_in.read((char *)&buffer[0], 104);
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
+                    scid_list.push_back(buffer[0] & 0b00001111);
                 }
 
-                hirs_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HIRS";
+                // ID
+                uint8_t scid = most_common(scid_list.begin(), scid_list.end());
+                scid_list.clear();
+                int norad = 0;
+                std::string sat_name = "Unknown NOAA";
+                if (scid == 7)
+                { // N15
+                    norad = 25338;
+                    sat_name = "NOAA-15";
+                }
+                else if (scid == 13)
+                { // N18
+                    norad = 28654;
+                    sat_name = "NOAA-18";
+                }
+                else if (scid == 15)
+                { // N19
+                    norad = 33591;
+                    sat_name = "NOAA-19";
+                }
 
-                if (!std::filesystem::exists(directory))
-                    std::filesystem::create_directories(directory);
+                // Products dataset
+                satdump::ProductDataSet dataset;
+                dataset.satellite_name = sat_name;
+                dataset.timestamp = avg_overflowless(hirs_reader.timestamps);
 
-                logger->info("----------- HIRS");
-                logger->info("Lines : " + std::to_string(hirs_reader.line));
+                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
-                satdump::ImageProducts hirs_products;
-                hirs_products.instrument_name = "hirs";
-                hirs_products.has_timestamps = false;
-                hirs_products.bit_depth = 13;
-                // hirs_products.set_tle(satellite_tle);
-                // hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                // hirs_products.set_timestamps(hirs_reader.timestamps);
+                // SATELLITE ID
+                {
+                    logger->info("----------- Satellite");
+                    logger->info("NORAD : " + std::to_string(norad));
+                    logger->info("Name  : " + sat_name);
+                }
 
-                for (int i = 0; i < 20; i++)
-                    hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+                // HIRS
+                {
+                    hirs_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HIRS";
 
-                hirs_products.save(directory);
-                // dataset.products_list.push_back("HIRS");
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directories(directory);
 
-                hirs_status = DONE;
+                    logger->info("----------- HIRS");
+                    logger->info("Lines : " + std::to_string(hirs_reader.line));
+
+                    satdump::ImageProducts hirs_products;
+                    hirs_products.instrument_name = "hirs";
+                    hirs_products.has_timestamps = true;
+                    hirs_products.bit_depth = 13;
+                    hirs_products.set_tle(satellite_tle);
+                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    hirs_products.set_timestamps(hirs_reader.timestamps);
+
+                    for (int i = 0; i < 20; i++)
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+
+                    hirs_products.save(directory);
+                    dataset.products_list.push_back("HIRS");
+
+                    hirs_status = DONE;
+                }
+
+                // SEM
+                {
+                    sem_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    logger->info("----------- SEM");
+                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+
+                    satdump::RadiationProducts sem_products;
+                    sem_products.instrument_name = "sem";
+                    sem_products.set_tle(satellite_tle);
+                    for (int i = 0; i < 62; i++)
+                    {
+                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
+                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
+                    }
+
+                    sem_products.save(directory);
+                    dataset.products_list.push_back("SEM");
+                    sem_status = DONE;
+                }
+                dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }
         }
 
