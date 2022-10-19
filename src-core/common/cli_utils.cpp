@@ -53,7 +53,7 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                         if (fractional != 0) // If this is not an integer, put it as a double
                             parameters[flag] = val;
                         else // Otherwse, cast to an integer
-                            parameters[flag] = (long)integral;
+                            parameters[flag] = (long long)integral;
                     }
                     catch (std::exception &e) // If it fails, parse to a string
                     {
