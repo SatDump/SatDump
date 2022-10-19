@@ -11,6 +11,7 @@
 #include "../../meteor.h"
 #include "products/image_products.h"
 #include <ctime>
+#include "products/dataset.h"
 
 #define BUFFER_SIZE 8192
 
@@ -80,6 +81,11 @@ namespace meteor
 
             logger->info("Writing images.... (Can take a while)");
 
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = "METEOR-M 2";
+            dataset.timestamp = time(0); // avg_overflowless(msureader.timestamps);
+
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
@@ -98,6 +104,9 @@ namespace meteor
             }
 
             msumr_products.save(directory);
+            dataset.products_list.push_back("MSU-MR");
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
 
             // TODO : Add detection system!!!!!!!!
             // Currently not *that* mandatory as only M2 is active on VHF
