@@ -128,7 +128,9 @@ void SDRPPServerSource::drawControlUI()
 
     if (is_connected)
     {
+        ImGui::Separator();
         client->showMenu();
+        ImGui::Separator();
     }
 }
 
