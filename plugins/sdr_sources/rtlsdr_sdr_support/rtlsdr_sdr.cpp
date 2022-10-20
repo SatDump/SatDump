@@ -61,6 +61,8 @@ void RtlSdrSource::set_gains()
         return;
 
     rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
+    logger->debug("Set RTL-SDR AGC to {:d}", (int)!lna_agc_enabled);
+
     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
     logger->debug("Set RTL-SDR Gain to {:d}", gain * 10);
 }
@@ -71,15 +73,6 @@ void RtlSdrSource::set_bias()
         return;
     rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled);
     logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
-}
-
-void RtlSdrSource::set_agcs()
-{
-    if (!is_started)
-        return;
-
-    rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
-    logger->debug("Set RTL-SDR AGC to {:d}", (int)!lna_agc_enabled);
 }
 
 void RtlSdrSource::set_settings(nlohmann::json settings)
@@ -93,7 +86,6 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     if (is_started)
     {
         set_bias();
-        set_agcs();
         set_gains();
     }
 }
@@ -153,7 +145,6 @@ void RtlSdrSource::start()
     set_frequency(d_frequency);
 
     set_bias();
-    set_agcs();
     set_gains();
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
@@ -199,7 +190,7 @@ void RtlSdrSource::drawControlUI()
         set_gains();
 
     if (ImGui::Checkbox("AGC", &lna_agc_enabled))
-        set_agcs();
+        set_gains();
 
     if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
