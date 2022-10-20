@@ -55,6 +55,11 @@ add_library(nng STATIC IMPORTED)
 set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/nng/${ANDROID_ABI}/libnng.a)
 include_directories(deps/nng/jni/)
 
+# ZSTD
+add_library(zstd STATIC IMPORTED)
+set_target_properties(zstd PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/zstd/${ANDROID_ABI}/libzstd.a)
+include_directories(deps/zstd/jni/)
+
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
