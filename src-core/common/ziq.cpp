@@ -52,9 +52,9 @@ namespace ziq
             delete[] buffer_i16;
     }
 
-    int ziq_writer::compress_and_write(uint8_t *input, int size)
+    int ziq_writer::compress_and_write(uint8_t *input, size_t size)
     {
-        zstd_input = {input, (unsigned long long)size, 0};
+        zstd_input = {input, size, 0};
         zstd_output = {output_compressed, max_buffer_size, 0};
 
         while (zstd_input.pos < zstd_input.size)

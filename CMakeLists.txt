@@ -67,7 +67,7 @@ if(UNIX)
 
     find_package(ZSTD)
 
-    if((NOT ZSTD_FOUND) AND BUILD_ZIQ)
+    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND (NOT ANDROID))
         message("ZIQ Was enabled but libzstd was not found!")
         set(BUILD_ZIQ OFF)
     endif()

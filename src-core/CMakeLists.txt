@@ -98,6 +98,10 @@ elseif(ANDROID)
 
     # NNG
     target_link_libraries(satdump_core PUBLIC nng)
+
+    # Libzstd
+    target_link_libraries(satdump_core PUBLIC zstd)
+    target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
 else()
     # LibCorrect
     # find_library(CORRECT_LIBRARY correct REQUIRED)

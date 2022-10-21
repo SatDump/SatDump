@@ -259,7 +259,6 @@
                     "constellation": "qpsk",
                     "cadu_size": 9872,
                     "nrzm": true,
-                    "qpsk_swap_iq": true,
                     "rs_i": 0,
                     "rs_type": "rs223"
                 }
@@ -446,6 +445,70 @@
                     "derandomize": true,
                     "nrzm": true,
                     "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "neossat_dump": {
+        "name": "NEOSSAT Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.250,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "iq_invert": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "aim_dump": {
+        "name": "AIM S-Band Dump",
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 3.2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 9952,
+                    "nrzm": true,
+                    "derandomize": true,
+                    "rs_i": 0,
                     "rs_type": "rs223"
                 }
             }

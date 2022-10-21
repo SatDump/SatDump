@@ -223,7 +223,7 @@ namespace goes
                 if (rice_parameters.pixels_per_block <= 0)
                 {
                     logger->critical("Pixel per blocks is set to 0! Using defaults");
-                    rice_parameters.pixels_per_block = 16 * 2; // The real default is 16, but has been to 32 for ages
+                    rice_parameters.pixels_per_block = 16 /* * 2*/; // The real default is 16, but has been to 32 for ages
                 }
 
                 size_t output_size = decompression_buffer.size();

@@ -8,14 +8,14 @@
 #include "dsp/complex.h"
 
 /*
-ZIQ - A Simple, efficient baseband format supporting ZSTD-based 
+ZIQ - A Simple, efficient baseband format supporting ZSTD-based
 compression.
 This started with the problem of high samplerate recording
 taking up a lot of disk space. ZSTD-based live compression
 was implemented providing disk space savings from 1.5 to 4x
 compared to raw, uncompressed IQ data.
 ZST was chosen as a compression standard over zlib, lzo, and
-others due to it's CPU effiency. A few threads can do 1GB/s 
+others due to it's CPU effiency. A few threads can do 1GB/s
 compression on any decently recent machine, and much more in
 decompression. Hence, the impact of using compression is kept
 very low.
@@ -59,7 +59,7 @@ namespace ziq
         uint8_t *output_compressed;
 
     private:
-        int compress_and_write(uint8_t *input, int size);
+        int compress_and_write(uint8_t *input, size_t size);
 
     public:
         ziq_writer(ziq_cfg cfg, std::ofstream &stream);

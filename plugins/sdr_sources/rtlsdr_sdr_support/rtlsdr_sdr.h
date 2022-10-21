@@ -29,7 +29,6 @@ protected:
 
     void set_gains();
     void set_bias();
-    void set_agcs();
 
     std::thread work_thread;
 

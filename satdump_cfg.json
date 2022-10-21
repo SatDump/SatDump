@@ -393,6 +393,11 @@
                         "equation": "ch3, ch2, ch1",
                         "equalize": true
                     },
+                    "Natural Color CSWIR+NIR": {
+                        "equation": "((0.5*max(ch4,min(ch2,ch1)) + 0.5*ch2)+0.3*ch3)*0.85, ch2, ch1",
+                        "geo_correct": true,
+                        "white_balance": true
+                    },
                     "4 Equalized": {
                         "equation": "1 - ch4",
                         "equalize": true
@@ -742,13 +747,16 @@
                 "name": "AMSU-A",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1"
+                        "equation": "ch2, ch2, ch1",
+                        "equalize": true
                     },
                     "421": {
-                        "equation": "ch4, ch2, ch1"
+                        "equation": "ch4, ch2, ch1",
+                        "equalize": true
                     },
                     "543": {
-                        "equation": "ch5, ch4, ch3"
+                        "equation": "ch5, ch4, ch3",
+                        "equalize": true
                     }
                 },
                 "project_channels": {
@@ -768,13 +776,16 @@
                 "name": "HIRS",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1"
+                        "equation": "ch2, ch2, ch1",
+                        "equalize": true
                     },
                     "421": {
-                        "equation": "ch4, ch2, ch1"
+                        "equation": "ch4, ch2, ch1",
+                        "equalize": true
                     },
                     "543": {
-                        "equation": "ch5, ch4, ch3"
+                        "equation": "ch5, ch4, ch3",
+                        "equalize": true
                     }
                 }
             },

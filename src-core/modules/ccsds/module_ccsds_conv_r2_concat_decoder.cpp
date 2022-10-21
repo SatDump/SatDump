@@ -16,6 +16,7 @@ namespace ccsds
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
           d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
+          d_iq_invert(parameters.count("iq_invert") > 0 ? parameters["iq_invert"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
           d_buffer_size(d_cadu_size),
@@ -154,7 +155,7 @@ namespace ccsds
                 }
             }
 
-            if (d_bpsk_90) // Symbols are swapped for some BPSK sats
+            if (d_bpsk_90 || d_iq_invert) // Symbols are swapped for some Q/BPSK sats
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 
             // Perform Viterbi decoding

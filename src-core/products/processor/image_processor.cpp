@@ -107,7 +107,7 @@ namespace satdump
                 logger->info("Saving " + product_path + "/" + name + ".png");
                 rgb_image.save_png(product_path + "/" + name + ".png");
 
-                if (compo.value().contains("project"))
+                if (compo.value().contains("project") && img_products->has_proj_cfg())
                 {
                     logger->debug("Reprojecting composite {:s}", name.c_str());
                     reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
