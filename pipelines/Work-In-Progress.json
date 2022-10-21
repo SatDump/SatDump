@@ -259,7 +259,6 @@
                     "constellation": "qpsk",
                     "cadu_size": 9872,
                     "nrzm": true,
-                    "qpsk_swap_iq": true,
                     "rs_i": 0,
                     "rs_type": "rs223"
                 }
