@@ -488,5 +488,30 @@
                 }
             }
         }
+    },
+    "aim_dump": {
+        "name": "AIM S-Band Dump",
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 3.2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 9952,
+                    "nrzm": true,
+                    "derandomize": true,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }
