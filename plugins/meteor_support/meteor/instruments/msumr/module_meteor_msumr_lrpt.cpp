@@ -12,6 +12,7 @@
 #include "products/image_products.h"
 #include <ctime>
 #include "products/dataset.h"
+#include "resources.h"
 
 #define BUFFER_SIZE 8192
 
@@ -94,7 +95,8 @@ namespace meteor
             msumr_products.has_timestamps = true;
             msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
             msumr_products.needs_correlation = true;
-            // msumr_products.set_timestamps(msumr_timestamps);
+            msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(40069));
+            msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
 
             for (int i = 0; i < 6; i++)
             {
