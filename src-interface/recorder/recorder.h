@@ -106,6 +106,11 @@ namespace satdump
                     source_ptr->set_settings(cfg);
                     if (cfg.contains("samplerate"))
                         source_ptr->set_samplerate(cfg["samplerate"]);
+                    if (cfg.contains("frequency"))
+                    {
+                        frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
+                        source_ptr->set_frequency(frequency_mhz * 1e6);
+                    }
                 }
             }
         }

@@ -196,6 +196,7 @@ namespace satdump
                         is_started = false;
                         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
                         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
+                        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
                         config::saveUserConfig();
                     }
                 }
