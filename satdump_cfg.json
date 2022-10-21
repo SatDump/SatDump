@@ -34,6 +34,12 @@
                 "value": false,
                 "name": "IQ Swap",
                 "description": "In some cases, the I and Q branches can be swapped.\nThat can happen when using some downconverters,\nor perhaps some software that records the file in an unusual way."
+            },
+            "freq_shift": {
+                "type": "int",
+                "value": 0,
+                "name": "Frequency Shift",
+                "description": "Can be used to offset the signal."
             }
         },
         //
