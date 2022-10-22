@@ -6,6 +6,7 @@
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/params.h"
+#include "core/config.h"
 #include "imgui/pfd/widget.h"
 #include "core/pipeline.h"
 #include "common/detect_header.h"
@@ -22,6 +23,9 @@ namespace satdump
 
     private:
         bool live_mode;
+        std::string text = u8"\uf006";
+        ImVec4 color = {0.73, 0.6, 0.15, 1.0};
+        std::vector<int> favourite;
 
         std::string pipeline_levels_str;
 
@@ -29,6 +33,16 @@ namespace satdump
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> parameters_ui_pipeline;
 
         std::string pipeline_search_in;
+
+        bool contains(std::vector<int> tm, int n)
+        {
+            for (unsigned int i = 0; i < tm.size(); i++)
+            {
+                if (tm[i] == n)
+                    return true;
+            }
+            return false;
+        }
 
     public:
         PipelineUISelector(bool live_mode) : live_mode(live_mode)
@@ -38,6 +52,14 @@ namespace satdump
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
                 if (!cfg.value().contains("no_live") || !live_mode)
                     parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
+
+            if (config::main_cfg["user"].contains("favourite_pipelines"))
+                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>()){
+                    for (int i = 0; i < (int)pipelines.size(); i++)
+                        if (pipelines[i].name == pipeline_s)
+                            favourite.push_back(i);
+                }
+                    
         }
 
         void updateSelectedPipeline()
@@ -87,8 +109,76 @@ namespace satdump
             ImGui::InputTextWithHint("##pipelinesearchbox", u8"\uf422   Search pipelines", &pipeline_search_in);
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
+
+            if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size()){
+                favourite.clear();
+                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>()){
+                    for (int i = 0; i < (int)pipelines.size(); i++)
+                        if (pipelines[i].name == pipeline_s)
+                            favourite.push_back(i);
+                }
+            }
+
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
+                bool show = !live_mode;
+                if (live_mode){
+                    for (int p : favourite)
+                        if (pipelines[p].live){
+                            show = true;
+                            break;
+                        }
+                }
+
+                if (!favourite.empty() && show)
+                {
+                    if (ImGui::CollapsingHeader("Favourites", ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        ImGui::Spacing();
+                        for (int k = 0; k < (int)favourite.size(); k++)
+                        {
+                            int n = favourite[k];
+                            bool show = true;
+                            if (pipeline_search_in.size() != 0)
+                                show = isStringPresent(pipelines[n].readable_name, pipeline_search_in);
+
+                            if (show && (!live_mode || pipelines[n].live))
+                            {
+                                bool is_selected = (pipeline_id == n);
+                                ImGui::Selectable((pipelines[n].readable_name + "##fav").c_str(), &is_selected);
+                                if (ImGui::IsItemHovered())
+                                {
+                                    int pos = ImGui::GetItemRectSize().x - 25;
+                                    ImGui::SameLine(pos);
+                                    ImGui::TextColored({0, 0, 0, 0}, text.c_str());
+
+                                    if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
+                                    {
+                                        favourite.erase(favourite.begin() + k);
+                                        config::main_cfg["user"]["favourite_pipelines"].erase(k);
+                                        continue;
+                                    }
+
+                                    ImGui::SameLine(pos);
+                                    text = u8"\uf005";
+                                    ImGui::TextColored(color, text.c_str());
+                                    text = u8"\uf006";
+                                }
+                                if (is_selected)
+                                {
+                                    pipeline_id = n;
+                                    updateSelectedPipeline();
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+                        }
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+                    ImGui::Spacing();
+                }
                 for (int n = 0; n < (int)pipelines.size(); n++)
                 {
                     bool show = true;
@@ -97,15 +187,55 @@ namespace satdump
 
                     if (show && (!live_mode || pipelines[n].live))
                     {
-                        const bool is_selected = (pipeline_id == n);
-                        if (ImGui::Selectable(pipelines[n].readable_name.c_str(), is_selected))
+                        bool is_selected = (pipeline_id == n);
+                        bool isfav = contains(favourite, n);
+                        ImGui::Selectable(pipelines[n].readable_name.c_str(), &is_selected);
+                        if (ImGui::IsItemHovered() || isfav)
                         {
-                            pipeline_id = n;
-                            updateSelectedPipeline();
-                        }
+                            int pos = ImGui::GetItemRectSize().x - 25;
+                            ImGui::SameLine(pos);
+                            ImGui::TextColored({0, 0, 0, 0}, text.c_str());
 
+                            if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
+                            {
+                                if (isfav)
+                                {
+                                    for (int i = 0; i < (int)favourite.size(); i++)
+                                    {
+                                        if (favourite[i] == n)
+                                        {
+                                            favourite.erase(favourite.begin() + i);
+                                            config::main_cfg["user"]["favourite_pipelines"].erase(i);
+                                            isfav = false;
+                                            break;
+                                        }
+                                    }
+                                    continue;
+                                }
+                                else
+                                {
+                                    favourite.push_back(n);
+                                    config::main_cfg["user"]["favourite_pipelines"].push_back(pipelines[n].name);
+                                    isfav = true;
+                                    is_selected = !is_selected;
+                                }
+                            }
+
+                            ImGui::SameLine(pos);
+                            if (isfav)
+                                text = u8"\uf005";
+                            ImGui::TextColored(color, text.c_str());
+                            text = u8"\uf006";
+                            if (is_selected != (pipeline_id == n))
+                            {
+                                pipeline_id = n;
+                                updateSelectedPipeline();
+                            }
+                        }
                         if (is_selected)
+                        {
                             ImGui::SetItemDefaultFocus();
+                        }
                     }
                 }
                 ImGui::EndListBox();
