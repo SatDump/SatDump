@@ -73,6 +73,12 @@ if(PLUGIN_NOAA_METOP OR PLUGINS_ALL)
     add_subdirectory(noaa_metop_support)
 endif()
 
+option(PLUGIN_DMSP "Enable the DMSP support plugin" OFF)
+
+if(PLUGIN_DMSP OR PLUGINS_ALL)
+    add_subdirectory(dmsp_support)
+endif()
+
 option(PLUGIN_JASON3 "Enable the Jason-3 (S-Band dumps) support plugin" OFF)
 
 if(PLUGIN_JASON3 OR PLUGINS_ALL)
