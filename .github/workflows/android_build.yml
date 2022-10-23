@@ -33,10 +33,6 @@ jobs:
       shell: bash
       run: cd $GITHUB_WORKSPACE/android/ && wget https://www.satdump.org/android_deps.zip && unzip android_deps.zip -d deps 
 
-    - name: LS
-      shell: bash
-      run: ls $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/
-
     - name: Build
       shell: bash
       run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
@@ -44,6 +40,10 @@ jobs:
     - name: Re-Build to include plugins
       shell: bash
       run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
+
+    - name: LS
+      shell: bash
+      run: ls ${{runner.workspace}}
 
     - name: Upload APK
       uses: actions/upload-artifact@v2
