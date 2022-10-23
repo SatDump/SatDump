@@ -35,10 +35,6 @@ namespace dmsp
 
         uint8_t rtd_words[19];
 
-        std::ofstream dmsp_ssp("dmsp_ssp.bin");
-        int cnt = 0;
-        uint8_t ssp_shifter;
-
         time_t lastTime = 0;
         while (!data_in.eof())
         {
