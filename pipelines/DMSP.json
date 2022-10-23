@@ -15,7 +15,7 @@
         "frequencies": [
             [
                 "Main",
-                2252.5
+                2252.5e6
             ]
         ],
         "parameters": {
