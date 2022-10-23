@@ -53,13 +53,24 @@ namespace satdump
                 if (!cfg.value().contains("no_live") || !live_mode)
                     parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
 
-            if (config::main_cfg["user"].contains("favourite_pipelines"))
-                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+            if (config::main_cfg.contains("user"))
+            {
+                if (config::main_cfg["user"].contains("favourite_pipelines"))
                 {
-                    for (int i = 0; i < (int)pipelines.size(); i++)
-                        if (pipelines[i].name == pipeline_s)
-                            favourite.push_back(i);
+                    try
+                    {
+                        for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                        {
+                            for (int i = 0; i < (int)pipelines.size(); i++)
+                                if (pipelines[i].name == pipeline_s)
+                                    favourite.push_back(i);
+                        }
+                    }
+                    catch (std::exception &e)
+                    {
+                    }
                 }
+            }
         }
 
         void updateSelectedPipeline()
@@ -110,14 +121,20 @@ namespace satdump
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
 
-            if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size())
+            if (config::main_cfg.contains("user"))
             {
-                favourite.clear();
-                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                if (config::main_cfg["user"].contains("favourite_pipelines"))
                 {
-                    for (int i = 0; i < (int)pipelines.size(); i++)
-                        if (pipelines[i].name == pipeline_s)
-                            favourite.push_back(i);
+                    if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size())
+                    {
+                        favourite.clear();
+                        for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                        {
+                            for (int i = 0; i < (int)pipelines.size(); i++)
+                                if (pipelines[i].name == pipeline_s)
+                                    favourite.push_back(i);
+                        }
+                    }
                 }
             }
 
