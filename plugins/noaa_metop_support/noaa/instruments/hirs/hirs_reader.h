@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include "common/image/image.h"
+#include "../../tip_time_parser.h"
+#include "../../contains.h"
 
 namespace noaa
 {
@@ -23,7 +25,8 @@ namespace noaa
             void work(uint8_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
 
-            double last_avhrr_timestamp;
+            double last_timestamp = -1;
+            TIPTimeParser ttp;
             std::vector<double> timestamps;
         };
     } // namespace hirs

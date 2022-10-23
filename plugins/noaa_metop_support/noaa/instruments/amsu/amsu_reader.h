@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "simpledeframer.h"
 #include "common/image/image.h"
+#include "../../contains.h"
 
 namespace noaa
 {
@@ -25,7 +26,7 @@ namespace noaa
             void work(uint8_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
 
-            double last_avhrr_timestamp;
+            double last_TIP_timestamp;
             std::vector<double> timestamps1;
             std::vector<double> timestamps2;
         };

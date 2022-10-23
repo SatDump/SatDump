@@ -16,6 +16,8 @@ namespace noaa
 
         void AMSUReader::work(uint8_t *buffer)
         {
+            uint8_t lines_since_timestamp = buffer[5] & 3;
+
             std::vector<uint8_t> amsuA2words;
             std::vector<uint8_t> amsuA1words;
 
@@ -48,7 +50,10 @@ namespace noaa
                 }
 
                 linesA2++;
-                timestamps2.push_back(last_avhrr_timestamp);
+                if (contains(timestamps2, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
+                    timestamps2.push_back(-1);
+                else
+                    timestamps2.push_back(last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0));
             }
 
             for (std::vector<uint8_t> frame : amsuA1Data)
@@ -62,7 +67,10 @@ namespace noaa
                 }
 
                 linesA1++;
-                timestamps1.push_back(last_avhrr_timestamp);
+                if (contains(timestamps1, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
+                    timestamps1.push_back(-1);
+                else
+                    timestamps1.push_back(last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0));
             }
         }
 
