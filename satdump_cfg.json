@@ -942,6 +942,20 @@
                         "draw_map": true
                     }
                 }
+            },
+            "ols": {
+                "handler": "image_handler",
+                "name": "OLS",
+                "rgb_composites": {
+                    "VIS/IR Mix": {
+                        "equation": "1-chir, chvis, chvis",
+                        "equalize": true
+                    },
+                    "Equalized IR": {
+                        "equation": "1-chir",
+                        "equalize": true
+                    }
+                }
             }
         }
     }
