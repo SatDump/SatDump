@@ -150,7 +150,7 @@ namespace satdump
                                 {
                                     int pos = ImGui::GetItemRectSize().x - 25;
                                     ImGui::SameLine(pos);
-                                    ImGui::TextColored({0, 0, 0, 0}, text.c_str());
+                                    ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                                     if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                                     {
@@ -161,7 +161,7 @@ namespace satdump
 
                                     ImGui::SameLine(pos);
                                     text = u8"\uf005";
-                                    ImGui::TextColored(color, text.c_str());
+                                    ImGui::TextColored(color, "%s", text.c_str());
                                     text = u8"\uf006";
                                 }
                                 if (is_selected)
@@ -194,7 +194,7 @@ namespace satdump
                         {
                             int pos = ImGui::GetItemRectSize().x - 25;
                             ImGui::SameLine(pos);
-                            ImGui::TextColored({0, 0, 0, 0}, text.c_str());
+                            ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                             if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                             {
@@ -224,7 +224,7 @@ namespace satdump
                             ImGui::SameLine(pos);
                             if (isfav)
                                 text = u8"\uf005";
-                            ImGui::TextColored(color, text.c_str());
+                            ImGui::TextColored(color, "%s", text.c_str());
                             text = u8"\uf006";
                             if (is_selected != (pipeline_id == n))
                             {
