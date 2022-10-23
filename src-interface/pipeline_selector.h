@@ -54,12 +54,12 @@ namespace satdump
                     parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
 
             if (config::main_cfg["user"].contains("favourite_pipelines"))
-                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>()){
+                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                {
                     for (int i = 0; i < (int)pipelines.size(); i++)
                         if (pipelines[i].name == pipeline_s)
                             favourite.push_back(i);
                 }
-                    
         }
 
         void updateSelectedPipeline()
@@ -110,9 +110,11 @@ namespace satdump
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
 
-            if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size()){
+            if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size())
+            {
                 favourite.clear();
-                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>()){
+                for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                {
                     for (int i = 0; i < (int)pipelines.size(); i++)
                         if (pipelines[i].name == pipeline_s)
                             favourite.push_back(i);
@@ -122,9 +124,11 @@ namespace satdump
             if (ImGui::BeginListBox("##pipelineslistbox"))
             {
                 bool show = !live_mode;
-                if (live_mode){
+                if (live_mode)
+                {
                     for (int p : favourite)
-                        if (pipelines[p].live){
+                        if (pipelines[p].live)
+                        {
                             show = true;
                             break;
                         }
@@ -150,7 +154,7 @@ namespace satdump
                                 {
                                     int pos = ImGui::GetItemRectSize().x - 25;
                                     ImGui::SameLine(pos);
-                                    ImGui::TextColored({0, 0, 0, 0}, text.c_str());
+                                    ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                                     if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                                     {
@@ -161,7 +165,7 @@ namespace satdump
 
                                     ImGui::SameLine(pos);
                                     text = u8"\uf005";
-                                    ImGui::TextColored(color, text.c_str());
+                                    ImGui::TextColored(color, "%s", text.c_str());
                                     text = u8"\uf006";
                                 }
                                 if (is_selected)
@@ -194,7 +198,7 @@ namespace satdump
                         {
                             int pos = ImGui::GetItemRectSize().x - 25;
                             ImGui::SameLine(pos);
-                            ImGui::TextColored({0, 0, 0, 0}, text.c_str());
+                            ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                             if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                             {
@@ -224,7 +228,7 @@ namespace satdump
                             ImGui::SameLine(pos);
                             if (isfav)
                                 text = u8"\uf005";
-                            ImGui::TextColored(color, text.c_str());
+                            ImGui::TextColored(color, "%s", text.c_str());
                             text = u8"\uf006";
                             if (is_selected != (pipeline_id == n))
                             {
