@@ -49,4 +49,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: SatDump-debug.apk
-        path: $GITHUB_WORKSPACE/android/app/build/outputs/apk/debug/app-debug.apk
+        path: ${{runner.workspace}}/android/app/build/outputs/apk/debug/app-debug.apk
