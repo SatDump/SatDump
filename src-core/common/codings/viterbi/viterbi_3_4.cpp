@@ -135,6 +135,9 @@ namespace viterbi
                         d_phase = (phase_t)phase;     // Set current phase
                         d_shift = shift;              // Set current puncturing shift
                         d_invalid = 0;                // Reset invalid BER count
+
+                        memset(soft_buffer, 128, d_buffer_size * 2);
+                        memset(depunc_buffer, 128, d_buffer_size * 2);
                     }
                 }
             }

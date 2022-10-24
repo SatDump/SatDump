@@ -11,47 +11,43 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/image.h"
-#include "common/projection/thinplatespline.h"
-#include "common/image/histogram_utils.h"
-
-#if 0
-image::Image<uint8_t> make_hist_img(std::vector<int> hist)
-{
-    image::Image<uint8_t> hist_img(hist.size(), 4096, 3);
-    uint8_t color[] = {255, 255, 255};
-    for (int i = 0; i < hist.size(); i++)
-    {
-        hist_img.draw_line(i, 0, i, hist[i], color);
-    }
-    // std::vector<int> all_values;
-    // for (int i = 0;)
-
-    hist_img.mirror(false, true);
-    // hist_img.resize_bilinear(1000, 500);
-    return hist_img;
-}
-#endif
+#include "common/codings/viterbi/cc_encoder.h"
+#include "common/codings/viterbi/cc_decoder.h"
+#include "common/codings/randomization.h"
+#include <fstream>
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    image::Image<uint16_t> img1, img2, img_final;
+    viterbi::CCEncoder vit_encoder(8192, 7, 2, {79, 109});
+    viterbi::CCDecoder vit_decoder(8192, 7, 2, {79, 109});
 
-    img1.load_img(argv[1]);
-    img2.load_img(argv[2]);
+    std::ofstream output_init("initial.vit");
+    std::ofstream output_deco("decoded.vit");
 
-    img_final.init(img1.width() * 2, img1.height(), 1);
+    uint8_t input_frame[8192];
+    uint8_t output_frame[8192];
 
-    for (int i = 0; i < (int)img_final.width(); i += 2)
+    // i % 2 == 0 ? 1 : 0;
+
+    uint8_t vit_encoded_buff[8192 * 2 * 100];
+
+    for (int i = 0; i < 100; i++)
     {
-        for (int y = 0; y < (int)img_final.height(); y++)
-        {
-            img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
-            img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];
-        }
+        for (int y = 0; y < 8192; y++)
+            input_frame[y] = rand() % 2;
+
+        output_init.write((char *)input_frame, 8192);
+        vit_encoder.work(input_frame, &vit_encoded_buff[i * 8192 * 2]);
+
+        for (int y = 0; y < 8192 * 2; y++)
+            (&vit_encoded_buff[i * 8192 * 2])[y] = ((&vit_encoded_buff[i * 8192 * 2])[y] ? 191 : 64) + (rand() % 200) - 100;
     }
 
-    img_final.save_img(argv[3]);
+    for (int i = 0; i < 100; i++)
+    {
+        vit_decoder.work(&vit_encoded_buff[i * 8192 * 2], output_frame);
+        output_deco.write((char *)output_frame, 8192);
+    }
 }

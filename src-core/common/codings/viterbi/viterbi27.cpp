@@ -1,5 +1,6 @@
 #include "viterbi27.h"
 #include "common/utils.h"
+#include <cstring>
 
 namespace viterbi
 {
@@ -12,6 +13,8 @@ namespace viterbi
         hard_buffer = new uint8_t[frame_size * 2];
         buffer_deco = new uint8_t[frame_size];
         buffer_enco = new uint8_t[ber_test_size];
+
+        memset(hard_buffer, 128, frame_size * 2);
 
         bitc = 0;
         bytec = 0;

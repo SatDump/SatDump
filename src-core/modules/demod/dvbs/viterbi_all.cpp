@@ -98,6 +98,9 @@ namespace viterbi
                         d_shift = shift;                 // Set current puncturing shift
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_1_2;               // Set rate
+
+                        memset(soft_buffer, 128, d_buffer_size * 4);
+                        memset(depunc_buffer, 128, d_buffer_size * 4);
                     }
                 }
 
@@ -120,6 +123,9 @@ namespace viterbi
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_2_3;               // Set rate
                         depunc_32.set_shift(d_shift);
+
+                        memset(soft_buffer, 128, d_buffer_size * 4);
+                        memset(depunc_buffer, 128, d_buffer_size * 4);
                     }
                 }
 
@@ -141,6 +147,9 @@ namespace viterbi
                         d_shift = shift;                 // Set current puncturing shift
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_3_4;               // Set rate
+
+                        memset(soft_buffer, 128, d_buffer_size * 4);
+                        memset(depunc_buffer, 128, d_buffer_size * 4);
                     }
                 }
 
@@ -163,6 +172,9 @@ namespace viterbi
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_5_6;               // Set rate
                         depunc_56.set_shift(d_shift);
+
+                        memset(soft_buffer, 128, d_buffer_size * 4);
+                        memset(depunc_buffer, 128, d_buffer_size * 4);
                     }
                 }
 
@@ -184,6 +196,9 @@ namespace viterbi
                         d_shift = shift;                 // Set current puncturing shift
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_7_8;               // Set rate
+
+                        memset(soft_buffer, 128, d_buffer_size * 4);
+                        memset(depunc_buffer, 128, d_buffer_size * 4);
                     }
                 }
             }
