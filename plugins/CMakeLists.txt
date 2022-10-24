@@ -171,6 +171,12 @@ if(PLUGIN_SPYSERVER_SUPPORT)
     add_subdirectory(sdr_sources/spyserver_support)
 endif()
 
+option(PLUGIN_RTLTCP_SUPPORT "Enable RTL-TCP Support plugin" ON)
+
+if(PLUGIN_RTLTCP_SUPPORT)
+    add_subdirectory(sdr_sources/rtltcp_support)
+endif()
+
 option(PLUGIN_SDRPP_SERVER_SUPPORT "Enable SDR++ Server Support plugin" ON)
 
 if(PLUGIN_SDRPP_SERVER_SUPPORT)
