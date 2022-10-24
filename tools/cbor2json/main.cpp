@@ -3,6 +3,9 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2)
+        printf("Usage : cbor2json file.cbor file.json\n");
+
     // Read file
     std::vector<uint8_t> cbor_data;
     std::ifstream in_file(argv[1], std::ios::binary);

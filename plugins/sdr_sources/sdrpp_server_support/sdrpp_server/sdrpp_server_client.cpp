@@ -175,7 +175,7 @@ namespace server
         return client->isOpen();
     }
 
-    void ClientClass::tcpHandler(int count, uint8_t *buf, void *ctx)
+    void ClientClass::tcpHandler(int /*count*/, uint8_t *buf, void *ctx)
     {
         ClientClass *_this = (ClientClass *)ctx;
 

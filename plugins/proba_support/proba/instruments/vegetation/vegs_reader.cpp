@@ -27,7 +27,7 @@ namespace proba
 
         void VegetationS::work(ccsds::CCSDSPacket &packet)
         {
-            if (packet.payload.size() < frm_size)
+            if ((int)packet.payload.size() < frm_size)
                 return;
 
             repackBytesTo12bits(&packet.payload[18], frm_size - 18, tmp_words);

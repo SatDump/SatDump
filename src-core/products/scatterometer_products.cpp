@@ -58,6 +58,9 @@ namespace satdump
 
                 img[y * img_width + x] = value;
             }
+
+            if (progress != nullptr)
+                *progress = y / img_height;
         }
 
         return img;
@@ -168,6 +171,9 @@ namespace satdump
                                 if (result2.output_image.channel(3)[y2 * result2.output_image.width() + x2])
                                     final_img.channel(c)[y * final_img.width() + x] = result2.output_image.channel(c)[y2 * result2.output_image.width() + x2];
                     }
+
+                    if (progress != nullptr)
+                        *progress = x / final_img.height();
                 }
             }
 

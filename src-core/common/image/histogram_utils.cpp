@@ -30,7 +30,7 @@ namespace image
         int try_find_val(std::vector<int> &array, int val)
         {
             int pos = -1;
-            for (int i = 0; i < array.size(); i++)
+            for (int i = 0; i < (int)array.size(); i++)
             {
                 if (array[i] == val)
                 {
@@ -77,7 +77,7 @@ namespace image
             return pos;
         }
 
-        std::vector<int> make_hist_match_table(std::vector<int> input_hist, std::vector<int> target_hist, int maxdiff)
+        std::vector<int> make_hist_match_table(std::vector<int> input_hist, std::vector<int> target_hist, int /*maxdiff*/)
         {
             std::vector<int> table(target_hist.size());
             for (int i = 0; i < (int)target_hist.size(); i++)

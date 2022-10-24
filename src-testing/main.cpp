@@ -44,9 +44,9 @@ int main(int /*argc*/, char *argv[])
 
     img_final.init(img1.width() * 2, img1.height(), 1);
 
-    for (int i = 0; i < img_final.width(); i += 2)
+    for (int i = 0; i < (int)img_final.width(); i += 2)
     {
-        for (int y = 0; y < img_final.height(); y++)
+        for (int y = 0; y < (int)img_final.height(); y++)
         {
             img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
             img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];

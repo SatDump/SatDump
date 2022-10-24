@@ -125,7 +125,7 @@ namespace proba
                 }
                 else if (vcdu.vcid == 2) // IDK VCID
                 {
-                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
+                    /*std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         // if (pkt.header.apid != 2047)
@@ -145,7 +145,7 @@ namespace proba
                         //     pkt.payload.resize(16000);
                         //     output.write((char *)pkt.payload.data(), 16000);
                         // }
-                    }
+                    }*/
                 }
                 else if (vcdu.vcid == 3) // SWAP VCID
                 {

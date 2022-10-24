@@ -28,7 +28,7 @@ namespace SmGui {
     bool serverMode = false;
 
     std::string ImStrToString(const char* imstr) {
-        int len = 0;
+        // int len = 0;
         const char* end = imstr;
         while (*end) { end += strlen(end) + 1; }
         return std::string(imstr, end);
@@ -205,7 +205,7 @@ namespace SmGui {
 
     // Drawlist stuff
     void DrawList::pushStep(DrawStep step, bool forceSync) {
-        DrawListElem elem;
+        DrawListElem elem = DrawListElem();
         elem.type = DRAW_LIST_ELEM_TYPE_DRAW_STEP;
         elem.step = step;
         elem.forceSync = forceSync;
@@ -213,28 +213,28 @@ namespace SmGui {
     }
 
     void DrawList::pushBool(bool b) {
-        DrawListElem elem;
+        DrawListElem elem = DrawListElem();
         elem.type = DRAW_LIST_ELEM_TYPE_BOOL;
         elem.b = b;
         elements.push_back(elem);
     }
     
     void DrawList::pushInt(int i) {
-        DrawListElem elem;
+        DrawListElem elem = DrawListElem();
         elem.type = DRAW_LIST_ELEM_TYPE_INT;
         elem.i = i;
         elements.push_back(elem);
     }
     
     void DrawList::pushFloat(float f) {
-        DrawListElem elem;
+        DrawListElem elem = DrawListElem();
         elem.type = DRAW_LIST_ELEM_TYPE_FLOAT;
         elem.f = f;
         elements.push_back(elem);
     }
     
     void DrawList::pushString(std::string str) {
-        DrawListElem elem;
+        DrawListElem elem = DrawListElem();
         elem.type = DRAW_LIST_ELEM_TYPE_STRING;
         elem.str = str;
         elements.push_back(elem);
@@ -382,7 +382,7 @@ namespace SmGui {
         va_start(args, n);
 
         // Check if enough elements are left
-        if (firstId + n > elements.size()) {
+        if (firstId + n > (int)elements.size()) {
             va_end(args);
             return false;
         }

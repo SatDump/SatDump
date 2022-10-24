@@ -291,7 +291,7 @@ namespace satdump
                 int px = std::stoi(item.key());
                 double roll = item.value()[0].get<double>();
                 double pitch = item.value()[1].get<double>();
-                double yaw = item.value()[2].get<double>();
+                // double yaw = item.value()[2].get<double>();
 
                 double rp_v[2] = {roll, pitch};
                 spline_roll_pitch.add_point(px, px, rp_v);
