@@ -57,7 +57,7 @@ endif()
 
 if(MSVC)
     # target_link_libraries(satdump_core PUBLIC correct.dll)
-    target_link_libraries(satdump_core PUBLIC jpeg)
+    # target_link_libraries(satdump_core PUBLIC jpeg)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
@@ -84,7 +84,7 @@ elseif(ANDROID)
     # target_link_libraries(satdump_core PUBLIC correct)
 
     # LibJpeg
-    target_link_libraries(satdump_core PUBLIC jpeg)
+    # target_link_libraries(satdump_core PUBLIC jpeg)
 
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
@@ -108,8 +108,8 @@ else()
     # target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
 
     # LibJpeg
-    find_library(JPEG_LIBRARY jpeg REQUIRED)
-    target_link_libraries(satdump_core PUBLIC ${JPEG_LIBRARY})
+    # find_library(JPEG_LIBRARY jpeg REQUIRED)
+    # target_link_libraries(satdump_core PUBLIC ${JPEG_LIBRARY})
 
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
