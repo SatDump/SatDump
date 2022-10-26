@@ -227,7 +227,7 @@ namespace goes
                 }
 
                 size_t output_size = decompression_buffer.size();
-                int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size(), &rice_parameters);
+                int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
                 if (r == AEC_OK)
                 {
                     lrit_data.insert(lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
@@ -239,7 +239,7 @@ namespace goes
             }
             else
             {
-                lrit_data.insert(lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size()]);
+                lrit_data.insert(lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size() - 2]);
             }
         }
 
