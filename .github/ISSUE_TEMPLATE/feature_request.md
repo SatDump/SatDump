@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an feature/improvement to SatDump
+about: Suggest a feature/improvement to SatDump
 title: ''
 labels: enhancement
 assignees: ''
