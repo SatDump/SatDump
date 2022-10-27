@@ -41,8 +41,8 @@ namespace widgets
 
                 if (v < 0)
                     v = 0;
-                if (v > resolution)
-                    v = resolution;
+                if (v >= resolution)
+                    v = resolution - 1;
 
                 raw_img_buffer[i] = palette[v];
             }
