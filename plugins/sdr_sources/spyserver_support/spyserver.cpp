@@ -200,6 +200,7 @@ void SpyServerSource::set_samplerate(uint64_t samplerate)
                 selected_samplerate = i;
                 current_samplerate = samplerate;
                 stage_to_use = i;
+                buffer_samplerate = 0;
                 return;
             }
         }
