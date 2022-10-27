@@ -204,7 +204,9 @@ void SpyServerSource::set_samplerate(uint64_t samplerate)
             }
         }
 
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        if (buffer_samplerate == 0)
+            throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        buffer_samplerate = 0;
     }
 }
 
