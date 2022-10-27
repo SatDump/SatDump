@@ -105,7 +105,15 @@ namespace satdump
                     auto cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
                     source_ptr->set_settings(cfg);
                     if (cfg.contains("samplerate"))
-                        source_ptr->set_samplerate(cfg["samplerate"]);
+                    {
+                        try
+                        {
+                            source_ptr->set_samplerate(cfg["samplerate"]);
+                        }
+                        catch (std::exception &e)
+                        {
+                        }
+                    }
                     if (cfg.contains("frequency"))
                     {
                         frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
