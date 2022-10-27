@@ -187,18 +187,25 @@ void SpyServerSource::drawControlUI()
 
 void SpyServerSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
+    if (!is_connected)
     {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            stage_to_use = i;
-            return;
-        }
+        buffer_samplerate = samplerate;
     }
+    else
+    {
+        for (int i = 0; i < (int)available_samplerates.size(); i++)
+        {
+            if (samplerate == available_samplerates[i])
+            {
+                selected_samplerate = i;
+                current_samplerate = samplerate;
+                stage_to_use = i;
+                return;
+            }
+        }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    }
 }
 
 uint64_t SpyServerSource::get_samplerate()

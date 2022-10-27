@@ -33,6 +33,8 @@ protected:
 
     std::string error;
 
+    uint64_t buffer_samplerate = 0;
+
     void try_connect()
     {
         output_stream = std::make_shared<dsp::stream<complex_t>>();
@@ -58,6 +60,9 @@ protected:
             samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
 
         is_connected = true;
+
+        if (buffer_samplerate != 0)
+            set_samplerate(buffer_samplerate);
     }
 
     void disconnect()
