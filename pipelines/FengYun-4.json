@@ -39,5 +39,32 @@
                 }
             }
         }
+    },
+    "fengyun4_hrit": {
+        "name": "FengYun-4 HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "HRIT",
+                1679e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            }
+        }
     }
 }
