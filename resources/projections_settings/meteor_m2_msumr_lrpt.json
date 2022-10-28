@@ -8,6 +8,8 @@
     "image_width": 1568,
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,
+    "interpolate_timestamps": 8,
+    "interpolate_timestamps_scantime": 0.2,
     ///////////////////////
     "timefilter": {
         "type": "simple",

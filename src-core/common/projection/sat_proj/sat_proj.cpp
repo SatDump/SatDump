@@ -37,6 +37,25 @@ namespace satdump
         {
             timestamps = timestamps_raw.get<std::vector<double>>();
 
+            if (cfg.contains("interpolate_timestamps"))
+            {
+                int to_interp = cfg["interpolate_timestamps"];
+                float scantime = cfg["interpolate_timestamps_scantime"];
+
+                auto timestamp_copy = timestamps;
+                timestamps.clear();
+                for (auto timestamp : timestamp_copy)
+                {
+                    for (int i = -(to_interp / 2); i < (to_interp / 2); i++)
+                    {
+                        if (timestamp != -1)
+                            timestamps.push_back(timestamp + i * scantime);
+                        else
+                            timestamps.push_back(-1);
+                    }
+                }
+            }
+
             image_width = cfg["image_width"].get<int>();
             scan_angle = cfg["scan_angle"].get<float>();
 
