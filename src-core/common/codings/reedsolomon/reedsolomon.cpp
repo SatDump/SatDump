@@ -27,7 +27,7 @@ namespace reedsolomon
                                         0xf3, 0x3f, 0x5f, 0x93, 0xa9, 0x65, 0x05, 0xc9, 0xd0, 0x1c, 0x7c, 0xb0, 0x59, 0x95, 0xf5, 0x39, 0x20, 0xec, 0x8c, 0x40, 0x54, 0x98, 0xf8, 0x34, 0x2d,
                                         0xe1, 0x81, 0x4d, 0xa4, 0x68, 0x08, 0xc4, 0xdd, 0x11, 0x71, 0xbd};
 
-    ReedSolomon::ReedSolomon(RS_TYPE type, int frm_size)
+    ReedSolomon::ReedSolomon(RS_TYPE type, int fill_bytes)
     {
         if (type == RS223)
         {
@@ -42,7 +42,7 @@ namespace reedsolomon
             d_parity_bits = 16;
         }
 
-        this->frm_size = frm_size;
+        this->fill_bytes = fill_bytes;
     }
 
     ReedSolomon::~ReedSolomon()
@@ -62,10 +62,10 @@ namespace reedsolomon
 
     int ReedSolomon::decode(uint8_t *data, bool ccsds)
     {
-        if (frm_size != -1) // Depuncture
+        if (fill_bytes != -1) // Depuncture
         {
-            memmove(&data[d_coded_bits], &data[frm_size], d_parity_bits); // Move parity to the end
-            memset(&data[frm_size], 0, d_coded_bits - frm_size);          // Set fill to 0
+            memmove(&data[fill_bytes], &data[0], 255 - fill_bytes); // Move RS to the end
+            memset(&data[0], 0, fill_bytes);                        // Set fill to 0
         }
 
         if (ccsds)
@@ -98,7 +98,7 @@ namespace reedsolomon
             }
         }
 
-        std::memcpy(data, odata, frm_size == -1 ? d_coded_bits : frm_size);
+        std::memcpy(data, odata, fill_bytes == -1 ? d_coded_bits : (d_coded_bits - fill_bytes));
 
         if (ccsds)
         {
@@ -106,8 +106,8 @@ namespace reedsolomon
                 data[i] = ToDualBasis[data[i]];
         }
 
-        if (frm_size != -1)                                               // Repuncture
-            memmove(&data[frm_size], &data[d_coded_bits], d_parity_bits); // Move back parity
+        if (fill_bytes != -1)                                       // Repuncture
+            memmove(&data[0], &data[fill_bytes], 255 - fill_bytes); // Move back parity
 
         return err;
     }
@@ -141,13 +141,13 @@ namespace reedsolomon
 
     void ReedSolomon::deinterleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t i)
     {
-        for (int ii = 0; ii < 255; ii++)
+        for (int ii = 0; ii < 255 - fill_bytes; ii++)
             output[ii] = data[ii * i + pos];
     }
 
     void ReedSolomon::interleave(uint8_t *data, uint8_t *output, uint8_t pos, uint8_t i)
     {
-        for (int ii = 0; ii < 255; ii++)
+        for (int ii = 0; ii < 255 - fill_bytes; ii++)
             output[ii * i + pos] = data[ii];
     }
 };

@@ -86,7 +86,7 @@
                     "constellation": "bpsk",
                     "cadu_size": 2000,
                     "nrzm": false,
-                    "rs_frm_size": 214,
+                    "rs_fill_bytes": 9,
                     "rs_i": 1,
                     "rs_type": "rs223"
                 }

@@ -31,7 +31,7 @@ namespace ccsds
           d_derand_from(parameters.count("derand_start") > 0 ? parameters["derand_start"].get<int>() : 4),
 
           d_rs_interleaving_depth(parameters["rs_i"].get<int>()),
-          d_rs_frame_size(parameters.count("rs_frm_size") > 0 ? parameters["rs_frm_size"].get<int>() : -1),
+          d_rs_fill_bytes(parameters.count("rs_fill_bytes") > 0 ? parameters["rs_fill_bytes"].get<int>() : -1),
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
@@ -68,7 +68,7 @@ namespace ccsds
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         deframer_qpsk = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync); // For QPSK without NRZ-M which gets split into 2 BPSK deframers
         if (d_rs_interleaving_depth != 0)
-            reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_frame_size);
+            reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_fill_bytes);
 
         if (d_cadu_size % 8 != 0) // If this is not a perfect byte length match, pad the frames
         {
