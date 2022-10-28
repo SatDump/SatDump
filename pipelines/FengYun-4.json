@@ -12,7 +12,12 @@
                 0
             ]
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "LRIT",
+                1697e6
+            ]
+        ],
         "samplerate": 1e6,
         "baseband_type": "i16",
         "work": {
