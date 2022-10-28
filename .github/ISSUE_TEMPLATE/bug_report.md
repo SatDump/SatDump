@@ -15,4 +15,4 @@ assignees: ''
 
 **Logs after the cras (satdump.logs)**
 
-**Other info (Eg, Screenshots)**
+**Other info (Eg, Screenshots) / Files useful for debugging (CADU, etc)**
