@@ -62,7 +62,7 @@ namespace meteor
                 for (std::vector<uint8_t> msumr_frame : msumr_frames)
                 {
                     msumr_reader.work(msumr_frame.data());
-                    double timestamp = dayValue + (msumr_frame[8] - 3.0) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0) - (3600 * 24);
+                    double timestamp = dayValue + (msumr_frame[8] - 3.0) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
                     msumr_timestamps.push_back(timestamp);
                     mtvza_reader.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);

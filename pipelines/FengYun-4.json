@@ -39,5 +39,43 @@
                 }
             }
         }
+    },
+    "fengyun4_hrit": {
+        "name": "FengYun-4 HRIT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "HRIT",
+                1679e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.001,
+                    "clock_alpha": 2.5e-3,
+                    "modcod": 9
+                }
+            },
+            "cadu": {
+                "s2_udp_cadu_extractor": {
+                    "bb_size": 53840,
+                    "pid": 3002
+                }
+            }
+        }
     }
 }
