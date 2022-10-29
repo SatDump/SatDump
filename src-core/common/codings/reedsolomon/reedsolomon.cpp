@@ -84,6 +84,9 @@ namespace reedsolomon
                     data[i] = ToDualBasis[data[i]];
             }
 
+            if (fill_bytes != -1)                                       // Repuncture
+                memmove(&data[0], &data[fill_bytes], 255 - fill_bytes); // Move back parity
+
             return -1;
         }
         else
