@@ -24,12 +24,8 @@ namespace dsp
         }
 
         // Setup taps
-        // for (int i = 0; i < (int)rtaps.size(); i++)
-        //     taps[i % nfilt][(ntaps - 1) - (i / nfilt)] = rtaps[i];
-
-        // Fill phases
         for (int i = 0; i < nfilt * ntaps; i++)
-            taps[(nfilt - 1) - (i % nfilt)][i / nfilt] = (i < rtaps.size()) ? rtaps[i] : 0;
+            taps[(nfilt - 1) - (i % nfilt)][i / nfilt] = (i < (int)rtaps.size()) ? rtaps[i] : 0;
 
         is_init = true;
     }
