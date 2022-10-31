@@ -77,4 +77,6 @@ namespace dsp
 
     // This is here as many blocks require it
     float branchless_clip(float x, float clip);
+    double hz_to_rad(double freq, double samplerate);
+    double rad_to_hz(double rad, double samplerate);
 }

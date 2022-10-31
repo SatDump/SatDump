@@ -189,7 +189,7 @@ namespace demod
                 peak_snr = snr;
 
             // Get freq
-            display_freq = ((current_freq / final_sps) / (2.0f * M_PI)) * final_samplerate;
+            display_freq = dsp::rad_to_hz(current_freq / final_sps, final_samplerate);
 
             detected_modcod = s2_bb_to_soft->detect_modcod;
             detected_shortframes = s2_bb_to_soft->detect_shortframes;

@@ -156,7 +156,7 @@ namespace demod
                 peak_snr = snr;
 
             // Update freq
-            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
+            display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
 
             if (is_bpsk) // BPSK Only uses the Q branch... So don't output useless data
             {

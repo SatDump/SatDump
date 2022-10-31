@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block.h"
+#include "polyphase_bank.h"
 
 /*
 Complex and real clock recovery M&M.
@@ -34,8 +35,10 @@ namespace dsp
 
         void work();
 
+        PolyphaseBank pfb;
+
     public:
-        MMClockRecoveryBlock(std::shared_ptr<dsp::stream<T>> input, float omega, float omegaGain, float mu, float muGain, float omegaLimit);
+        MMClockRecoveryBlock(std::shared_ptr<dsp::stream<T>> input, float omega, float omegaGain, float mu, float muGain, float omegaLimit, int nfilt = 128, int ntaps = 8);
         ~MMClockRecoveryBlock();
     };
 }
