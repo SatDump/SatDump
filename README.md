@@ -5,6 +5,8 @@
 A generic satellite data processing software.
 *Thanks Mnux for the icon!*
 
+There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat!
+
 # Introduction
 
 *Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced usecases, please see the detailed documention.* 
