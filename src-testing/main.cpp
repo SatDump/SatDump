@@ -11,7 +11,8 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
 #include <fstream>
 
 int main(int /*argc*/, char *argv[])
@@ -20,14 +21,33 @@ int main(int /*argc*/, char *argv[])
 
     std::ifstream idk_file(argv[1]);
 
-    uint8_t buffer1[1279];
+    std::ofstream idk_file2(argv[2]);
+
+    uint8_t buffer1[1024];
+
+    ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid1(884, true, 0);
 
     while (!idk_file.eof())
     {
-        idk_file.read((char *)buffer1, 1279);
+        idk_file.read((char *)buffer1, 1024);
 
-        auto vcdu = ccsds::ccsds_1_0_proba::parseVCDU(buffer1);
+        auto vcdu = ccsds::ccsds_1_0_1024::parseVCDU(buffer1);
 
-        logger->critical(vcdu.spacecraft_id);
+        // logger->critical(vcdu.vcid);
+
+        if (vcdu.vcid == 4)
+        {
+
+            std::vector<ccsds::CCSDSPacket> pkts = demuxer_vcid1.work(buffer1);
+
+            for (auto pkt : pkts)
+            {
+                logger->critical(pkt.header.apid);
+
+                pkt.payload.resize(1000 - 6);
+                idk_file2.write((char *)pkt.header.raw, 6);
+                idk_file2.write((char *)pkt.payload.data(), 1000 - 6);
+            }
+        }
     }
 }
