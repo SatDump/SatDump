@@ -1,17 +1,49 @@
 {
-    "bluewalker3_link": {
-        "name": "BlueWalker-3 S-Band",
+    "bluewalker3_wide": {
+        "name": "BlueWalker-3 S-Band Wide",
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
-                    "constellation": "qpsk",
-                    "symbolrate": 1.024e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.009
+                "fsk_demod": {
+                    "symbolrate": 512e3,
+                    "rrc_alpha": 0.35,
+                    "buffer_size": 8192
                 }
             },
-            "frm": {},
+            "frm": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 9784,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
+    "bluewalker3_narrow": {
+        "name": "BlueWalker-3 S-Band Narrow",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "fsk_demod": {
+                    "symbolrate": 128e3,
+                    "rrc_alpha": 0.35,
+                    "buffer_size": 8192
+                }
+            },
+            "frm": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2872,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
             "products": {}
         }
     }
