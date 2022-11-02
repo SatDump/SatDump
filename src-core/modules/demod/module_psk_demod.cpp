@@ -143,7 +143,10 @@ namespace demod
             dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
+            {
+                rec->output_stream->flush();
                 continue;
+            }
 
             // Push into constellation
             constellation.pushComplex(rec->output_stream->readBuf, dat_size);

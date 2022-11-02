@@ -64,7 +64,10 @@ namespace terra
             dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
+            {
+                rec->output_stream->flush();
                 continue;
+            }
 
             // Push into constellation
             constellation.pushComplexScaled(rec->output_stream->readBuf, dat_size, 0.5);
@@ -77,7 +80,7 @@ namespace terra
                 peak_snr = snr;
 
             // Update freq
-            display_freq = (pll->getFreq() / (2.0f * M_PI)) * final_samplerate;
+            display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
 
             for (int i = 0; i < dat_size; i++)
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 50);

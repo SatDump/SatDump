@@ -175,7 +175,10 @@ namespace demod
             dat_size = s2_bb_to_soft->output_stream->read();
 
             if (dat_size <= 0)
+            {
+                s2_bb_to_soft->output_stream->flush();
                 continue;
+            }
 
             // Push into constellation
             constellation_s2.pushComplexPL(&s2_pll->output_stream->readBuf[0], 90);

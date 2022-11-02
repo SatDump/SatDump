@@ -94,7 +94,10 @@ namespace demod
             dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
+            {
+                rec->output_stream->flush();
                 continue;
+            }
 
             // Into const
             constellation.pushFloatAndGaussian(rec->output_stream->readBuf, rec->output_stream->getDataSize());
