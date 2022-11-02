@@ -53,7 +53,7 @@ namespace dsp
         }
 
         // Copy NTAPS samples in the buffer from input, as that's required for the last samples
-        memcpy(&buffer[in_buffer], Block<T, T>::input_stream->readBuf, pfb.ntaps * sizeof(complex_t));
+        memcpy(&buffer[in_buffer], Block<T, T>::input_stream->readBuf, pfb.ntaps * sizeof(T));
 
         int out_c = 0;                                              // Output index
         int in_c = 0;                                               // Input index
