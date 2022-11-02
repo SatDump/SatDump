@@ -573,8 +573,8 @@
                 "psk_demod": {
                     "constellation": "qpsk",
                     "symbolrate": 1e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.006
+                    "rrc_alpha": 0.15,
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
