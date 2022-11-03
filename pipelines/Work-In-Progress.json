@@ -343,7 +343,9 @@
                 "ccsds_simple_psk_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10112,
-                    "rs_i": 0
+                    "rs_i": 5,
+                    "rs_fill_bytes": 3,
+                    "rs_type": "rs223"
                 }
             }
         }
