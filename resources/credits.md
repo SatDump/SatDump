@@ -68,7 +68,6 @@ And additionally, on the UI side :
 - LazzSnazz
 - Raov UB8QBD
 - Peter Kooistra
-- Felix OK9UWU
 - Fred Jansen
 - MeteoOleg
 - Oleg Kutkov
