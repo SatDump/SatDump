@@ -26,7 +26,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 800e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
@@ -57,10 +57,6 @@
             [
                 2,
                 0
-            ],
-            [
-                3,
-                0
             ]
         ],
         "frequencies": [
@@ -77,7 +73,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 400e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
@@ -95,6 +91,51 @@
             "products": {
                 "angels_argos": {}
             }
+        }
+    },
+    "gazelle_l_band": {
+        "name": "OTB-3/Gazelle L-Band",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "DB",
+                1703e6
+            ]
+        ],
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
         }
     },
     "yunhai_ahrpt": {
