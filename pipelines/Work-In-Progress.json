@@ -592,5 +592,20 @@
                 }
             }
         }
+    },
+    "mats_dump": {
+        "name": "MATS S-Band Dump",
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.006
+                }
+            }
+        }
     }
 }
