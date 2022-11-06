@@ -104,12 +104,12 @@ namespace dsp
                 // Slice it
                 c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
 
-                // Write output
-                Block<T, T>::output_stream->writeBuf[out_c++] = p_0T;
-
                 // Phase error
                 phase_error = (((p_0T - p_2T) * c_1T.conj()) - ((c_0T - c_2T) * p_1T.conj())).real;
                 phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
+
+                // Write output
+                Block<T, T>::output_stream->writeBuf[out_c++] = p_0T;
             }
 
             // Adjust omega
