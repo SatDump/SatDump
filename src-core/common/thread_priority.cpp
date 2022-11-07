@@ -5,7 +5,7 @@
 #include <windows.h>
 #endif
 
-void setThreadPriority(std::thread &th, int priority)
+void setThreadPriority(std::thread &th, thread_priority_t priority)
 {
 #ifdef _WIN32
     if (SetThreadPriority(th.native_handle(), priority))
