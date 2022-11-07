@@ -29,6 +29,8 @@ namespace demod
         float d_clock_gain_mu = 0.01;
         float d_clock_omega_relative_limit = 0.005f;
 
+        uint64_t d_subccarier_offset = 0;
+
         int8_t *sym_buffer;
 
     public:

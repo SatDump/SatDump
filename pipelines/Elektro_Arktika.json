@@ -176,9 +176,20 @@
         "samplerate": 3e6,
         "work": {
             "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 5e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5
+                }
+            },
             "cadu": {
-                "elektro_arktika_tlm_demod": {
-                    "buffer_size": 8192
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1792,
+                    "derandomize": false,
+                    "nrzm": false,
+                    "rs_i": 0
                 }
             }
         }
@@ -202,8 +213,19 @@
         "work": {
             "baseband": {},
             "soft": {
-                "elektro_arktika_tlm_demod": {
-                    "buffer_size": 8192
+                "pm_demod": {
+                    "symbolrate": 5e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1792,
+                    "derandomize": false,
+                    "nrzm": false,
+                    "rs_i": 0
                 }
             }
         }

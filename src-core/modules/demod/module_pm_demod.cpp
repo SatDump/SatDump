@@ -42,6 +42,9 @@ namespace demod
         if (parameters.count("clock_omega_relative_limit") > 0)
             d_clock_omega_relative_limit = parameters["clock_omega_relative_limit"].get<float>();
 
+        if (parameters.count("subcarrier_offset") > 0)
+            d_subccarier_offset = parameters["subcarrier_offset"].get<uint64_t>();
+
         name = "PM Demodulator";
         MAX_SPS = 10; // Here we do NOT want to resample unless really necessary
 
@@ -56,7 +59,7 @@ namespace demod
         pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
 
         // Domain conversion
-        pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream, final_samplerate, d_symbolrate);
+        pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream, final_samplerate, d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
 
         // RRC
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
