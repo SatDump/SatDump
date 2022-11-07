@@ -2,6 +2,7 @@
 
 #include "block.h"
 #include <vector>
+#include "polyphase_bank.h"
 
 namespace dsp
 {
@@ -14,14 +15,13 @@ namespace dsp
         int d_decimation;
         int d_ctr;
 
+        int inc = 0, outc = 0;
+
         // Buffer
         T *buffer;
-        int in_buffer;
 
         // Taps
-        float **taps;
-        int nfilt; // Number of filters (one per phase)
-        int ntaps;
+        PolyphaseBank pfb;
 
         void work();
 

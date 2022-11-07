@@ -6,7 +6,7 @@ namespace dsp
     void PolyphaseBank::init(std::vector<float> rtaps, int nfilt2)
     {
         this->nfilt = nfilt2;
-        this->ntaps = rtaps.size();
+        this->ntaps = (rtaps.size() + nfilt - 1) / nfilt;
 
         // Get alignement parameters
         int align = volk_get_alignment();

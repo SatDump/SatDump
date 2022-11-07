@@ -138,7 +138,7 @@
                     "constellation": "oqpsk",
                     "symbolrate": 1.15e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.001
                 }
             },
             "cadu": {
@@ -148,7 +148,7 @@
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
-                    "oqpsk_delay": true,
+                    //"oqpsk_delay": true,
                     "rs_i": 4,
                     "rs_type": "rs223"
                 }
