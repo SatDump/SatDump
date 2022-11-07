@@ -191,5 +191,42 @@
                 }
             }
         }
+    },
+    "scisat1_dump": {
+        "name": "SciSat-1 Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.005
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 9592,
+                    "rs_i": 5,
+                    "rs_fill_bytes": 16,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "scisat1_instruments": {}
+            }
+        }
     }
 }

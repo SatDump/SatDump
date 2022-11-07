@@ -41,6 +41,7 @@ namespace proba
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
             ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
+            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid4(1103, false);
 
             // std::ofstream output("file.ccsds");
 
@@ -159,7 +160,7 @@ namespace proba
                 }
                 else if (vcdu.vcid == 4) // Idk VCID
                 {
-                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid4.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
                         if (d_satellite == PROBA_V)

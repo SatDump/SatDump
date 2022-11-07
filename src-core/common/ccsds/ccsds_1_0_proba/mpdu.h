@@ -16,7 +16,7 @@ namespace ccsds
         };
 
         // Parse MPDU from CADU
-        MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone = false);
+        MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone = false, int insertZoneSize = 2);
 
     } // namespace libccsds
 } // namespace proba
