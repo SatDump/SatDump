@@ -27,7 +27,11 @@ endif()
 # Set default install prefix to /usr
 if(UNIX)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX /usr CACHE PATH "Set CMAKE Default to /usr" FORCE)
+        if(APPLE)
+            set(CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Set CMAKE Default to /usr/local" FORCE)
+        else()
+            set(CMAKE_INSTALL_PREFIX /usr CACHE PATH "Set CMAKE Default to /usr" FORCE)
+        endif()
     endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
@@ -67,7 +71,7 @@ if(UNIX)
 
     find_package(ZSTD)
 
-    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND (NOT ANDROID))
+    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND(NOT ANDROID))
         message("ZIQ Was enabled but libzstd was not found!")
         set(BUILD_ZIQ OFF)
     endif()
