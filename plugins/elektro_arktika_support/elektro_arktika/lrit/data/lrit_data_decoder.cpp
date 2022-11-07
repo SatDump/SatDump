@@ -253,13 +253,20 @@ namespace elektro
                         Util::CDataFieldUncompressedImage decompressedImage;
 
                         // Perform WT Decompression
-                        std::vector<short> m_QualityInfo;
-                        if (compression_type == 3)
-                            COMP::DecompressWT(compressedImage, image_structure_record.bit_per_pixel, decompressedImage, m_QualityInfo); // Standard HRIT compression
-                        else if (compression_type == 2)
-                            COMP::DecompressT4(compressedImage, decompressedImage, m_QualityInfo); // Shouldn't happen but better be ready
-                        else
-                            logger->error("Unknown compression! This should not have happened!");
+                        try
+                        {
+                            std::vector<short> m_QualityInfo;
+                            if (compression_type == 3)
+                                COMP::DecompressWT(compressedImage, image_structure_record.bit_per_pixel, decompressedImage, m_QualityInfo); // Standard HRIT compression
+                            else if (compression_type == 2)
+                                COMP::DecompressT4(compressedImage, decompressedImage, m_QualityInfo); // Shouldn't happen but better be ready
+                            else
+                                logger->error("Unknown compression! This should not have happened!");
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Failed decompression! {:d}", e.what());
+                        }
 
                         // Fill our output buffer
                         buf_size = decompressedImage.Size() / 8;

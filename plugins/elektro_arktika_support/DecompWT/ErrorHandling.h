@@ -19,6 +19,7 @@
 
 #include <string>
 #include <errno.h>
+#include <stdexcept>
 
 namespace Util
 {
@@ -140,7 +141,7 @@ namespace Util
  **/
 #define LOGCATCHANDTHROW                    \
     Util::LogException(__FILE__, __LINE__); \
-    throw;
+    throw std::runtime_error("DecompWT Error!");
 /**
  * This macro logs an exception 
  **/
