@@ -164,7 +164,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 30e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.0163
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
@@ -202,7 +202,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 38.4e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.0189
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
@@ -240,7 +240,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 62e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.0189
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
