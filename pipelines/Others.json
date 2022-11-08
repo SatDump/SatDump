@@ -230,7 +230,7 @@
         }
     },
     "CALIPSO": {
-        "name": "calisp",
+        "name": "Calipso S band Dump",
         "live": false,
         "live_cfg": [],
         "frequencies": [],
