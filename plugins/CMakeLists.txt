@@ -85,6 +85,12 @@ if(PLUGIN_JASON3 OR PLUGINS_ALL)
     add_subdirectory(jason3_support)
 endif()
 
+option(PLUGIN_AIM "Enable the AIM support plugin" OFF)
+
+if(PLUGIN_AIM OR PLUGINS_ALL)
+    add_subdirectory(aim_support)
+endif()
+
 option(PLUGIN_OCEANSAT "Enable the Oceansat (X-Band, etc) support plugin" OFF)
 
 if(PLUGIN_OCEANSAT OR PLUGINS_ALL)
