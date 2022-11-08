@@ -292,12 +292,13 @@ void SDRPlaySource::start()
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_IfType, sdrplay_api_Update_Ext1_None);
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_LoMode, sdrplay_api_Update_Ext1_None);
 
+    is_started = true;
+    
     set_gains();
     set_bias();
     set_agcs();
     set_others();
 
-    is_started = true;
 }
 
 void SDRPlaySource::stop()
