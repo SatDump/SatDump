@@ -30,23 +30,13 @@ namespace proba
             std::unique_ptr<chris::CHRISReader> chris_reader;
             std::unique_ptr<hrc::HRCReader> hrc_reader;
             std::unique_ptr<swap::SWAPReader> swap_reader;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader1;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader2;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader3;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader4;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader5;
-            std::unique_ptr<vegetation::VegetationS> vegs_reader6;
+            std::unique_ptr<vegetation::VegetationS> vegs_readers[3][6];
 
             // Statuses
             instrument_status_t chris_status = DECODING;
             instrument_status_t hrc_status = DECODING;
             instrument_status_t swap_status = DECODING;
-            instrument_status_t vegs_status1 = DECODING;
-            instrument_status_t vegs_status2 = DECODING;
-            instrument_status_t vegs_status3 = DECODING;
-            instrument_status_t vegs_status4 = DECODING;
-            instrument_status_t vegs_status5 = DECODING;
-            instrument_status_t vegs_status6 = DECODING;
+            instrument_status_t vegs_status[3][6];
 
         public:
             PROBAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

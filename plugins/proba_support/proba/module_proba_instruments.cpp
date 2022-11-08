@@ -85,12 +85,18 @@ namespace proba
                 if (!std::filesystem::exists(vegs_directory))
                     std::filesystem::create_directory(vegs_directory);
 
-                vegs_reader1 = std::make_unique<vegetation::VegetationS>(7818, 5200);
-                vegs_reader2 = std::make_unique<vegetation::VegetationS>(7818, 5200);
-                vegs_reader3 = std::make_unique<vegetation::VegetationS>(7818, 5200);
-                vegs_reader4 = std::make_unique<vegetation::VegetationS>(1554, 1024);
-                vegs_reader5 = std::make_unique<vegetation::VegetationS>(1554, 1024);
-                vegs_reader6 = std::make_unique<vegetation::VegetationS>(1554, 1024);
+                for (int i = 0; i < 3; i++)
+                {
+                    vegs_readers[i][0] = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                    vegs_readers[i][1] = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                    vegs_readers[i][2] = std::make_unique<vegetation::VegetationS>(7818, 5200);
+                    vegs_readers[i][3] = std::make_unique<vegetation::VegetationS>(1554, 1024);
+                    vegs_readers[i][4] = std::make_unique<vegetation::VegetationS>(1554, 1024);
+                    vegs_readers[i][5] = std::make_unique<vegetation::VegetationS>(1554, 1024);
+
+                    for (int y = 0; y < 6; y++)
+                        vegs_status[i][y] = DECODING;
+                }
             }
 
             while (!data_in.eof())
@@ -165,18 +171,47 @@ namespace proba
                     {
                         if (d_satellite == PROBA_V)
                         {
-                            if (pkt.header.apid == 290)
-                                vegs_reader1->work(pkt);
+                            // Vegs-1
+                            if (pkt.header.apid == 289)
+                                vegs_readers[1][0]->work(pkt);
+                            else if (pkt.header.apid == 273)
+                                vegs_readers[1][1]->work(pkt);
+                            else if (pkt.header.apid == 321)
+                                vegs_readers[1][2]->work(pkt);
+                            else if (pkt.header.apid == 281)
+                                vegs_readers[1][3]->work(pkt);
+                            else if (pkt.header.apid == 297)
+                                vegs_readers[1][4]->work(pkt);
+                            else if (pkt.header.apid == 329)
+                                vegs_readers[1][5]->work(pkt);
+                            // Vegs-2
+                            else if (pkt.header.apid == 290)
+                                vegs_readers[0][0]->work(pkt);
                             else if (pkt.header.apid == 274)
-                                vegs_reader2->work(pkt);
+                                vegs_readers[0][1]->work(pkt);
                             else if (pkt.header.apid == 322)
-                                vegs_reader3->work(pkt);
+                                vegs_readers[0][2]->work(pkt);
                             else if (pkt.header.apid == 282)
-                                vegs_reader4->work(pkt);
+                                vegs_readers[0][3]->work(pkt);
                             else if (pkt.header.apid == 298)
-                                vegs_reader5->work(pkt);
+                                vegs_readers[0][4]->work(pkt);
                             else if (pkt.header.apid == 330)
-                                vegs_reader6->work(pkt);
+                                vegs_readers[0][5]->work(pkt);
+                            // Vegs-3
+                            else if (pkt.header.apid == 291)
+                                vegs_readers[2][0]->work(pkt);
+                            else if (pkt.header.apid == 275)
+                                vegs_readers[2][1]->work(pkt);
+                            else if (pkt.header.apid == 323)
+                                vegs_readers[2][2]->work(pkt);
+                            else if (pkt.header.apid == 283)
+                                vegs_readers[2][3]->work(pkt);
+                            else if (pkt.header.apid == 300)
+                                vegs_readers[2][4]->work(pkt);
+                            else if (pkt.header.apid == 331)
+                                vegs_readers[2][5]->work(pkt);
+                            else
+                                logger->critical(pkt.header.apid);
                         }
                     }
                 }
@@ -233,26 +268,34 @@ namespace proba
             // VegS
             if (d_satellite == PROBA_V)
             {
-                vegs_status1 = vegs_status2 = vegs_status3 = vegs_status4 = vegs_status5 = vegs_status6 = SAVING;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int y = 0; y < 6; y++)
+                        vegs_status[i][y] = SAVING;
 
-                logger->info("----------- Vegetation");
-                logger->info("Lines (1) : {:d}", vegs_reader1->lines);
-                logger->info("Lines (2) : {:d}", vegs_reader2->lines);
-                logger->info("Lines (3) : {:d}", vegs_reader3->lines);
-                logger->info("Lines (4) : {:d}", vegs_reader4->lines);
-                logger->info("Lines (5) : {:d}", vegs_reader5->lines);
-                logger->info("Lines (6) : {:d}", vegs_reader6->lines);
+                    logger->info("----------- Vegetation {:d}", i + 1);
+                    logger->info("Lines (1) : {:d}", vegs_readers[i][0]->lines);
+                    logger->info("Lines (2) : {:d}", vegs_readers[i][1]->lines);
+                    logger->info("Lines (3) : {:d}", vegs_readers[i][2]->lines);
+                    logger->info("Lines (4) : {:d}", vegs_readers[i][3]->lines);
+                    logger->info("Lines (5) : {:d}", vegs_readers[i][4]->lines);
+                    logger->info("Lines (6) : {:d}", vegs_readers[i][5]->lines);
 
-                std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
+                    std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
 
-                vegs_reader1->getImg().save_img(vegs_directory + "/Vegetation_1.png");
-                vegs_reader2->getImg().save_img(vegs_directory + "/Vegetation_2.png");
-                vegs_reader3->getImg().save_img(vegs_directory + "/Vegetation_3.png");
-                vegs_reader4->getImg().save_img(vegs_directory + "/Vegetation_4.png");
-                vegs_reader5->getImg().save_img(vegs_directory + "/Vegetation_5.png");
-                vegs_reader6->getImg().save_img(vegs_directory + "/Vegetation_6.png");
+                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1.png");
+                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2.png");
+                    auto img3 = vegs_readers[i][2]->getImg();
+                    img3.mirror(true, false);
+                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3.png");
+                    img3.clear();
+                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4.png");
+                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5.png");
+                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6.png");
 
-                vegs_status1 = vegs_status2 = vegs_status3 = vegs_status4 = vegs_status5 = vegs_status6 = DONE;
+                    for (int y = 0; y < 6; y++)
+                        vegs_status[i][y] = DONE;
+                }
             }
 
             if (d_satellite == PROBA_1)
@@ -305,53 +348,56 @@ namespace proba
 
                 if (d_satellite == PROBA_V)
                 {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 1");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader1->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status1);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch1", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][0]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][0]);
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 2");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader2->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status2);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch2", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][1]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][1]);
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 3");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader3->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status3);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch2", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][2]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][2]);
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 4");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader4->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status4);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch4", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][3]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][3]);
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 5");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader5->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status5);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch5", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][4]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][4]);
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Vegetation 6");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_reader6->lines);
-                    ImGui::TableSetColumnIndex(2);
-                    drawStatus(vegs_status6);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Vegetation %d Ch6", i + 1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][5]->lines);
+                        ImGui::TableSetColumnIndex(2);
+                        drawStatus(vegs_status[i][5]);
+                    }
                 }
 
                 ImGui::EndTable();
