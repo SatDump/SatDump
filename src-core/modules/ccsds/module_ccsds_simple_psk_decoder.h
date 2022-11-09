@@ -39,10 +39,10 @@ namespace ccsds
         const int d_cadu_bytes;  // CADU Size in bytes, including ASM
         const int d_buffer_size; // Processing buffer size, default half of a frame (= d_cadu_size)
 
-        const bool d_qpsk_swapiq;    // If IQ should be swapped before being demodulated (to support different DQPSK modes)
-        const bool d_qpsk_swapdiff;  // If bits should be swapped after the output of the QPSK diff decoder
-        const bool d_oqpsk_delay;    // For some OQPSK satellites, the Q branch is delayed by 1 symbol
-        const bool d_oqpsk_method_2; // Weird satellites
+        const bool d_qpsk_swapiq;                      // If IQ should be swapped before being demodulated (to support different DQPSK modes)
+        const bool d_qpsk_swapdiff;                    // If bits should be swapped after the output of the QPSK diff decoder
+        const bool d_oqpsk_delay;                      // For some OQPSK satellites, the Q branch is delayed by 1 symbol
+        const bool d_oqpsk_method_2, d_oqpsk_method_3; // Weird satellites
 
         const bool d_diff_decode; // If NRZ-M Decoding is required or not
 

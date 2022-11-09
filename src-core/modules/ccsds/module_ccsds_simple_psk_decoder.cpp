@@ -24,6 +24,7 @@ namespace ccsds
           d_qpsk_swapdiff(parameters.count("qpsk_swap_diff") > 0 ? parameters["qpsk_swap_diff"].get<bool>() : true),
           d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
           d_oqpsk_method_2(parameters.count("oqpsk_method2") > 0 ? parameters["oqpsk_method2"].get<bool>() : false),
+          d_oqpsk_method_3(parameters.count("oqpsk_method3") > 0 ? parameters["oqpsk_method3"].get<bool>() : false),
 
           d_diff_decode(parameters.count("nrzm") > 0 ? parameters["nrzm"].get<bool>() : false),
 
@@ -79,7 +80,7 @@ namespace ccsds
             logger->info("Frames will be padded!");
         }
 
-        if (d_constellation == dsp::QPSK && d_oqpsk_method_2)
+        if (d_constellation == dsp::QPSK && (d_oqpsk_method_2 || d_oqpsk_method_3))
             soft_buffer2 = new int8_t[d_buffer_size];
     }
 
@@ -99,7 +100,7 @@ namespace ccsds
         delete[] soft_buffer;
         delete[] frame_buffer;
         delete[] qpsk_diff_buffer;
-        if (d_constellation == dsp::QPSK && d_oqpsk_method_2)
+        if (d_constellation == dsp::QPSK && (d_oqpsk_method_2 || d_oqpsk_method_3))
             delete[] soft_buffer2;
     }
 
@@ -177,12 +178,43 @@ namespace ccsds
                 }
                 else
                 {
-                    if (!d_oqpsk_method_2) // Normal QPSK case
+                    if (!(d_oqpsk_method_2 || d_oqpsk_method_3)) // Normal QPSK case
                     {
                         // Run deframer on 0 deg const
                         for (int i = 0; i < d_buffer_size / 2; i++)
                         {
                             uint8_t sym = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+                            bits_out[i * 2 + 0] = sym >> 1;
+                            bits_out[i * 2 + 1] = sym & 1;
+                        }
+
+                        frames += deframer_qpsk->work(bits_out, d_buffer_size, &frame_buffer[frames * d_cadu_bytes]);
+
+                        // Now shift by 90 degs and let the main one do its thing
+                        rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_90, false);
+
+                        for (int i = 0; i < d_buffer_size / 2; i++)
+                        {
+                            uint8_t sym = qpsk_const.soft_demod(&soft_buffer[i * 2]);
+                            bits_out[i * 2 + 0] = sym >> 1;
+                            bits_out[i * 2 + 1] = sym & 1;
+                        }
+                    }
+                    else if (!d_oqpsk_method_3) // Weird OQPSK case, where the demodulator can lock at an offset
+                    {
+                        memcpy(soft_buffer2, soft_buffer, d_buffer_size);
+
+                        for (int i = 0; i < d_buffer_size / 2; i++)
+                        {
+                            int8_t back = soft_buffer2[i * 2 + 0];
+                            soft_buffer2[i * 2 + 0] = last_oqpsk2;
+                            last_oqpsk2 = back;
+                        }
+
+                        // Run deframer on 0 deg const, shifted around
+                        for (int i = 0; i < d_buffer_size / 2; i++)
+                        {
+                            uint8_t sym = qpsk_const.soft_demod(&soft_buffer2[i * 2]);
                             bits_out[i * 2 + 0] = sym >> 1;
                             bits_out[i * 2 + 1] = sym & 1;
                         }
@@ -210,6 +242,9 @@ namespace ccsds
                             last_oqpsk2 = back;
                         }
 
+                        // Now shift by 90 degs and let the main one do its thing
+                        rotate_soft((int8_t *)soft_buffer2, d_buffer_size, PHASE_90, false);
+
                         // Run deframer on 0 deg const, shifted around
                         for (int i = 0; i < d_buffer_size / 2; i++)
                         {
@@ -219,9 +254,6 @@ namespace ccsds
                         }
 
                         frames += deframer_qpsk->work(bits_out, d_buffer_size, &frame_buffer[frames * d_cadu_bytes]);
-
-                        // Now shift by 90 degs and let the main one do its thing
-                        rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_90, false);
 
                         for (int i = 0; i < d_buffer_size / 2; i++)
                         {

@@ -283,6 +283,7 @@
             "cadu": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "qpsk",
+                    "oqpsk_method3": true,
                     "cadu_size": 10232,
                     "nrzm": false,
                     "rs_i": 5,
