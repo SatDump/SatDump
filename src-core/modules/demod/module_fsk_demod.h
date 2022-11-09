@@ -11,10 +11,10 @@ namespace demod
     class FSKDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
         std::shared_ptr<dsp::CorrectIQBlock<float>> dcb2;
         std::shared_ptr<dsp::AGCBlock<float>> agc2;
+        std::shared_ptr<dsp::FIRBlock<float>> rrc;
         std::shared_ptr<dsp::MMClockRecoveryBlock<float>> rec;
 
         float d_rrc_alpha;

@@ -46,18 +46,15 @@ namespace demod
         constellation.d_vscale = 20.0 / 100.0;
 
         // MIN_SPS = 1.1;
-        // MAX_SPS = 10.0;
+        // MAX_SPS = 8.0;
     }
 
     void FSKDemodModule::init()
     {
         BaseDemodModule::init();
 
-        // LPF
-        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
-
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(rrc->output_stream, 1.0f);
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(agc->output_stream, 1.0f);
 
         // DC Blocker
         dcb2 = std::make_shared<dsp::CorrectIQBlock<float>>(qua->output_stream);
@@ -65,8 +62,11 @@ namespace demod
         // Second AGC (Doppler)
         agc2 = std::make_shared<dsp::AGCBlock<float>>(dcb2->output_stream, 0.1f, 0.5f, 1.0f, 65535.0f);
 
+        // LPF
+        rrc = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+
         // Clock recovery
-        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(agc2->output_stream,
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(rrc->output_stream,
                                                                  final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
     }
 
@@ -93,10 +93,10 @@ namespace demod
 
         // Start
         BaseDemodModule::start();
-        rrc->start();
         qua->start();
         dcb2->start();
         agc2->start();
+        rrc->start();
         rec->start();
 
         int dat_size = 0;
@@ -154,10 +154,10 @@ namespace demod
     {
         // Stop
         BaseDemodModule::stop();
-        rrc->stop();
         qua->stop();
         dcb2->stop();
         agc2->stop();
+        rrc->stop();
         rec->stop();
         rec->output_stream->stopReader();
 
