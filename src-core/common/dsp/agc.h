@@ -4,7 +4,8 @@
 
 namespace dsp
 {
-    class AGCBlock : public Block<complex_t, complex_t>
+    template <typename T>
+    class AGCBlock : public Block<T, T>
     {
     private:
         float rate;      // adjustment rate
@@ -14,6 +15,6 @@ namespace dsp
         void work();
 
     public:
-        AGCBlock(std::shared_ptr<dsp::stream<complex_t>> input, float agc_rate, float reference, float gain, float max_gain);
+        AGCBlock(std::shared_ptr<dsp::stream<T>> input, float agc_rate, float reference, float gain, float max_gain);
     };
 }

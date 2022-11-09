@@ -92,7 +92,7 @@ namespace demod
             pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 8);
 
         if (d_post_costas_dc_blocking)
-            post_pll_dc = std::make_shared<dsp::CorrectIQBlock>(pll->output_stream);
+            post_pll_dc = std::make_shared<dsp::CorrectIQBlock<complex_t>>(pll->output_stream);
 
         if (is_oqpsk)
             delay = std::make_shared<dsp::DelayOneImagBlock>(d_post_costas_dc_blocking ? post_pll_dc->output_stream : pll->output_stream);

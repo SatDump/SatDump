@@ -44,6 +44,9 @@ namespace demod
 
         constellation.d_hscale = 80.0 / 100.0;
         constellation.d_vscale = 20.0 / 100.0;
+
+        // MIN_SPS = 1.1;
+        // MAX_SPS = 10.0;
     }
 
     void FSKDemodModule::init()
@@ -56,8 +59,14 @@ namespace demod
         // Quadrature demod
         qua = std::make_shared<dsp::QuadratureDemodBlock>(rrc->output_stream, 1.0f);
 
+        // DC Blocker
+        dcb2 = std::make_shared<dsp::CorrectIQBlock<float>>(qua->output_stream);
+
+        // Second AGC (Doppler)
+        agc2 = std::make_shared<dsp::AGCBlock<float>>(dcb2->output_stream, 0.1f, 0.5f, 1.0f, 65535.0f);
+
         // Clock recovery
-        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(qua->output_stream,
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(agc2->output_stream,
                                                                  final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
     }
 
@@ -86,6 +95,8 @@ namespace demod
         BaseDemodModule::start();
         rrc->start();
         qua->start();
+        dcb2->start();
+        agc2->start();
         rec->start();
 
         int dat_size = 0;
@@ -145,6 +156,8 @@ namespace demod
         BaseDemodModule::stop();
         rrc->stop();
         qua->stop();
+        dcb2->stop();
+        agc2->stop();
         rec->stop();
         rec->output_stream->stopReader();
 

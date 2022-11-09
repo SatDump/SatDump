@@ -67,7 +67,7 @@ namespace demod
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
 
         if (d_dc_block)
-            dc_blocker = std::make_shared<dsp::CorrectIQBlock>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
+            dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
         // Cleanup things a bit
         std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
@@ -88,7 +88,7 @@ namespace demod
             resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(fft_splitter->output_stream, final_samplerate, d_samplerate);
 
         // AGC
-        agc = std::make_shared<dsp::AGCBlock>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+        agc = std::make_shared<dsp::AGCBlock<complex_t>>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()

@@ -2,8 +2,9 @@
 
 namespace dsp
 {
-    AGCBlock::AGCBlock(std::shared_ptr<dsp::stream<complex_t>> input, float agc_rate, float reference, float gain, float max_gain)
-        : Block(input),
+    template <typename T>
+    AGCBlock<T>::AGCBlock(std::shared_ptr<dsp::stream<T>> input, float agc_rate, float reference, float gain, float max_gain)
+        : Block<T, T>(input),
           rate(agc_rate),
           reference(reference),
           gain(gain),
@@ -11,29 +12,36 @@ namespace dsp
     {
     }
 
-    void AGCBlock::work()
+    template <typename T>
+    void AGCBlock<T>::work()
     {
-        int nsamples = input_stream->read();
+        int nsamples = Block<T, T>::input_stream->read();
         if (nsamples <= 0)
         {
-            input_stream->flush();
+            Block<T, T>::input_stream->flush();
             return;
         }
 
         for (int i = 0; i < nsamples; i++)
         {
-            complex_t output = input_stream->readBuf[i] * gain;
+            T output = Block<T, T>::input_stream->readBuf[i] * gain;
 
-            gain += rate * (reference - sqrt(output.real * output.real +
-                                             output.imag * output.imag));
+            if constexpr (std::is_same_v<T, float>)
+                gain += rate * (reference - fabsf(output));
+            if constexpr (std::is_same_v<T, complex_t>)
+                gain += rate * (reference - sqrt(output.real * output.real +
+                                                 output.imag * output.imag));
 
             if (max_gain > 0.0 && gain > max_gain)
                 gain = max_gain;
 
-            output_stream->writeBuf[i] = output;
+            Block<T, T>::output_stream->writeBuf[i] = output;
         }
 
-        input_stream->flush();
-        output_stream->swap(nsamples);
+        Block<T, T>::input_stream->flush();
+        Block<T, T>::output_stream->swap(nsamples);
     }
+
+    template class AGCBlock<complex_t>;
+    template class AGCBlock<float>;
 }

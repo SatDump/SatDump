@@ -34,9 +34,9 @@ namespace demod
         std::shared_ptr<dsp::FreqShiftBlock> freq_shift;
         std::shared_ptr<dsp::SplitterBlock> fft_splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft_proc;
-        std::shared_ptr<dsp::CorrectIQBlock> dc_blocker;
+        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> dc_blocker;
         std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> resampler;
-        std::shared_ptr<dsp::AGCBlock> agc;
+        std::shared_ptr<dsp::AGCBlock<complex_t>> agc;
 
         std::string name = "Demodulator";
 

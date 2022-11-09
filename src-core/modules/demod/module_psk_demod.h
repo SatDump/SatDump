@@ -13,7 +13,7 @@ namespace demod
     protected:
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
-        std::shared_ptr<dsp::CorrectIQBlock> post_pll_dc;
+        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> post_pll_dc;
         std::shared_ptr<dsp::DelayOneImagBlock> delay;
         std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 

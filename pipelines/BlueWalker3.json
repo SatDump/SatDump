@@ -71,7 +71,7 @@
             "frm": {
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "bpsk_90",
-                    "cadu_size": 2872,
+                    "cadu_size": 2648,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,

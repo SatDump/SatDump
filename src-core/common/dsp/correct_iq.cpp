@@ -2,31 +2,37 @@
 
 namespace dsp
 {
-    CorrectIQBlock::CorrectIQBlock(std::shared_ptr<dsp::stream<complex_t>> input)
-        : Block(input)
+    template <typename T>
+    CorrectIQBlock<T>::CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input)
+        : Block<T, T>(input)
     {
     }
 
-    CorrectIQBlock::~CorrectIQBlock()
+    template <typename T>
+    CorrectIQBlock<T>::~CorrectIQBlock()
     {
     }
 
-    void CorrectIQBlock::work()
+    template <typename T>
+    void CorrectIQBlock<T>::work()
     {
-        int nsamples = input_stream->read();
+        int nsamples = Block<T, T>::input_stream->read();
         if (nsamples <= 0)
         {
-            input_stream->flush();
+            Block<T, T>::input_stream->flush();
             return;
         }
 
         for (int i = 0; i < nsamples; i++)
         {
-            acc = acc * beta + input_stream->readBuf[i] * alpha;         // Compute a moving average, of both I & Q
-            output_stream->writeBuf[i] = input_stream->readBuf[i] - acc; // Substract it to the input buffer, moving back to 0
+            acc = acc * beta + Block<T, T>::input_stream->readBuf[i] * alpha;                      // Compute a moving average, of both I & Q
+            Block<T, T>::output_stream->writeBuf[i] = Block<T, T>::input_stream->readBuf[i] - acc; // Substract it to the input buffer, moving back to 0
         }
 
-        input_stream->flush();
-        output_stream->swap(nsamples);
+        Block<T, T>::input_stream->flush();
+        Block<T, T>::output_stream->swap(nsamples);
     }
+
+    template class CorrectIQBlock<complex_t>;
+    template class CorrectIQBlock<float>;
 }

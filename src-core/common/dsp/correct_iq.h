@@ -13,18 +13,19 @@ so correcting for it is as simple as getting the average value
 */
 namespace dsp
 {
-    class CorrectIQBlock : public Block<complex_t, complex_t>
+    template <typename T>
+    class CorrectIQBlock : public Block<T, T>
     {
     private:
         // Just remove a DC spike with a moving average
         const float alpha = 0.0001;
         const float beta = 1.0f - alpha;
-        complex_t acc;
+        T acc = 0;
 
         void work();
 
     public:
-        CorrectIQBlock(std::shared_ptr<dsp::stream<complex_t>> input);
+        CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input);
         ~CorrectIQBlock();
     };
 }
