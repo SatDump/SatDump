@@ -198,17 +198,17 @@ namespace proba
                             else if (pkt.header.apid == 330)
                                 vegs_readers[0][5]->work(pkt);
                             // Vegs-3
-                            else if (pkt.header.apid == 291)
+                            else if (pkt.header.apid == 292)
                                 vegs_readers[2][0]->work(pkt);
-                            else if (pkt.header.apid == 275)
+                            else if (pkt.header.apid == 276)
                                 vegs_readers[2][1]->work(pkt);
-                            else if (pkt.header.apid == 323)
+                            else if (pkt.header.apid == 324)
                                 vegs_readers[2][2]->work(pkt);
-                            else if (pkt.header.apid == 283)
+                            else if (pkt.header.apid == 284)
                                 vegs_readers[2][3]->work(pkt);
                             else if (pkt.header.apid == 300)
                                 vegs_readers[2][4]->work(pkt);
-                            else if (pkt.header.apid == 331)
+                            else if (pkt.header.apid == 332)
                                 vegs_readers[2][5]->work(pkt);
                             else
                                 logger->critical(pkt.header.apid);
