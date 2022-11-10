@@ -39,10 +39,13 @@ protected:
     bool thread_should_run = false;
     std::mutex work_thread_mtx;
 
+    bool try_reconnect = false;
+
     void mainThread()
     {
         work_thread_mtx.lock();
 
+    restart:
         int blockSize = 8192; ////current_samplerate / 200.0f;
 
         struct iio_channel *rx0_i, *rx0_q;
@@ -63,13 +66,33 @@ protected:
 
         while (thread_should_run)
         {
-            iio_buffer_refill(rxbuf);
+            if (iio_buffer_refill(rxbuf) < 0)
+                break;
             int16_t *buf = (int16_t *)iio_buffer_first(rxbuf, rx0_i);
             volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 32768.0f, blockSize * 2);
             output_stream->swap(blockSize);
         }
 
         iio_buffer_destroy(rxbuf);
+
+        if (thread_should_run && try_reconnect && !is_usb)
+        {
+            iio_context_destroy(ctx);
+            is_started = false;
+            while (thread_should_run)
+            {
+                logger->trace("Trying to reconnect PlutoSDR");
+                try
+                {
+                    sdr_startup();
+                    goto restart;
+                }
+                catch (std::runtime_error &)
+                {
+                }
+            }
+        }
+
         work_thread_mtx.unlock();
     }
 
@@ -95,6 +118,8 @@ protected:
             work_thread.join();
         logger->info("Thread stopped");
     }
+
+    void sdr_startup();
 
 public:
     PlutoSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
