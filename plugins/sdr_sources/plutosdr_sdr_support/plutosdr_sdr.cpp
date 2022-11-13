@@ -33,6 +33,7 @@ void PlutoSDRSource::set_settings(nlohmann::json settings)
     gain = getValueOrDefault(d_settings["gain"], gain);
     gain_mode = getValueOrDefault(d_settings["gain_mode"], gain_mode);
     ip_address = getValueOrDefault(d_settings["ip_address"], ip_address);
+    auto_reconnect = getValueOrDefault(d_settings["auto_reconnect"], auto_reconnect);
 
     if (is_open && is_started)
         set_gains();
@@ -43,6 +44,7 @@ nlohmann::json PlutoSDRSource::get_settings()
     d_settings["gain"] = gain;
     d_settings["gain_mode"] = gain_mode;
     d_settings["ip_address"] = ip_address;
+    d_settings["auto_reconnect"] = auto_reconnect;
 
     return d_settings;
 }
@@ -69,58 +71,8 @@ void PlutoSDRSource::open()
 void PlutoSDRSource::start()
 {
     DSPSampleSource::start();
-
-#ifndef __ANDROID__
-    if (is_usb)
-    {
-        uint8_t x1 = (d_sdr_id >> 16) & 0xFF;
-        uint8_t x2 = (d_sdr_id >> 8) & 0xFF;
-        uint8_t x3 = (d_sdr_id >> 0) & 0xFF;
-
-        std::string usbid = std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
-        logger->trace("Using PlutoSDR Device at " + usbid);
-        ctx = iio_create_context_from_uri(std::string("usb:" + usbid).c_str());
-    }
-    else
-    {
-        logger->trace("Using PlutoSDR IP Address " + ip_address);
-        ctx = iio_create_context_from_uri(std::string("ip:" + ip_address).c_str());
-    }
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, PLUTOSDR_USB_VID_PID, path);
-    ctx = usb_create_context_fd(0, fd, 0, 1);
-#endif
-    if (ctx == NULL)
-        throw std::runtime_error("Could not open PlutoSDR device!");
-    phy = iio_context_find_device(ctx, "ad9361-phy");
-    if (phy == NULL)
-    {
-        iio_context_destroy(ctx);
-        throw std::runtime_error("Could not connect to PlutoSDR PHY!");
-    }
-    dev = iio_context_find_device(ctx, "cf-ad9361-lpc");
-    if (dev == NULL)
-    {
-        iio_context_destroy(ctx);
-        throw std::runtime_error("Could not connect to PlutoSDR device!");
-    }
-
-    iio_channel_attr_write_bool(iio_device_find_channel(phy, "altvoltage1", true), "powerdown", true);
-    iio_channel_attr_write_bool(iio_device_find_channel(phy, "altvoltage0", true), "powerdown", false);
-    iio_channel_attr_write(iio_device_find_channel(phy, "voltage0", false), "rf_port_select", "A_BALANCED");
-
-    logger->debug("Set PlutoSDR samplerate to " + std::to_string(current_samplerate));
-    iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "sampling_frequency", round(current_samplerate));
-    ad9361_set_bb_rate(phy, current_samplerate);
-
+    sdr_startup();
     start_thread();
-
-    is_started = true;
-
-    set_frequency(d_frequency);
-    set_gains();
 }
 
 void PlutoSDRSource::stop()
@@ -154,7 +106,10 @@ void PlutoSDRSource::drawControlUI()
     current_samplerate = available_samplerates[selected_samplerate];
 
     if (!is_usb)
+    {
         ImGui::InputText("Adress", &ip_address);
+        ImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
+    }
 
     if (is_started)
         style::endDisabled();
@@ -227,4 +182,57 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 #endif
 
     return results;
+}
+
+void PlutoSDRSource::sdr_startup()
+{
+#ifndef __ANDROID__
+    if (is_usb)
+    {
+        uint8_t x1 = (d_sdr_id >> 16) & 0xFF;
+        uint8_t x2 = (d_sdr_id >> 8) & 0xFF;
+        uint8_t x3 = (d_sdr_id >> 0) & 0xFF;
+
+        std::string usbid = std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
+        logger->trace("Using PlutoSDR Device at " + usbid);
+        ctx = iio_create_context_from_uri(std::string("usb:" + usbid).c_str());
+    }
+    else
+    {
+        logger->trace("Using PlutoSDR IP Address " + ip_address);
+        ctx = iio_create_context_from_uri(std::string("ip:" + ip_address).c_str());
+    }
+#else
+    int vid, pid;
+    std::string path;
+    int fd = getDeviceFD(vid, pid, PLUTOSDR_USB_VID_PID, path);
+    ctx = usb_create_context_fd(0, fd, 0, 1);
+#endif
+    if (ctx == NULL)
+        throw std::runtime_error("Could not open PlutoSDR device!");
+    phy = iio_context_find_device(ctx, "ad9361-phy");
+    if (phy == NULL)
+    {
+        iio_context_destroy(ctx);
+        throw std::runtime_error("Could not connect to PlutoSDR PHY!");
+    }
+    dev = iio_context_find_device(ctx, "cf-ad9361-lpc");
+    if (dev == NULL)
+    {
+        iio_context_destroy(ctx);
+        throw std::runtime_error("Could not connect to PlutoSDR device!");
+    }
+
+    iio_channel_attr_write_bool(iio_device_find_channel(phy, "altvoltage1", true), "powerdown", true);
+    iio_channel_attr_write_bool(iio_device_find_channel(phy, "altvoltage0", true), "powerdown", false);
+    iio_channel_attr_write(iio_device_find_channel(phy, "voltage0", false), "rf_port_select", "A_BALANCED");
+
+    logger->debug("Set PlutoSDR samplerate to " + std::to_string(current_samplerate));
+    iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "sampling_frequency", round(current_samplerate));
+    ad9361_set_bb_rate(phy, current_samplerate);
+
+    is_started = true;
+
+    set_frequency(d_frequency);
+    set_gains();
 }
