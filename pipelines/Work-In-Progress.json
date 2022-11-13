@@ -603,8 +603,8 @@
             }
         }
     },
-    "iris_dump": {
-        "name": "IRIS Dump",
+    "iris_s_dump": {
+        "name": "IRIS S-Band Dump",
         "live": true,
         "live_cfg": [
             [
@@ -631,7 +631,7 @@
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 14304,
-		    "nrzm":true,
+                    "nrzm": true,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
