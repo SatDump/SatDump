@@ -9,7 +9,7 @@ namespace demod
     FSKDemodModule::FSKDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         // Buffers
-        sym_buffer = new int8_t[d_buffer_size * 10];
+        sym_buffer = new int8_t[d_buffer_size * 4];
 
         // Parse params
         if (parameters.count("rrc_alpha") > 0)

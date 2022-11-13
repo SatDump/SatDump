@@ -26,14 +26,12 @@ namespace dsp
         omega_mid = omega;
         omega_limit = omega_relative_limit * omega;
 
-        // Buffer
-        in_buffer = 0;
-        int size = 2 * STREAM_BUFFER_SIZE;
-        buffer = (T *)volk_malloc(size * sizeof(T), align);
-        std::fill(buffer, &buffer[size], 0);
-
         // Init interpolator
         pfb.init(windowed_sinc(nfilt * ntaps, hz_to_rad(0.5 / (double)nfilt, 1.0), window::nuttall, nfilt), nfilt);
+
+        // Buffer
+        buffer = (T *)volk_malloc(pfb.ntaps * 4 * sizeof(T), align);
+        std::fill(buffer, &buffer[pfb.ntaps * 4], 0);
     }
 
     template <typename T>
@@ -53,15 +51,10 @@ namespace dsp
         }
 
         // Copy NTAPS samples in the buffer from input, as that's required for the last samples
-        memcpy(&buffer[in_buffer], Block<T, T>::input_stream->readBuf, pfb.ntaps * sizeof(T));
+        memcpy(&buffer[pfb.ntaps - 1], Block<T, T>::input_stream->readBuf, (pfb.ntaps - 1) * sizeof(T));
+        ouc = 0;
 
-        int out_c = 0;                                              // Output index
-        int in_c = 0;                                               // Input index
-        int input_number = (in_buffer + nsamples) - pfb.ntaps - 16; // Number of samples to use
-        float phase_error = 0;                                      // Phase Error
-        int output_cnt_max = 2 * omega * nsamples;                  // Max output CNT
-
-        for (; in_c < input_number && out_c < output_cnt_max;)
+        for (; inc < nsamples && ouc < STREAM_BUFFER_SIZE;)
         {
             if constexpr (std::is_same_v<T, complex_t>)
             {
@@ -81,10 +74,10 @@ namespace dsp
 
             if constexpr (std::is_same_v<T, float>)
             {
-                if (in_c < in_buffer)
-                    volk_32f_x2_dot_prod_32f(&sample, &buffer[in_c], pfb.taps[imu], pfb.ntaps);
+                if (inc < (pfb.ntaps - 1))
+                    volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
                 else
-                    volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[in_c - in_buffer], pfb.taps[imu], pfb.ntaps);
+                    volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 
                 // Phase error
                 phase_error = (last_sample < 0 ? -1.0f : 1.0f) * sample - (sample < 0 ? -1.0f : 1.0f) * last_sample;
@@ -92,14 +85,14 @@ namespace dsp
                 last_sample = sample;
 
                 // Write output sample
-                Block<T, T>::output_stream->writeBuf[out_c++] = sample;
+                Block<T, T>::output_stream->writeBuf[ouc++] = sample;
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {
-                if (in_c < in_buffer)
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[in_c], pfb.taps[imu], pfb.ntaps);
+                if (inc < (pfb.ntaps - 1))
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
                 else
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[in_c - in_buffer], pfb.taps[imu], pfb.ntaps);
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 
                 // Slice it
                 c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
@@ -109,7 +102,7 @@ namespace dsp
                 phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
 
                 // Write output
-                Block<T, T>::output_stream->writeBuf[out_c++] = p_0T;
+                Block<T, T>::output_stream->writeBuf[ouc++] = p_0T;
             }
 
             // Adjust omega
@@ -118,28 +111,22 @@ namespace dsp
 
             // Adjust phase
             mu = mu + omega + mu_gain * phase_error;
-            in_c += int(floor(mu));
+            inc += int(floor(mu));
             mu -= floor(mu);
-            if (in_c < 0)
-                in_c = 0;
+            if (inc < 0)
+                inc = 0;
         }
+
+        inc -= nsamples;
+
+        if (inc < 0)
+            inc = 0;
 
         // We need some history for the next run, so copy it over into our buffer
-        // If everything's normal this will be around NTAPS - 16 +-1, but the buffer
-        // is way larger just by safety
-        int to_keep = nsamples - (in_c - in_buffer);
-        if (to_keep > 0 && to_keep <= STREAM_BUFFER_SIZE)
-        {
-            memcpy(&buffer[0], &Block<T, T>::input_stream->readBuf[in_c - in_buffer], to_keep * sizeof(T));
-            in_buffer = to_keep;
-        }
-        else // In some cases, the M&M could go wrong on bad data being fed. Avoid it.
-        {
-            in_buffer = 0;
-        }
+        memcpy(buffer, &Block<T, T>::input_stream->readBuf[nsamples - pfb.ntaps + 1], (pfb.ntaps - 1) * sizeof(T));
 
         Block<T, T>::input_stream->flush();
-        Block<T, T>::output_stream->swap(out_c);
+        Block<T, T>::output_stream->swap(ouc);
     }
 
     template class MMClockRecoveryBlock<complex_t>;

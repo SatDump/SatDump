@@ -16,7 +16,6 @@ namespace dsp
     private:
         // Buffer
         T *buffer;
-        int in_buffer;
 
         // Variables
         float mu;
@@ -36,6 +35,11 @@ namespace dsp
         void work();
 
         PolyphaseBank pfb;
+
+        float phase_error = 0;
+
+        int ouc = 0;
+        int inc = 0;
 
     public:
         MMClockRecoveryBlock(std::shared_ptr<dsp::stream<T>> input, float omega, float omegaGain, float mu, float muGain, float omegaLimit, int nfilt = 128, int ntaps = 8);

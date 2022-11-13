@@ -33,11 +33,14 @@ namespace metop
             logger->info("Writing message to " + outputFileName);
             std::ofstream outputMessageFile(outputFileName);
             outputMessageFile.write((char *)message_out, outsize);
+            outputMessageFile.close();
 
             // TLE Parsing
             {
+                // std::string xml_str(message_out, &message_out[outsize]);
+
                 // Parse
-                doc.parse<0>((char *)std::string(message_out, &message_out[outsize]).c_str()); // const char * to char * is needed...
+                doc.parse<0>((char *)message_out); // const char * to char * is needed...
                 root_node = doc.first_node("multi-mission-administrative-message");
 
                 // Convert to our usual TLE Registry stuff
