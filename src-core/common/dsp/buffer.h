@@ -152,7 +152,7 @@ namespace dsp
 
         RingBuffer(int maxLatency) { init(maxLatency); }
 
-        ~RingBuffer() { delete _buffer; }
+        ~RingBuffer() { delete[] _buffer; }
 
         void init(int maxLatency)
         {

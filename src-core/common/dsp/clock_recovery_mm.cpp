@@ -128,8 +128,15 @@ namespace dsp
         // If everything's normal this will be around NTAPS - 16 +-1, but the buffer
         // is way larger just by safety
         int to_keep = nsamples - (in_c - in_buffer);
-        memcpy(&buffer[0], &Block<T, T>::input_stream->readBuf[in_c - in_buffer], to_keep * sizeof(T));
-        in_buffer = to_keep;
+        if (to_keep > 0 && to_keep <= STREAM_BUFFER_SIZE)
+        {
+            memcpy(&buffer[0], &Block<T, T>::input_stream->readBuf[in_c - in_buffer], to_keep * sizeof(T));
+            in_buffer = to_keep;
+        }
+        else // In some cases, the M&M could go wrong on bad data being fed. Avoid it.
+        {
+            in_buffer = 0;
+        }
 
         Block<T, T>::input_stream->flush();
         Block<T, T>::output_stream->swap(out_c);
