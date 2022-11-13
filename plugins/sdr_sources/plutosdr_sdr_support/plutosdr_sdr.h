@@ -39,7 +39,7 @@ protected:
     bool thread_should_run = false;
     std::mutex work_thread_mtx;
 
-    bool try_reconnect = false;
+    bool auto_reconnect = false;
 
     void mainThread()
     {
@@ -75,7 +75,7 @@ protected:
 
         iio_buffer_destroy(rxbuf);
 
-        if (thread_should_run && try_reconnect && !is_usb)
+        if (thread_should_run && auto_reconnect && !is_usb)
         {
             iio_context_destroy(ctx);
             is_started = false;
@@ -87,8 +87,9 @@ protected:
                     sdr_startup();
                     goto restart;
                 }
-                catch (std::runtime_error &)
+                catch (std::runtime_error &e)
                 {
+                    logger->trace(e.what());
                 }
             }
         }

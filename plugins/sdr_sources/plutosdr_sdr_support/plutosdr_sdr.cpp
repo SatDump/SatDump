@@ -33,7 +33,7 @@ void PlutoSDRSource::set_settings(nlohmann::json settings)
     gain = getValueOrDefault(d_settings["gain"], gain);
     gain_mode = getValueOrDefault(d_settings["gain_mode"], gain_mode);
     ip_address = getValueOrDefault(d_settings["ip_address"], ip_address);
-    try_reconnect = getValueOrDefault(d_settings["try_reconnect"], try_reconnect);
+    auto_reconnect = getValueOrDefault(d_settings["auto_reconnect"], auto_reconnect);
 
     if (is_open && is_started)
         set_gains();
@@ -44,7 +44,7 @@ nlohmann::json PlutoSDRSource::get_settings()
     d_settings["gain"] = gain;
     d_settings["gain_mode"] = gain_mode;
     d_settings["ip_address"] = ip_address;
-    d_settings["try_reconnect"] = try_reconnect;
+    d_settings["auto_reconnect"] = auto_reconnect;
 
     return d_settings;
 }
@@ -108,7 +108,7 @@ void PlutoSDRSource::drawControlUI()
     if (!is_usb)
     {
         ImGui::InputText("Adress", &ip_address);
-        ImGui::Checkbox("try to reconnect", &try_reconnect);
+        ImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
     }
 
     if (is_started)
