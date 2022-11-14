@@ -12,7 +12,12 @@
                 0
             ]
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "Main",
+                2215.92e6
+            ]
+        ],
         "parameters": {
             "samplerate": {
                 "value": 3e6
