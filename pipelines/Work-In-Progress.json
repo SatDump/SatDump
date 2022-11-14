@@ -31,6 +31,12 @@
     },
     "gcom_w1": {
         "name": "GCOM-W1 DB",
+        "frequencies": [
+            [
+                "Main",
+                8245e6
+            ]
+        ],
         "samplerate": 20e6,
         "work": {
             "baseband": {},
@@ -219,6 +225,23 @@
     },
     "cheops_link": {
         "name": "CHEOPS S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208.5e6
+            ]
+        ],
         "samplerate": 3e6,
         "work": {
             "baseband": {},
@@ -243,6 +266,12 @@
     },
     "timed_dump": {
         "name": "TIMED S-Band Dump",
+        "frequencies": [
+            [
+                "Main",
+                2214.97e6
+            ]
+        ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
@@ -389,7 +418,12 @@
                 0
             ]
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "Main",
+                2256.22e6
+            ]
+        ],
         "parameters": {},
         "work": {
             "baseband": {},
@@ -507,7 +541,12 @@
                 0
             ]
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "Main",
+                2215e6
+            ]
+        ],
         "parameters": {},
         "work": {
             "baseband": {},
@@ -541,6 +580,12 @@
             [
                 2,
                 0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2229.5e6
             ]
         ],
         "samplerate": 6e6,
@@ -581,6 +626,12 @@
                 0
             ]
         ],
+        "frequencies": [
+            [
+                "Main",
+                2214e6
+            ]
+        ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
@@ -614,6 +665,12 @@
             [
                 2,
                 0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2220.8e6
             ]
         ],
         "samplerate": 6e6,
