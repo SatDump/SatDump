@@ -31,6 +31,12 @@
     },
     "gcom_w1": {
         "name": "GCOM-W1 DB",
+        "frequencies": [
+            [
+                "Main",
+                8245e6
+            ]
+        ],
         "samplerate": 20e6,
         "work": {
             "baseband": {},
