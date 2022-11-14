@@ -7,7 +7,9 @@
 
 namespace bluewalker3
 {
-    BW3DecoderModule::BW3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    BW3DecoderModule::BW3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                          d_cadu_size(parameters["cadu_size"].get<int>()),
+                                                                                                                          d_payload_size(parameters["payload_size"].get<int>())
     {
     }
 
@@ -23,7 +25,7 @@ namespace bluewalker3
 
         time_t lastTime = 0;
 
-        uint8_t buffer[331];
+        uint8_t *buffer = new uint8_t[d_cadu_size];
 
         std::vector<uint8_t> wip_pkt;
         std::vector<uint8_t> wip_pictures_stream;
@@ -31,7 +33,7 @@ namespace bluewalker3
         while (!data_in.eof())
         {
             // Read buffer
-            data_in.read((char *)buffer, 331);
+            data_in.read((char *)buffer, d_cadu_size);
 
             uint8_t frame_type = buffer[5];
 
@@ -40,15 +42,15 @@ namespace bluewalker3
             if (frame_type == 217)
             {
                 uint16_t frm_id = buffer[18] << 8 | buffer[17];
-                uint16_t ptr = buffer[19];
+                uint16_t ptr = buffer[20] << 8 | buffer[19];
 
                 // printf("PTR %d %d\n", ptr, ptr2);
 
-                if (ptr == 198)
+                if (ptr == d_payload_size)
                 {
-                    wip_pkt.insert(wip_pkt.end(), &buffer[21], &buffer[21 + 198]);
+                    wip_pkt.insert(wip_pkt.end(), &buffer[21], &buffer[21 + d_payload_size]);
                 }
-                else if (ptr < 198)
+                else if (ptr < d_payload_size)
                 {
                     wip_pkt.insert(wip_pkt.end(), &buffer[21], &buffer[21 + ptr]);
                     wip_pkt.erase(wip_pkt.begin(), wip_pkt.begin() + 8);
@@ -56,7 +58,7 @@ namespace bluewalker3
                     wip_pictures_stream.insert(wip_pictures_stream.end(), wip_pkt.begin(), wip_pkt.end());
 
                     wip_pkt.clear();
-                    wip_pkt.insert(wip_pkt.end(), &buffer[21 + ptr], &buffer[21 + 198]);
+                    wip_pkt.insert(wip_pkt.end(), &buffer[21 + ptr], &buffer[21 + d_payload_size]);
                 }
             }
 
@@ -69,6 +71,7 @@ namespace bluewalker3
             }
         }
 
+        delete[] buffer;
         data_in.close();
 
         uint8_t sliding_header[4] = {0, 0, 0, 0};

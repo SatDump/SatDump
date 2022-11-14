@@ -79,7 +79,10 @@
                 }
             },
             "products": {
-                "bw3_decoder": {}
+                "bw3_decoder": {
+                    "cadu_size": 331,
+                    "payload_size": 198
+                }
             }
         }
     }

@@ -10,6 +10,9 @@ namespace bluewalker3
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
+        const int d_cadu_size;
+        const int d_payload_size;
+
     public:
         BW3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         void process();
