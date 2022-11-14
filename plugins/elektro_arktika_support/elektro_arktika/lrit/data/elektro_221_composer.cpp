@@ -1,4 +1,4 @@
-#include "lrit_data_decoder.h"
+#include "lrit_data.h"
 #include "resources.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
