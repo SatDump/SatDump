@@ -219,6 +219,23 @@
     },
     "cheops_link": {
         "name": "CHEOPS S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208.5e6
+            ]
+        ],
         "samplerate": 3e6,
         "work": {
             "baseband": {},
@@ -243,6 +260,12 @@
     },
     "timed_dump": {
         "name": "TIMED S-Band Dump",
+        "frequencies": [
+            [
+                "Main",
+                2214.97e6
+            ]
+        ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
