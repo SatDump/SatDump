@@ -5,9 +5,7 @@
 
 namespace lrit
 {
-
-    LRITDemux::LRITDemux(int mpdu_size)
-        : d_mpdu_size(mpdu_size)
+    LRITDemux::LRITDemux(int mpdu_size, bool check_crc) : d_mpdu_size(mpdu_size), d_check_crc(check_crc)
     {
     }
 
@@ -44,13 +42,21 @@ namespace lrit
 
         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
         {
-            if (pkt.header.apid == 2047) // Skip filler
+            if (pkt.header.apid == 2047 || pkt.payload.size() < 2) // Skip filler
                 return files;
 
             if (wip_files[vcdu.vcid].count(pkt.header.apid) == 0) // One file per APID
                 wip_files[vcdu.vcid].insert({pkt.header.apid, LRITFile()});
 
             LRITFile &current_file = wip_files[vcdu.vcid][pkt.header.apid];
+
+            // Check CRC
+            uint16_t crc = pkt.payload.data()[pkt.payload.size() - 2] << 8 | pkt.payload.data()[pkt.payload.size() - 1];
+            if (d_check_crc ? !(crc == computeCRC(pkt.payload.data(), pkt.payload.size() - 2)) : false)
+            {
+                logger->error("LRIT CRC is invalid... Skipping.");
+                current_file.file_in_progress = false;
+            }
 
             if (pkt.header.sequence_flag == 1 || pkt.header.sequence_flag == 3)
             {
@@ -59,20 +65,9 @@ namespace lrit
 
                 current_file.lrit_data.clear();
 
-                // Check CRC
-                uint16_t crc = pkt.payload.data()[pkt.payload.size() - 2] << 8 | pkt.payload.data()[pkt.payload.size() - 1];
-
-                if (crc == computeCRC(pkt.payload.data(), pkt.payload.size() - 2))
-                {
-                    processLRITHeader(current_file, pkt);
-                    current_file.header_parsed = false;
-                    current_file.file_in_progress = true;
-                }
-                else
-                {
-                    logger->error("LRIT CRC is invalid... Skipping.");
-                    current_file.file_in_progress = false;
-                }
+                processLRITHeader(current_file, pkt);
+                current_file.header_parsed = false;
+                current_file.file_in_progress = true;
             }
             else if (pkt.header.sequence_flag == 0)
             {

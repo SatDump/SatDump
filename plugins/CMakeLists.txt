@@ -25,6 +25,12 @@ if(PLUGIN_FY3 OR PLUGINS_ALL)
     add_subdirectory(fengyun3_support)
 endif()
 
+option(PLUGIN_FY4 "Enable the FengYun-4 (LRIT, HRIT) support plugin" OFF)
+
+if(PLUGIN_FY4 OR PLUGINS_ALL)
+    add_subdirectory(fengyun4_support)
+endif()
+
 option(PLUGIN_PROBA "Enable the Proba (1, 2, V, etc) support plugin" OFF)
 
 if(PLUGIN_PROBA OR PLUGINS_ALL)

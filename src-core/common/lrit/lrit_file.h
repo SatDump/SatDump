@@ -55,6 +55,28 @@ namespace lrit
         }
     };
 
+    struct TimeStampRecord
+    {
+        static constexpr int TYPE = 5;
+
+        uint8_t type;
+        uint16_t record_length;
+        uint16_t days;
+        uint32_t milliseconds_of_day;
+
+        time_t timestamp;
+
+        TimeStampRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            uint16_t days = data[3] << 8 | data[4];
+            uint32_t milliseconds_of_day = data[5] << 24 | data[6] << 16 | data[7] << 8 | data[8];
+
+            timestamp = (days - 4383) * 86400 + milliseconds_of_day;
+        }
+    };
+
     struct ImageStructureRecord
     {
         static constexpr int TYPE = 1;

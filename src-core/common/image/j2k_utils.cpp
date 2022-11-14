@@ -1,5 +1,5 @@
 #include "j2k_utils.h"
-#include "openjp2/openjpeg.h"
+#include "libs/openjp2/openjpeg.h"
 #include <cstring>
 
 namespace image

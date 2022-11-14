@@ -37,6 +37,9 @@
                     "bb_size": 25728,
                     "pid": 3004
                 }
+            },
+            "products": {
+                "fy4_lrit_data_decoder": {}
             }
         }
     },

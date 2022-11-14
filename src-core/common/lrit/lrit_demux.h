@@ -11,6 +11,7 @@ namespace lrit
     {
     private:
         const int d_mpdu_size;
+        const bool d_check_crc;
 
     private:
         std::map<int, std::unique_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
@@ -32,7 +33,7 @@ namespace lrit
         { return true; };
 
     public:
-        LRITDemux(int mpdu_size = 884);
+        LRITDemux(int mpdu_size = 884, bool check_crc = true);
         ~LRITDemux();
 
         std::vector<LRITFile> work(uint8_t *cadu);
