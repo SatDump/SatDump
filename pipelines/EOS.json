@@ -47,7 +47,12 @@
     "terra_db": {
         "name": "Terra DB",
         "live": false,
-        "frequencies": [],
+        "frequencies": [
+            [
+                "DB",
+                8212.5e6
+            ]
+        ],
         "samplerate": 45e6,
         "work": {
             "baseband": {},
