@@ -103,6 +103,12 @@ if(PLUGIN_HIMAWARI OR PLUGINS_ALL)
     add_subdirectory(himawari_support)
 endif()
 
+option(PLUGIN_BLUEWALKER3 "Enable the BlueWalker-3 support plugin" OFF)
+
+if(PLUGIN_BLUEWALKER3 OR PLUGINS_ALL)
+    add_subdirectory(bluewalker3_support)
+endif()
+
 option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)

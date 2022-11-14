@@ -22,16 +22,16 @@ namespace Util
 {
 
 	/**
- * thread safe pointer class
-**/
+	 * thread safe pointer class
+	 **/
 	template <class T>
 	class CSmartPtr
 	{
 
 	private:
 		/**
- * Holds address of heap memory and maintains counter of references to it.
-**/
+		 * Holds address of heap memory and maintains counter of references to it.
+		 **/
 		class CCounted
 		{
 		private:
@@ -40,8 +40,8 @@ namespace Util
 
 		public:
 			/**
- * Stores address of heap memory, initializes number of references.
-**/
+			 * Stores address of heap memory, initializes number of references.
+			 **/
 			CCounted(T *i_Ptr)
 			{
 				m_Ptr = i_Ptr;
@@ -49,30 +49,30 @@ namespace Util
 			}
 
 			/**
- * Increments number of references.
- **/
+			 * Increments number of references.
+			 **/
 			void Use()
 			{
 				m_NumReferences++;
 			}
 
 			/**
- * Decrements number of references,deletes itself when last reference dismisses.
-**/
+			 * Decrements number of references,deletes itself when last reference dismisses.
+			 **/
 			void Dismiss()
 			{
 				if (0 == --m_NumReferences)
 				{
-					delete m_Ptr;
-					// delete this;
+					delete[] m_Ptr; // ORIGINAL WAS delete
+									// delete this;
 				}
 			}
 
 			/**
- * Returns heap memory address and set sets own copy of the address to NULL to prevent deletion.
- * @returns 
- * Heap memory address
-**/
+			 * Returns heap memory address and set sets own copy of the address to NULL to prevent deletion.
+			 * @returns
+			 * Heap memory address
+			 **/
 			T *Release()
 			{
 				/** Return the heap memory address.**/
@@ -82,10 +82,10 @@ namespace Util
 			}
 
 			/**
- * Operators to access the heap memory.
- * @returns 
- * Address or value of dynamic object
-**/
+			 * Operators to access the heap memory.
+			 * @returns
+			 * Address or value of dynamic object
+			 **/
 			operator T &() const { return *m_Ptr; }
 			operator T *() const { return m_Ptr; }
 			T *operator->() const { return m_Ptr; }
@@ -95,8 +95,8 @@ namespace Util
 
 	public:
 		/**
- * constructor
-**/
+		 * constructor
+		 **/
 		explicit CSmartPtr(
 			T *i_Ptr = NULL /** Start address of heap memory.**/
 		)
@@ -106,8 +106,8 @@ namespace Util
 		}
 
 		/**
- * copy constructor
-**/
+		 * copy constructor
+		 **/
 		CSmartPtr(
 			const CSmartPtr<T> &i_Src /** Reference CSmartPtr.**/
 		)
@@ -117,18 +117,18 @@ namespace Util
 		}
 
 		/**
- * destructor
-**/
+		 * destructor
+		 **/
 		~CSmartPtr()
 		{
 			m_Counted->Dismiss();
 		}
 
 		/**
- * Assignment operator.
- * @returns 
- * Reference to itself.
-**/
+		 * Assignment operator.
+		 * @returns
+		 * Reference to itself.
+		 **/
 		CSmartPtr<T> &operator=(
 			T *i_Ptr /** Start address of heap memory.**/
 		)
@@ -140,10 +140,10 @@ namespace Util
 		}
 
 		/**
- * Assignment operator.
- * @returns 
- * Reference to itself.
-**/
+		 * Assignment operator.
+		 * @returns
+		 * Reference to itself.
+		 **/
 		CSmartPtr<T> &operator=(
 			const CSmartPtr<T> &i_Src /** Reference CSmartPtr.**/
 		)
@@ -154,10 +154,10 @@ namespace Util
 			return *this;
 		}
 		/**
- *compare < operator. Will call the operator for the data itself.
- * @returns 
- * true if this object is'less than' (in terms of the defined data-operator)
-**/
+		 *compare < operator. Will call the operator for the data itself.
+		 * @returns
+		 * true if this object is'less than' (in terms of the defined data-operator)
+		 **/
 		bool operator<(
 			const CSmartPtr<T> &i_Src /** Reference CSmartPtr.**/
 		)
@@ -166,27 +166,27 @@ namespace Util
 		}
 
 		/**
- * Operators and functions to access the heap memory.
- * @returns 
- * Address or value of dynamic object.
-**/
+		 * Operators and functions to access the heap memory.
+		 * @returns
+		 * Address or value of dynamic object.
+		 **/
 		operator T &() const { return m_Counted->operator T &(); }
 		operator T *() const { return m_Counted->operator T *(); }
 		T *operator->() const { return m_Counted->operator->(); }
 		T *Get() const { return m_Counted->operator->(); }
 
 		/**
- *Only for easier conversion of former auto_ptr's.
- *
-**/
+		 *Only for easier conversion of former auto_ptr's.
+		 *
+		 **/
 
 		T *get() const { return m_Counted->operator->(); }
 
 		/**
- * Returns heap memory address and set sets own copy of the address to NULL to prevent deletion.
- * @returns 
- * 	Heap memory address.
-**/
+		 * Returns heap memory address and set sets own copy of the address to NULL to prevent deletion.
+		 * @returns
+		 * 	Heap memory address.
+		 **/
 
 		T *Release()
 		{
@@ -194,13 +194,13 @@ namespace Util
 		}
 
 		/**
- * Casts a Util::CSmartPtr<F> object to a Util:CSmartPtr<T> object.
- * Note that this will actually release the original and set it to NULL.
- * @returns 
- * Util::CSmartPtr<T>.
- * - the cast operation is not possible because the classes are not suitably related, or 
- * - the original CSmartPtr contains a NULL pointer.
-**/
+		 * Casts a Util::CSmartPtr<F> object to a Util:CSmartPtr<T> object.
+		 * Note that this will actually release the original and set it to NULL.
+		 * @returns
+		 * Util::CSmartPtr<T>.
+		 * - the cast operation is not possible because the classes are not suitably related, or
+		 * - the original CSmartPtr contains a NULL pointer.
+		 **/
 		template <class F>
 		inline static Util::CSmartPtr<T> Cast(
 			Util::CSmartPtr<F> i_From)
@@ -213,16 +213,16 @@ namespace Util
 	};
 
 	/**
- * Casts a Util::CSmartPtr<CFrom> object to a Util:CSmartPtr<CTo> object.
- * Note that this will actually release the original and set it to NULL.
- * @returns 
- * Util::CSmartPtr<T>.
- * - the cast operation is not possible because the classes are not suitably related, or 
- * - the original CSmartPtr contains a NULL pointer.
- * NOTE:
- * Function exists only for backward compatibility. 
- * Rather use the CSmartPtr<CTo>::Cast() function directly!
-**/
+	 * Casts a Util::CSmartPtr<CFrom> object to a Util:CSmartPtr<CTo> object.
+	 * Note that this will actually release the original and set it to NULL.
+	 * @returns
+	 * Util::CSmartPtr<T>.
+	 * - the cast operation is not possible because the classes are not suitably related, or
+	 * - the original CSmartPtr contains a NULL pointer.
+	 * NOTE:
+	 * Function exists only for backward compatibility.
+	 * Rather use the CSmartPtr<CTo>::Cast() function directly!
+	 **/
 	template <class CTo, class CFrom>
 	inline Util::CSmartPtr<CTo> SmartPtrCast(
 		Util::CSmartPtr<CFrom> i_From)

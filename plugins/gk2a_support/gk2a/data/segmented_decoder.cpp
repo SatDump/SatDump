@@ -1,4 +1,4 @@
-#include "lrit_data_decoder.h"
+#include "lrit_data.h"
 #include <cstring>
 
 namespace gk2a

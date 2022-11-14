@@ -16,6 +16,13 @@ namespace elektro
 {
     namespace lrit
     {
+        enum lrit_image_status
+        {
+            RECEIVING,
+            SAVING,
+            IDLE
+        };
+
         class SegmentedLRITImageDecoder
         {
         private:
@@ -31,13 +38,6 @@ namespace elektro
             bool isComplete();
             image::Image<uint8_t> image;
             std::string image_id = "";
-        };
-
-        enum lrit_image_status
-        {
-            RECEIVING,
-            SAVING,
-            IDLE
         };
 
         class ELEKTRO221Composer
@@ -96,48 +96,6 @@ namespace elektro
             // UI Stuff
             lrit_image_status imageStatus;
             int img_width, img_height;
-            bool hasToUpdate = false;
-            unsigned int textureID = 0;
-            uint32_t *textureBuffer;
-        };
-
-        class LRITDataDecoder
-        {
-        private:
-            const std::string directory;
-
-            bool file_in_progress;
-            std::vector<uint8_t> lrit_data;
-
-            bool is_jpeg_compressed, is_wt_compressed;
-            std::string current_filename;
-            std::vector<uint8_t> decompression_buffer;
-            std::map<int, int> all_headers;
-            SegmentedLRITImageDecoder segmentedDecoder;
-
-            bool header_parsed = false;
-
-            void processLRITHeader(ccsds::CCSDSPacket &pkt);
-            void parseHeader();
-            void processLRITData(ccsds::CCSDSPacket &pkt);
-            void finalizeLRITData();
-
-        public: // Other things
-            std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
-            std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;
-
-        public:
-            LRITDataDecoder(std::string dir);
-            ~LRITDataDecoder();
-
-            void save();
-            void work(ccsds::CCSDSPacket &packet);
-
-            lrit_image_status imageStatus;
-            int img_width, img_height;
-
-        public:
-            // UI Stuff
             bool hasToUpdate = false;
             unsigned int textureID = 0;
             uint32_t *textureBuffer;

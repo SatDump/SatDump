@@ -1,18 +1,9 @@
-#include "lrit_data_decoder.h"
+#include "module_elektro_lrit_data_decoder.h"
 #include "logger.h"
-#include <fstream>
-#include "lrit_header.h"
-#include "crc_table.h"
-#include <sstream>
-#include <string>
-#include <iomanip>
 #include <filesystem>
-#include <algorithm>
-#include "common/utils.h"
-#include "libs/others/strptime.h"
 #include "imgui/imgui_image.h"
+#include "lrit_header.h"
 #include "common/image/jpeg_utils.h"
-#include "resources.h"
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
 
@@ -44,181 +35,28 @@ namespace elektro
             return utc_filename;
         }
 
-        // CRC Implementation from LRIT-Missin-Specific-Document.pdf
-        uint16_t computeCRC(const uint8_t *data, int size)
+        void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
-            uint16_t crc = 0xffff;
-            for (int i = 0; i < size; i++)
-                crc = (crc << 8) ^ crc_table[(crc >> 8) ^ (uint16_t)data[i]];
-            return crc;
-        }
+            std::string current_filename = file.filename;
 
-        LRITDataDecoder::LRITDataDecoder(std::string dir) : directory(dir)
-        {
-            file_in_progress = false;
-            imageStatus = IDLE;
-            img_height = 0;
-            img_width = 0;
-        }
-
-        LRITDataDecoder::~LRITDataDecoder()
-        {
-        }
-
-        void LRITDataDecoder::work(ccsds::CCSDSPacket &packet)
-        {
-            if (packet.header.sequence_flag == 1 || packet.header.sequence_flag == 3)
-            {
-                if (file_in_progress)
-                    finalizeLRITData();
-
-                lrit_data.clear();
-
-                // Check CRC
-                uint16_t crc = packet.payload.data()[packet.payload.size() - 2] << 8 | packet.payload.data()[packet.payload.size() - 1];
-
-                if (crc == computeCRC(packet.payload.data(), packet.payload.size() - 2))
-                {
-                    processLRITHeader(packet);
-                    header_parsed = false;
-                    file_in_progress = true;
-                }
-                else
-                {
-                    logger->error("CRC is invalid... Skipping.");
-                    file_in_progress = false;
-                }
-            }
-            else if (packet.header.sequence_flag == 0)
-            {
-                if (file_in_progress)
-                {
-                    processLRITData(packet);
-                }
-            }
-            else if (packet.header.sequence_flag == 2)
-            {
-                if (file_in_progress)
-                {
-                    processLRITData(packet);
-                    finalizeLRITData();
-                    file_in_progress = false;
-                }
-            }
-
-            if (file_in_progress && !header_parsed)
-            {
-                PrimaryHeader primary_header(&lrit_data[0]);
-
-                if (lrit_data.size() >= primary_header.total_header_length)
-                {
-                    parseHeader();
-                    header_parsed = true;
-                }
-            }
-        }
-
-        void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
-        {
-            lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
-        }
-
-        void LRITDataDecoder::parseHeader()
-        {
-            PrimaryHeader primary_header(&lrit_data[0]);
-
-            // Get all other headers
-            all_headers.clear();
-            for (uint32_t i = 0; i < primary_header.total_header_length;)
-            {
-                uint8_t type = lrit_data[i];
-                uint16_t record_length = lrit_data[i + 1] << 8 | lrit_data[i + 2];
-
-                if (record_length == 0)
-                    break;
-
-                all_headers.emplace(std::pair<int, int>(type, i));
-
-                i += record_length;
-            }
-
-            // Check if this has a filename
-            if (all_headers.count(AnnotationRecord::TYPE) > 0)
-            {
-                AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
-
-                current_filename = std::string(annotation_record.annotation_text.data());
-
-                std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
-                std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
-
-                for (char &c : current_filename) // Strip invalid chars
-                {
-                    if (c < 33)
-                        c = '_';
-                }
-
-                logger->info("New LRIT file : " + current_filename);
-
-                // Check if this is image data
-                if (all_headers.count(ImageStructureRecord::TYPE) > 0)
-                {
-                    ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
-
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
-                    {
-                        logger->debug("JPEG Compression is used, decompressing...");
-                        is_jpeg_compressed = true;
-                        is_wt_compressed = false;
-                    }
-                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
-                    {
-                        logger->debug("Wavelet Compression is used, decompressing...");
-                        is_jpeg_compressed = false;
-                        is_wt_compressed = true;
-                    }
-                    else
-                    {
-                        is_jpeg_compressed = false;
-                        is_wt_compressed = false;
-                    }
-                }
-
-                if (all_headers.count(KeyHeader::TYPE) > 0)
-                {
-                    KeyHeader key_header(&lrit_data[all_headers[KeyHeader::TYPE]]);
-                    logger->debug("This is encrypted!");
-                }
-            }
-        }
-
-        void LRITDataDecoder::processLRITData(ccsds::CCSDSPacket &pkt)
-        {
-            // File may be encrypted so we cannot process them before the fact...
-            lrit_data.insert(lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size() - 2]);
-        }
-
-        void LRITDataDecoder::finalizeLRITData()
-        {
-            PrimaryHeader primary_header(&lrit_data[0]);
+            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
 
             // Check if this is image data, and if so also write it as an image
-            if (primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
+            if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
             {
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
 
-                ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
 
-                if (is_jpeg_compressed) // Is this Jpeg-Compressed? Decompress
+                if (file.custom_flags[JPEG_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
                 {
                     logger->info("Decompressing JPEG...");
-                    image::Image<uint8_t> img = image::decompress_jpeg(&lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length, true);
-                    lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
-                    lrit_data.insert(lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                    image::Image<uint8_t> img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, true);
+                    file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
+                    file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
                 }
-                else if (is_wt_compressed) // Is this Wavelet-Compressed? Decompress. We know this will always be 10-bits
+                else if (file.custom_flags[WT_COMPRESSED]) // Is this Wavelet-Compressed? Decompress. We know this will always be 10-bits
                 {
                     /*
                     This could be better... Sometimes I should maybe adapt the DecompWT code to be cleaner for this purpose...
@@ -227,9 +65,9 @@ namespace elektro
 
                     int compression_type = 3; // We assume Wavelet
 
-                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0) // But if we have a header with better info, use it
+                    if (file.all_headers.count(SegmentIdentificationHeader::TYPE) > 0) // But if we have a header with better info, use it
                     {
-                        SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
+                        SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
                         compression_type = segment_id_header.compression;
                     }
 
@@ -241,12 +79,12 @@ namespace elektro
                     // Decompress
                     {
                         // We need to copy over that memory to its own buffer
-                        uint8_t *compressedData = new uint8_t[lrit_data.size() - primary_header.total_header_length];
-                        std::memcpy(compressedData, &lrit_data[primary_header.total_header_length], lrit_data.size() - primary_header.total_header_length);
+                        uint8_t *compressedData = new uint8_t[file.lrit_data.size() - primary_header.total_header_length];
+                        std::memcpy(compressedData, &file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length);
 
                         // Images object
                         Util::CDataFieldCompressedImage compressedImage(compressedData,
-                                                                        (lrit_data.size() - primary_header.total_header_length) * 8,
+                                                                        (file.lrit_data.size() - primary_header.total_header_length) * 8,
                                                                         image_structure_record.bit_per_pixel,
                                                                         image_structure_record.columns_count,
                                                                         image_structure_record.lines_count);
@@ -278,7 +116,7 @@ namespace elektro
                     if (out_pixels == image_structure_record.columns_count * image_structure_record.lines_count) // Matches?
                     {
                         // Empty current LRIT file
-                        lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
+                        file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
 
                         if (image_structure_record.bit_per_pixel == 10)
                         {
@@ -290,21 +128,21 @@ namespace elektro
                                 uint16_t v3 = ((image_ptr[2] % 16) << 6) | (image_ptr[3] >> 2);
                                 uint16_t v4 = ((image_ptr[3] % 4) << 8) | image_ptr[4];
 
-                                lrit_data.push_back(v1 >> 2);
-                                lrit_data.push_back(v2 >> 2);
-                                lrit_data.push_back(v3 >> 2);
-                                lrit_data.push_back(v4 >> 2);
+                                file.lrit_data.push_back(v1 >> 2);
+                                file.lrit_data.push_back(v2 >> 2);
+                                file.lrit_data.push_back(v3 >> 2);
+                                file.lrit_data.push_back(v4 >> 2);
 
                                 image_ptr += 5;
                             }
 
                             // Fill remaining if required
                             for (int i = 0; i < buf_size % 5; i++)
-                                lrit_data.push_back(0);
+                                file.lrit_data.push_back(0);
                         }
                         else if (image_structure_record.bit_per_pixel == 8) // Just in case
                         {
-                            lrit_data.insert(lrit_data.end(), image_ptr, &image_ptr[buf_size]);
+                            file.lrit_data.insert(file.lrit_data.end(), image_ptr, &image_ptr[buf_size]);
                         }
                         else
                         {
@@ -318,11 +156,11 @@ namespace elektro
                         out_pixels = image_structure_record.lines_count * image_structure_record.columns_count;
 
                         // Empty current LRIT file
-                        lrit_data.erase(lrit_data.begin() + primary_header.total_header_length, lrit_data.end());
+                        file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
 
                         // Fill with 0s
                         for (int i = 0; i < out_pixels; i++)
-                            lrit_data.push_back(0);
+                            file.lrit_data.push_back(0);
                     }
 
                     // Free up memory if necessary
@@ -330,10 +168,9 @@ namespace elektro
                     //    delete[] image_ptr;
                 }
 
-                if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+                if (file.all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
                 {
-                    imageStatus = RECEIVING;
-                    SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
+                    SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_');
 
@@ -389,13 +226,23 @@ namespace elektro
                         }
                     }
 
+                    if (all_wip_images.count(channel) == 0)
+                        all_wip_images.insert({channel, std::make_unique<wip_images>()});
+
+                    std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
+
+                    if (segmentedDecoders.count(channel) == 0)
+                        segmentedDecoders.insert({channel, SegmentedLRITImageDecoder()});
+
+                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
+
                     if (segmentedDecoder.image_id != image_id)
                     {
                         if (segmentedDecoder.image_id != "")
                         {
                             current_filename = image_id;
 
-                            imageStatus = SAVING;
+                            wip_img->imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
 
@@ -404,7 +251,7 @@ namespace elektro
                             if (elektro_321_composer_full_disk->hasData)
                                 elektro_321_composer_full_disk->save(directory);
 
-                            imageStatus = RECEIVING;
+                            wip_img->imageStatus = RECEIVING;
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.planned_end_segment,
@@ -414,7 +261,7 @@ namespace elektro
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
-                    segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], seg_number);
+                    segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
 
                     // Composite?
                     if (channel == 1)
@@ -433,22 +280,22 @@ namespace elektro
                     }
 
                     // If the UI is active, update texture
-                    if (textureID > 0)
+                    if (wip_img->textureID > 0)
                     {
                         // Downscale image
-                        img_height = 1000;
-                        img_width = 1000;
+                        wip_img->img_height = 1000;
+                        wip_img->img_width = 1000;
                         image::Image<uint8_t> imageScaled = segmentedDecoder.image;
-                        imageScaled.resize(img_width, img_height);
-                        uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width);
-                        hasToUpdate = true;
+                        imageScaled.resize(wip_img->img_width, wip_img->img_height);
+                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                        wip_img->hasToUpdate = true;
                     }
 
                     if (segmentedDecoder.isComplete())
                     {
                         current_filename = image_id;
 
-                        imageStatus = SAVING;
+                        wip_img->imageStatus = SAVING;
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
 
@@ -458,14 +305,14 @@ namespace elektro
                             elektro_321_composer_full_disk->save(directory);
 
                         segmentedDecoder = SegmentedLRITImageDecoder();
-                        imageStatus = IDLE;
+                        wip_img->imageStatus = IDLE;
                     }
                 }
                 else
                 {
                     // Write raw image dats
                     logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                    image::Image<uint8_t> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                    image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                     image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                 }
             }
@@ -474,24 +321,13 @@ namespace elektro
                 if (!std::filesystem::exists(directory + "/LRIT"))
                     std::filesystem::create_directory(directory + "/LRIT");
 
-                logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
+                logger->info("Writing file " + directory + "/LRIT/" + file.filename + "...");
 
                 // Write file out
-                std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
-                file.write((char *)lrit_data.data(), lrit_data.size());
-                file.close();
+                std::ofstream fileo(directory + "/LRIT/" + file.filename, std::ios::binary);
+                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+                fileo.close();
             }
         }
-
-        void LRITDataDecoder::save()
-        {
-            if (segmentedDecoder.image_id != "")
-            {
-                finalizeLRITData();
-
-                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-            }
-        }
-    } // namespace atms
-} // namespace jpss
+    } // namespace avhrr
+} // namespace metop

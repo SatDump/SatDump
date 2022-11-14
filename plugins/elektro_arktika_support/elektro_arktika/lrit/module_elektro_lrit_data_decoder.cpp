@@ -1,16 +1,11 @@
 #include "module_elektro_lrit_data_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-
-#define BUFFER_SIZE 8192
-
-// Return filesize
-size_t getFilesize(std::string filepath);
+#include "common/utils.h"
+#include "common/lrit/lrit_demux.h"
 
 namespace elektro
 {
@@ -34,9 +29,9 @@ namespace elektro
 
         ELEKTROLRITDataDecoderModule::~ELEKTROLRITDataDecoderModule()
         {
-            for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+            for (auto &decMap : all_wip_images)
             {
-                std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                auto &dec = decMap.second;
 
                 if (dec->textureID > 0)
                 {
@@ -70,7 +65,38 @@ namespace elektro
 
             logger->info("Demultiplexing and deframing...");
 
-            std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
+            ::lrit::LRITDemux lrit_demux;
+
+            this->directory = directory;
+
+            lrit_demux.onParseHeader =
+                [](::lrit::LRITFile &file) -> void
+            {
+                // Check if this is image data
+                if (file.hasHeader<::lrit::ImageStructureRecord>())
+                {
+                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
+                    {
+                        logger->debug("JPEG Compression is used, decompressing...");
+                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, true);
+                        file.custom_flags.insert_or_assign(WT_COMPRESSED, false);
+                    }
+                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
+                    {
+                        logger->debug("Wavelet Compression is used, decompressing...");
+                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, false);
+                        file.custom_flags.insert_or_assign(WT_COMPRESSED, true);
+                    }
+                    else
+                    {
+                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, false);
+                        file.custom_flags.insert_or_assign(WT_COMPRESSED, false);
+                    }
+                }
+            };
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -80,33 +106,10 @@ namespace elektro
                 else
                     input_fifo->read((uint8_t *)&cadu, 1024);
 
-                // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
-                if (vcdu.vcid == 63)
-                    continue;
-
-                if (demuxers.count(vcdu.vcid) <= 0)
-                    demuxers.emplace(std::pair<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_shared<ccsds::ccsds_1_0_1024::Demuxer>(884, false)));
-
-                // Demux
-                std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxers[vcdu.vcid]->work(cadu);
-
-                // Push into processor (filtering APID 103 and 104)
-                for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                {
-                    if (pkt.header.apid != 2047)
-                    {
-                        if (decoders.count(vcdu.vcid) <= 0)
-                        {
-                            decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
-
-                            decoders[vcdu.vcid]->elektro_221_composer_full_disk = elektro_221_composer_full_disk;
-                            decoders[vcdu.vcid]->elektro_321_composer_full_disk = elektro_321_composer_full_disk;
-                        }
-                        decoders[vcdu.vcid]->work(pkt);
-                    }
-                }
+                for (auto &file : files)
+                    processLRITFile(file);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -120,8 +123,19 @@ namespace elektro
 
             data_in.close();
 
-            for (const std::pair<const int, std::shared_ptr<LRITDataDecoder>> &dec : decoders)
-                dec.second->save();
+            for (auto &segmentedDecoder : segmentedDecoders)
+            {
+                if (segmentedDecoder.second.image_id != "")
+                {
+                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png" + "...");
+                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png").c_str());
+                }
+            }
+
+            if (elektro_221_composer_full_disk->hasData)
+                elektro_221_composer_full_disk->save(directory);
+            if (elektro_321_composer_full_disk->hasData)
+                elektro_321_composer_full_disk->save(directory);
         }
 
         void ELEKTROLRITDataDecoderModule::drawUI(bool window)
@@ -132,9 +146,9 @@ namespace elektro
             {
                 bool hasImage = false;
 
-                for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+                for (auto &decMap : all_wip_images)
                 {
-                    std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                    auto &dec = decMap.second;
 
                     if (dec->textureID == 0)
                     {
@@ -152,7 +166,7 @@ namespace elektro
 
                         hasImage = true;
 
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        if (ImGui::BeginTabItem(std::string("Ch " + std::to_string(decMap.first)).c_str()))
                         {
                             ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
                             ImGui::SameLine();
