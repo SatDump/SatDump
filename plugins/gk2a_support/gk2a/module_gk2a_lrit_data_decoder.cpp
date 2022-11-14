@@ -1,16 +1,13 @@
 #include "module_gk2a_lrit_data_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-
-#define BUFFER_SIZE 8192
-
-// Return filesize
-size_t getFilesize(std::string filepath);
+#include "common/utils.h"
+#include "common/lrit/lrit_demux.h"
+#include "lrit_header.h"
+#include "resources.h"
 
 namespace gk2a
 {
@@ -35,17 +32,13 @@ namespace gk2a
 
         GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule()
         {
-            for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+            for (auto &decMap : all_wip_images)
             {
-                std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                auto &dec = decMap.second;
 
-                for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec2 : dec->segmentedDecoders)
+                if (dec->textureID > 0)
                 {
-                    std::string channel = dec2.first;
-                    if (dec->textureIDs[channel] > 0)
-                    {
-                        delete[] dec->textureBuffers[channel];
-                    }
+                    delete[] dec->textureBuffer;
                 }
             }
         }
@@ -76,9 +69,93 @@ namespace gk2a
             logger->warn("All credits for decoding GK-2A encrypted xRIT files goes to @sam210723, and xrit-rx over on Github.");
             logger->warn("See https://vksdr.com/xrit-rx for a lot more information!");
 
+            if (resources::resourceExists("gk2a/EncryptionKeyMessage.bin"))
+            {
+                // Load decryption keys
+                std::ifstream keyFile(resources::getResourcePath("gk2a/EncryptionKeyMessage.bin"), std::ios::binary);
+
+                // Read key count
+                uint16_t key_count = 0;
+                keyFile.read((char *)&key_count, 2);
+                key_count = (key_count & 0xFF) << 8 | (key_count >> 8);
+
+                uint8_t readBuf[10];
+                for (int i = 0; i < key_count; i++)
+                {
+                    keyFile.read((char *)readBuf, 10);
+                    int index = readBuf[0] << 8 | readBuf[1];
+                    uint64_t key = (uint64_t)readBuf[2] << 56 |
+                                   (uint64_t)readBuf[3] << 48 |
+                                   (uint64_t)readBuf[4] << 40 |
+                                   (uint64_t)readBuf[5] << 32 |
+                                   (uint64_t)readBuf[6] << 24 |
+                                   (uint64_t)readBuf[7] << 16 |
+                                   (uint64_t)readBuf[8] << 8 |
+                                   (uint64_t)readBuf[9];
+                    std::memcpy(&key, &readBuf[2], 8);
+                    decryption_keys.emplace(std::pair<int, uint64_t>(index, key));
+                }
+
+                keyFile.close();
+            }
+            else
+            {
+                logger->critical("GK-2A Decryption keys could not be loaded!!! Nothing apart from encrypted data will be decoded.");
+            }
+
             logger->info("Demultiplexing and deframing...");
 
-            std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
+            ::lrit::LRITDemux lrit_demux;
+
+            this->directory = directory;
+
+            lrit_demux.onParseHeader =
+                [](::lrit::LRITFile &file) -> void
+            {
+                // Check if this is image data
+                if (file.hasHeader<::lrit::ImageStructureRecord>())
+                {
+                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+
+                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
+                    {
+                        logger->debug("JPEG Compression is used, decompressing...");
+                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, true);
+                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, false);
+                    }
+                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
+                    {
+                        logger->debug("Wavelet Compression is used, decompressing...");
+                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, false);
+                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, true);
+                    }
+                    else
+                    {
+                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, false);
+                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, false);
+                    }
+                }
+
+                if (file.hasHeader<KeyHeader>())
+                {
+                    KeyHeader key_header = file.getHeader<KeyHeader>();
+                    if (key_header.key != 0)
+                    {
+                        logger->debug("This is encrypted!");
+                        file.custom_flags.insert_or_assign(IS_ENCRYPTED, true);
+                        file.custom_flags.insert_or_assign(KEY_INDEX, key_header.key);
+                    }
+                    else
+                    {
+                        file.custom_flags.insert_or_assign(IS_ENCRYPTED, false);
+                    }
+                }
+                else
+                {
+                    file.custom_flags.insert_or_assign(IS_ENCRYPTED, false);
+                }
+            };
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -88,34 +165,10 @@ namespace gk2a
                 else
                     input_fifo->read((uint8_t *)&cadu, 1024);
 
-                // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
-                if (vcdu.vcid == 63)
-                    continue;
-
-                if (demuxers.count(vcdu.vcid) <= 0)
-                    demuxers.emplace(std::pair<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_shared<ccsds::ccsds_1_0_1024::Demuxer>(884, false)));
-
-                // Demux
-                std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxers[vcdu.vcid]->work(cadu);
-
-                // Push into processor (filtering APID 103 and 104)
-                for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                {
-                    if (pkt.header.apid != 2047)
-                    {
-                        if (decoders.count(vcdu.vcid) <= 0)
-                        {
-                            decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
-
-                            decoders[vcdu.vcid]->write_images = write_images;
-                            decoders[vcdu.vcid]->write_additional = write_additional;
-                            decoders[vcdu.vcid]->write_unknown = write_unknown;
-                        }
-                        decoders[vcdu.vcid]->work(pkt);
-                    }
-                }
+                for (auto &file : files)
+                    processLRITFile(file);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -129,8 +182,14 @@ namespace gk2a
 
             data_in.close();
 
-            for (const std::pair<const int, std::shared_ptr<LRITDataDecoder>> &dec : decoders)
-                dec.second->save();
+            for (auto &segmentedDecoder : segmentedDecoders)
+            {
+                if (segmentedDecoder.second.image_id != "")
+                {
+                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png" + "...");
+                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png").c_str());
+                }
+            }
         }
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)
@@ -141,45 +200,40 @@ namespace gk2a
             {
                 bool hasImage = false;
 
-                for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+                for (auto &decMap : all_wip_images)
                 {
-                    std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                    auto &dec = decMap.second;
 
-                    for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec2 : dec->segmentedDecoders)
+                    if (dec->textureID == 0)
                     {
-                        std::string channel = dec2.first;
+                        dec->textureID = makeImageTexture();
+                        dec->textureBuffer = new uint32_t[1000 * 1000];
+                    }
 
-                        if (dec->textureIDs[channel] == 0)
+                    if (dec->imageStatus != IDLE)
+                    {
+                        if (dec->hasToUpdate)
                         {
-                            dec->textureIDs[channel] = makeImageTexture();
-                            dec->textureBuffers[channel] = new uint32_t[1000 * 1000];
+                            dec->hasToUpdate = true;
+                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
                         }
 
-                        if (dec->imageStatus[channel] != IDLE)
+                        hasImage = true;
+
+                        if (ImGui::BeginTabItem(std::string("Ch " + decMap.first).c_str()))
                         {
-                            if (dec->hasToUpdates[channel])
-                            {
-                                dec->hasToUpdates[channel] = true;
-                                updateImageTexture(dec->textureIDs[channel], dec->textureBuffers[channel], dec->img_widths[channel], dec->img_heights[channel]);
-                            }
-
-                            hasImage = true;
-
-                            if (ImGui::BeginTabItem(std::string(channel).c_str()))
-                            {
-                                ImGui::Image((void *)(intptr_t)dec->textureIDs[channel], {200 * ui_scale, 200 * ui_scale});
-                                ImGui::SameLine();
-                                ImGui::BeginGroup();
-                                ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                                if (dec->imageStatus[channel] == SAVING)
-                                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
-                                else if (dec->imageStatus[channel] == RECEIVING)
-                                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-                                else
-                                    ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
-                                ImGui::EndGroup();
-                                ImGui::EndTabItem();
-                            }
+                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                            if (dec->imageStatus == SAVING)
+                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                            else if (dec->imageStatus == RECEIVING)
+                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                            else
+                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                            ImGui::EndGroup();
+                            ImGui::EndTabItem();
                         }
                     }
                 }

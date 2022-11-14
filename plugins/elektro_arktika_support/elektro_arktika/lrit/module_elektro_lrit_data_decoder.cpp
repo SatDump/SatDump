@@ -65,8 +65,6 @@ namespace elektro
 
             logger->info("Demultiplexing and deframing...");
 
-            // std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
-
             ::lrit::LRITDemux lrit_demux;
 
             this->directory = directory;

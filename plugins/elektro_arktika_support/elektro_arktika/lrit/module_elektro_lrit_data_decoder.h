@@ -2,7 +2,6 @@
 
 #include "core/module.h"
 #include "data/lrit_data.h"
-
 #include "common/lrit/lrit_file.h"
 
 namespace elektro
