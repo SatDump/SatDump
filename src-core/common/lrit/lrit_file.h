@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "libs/others/strptime.h"
 
 namespace lrit
 {
