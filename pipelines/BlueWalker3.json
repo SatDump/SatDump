@@ -27,7 +27,7 @@
                     "buffer_size": 8192
                 }
             },
-            "frm": {
+            "cadu": {
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 9784,
@@ -68,7 +68,7 @@
                     "buffer_size": 8192
                 }
             },
-            "frm": {
+            "cadu": {
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 2648,
@@ -78,7 +78,9 @@
                     "rs_i": 0
                 }
             },
-            "products": {}
+            "products": {
+                "bw3_decoder": {}
+            }
         }
     }
 }

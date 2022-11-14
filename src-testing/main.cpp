@@ -27,64 +27,93 @@ int main(int /*argc*/, char *argv[])
 
     std::ofstream idk_file2(argv[2]);
 
-    uint8_t buffer1[1244];
+    uint8_t buffer1[331];
 
-    // int sz = 0;
-
-    ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1062, false);
+    std::vector<uint8_t> wip_pkt;
+    std::vector<uint8_t> wip_picture;
+    int img_cnt = 1;
 
     while (!idk_file.eof())
     {
-        idk_file.read((char *)buffer1, 1244);
+        idk_file.read((char *)buffer1, 331);
 
-        auto vcdu = ccsds::ccsds_1_0_proba::parseVCDU(buffer1);
+        uint8_t frame_type = buffer1[5];
 
-        //  logger->critical(vcdu.vcid);
-        printf("VCID %d\n", vcdu.vcid);
+        printf("MARKER %d\n", frame_type);
 
-        // 0, 1, 4, 5
-
-        // if (vcdu.vcid == 0)
-        //     idk_file2.write((char *)buffer1, 1199);
-
-        if (vcdu.vcid == 1)
+        if (frame_type == 217)
         {
-            memmove(&buffer1[10 - 2], &buffer1[22 - 2], 1064);
+            // idk_file2.write((char *)&buffer1[0], 331);
+            uint16_t ptr = buffer1[18] << 8 | buffer1[17];
 
-            // idk_file2.write((char *)&buffer1[0], 1244);
+            uint16_t ptr2 = buffer1[19]; // << 8 | buffer1[17];
 
-            // auto mpdu = ccsds::ccsds_1_0_proba::parseMPDU(buffer1);
+            printf("PTR %d %d\n", ptr, ptr2);
 
-            // logger->critical(mpdu.first_header_pointer);
+#if 0
+            int ptr3 = 0;
 
-            std::vector<ccsds::CCSDSPacket> pkts = demuxer_vcid1.work(buffer1);
-
-            for (auto pkt : pkts)
+            if (ptr2 >= 198)
+                ptr2 = ptr3 = 198;
+            else
             {
-                // logger->critical("{:d} {:d} {:d}", pkt.header.apid, pkt.payload.size(), pkt.header.packet_length + 1);
-
-                printf("APID %d\n", pkt.header.apid);
-
-                if (pkt.header.apid == 385) // 221 227 228 232
-                {
-                    printf("cnt %d\n", pkt.payload[14]);
-
-                    // if (pkt.payload.size() == 82)
-                    {
-                        pkt.payload.resize(2000 - 6);
-                        idk_file2.write((char *)pkt.header.raw, 6);
-                        idk_file2.write((char *)pkt.payload.data(), 2000 - 6);
-                    }
-
-                    // idk_file2.write((char *)pkt.header.raw, 6);
-                    // idk_file2.write((char *)pkt.payload.data(), pkt.payload.size());
-
-                    printf("len %d\n", pkt.payload.size());
-
-                    // if (pkt.payload.size() >= 65536)
-                    // idk_file2.write((char *)pkt.payload.data(), 65536 - 4);
-                }
+                ptr3 = 198 - ptr2;
             }
+
+            // if (ptr2 != 198)
+            idk_file2.write((char *)&buffer1[21], 198); // 202 - 4);
+#else
+            if (ptr2 == 198)
+            {
+                wip_pkt.insert(wip_pkt.end(), &buffer1[21], &buffer1[21 + 198]);
+            }
+            else if (ptr2 < 198)
+            {
+                wip_pkt.insert(wip_pkt.end(), &buffer1[21], &buffer1[21 + ptr2]);
+                wip_pkt.erase(wip_pkt.begin(), wip_pkt.begin() + 8);
+
+                wip_picture.insert(wip_picture.end(), wip_pkt.begin(), wip_pkt.end());
+
+                wip_pkt.clear();
+                wip_pkt.insert(wip_pkt.end(), &buffer1[21 + ptr2], &buffer1[21 + 198]);
+            }
+#endif
         }
+    }
+
+    idk_file2.write((char *)wip_picture.data(), wip_picture.size());
+
+    uint8_t sliding_header[4] = {0, 0, 0, 0};
+    std::vector<uint8_t> wip_until_hdr;
+
+    for (uint8_t b : wip_picture)
+    {
+        sliding_header[0] = sliding_header[1];
+        sliding_header[1] = sliding_header[2];
+        sliding_header[2] = sliding_header[3];
+        sliding_header[3] = b;
+
+        wip_until_hdr.push_back(b);
+
+        if (sliding_header[0] == 0xFF && sliding_header[1] == 0xD8 && sliding_header[2] == 0xFF && sliding_header[3] == 0xE0)
+        {
+            std::ofstream raw_img("BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
+            raw_img.put(0xFF);
+            raw_img.put(0xD8);
+            raw_img.put(0xFF);
+            raw_img.write((char *)wip_until_hdr.data(), wip_until_hdr.size());
+            raw_img.close();
+            wip_until_hdr.clear();
+        }
+    }
+
+    if (wip_until_hdr.size() > 0)
+    {
+        std::ofstream raw_img("BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
+        raw_img.put(0xFF);
+        raw_img.put(0xD8);
+        raw_img.put(0xFF);
+        raw_img.write((char *)wip_until_hdr.data(), wip_until_hdr.size());
+        raw_img.close();
     }
 }
