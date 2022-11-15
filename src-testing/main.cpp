@@ -11,10 +11,12 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
-#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
-#include "common/ccsds/ccsds_1_0_proba/mpdu.h"
+#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_1_0_1024/mpdu.h"
 #include <fstream>
+
+#include "common/codings/randomization.h"
 
 #include "common/image/image.h"
 #include "common/repack.h"
@@ -23,97 +25,85 @@ int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
+#if 0
     std::ifstream idk_file(argv[1]);
-
     std::ofstream idk_file2(argv[2]);
 
-    uint8_t buffer1[331];
+    uint8_t buffer1[1024];
 
-    std::vector<uint8_t> wip_pkt;
-    std::vector<uint8_t> wip_picture;
-    int img_cnt = 1;
 
     while (!idk_file.eof())
     {
-        idk_file.read((char *)buffer1, 331);
+        idk_file.read((char *)buffer1, 1024);
 
-        uint8_t frame_type = buffer1[5];
+        derand_ccsds(&buffer1[4], 1024 - 4);
 
-        printf("MARKER %d\n", frame_type);
-
-        if (frame_type == 217)
-        {
-            // idk_file2.write((char *)&buffer1[0], 331);
-            uint16_t ptr = buffer1[18] << 8 | buffer1[17];
-
-            uint16_t ptr2 = buffer1[19]; // << 8 | buffer1[17];
-
-            printf("PTR %d %d\n", ptr, ptr2);
-
-#if 0
-            int ptr3 = 0;
-
-            if (ptr2 >= 198)
-                ptr2 = ptr3 = 198;
-            else
-            {
-                ptr3 = 198 - ptr2;
-            }
-
-            // if (ptr2 != 198)
-            idk_file2.write((char *)&buffer1[21], 198); // 202 - 4);
+        idk_file2.write((char *)&buffer1[4], 892);
+    }
 #else
-            if (ptr2 == 198)
-            {
-                wip_pkt.insert(wip_pkt.end(), &buffer1[21], &buffer1[21 + 198]);
-            }
-            else if (ptr2 < 198)
-            {
-                wip_pkt.insert(wip_pkt.end(), &buffer1[21], &buffer1[21 + ptr2]);
-                wip_pkt.erase(wip_pkt.begin(), wip_pkt.begin() + 8);
+    std::ifstream idk_file(argv[1]);
+    std::ofstream idk_file2(argv[2]);
 
-                wip_picture.insert(wip_picture.end(), wip_pkt.begin(), wip_pkt.end());
+    uint8_t buffer1[1034];
 
-                wip_pkt.clear();
-                wip_pkt.insert(wip_pkt.end(), &buffer1[21 + ptr2], &buffer1[21 + 198]);
-            }
-#endif
-        }
-    }
+    ccsds::ccsds_1_0_1024::Demuxer demux_idk(1022, true, 0);
 
-    idk_file2.write((char *)wip_picture.data(), wip_picture.size());
+    image::Image<uint16_t> img_out1(1280, 3000, 1);
+    image::Image<uint16_t> img_out2(1280, 3000, 1);
+    image::Image<uint16_t> img_out3(1280, 3000, 1);
+    uint16_t tirs_line[3898];
+    int lines = 0;
 
-    uint8_t sliding_header[4] = {0, 0, 0, 0};
-    std::vector<uint8_t> wip_until_hdr;
-
-    for (uint8_t b : wip_picture)
+    while (!idk_file.eof())
     {
-        sliding_header[0] = sliding_header[1];
-        sliding_header[1] = sliding_header[2];
-        sliding_header[2] = sliding_header[3];
-        sliding_header[3] = b;
+        idk_file.read((char *)buffer1, 1034);
 
-        wip_until_hdr.push_back(b);
+        auto vcdu = ccsds::ccsds_1_0_1024::parseVCDU(buffer1);
 
-        if (sliding_header[0] == 0xFF && sliding_header[1] == 0xD8 && sliding_header[2] == 0xFF && sliding_header[3] == 0xE0)
+        printf("VCID %d\n", vcdu.vcid);
+
+        if (vcdu.vcid == 5)
         {
-            std::ofstream raw_img("BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
-            raw_img.put(0xFF);
-            raw_img.put(0xD8);
-            raw_img.put(0xFF);
-            raw_img.write((char *)wip_until_hdr.data(), wip_until_hdr.size());
-            raw_img.close();
-            wip_until_hdr.clear();
+            // idk_file2.write((char *)buffer1, 1034);
+
+            std::vector<ccsds::CCSDSPacket> ccsdsFrames = demux_idk.work(buffer1);
+            for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+            {
+                printf("APID %d\n", pkt.header.apid);
+
+                if (pkt.header.apid == 1793)
+                {
+                    printf("SIZE %d\n", pkt.payload.size());
+
+                    pkt.payload.resize(5848);
+                    idk_file2.write((char *)pkt.header.raw, 6);
+                    idk_file2.write((char *)pkt.payload.data(), pkt.payload.size());
+
+                    repackBytesTo12bits(&pkt.payload[31], 5848 - 31, tirs_line);
+
+                    for (int i = 0; i < 640; i++)
+                        img_out1[lines * 1280 + i * 2 + 0] = tirs_line[i] << 4;
+                    for (int i = 0; i < 640; i++)
+                        img_out1[lines * 1280 + i * 2 + 1] = tirs_line[1941 + i] << 4;
+
+                    for (int i = 0; i < 640; i++)
+                        img_out2[lines * 1280 + i * 2 + 0] = tirs_line[647 + i] << 4;
+                    for (int i = 0; i < 640; i++)
+                        img_out2[lines * 1280 + i * 2 + 1] = tirs_line[2588 + i] << 4;
+
+                    for (int i = 0; i < 640; i++)
+                        img_out3[lines * 1280 + i * 2 + 0] = tirs_line[1294 + i] << 4;
+                    for (int i = 0; i < 640; i++)
+                        img_out3[lines * 1280 + i * 2 + 1] = tirs_line[3235 + i] << 4;
+
+                    lines++;
+                }
+            }
         }
     }
 
-    if (wip_until_hdr.size() > 0)
-    {
-        std::ofstream raw_img("BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
-        raw_img.put(0xFF);
-        raw_img.put(0xD8);
-        raw_img.put(0xFF);
-        raw_img.write((char *)wip_until_hdr.data(), wip_until_hdr.size());
-        raw_img.close();
-    }
+    img_out1.save_png("TEST_TIRS_1.png");
+    img_out2.save_png("TEST_TIRS_2.png");
+    img_out3.save_png("TEST_TIRS_3.png");
+#endif
 }
