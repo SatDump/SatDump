@@ -62,6 +62,7 @@
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
+                    "iq_invert": true,
                     "derandomize": true,
                     "nrzm": true,
                     "rs_i": 5,
