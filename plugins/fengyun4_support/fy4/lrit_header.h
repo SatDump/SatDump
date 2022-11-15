@@ -11,7 +11,7 @@ namespace fy4
     {
         struct KeyHeader
         {
-            static constexpr int TYPE = 9;
+            static constexpr int TYPE = 7;
 
             uint8_t type;
             uint16_t record_length;
