@@ -1,16 +1,12 @@
 #include "module_goes_lrit_data_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-
-#define BUFFER_SIZE 8192
-
-// Return filesize
-size_t getFilesize(std::string filepath);
+#include "common/utils.h"
+#include "common/lrit/lrit_demux.h"
+#include "lrit_header.h"
 
 namespace goes
 {
@@ -40,9 +36,9 @@ namespace goes
 
         GOESLRITDataDecoderModule::~GOESLRITDataDecoderModule()
         {
-            for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+            for (auto &decMap : all_wip_images)
             {
-                std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                auto &dec = decMap.second;
 
                 if (dec->textureID > 0)
                 {
@@ -83,7 +79,83 @@ namespace goes
 
             logger->info("Demultiplexing and deframing...");
 
-            std::map<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>> demuxers;
+            ::lrit::LRITDemux lrit_demux;
+
+            this->directory = directory;
+
+            lrit_demux.onParseHeader =
+                [this](::lrit::LRITFile &file) -> void
+            {
+                file.custom_flags.insert({RICE_COMPRESSED, false});
+
+                // Check if this is image data
+                if (file.hasHeader<::lrit::ImageStructureRecord>())
+                {
+                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+
+                    NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
+
+                    if (image_structure_record.compression_flag == 1 && noaa_header.noaa_specific_compression == 1) // Check this is RICE
+                    {
+                        file.custom_flags.insert_or_assign(RICE_COMPRESSED, true);
+
+                        if (rice_parameters_all.count(file.filename) == 0)
+                            rice_parameters_all.insert({file.filename, SZ_com_t()});
+
+                        SZ_com_t &rice_parameters = rice_parameters_all[file.filename];
+
+                        logger->debug("This is RICE-compressed! Decompressing...");
+
+                        rice_parameters.bits_per_pixel = image_structure_record.bit_per_pixel;
+                        rice_parameters.pixels_per_block = 16;
+                        rice_parameters.pixels_per_scanline = image_structure_record.columns_count;
+                        rice_parameters.options_mask = SZ_ALLOW_K13_OPTION_MASK | SZ_MSB_OPTION_MASK | SZ_NN_OPTION_MASK | SZ_RAW_OPTION_MASK;
+
+                        if (file.hasHeader<RiceCompressionHeader>())
+                        {
+                            RiceCompressionHeader rice_compression_header = file.getHeader<RiceCompressionHeader>();
+                            logger->debug("Rice header is present!");
+                            logger->debug("Pixels per block : " + std::to_string(rice_compression_header.pixels_per_block));
+                            logger->debug("Scan lines per packet : " + std::to_string(rice_compression_header.scanlines_per_packet));
+                            rice_parameters.pixels_per_block = rice_compression_header.pixels_per_block;
+                            rice_parameters.options_mask = rice_compression_header.flags | SZ_RAW_OPTION_MASK;
+                        }
+                        else if (rice_parameters.pixels_per_block <= 0)
+                        {
+                            logger->critical("Pixel per blocks is set to 0! Using defaults");
+                            rice_parameters.pixels_per_block = 16;
+                        }
+                    }
+                }
+            };
+
+            lrit_demux.onProcessData =
+                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt) -> bool
+            {
+                if (file.custom_flags[RICE_COMPRESSED])
+                {
+                    SZ_com_t &rice_parameters = rice_parameters_all[file.filename];
+
+                    if (rice_parameters.bits_per_pixel == 0)
+                        return false;
+
+                    std::vector<uint8_t> decompression_buffer(rice_parameters.pixels_per_scanline);
+
+                    size_t output_size = decompression_buffer.size();
+                    int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
+                    if (r == AEC_OK)
+                        file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                    else
+                        logger->warn("Rice decompression failed. This may be an issue!");
+
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            };
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -93,39 +165,10 @@ namespace goes
                 else
                     input_fifo->read((uint8_t *)&cadu, 1024);
 
-                // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
-                if (vcdu.vcid == 63)
-                    continue;
-
-                if (demuxers.count(vcdu.vcid) <= 0)
-                    demuxers.emplace(std::pair<int, std::shared_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_shared<ccsds::ccsds_1_0_1024::Demuxer>(884, false)));
-
-                // Demux
-                std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxers[vcdu.vcid]->work(cadu);
-
-                // Push into processor (filtering APID 103 and 104)
-                for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                {
-                    if (pkt.header.apid != 2047)
-                    {
-                        if (decoders.count(vcdu.vcid) <= 0)
-                        {
-                            decoders.emplace(std::pair<int, std::shared_ptr<LRITDataDecoder>>(vcdu.vcid, std::make_shared<LRITDataDecoder>(directory)));
-                            decoders[vcdu.vcid]->write_images = write_images;
-                            decoders[vcdu.vcid]->write_emwin = write_emwin;
-                            decoders[vcdu.vcid]->write_messages = write_messages;
-                            decoders[vcdu.vcid]->write_dcs = write_dcs;
-                            decoders[vcdu.vcid]->write_unknown = write_unknown;
-
-                            decoders[vcdu.vcid]->goes_r_fc_composer_full_disk = goes_r_fc_composer_full_disk;
-                            decoders[vcdu.vcid]->goes_r_fc_composer_meso1 = goes_r_fc_composer_meso1;
-                            decoders[vcdu.vcid]->goes_r_fc_composer_meso2 = goes_r_fc_composer_meso2;
-                        }
-                        decoders[vcdu.vcid]->work(pkt);
-                    }
-                }
+                for (auto &file : files)
+                    processLRITFile(file);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -139,8 +182,21 @@ namespace goes
 
             data_in.close();
 
-            for (const std::pair<const int, std::shared_ptr<LRITDataDecoder>> &dec : decoders)
-                dec.second->save();
+            for (auto &segmentedDecoder : segmentedDecoders)
+            {
+                if (segmentedDecoder.second.image.size())
+                {
+                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png" + "...");
+                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png").c_str());
+                }
+            }
+
+            if (goes_r_fc_composer_full_disk->hasData)
+                goes_r_fc_composer_full_disk->save(directory);
+            if (goes_r_fc_composer_meso1->hasData)
+                goes_r_fc_composer_meso1->save(directory);
+            if (goes_r_fc_composer_meso2->hasData)
+                goes_r_fc_composer_meso2->save(directory);
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
@@ -151,9 +207,9 @@ namespace goes
             {
                 bool hasImage = false;
 
-                for (std::pair<int, std::shared_ptr<LRITDataDecoder>> decMap : decoders)
+                for (auto &decMap : all_wip_images)
                 {
-                    std::shared_ptr<LRITDataDecoder> dec = decMap.second;
+                    auto &dec = decMap.second;
 
                     if (dec->textureID == 0)
                     {
@@ -171,7 +227,7 @@ namespace goes
 
                         hasImage = true;
 
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        if (ImGui::BeginTabItem(std::string("Img " + std::to_string(decMap.first)).c_str()))
                         {
                             ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
                             ImGui::SameLine();

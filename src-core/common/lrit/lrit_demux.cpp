@@ -43,7 +43,7 @@ namespace lrit
         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
         {
             if (pkt.header.apid == 2047 || pkt.payload.size() < 2) // Skip filler
-                return files;
+                continue;
 
             if (wip_files[vcdu.vcid].count(pkt.header.apid) == 0) // One file per APID
                 wip_files[vcdu.vcid].insert({pkt.header.apid, LRITFile()});
@@ -56,6 +56,7 @@ namespace lrit
             {
                 logger->error("LRIT CRC is invalid... Skipping.");
                 current_file.file_in_progress = false;
+                continue;
             }
 
             if (pkt.header.sequence_flag == 1 || pkt.header.sequence_flag == 3)

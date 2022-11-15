@@ -7,10 +7,6 @@
 #include <string>
 #include <map>
 #include <memory>
-extern "C"
-{
-#include <libs/aec/szlib.h>
-}
 
 namespace goes
 {
@@ -31,6 +27,7 @@ namespace goes
             bool isComplete();
             image::Image<uint8_t> image;
             int image_id = -1;
+            std::string filename;
         };
 
         enum lrit_image_status
@@ -66,57 +63,6 @@ namespace goes
             // UI Stuff
             lrit_image_status imageStatus;
             int img_width, img_height;
-            bool hasToUpdate = false;
-            unsigned int textureID = 0;
-            uint32_t *textureBuffer;
-        };
-
-        class LRITDataDecoder
-        {
-        private:
-            const std::string directory;
-
-            bool file_in_progress;
-            std::vector<uint8_t> lrit_data;
-
-            bool is_rice_compressed;
-            bool is_goesn;
-            std::string current_filename;
-            SZ_com_t rice_parameters;
-            std::vector<uint8_t> decompression_buffer;
-            std::map<int, int> all_headers;
-            SegmentedLRITImageDecoder segmentedDecoder;
-
-            bool header_parsed = false;
-
-            void processLRITHeader(ccsds::CCSDSPacket &pkt);
-            void parseHeader();
-            void processLRITData(ccsds::CCSDSPacket &pkt);
-            void finalizeLRITData();
-
-        public: // Other things
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
-
-        public:
-            LRITDataDecoder(std::string dir);
-            ~LRITDataDecoder();
-
-            bool write_images = true;
-            bool write_emwin = true;
-            bool write_messages = true;
-            bool write_dcs = true;
-            bool write_unknown = true;
-
-            void save();
-            void work(ccsds::CCSDSPacket &packet);
-
-            lrit_image_status imageStatus;
-            int img_width, img_height;
-
-        public:
-            // UI Stuff
             bool hasToUpdate = false;
             unsigned int textureID = 0;
             uint32_t *textureBuffer;

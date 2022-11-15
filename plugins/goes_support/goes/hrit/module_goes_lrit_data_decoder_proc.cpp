@@ -1,18 +1,8 @@
-#include "lrit_data_decoder.h"
-#include "logger.h"
-#include <fstream>
+#include "module_goes_lrit_data_decoder.h"
 #include "lrit_header.h"
-#include "crc_table.h"
-#include <sstream>
-#include <string>
-#include <iomanip>
-#include "products.h"
-#include <filesystem>
-#include <algorithm>
+#include "logger.h"
 #include "libs/miniz/miniz.h"
 #include "libs/miniz/miniz_zip.h"
-#include "common/utils.h"
-#include "libs/others/strptime.h"
 #include "imgui/imgui_image.h"
 
 namespace goes
@@ -43,223 +33,29 @@ namespace goes
             return utc_filename;
         }
 
-        // CRC Implementation from LRIT-Missin-Specific-Document.pdf
-        uint16_t computeCRC(const uint8_t *data, int size)
+        const int ID_HIMAWARI8 = 43;
+
+        void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
-            uint16_t crc = 0xffff;
-            for (int i = 0; i < size; i++)
-                crc = (crc << 8) ^ crc_table[(crc >> 8) ^ (uint16_t)data[i]];
-            return crc;
-        }
+            std::string current_filename = file.filename;
 
-        LRITDataDecoder::LRITDataDecoder(std::string dir) : directory(dir)
-        {
-            file_in_progress = false;
-            is_goesn = false;
-            imageStatus = IDLE;
-            img_height = 0;
-            img_width = 0;
-        }
-
-        LRITDataDecoder::~LRITDataDecoder()
-        {
-        }
-
-        void LRITDataDecoder::work(ccsds::CCSDSPacket &packet)
-        {
-            if (packet.header.sequence_flag == 1 || packet.header.sequence_flag == 3)
-            {
-                if (file_in_progress)
-                    finalizeLRITData();
-
-                lrit_data.clear();
-
-                // Check CRC
-                uint16_t crc = packet.payload.data()[packet.payload.size() - 2] << 8 | packet.payload.data()[packet.payload.size() - 1];
-
-                if (crc == computeCRC(packet.payload.data(), packet.payload.size() - 2))
-                {
-                    processLRITHeader(packet);
-                    header_parsed = false;
-                    file_in_progress = true;
-                    is_goesn = false;
-                }
-                else
-                {
-                    logger->error("CRC is invalid... Skipping.");
-                    file_in_progress = false;
-                }
-            }
-            else if (packet.header.sequence_flag == 0)
-            {
-                if (file_in_progress)
-                {
-                    processLRITData(packet);
-                }
-            }
-            else if (packet.header.sequence_flag == 2)
-            {
-                if (file_in_progress)
-                {
-                    processLRITData(packet);
-                    finalizeLRITData();
-                    file_in_progress = false;
-                }
-            }
-
-            if (file_in_progress && !header_parsed)
-            {
-                PrimaryHeader primary_header(&lrit_data[0]);
-
-                if (lrit_data.size() >= primary_header.total_header_length)
-                {
-                    parseHeader();
-                    header_parsed = true;
-                }
-            }
-        }
-
-        void LRITDataDecoder::processLRITHeader(ccsds::CCSDSPacket &pkt)
-        {
-            lrit_data.insert(lrit_data.end(), &pkt.payload.data()[10], &pkt.payload.data()[pkt.payload.size() - 2]);
-        }
-
-        void LRITDataDecoder::parseHeader()
-        {
-            PrimaryHeader primary_header(&lrit_data[0]);
-
-            // Get all other headers
-            all_headers.clear();
-            for (uint32_t i = 0; i < primary_header.total_header_length;)
-            {
-                uint8_t type = lrit_data[i];
-                uint16_t record_length = lrit_data[i + 1] << 8 | lrit_data[i + 2];
-
-                if (record_length == 0)
-                    break;
-
-                all_headers.emplace(std::pair<int, int>(type, i));
-
-                i += record_length;
-            }
-
-            // Check if this has a filename
-            if (all_headers.count(AnnotationRecord::TYPE) > 0)
-            {
-                AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
-
-                current_filename = std::string(annotation_record.annotation_text.data());
-
-                std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
-                std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
-
-                for (char &c : current_filename) // Strip invalid chars
-                {
-                    if (c < 33)
-                        c = '_';
-                }
-
-                // Taken from goestools... Took me a while to figure out what was going on there.. Damn it!
-                /*NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
-                if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 || noaa_header.product_id == 17))
-                {
-                    if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
-                    {
-                        SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
-                        std::stringstream suffix;
-                        suffix << "_" << std::setfill('0') << std::setw(3) << segment_id_header.segment_sequence_number;
-                        current_filename.insert(current_filename.rfind(".lrit"), suffix.str());
-                    }
-                }*/
-
-                logger->info("New LRIT file : " + current_filename);
-
-                // Check if this is image data
-                if (all_headers.count(ImageStructureRecord::TYPE) > 0)
-                {
-                    ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
-
-                    NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
-
-                    if (image_structure_record.compression_flag == 1 && noaa_header.noaa_specific_compression == 1) // Check this is RICE
-                    {
-                        is_rice_compressed = true;
-
-                        logger->debug("This is RICE-compressed! Decompressing...");
-
-                        rice_parameters.bits_per_pixel = image_structure_record.bit_per_pixel;
-                        rice_parameters.pixels_per_block = 16 /* * 2*/; // The real default is 16, but has been to 32 for ages
-                        rice_parameters.pixels_per_scanline = image_structure_record.columns_count;
-                        rice_parameters.options_mask = SZ_ALLOW_K13_OPTION_MASK | SZ_MSB_OPTION_MASK | SZ_NN_OPTION_MASK | SZ_RAW_OPTION_MASK;
-
-                        if (all_headers.count(RiceCompressionHeader::TYPE) > 0)
-                        {
-                            RiceCompressionHeader rice_compression_header(&lrit_data[all_headers[RiceCompressionHeader::TYPE]]);
-                            logger->debug("Rice header is present!");
-                            logger->debug("Pixels per block : " + std::to_string(rice_compression_header.pixels_per_block));
-                            logger->debug("Scan lines per packet : " + std::to_string(rice_compression_header.scanlines_per_packet));
-                            rice_parameters.pixels_per_block = rice_compression_header.pixels_per_block;
-                            rice_parameters.options_mask = rice_compression_header.flags | SZ_RAW_OPTION_MASK;
-                        }
-
-                        decompression_buffer.resize(rice_parameters.pixels_per_scanline);
-                    }
-                    else
-                    {
-                        is_rice_compressed = false;
-                    }
-                }
-            }
-        }
-
-        void LRITDataDecoder::processLRITData(ccsds::CCSDSPacket &pkt)
-        {
-            if (is_rice_compressed)
-            {
-                if (rice_parameters.bits_per_pixel == 0)
-                    return;
-
-                if (rice_parameters.pixels_per_block <= 0)
-                {
-                    logger->critical("Pixel per blocks is set to 0! Using defaults");
-                    rice_parameters.pixels_per_block = 16 /* * 2*/; // The real default is 16, but has been to 32 for ages
-                }
-
-                size_t output_size = decompression_buffer.size();
-                int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
-                if (r == AEC_OK)
-                {
-                    lrit_data.insert(lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
-                }
-                else
-                {
-                    logger->warn("Rice decompression failed. This may be an issue!");
-                }
-            }
-            else
-            {
-                lrit_data.insert(lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size() - 2]);
-            }
-        }
-
-        void LRITDataDecoder::finalizeLRITData()
-        {
-            PrimaryHeader primary_header(&lrit_data[0]);
-            NOAALRITHeader noaa_header(&lrit_data[all_headers[NOAALRITHeader::TYPE]]);
+            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
 
             // Check if this is image data, and if so also write it as an image
-            if (write_images && primary_header.file_type_code == 0 && all_headers.count(ImageStructureRecord::TYPE) > 0)
+            if (write_images && primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
             {
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
 
-                ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
 
-                TimeStampRecord timestamp_record(&lrit_data[all_headers[TimeStampRecord::TYPE]]);
+                ::lrit::TimeStampRecord timestamp_record = file.getHeader<::lrit::TimeStampRecord>();
                 std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
                 std::string old_filename = current_filename;
+
+                bool is_goesn = false;
 
                 // Process as a specific dataset
                 {
@@ -279,7 +75,7 @@ namespace goes
 
                             if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                             {
-                                AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+                                AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
 
                                 std::string region = "Others";
 
@@ -342,7 +138,7 @@ namespace goes
                                         else if (region == "Mesoscale 2")
                                             goes_r_fc_composer = goes_r_fc_composer_meso2;
 
-                                        image::Image<uint8_t> image(&lrit_data[primary_header.total_header_length],
+                                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length],
                                                                     image_structure_record.columns_count,
                                                                     image_structure_record.lines_count, 1);
 
@@ -399,7 +195,7 @@ namespace goes
                         }
 
                         // Parse scan time
-                        AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+                        AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
                         std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
                         if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
                         {
@@ -423,7 +219,7 @@ namespace goes
                             std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
                         // Apparently the timestamp is in there for Himawari-8 data
-                        AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
+                        AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
 
                         std::vector<std::string> strParts = splitString(annotation_record.annotation_text, '_');
                         if (strParts.size() > 3)
@@ -445,22 +241,33 @@ namespace goes
                     }
                 }
 
-                if (all_headers.count(SegmentIdentificationHeader::TYPE) > 0)
+                if (file.hasHeader<SegmentIdentificationHeader>())
                 {
-                    imageStatus = RECEIVING;
 
-                    SegmentIdentificationHeader segment_id_header(&lrit_data[all_headers[SegmentIdentificationHeader::TYPE]]);
+                    SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
+
+                    if (all_wip_images.count(segment_id_header.image_identifier) == 0)
+                        all_wip_images.insert({segment_id_header.image_identifier, std::make_unique<wip_images>()});
+
+                    std::unique_ptr<wip_images> &wip_img = all_wip_images[segment_id_header.image_identifier];
+
+                    wip_img->imageStatus = RECEIVING;
+
+                    if (segmentedDecoders.count(segment_id_header.image_identifier) == 0)
+                        segmentedDecoders.insert({segment_id_header.image_identifier, SegmentedLRITImageDecoder()});
+
+                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[segment_id_header.image_identifier];
 
                     if (segmentedDecoder.image_id != segment_id_header.image_identifier)
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
-                            imageStatus = SAVING;
+                            wip_img->imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                             if (is_goesn)
                                 segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
                             segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                            imageStatus = RECEIVING;
+                            wip_img->imageStatus = RECEIVING;
 
                             // Check if this is GOES-R
                             if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
@@ -486,12 +293,13 @@ namespace goes
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      segment_id_header.image_identifier);
+                        segmentedDecoder.filename = current_filename;
                     }
 
                     if (noaa_header.product_id == ID_HIMAWARI8)
-                        segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number - 1);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number - 1);
                     else
-                        segmentedDecoder.pushSegment(&lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
 
                     // Check if this is GOES-R, if yes, MS
                     if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
@@ -506,7 +314,7 @@ namespace goes
                         {
                             if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                             {
-                                AncillaryTextRecord ancillary_record(&lrit_data[all_headers[AncillaryTextRecord::TYPE]]);
+                                AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
 
                                 // Parse scan time
                                 std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
@@ -525,26 +333,26 @@ namespace goes
                     }
 
                     // If the UI is active, update texture
-                    if (textureID > 0)
+                    if (wip_img->textureID > 0)
                     {
                         // Downscale image
-                        img_height = 1000;
-                        img_width = 1000;
+                        wip_img->img_height = 1000;
+                        wip_img->img_width = 1000;
                         image::Image<uint8_t> imageScaled = segmentedDecoder.image;
-                        imageScaled.resize(img_width, img_height);
-                        uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width);
-                        hasToUpdate = true;
+                        imageScaled.resize(wip_img->img_width, wip_img->img_height);
+                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                        wip_img->hasToUpdate = true;
                     }
 
                     if (segmentedDecoder.isComplete())
                     {
-                        imageStatus = SAVING;
+                        wip_img->imageStatus = SAVING;
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         if (is_goesn)
                             segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
                         segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
-                        imageStatus = IDLE;
+                        wip_img->imageStatus = IDLE;
 
                         // Check if this is GOES-R
                         if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
@@ -575,16 +383,16 @@ namespace goes
                         int offset = primary_header.total_header_length;
 
                         // Write file out
-                        std::ofstream file(directory + "/IMAGES/" + current_filename + ".gif");
-                        file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
-                        file.close();
+                        std::ofstream fileo(directory + "/IMAGES/" + current_filename + ".gif");
+                        fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
+                        fileo.close();
                     }
                     else // Write raw image dats
                     {
                         logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                        image::Image<uint8_t> image(&lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         if (is_goesn)
-                            segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
+                            image.resize(image.width(), image.height() * 1.75);
                         image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
 
                         // Check if this is GOES-R
@@ -616,9 +424,9 @@ namespace goes
                     int offset = primary_header.total_header_length;
 
                     // Write file out
-                    std::ofstream file(directory + "/EMWIN/" + clean_filename + ".txt");
-                    file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
-                    file.close();
+                    std::ofstream fileo(directory + "/EMWIN/" + clean_filename + ".txt");
+                    fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
+                    fileo.close();
                 }
                 else if (noaa_header.noaa_specific_compression == 10) // ZIP Files
                 {
@@ -630,7 +438,7 @@ namespace goes
                     // Init
                     mz_zip_archive zipFile;
                     MZ_CLEAR_OBJ(zipFile);
-                    if (!mz_zip_reader_init_mem(&zipFile, &lrit_data[offset], lrit_data.size() - offset, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+                    if (!mz_zip_reader_init_mem(&zipFile, &file.lrit_data[offset], file.lrit_data.size() - offset, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
                     {
                         logger->error("Could not open ZIP data! Discarding...");
                         return;
@@ -668,9 +476,9 @@ namespace goes
                 int offset = primary_header.total_header_length;
 
                 // Write file out
-                std::ofstream file(directory + "/Admin Messages/" + clean_filename + ".txt");
-                file.write((char *)&lrit_data[offset], lrit_data.size() - offset);
-                file.close();
+                std::ofstream fileo(directory + "/Admin Messages/" + clean_filename + ".txt");
+                fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
+                fileo.close();
             }
             // Check if this is DCS data
             else if (write_dcs && primary_header.file_type_code == 130)
@@ -681,9 +489,9 @@ namespace goes
                 logger->info("Writing file " + directory + "/DCS/" + current_filename + "...");
 
                 // Write file out
-                std::ofstream file(directory + "/DCS/" + current_filename, std::ios::binary);
-                file.write((char *)lrit_data.data(), lrit_data.size());
-                file.close();
+                std::ofstream fileo(directory + "/DCS/" + current_filename, std::ios::binary);
+                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+                fileo.close();
             }
             // Otherwise, write as generic, unknown stuff. This should not happen
             else if (write_unknown)
@@ -694,21 +502,10 @@ namespace goes
                 logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
 
                 // Write file out
-                std::ofstream file(directory + "/LRIT/" + current_filename, std::ios::binary);
-                file.write((char *)lrit_data.data(), lrit_data.size());
-                file.close();
+                std::ofstream fileo(directory + "/LRIT/" + current_filename, std::ios::binary);
+                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+                fileo.close();
             }
         }
-
-        void LRITDataDecoder::save()
-        {
-            if (segmentedDecoder.image_id != -1)
-            {
-                finalizeLRITData();
-
-                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-            }
-        }
-    } // namespace atms
-} // namespace jpss
+    } // namespace avhrr
+} // namespace metop
