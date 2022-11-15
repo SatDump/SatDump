@@ -18,8 +18,14 @@
                 1697e6
             ]
         ],
-        "samplerate": 1e6,
-        "baseband_type": "i16",
+        "parameters": {
+            "ts_input": {
+                "type": "bool",
+                "value": false,
+                "name": "TS Input",
+                "description": "Input TS instead of BBFrame"
+            }
+        },
         "work": {
             "baseband": {},
             "bbframe": {
