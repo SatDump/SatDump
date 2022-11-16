@@ -18,22 +18,16 @@ void LimeSDRSource::set_gains()
     if (!is_started)
         return;
 
-    limeDevice->SetGain(false, 0, tia_gain, "TIA");
-    limeDevice->SetGain(false, 0, lna_gain, "LNA");
-    limeDevice->SetGain(false, 0, pga_gain, "PGA");
+    LMS_SetGaindB(limeDevice, 0, 0, gain);
 
-    logger->debug("Set LimeSDR TIA to {:d}", tia_gain);
-    logger->debug("Set LimeSDR LNA to {:d}", lna_gain);
-    logger->debug("Set LimeSDR PGA to {:d}", pga_gain);
+    logger->debug("Set LimeSDR Gain to {:d}", gain);
 }
 
 void LimeSDRSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
-    tia_gain = getValueOrDefault(d_settings["tia_gain"], tia_gain);
-    lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
-    pga_gain = getValueOrDefault(d_settings["pga_gain"], pga_gain);
+    gain = getValueOrDefault(d_settings["gain"], gain);
 
     if (is_started)
     {
@@ -43,9 +37,7 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
 
 nlohmann::json LimeSDRSource::get_settings()
 {
-    d_settings["tia_gain"] = tia_gain;
-    d_settings["lna_gain"] = lna_gain;
-    d_settings["pga_gain"] = pga_gain;
+    d_settings["gain"] = gain;
 
     return d_settings;
 }
@@ -70,40 +62,39 @@ void LimeSDRSource::start()
 
     if (!is_started)
     {
-        lime::ConnectionHandle handle;
-#ifdef __ANDROID__
-        int vid, pid;
-        std::string path;
-        int fd = getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path);
-        if (limeDevice_android == nullptr)
+        lms_info_str_t found_devices[256];
+        LMS_GetDeviceList(found_devices);
+
+        limeDevice = NULL;
+        LMS_Open(&limeDevice, found_devices[d_sdr_id], NULL);
+        int err = LMS_Init(limeDevice);
+
+        // LimeSuite Bug
+        if (err)
         {
-            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd, pid == 0x6108);
-            limeDevice_android->Init();
+            LMS_Close(limeDevice);
+            LMS_Open(&limeDevice, found_devices[d_sdr_id], NULL);
+            err = LMS_Init(limeDevice);
         }
-        limeDevice = limeDevice_android;
-#else
-        limeDevice = lime::LMS7_Device::CreateDevice(lime::ConnectionRegistry::findConnections()[d_sdr_id]);
-#endif
-        if (limeDevice == NULL)
+
+        if (err)
             throw std::runtime_error("Could not open LimeSDR Device!");
-#ifndef __ANDROID__
-        limeDevice->Init();
-#endif
     }
 
-    limeDevice->EnableChannel(false, 0, true);
-    limeDevice->SetPath(false, 0, 3);
+    LMS_EnableChannel(limeDevice, false, 0, true);
+    LMS_SetAntenna(limeDevice, false, 0, 3);
 
-    limeConfig.align = false;
-    limeConfig.isTx = false;
-    limeConfig.performanceLatency = 0.5;
-    limeConfig.bufferLength = 0; // auto
-    limeConfig.format = lime::StreamConfig::FMT_FLOAT32;
-    limeConfig.channelID = 0;
+    // limeStream.align = false;
+    limeStream.isTx = false;
+    limeStream.throughputVsLatency = 0.5;
+    limeStream.fifoSize = 8192 * 10; // auto
+    limeStream.dataFmt = limeStream.LMS_FMT_F32;
+    limeStream.channel = 0;
 
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
-    limeDevice->SetRate(current_samplerate, 0);
-    limeDevice->SetLPF(false, 0, true, current_samplerate);
+    LMS_SetSampleRate(limeDevice, current_samplerate, 0);
+    LMS_SetLPFBW(limeDevice, false, 0, current_samplerate);
+    LMS_SetLPF(limeDevice, false, 0, true);
 
     is_started = true;
 
@@ -111,19 +102,9 @@ void LimeSDRSource::start()
 
     set_gains();
 
-#ifndef __ANDROID__
-    limeStreamID = limeDevice->SetupStream(limeConfig);
-#else
-    if (limeStreamID_android == nullptr)
-        limeStreamID_android = limeDevice->SetupStream(limeConfig);
-    limeStreamID = limeStreamID_android;
-#endif
+    LMS_SetupStream(limeDevice, &limeStream);
 
-    if (limeStreamID == 0)
-        throw std::runtime_error("Could not open LimeSDR device stream!");
-
-    limeStream = limeStreamID;
-    limeStream->Start();
+    LMS_StartStream(&limeStream);
     needs_to_run = true;
 }
 
@@ -132,12 +113,10 @@ void LimeSDRSource::stop()
     needs_to_run = false;
     if (is_started)
     {
-        limeStream->Stop();
-#ifndef __ANDROID__
-        limeDevice->DestroyStream(limeStream);
-        limeDevice->Reset();
-        lime::ConnectionRegistry::freeConnection(limeDevice->GetConnection());
-#endif
+        LMS_StopStream(&limeStream);
+        LMS_DestroyStream(limeDevice, &limeStream);
+        LMS_EnableChannel(limeDevice, false, 0, false);
+        LMS_Close(limeDevice);
     }
     is_started = false;
 }
@@ -151,8 +130,7 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
-        limeDevice->SetFrequency(false, 0, frequency);
-        // limeDevice->SetClockFreq(LMS_CLOCK_SXR, frequency, 0);
+        LMS_SetLOFrequency(limeDevice, false, 0, frequency);
         logger->debug("Set LimeSDR frequency to {:d}", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
@@ -169,9 +147,7 @@ void LimeSDRSource::drawControlUI()
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("TIA Gain", &tia_gain, 0, 12);
-    gain_changed |= ImGui::SliderInt("LNA Gain", &lna_gain, 0, 30);
-    gain_changed |= ImGui::SliderInt("PGA Gain", &pga_gain, 0, 19);
+    gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 73);
 
     if (gain_changed)
         set_gains();

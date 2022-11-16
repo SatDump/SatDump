@@ -6,9 +6,7 @@
 #include "protocols/Streamer.h"
 #include "ConnectionRegistry/ConnectionRegistry.h"
 #else
-#include <lime/lms7_device.h>
-#include <lime/Streamer.h>
-#include <lime/ConnectionRegistry.h>
+#include <lime/LimeSuite.h>
 #endif
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -18,19 +16,16 @@ class LimeSDRSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
-    lime::LMS7_Device *limeDevice;
-    lime::StreamChannel *limeStream;
-    lime::StreamChannel *limeStreamID;
-    lime::StreamConfig limeConfig;
+
+    lms_device_t *limeDevice;
+    lms_stream_t limeStream;
 
     int selected_samplerate = 0;
     std::string samplerate_option_str;
     std::vector<uint64_t> available_samplerates;
     uint64_t current_samplerate = 0;
 
-    int tia_gain = 0;
-    int lna_gain = 0;
-    int pga_gain = 0;
+    int gain = 0;
 
     void set_gains();
 
@@ -38,13 +33,13 @@ protected:
     bool thread_should_run = false, needs_to_run = false;
     void mainThread()
     {
-        lime::StreamChannel::Metadata md;
+        lms_stream_meta_t md;
 
         while (thread_should_run)
         {
             if (needs_to_run)
             {
-                int cnt = limeStream->Read(output_stream->writeBuf, 8192 * 10, &md);
+                int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
                 output_stream->swap(cnt);
             }
             else
