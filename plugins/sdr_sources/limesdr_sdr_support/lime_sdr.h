@@ -8,6 +8,7 @@
 #else
 #include <lime/LimeSuite.h>
 #endif
+#include <thread>
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"
@@ -40,7 +41,8 @@ protected:
             if (needs_to_run)
             {
                 int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
-                output_stream->swap(cnt);
+                if (cnt > 0)
+                    output_stream->swap(cnt);
             }
             else
             {
