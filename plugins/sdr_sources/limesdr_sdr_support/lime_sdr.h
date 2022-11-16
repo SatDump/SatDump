@@ -18,8 +18,15 @@ class LimeSDRSource : public dsp::DSPSampleSource
 protected:
     bool is_open = false, is_started = false;
 
+#if __ANDROID__
+    lime::LMS7_Device *limeDevice;
+    lime::StreamChannel *limeStream;
+    lime::StreamChannel *limeStreamID;
+    lime::StreamConfig limeConfig;
+#else
     lms_device_t *limeDevice;
     lms_stream_t limeStream;
+#endif
 
     int selected_samplerate = 0;
     std::string samplerate_option_str;
@@ -34,11 +41,19 @@ protected:
     bool thread_should_run = false;
     void mainThread()
     {
+#if __ANDROID__
+        lime::StreamChannel::Metadata md;
+#else
         lms_stream_meta_t md;
+#endif
 
         while (thread_should_run)
         {
+#if __ANDROID__
+            int cnt = limeStream->Read(output_stream->writeBuf, 8192 * 10, &md);
+#else
             int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
+#endif
             if (cnt > 0)
                 output_stream->swap(cnt);
         }
@@ -47,7 +62,7 @@ protected:
 public:
     LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        }
+    }
 
     ~LimeSDRSource()
     {

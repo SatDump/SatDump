@@ -18,7 +18,11 @@ void LimeSDRSource::set_gains()
     if (!is_started)
         return;
 
+#ifndef __ANDROID__
     LMS_SetGaindB(limeDevice, 0, 0, gain);
+#else
+    limeDevice->SetGain(false, 0, gain, "");
+#endif
 
     logger->debug("Set LimeSDR Gain to {:d}", gain);
 }
@@ -62,6 +66,7 @@ void LimeSDRSource::start()
 
     if (!is_started)
     {
+#ifndef __ANDROID__
         lms_info_str_t found_devices[256];
         LMS_GetDeviceList(found_devices);
 
@@ -79,8 +84,54 @@ void LimeSDRSource::start()
 
         if (err)
             throw std::runtime_error("Could not open LimeSDR Device!");
+#else
+        lime::ConnectionHandle handle;
+        int vid, pid;
+        std::string path;
+        int fd = getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path);
+        if (limeDevice_android == nullptr)
+        {
+            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd, pid == 0x6108);
+            limeDevice_android->Init();
+        }
+        limeDevice = limeDevice_android;
+
+        if (limeDevice == NULL)
+            throw std::runtime_error("Could not open LimeSDR Device!");
+#endif
     }
 
+#ifdef __ANDROID__
+    limeDevice->EnableChannel(false, 0, true);
+    limeDevice->SetPath(false, 0, 3);
+
+    limeConfig.align = false;
+    limeConfig.isTx = false;
+    limeConfig.performanceLatency = 0.5;
+    limeConfig.bufferLength = 0; // auto
+    limeConfig.format = lime::StreamConfig::FMT_FLOAT32;
+    limeConfig.channelID = 0;
+
+    logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
+    limeDevice->SetRate(current_samplerate, 0);
+    limeDevice->SetLPF(false, 0, true, current_samplerate);
+
+    is_started = true;
+
+    set_frequency(d_frequency);
+
+    set_gains();
+
+    if (limeStreamID_android == nullptr)
+        limeStreamID_android = limeDevice->SetupStream(limeConfig);
+    limeStreamID = limeStreamID_android;
+
+    if (limeStreamID == 0)
+        throw std::runtime_error("Could not open LimeSDR device stream!");
+
+    limeStream = limeStreamID;
+    limeStream->Start();
+#else
     LMS_EnableChannel(limeDevice, false, 0, true);
     LMS_SetAntenna(limeDevice, false, 0, 3);
 
@@ -105,6 +156,7 @@ void LimeSDRSource::start()
     LMS_SetupStream(limeDevice, &limeStream);
 
     LMS_StartStream(&limeStream);
+#endif
 
     thread_should_run = true;
     work_thread = std::thread(&LimeSDRSource::mainThread, this);
@@ -121,10 +173,14 @@ void LimeSDRSource::stop()
     logger->info("Thread stopped");
     if (is_started)
     {
+#ifndef __ANDROID__
         LMS_StopStream(&limeStream);
         LMS_DestroyStream(limeDevice, &limeStream);
         LMS_EnableChannel(limeDevice, false, 0, false);
         LMS_Close(limeDevice);
+#else
+        limeStream->Stop();
+#endif
     }
     is_started = false;
 }
@@ -138,7 +194,11 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
+#ifndef __ANDROID__
         LMS_SetLOFrequency(limeDevice, false, 0, frequency);
+#else
+        limeDevice->SetFrequency(false, 0, frequency);
+#endif
         logger->debug("Set LimeSDR frequency to {:d}", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
