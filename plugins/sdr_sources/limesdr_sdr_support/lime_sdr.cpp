@@ -105,12 +105,20 @@ void LimeSDRSource::start()
     LMS_SetupStream(limeDevice, &limeStream);
 
     LMS_StartStream(&limeStream);
-    needs_to_run = true;
+
+    thread_should_run = true;
+    work_thread = std::thread(&LimeSDRSource::mainThread, this);
 }
 
 void LimeSDRSource::stop()
 {
-    needs_to_run = false;
+    thread_should_run = false;
+    logger->info("Waiting for the thread...");
+    if (is_started)
+        output_stream->stopWriter();
+    if (work_thread.joinable())
+        work_thread.join();
+    logger->info("Thread stopped");
     if (is_started)
     {
         LMS_StopStream(&limeStream);

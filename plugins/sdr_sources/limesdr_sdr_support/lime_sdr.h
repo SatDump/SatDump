@@ -31,45 +31,28 @@ protected:
     void set_gains();
 
     std::thread work_thread;
-    bool thread_should_run = false, needs_to_run = false;
+    bool thread_should_run = false;
     void mainThread()
     {
         lms_stream_meta_t md;
 
         while (thread_should_run)
         {
-            if (needs_to_run)
-            {
-                int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
-                if (cnt > 0)
-                    output_stream->swap(cnt);
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
+            int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
+            if (cnt > 0)
+                output_stream->swap(cnt);
         }
     }
 
 public:
     LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        thread_should_run = true;
-        work_thread = std::thread(&LimeSDRSource::mainThread, this);
-    }
+        }
 
     ~LimeSDRSource()
     {
         stop();
         close();
-
-        thread_should_run = false;
-        logger->info("Waiting for the thread...");
-        if (is_started)
-            output_stream->stopWriter();
-        if (work_thread.joinable())
-            work_thread.join();
-        logger->info("Thread stopped");
     }
 
     void set_settings(nlohmann::json settings);
