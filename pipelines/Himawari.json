@@ -8,7 +8,14 @@
                 0
             ]
         ],
-        "samplerate": 6e6,
+        "parameters": {
+            "ts_input": {
+                "type": "bool",
+                "value": false,
+                "name": "TS Input",
+                "description": "Input TS instead of BBFrame"
+            }
+        },
         "work": {
             "baseband": {},
             "bbframe": {
