@@ -138,20 +138,24 @@ void MiriSdrSource::start()
     set_bias();
 
     mirisdr_reset_buffer(mirisdr_dev_obj);
-    needs_to_run = true;
+
+    thread_should_run = true;
+    work_thread = std::thread(&MiriSdrSource::mainThread, this);
 }
 
 void MiriSdrSource::stop()
 {
-    needs_to_run = false;
     if (is_started)
     {
-        do
-        {
-            mirisdr_cancel_async(mirisdr_dev_obj);
-            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait
-            logger->warn("Trying to cancel async...");
-        } while (async_running);
+        logger->warn("Trying to cancel async...");
+        mirisdr_cancel_async(mirisdr_dev_obj);
+        thread_should_run = false;
+        logger->info("Waiting for the thread...");
+        if (is_started)
+            output_stream->stopWriter();
+        if (work_thread.joinable())
+            work_thread.join();
+        logger->info("Thread stopped");
         mirisdr_close(mirisdr_dev_obj);
     }
     is_started = false;

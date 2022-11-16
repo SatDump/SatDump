@@ -32,42 +32,25 @@ protected:
 
     std::thread work_thread;
 
-    bool thread_should_run = false, needs_to_run = false;
+    bool thread_should_run = false;
 
     void mainThread()
     {
         while (thread_should_run)
         {
-            if (needs_to_run)
-            {
-                rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, 16384);
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
+            rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, 16384);
         }
     }
 
 public:
     RtlSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        thread_should_run = true;
-        work_thread = std::thread(&RtlSdrSource::mainThread, this);
     }
 
     ~RtlSdrSource()
     {
         stop();
         close();
-
-        thread_should_run = false;
-        logger->info("Waiting for the thread...");
-        if (is_started)
-            output_stream->stopWriter();
-        if (work_thread.joinable())
-            work_thread.join();
-        logger->info("Thread stopped");
     }
 
     void set_settings(nlohmann::json settings);

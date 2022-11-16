@@ -148,15 +148,23 @@ void RtlSdrSource::start()
     set_gains();
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
-    needs_to_run = true;
+
+    thread_should_run = true;
+    work_thread = std::thread(&RtlSdrSource::mainThread, this);
 }
 
 void RtlSdrSource::stop()
 {
-    needs_to_run = false;
     if (is_started)
     {
         rtlsdr_cancel_async(rtlsdr_dev_obj);
+        thread_should_run = false;
+        logger->info("Waiting for the thread...");
+        if (is_started)
+            output_stream->stopWriter();
+        if (work_thread.joinable())
+            work_thread.join();
+        logger->info("Thread stopped");
         rtlsdr_close(rtlsdr_dev_obj);
     }
     is_started = false;

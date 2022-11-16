@@ -123,7 +123,9 @@ void BladeRFSource::start()
     // Setup and start streaming
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
     bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), true);
-    needs_to_run = true;
+
+    thread_should_run = true;
+    work_thread = std::thread(&BladeRFSource::mainThread, this);
 
     is_started = true;
 
@@ -135,9 +137,16 @@ void BladeRFSource::start()
 
 void BladeRFSource::stop()
 {
-    needs_to_run = false;
     if (is_started)
     {
+        thread_should_run = false;
+        logger->info("Waiting for the thread...");
+        if (is_started)
+            output_stream->stopWriter();
+        if (work_thread.joinable())
+            work_thread.join();
+        logger->info("Thread stopped");
+
         bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), false);
         bladerf_close(bladerf_dev_obj);
     }

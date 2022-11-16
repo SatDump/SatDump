@@ -29,46 +29,29 @@ protected:
 
     std::thread work_thread;
 
-    bool thread_should_run = false, needs_to_run = false;
+    bool thread_should_run = false;
 
     void mainThread()
     {
         uint8_t in_buf[8192];
         while (thread_should_run)
         {
-            if (needs_to_run)
-            {
                 client.receiveData(in_buf, 8192);
                 for (int i = 0; i < (int)8192 / 2; i++)
                     output_stream->writeBuf[i] = complex_t((in_buf[i * 2 + 0] - 127.0f) / 128.0f, (in_buf[i * 2 + 1] - 127.0f) / 128.0f);
                 output_stream->swap(8192 / 2);
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
         }
     }
 
 public:
     RTLTCPSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        thread_should_run = true;
-        work_thread = std::thread(&RTLTCPSource::mainThread, this);
     }
 
     ~RTLTCPSource()
     {
         stop();
         close();
-
-        thread_should_run = false;
-        logger->info("Waiting for the thread...");
-        if (is_started)
-            output_stream->stopWriter();
-        if (work_thread.joinable())
-            work_thread.join();
-        logger->info("Thread stopped");
     }
 
     void set_settings(nlohmann::json settings);

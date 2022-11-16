@@ -89,14 +89,22 @@ void RTLTCPSource::start()
     set_gains();
     set_bias();
 
-    needs_to_run = true;
+    thread_should_run = true;
+    work_thread = std::thread(&RTLTCPSource::mainThread, this);
 }
 
 void RTLTCPSource::stop()
 {
-    needs_to_run = false;
     if (is_started)
     {
+        thread_should_run = false;
+        logger->info("Waiting for the thread...");
+        if (is_started)
+            output_stream->stopWriter();
+        if (work_thread.joinable())
+            work_thread.join();
+        logger->info("Thread stopped");
+
         client.disconnect();
     }
     is_started = false;

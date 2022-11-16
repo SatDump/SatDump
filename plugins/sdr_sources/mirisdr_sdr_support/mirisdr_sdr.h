@@ -33,7 +33,7 @@ protected:
 
     std::thread work_thread;
 
-    bool thread_should_run = false, needs_to_run = false;
+    bool thread_should_run = false;
 
     bool async_running = false;
 
@@ -41,43 +41,24 @@ protected:
     {
         while (thread_should_run)
         {
-            if (needs_to_run)
-            {
                 logger->trace("Starting async reads...");
-                async_running = true;
                 if (bit_depth == 8)
                     mirisdr_read_async(mirisdr_dev_obj, _rx_callback_8, &output_stream, 15, 2304 * 8 * 2);
                 else
                     mirisdr_read_async(mirisdr_dev_obj, _rx_callback_16, &output_stream, 15, 2304 * 8 * 2);
                 logger->trace("Stopped async reads...");
-                async_running = false;
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
         }
     }
 
 public:
     MiriSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        thread_should_run = true;
-        work_thread = std::thread(&MiriSdrSource::mainThread, this);
     }
 
     ~MiriSdrSource()
     {
         stop();
         close();
-
-        thread_should_run = false;
-        logger->info("Waiting for the thread...");
-        if (is_started)
-            output_stream->stopWriter();
-        if (work_thread.joinable())
-            work_thread.join();
-        logger->info("Thread stopped");
     }
 
     void set_settings(nlohmann::json settings);
