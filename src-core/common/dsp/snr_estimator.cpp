@@ -23,6 +23,11 @@ void M2M4SNREstimator::update(complex_t *input, int size)
         float y2 = abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]) * abs((std::complex<float>)input[i]);
         d_y2 = d_alpha * y2 + d_beta * d_y2;
     }
+
+    if (d_y1 != d_y1)
+        d_y1 = 0;
+    if (d_y2 != d_y2)
+        d_y2 = 0;
 }
 
 float M2M4SNREstimator::snr()
