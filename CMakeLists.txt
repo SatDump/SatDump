@@ -98,7 +98,7 @@ if(MSVC OR BUILD_MSVC)
     endif()
 endif()
 
-project(SatDump VERSION "1.0.0")
+project(SatDump VERSION "1.0.1")
 
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
