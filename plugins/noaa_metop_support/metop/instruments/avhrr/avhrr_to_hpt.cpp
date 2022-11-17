@@ -83,7 +83,7 @@ namespace metop
                 counter = 0;
 
             // Timestamp
-            uint16_t days = gmtime(&timestamp)->tm_yday; // pkt.payload[0] << 8 | pkt.payload[1];
+            uint16_t days = gmtime(&timestamp)->tm_yday + 1; // pkt.payload[0] << 8 | pkt.payload[1];
             // days = 273;          //-= 502;         // Scale from 1/1/2000 to days since first frame
             days &= 0b111111111; // Cap to 9-bits
 
