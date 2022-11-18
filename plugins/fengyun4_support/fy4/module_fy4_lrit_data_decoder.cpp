@@ -194,7 +194,7 @@ namespace fy4
 
         void FY4LRITDataDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+            ImGui::Begin("FY-4x LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
             {
