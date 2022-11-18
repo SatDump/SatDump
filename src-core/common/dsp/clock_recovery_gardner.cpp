@@ -1,22 +1,16 @@
-#include "clock_recovery_mm.h"
+#include "clock_recovery_gardner.h"
 #include "window.h"
 
 namespace dsp
 {
     template <typename T>
-    MMClockRecoveryBlock<T>::MMClockRecoveryBlock(std::shared_ptr<dsp::stream<T>> input, float omega, float omegaGain, float mu, float muGain, float omegaLimit, int nfilt, int ntaps)
+    GardnerClockRecoveryBlock<T>::GardnerClockRecoveryBlock(std::shared_ptr<dsp::stream<T>> input, float omega, float omegaGain, float mu, float muGain, float omegaLimit, int nfilt, int ntaps)
         : Block<T, T>(input),
           mu(mu),
           omega(omega),
           omega_gain(omegaGain),
           mu_gain(muGain),
-          omega_relative_limit(omegaLimit),
-          p_2T(0),
-          p_1T(0),
-          p_0T(0),
-          c_2T(0),
-          c_1T(0),
-          c_0T(0)
+          omega_relative_limit(omegaLimit)
     {
         // Get alignement parameters
         int align = volk_get_alignment();
@@ -25,22 +19,24 @@ namespace dsp
         omega_mid = omega;
         omega_limit = omega_relative_limit * omega;
 
+        // Buffer
+        in_buffer = 0;
+        int size = 2 * STREAM_BUFFER_SIZE;
+        buffer = (T *)volk_malloc(size * sizeof(T), align);
+        std::fill(buffer, &buffer[size], 0);
+
         // Init interpolator
         pfb.init(windowed_sinc(nfilt * ntaps, hz_to_rad(0.5 / (double)nfilt, 1.0), window::nuttall, nfilt), nfilt);
-
-        // Buffer
-        buffer = (T *)volk_malloc(pfb.ntaps * 4 * sizeof(T), align);
-        std::fill(buffer, &buffer[pfb.ntaps * 4], 0);
     }
 
     template <typename T>
-    MMClockRecoveryBlock<T>::~MMClockRecoveryBlock()
+    GardnerClockRecoveryBlock<T>::~GardnerClockRecoveryBlock()
     {
         volk_free(buffer);
     }
 
     template <typename T>
-    void MMClockRecoveryBlock<T>::work()
+    void GardnerClockRecoveryBlock<T>::work()
     {
         int nsamples = Block<T, T>::input_stream->read();
         if (nsamples <= 0)
@@ -55,14 +51,20 @@ namespace dsp
 
         for (; inc < nsamples && ouc < STREAM_BUFFER_SIZE;)
         {
-            if constexpr (std::is_same_v<T, complex_t>)
+            // Compute Zero-Crossing sample
+            float muz = mu - (omega / 2.0);
+            int offzc = floor(omega / 2.0);
+            float mupos = fmod(muz + offzc, 1.0);
+            if (mupos < 0)
             {
-                // Propagate delay
-                p_2T = p_1T;
-                p_1T = p_0T;
-                c_2T = c_1T;
-                c_1T = c_0T;
+                mupos = 1 + mupos;
+                offzc += 1;
             }
+            int imuz = (int)rint(mupos * pfb.nfilt);
+            if (imuz < 0) // If we're out of bounds, clamp
+                imuz = 0;
+            if (imuz >= pfb.nfilt)
+                imuz = pfb.nfilt - 1;
 
             // Compute output
             int imu = (int)rint(mu * pfb.nfilt);
@@ -73,13 +75,19 @@ namespace dsp
 
             if constexpr (std::is_same_v<T, float>)
             {
+                if (inc - offzc < (pfb.ntaps - 1)) // Zero-Crossing sample
+                    volk_32f_x2_dot_prod_32f(&zc_sample, &buffer[inc - offzc], pfb.taps[imuz], pfb.ntaps);
+                else
+                    volk_32f_x2_dot_prod_32f(&zc_sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1) - offzc], pfb.taps[imuz], pfb.ntaps);
+
                 if (inc < (pfb.ntaps - 1))
                     volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
                 else
                     volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 
                 // Phase error
-                phase_error = (last_sample < 0 ? -1.0f : 1.0f) * sample - (sample < 0 ? -1.0f : 1.0f) * last_sample;
+                phase_error = zc_sample * (last_sample - sample);
+
                 phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
                 last_sample = sample;
 
@@ -88,20 +96,25 @@ namespace dsp
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {
-                if (inc < (pfb.ntaps - 1))
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                if (inc - offzc < (pfb.ntaps - 1)) // Zero-Crossing sample
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&zc_sample, (lv_32fc_t *)&buffer[inc - offzc], pfb.taps[imuz], pfb.ntaps);
                 else
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&zc_sample, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1) - offzc], pfb.taps[imuz], pfb.ntaps);
 
-                // Slice it
-                c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
+                if (inc < (pfb.ntaps - 1))
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&sample, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                else
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&sample, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 
                 // Phase error
-                phase_error = (((p_0T - p_2T) * c_1T.conj()) - ((c_0T - c_2T) * p_1T.conj())).real;
+                phase_error = zc_sample.real * (last_sample.real - sample.real) +
+                              zc_sample.imag * (last_sample.imag - sample.imag);
+
                 phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
+                last_sample = sample;
 
                 // Write output
-                Block<T, T>::output_stream->writeBuf[ouc++] = p_0T;
+                Block<T, T>::output_stream->writeBuf[ouc++] = sample;
             }
 
             // Adjust omega
@@ -128,6 +141,6 @@ namespace dsp
         Block<T, T>::output_stream->swap(ouc);
     }
 
-    template class MMClockRecoveryBlock<complex_t>;
-    template class MMClockRecoveryBlock<float>;
+    template class GardnerClockRecoveryBlock<complex_t>;
+    template class GardnerClockRecoveryBlock<float>;
 }
