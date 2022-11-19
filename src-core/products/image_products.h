@@ -53,8 +53,13 @@ namespace satdump
                 if (image_index == -1)
                     return contents["timestamps"].get<std::vector<double>>();
 
-                if (images[image_index].timestamps.size() > 0)
-                    return images[image_index].timestamps;
+                if ((int)images.size() > image_index)
+                {
+                    if (images[image_index].timestamps.size() > 0)
+                        return images[image_index].timestamps;
+                    else
+                        return contents["timestamps"].get<std::vector<double>>();
+                }
                 else
                     return contents["timestamps"].get<std::vector<double>>();
             }
