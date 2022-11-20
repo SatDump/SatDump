@@ -44,6 +44,11 @@ namespace fy4
             {
                 if (primary_header.file_type_code == 0 && file.hasHeader<ImageInformationRecord>())
                 {
+                    std::vector<std::string> header_parts = splitString(current_filename, '_');
+
+                    // for (std::string part : header_parts)
+                    //     logger->trace(part);
+
                     ImageInformationRecord image_structure_record = file.getHeader<ImageInformationRecord>();
 
                     if (true) // file.custom_flags[JPG_COMPRESSED] || file.custom_flags[J2K_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
@@ -72,9 +77,34 @@ namespace fy4
                             img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
                                                                  file.lrit_data.size() - primary_header.total_header_length - offset);
 
+                        // Rely on the background for bit depth,
+                        // as apparently nothing else works expected.
+                        int max_val = 0;
+                        for (int i = 0; i < (int)img2.size(); i++)
+                            if (img2[i] > max_val)
+                                max_val = img2[i];
+
                         image::Image<uint8_t> img = img2.to8bits();
-                        for (int i = 0; i < (int)img.size(); i++)
-                            img[i] = img2[i];
+                        if (max_val == 255) // LRIT, 4-bits
+                        {
+                            for (int i = 0; i < (int)img.size(); i++)
+                            {
+                                int v = img2[i] << 4;
+                                if (v > 255)
+                                    v = 255;
+                                img[i] = v;
+                            }
+                        }
+                        else // HRIT full 10-bits
+                        {
+                            for (int i = 0; i < (int)img.size(); i++)
+                            {
+                                int v = img2[i] >> 4;
+                                if (v > 255)
+                                    v = 255;
+                                img[i] = v;
+                            }
+                        }
 
                         if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
                             img.init(image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
@@ -85,11 +115,6 @@ namespace fy4
                     if (!std::filesystem::exists(directory + "/IMAGES"))
                         std::filesystem::create_directory(directory + "/IMAGES");
 
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
-
-                    // for (std::string part : header_parts)
-                    //    logger->trace(part);
-
                     int channel = image_structure_record.channel_number;
 
                     // Timestamp
@@ -98,67 +123,81 @@ namespace fy4
                     strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
                     scanTimestamp.tm_sec = 0; // No seconds
 
-                    if (all_wip_images.count(channel) == 0)
-                        all_wip_images.insert({channel, std::make_unique<wip_images>()});
-
-                    std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
-
-                    if (segmentedDecoders.count(channel) <= 0)
-                    {
-                        segmentedDecoders.insert(std::pair<int, SegmentedLRITImageDecoder>(channel, SegmentedLRITImageDecoder()));
-                        wip_img->imageStatus = IDLE;
-                        wip_img->img_height = 0;
-                        wip_img->img_width = 0;
-                    }
-
-                    wip_img->imageStatus = RECEIVING;
-
                     std::string orig_filename = current_filename;
                     std::string image_id = getHRITImageFilename(&scanTimestamp, image_structure_record.satellite_name.substr(0, 4), channel);
 
-                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
-
-                    if (segmentedDecoder.image_id != image_id)
+                    if (header_parts[3] == "DISK") // Segmented
                     {
-                        if (segmentedDecoder.image_id != "")
+                        if (all_wip_images.count(channel) == 0)
+                            all_wip_images.insert({channel, std::make_unique<wip_images>()});
+
+                        std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
+
+                        if (segmentedDecoders.count(channel) <= 0)
+                        {
+                            segmentedDecoders.insert(std::pair<int, SegmentedLRITImageDecoder>(channel, SegmentedLRITImageDecoder()));
+                            wip_img->imageStatus = IDLE;
+                            wip_img->img_height = 0;
+                            wip_img->img_width = 0;
+                        }
+
+                        wip_img->imageStatus = RECEIVING;
+
+                        SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
+
+                        if (segmentedDecoder.image_id != image_id)
+                        {
+                            if (segmentedDecoder.image_id != "")
+                            {
+                                current_filename = image_id;
+
+                                wip_img->imageStatus = SAVING;
+                                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                                segmentedDecoder.image.save_png(directory + "/IMAGES/" + current_filename + ".png");
+                                wip_img->imageStatus = RECEIVING;
+                            }
+
+                            segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.total_segment_count,
+                                                                         image_structure_record.columns_count,
+                                                                         image_structure_record.lines_count,
+                                                                         image_id);
+                        }
+
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
+
+                        // If the UI is active, update texture
+                        if (wip_img->textureID > 0)
+                        {
+                            // Downscale image
+                            wip_img->img_height = 1000;
+                            wip_img->img_width = 1000;
+                            image::Image<uint8_t> imageScaled = segmentedDecoder.image;
+                            imageScaled.resize(wip_img->img_width, wip_img->img_height);
+                            uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                            wip_img->hasToUpdate = true;
+                        }
+
+                        if (segmentedDecoder.isComplete())
                         {
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
                             logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                            wip_img->imageStatus = RECEIVING;
+                            segmentedDecoder.image.save_png(directory + "/IMAGES/" + current_filename + ".png");
+                            segmentedDecoder = SegmentedLRITImageDecoder();
+                            wip_img->imageStatus = IDLE;
                         }
-
-                        segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.total_segment_count,
-                                                                     image_structure_record.columns_count,
-                                                                     image_structure_record.lines_count,
-                                                                     image_id);
                     }
-
-                    segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
-
-                    // If the UI is active, update texture
-                    if (wip_img->textureID > 0)
+                    else
                     {
-                        // Downscale image
-                        wip_img->img_height = 1000;
-                        wip_img->img_width = 1000;
-                        image::Image<uint8_t> imageScaled = segmentedDecoder.image;
-                        imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
-                        wip_img->hasToUpdate = true;
-                    }
+                        std::string img_type = header_parts[3] + "_" + std::to_string(image_structure_record.current_segment_pos);
 
-                    if (segmentedDecoder.isComplete())
-                    {
-                        current_filename = image_id;
+                        if (!std::filesystem::exists(directory + "/IMAGES/" + img_type))
+                            std::filesystem::create_directory(directory + "/IMAGES/" + img_type);
 
-                        wip_img->imageStatus = SAVING;
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
-                        segmentedDecoder = SegmentedLRITImageDecoder();
-                        wip_img->imageStatus = IDLE;
+                        logger->info("Writing image " + directory + "/IMAGES/" + img_type + "/" + image_id + ".png" + "...");
+                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image.save_png(directory + "/IMAGES/" + img_type + "/" + image_id + ".png");
                     }
                 }
                 else
