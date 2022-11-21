@@ -209,7 +209,7 @@ namespace gk2a
                 logger->info("Writing file " + directory + "/ADD/" + name + clean_filename + "." + extension + "...");
 
                 // Write file out
-                std::ofstream fileo(directory + "/ADD/" + name + clean_filename + "." + extension);
+                std::ofstream fileo(directory + "/ADD/" + name + clean_filename + "." + extension, std::ios::binary);
                 fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
                 fileo.close();
             }

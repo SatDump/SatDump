@@ -383,7 +383,7 @@ namespace goes
                         int offset = primary_header.total_header_length;
 
                         // Write file out
-                        std::ofstream fileo(directory + "/IMAGES/" + current_filename + ".gif");
+                        std::ofstream fileo(directory + "/IMAGES/" + current_filename + ".gif", std::ios::binary);
                         fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
                         fileo.close();
                     }
@@ -424,7 +424,7 @@ namespace goes
                     int offset = primary_header.total_header_length;
 
                     // Write file out
-                    std::ofstream fileo(directory + "/EMWIN/" + clean_filename + ".txt");
+                    std::ofstream fileo(directory + "/EMWIN/" + clean_filename + ".txt", std::ios::binary);
                     fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
                     fileo.close();
                 }
@@ -455,7 +455,7 @@ namespace goes
 
                     // Write out
                     logger->info("Writing file " + directory + "/EMWIN/" + filename + "...");
-                    std::ofstream file(directory + "/EMWIN/" + filename);
+                    std::ofstream file(directory + "/EMWIN/" + filename, std::ios::binary);
                     file.write((char *)outBuffer, outSize);
                     file.close();
 
@@ -476,7 +476,7 @@ namespace goes
                 int offset = primary_header.total_header_length;
 
                 // Write file out
-                std::ofstream fileo(directory + "/Admin Messages/" + clean_filename + ".txt");
+                std::ofstream fileo(directory + "/Admin Messages/" + clean_filename + ".txt", std::ios::binary);
                 fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
                 fileo.close();
             }

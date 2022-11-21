@@ -10,8 +10,6 @@ were observed between platforms.
 Hence, seems like providing our own helps a lot more than I
 originally expected / tested on my machine.
 */
-// namespace dsp
-//{
 struct complex_t
 {
     float real;
@@ -74,12 +72,19 @@ struct complex_t
     }
 
     // Complex / Int
-    std::complex<float> operator=(const int &b)
+    void operator=(const int &b)
     {
-        return std::complex<float>(b, 0);
+        real = b;
+        imag = 0;
     }
 
     // Complex / Float operations
+    void operator=(const float &b)
+    {
+        real = b;
+        imag = 0;
+    }
+
     complex_t operator*(const float &b)
     {
         return complex_t(real * b, imag * b);
@@ -97,4 +102,3 @@ struct complex_t
         return *this;
     }
 };
-//};

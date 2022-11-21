@@ -17,6 +17,7 @@ namespace dsp
         // Buffer
         int size = 2 * STREAM_BUFFER_SIZE;
         buffer = (T *)volk_malloc(size * sizeof(T), align);
+        std::fill(buffer, &buffer[size], 0);
 
         // Start by reducing the interp and decim by their GCD
         int gcd = std::gcd(interpolation, decimation);

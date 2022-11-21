@@ -10,11 +10,11 @@ namespace viterbi
                                                                                       d_ber_test_size(ber_test_size),
                                                                                       d_frame_size(frame_size)
     {
-        hard_buffer = new uint8_t[frame_size * 2];
-        buffer_deco = new uint8_t[frame_size];
-        buffer_enco = new uint8_t[ber_test_size];
+        hard_buffer = new uint8_t[frame_size * 3];
+        buffer_deco = new uint8_t[frame_size * 2];
+        buffer_enco = new uint8_t[ber_test_size * 2];
 
-        memset(hard_buffer, 128, frame_size * 2);
+        memset(hard_buffer, 128, frame_size * 3);
 
         bitc = 0;
         bytec = 0;

@@ -20,7 +20,8 @@ namespace dsp
         for (int i = 0; i < nfilt; i++)
         {
             this->taps[i] = (float *)volk_malloc(ntaps * sizeof(float), align);
-            memset(this->taps[i], 0, ntaps);
+            for (int y = 0; y < ntaps; y++)
+                this->taps[i][y] = 0;
         }
 
         // Setup taps
