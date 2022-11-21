@@ -75,17 +75,22 @@ namespace demod
         if (d_frequency_shift != 0)
             freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
 
-        fft_splitter = std::make_shared<dsp::SplitterBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
-        fft_splitter->set_output_2nd(show_fft);
+        std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_frequency_shift != 0 ? freq_shift->output_stream : input_data;
 
-        fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
-        fft_proc->set_fft_settings(8192);
-        fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
-        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);
+        if (input_data_type == DATA_FILE)
+        {
+            fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data_final);
+            fft_splitter->set_output_2nd(show_fft);
+
+            fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
+            fft_proc->set_fft_settings(8192);
+            fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);
+        }
 
         // Init resampler if required
         if (resample)
-            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(fft_splitter->output_stream, final_samplerate, d_samplerate);
+            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final, final_samplerate, d_samplerate);
 
         // AGC
         agc = std::make_shared<dsp::AGCBlock<complex_t>>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
@@ -114,8 +119,10 @@ namespace demod
             dc_blocker->start();
         if (d_frequency_shift != 0)
             freq_shift->start();
-        fft_splitter->start();
-        fft_proc->start();
+        if (input_data_type == DATA_FILE)
+            fft_splitter->start();
+        if (input_data_type == DATA_FILE)
+            fft_proc->start();
         if (resample)
             resampler->start();
         agc->start();
@@ -130,8 +137,10 @@ namespace demod
             dc_blocker->stop();
         if (d_frequency_shift != 0)
             freq_shift->stop();
-        fft_splitter->stop();
-        fft_proc->stop();
+        if (input_data_type == DATA_FILE)
+            fft_splitter->stop();
+        if (input_data_type == DATA_FILE)
+            fft_proc->stop();
         if (resample)
             resampler->stop();
         agc->stop();

@@ -17,6 +17,12 @@ namespace dsp
         {
             writeBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
             readBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
+
+            for (int i = 0; i < stream_size; i++)
+            {
+                writeBuf[i] = 0;
+                readBuf[i] = 0;
+            }
         }
 
         ~stream()
