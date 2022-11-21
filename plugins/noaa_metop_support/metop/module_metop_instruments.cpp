@@ -20,7 +20,7 @@ namespace metop
     namespace instruments
     {
         MetOpInstrumentsDecoderModule::MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false)
         {
             write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
         }
@@ -79,7 +79,7 @@ namespace metop
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 103 || pkt.header.apid == 104)
                         {
-                            avhrr_reader.work(pkt);
+                            avhrr_reader.work_metop(pkt);
                             if (write_hpt)
                                 avhrr_to_hpt->work(pkt);
                         }
@@ -214,8 +214,9 @@ namespace metop
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
                 avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                for (int i = 0; i < 5; i++)
-                    avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
+                std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
+                for (int i = 0; i < 6; i++)
+                    avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
 
                 avhrr_products.save(directory);
                 dataset.products_list.push_back("AVHRR");

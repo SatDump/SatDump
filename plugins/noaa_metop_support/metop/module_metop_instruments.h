@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/module.h"
-#include "instruments/avhrr/avhrr_reader.h"
+#include "../instruments/avhrr/avhrr_reader.h"
 #include "../instruments/mhs/mhs_reader.h"
 #include "instruments/ascat/ascat_reader.h"
 #include "instruments/iasi/iasi_reader.h"
@@ -26,7 +26,7 @@ namespace metop
             bool write_hpt = false;
 
             // Readers
-            avhrr::AVHRRReader avhrr_reader;
+            noaa_metop::avhrr::AVHRRReader avhrr_reader;
             noaa_metop::mhs::MHSReader mhs_reader;
             ascat::ASCATReader ascat_reader;
             iasi::IASIReader iasi_reader;

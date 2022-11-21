@@ -2,7 +2,7 @@
 
 #include "core/module.h"
 #include "common/repack.h"
-#include "instruments/avhrr/avhrr_reader.h"
+#include "../instruments/avhrr/avhrr_reader.h"
 #include "../instruments/mhs/mhs_reader.h"
 #include "instruments/hirs/hirs_reader.h"
 #include "instruments/amsu/amsu_reader.h"
@@ -21,7 +21,7 @@ namespace noaa
             const bool is_dsb;
 
             // Readers
-            avhrr::AVHRRReader avhrr_reader;
+            noaa_metop::avhrr::AVHRRReader avhrr_reader;
             noaa_metop::mhs::MHSReader mhs_reader;
             hirs::HIRSReader hirs_reader;
             amsu::AMSUReader amsu_reader;

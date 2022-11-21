@@ -27,7 +27,7 @@ namespace noaa
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             logger->info("Using input frames " + d_input_file);
-
+            std::vector<int> spacecraft_ids;
             if (!is_dsb)
             {
                 uint16_t buffer[11090] = {0};
@@ -37,7 +37,8 @@ namespace noaa
                     if (!is_gac)
                     {
                         data_in.read((char *)&buffer[0], 11090 * 2);
-                        avhrr_reader.work(buffer); // avhrr
+                        avhrr_reader.work_noaa(buffer); // avhrr
+                        spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
 
                         { // getting the TIP/AIP out
                             int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
@@ -73,8 +74,9 @@ namespace noaa
                         uint8_t rawWords[4159];
                         data_in.read((char *)rawWords, 4159);
                         repackBytesTo10bits(rawWords, 4159, buffer);
+                        spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
 
-                        avhrr_reader.work(buffer); // avhrr
+                        avhrr_reader.work_noaa(buffer); // avhrr
 
                         { // getting the TIP/AIP out
                             uint8_t frameBuffer[104];
@@ -101,8 +103,8 @@ namespace noaa
                 } // done with the frames
                 data_in.close();
 
-                int scid = most_common(avhrr_reader.spacecraft_ids.begin(), avhrr_reader.spacecraft_ids.end());
-                avhrr_reader.spacecraft_ids.clear();
+                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
+                spacecraft_ids.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
                 if (scid == 7)
@@ -168,8 +170,10 @@ namespace noaa
 
                     avhrr_products.set_proj_cfg(proj_settings);
 
-                    for (int i = 0; i < 5; i++)
-                        avhrr_products.images.push_back({"AVHRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), avhrr_reader.getChannel(i)});
+
+                    std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
+                    for (int i = 0; i < 6; i++)
+                        avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
