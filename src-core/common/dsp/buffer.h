@@ -3,6 +3,7 @@
 #include <condition_variable>
 #include <volk/volk.h>
 #include <string.h>
+#include "common/dsp/complex.h"
 
 namespace dsp
 {

@@ -24,7 +24,8 @@ namespace dsp
         for (int i = 0; i < aligned_tap_count; i++)
         {
             this->taps[i] = (float *)volk_malloc((ntaps + aligned_tap_count - 1) * sizeof(float), align);
-            memset(this->taps[i], 0, ntaps + aligned_tap_count - 1);
+            for (int y = 0; y < ntaps + aligned_tap_count - 1; y++)
+                this->taps[i][y] = 0;
             for (int j = 0; j < ntaps; j++)
                 this->taps[i][i + j] = taps[(ntaps - 1) - j]; // Reverse taps
         }
