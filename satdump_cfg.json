@@ -221,25 +221,25 @@
                             }
                         }
                     },
-                    "321": {
-                        "equation": "ch3, ch2, ch1",
+                    "3a21": {
+                        "equation": "ch3a, ch2, ch1",
                         "geo_correct": true
                     },
-                    "321/221 Mix": {
-                        "equation": "(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15",
+                    "3a21/221 Mix": {
+                        "equation": "(ch3a * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15",
                         "geo_correct": true
                     },
                     "4/221 Merge": {
                         "equation": "ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch1 * 2.2 - 0.15",
                         "geo_correct": true
                     },
-                    "543": {
-                        "equation": "ch5, ch4, ch3",
+                    "543b": {
+                        "equation": "ch5, ch4, ch3b",
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "345": {
-                        "equation": "ch3, ch4, ch5",
+                    "3b45": {
+                        "equation": "ch3b, ch4, ch5",
                         "equalize": true,
                         "geo_correct": true
                     },
@@ -263,13 +263,13 @@
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "(1-ch5)-(1-ch4),(1-ch4)-(1-ch3),(1-ch4)",
+                        "equation": "(1-ch5)-(1-ch4),(1-ch4)-(1-ch3b),(1-ch4)",
                         "geo_correct": true,
                         "equalize": true,
                         "white_balance": true
                     },
                     "Day Microphysics": {
-                        "equation": "ch1, (1-ch3)^2.5,(1-ch4)",
+                        "equation": "ch1, (1-ch3a)^2.5,(1-ch4)",
                         "geo_correct": true,
                         "equalize": true
                     }
