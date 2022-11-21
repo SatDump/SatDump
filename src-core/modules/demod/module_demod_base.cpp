@@ -88,12 +88,14 @@ namespace demod
             waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);
         }
 
+        std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
+
         // Init resampler if required
         if (resample)
-            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final, final_samplerate, d_samplerate);
+            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(input_data_final_fft, final_samplerate, d_samplerate);
 
         // AGC
-        agc = std::make_shared<dsp::AGCBlock<complex_t>>(resample ? resampler->output_stream : fft_splitter->output_stream, d_agc_rate, 1.0f, 1.0f, 65536);
+        agc = std::make_shared<dsp::AGCBlock<complex_t>>(resample ? resampler->output_stream : input_data_final_fft, d_agc_rate, 1.0f, 1.0f, 65536);
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()
