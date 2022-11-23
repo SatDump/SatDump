@@ -171,8 +171,8 @@ void BladeRFSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    if (ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str()))
+        current_samplerate = available_samplerates[selected_samplerate];
 
     if (channel_cnt > 1)
         ImGui::Combo("Channel", &channel_id, "RX1\0"
