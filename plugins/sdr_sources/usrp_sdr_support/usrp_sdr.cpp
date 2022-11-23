@@ -106,6 +106,12 @@ void USRPSource::set_settings(nlohmann::json settings)
     antenna = getValueOrDefault(d_settings["antenna"], antenna);
     gain = getValueOrDefault(d_settings["gain"], gain);
     agc = getValueOrDefault(d_settings["agc"], agc);
+    bit_depth = getValueOrDefault(d_settings["bit_depth"], bit_depth);
+
+    if (bit_depth == 8)
+        selected_bit_depth = 0;
+    else if (bit_depth == 16)
+        selected_bit_depth = 1;
 
     if (is_started)
     {
@@ -121,6 +127,7 @@ nlohmann::json USRPSource::get_settings()
     d_settings["antenna"] = antenna;
     d_settings["gain"] = gain;
     d_settings["agc"] = agc;
+    d_settings["bit_depth"] = bit_depth;
 
     return d_settings;
 }
@@ -160,7 +167,10 @@ void USRPSource::start()
     sargs.channels.clear();
     sargs.channels.push_back(channel);
     sargs.cpu_format = "fc32";
-    sargs.otw_format = "sc8";
+    if (bit_depth == 8)
+        sargs.otw_format = "sc8";
+    else if (bit_depth == 16)
+        sargs.otw_format = "sc16";
 
     usrp_streamer = usrp_device->get_rx_stream(sargs);
     usrp_streamer->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
@@ -219,6 +229,15 @@ void USRPSource::drawControlUI()
 
     if (ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str()))
         current_samplerate = available_samplerates[selected_samplerate];
+
+    if (ImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
+                                                       "16-bits\0"))
+    {
+        if (selected_bit_depth == 0)
+            bit_depth = 8;
+        else if (selected_bit_depth == 1)
+            bit_depth = 16;
+    }
 
     if (is_started)
         style::endDisabled();

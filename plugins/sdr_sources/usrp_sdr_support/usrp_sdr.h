@@ -26,11 +26,13 @@ protected:
     std::string channel_option_str;
     std::vector<std::string> usrp_antennas;
     std::string antenna_option_str;
+    int selected_bit_depth = 1;
 
     int channel = 0;
     int antenna = 0;
     float gain = 0;
     bool agc = false;
+    int bit_depth = 16;
 
     void set_gains();
     void set_agcs();
