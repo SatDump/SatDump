@@ -45,6 +45,8 @@ protected:
     {
         bladerf_metadata meta;
 
+        sample_buffer = new int16_t[STREAM_BUFFER_SIZE * 2];
+
         while (thread_should_run)
         {
             if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
@@ -52,19 +54,19 @@ protected:
             volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
             output_stream->swap(sample_buffer_size);
         }
+
+        delete[] sample_buffer;
     }
 
 public:
     BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        sample_buffer = new int16_t[STREAM_BUFFER_SIZE * 2];
     }
 
     ~BladeRFSource()
     {
         stop();
         close();
-        delete[] sample_buffer;
     }
 
     void set_settings(nlohmann::json settings);
