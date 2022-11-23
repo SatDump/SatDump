@@ -27,7 +27,10 @@ namespace noaa
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             logger->info("Using input frames " + d_input_file);
+
             std::vector<int> spacecraft_ids;
+            time_t lastTime = 0;
+
             if (!is_dsb)
             {
                 uint16_t buffer[11090] = {0};
@@ -38,7 +41,6 @@ namespace noaa
                     {
                         data_in.read((char *)&buffer[0], 11090 * 2);
                         avhrr_reader.work_noaa(buffer); // avhrr
-                        spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
 
                         { // getting the TIP/AIP out
                             int frmnum = ((buffer[6] >> 7) & 0b00000010) | ((buffer[6] >> 7) & 1);
@@ -74,7 +76,6 @@ namespace noaa
                         uint8_t rawWords[4159];
                         data_in.read((char *)rawWords, 4159);
                         repackBytesTo10bits(rawWords, 4159, buffer);
-                        spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
 
                         avhrr_reader.work_noaa(buffer); // avhrr
 
@@ -99,6 +100,14 @@ namespace noaa
                                 mhs_reader.work_NOAA(frameBuffer);
                             }
                         }
+                    }
+                    spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
+
+                    progress = data_in.tellg();
+                    if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                    {
+                        lastTime = time(NULL);
+                        logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                     }
                 } // done with the frames
                 data_in.close();
@@ -169,7 +178,6 @@ namespace noaa
                         proj_settings["image_width"] = 409;
 
                     avhrr_products.set_proj_cfg(proj_settings);
-
 
                     std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                     for (int i = 0; i < 6; i++)
@@ -319,6 +327,13 @@ namespace noaa
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
                     scid_list.push_back(buffer[0] & 0b00001111);
+
+                    progress = data_in.tellg();
+                    if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                    {
+                        lastTime = time(NULL);
+                        logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    }
                 }
 
                 // ID
