@@ -46,7 +46,7 @@ protected:
         work_thread_mtx.lock();
 
     restart:
-        int blockSize = 8192; ////current_samplerate / 200.0f;
+        int blockSize = std::min<int>(current_samplerate / 250, STREAM_BUFFER_SIZE);
 
         struct iio_channel *rx0_i, *rx0_q;
         struct iio_buffer *rxbuf;

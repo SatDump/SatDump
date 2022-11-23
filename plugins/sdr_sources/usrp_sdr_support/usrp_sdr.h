@@ -18,6 +18,8 @@ protected:
     uhd::rx_streamer::sptr usrp_streamer;
     uhd::gain_range_t gain_range;
 
+    bool use_device_rates = false;
+
     int selected_samplerate = 0;
     std::string samplerate_option_str;
     std::vector<uint64_t> available_samplerates;
@@ -31,11 +33,9 @@ protected:
     int channel = 0;
     int antenna = 0;
     float gain = 0;
-    bool agc = false;
     int bit_depth = 16;
 
     void set_gains();
-    void set_agcs();
 
     void open_sdr();
     void open_channel();
@@ -46,9 +46,11 @@ protected:
     {
         uhd::rx_metadata_t meta;
 
+        int buffer_size = std::min<int>(current_samplerate / 250, STREAM_BUFFER_SIZE);
+
         while (thread_should_run)
         {
-            int cnt = usrp_streamer->recv(output_stream->writeBuf, current_samplerate / 100, meta, 1.0);
+            int cnt = usrp_streamer->recv(output_stream->writeBuf, buffer_size, meta, 1.0);
             if (cnt > 0)
                 output_stream->swap(cnt);
         }

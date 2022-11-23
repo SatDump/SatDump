@@ -9,15 +9,6 @@ void USRPSource::set_gains()
     logger->debug("Set USRP gain to {:f}", gain);
 }
 
-void USRPSource::set_agcs()
-{
-    if (!is_started)
-        return;
-
-    usrp_device->set_rx_agc(agc, channel);
-    logger->debug("Set USRP AGC to {:d}", (int)agc);
-}
-
 void USRPSource::open_sdr()
 {
     uhd::device_addrs_t devlist = uhd::device::find(uhd::device_addr_t());
@@ -42,45 +33,51 @@ void USRPSource::open_channel()
 
     logger->info("Using USRP channel {:d}", channel);
 
-#if 0
-    // Get samplerates
-    uhd::meta_range_t dev_samplerates = usrp_device->get_rx_rates(channel);
-    available_samplerates.clear();
-    for (auto &sr : dev_samplerates)
+    if (usrp_device->get_master_clock_rate_range().start() != usrp_device->get_master_clock_rate_range().stop())
+        use_device_rates = true;
+
+    if (use_device_rates)
     {
-        if (sr.step() == 0 || sr.start() == sr.stop())
+        // Get samplerates
+        uhd::meta_range_t dev_samplerates = usrp_device->get_master_clock_rate_range();
+        available_samplerates.clear();
+        for (auto &sr : dev_samplerates)
         {
-            available_samplerates.push_back(sr.start());
-        }
-        else
-        {
-            for (double s = sr.start(); s <= sr.stop(); s += sr.step())
-                available_samplerates.push_back(s);
+            if (sr.step() == 0 && sr.start() == sr.stop())
+            {
+                available_samplerates.push_back(sr.start());
+            }
+            else if (sr.step() == 0)
+            {
+                for (double s = std::max(sr.start(), 1e6); s < sr.stop(); s += 1e6)
+                    available_samplerates.push_back(s);
+                available_samplerates.push_back(sr.stop());
+            }
+            else
+            {
+                for (double s = sr.start(); s <= sr.stop(); s += sr.step())
+                    available_samplerates.push_back(s);
+            }
         }
     }
-#else
-    // Get samplerates
-    uhd::meta_range_t dev_samplerates = usrp_device->get_master_clock_rate_range(channel);
-    available_samplerates.clear();
-    for (auto &sr : dev_samplerates)
+    else
     {
-        if (sr.step() == 0 && sr.start() == sr.stop())
+        // Get samplerates
+        uhd::meta_range_t dev_samplerates = usrp_device->get_rx_rates(channel);
+        available_samplerates.clear();
+        for (auto &sr : dev_samplerates)
         {
-            available_samplerates.push_back(sr.start());
-        }
-        else if (sr.step() == 0)
-        {
-            for (double s = std::max(sr.start(), 1e6); s < sr.stop(); s += 1e6)
-                available_samplerates.push_back(s);
-            available_samplerates.push_back(sr.stop());
-        }
-        else
-        {
-            for (double s = sr.start(); s <= sr.stop(); s += sr.step())
-                available_samplerates.push_back(s);
+            if (sr.step() == 0 || sr.start() == sr.stop())
+            {
+                available_samplerates.push_back(sr.start());
+            }
+            else
+            {
+                for (double s = sr.start(); s <= sr.stop(); s += sr.step())
+                    available_samplerates.push_back(s);
+            }
         }
     }
-#endif
 
     // Init UI stuff
     samplerate_option_str = "";
@@ -105,7 +102,6 @@ void USRPSource::set_settings(nlohmann::json settings)
     channel = getValueOrDefault(d_settings["channel"], channel);
     antenna = getValueOrDefault(d_settings["antenna"], antenna);
     gain = getValueOrDefault(d_settings["gain"], gain);
-    agc = getValueOrDefault(d_settings["agc"], agc);
     bit_depth = getValueOrDefault(d_settings["bit_depth"], bit_depth);
 
     if (bit_depth == 8)
@@ -116,7 +112,6 @@ void USRPSource::set_settings(nlohmann::json settings)
     if (is_started)
     {
         set_gains();
-        set_agcs();
     }
 }
 
@@ -126,7 +121,6 @@ nlohmann::json USRPSource::get_settings()
     d_settings["channel"] = channel;
     d_settings["antenna"] = antenna;
     d_settings["gain"] = gain;
-    d_settings["agc"] = agc;
     d_settings["bit_depth"] = bit_depth;
 
     return d_settings;
@@ -147,7 +141,8 @@ void USRPSource::start()
     open_channel();
 
     logger->debug("Set USRP samplerate to " + std::to_string(current_samplerate));
-    usrp_device->set_master_clock_rate(current_samplerate);
+    if (use_device_rates)
+        usrp_device->set_master_clock_rate(current_samplerate);
     usrp_device->set_rx_rate(current_samplerate, channel);
     usrp_device->set_rx_bandwidth(current_samplerate, channel);
 
@@ -161,7 +156,6 @@ void USRPSource::start()
     set_frequency(d_frequency);
 
     set_gains();
-    set_agcs();
 
     uhd::stream_args_t sargs;
     sargs.channels.clear();
@@ -245,10 +239,6 @@ void USRPSource::drawControlUI()
     // Gain settings
     if (ImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
         set_gains();
-
-    // Gain settings
-    if (ImGui::Checkbox("AGC", &agc))
-        set_agcs();
 }
 
 void USRPSource::set_samplerate(uint64_t samplerate)

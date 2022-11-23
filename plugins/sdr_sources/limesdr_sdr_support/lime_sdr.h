@@ -47,12 +47,14 @@ protected:
         lms_stream_meta_t md;
 #endif
 
+        int buffer_size = std::min<int>(current_samplerate / 250, STREAM_BUFFER_SIZE);
+
         while (thread_should_run)
         {
 #if __ANDROID__
-            int cnt = limeStream->Read(output_stream->writeBuf, 8192 * 10, &md);
+            int cnt = limeStream->Read(output_stream->writeBuf, buffer_size, &md);
 #else
-            int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, 8192 * 10, &md, 2000);
+            int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, buffer_size, &md, 2000);
 #endif
             if (cnt > 0)
                 output_stream->swap(cnt);

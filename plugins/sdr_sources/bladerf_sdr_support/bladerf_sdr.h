@@ -36,8 +36,8 @@ protected:
     void set_gains();
     void set_bias();
 
-    static const int sample_buffer_size = 8192 * 4;
-    int16_t sample_buffer[sample_buffer_size * 2];
+    int sample_buffer_size = 8192;
+    int16_t *sample_buffer;
 
     std::thread work_thread;
     bool thread_should_run = false;
@@ -47,22 +47,24 @@ protected:
 
         while (thread_should_run)
         {
-                if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
-                    continue;
-                volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
-                output_stream->swap(sample_buffer_size);
+            if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
+                continue;
+            volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
+            output_stream->swap(sample_buffer_size);
         }
     }
 
 public:
     BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
+        sample_buffer = new int16_t[STREAM_BUFFER_SIZE * 2];
     }
 
     ~BladeRFSource()
     {
         stop();
         close();
+        delete[] sample_buffer;
     }
 
     void set_settings(nlohmann::json settings);
