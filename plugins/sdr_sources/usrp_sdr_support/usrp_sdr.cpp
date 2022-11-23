@@ -280,7 +280,7 @@ std::vector<dsp::SourceDescriptor> USRPSource::getAvailableSources()
     uint64_t i = 0;
     for (const uhd::device_addr_t &dev : devlist)
     {
-        std::string type = dev.has_key("product") ? dev["product"] : dev["model"];
+        std::string type = dev.has_key("product") ? dev["product"] : dev["type"];
         results.push_back({"usrp", "USRP " + type + " " + dev["serial"], i});
         i++;
     }
