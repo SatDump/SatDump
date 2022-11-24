@@ -45,6 +45,8 @@ namespace demod
 
         int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1)); // Avoid complex resampling
 
+        final_samplerate = d_samplerate;
+
         if (MAX_SPS == MIN_SPS)
             final_samplerate = d_symbolrate * MAX_SPS;
         else if (input_sps > MAX_SPS)
