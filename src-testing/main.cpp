@@ -11,32 +11,48 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/mpdu.h"
-#include <fstream>
 
-#include "common/codings/randomization.h"
+#include "libs/sol2/sol.hpp"
 
-#include "common/image/image.h"
-#include "common/repack.h"
+class LuaLogger
+{
+public:
+    LuaLogger() {}
+
+    void trace(std::string log) { logger->trace(log); }
+    void debug(std::string log) { logger->debug(log); }
+    void info(std::string log) { logger->info(log); }
+    void warn(std::string log) { logger->warn(log); }
+    void error(std::string log) { logger->error(log); }
+    void critical(std::string log) { logger->critical(log); }
+
+    static void bindLogger(sol::state &lua)
+    {
+        lua.new_usertype<LuaLogger>("lua_logger",
+                                    "trace", &LuaLogger::trace,
+                                    "debug", &LuaLogger::debug,
+                                    "info", &LuaLogger::info,
+                                    "warn", &LuaLogger::warn,
+                                    "error", &LuaLogger::error,
+                                    "critical", &LuaLogger::critical);
+        lua["logger"] = std::make_shared<LuaLogger>();
+    }
+};
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    std::ifstream idk_file(argv[1]);
-    std::ofstream idk_file2(argv[2]);
+    sol::state lua;
 
-    uint8_t buffer1[1024];
+    lua.open_libraries(sol::lib::base);
+    lua.open_libraries(sol::lib::string);
 
+    LuaLogger::bindLogger(lua);
 
-    while (!idk_file.eof())
-    {
-        idk_file.read((char *)buffer1, 1024);
-
-        derand_ccsds(&buffer1[4], 1024 - 4);
-
-        idk_file2.write((char *)&buffer1[4], 892);
-    }
+    lua.script(
+        "for i = 0, 10, 1 \n"
+        "do \n"
+        "logger:warn(string.format('Test %d', i)) \n"
+        "end \n");
 }
