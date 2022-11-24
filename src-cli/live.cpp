@@ -279,6 +279,25 @@ int main_live(int argc, char *argv[])
         // Stop cleanly
         source_ptr->stop();
         live_pipeline->stop();
+
+        if ((parameters.contains("finish_processing") ? parameters["finish_processing"].get<bool>() : false) &&
+            live_pipeline->getOutputFiles().size() > 0 &&
+            !server_mode)
+        {
+            std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+            std::string input_file = live_pipeline->getOutputFiles()[0];
+            int start_level = pipeline->live_cfg.normal_live[pipeline->live_cfg.normal_live.size() - 1].first;
+            std::string input_level = pipeline->steps[start_level].level_name;
+
+            try
+            {
+                pipeline.value().run(input_file, output_file, parameters, input_level);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Fatal error running pipeline : " + std::string(e.what()));
+            }
+        }
     }
 
     if (parameters.contains("http_server"))
