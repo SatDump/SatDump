@@ -40,14 +40,19 @@ namespace demod
 
     void BaseDemodModule::init()
     {
-        float input_sps = (float)d_samplerate / (float)d_symbolrate;         // Compute input SPS
-        resample = input_sps > MAX_SPS || input_sps < MIN_SPS;               // If SPS is out of allowed range, we resample
+        float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
+        resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
+
         int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1)); // Avoid complex resampling
+
         if (MAX_SPS == MIN_SPS)
             final_samplerate = d_symbolrate * MAX_SPS;
-        else
+        else if (input_sps > MAX_SPS)
             final_samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
-        float decimation_factor = d_samplerate / final_samplerate;                                        // Decimation factor to rescale our input buffer
+        else if (input_sps < MIN_SPS)
+            final_samplerate = resample ? d_symbolrate * MIN_SPS : d_samplerate; // Get the final samplerate we'll be working with
+
+        float decimation_factor = d_samplerate / final_samplerate; // Decimation factor to rescale our input buffer
 
         if (resample)
             d_buffer_size *= round(decimation_factor);
