@@ -232,6 +232,9 @@ namespace himawari
                                     auto lrit_data = file.data;
                                     PrimaryHeader primary_header(&lrit_data[0]);
 
+                                    if (lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
+                                        continue;
+
                                     // Get all other headers
                                     std::map<int, int> all_headers;
                                     for (uint32_t i = 0; i < primary_header.total_header_length;)

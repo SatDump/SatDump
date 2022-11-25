@@ -48,21 +48,57 @@ int main(int /*argc*/, char *argv[])
 
     lua.open_libraries(sol::lib::base);
     lua.open_libraries(sol::lib::string);
+    lua.open_libraries(sol::lib::math);
 
     LuaLogger::bindLogger(lua);
 
     ////////////////////////////////////////////////////////////////////////////////
     sol::usertype<image::Image<uint16_t>> image16_type = lua.new_usertype<image::Image<uint16_t>>(
         "image16",
-        sol::constructors<image::Image<uint16_t>(), image::Image<uint16_t>(size_t, size_t, int)>(),
-        sol::meta_function::index, [](image::Image<uint16_t> &img, int i)
-        { return img[i]; },
-        sol::meta_function::new_index, [](image::Image<uint16_t> &img, int i, uint16_t x)
-        { return img[i] = x; });
+        sol::constructors<image::Image<uint16_t>(), image::Image<uint16_t>(size_t, size_t, int)>());
 
+    image16_type["clear"] = &image::Image<uint16_t>::clear;
+
+    image16_type["get"] = [](image::Image<uint16_t> &img, int i)
+    { return img[i]; };
+    image16_type["set"] = [](image::Image<uint16_t> &img, int i, uint16_t x)
+    { img[i] = img.clamp(x); };
+
+    image16_type["depth"] = &image::Image<uint16_t>::depth;
+    image16_type["width"] = &image::Image<uint16_t>::width;
+    image16_type["height"] = &image::Image<uint16_t>::height;
+    image16_type["channels"] = &image::Image<uint16_t>::channels;
+    image16_type["size"] = &image::Image<uint16_t>::size;
+
+    image16_type["to_rgb"] = &image::Image<uint16_t>::to_rgb;
+    image16_type["to_rgba"] = &image::Image<uint16_t>::to_rgba;
+
+    image16_type["fill_color"] = &image::Image<uint16_t>::fill_color;
+    image16_type["fill"] = &image::Image<uint16_t>::fill;
+    image16_type["mirror"] = &image::Image<uint16_t>::mirror;
     image16_type["equalize"] = &image::Image<uint16_t>::equalize;
-    // image16_type["load_png"] = &image::Image<uint16_t>::load_png;
+    image16_type["white_balance"] = &image::Image<uint16_t>::white_balance;
+    // CROP / CROP-TO
+    image16_type["resize"] = &image::Image<uint16_t>::resize;
+    image16_type["resize_to"] = &image::Image<uint16_t>::resize_to;
+    image16_type["resize_bilinear"] = &image::Image<uint16_t>::resize_bilinear;
+    image16_type["brightness_contrast_old"] = &image::Image<uint16_t>::brightness_contrast_old;
+    image16_type["linear_invert"] = &image::Image<uint16_t>::linear_invert;
+    image16_type["simple_despeckle"] = &image::Image<uint16_t>::simple_despeckle;
+    image16_type["median_blur"] = &image::Image<uint16_t>::median_blur;
+
+    image16_type["draw_pixel"] = &image::Image<uint16_t>::draw_pixel;
+    image16_type["draw_line"] = &image::Image<uint16_t>::draw_line;
+    image16_type["draw_circle"] = &image::Image<uint16_t>::draw_circle;
+    image16_type["draw_image"] = &image::Image<uint16_t>::draw_image;
+    // image16_type["draw_text"] = &image::Image<uint16_t>::draw_text;
+
+    image16_type["load_png"] = (void(image::Image<uint16_t>::*)(std::string, bool))(&image::Image<uint16_t>::load_png);
     image16_type["save_png"] = &image::Image<uint16_t>::save_png;
+    image16_type["load_jpeg"] = (void(image::Image<uint16_t>::*)(std::string))(&image::Image<uint16_t>::load_jpeg);
+    image16_type["save_jpeg"] = &image::Image<uint16_t>::save_jpeg;
+    image16_type["load_img"] = (void(image::Image<uint16_t>::*)(std::string))(&image::Image<uint16_t>::load_img);
+    image16_type["save_img"] = &image::Image<uint16_t>::save_img;
     ////////////////////////////////////////////////////////////////////////////////
 
     std::ifstream isf(argv[1]);
