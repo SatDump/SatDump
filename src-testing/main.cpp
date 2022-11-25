@@ -11,8 +11,9 @@
  **********************************************************************/
 
 #include "logger.h"
-
+#include <fstream>
 #include "libs/sol2/sol.hpp"
+#include "common/image/image.h"
 
 class LuaLogger
 {
@@ -50,9 +51,22 @@ int main(int /*argc*/, char *argv[])
 
     LuaLogger::bindLogger(lua);
 
-    lua.script(
-        "for i = 0, 10, 1 \n"
-        "do \n"
-        "logger:warn(string.format('Test %d', i)) \n"
-        "end \n");
+    ////////////////////////////////////////////////////////////////////////////////
+    sol::usertype<image::Image<uint16_t>> image16_type = lua.new_usertype<image::Image<uint16_t>>(
+        "image16",
+        sol::constructors<image::Image<uint16_t>(), image::Image<uint16_t>(size_t, size_t, int)>(),
+        sol::meta_function::index, [](image::Image<uint16_t> &img, int i)
+        { return img[i]; },
+        sol::meta_function::new_index, [](image::Image<uint16_t> &img, int i, uint16_t x)
+        { return img[i] = x; });
+
+    image16_type["equalize"] = &image::Image<uint16_t>::equalize;
+    // image16_type["load_png"] = &image::Image<uint16_t>::load_png;
+    image16_type["save_png"] = &image::Image<uint16_t>::save_png;
+    ////////////////////////////////////////////////////////////////////////////////
+
+    std::ifstream isf(argv[1]);
+    std::string lua_src(std::istreambuf_iterator<char>{isf}, {});
+
+    lua.script(lua_src);
 }
