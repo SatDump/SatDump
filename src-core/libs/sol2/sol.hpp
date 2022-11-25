@@ -3152,9 +3152,9 @@ struct pre_main {
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "libs/lua/lua.h"
+#include "libs/lua/lauxlib.h"
+#include "libs/lua/lualib.h"
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif
@@ -4412,9 +4412,9 @@ COMPAT53_API void luaL_requiref(lua_State* L, const char* modname, lua_CFunction
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "libs/lua/lua.h"
+#include "libs/lua/lauxlib.h"
+#include "libs/lua/lualib.h"
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif
