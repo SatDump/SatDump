@@ -2,16 +2,39 @@
     "fengyun4_lrit": {
         "name": "FengYun-4 LRIT",
         "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
+        "live_cfg": {
+            "pkt_size": 10240, // 1024 * 10
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
             ],
-            [
-                2,
-                0
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
+            ],
+            "client": [
+                [
+                    3,
+                    0
+                ]
             ]
-        ],
+        },
         "frequencies": [
             [
                 "LRIT",
@@ -52,16 +75,39 @@
     "fengyun4_hrit": {
         "name": "FengYun-4 HRIT",
         "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
+        "live_cfg": {
+            "pkt_size": 10240, // 1024 * 10
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
             ],
-            [
-                2,
-                0
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
+            ],
+            "client": [
+                [
+                    3,
+                    0
+                ]
             ]
-        ],
+        },
         "frequencies": [
             [
                 "HRIT",
