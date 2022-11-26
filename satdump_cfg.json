@@ -96,8 +96,14 @@
                 "error",
                 "critical"
             ],
-            "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
+            "description": "The logger level of SatDump in the console.\nEg, if you wish to only show errors\nor every little thing that's going on",
             "no_live": true
+        },
+        "log_to_file": {
+            "type": "bool",
+            "value": true,
+            "name": "Save log file",
+            "description": "Save ALL SatDump logs to a file.\nThis is useful to send in\nbug reports and such."
         },
         "opencl_device": {
             "platform": 0,

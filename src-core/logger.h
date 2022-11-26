@@ -13,5 +13,8 @@ SATDUMP_DLL extern std::shared_ptr<spdlog::logger> logger;
 // Initialize the logger
 void initLogger();
 
+// Init logger file sink
+void initFileSink();
+
 // Change output level, eg Debug, Info, etc
 void setConsoleLevel(spdlog::level::level_enum level);
