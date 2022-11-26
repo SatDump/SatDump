@@ -43,6 +43,12 @@ namespace satdump
         else
             config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
 
+        if (config::main_cfg["satdump_general"].contains("log_level"))
+        {
+            int log_level = config::main_cfg["satdump_general"]["log_level"]["value"];
+            setConsoleLevel((spdlog::level::level_enum)log_level);
+        }
+
         loadPlugins();
 
         registerModules();

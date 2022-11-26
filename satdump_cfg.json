@@ -84,6 +84,21 @@
     },
     // More generic SatDump settings
     "satdump_general": {
+        "log_level": {
+            "type": "options",
+            "value": 0,
+            "name": "Log Level",
+            "options": [
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "critical"
+            ],
+            "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
+            "no_live": true
+        },
         "opencl_device": {
             "platform": 0,
             "device": 0
