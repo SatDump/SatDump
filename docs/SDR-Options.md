@@ -44,9 +44,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 
 ## LimeSDR
 
-- `tia_gain` : TIA Gain in dBs
-- `lna_gain` : LNA Gain in dBs
-- `pga_gain` : PGA Gain in dBs
+- `gain` : Gain in dBs
 
 ## RTL-SDR
 
@@ -76,7 +74,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `am_port` : Select the AM antenna port
 - `antenna_input` : Select a specific antenna input. 0 is the first input
 - `agc_mode` : AGC Mode, 0 is disabled :
-    - 1 if 5Hz
+    - 1 is 5Hz
     - 2 is 50Hz
     - 3 is 500Hz
 
@@ -87,6 +85,22 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `bit_depth` : Bit depth to stream at. Options are 8/16/32
 - `gain` : Device gain in dBs
 - `digital_gain` : Software gain, in dBs
+
+## PlutoSDR
+
+- `gain` : Device Gain in dBs
+- `gain_mode` : Gain mode :
+    - 1 is Manual
+    - 2 is Fast Attack
+    - 3 is Slow Attack
+    - 4 is Hybrid
+
+## USRP
+
+- `gain` : Device Gain in dBs
+- `channel` : Channel ID
+- `antenna` : Antenna ID
+- `bit_depth` : Bit depth. Can be 16 on all devices, 8 or 12 on some
 
 ## MiriSDR
 
