@@ -18,7 +18,7 @@ namespace metop
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
-        deframer.STATE_SYNCED = 22;
+        deframer.STATE_SYNCED = 18;
     }
 
     std::vector<ModuleDataType> MetOpAHRPTDecoderModule::getInputTypes()
