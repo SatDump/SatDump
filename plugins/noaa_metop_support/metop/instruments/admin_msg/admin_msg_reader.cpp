@@ -36,6 +36,7 @@ namespace metop
             outputMessageFile.close();
 
             // TLE Parsing
+            try
             {
                 // std::string xml_str(message_out, &message_out[outsize]);
 
@@ -68,6 +69,10 @@ namespace metop
                     // Done, save it
                     tles.push_back(tle);
                 }
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error parsing Admin message : {:s}", e.what());
             }
 
             count++;
