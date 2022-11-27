@@ -221,109 +221,115 @@ namespace himawari
                             }
                             else
                             {
-
-                                if (file.name.find("IMG_") != std::string::npos)
-                                    file.name = (file.name.substr(0, file.name.size() - 4)) + ".hrit";
-                                else
-                                    file.name = (file.name.substr(0, file.name.size() - 4));
-
-                                if (file.name.find("IMG_") != std::string::npos)
+                                try
                                 {
-                                    auto lrit_data = file.data;
-                                    PrimaryHeader primary_header(&lrit_data[0]);
+                                    if (file.name.find("IMG_") != std::string::npos)
+                                        file.name = (file.name.substr(0, file.name.size() - 4)) + ".hrit";
+                                    else
+                                        file.name = (file.name.substr(0, file.name.size() - 4));
 
-                                    if (lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
-                                        continue;
-
-                                    // Get all other headers
-                                    std::map<int, int> all_headers;
-                                    for (uint32_t i = 0; i < primary_header.total_header_length;)
+                                    if (file.name.find("IMG_") != std::string::npos)
                                     {
-                                        uint8_t type = lrit_data[i];
-                                        uint16_t record_length = lrit_data[i + 1] << 8 | lrit_data[i + 2];
+                                        auto lrit_data = file.data;
+                                        PrimaryHeader primary_header(&lrit_data[0]);
 
-                                        if (record_length == 0)
-                                            break;
+                                        if (lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
+                                            continue;
 
-                                        all_headers.emplace(std::pair<int, int>(type, i));
-
-                                        i += record_length;
-                                    }
-
-                                    // Check if this has a filename
-                                    if (all_headers.count(AnnotationRecord::TYPE) > 0)
-                                    {
-                                        AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
-
-                                        std::string current_filename = std::string(annotation_record.annotation_text.data());
-
-                                        std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
-                                        std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
-
-                                        logger->info("New xRIT file : " + current_filename);
-
-                                        // Check if this is image data
-                                        if (all_headers.count(ImageStructureRecord::TYPE) > 0)
+                                        // Get all other headers
+                                        std::map<int, int> all_headers;
+                                        for (uint32_t i = 0; i < primary_header.total_header_length;)
                                         {
-                                            ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-                                            logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+                                            uint8_t type = lrit_data[i];
+                                            uint16_t record_length = lrit_data[i + 1] << 8 | lrit_data[i + 2];
 
-                                            image::Image<uint16_t> image;
+                                            if (record_length == 0)
+                                                break;
 
-                                            if (image_structure_record.bit_per_pixel == 8)
+                                            all_headers.emplace(std::pair<int, int>(type, i));
+
+                                            i += record_length;
+                                        }
+
+                                        // Check if this has a filename
+                                        if (all_headers.count(AnnotationRecord::TYPE) > 0)
+                                        {
+                                            AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
+
+                                            std::string current_filename = std::string(annotation_record.annotation_text.data());
+
+                                            std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
+                                            std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
+
+                                            logger->info("New xRIT file : " + current_filename);
+
+                                            // Check if this is image data
+                                            if (all_headers.count(ImageStructureRecord::TYPE) > 0)
                                             {
-                                                image = image::Image<uint8_t>(&lrit_data[primary_header.total_header_length],
-                                                                              image_structure_record.columns_count,
-                                                                              image_structure_record.lines_count, 1)
-                                                            .to16bits();
+                                                ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                                                logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+
+                                                image::Image<uint16_t> image;
+
+                                                if (image_structure_record.bit_per_pixel == 8)
+                                                {
+                                                    image = image::Image<uint8_t>(&lrit_data[primary_header.total_header_length],
+                                                                                  image_structure_record.columns_count,
+                                                                                  image_structure_record.lines_count, 1)
+                                                                .to16bits();
+                                                }
+                                                else if (image_structure_record.bit_per_pixel == 16)
+                                                {
+                                                    image::Image<uint16_t> image2(image_structure_record.columns_count,
+                                                                                  image_structure_record.lines_count, 1);
+
+                                                    for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
+                                                        image2[i] = ((&lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
+                                                                     (&lrit_data[primary_header.total_header_length])[i * 2 + 1]);
+
+                                                    image = image2;
+                                                }
+
+                                                std::string channel_name = current_filename.substr(4, 7);
+                                                int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
+                                                long id = std::stol(current_filename.substr(12, 12));
+
+                                                logger->debug("Channel {:s} segment {:d} id {:d}", channel_name.c_str(), segment, id);
+
+                                                if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
+                                                {
+                                                    segmented_decoders[channel_name].image.normalize();
+                                                    if (!std::filesystem::exists(directory + "/" + channel_name))
+                                                        std::filesystem::create_directory(directory + "/" + channel_name);
+                                                    logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                                                    segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                                                    segmented_decoders[channel_name].image.clear();
+                                                    segmented_decoders.erase(channel_name);
+                                                    segmented_decoders_filenames.erase(channel_name);
+                                                }
+
+                                                if (segmented_decoders.count(channel_name) == 0)
+                                                {
+                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
+                                                    segmented_decoders_filenames.insert({channel_name, current_filename});
+                                                }
+
+                                                segmented_decoders[channel_name].pushSegment(image.data(), segment);
                                             }
-                                            else if (image_structure_record.bit_per_pixel == 16)
-                                            {
-                                                image::Image<uint16_t> image2(image_structure_record.columns_count,
-                                                                              image_structure_record.lines_count, 1);
-
-                                                for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                    image2[i] = ((&lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
-                                                                 (&lrit_data[primary_header.total_header_length])[i * 2 + 1]);
-
-                                                image = image2;
-                                            }
-
-                                            std::string channel_name = current_filename.substr(4, 7);
-                                            int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
-                                            long id = std::stol(current_filename.substr(12, 12));
-
-                                            logger->debug("Channel {:s} segment {:d} id {:d}", channel_name.c_str(), segment, id);
-
-                                            if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
-                                            {
-                                                segmented_decoders[channel_name].image.normalize();
-                                                if (!std::filesystem::exists(directory + "/" + channel_name))
-                                                    std::filesystem::create_directory(directory + "/" + channel_name);
-                                                logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                                                segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                                                segmented_decoders[channel_name].image.clear();
-                                                segmented_decoders.erase(channel_name);
-                                                segmented_decoders_filenames.erase(channel_name);
-                                            }
-
-                                            if (segmented_decoders.count(channel_name) == 0)
-                                            {
-                                                segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
-                                                segmented_decoders_filenames.insert({channel_name, current_filename});
-                                            }
-
-                                            segmented_decoders[channel_name].pushSegment(image.data(), segment);
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
+                                    else
+                                    {
+                                        logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
 
-                                    std::ofstream output_himawari_file(directory + "/" + file.name);
-                                    output_himawari_file.write((char *)file.data.data(), file.data.size());
-                                    output_himawari_file.close();
+                                        std::ofstream output_himawari_file(directory + "/" + file.name);
+                                        output_himawari_file.write((char *)file.data.data(), file.data.size());
+                                        output_himawari_file.close();
+                                    }
+                                }
+                                catch (std::exception &e)
+                                {
+                                    logger->error("Error processing HimawariCast file {:s}", e.what());
                                 }
                             }
                         }
