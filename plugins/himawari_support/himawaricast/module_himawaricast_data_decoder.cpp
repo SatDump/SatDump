@@ -292,7 +292,7 @@ namespace himawari
 
                                                 std::string channel_name = current_filename.substr(4, 7);
                                                 int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
-                                                long id = std::stol(current_filename.substr(12, 12));
+                                                long id = std::stoll(current_filename.substr(12, 12));
 
                                                 logger->debug("Channel {:s} segment {:d} id {:d}", channel_name.c_str(), segment, id);
 
