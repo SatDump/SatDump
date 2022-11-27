@@ -109,7 +109,16 @@ namespace satdump
                         d_options_str += opt + '\0';
 
                     if (hasValue)
-                        d_option = p_json["value"].get<int>();
+                    {
+                        d_option = 0;
+                        int i = 0;
+                        for (std::string opt : d_options)
+                        {
+                            if (p_json["value"].get<std::string>() == opt)
+                                d_option = i;
+                            i++;
+                        }
+                    }
                     else
                         d_option = 0;
                 }

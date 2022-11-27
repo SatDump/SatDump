@@ -12,10 +12,12 @@
 #include "satdump_vars.h"
 //#include "tle.h"
 #include "common/cli_utils.h"
-
 #include "common/tile_map/map.h"
-
 #include "../src-core/resources.h"
+
+#include "core/opencl.h"
+#include <CL/cl_gl.h>
+#include <GL/glx.h>
 
 extern bool recorder_running;
 
@@ -160,6 +162,17 @@ int main(int argc, char *argv[])
 
     // Init SatDump
     satdump::initSatdump();
+
+    // Try to setup CL/GL interop
+    {
+        satdump::opencl::opencl_ctx_props[0] = CL_GL_CONTEXT_KHR;
+        satdump::opencl::opencl_ctx_props[1] = (cl_context_properties)glXGetCurrentContext();
+        satdump::opencl::opencl_ctx_props[2] = CL_GLX_DISPLAY_KHR;
+        satdump::opencl::opencl_ctx_props[3] = (cl_context_properties)glXGetCurrentDisplay();
+        satdump::opencl::opencl_ctx_props[4] = CL_CONTEXT_PLATFORM;
+        satdump::opencl::opencl_ctx_props[5] = 0; //(cl_context_properties)cl->pl_id;
+        satdump::opencl::opencl_ctx_props[6] = 0;
+    }
 
     // Setup Icon
     GLFWimage img;

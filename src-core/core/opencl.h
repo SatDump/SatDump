@@ -23,6 +23,8 @@ namespace satdump
 
         std::vector<OCLDevice> getAllDevices();
 
+        extern cl_context_properties opencl_ctx_props[7];
+
         void initOpenCL();
 
         extern cl_context ocl_context;

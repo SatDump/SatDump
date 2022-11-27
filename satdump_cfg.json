@@ -5,7 +5,7 @@
         "default_offline_parameters": {
             "baseband_format": {
                 "type": "options",
-                "value": 0,
+                "value": "s8",
                 "name": "Baseband Format",
                 "options": [
                     "s8",
@@ -86,7 +86,7 @@
     "satdump_general": {
         "log_level": {
             "type": "options",
-            "value": 0,
+            "value": "trace",
             "name": "Log Level",
             "options": [
                 "trace",
