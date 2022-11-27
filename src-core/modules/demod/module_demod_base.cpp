@@ -57,7 +57,7 @@ namespace demod
         float decimation_factor = d_samplerate / final_samplerate; // Decimation factor to rescale our input buffer
 
         if (resample)
-            d_buffer_size *= round(decimation_factor);
+            d_buffer_size *= ceil(decimation_factor);
         if (d_buffer_size > 8192 * 20)
             d_buffer_size = 8192 * 20;
 
