@@ -63,7 +63,7 @@ namespace satdump
             opencl_devices_str = "";
             for (opencl::OCLDevice &dev : opencl_devices_enum)
             {
-                if (dev_id == opencl_devices_enum.size() - 1)
+                if (dev_id == (int)opencl_devices_enum.size() - 1)
                     opencl_devices_str += dev.name;
                 else
                     opencl_devices_str += dev.name + " \0";
