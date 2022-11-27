@@ -11,6 +11,8 @@
 #include "init.h"
 #include "common/tracking/tle.h"
 
+#include "core/style.h"
+
 namespace satdump
 {
     namespace settings
@@ -25,6 +27,8 @@ namespace satdump
         std::string opencl_devices_str;
         std::vector<opencl::OCLDevice> opencl_devices_enum;
 #endif
+
+        bool tles_are_update = false;
 
         void setup()
         {
@@ -107,8 +111,17 @@ namespace satdump
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Update TLEs Now");
                     ImGui::TableSetColumnIndex(1);
+                    if (tles_are_update)
+                        style::beginDisabled();
                     if (ImGui::Button("Update###updateTLEs"))
-                        updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                    {
+                        ui_thread_pool.push([](int)
+                                            {   tles_are_update = true;
+                                                updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
+                                                tles_are_update = false; });
+                    }
+                    if (tles_are_update)
+                        style::endDisabled();
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
