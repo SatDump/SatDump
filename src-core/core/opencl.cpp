@@ -34,8 +34,6 @@ namespace satdump
             return devs;
         }
 
-        cl_context_properties opencl_ctx_props[7] = {0, 0, 0, 0, 0, 0, 0};
-
         void initOpenCL()
         {
             std::vector<OCLDevice> devices = getAllDevices();
@@ -93,7 +91,7 @@ namespace satdump
                 if (clGetDeviceInfo(ocl_device, CL_DEVICE_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
                     logger->info("Using device: {:s}", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]));
 
-                ocl_context = clCreateContext(opencl_ctx_props, 1, &ocl_device, NULL, NULL, &err);
+                ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
                 if (err != CL_SUCCESS)
                 {
                     logger->error("Could not init OpenCL context!");
