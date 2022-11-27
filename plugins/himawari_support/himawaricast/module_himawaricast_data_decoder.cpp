@@ -159,7 +159,7 @@ namespace himawari
                         data_in.read((char *)bb_frame, 38688 / 8);
                     else
                         input_fifo->read((uint8_t *)bb_frame, 38688 / 8);
-                    ts_cnt = ts_extractor.work(bb_frame, 1, mpeg_ts_all);
+                    ts_cnt = ts_extractor.work(bb_frame, 1, mpeg_ts_all, 188 * 1000);
                 }
 
                 for (int tsc = 0; tsc < ts_cnt; tsc++)

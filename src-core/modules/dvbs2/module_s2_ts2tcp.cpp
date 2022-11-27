@@ -102,7 +102,7 @@ namespace dvbs2
             else
                 input_fifo->read((uint8_t *)bb_buffer, bbframe_size / 8);
 
-            int ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames);
+            int ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames, 188 * 1000);
 
             for (int i = 0; i < ts_cnt; i++)
             {

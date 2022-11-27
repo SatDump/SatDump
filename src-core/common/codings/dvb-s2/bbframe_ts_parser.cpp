@@ -95,7 +95,7 @@ namespace dvbs2
         return (crc);
     }
 
-    int BBFrameTSParser::work(uint8_t *bbframe, int cnt, uint8_t *tsframes)
+    int BBFrameTSParser::work(uint8_t *bbframe, int cnt, uint8_t *tsframes, int buffer_outsize)
     {
         int in_p = 0;
         int out_p = 0;
@@ -162,7 +162,7 @@ namespace dvbs2
                 distance = header.syncd / 8;
             }
 
-            while (df_remaining)
+            while (df_remaining && out_p < buffer_outsize)
             {
                 if (count == 0)
                 {

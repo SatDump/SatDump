@@ -159,7 +159,12 @@ namespace dsp
 
         RingBuffer(int maxLatency) { init(maxLatency); }
 
-        ~RingBuffer() { delete[] _buffer; }
+        ~RingBuffer()
+        {
+            if (size != 0)
+                delete[] _buffer;
+            size = 0;
+        }
 
         void init(int maxLatency)
         {
@@ -419,7 +424,7 @@ namespace dsp
 
     private:
         T *_buffer;
-        int size;
+        int size = 0;
         int readc;
         int writec;
         int readable;

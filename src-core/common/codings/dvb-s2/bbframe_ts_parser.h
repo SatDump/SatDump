@@ -83,6 +83,6 @@ namespace dvbs2
         BBFrameTSParser(int bbframe_size);
         ~BBFrameTSParser();
 
-        int work(uint8_t *bbframe, int cnt, uint8_t *tsframes); // TSFrame should be at least as big as bbframe to be safe
+        int work(uint8_t *bbframe, int cnt, uint8_t *tsframes, int buffer_outsize); // TSFrame should be at least as big as bbframe to be safe
     };
 }

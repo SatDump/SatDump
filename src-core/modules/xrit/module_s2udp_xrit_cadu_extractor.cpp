@@ -36,8 +36,11 @@ namespace xrit
             filesize = 0;
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".cadu");
+        if (output_data_type == DATA_FILE)
+        {
+            data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
+            d_output_files.push_back(d_output_file_hint + ".cadu");
+        }
 
         logger->info("Using input bbframes " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".cadu");
@@ -52,7 +55,7 @@ namespace xrit
         dvbs2::BBFrameTSParser ts_extractor(bbframe_size);
 
         // TS Stuff
-        int ts_cnt = 1;
+        int ts_cnt = 0;
         mpeg_ts::TSHeader ts_header;
         mpeg_ts::TSDemux ts_demux;
 
@@ -74,7 +77,7 @@ namespace xrit
                     data_in.read((char *)bb_buffer, bbframe_size / 8);
                 else
                     input_fifo->read((uint8_t *)bb_buffer, bbframe_size / 8);
-                ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames);
+                ts_cnt = ts_extractor.work(bb_buffer, 1, ts_frames, 188 * 100);
             }
 
             for (int i = 0; i < ts_cnt; i++)
@@ -89,7 +92,12 @@ namespace xrit
                 for (std::vector<uint8_t> payload : frames)
                 {
                     if (payload[40] == 0x1a && payload[41] == 0xcf && payload[42] == 0xfc && payload[43] == 0x1d && payload.size() >= 1024) // Check this is a CADU and not other IP data
-                        data_out.write((char *)&payload[40], 1024);
+                    {
+                        if (output_data_type == DATA_FILE)
+                            data_out.write((char *)&payload[40], 1024);
+                        else
+                            output_fifo->write((uint8_t *)&payload[40], 1024);
+                    }
                 }
             }
 
@@ -105,7 +113,8 @@ namespace xrit
 
         delete[] bb_buffer;
 
-        data_out.close();
+        if (output_data_type == DATA_FILE)
+            data_out.close();
         if (output_data_type == DATA_FILE)
             data_in.close();
     }

@@ -69,6 +69,9 @@ namespace demod
 
         // Window Name in the UI
         name = "DVB-S2 Demodulator";
+
+        ring_buffer = std::make_unique<dsp::RingBuffer<int8_t>>();
+        ring_buffer2 = std::make_unique<dsp::RingBuffer<uint8_t>>();
     }
 
     void DVBS2DemodModule::init()
@@ -160,14 +163,13 @@ namespace demod
         s2_pll->start();
         s2_bb_to_soft->start();
 
-        ring_buffer.init(1000000);
+        ring_buffer->init(1000000);
         if (d_multithread_bch)
-            ring_buffer2.init(1000000);
+            ring_buffer2->init(1000000);
 
-        std::thread th(&DVBS2DemodModule::process_s2, this);
-        std::thread th2;
+        process_s2_th = std::thread(&DVBS2DemodModule::process_s2, this);
         if (d_multithread_bch)
-            th2 = std::thread(&DVBS2DemodModule::process_s2_bch, this);
+            process_bch_th = std::thread(&DVBS2DemodModule::process_s2_bch, this);
 
         int dat_size = 0;
         while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
@@ -198,7 +200,7 @@ namespace demod
             detected_shortframes = s2_bb_to_soft->detect_shortframes;
             detected_pilots = s2_bb_to_soft->detect_pilots;
 
-            ring_buffer.write(s2_bb_to_soft->output_stream->readBuf, d_shortframes ? 16200 : 64800);
+            ring_buffer->write(s2_bb_to_soft->output_stream->readBuf, d_shortframes ? 16200 : 64800);
 
             s2_bb_to_soft->output_stream->flush();
 
@@ -227,12 +229,6 @@ namespace demod
 
         if (input_data_type == DATA_FILE)
             stop();
-
-        if (th.joinable())
-            th.join();
-        if (d_multithread_bch)
-            if (th2.joinable())
-                th2.join();
     }
 
     void DVBS2DemodModule::process_s2()
@@ -242,7 +238,7 @@ namespace demod
 
         while (!should_stop)
         {
-            int read = ring_buffer.read(sym_buffer, (d_shortframes ? 16200 : 64800) * dvbs2::simd_type::SIZE);
+            int read = ring_buffer->read(sym_buffer, (d_shortframes ? 16200 : 64800) * dvbs2::simd_type::SIZE);
 
             if (read <= 0)
                 continue;
@@ -277,10 +273,12 @@ namespace demod
                 }
                 else
                 {
-                    ring_buffer2.write((uint8_t *)repacker_buffer, ldpc_decoder->dataSize() / 8);
+                    ring_buffer2->write((uint8_t *)repacker_buffer, ldpc_decoder->dataSize() / 8);
                 }
             }
         }
+
+        logger->info("Exit FEC Thead!");
 
         delete[] sym_buffer;
         delete[] repacker_buffer;
@@ -296,7 +294,7 @@ namespace demod
         {
             int bch_fsize = ldpc_decoder->dataSize() / 8;
             int bch_dsize = bch_decoder->dataSize() / 8;
-            int read = ring_buffer2.read(repacker_buffer, bch_fsize);
+            int read = ring_buffer2->read(repacker_buffer, bch_fsize);
 
             if (read <= 0)
                 continue;
@@ -314,6 +312,8 @@ namespace demod
                 output_fifo->write((uint8_t *)repacker_buffer, bch_dsize);
         }
 
+        logger->info("Exit BCH Thead!");
+
         delete[] repacker_buffer;
     }
 
@@ -329,13 +329,19 @@ namespace demod
         s2_pll->stop();
         s2_bb_to_soft->stop();
         s2_bb_to_soft->output_stream->stopReader();
-        ring_buffer.stopWriter();
-        ring_buffer.stopReader();
+        ring_buffer->stopWriter();
+        ring_buffer->stopReader();
         if (d_multithread_bch)
         {
-            ring_buffer2.stopWriter();
-            ring_buffer2.stopReader();
+            ring_buffer2->stopWriter();
+            ring_buffer2->stopReader();
         }
+
+        if (process_s2_th.joinable())
+            process_s2_th.join();
+        if (d_multithread_bch)
+            if (process_bch_th.joinable())
+                process_bch_th.join();
 
         if (output_data_type == DATA_FILE)
             data_out.close();

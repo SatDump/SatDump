@@ -33,8 +33,8 @@ namespace demod
         std::shared_ptr<dvbs2::S2PLLBlock> s2_pll;
         std::shared_ptr<dvbs2::S2BBToSoft> s2_bb_to_soft;
 
-        dsp::RingBuffer<int8_t> ring_buffer;
-        dsp::RingBuffer<uint8_t> ring_buffer2;
+        std::unique_ptr<dsp::RingBuffer<int8_t>> ring_buffer;
+        std::unique_ptr<dsp::RingBuffer<uint8_t>> ring_buffer2;
 
         float d_rrc_alpha;
         int d_rrc_taps = 31;
@@ -68,6 +68,10 @@ namespace demod
         float bch_corrections;
         widgets::ValuePlotViewer ldpc_viewer;
         widgets::ValuePlotViewer bch_viewer;
+
+        // Threads
+        std::thread process_s2_th;
+        std::thread process_bch_th;
 
         // DVB-S2 Stuff
         int frame_slot_count;
