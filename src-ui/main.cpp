@@ -58,9 +58,6 @@ int main(int argc, char *argv[])
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
 
-    // Init SatDump
-    satdump::initSatdump();
-
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -160,6 +157,9 @@ int main(int argc, char *argv[])
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
+
+    // Init SatDump
+    satdump::initSatdump();
 
     // Setup Icon
     GLFWimage img;
