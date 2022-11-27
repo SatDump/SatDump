@@ -72,8 +72,8 @@
             }
         }
     },
-    "fengyun4_hrit": {
-        "name": "FengYun-4 HRIT",
+    "fengyun4_hrit23": {
+        "name": "FengYun-4 HRIT-II/III",
         "live": true,
         "live_cfg": {
             "pkt_size": 10240, // 1024 * 10
