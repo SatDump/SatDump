@@ -36,9 +36,11 @@ protected:
 
     void mainThread()
     {
+        int buffer_size = std::min<int>(roundf(current_samplerate / (250 * 512)) * 512, STREAM_BUFFER_SIZE);
+
         while (thread_should_run)
         {
-            rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, 16384);
+            rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, buffer_size);
         }
     }
 
