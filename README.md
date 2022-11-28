@@ -102,7 +102,9 @@ sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev
 sudo apt install libnng-dev                                                                 # If this packages is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                  # All libraries required for live processing (optional)
 sudo apt install libglew-dev libglfw3-dev                                                   # Only if you want to build the GUI Version (optional)
-sudo apt install libzstd-dev                                                                # Only if you want to build with ZIQ Recording compression (optional)
+sudo apt install libzstd-dev                                                                # Only if you want to build with ZIQ Recording compression 
+sudo apt install libomp-dev                                                                 # Shouldn't be required in general, but in case you have errors with OMP
+(optional)
 
 # Optional, but recommended as it drastically 
 # increases speed of some operations.
