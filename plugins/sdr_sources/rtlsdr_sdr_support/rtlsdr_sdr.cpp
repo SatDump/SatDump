@@ -61,10 +61,19 @@ void RtlSdrSource::set_gains()
         return;
 
     rtlsdr_set_agc_mode(rtlsdr_dev_obj, lna_agc_enabled);
-    rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, !lna_agc_enabled);
-    logger->debug("Set RTL-SDR AGC to {:d}", (int)lna_agc_enabled);
-
     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
+
+    if (lna_agc_enabled)
+    {
+        rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 0);
+    }
+    else
+    {
+        rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 1);
+        rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
+    }
+
+    logger->debug("Set RTL-SDR AGC to {:d}", (int)lna_agc_enabled);
     logger->debug("Set RTL-SDR Gain to {:d}", gain * 10);
 }
 
