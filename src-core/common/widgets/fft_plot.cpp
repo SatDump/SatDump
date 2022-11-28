@@ -15,6 +15,7 @@ namespace widgets
 
     void FFTPlot::draw(ImVec2 size)
     {
+        work_mutex.lock();
         ImGuiWindow *window = ImGui::GetCurrentWindow();
         ImGuiContext &g = *GImGui;
         const ImGuiStyle &style = g.Style;
@@ -66,5 +67,6 @@ namespace widgets
         }
 
         ImGui::Dummy(size);
+        work_mutex.unlock();
     }
 }

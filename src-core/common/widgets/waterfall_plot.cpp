@@ -10,7 +10,7 @@ namespace widgets
     WaterfallPlot::WaterfallPlot(float *v, int size, int lines)
     {
         values = v;
-        fft_size = size;
+        fft_max_size = fft_size = size;
         fft_lines = lines;
     }
 
@@ -22,6 +22,7 @@ namespace widgets
 
     void WaterfallPlot::draw(ImVec2 size, bool active)
     {
+        work_mtx.lock();
         if (active || first_run)
         {
             if (first_run)
@@ -51,5 +52,6 @@ namespace widgets
         }
 
         ImGui::Image((void *)(intptr_t)texture_id, size);
+        work_mtx.unlock();
     }
 }

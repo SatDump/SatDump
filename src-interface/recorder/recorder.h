@@ -26,6 +26,8 @@ namespace satdump
         bool show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false;
 
+        int selected_fft_size = 0;
+        std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
 
         bool dragging_waterfall = false;
@@ -71,6 +73,7 @@ namespace satdump
             out["show_waterfall"] = show_waterfall;
             out["waterfall_ratio"] = waterfall_ratio;
             out["panel_ratio"] = panel_ratio;
+            out["fft_size"] = fft_size;
             if (fft_plot && waterfall_plot && fft)
             {
                 out["fft_min"] = fft_plot->scale_min;
@@ -93,6 +96,13 @@ namespace satdump
                     fft_plot->scale_max = in["fft_max"];
                 if (in.contains("fft_avg"))
                     fft->avg_rate = in["fft_avg"];
+            }
+            if (in.contains("fft_size"))
+            {
+                fft_size = in["fft_size"].get<int>();
+                for (int i = 0; i < 4; i++)
+                    if (fft_sizes_lut[i] == fft_size)
+                        selected_fft_size = i;
             }
         }
 

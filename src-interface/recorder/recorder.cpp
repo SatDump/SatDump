@@ -206,6 +206,19 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
             {
+                if (ImGui::Combo("FFT Size", &selected_fft_size, "8192\0"
+                                                                 "4096\0"
+                                                                 "2048\0"
+                                                                 "1024\0"))
+                {
+                    fft_size = fft_sizes_lut[selected_fft_size];
+
+                    fft->set_fft_settings(fft_size);
+                    fft_plot->set_size(fft_size);
+                    waterfall_plot->set_size(fft_size);
+
+                    logger->info("Set FFT size to {:d}", fft_size);
+                }
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
                 ImGui::SliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99);
