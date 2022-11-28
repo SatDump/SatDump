@@ -87,6 +87,21 @@ int main(int argc, char *argv[])
         logger->critical("Could not init GLFW Window");
         exit(1);
     }
+#elif _WIN32
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+
+    final_gl_version = 0;
+
+    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+
+    if (window == NULL)
+    {
+        logger->critical("Could not init GLFW Window");
+        exit(1);
+    }
 #else
     const char *gl_override_rpi = getenv("MESA_GL_VERSION_OVERRIDE");
     if (gl_override_rpi != nullptr)
