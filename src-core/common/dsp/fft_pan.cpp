@@ -6,7 +6,7 @@ namespace dsp
     FFTPanBlock::FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input)
         : Block(input)
     {
-        fft_main_buffer = new complex_t[STREAM_BUFFER_SIZE * 4];
+        // fft_main_buffer = new complex_t[STREAM_BUFFER_SIZE * 4];
     }
 
     FFTPanBlock::~FFTPanBlock()
@@ -57,6 +57,25 @@ namespace dsp
             return;
         }
 
+#if 1
+        fft_mutex.lock();
+
+        complex_t *buffer_ptr = input_stream->readBuf;
+
+        volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps, fft_size);
+
+        input_stream->flush();
+
+        fftwf_execute(fftw_plan);
+
+        volk_32fc_s32f_power_spectrum_32f(fft_output_buffer, (lv_32fc_t *)fftw_out, 1, fft_size);
+
+        for (int i = 0; i < fft_size; i++)
+            output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
+        // output_stream->swap(fft_size);
+
+        fft_mutex.unlock();
+#else
         if (in_main_buffer + nsamples < STREAM_BUFFER_SIZE * 4)
         {
             memcpy(&fft_main_buffer[in_main_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
@@ -87,5 +106,6 @@ namespace dsp
             fft_mutex.unlock();
             in_main_buffer = 0;
         }
+#endif
     }
 }

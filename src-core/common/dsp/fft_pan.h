@@ -17,8 +17,8 @@ namespace dsp
 
         float *fft_output_buffer;
 
-        int in_main_buffer = 0;
-        complex_t *fft_main_buffer;
+        // int in_main_buffer = 0;
+        // complex_t *fft_main_buffer;
 
         fftwf_complex *fftw_in;
         fftwf_complex *fftw_out;
