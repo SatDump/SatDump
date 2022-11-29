@@ -34,6 +34,9 @@ namespace dsp
         fftw_plan = fftwf_plan_dft_1d(fft_size, fftw_in, fftw_out, FFTW_FORWARD, FFTW_ESTIMATE);
         fft_mutex.unlock();
 
+        memset(fftw_in, 0, sizeof(fftwf_complex) * fft_size);
+        memset(fftw_out, 0, sizeof(fftwf_complex) * fft_size);
+
         // Output buffer
         fft_output_buffer = new float[fft_size];
     }
