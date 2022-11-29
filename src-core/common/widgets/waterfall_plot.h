@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <mutex>
+#include "common/colormaps.h"
 
 namespace widgets
 {
@@ -39,5 +40,7 @@ namespace widgets
                 fft_size = size;
             work_mtx.unlock();
         }
+
+        void set_palette(colormaps::Map palette, bool mtx = true);
     };
 }

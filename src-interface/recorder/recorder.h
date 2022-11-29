@@ -30,6 +30,10 @@ namespace satdump
         std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
 
+        std::vector<colormaps::Map> waterfall_palettes;
+        std::string waterfall_palettes_str;
+        int selected_waterfall_palette = 0;
+
         bool dragging_waterfall = false;
         float waterfall_ratio = 0.7;
 
@@ -74,6 +78,7 @@ namespace satdump
             out["waterfall_ratio"] = waterfall_ratio;
             out["panel_ratio"] = panel_ratio;
             out["fft_size"] = fft_size;
+            out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
             if (fft_plot && waterfall_plot && fft)
             {
                 out["fft_min"] = fft_plot->scale_min;
@@ -103,6 +108,14 @@ namespace satdump
                 for (int i = 0; i < 4; i++)
                     if (fft_sizes_lut[i] == fft_size)
                         selected_fft_size = i;
+            }
+            if (in.contains("waterfall_palette"))
+            {
+                std::string name = in["waterfall_palette"].get<std::string>();
+                for (int i = 0; i < (int)waterfall_palettes.size(); i++)
+                    if (waterfall_palettes[i].name == name)
+                        selected_waterfall_palette = i;
+                waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
             }
         }
 

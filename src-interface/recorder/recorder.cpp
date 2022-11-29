@@ -12,6 +12,8 @@
 
 #include "processing.h"
 
+#include "resources.h"
+
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
@@ -42,6 +44,26 @@ namespace satdump
             catch (std::runtime_error &e)
             {
                 logger->error(e.what());
+            }
+        }
+
+        // Load waterfall palettes
+        {
+            waterfall_palettes_str = "";
+            std::filesystem::recursive_directory_iterator paletteIterator(resources::getResourcePath("waterfall"));
+            std::error_code iteratorError;
+            while (paletteIterator != std::filesystem::recursive_directory_iterator())
+            {
+                if (!std::filesystem::is_directory(paletteIterator->path()))
+                {
+                    auto map = colormaps::loadMap(paletteIterator->path().string());
+                    waterfall_palettes.push_back(map);
+                    waterfall_palettes_str += map.name + " [" + map.author + "]" + '\0';
+                }
+
+                paletteIterator.increment(iteratorError);
+                if (iteratorError)
+                    logger->critical(iteratorError.message());
             }
         }
 
@@ -222,6 +244,8 @@ namespace satdump
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
                 ImGui::SliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99);
+                if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
+                    waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                 ImGui::Checkbox("Show Waterfall", &show_waterfall);
             }
 

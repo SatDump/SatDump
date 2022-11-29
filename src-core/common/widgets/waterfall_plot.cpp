@@ -1,7 +1,6 @@
 #include "waterfall_plot.h"
 #include "imgui/imgui_internal.h"
 #include <string>
-#include "common/colormaps.h"
 #include "imgui/imgui_image.h"
 #include "resources.h"
 
@@ -31,7 +30,8 @@ namespace widgets
                 first_run = false;
                 raw_img_buffer = new uint32_t[fft_size * fft_lines];
                 memset(raw_img_buffer, 0, sizeof(uint32_t) * fft_size * fft_lines);
-                palette = colormaps::generatePalette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), resolution);
+                if (palette.size() != resolution)
+                    set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
             }
 
             memmove(&raw_img_buffer[fft_size * 1], &raw_img_buffer[fft_size * 0], fft_size * (fft_lines - 1));
@@ -53,5 +53,14 @@ namespace widgets
 
         ImGui::Image((void *)(intptr_t)texture_id, size);
         work_mtx.unlock();
+    }
+
+    void WaterfallPlot::set_palette(colormaps::Map pa, bool mtx)
+    {
+        if (mtx)
+            work_mtx.lock();
+        palette = colormaps::generatePalette(pa, resolution);
+        if (mtx)
+            work_mtx.unlock();
     }
 }
