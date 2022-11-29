@@ -1,5 +1,6 @@
 #include "fft_pan.h"
 #include "logger.h"
+#include "window.h"
 
 namespace dsp
 {
@@ -11,8 +12,6 @@ namespace dsp
 
     FFTPanBlock::~FFTPanBlock()
     {
-        if (fft_taps != nullptr)
-            destroy_fft();
     }
 
     void FFTPanBlock::set_fft_settings(int size)
@@ -21,13 +20,13 @@ namespace dsp
 
         fft_size = size;
 
-        if (fft_taps != nullptr)
+        if (fft_output_buffer != nullptr)
             destroy_fft();
 
         // Init taps, rectangular window
-        fft_taps = new float[fft_size];
+        fft_taps.resize(fft_size);
         for (int i = 0; i < fft_size; i++)
-            fft_taps[i] = (i % 2) ? 1 : -1;
+            fft_taps[i] = window::nuttall(i, fft_size) * ((i % 2) ? 1.0f : -1.0f);
 
         // Init FFTW
         fftw_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fft_size);
@@ -41,7 +40,6 @@ namespace dsp
 
     void FFTPanBlock::destroy_fft()
     {
-        delete[] fft_taps;
         fftwf_free(fftw_in);
         fftwf_free(fftw_out);
         fftwf_destroy_plan(fftw_plan);
@@ -62,7 +60,7 @@ namespace dsp
 
         complex_t *buffer_ptr = input_stream->readBuf;
 
-        volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps, fft_size);
+        volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps.data(), fft_size);
 
         input_stream->flush();
 

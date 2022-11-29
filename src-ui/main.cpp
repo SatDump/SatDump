@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         logger->critical("Could not init GLFW Window");
         exit(1);
     }
-#elif _WIN32
+#elif defined(_WIN32)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only

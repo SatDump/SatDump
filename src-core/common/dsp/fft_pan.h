@@ -2,6 +2,7 @@
 
 #include "block.h"
 #include <fftw3.h>
+#include <volk/volk_alloc.hh>
 
 namespace dsp
 {
@@ -9,13 +10,13 @@ namespace dsp
     {
     private:
         std::mutex fft_mutex;
-        float *fft_taps = nullptr;
+        volk::vector<float> fft_taps;
         int fft_size;
         void work();
 
         void destroy_fft();
 
-        float *fft_output_buffer;
+        float *fft_output_buffer = nullptr;
 
         // int in_main_buffer = 0;
         // complex_t *fft_main_buffer;
