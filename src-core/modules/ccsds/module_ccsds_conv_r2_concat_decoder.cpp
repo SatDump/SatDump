@@ -16,6 +16,7 @@ namespace ccsds
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
           d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
+          d_oqpsk_mode(parameters.count("oqpsk_mode") > 0 ? parameters["oqpsk_mode"].get<bool>() : false),
           d_iq_invert(parameters.count("iq_invert") > 0 ? parameters["iq_invert"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
@@ -36,6 +37,8 @@ namespace ccsds
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
         viterbi_out = new uint8_t[d_buffer_size * 2];
+        if (d_oqpsk_mode)
+            viterbi_out2 = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
         frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
         d_bpsk_90 = false;
@@ -84,6 +87,8 @@ namespace ccsds
             asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
 
         viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
+        if (d_oqpsk_mode)
+            viterbi2 = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_fill_bytes);
@@ -108,6 +113,8 @@ namespace ccsds
     CCSDSConvR2ConcatDecoderModule::~CCSDSConvR2ConcatDecoderModule()
     {
         delete[] viterbi_out;
+        if (d_oqpsk_mode)
+            delete[] viterbi_out2;
         delete[] soft_buffer;
         delete[] frame_buffer;
     }
@@ -159,13 +166,49 @@ namespace ccsds
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 
             // Perform Viterbi decoding
-            int vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+            int vitout = 0;
+            uint8_t *viterbi_out_ptr = viterbi_out;
+
+            if (d_oqpsk_mode)
+            {
+                int vitout1 = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+                rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
+                int vitout2 = viterbi2->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out2);
+
+                if (vitout1 > vitout2)
+                {
+                    viterbi_out_ptr = viterbi_out;
+                    vitout = vitout1;
+                    viterbi_ber = viterbi->ber();
+                    viterbi_lock = viterbi->getState();
+                }
+                else if (vitout2 > vitout1)
+                {
+                    viterbi_out_ptr = viterbi_out2;
+                    vitout = vitout2;
+                    viterbi_ber = viterbi2->ber();
+                    viterbi_lock = viterbi2->getState();
+                }
+                else
+                {
+                    viterbi_out_ptr = viterbi2->ber() < viterbi->ber() ? viterbi_out2 : viterbi_out;
+                    vitout = viterbi2->ber() < viterbi->ber() ? vitout2 : vitout1;
+                    viterbi_ber = viterbi2->ber() < viterbi->ber() ? viterbi2->ber() : viterbi->ber();
+                    viterbi_lock = viterbi2->ber() < viterbi->ber() ? viterbi2->getState() : viterbi->getState();
+                }
+            }
+            else
+            {
+                vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+                viterbi_ber = viterbi->ber();
+                viterbi_lock = viterbi->getState();
+            }
 
             if (d_diff_decode) // Diff decoding if required
-                diff.decode_bits(viterbi_out, vitout);
+                diff.decode_bits(viterbi_out_ptr, vitout);
 
             // Run deframer
-            int frames = deframer->work(viterbi_out, vitout, frame_buffer);
+            int frames = deframer->work(viterbi_out_ptr, vitout, frame_buffer);
 
             for (int i = 0; i < frames; i++)
             {
@@ -192,8 +235,8 @@ namespace ccsds
 
             // Update module stats
             module_stats["deframer_lock"] = deframer->getState() == deframer->STATE_SYNCED;
-            module_stats["viterbi_ber"] = viterbi->ber();
-            module_stats["viterbi_lock"] = viterbi->getState();
+            module_stats["viterbi_ber"] = viterbi_ber;
+            module_stats["viterbi_lock"] = viterbi_lock;
             if (d_rs_interleaving_depth != 0)
                 module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
 
@@ -215,7 +258,7 @@ namespace ccsds
     void CCSDSConvR2ConcatDecoderModule::drawUI(bool window)
     {
         ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
-        float ber = viterbi->ber();
+        float &ber = viterbi_ber;
 
         ImGui::BeginGroup();
         if (!streamingInput)
@@ -268,14 +311,14 @@ namespace ccsds
 
                 ImGui::SameLine();
 
-                if (viterbi->getState() == 0)
+                if (viterbi_lock == 0)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi->getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
+                ImGui::TextColored(viterbi_lock == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;

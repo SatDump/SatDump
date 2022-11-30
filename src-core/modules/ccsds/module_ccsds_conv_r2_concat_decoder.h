@@ -49,6 +49,7 @@ namespace ccsds
         dsp::constellation_type_t d_constellation; // Constellation type
         bool d_bpsk_90;                            // Special case for BPSK shifted by 90 degs + IQ-swapped
         const bool d_oqpsk_delay;                  // For some OQPSK satellites, the Q branch is delayed by 1 symbol
+        const bool d_oqpsk_mode;                   // OQPSK does NOT guarantee IQ stability
         const bool d_iq_invert;                    // For some QPSK sats, can need to be inverted...
 
         const int d_cadu_size;   // CADU Size in bits, including ASM
@@ -69,7 +70,7 @@ namespace ccsds
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
 
-        uint8_t *viterbi_out;
+        uint8_t *viterbi_out, *viterbi_out2;
         int8_t *soft_buffer;
         uint8_t *frame_buffer;
 
@@ -79,7 +80,7 @@ namespace ccsds
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
-        std::shared_ptr<viterbi::Viterbi1_2> viterbi;
+        std::shared_ptr<viterbi::Viterbi1_2> viterbi, viterbi2;
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
         std::shared_ptr<reedsolomon::ReedSolomon> reed_solomon;
 
@@ -88,6 +89,9 @@ namespace ccsds
         // UI Stuff
         float ber_history[200];
         dsp::Random rng;
+
+        float viterbi_ber = 0;
+        int viterbi_lock = 0;
 
     public:
         CCSDSConvR2ConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

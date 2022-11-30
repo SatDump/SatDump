@@ -59,6 +59,7 @@
             "cadu": {
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "qpsk",
+                    "oqpsk_mode": true,
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
