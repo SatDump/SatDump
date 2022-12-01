@@ -307,6 +307,24 @@
                     }
                 }
             },
+            "avhrr_apt": {
+                "handler": "image_handler",
+                "name": "AVHRR APT",
+                "rgb_composites": {
+                    "224": {
+                        "equation": "cha + 0.01, cha, chb - 0.2"
+                    },
+                    "A Equalized": {
+                        "equation": "cha",
+                        "equalize": true
+                    },
+                    "B Equalized": {
+                        "equation": "chb",
+                        "equalize": true
+                    }
+                },
+                "project_channels": {}
+            },
             "virr": {
                 "handler": "image_handler",
                 "name": "VIRR",

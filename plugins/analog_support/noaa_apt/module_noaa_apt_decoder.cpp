@@ -138,13 +138,60 @@ namespace noaa_apt
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got {:d} lines...", line_cnt);
-        // wip_apt_image.crop(0, 0, APT_IMG_WIDTH, line_cnt*2);
 
         // WB
         logger->info("White balance...");
         wip_apt_image.white_balance();
 
         // Synchronize
+        logger->info("Synchronize...");
+        image::Image<uint8_t> wip_apt_image_sync = synchronize(line_cnt);
+
+        // Save
+        std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+
+        logger->info("Saving...");
+        wip_apt_image_sync.save_png(main_dir + "/raw.png");
+
+        // Products ARE not yet being processed properly. Need to parse the wedges!
+        satdump::ProductDataSet dataset;
+        dataset.satellite_name = "NOAA";
+        dataset.timestamp = time(0);
+
+        // AVHRR
+        {
+            logger->info("----------- AVHRR");
+            logger->info("Lines : " + std::to_string(line_cnt));
+
+            satdump::ImageProducts avhrr_products;
+            avhrr_products.instrument_name = "avhrr_apt";
+            // avhrr_products.has_timestamps = true;
+            // avhrr_products.set_tle(satellite_tle);
+            avhrr_products.bit_depth = 8;
+            // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            // avhrr_products.set_timestamps(avhrr_reader.timestamps);
+            // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+
+            // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
+            // for (int i = 0; i < 6; i++)
+            //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+
+            image::Image<uint8_t> cha, chb;
+            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
+            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
+
+            avhrr_products.images.push_back({"APT-A.png", "a", cha.to16bits()});
+            avhrr_products.images.push_back({"APT-B.png", "b", chb.to16bits()});
+
+            avhrr_products.save(main_dir);
+            dataset.products_list.push_back(".");
+        }
+
+        dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
+    }
+
+    image::Image<uint8_t> NOAAAPTDecoderModule::synchronize(int line_cnt)
+    {
         const int sync_a[] = {0, 0, 0, 0,
                               255, 255, 0, 0,
                               255, 255, 0, 0,
@@ -163,7 +210,6 @@ namespace noaa_apt
 
         image::Image<uint8_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
 
-        logger->info("Synchronize...");
         for (int line = 0; line < line_cnt - 1; line++)
         {
             int best_cor = 40 * 255 * APT_IMG_OVERS;
@@ -172,9 +218,7 @@ namespace noaa_apt
             {
                 int cor = 0;
                 for (int i = 0; i < 40 * APT_IMG_OVERS; i++)
-                {
                     cor += abs(int(wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] - final_sync_a[i]));
-                }
 
                 if (cor < best_cor)
                 {
@@ -188,46 +232,7 @@ namespace noaa_apt
                 wip_apt_image_sync[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS];
         }
 
-        std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
-
-        logger->info("Saving...");
-        wip_apt_image_sync.save_png(main_dir + "/raw.png");
-
-        // Products ARE not yet being processed properly. Need to parse the wedges!
-        satdump::ProductDataSet dataset;
-        dataset.satellite_name = "NOAA";
-        dataset.timestamp = time(0);
-
-        // AVHRR
-        {
-            logger->info("----------- AVHRR");
-            logger->info("Lines : " + std::to_string(line_cnt));
-
-            satdump::ImageProducts avhrr_products;
-            avhrr_products.instrument_name = "avhrr_3";
-            // avhrr_products.has_timestamps = true;
-            // avhrr_products.set_tle(satellite_tle);
-            avhrr_products.bit_depth = 8;
-            // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // avhrr_products.set_timestamps(avhrr_reader.timestamps);
-            // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
-
-            // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
-            // for (int i = 0; i < 6; i++)
-            //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
-
-            image::Image<uint8_t> ch1, ch2;
-            ch1 = wip_apt_image_sync.crop_to(86, 86 + 909);
-            ch2 = wip_apt_image_sync.crop_to(1126, 1126 + 909);
-
-            avhrr_products.images.push_back({"APT-1.png", "1", ch1.to16bits()});
-            avhrr_products.images.push_back({"APT-2.png", "2", ch2.to16bits()});
-
-            avhrr_products.save(main_dir);
-            dataset.products_list.push_back(".");
-        }
-
-        dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
+        return wip_apt_image_sync;
     }
 
     void NOAAAPTDecoderModule::drawUI(bool window)

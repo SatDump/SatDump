@@ -37,6 +37,9 @@ namespace noaa_apt
         unsigned int textureID = 0;
         uint32_t *textureBuffer;
 
+        // Functions
+        image::Image<uint8_t> synchronize(int line_cnt);
+
     public:
         NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~NOAAAPTDecoderModule();
