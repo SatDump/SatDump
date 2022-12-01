@@ -113,7 +113,7 @@ namespace noaa_apt
 
             if (textureID != 0 && line_cnt > last_line_cnt)
             {
-                auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 20, wip_apt_image.height() / 20);
+                auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 5, wip_apt_image.height() / 5);
                 uchar_to_rgba(preview.data(), textureBuffer, preview.size());
                 has_to_update = true;
                 last_line_cnt = line_cnt;
@@ -244,12 +244,12 @@ namespace noaa_apt
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[((APT_IMG_WIDTH * APT_IMG_OVERS) / 20) * (APT_MAX_LINES / 20)];
+                textureBuffer = new uint32_t[((APT_IMG_WIDTH * APT_IMG_OVERS) / 5) * (APT_MAX_LINES / 5)];
             }
 
             if (has_to_update)
             {
-                updateImageTexture(textureID, textureBuffer, wip_apt_image.width() / 20, wip_apt_image.height() / 20);
+                updateImageTexture(textureID, textureBuffer, wip_apt_image.width() / 5, wip_apt_image.height() / 5);
                 has_to_update = false;
             }
 
