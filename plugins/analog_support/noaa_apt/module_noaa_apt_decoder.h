@@ -4,13 +4,15 @@
 
 #include "common/dsp/real_to_complex.h"
 #include "common/dsp/freq_shift.h"
+#include "common/dsp/fir.h"
 #include "common/dsp/rational_resampler.h"
 #include "common/dsp/complex_to_mag.h"
 
 #include "common/image/image.h"
 
 #define APT_IMG_WIDTH 2080
-#define MAX_APT_LINES 2400
+#define APT_MAX_LINES 2400
+#define APT_IMG_OVERS 4
 
 namespace noaa_apt
 {
@@ -25,6 +27,7 @@ namespace noaa_apt
         std::shared_ptr<dsp::RealToComplexBlock> rtc;
         std::shared_ptr<dsp::FreqShiftBlock> frs;
         std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> rsp;
+        std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
         std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 
         image::Image<uint8_t> wip_apt_image;

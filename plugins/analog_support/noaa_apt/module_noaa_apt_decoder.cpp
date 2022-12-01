@@ -7,6 +7,8 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 
+#include "common/dsp/firdes.h"
+
 namespace noaa_apt
 {
     NOAAAPTDecoderModule::NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -71,18 +73,25 @@ namespace noaa_apt
         // Init blocks
         rtc = std::make_shared<dsp::RealToComplexBlock>(input_stream);
         frs = std::make_shared<dsp::FreqShiftBlock>(rtc->output_stream, d_audio_samplerate, -2.4e3);
-        rsp = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(frs->output_stream, 2080 * 2, d_audio_samplerate);
-        ctm = std::make_shared<dsp::ComplexToMagBlock>(rsp->output_stream);
+        int filter_srate = APT_IMG_WIDTH * 2 * APT_IMG_OVERS;
+        rsp = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(frs->output_stream, filter_srate, d_audio_samplerate);
+        int tofilter_freq = 1040;
+        int gcd = std::gcd(filter_srate, tofilter_freq);
+        filter_srate /= gcd;
+        tofilter_freq /= gcd;
+        lpf = std::make_shared<dsp::FIRBlock<complex_t>>(rsp->output_stream, dsp::firdes::low_pass(1, filter_srate, tofilter_freq, 0.5));
+        ctm = std::make_shared<dsp::ComplexToMagBlock>(lpf->output_stream);
 
         // Start everything
         std::thread feeder_thread(feeder_func);
         rtc->start();
         frs->start();
         rsp->start();
+        lpf->start();
         ctm->start();
 
         int image_i = 0;
-        wip_apt_image.init(APT_IMG_WIDTH, MAX_APT_LINES, 1);
+        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, APT_MAX_LINES, 1);
 
         int last_line_cnt = 0;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
@@ -94,17 +103,18 @@ namespace noaa_apt
                 float v = ctm->output_stream->readBuf[i];
                 v = (v / 0.5f) * 255.0f;
 
-                if (image_i < APT_IMG_WIDTH * MAX_APT_LINES)
+                if (image_i < APT_IMG_WIDTH * APT_IMG_OVERS * APT_MAX_LINES)
                     wip_apt_image[image_i++] = wip_apt_image.clamp(v);
             }
 
             ctm->output_stream->flush();
 
-            int line_cnt = image_i / APT_IMG_WIDTH;
+            int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
 
             if (textureID != 0 && line_cnt > last_line_cnt)
             {
-                uchar_to_rgba(wip_apt_image.data(), textureBuffer, image_i);
+                auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 20, wip_apt_image.height() / 20);
+                uchar_to_rgba(preview.data(), textureBuffer, preview.size());
                 has_to_update = true;
                 last_line_cnt = line_cnt;
             }
@@ -119,13 +129,14 @@ namespace noaa_apt
         rtc->stop();
         frs->stop();
         rsp->stop();
+        lpf->stop();
         ctm->stop();
 
         if (input_data_type == DATA_FILE)
             data_in.close();
 
         // Line mumbers
-        int line_cnt = image_i / APT_IMG_WIDTH;
+        int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got {:d} lines...", line_cnt);
         // wip_apt_image.crop(0, 0, APT_IMG_WIDTH, line_cnt*2);
 
@@ -145,19 +156,24 @@ namespace noaa_apt
                               0, 0, 0, 0,
                               0, 0, 0, 0};
 
+        std::vector<int> final_sync_a;
+        for (int i = 0; i < 40; i++)
+            for (int f = 0; f < APT_IMG_OVERS; f++)
+                final_sync_a.push_back(sync_a[i]);
+
         image::Image<uint8_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
 
         logger->info("Synchronize...");
         for (int line = 0; line < line_cnt - 1; line++)
         {
-            int best_cor = 40 * 1e6;
+            int best_cor = 40 * 255 * APT_IMG_OVERS;
             int best_pos = 0;
-            for (int pos = 0; pos < APT_IMG_WIDTH; pos++)
+            for (int pos = 0; pos < APT_IMG_WIDTH * APT_IMG_OVERS; pos++)
             {
                 int cor = 0;
-                for (int i = 0; i < 40; i++)
+                for (int i = 0; i < 40 * APT_IMG_OVERS; i++)
                 {
-                    cor += abs(int(wip_apt_image[line * APT_IMG_WIDTH + pos + i] - sync_a[i]));
+                    cor += abs(int(wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] - final_sync_a[i]));
                 }
 
                 if (cor < best_cor)
@@ -167,8 +183,9 @@ namespace noaa_apt
                 }
             }
 
-            // logger->critical(line);
-            memcpy(&wip_apt_image_sync[line * APT_IMG_WIDTH], &wip_apt_image[line * APT_IMG_WIDTH + best_pos], APT_IMG_WIDTH);
+            // logger->critical("Line {:d} Pos {:d} Cor {:d}", line, best_pos, best_cor);
+            for (int i = 0; i < APT_IMG_WIDTH; i++)
+                wip_apt_image_sync[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS];
         }
 
         std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
@@ -200,7 +217,7 @@ namespace noaa_apt
             //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
 
             image::Image<uint8_t> ch1, ch2;
-            ch1 = wip_apt_image_sync.crop_to(87, 87 + 909);
+            ch1 = wip_apt_image_sync.crop_to(86, 86 + 909);
             ch2 = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
             avhrr_products.images.push_back({"APT-1.png", "1", ch1.to16bits()});
@@ -222,12 +239,12 @@ namespace noaa_apt
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[APT_IMG_WIDTH * MAX_APT_LINES];
+                textureBuffer = new uint32_t[((APT_IMG_WIDTH * APT_IMG_OVERS) / 20) * (APT_MAX_LINES / 20)];
             }
 
             if (has_to_update)
             {
-                updateImageTexture(textureID, textureBuffer, wip_apt_image.width(), wip_apt_image.height());
+                updateImageTexture(textureID, textureBuffer, wip_apt_image.width() / 20, wip_apt_image.height() / 20);
                 has_to_update = false;
             }
 
