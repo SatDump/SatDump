@@ -14,6 +14,8 @@ namespace dsp
         complex_t *buffer;
         void work();
 
+        float phase = 0;
+
     public:
         QuadratureDemodBlock(std::shared_ptr<dsp::stream<complex_t>> input, float gain);
         ~QuadratureDemodBlock();

@@ -115,6 +115,12 @@ if(PLUGIN_BLUEWALKER3 OR PLUGINS_ALL)
     add_subdirectory(bluewalker3_support)
 endif()
 
+option(PLUGIN_ANALOG "Enable the support plugin for analog protocols such as NOAA APT" OFF)
+
+if(PLUGIN_ANALOG OR PLUGINS_ALL)
+    add_subdirectory(analog_support)
+endif()
+
 option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)

@@ -163,5 +163,51 @@
                 }
             }
         }
+    },
+    "noaa_apt": {
+        "name": "NOAA APT",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "NOAA-18",
+                137.9125e6
+            ],
+            [
+                "NOAA-19",
+                137.1e6
+            ],
+            [
+                "NOAA-15",
+                137.62e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "wav": {
+                "noaa_apt_demod": {
+                    "symbolrate": 50e3
+                }
+            },
+            "products": {
+                "noaa_apt_decoder": {
+                    "audio_samplerate": 50e3
+                }
+            }
+        }
     }
 }
