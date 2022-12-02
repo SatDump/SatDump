@@ -121,7 +121,7 @@ if(GIT_HAS_TAG STREQUAL "undefined")
     message("-- Commit has no tag (${GIT_HAS_TAG}). Assume dev build")
     add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}-${GIT_HASH}")
 else()
-    message("-- Coming has no tag (${GIT_HAS_TAG}). Assume release build")
+    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume release build")
     add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 endif()
 
