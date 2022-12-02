@@ -293,18 +293,18 @@ void SDRPlaySource::start()
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_LoMode, sdrplay_api_Update_Ext1_None);
 
     is_started = true;
-    
+
     set_gains();
     set_bias();
     set_agcs();
     set_others();
-
 }
 
 void SDRPlaySource::stop()
 {
     if (is_started)
     {
+        output_stream->stopWriter();
         sdrplay_api_Uninit(sdrplay_dev.dev);
         sdrplay_api_ReleaseDevice(&sdrplay_dev);
     }
