@@ -98,13 +98,36 @@ if(MSVC OR BUILD_MSVC)
     endif()
 endif()
 
-project(SatDump VERSION "1.0.2")
+project(SatDump VERSION "1.0.3")
+
+# Check if the current commit has a tag
+execute_process(
+    COMMAND git name-rev --name-only --tags HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HAS_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of current branch
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Set version
+if(GIT_HAS_TAG STREQUAL "undefined")
+    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume dev build")
+    add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}-${GIT_HASH}")
+else()
+    message("-- Coming has no tag (${GIT_HAS_TAG}). Assume release build")
+    add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
+endif()
 
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
 endif()
-
-add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
 
 # Check we have OpenCL
 if(MSVC)
