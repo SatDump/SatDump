@@ -460,7 +460,7 @@ namespace goes
                     file.close();
 
                     // Free memory
-                    delete outBuffer;
+                    zipFile.m_pFree(&zipFile, outBuffer);
                 }
             }
             // Check if this is message data. If we slipped to here we know it's not EMWIN
