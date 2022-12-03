@@ -100,8 +100,7 @@ int main(int argc, char *argv[])
     if (window == NULL) // Try 2.1. We assume it's the only available if 3.2 does not work
     {
         logger->warn("Could not init GLFW Window. Trying GL 2.1");
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 0);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwDefaultWindowHints();
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
         final_gl_version = 2;
 
