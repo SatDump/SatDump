@@ -97,10 +97,17 @@ int main(int argc, char *argv[])
 
     window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
 
-    if (window == NULL)
+    if (window == NULL) // Try 2.1. We assume it's the only available if 3.2 does not work
     {
-        logger->critical("Could not init GLFW Window");
-        exit(1);
+        logger->warn("Could not init GLFW Window. Trying GL 2.1");
+        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+        final_gl_version = 2;
+
+        if (window == NULL)
+        {
+            logger->critical("Could not init GLFW Window");
+            exit(1);
+        }
     }
 #else
     const char *gl_override_rpi = getenv("MESA_GL_VERSION_OVERRIDE");
