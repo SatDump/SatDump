@@ -135,6 +135,8 @@ namespace noaa_apt
         if (input_data_type == DATA_FILE)
             data_in.close();
 
+        apt_status = PROCESSING;
+
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got {:d} lines...", line_cnt);
@@ -149,6 +151,8 @@ namespace noaa_apt
 
         // Save
         std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+
+        apt_status = SAVING;
 
         logger->info("Saving...");
         wip_apt_image_sync.save_png(main_dir + "/raw.png");
@@ -186,6 +190,8 @@ namespace noaa_apt
             avhrr_products.save(main_dir);
             dataset.products_list.push_back(".");
         }
+
+        apt_status = DONE;
 
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }
@@ -254,6 +260,15 @@ namespace noaa_apt
             }
 
             ImGui::Image((void *)(intptr_t)textureID, {200 * ui_scale, 200 * ui_scale});
+        }
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+            drawStatus(apt_status);
         }
         ImGui::EndGroup();
 

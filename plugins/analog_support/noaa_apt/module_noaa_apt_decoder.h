@@ -33,6 +33,7 @@ namespace noaa_apt
         image::Image<uint8_t> wip_apt_image;
 
         // UI Stuff
+        instrument_status_t apt_status = DECODING;
         bool has_to_update = false;
         unsigned int textureID = 0;
         uint32_t *textureBuffer;
