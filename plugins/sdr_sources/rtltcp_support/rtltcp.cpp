@@ -6,8 +6,8 @@ void RTLTCPSource::set_gains()
     if (!is_started)
         return;
 
-    client.setAGCMode(!lna_agc_enabled);
-    logger->debug("Set RTL-TCP AGC to {:d}", (int)!lna_agc_enabled);
+    client.setAGCMode(lna_agc_enabled);
+    logger->debug("Set RTL-TCP AGC to {:d}", (int)lna_agc_enabled);
 
     client.setGain(gain * 10);
     logger->debug("Set RTL-TCP Gain to {:d}", gain * 10);
