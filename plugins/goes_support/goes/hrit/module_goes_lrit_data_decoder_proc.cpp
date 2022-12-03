@@ -33,7 +33,7 @@ namespace goes
             return utc_filename;
         }
 
-        const int ID_HIMAWARI8 = 43;
+        const int ID_HIMAWARI = 43;
 
         void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
@@ -225,7 +225,7 @@ namespace goes
                         if (strParts.size() > 3)
                         {
                             strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);
-                            current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM8", noaa_header.product_subid); // SubID = Channel
+                            current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM", noaa_header.product_subid); // SubID = Channel
                         }
                     }
                     // NWS Images
@@ -296,7 +296,7 @@ namespace goes
                         segmentedDecoder.filename = current_filename;
                     }
 
-                    if (noaa_header.product_id == ID_HIMAWARI8)
+                    if (noaa_header.product_id == ID_HIMAWARI)
                         segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number - 1);
                     else
                         segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
