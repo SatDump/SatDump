@@ -12,18 +12,13 @@ namespace dsp
           mu_gain(muGain),
           omega_relative_limit(omegaLimit)
     {
-        // Get alignement parameters
-        int align = volk_get_alignment();
-
         // Omega setup
         omega_mid = omega;
         omega_limit = omega_relative_limit * omega;
 
         // Buffer
         in_buffer = 0;
-        int size = 2 * STREAM_BUFFER_SIZE;
-        buffer = (T *)volk_malloc(size * sizeof(T), align);
-        std::fill(buffer, &buffer[size], 0);
+        buffer = create_volk_buffer<T>(2 * STREAM_BUFFER_SIZE);
 
         // Init interpolator
         pfb.init(windowed_sinc(nfilt * ntaps, hz_to_rad(0.5 / (double)nfilt, 1.0), window::nuttall, nfilt), nfilt);

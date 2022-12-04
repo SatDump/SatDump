@@ -38,7 +38,7 @@ namespace dsp
         memset(fftw_out, 0, sizeof(fftwf_complex) * fft_size);
 
         // Output buffer
-        fft_output_buffer = new float[fft_size];
+        fft_output_buffer = create_volk_buffer<float>(fft_size);
     }
 
     void FFTPanBlock::destroy_fft()
@@ -46,7 +46,7 @@ namespace dsp
         fftwf_free(fftw_in);
         fftwf_free(fftw_out);
         fftwf_destroy_plan(fftw_plan);
-        delete[] fft_output_buffer;
+        volk_free(fft_output_buffer);
     }
 
     void FFTPanBlock::work()

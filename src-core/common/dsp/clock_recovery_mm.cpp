@@ -18,9 +18,6 @@ namespace dsp
           c_1T(0),
           c_0T(0)
     {
-        // Get alignement parameters
-        int align = volk_get_alignment();
-
         // Omega setup
         omega_mid = omega;
         omega_limit = omega_relative_limit * omega;
@@ -29,8 +26,7 @@ namespace dsp
         pfb.init(windowed_sinc(nfilt * ntaps, hz_to_rad(0.5 / (double)nfilt, 1.0), window::nuttall, nfilt), nfilt);
 
         // Buffer
-        buffer = (T *)volk_malloc(pfb.ntaps * 4 * sizeof(T), align);
-        std::fill(buffer, &buffer[pfb.ntaps * 4], 0);
+        buffer = create_volk_buffer<T>(pfb.ntaps * 4);
     }
 
     template <typename T>

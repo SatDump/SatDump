@@ -5,8 +5,8 @@ namespace dsp
     FileSinkBlock::FileSinkBlock(std::shared_ptr<dsp::stream<complex_t>> input)
         : Block(input)
     {
-        buffer_s8 = (int8_t *)volk_malloc(STREAM_BUFFER_SIZE * 2 * sizeof(int8_t), volk_get_alignment());
-        buffer_s16 = (int16_t *)volk_malloc(STREAM_BUFFER_SIZE * 2 * sizeof(int16_t), volk_get_alignment());
+        buffer_s8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
+        buffer_s16 = create_volk_buffer<int16_t>(STREAM_BUFFER_SIZE * 2);
     }
 
     FileSinkBlock::~FileSinkBlock()

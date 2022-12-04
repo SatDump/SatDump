@@ -61,16 +61,16 @@ namespace dsp
     public:
         BasebandReader()
         {
-            buffer_i16 = new int16_t[STREAM_BUFFER_SIZE * 2];
-            buffer_i8 = new int8_t[STREAM_BUFFER_SIZE * 2];
-            buffer_u8 = new uint8_t[STREAM_BUFFER_SIZE * 2];
+            buffer_i16 = create_volk_buffer<int16_t>(STREAM_BUFFER_SIZE * 2);
+            buffer_i8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
+            buffer_u8 = create_volk_buffer<uint8_t>(STREAM_BUFFER_SIZE * 2);
         }
 
         ~BasebandReader()
         {
-            delete[] buffer_i16;
-            delete[] buffer_i8;
-            delete[] buffer_u8;
+            volk_free(buffer_i16);
+            volk_free(buffer_i8);
+            volk_free(buffer_u8);
         }
 
         // Set the file you want to work on

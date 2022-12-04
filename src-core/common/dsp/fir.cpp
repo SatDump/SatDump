@@ -31,9 +31,7 @@ namespace dsp
         }
 
         // Init history buffer
-        int size_hist = 2 * STREAM_BUFFER_SIZE;
-        history = (T *)volk_malloc(size_hist * sizeof(T), align);
-        std::fill(history, &history[size_hist], 0);
+        history = create_volk_buffer<T>(2 * STREAM_BUFFER_SIZE);
     }
 
     template <typename T>

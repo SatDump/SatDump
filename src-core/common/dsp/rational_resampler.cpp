@@ -11,13 +11,8 @@ namespace dsp
           d_decimation(decimation),
           d_ctr(0)
     {
-        // Get alignement parameters
-        int align = volk_get_alignment();
-
         // Buffer
-        int size = 2 * STREAM_BUFFER_SIZE;
-        buffer = (T *)volk_malloc(size * sizeof(T), align);
-        std::fill(buffer, &buffer[size], 0);
+        buffer = create_volk_buffer<T>(2 * STREAM_BUFFER_SIZE);
 
         // Start by reducing the interp and decim by their GCD
         int gcd = std::gcd(interpolation, decimation);

@@ -7,8 +7,22 @@
 
 namespace dsp
 {
-// 1MB buffer
+// 1MB buffers
 #define STREAM_BUFFER_SIZE 1000000
+#define RING_BUF_SZ 1000000
+
+    /*
+    Util function to create a volk aligned buffer
+    */
+    template <typename T>
+    T *create_volk_buffer(int size, bool zero = true)
+    {
+        T *buffer = (T *)volk_malloc(size * sizeof(T), volk_get_alignment());
+        if (zero)
+            for (int i = 0; i < size; i++)
+                buffer[i] = 0;
+        return buffer;
+    }
 
     template <class T>
     class stream
@@ -16,8 +30,8 @@ namespace dsp
     public:
         stream(int stream_size = STREAM_BUFFER_SIZE)
         {
-            writeBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
-            readBuf = (T *)volk_malloc(stream_size * sizeof(T), volk_get_alignment());
+            writeBuf = create_volk_buffer<T>(stream_size);
+            readBuf = create_volk_buffer<T>(stream_size);
 
             for (int i = 0; i < stream_size; i++)
             {
@@ -114,20 +128,9 @@ namespace dsp
             rdyCV.notify_all();
         }
 
-        void clearReadStop()
-        {
-            readerStop = false;
-        }
-
-        int getDataSize()
-        {
-            return dataSize;
-        }
-
-        bool getReady()
-        {
-            return dataReady;
-        }
+        void clearReadStop() { readerStop = false; }
+        int getDataSize() { return dataSize; }
+        bool getReady() { return dataReady; }
 
         T *writeBuf;
         T *readBuf;
@@ -146,8 +149,6 @@ namespace dsp
 
         int dataSize = 0;
     };
-
-#define RING_BUF_SZ 1000000
 
     template <class T>
     class RingBuffer
@@ -397,30 +398,11 @@ namespace dsp
             canWriteVar.notify_one();
         }
 
-        bool getReadStop()
-        {
-            return _stopReader;
-        }
-
-        bool getWriteStop()
-        {
-            return _stopWriter;
-        }
-
-        void clearReadStop()
-        {
-            _stopReader = false;
-        }
-
-        void clearWriteStop()
-        {
-            _stopWriter = false;
-        }
-
-        void setMaxLatency(int maxLatency)
-        {
-            this->maxLatency = maxLatency;
-        }
+        bool getReadStop() { return _stopReader; }
+        bool getWriteStop() { return _stopWriter; }
+        void clearReadStop() { _stopReader = false; }
+        void clearWriteStop() { _stopWriter = false; }
+        void setMaxLatency(int maxLatency) { this->maxLatency = maxLatency; }
 
     private:
         T *_buffer;
