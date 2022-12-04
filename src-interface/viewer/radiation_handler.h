@@ -19,6 +19,7 @@ namespace satdump
         int selected_visualization_id = 0;
 
         // Map viz
+        image::Image<uint16_t> map_img;
         int select_channel_image_id = 0;
         std::string select_channel_image_str;
         ImageViewWidget image_view;

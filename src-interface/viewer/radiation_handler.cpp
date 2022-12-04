@@ -2,6 +2,7 @@
 #include "core/config.h"
 #include "resources.h"
 #include "core/module.h"
+#include "core/style.h"
 
 namespace satdump
 {
@@ -25,8 +26,8 @@ namespace satdump
             cfg.radius = 5;
             cfg.min = map_min;
             cfg.max = map_max;
-            image::Image<uint16_t> map = make_radiation_map(*products, cfg);
-            image_view.update(map);
+            map_img = make_radiation_map(*products, cfg);
+            image_view.update(map_img);
         }
         else if (selected_visualization_id == 1)
         {
@@ -61,6 +62,32 @@ namespace satdump
                 if (ImGui::DragInt("##Max", &map_max, 1.0f, 0, 255, "Max: %d", ImGuiSliderFlags_AlwaysClamp))
                     update();
             }
+
+            if (selected_visualization_id != 0)
+                style::beginDisabled();
+            if (ImGui::Button("Save"))
+            {
+                std::string default_name = products->instrument_name + "_map.png";
+
+#ifndef __ANDROID__
+                auto result = pfd::save_file("Save Image", default_name, {"*.png"});
+                while (!result.ready(1000))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                if (result.result().size() > 0)
+                {
+                    std::string path = result.result();
+                    logger->info("Saving current image at {:s}", path.c_str());
+                    map_img.save_img(path);
+                }
+#else
+                std::string path = "/storage/emulated/0/" + default_name;
+                logger->info("Saving current image at {:s}", path.c_str());
+                map_img.save_img("" + path);
+#endif
+            }
+            if (selected_visualization_id != 0)
+                style::endDisabled();
         }
     }
 
@@ -75,15 +102,14 @@ namespace satdump
             ImGui::BeginChild("RadiationPlot");
             for (int i = 0; i < (int)products->channel_counts.size(); i++)
             {
-                ImGui::BeginChild(("RadiationPlotChild##" + std::to_string(i)).c_str(), ImVec2(ImGui::GetWindowWidth(), 50*ui_scale));
-                ImGui::PlotLines(products->get_channel_name(i).c_str(), graph_values[i].data(), graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth()-100*ui_scale, 30*ui_scale));
+                ImGui::BeginChild(("RadiationPlotChild##" + std::to_string(i)).c_str(), ImVec2(ImGui::GetWindowWidth(), 50 * ui_scale));
+                ImGui::PlotLines(products->get_channel_name(i).c_str(), graph_values[i].data(), graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth() - 100 * ui_scale, 30 * ui_scale));
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
                 ImGui::EndChild();
             }
             ImGui::EndChild();
-            
         }
     }
 
