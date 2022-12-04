@@ -15,9 +15,9 @@
  */
 
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jerror.h"
+#include "jinclude12.h"
+#include "jpeglib12.h"
+#include "jerror12.h"
 
 
 /* Expanded data source object for stdio input */
@@ -27,7 +27,7 @@ typedef struct {
 
   FILE * infile;		/* source stream */
   JOCTET * buffer;		/* start of buffer */
-  jboolean start_of_file;	/* have we gotten any data yet? */
+  boolean start_of_file;	/* have we gotten any data yet? */
 } my_source_mgr;
 
 typedef my_source_mgr * my_src_ptr;
@@ -91,7 +91,7 @@ init_mem_source(j_decompress_ptr cinfo)
  * the front of the buffer rather than discarding it.
  */
 
-METHODDEF(jboolean)
+METHODDEF(boolean)
 fill_input_buffer (j_decompress_ptr cinfo)
 {
   my_src_ptr src = (my_src_ptr) cinfo->src;
@@ -116,7 +116,7 @@ fill_input_buffer (j_decompress_ptr cinfo)
   return TRUE;
 }
 
-METHODDEF(jboolean)
+METHODDEF(boolean)
 fill_mem_input_buffer(j_decompress_ptr cinfo)
 {
   static const JOCTET mybuffer[4] = {

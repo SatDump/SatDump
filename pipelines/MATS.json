@@ -1,0 +1,46 @@
+{
+    "mats_dump": {
+        "name": "MATS Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2214e6
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 1.562e6,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.005
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "oqpsk_method2": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "mats_instruments": {}
+            }
+        }
+    }
+}

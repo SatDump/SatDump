@@ -1,0 +1,15 @@
+#define HAVE_PROTOTYPES 
+#define HAVE_UNSIGNED_CHAR 
+#define HAVE_UNSIGNED_SHORT 
+#undef NEED_FAR_POINTERS
+#undef INCOMPLETE_TYPES_BROKEN
+
+
+#define const
+#define NEED_SHORT_EXTERNAL_NAMES
+#define INLINE 
+
+#undef DEFAULT_MAX_MEM
+#undef NO_MKTEMP
+
+#define NO_GETENV

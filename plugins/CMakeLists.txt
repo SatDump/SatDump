@@ -97,6 +97,12 @@ if(PLUGIN_AIM OR PLUGINS_ALL)
     add_subdirectory(aim_support)
 endif()
 
+option(PLUGIN_MATS "Enable the MATS support plugin" OFF)
+
+if(PLUGIN_MATS OR PLUGINS_ALL)
+    add_subdirectory(mats_support)
+endif()
+
 option(PLUGIN_OCEANSAT "Enable the Oceansat (X-Band, etc) support plugin" OFF)
 
 if(PLUGIN_OCEANSAT OR PLUGINS_ALL)

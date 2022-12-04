@@ -12,97 +12,157 @@
 
 #include "logger.h"
 #include <fstream>
-#include "libs/sol2/sol.hpp"
+#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include <cmath>
 #include "common/image/image.h"
-
-class LuaLogger
-{
-public:
-    LuaLogger() {}
-
-    void trace(std::string log) { logger->trace(log); }
-    void debug(std::string log) { logger->debug(log); }
-    void info(std::string log) { logger->info(log); }
-    void warn(std::string log) { logger->warn(log); }
-    void error(std::string log) { logger->error(log); }
-    void critical(std::string log) { logger->critical(log); }
-
-    static void bindLogger(sol::state &lua)
-    {
-        lua.new_usertype<LuaLogger>("lua_logger",
-                                    "trace", &LuaLogger::trace,
-                                    "debug", &LuaLogger::debug,
-                                    "info", &LuaLogger::info,
-                                    "warn", &LuaLogger::warn,
-                                    "error", &LuaLogger::error,
-                                    "critical", &LuaLogger::critical);
-        lua["logger"] = std::make_shared<LuaLogger>();
-    }
-};
+#include "common/repack.h"
+#include "common/codings/randomization.h"
+#include "common/image/image.h"
+#include <filesystem>
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    sol::state lua;
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_out(argv[2], std::ios::binary);
 
-    lua.open_libraries(sol::lib::base);
-    lua.open_libraries(sol::lib::string);
-    lua.open_libraries(sol::lib::math);
+    uint8_t cadu[1279];
 
-    LuaLogger::bindLogger(lua);
+    ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1103, false);
 
-    ////////////////////////////////////////////////////////////////////////////////
-    sol::usertype<image::Image<uint16_t>> image16_type = lua.new_usertype<image::Image<uint16_t>>(
-        "image16",
-        sol::constructors<image::Image<uint16_t>(), image::Image<uint16_t>(size_t, size_t, int)>());
+    std::vector<uint8_t> wip_payload;
 
-    image16_type["clear"] = &image::Image<uint16_t>::clear;
+    int nb_img = 0;
 
-    image16_type["get"] = [](image::Image<uint16_t> &img, int i)
-    { return img[i]; };
-    image16_type["set"] = [](image::Image<uint16_t> &img, int i, uint16_t x)
-    { img[i] = img.clamp(x); };
+    int offset = 11; // std::stoi(argv[3]);
 
-    image16_type["depth"] = &image::Image<uint16_t>::depth;
-    image16_type["width"] = &image::Image<uint16_t>::width;
-    image16_type["height"] = &image::Image<uint16_t>::height;
-    image16_type["channels"] = &image::Image<uint16_t>::channels;
-    image16_type["size"] = &image::Image<uint16_t>::size;
+    std::vector<uint16_t> img_stuff;
 
-    image16_type["to_rgb"] = &image::Image<uint16_t>::to_rgb;
-    image16_type["to_rgba"] = &image::Image<uint16_t>::to_rgba;
+    std::vector<uint16_t> img_stuff_51;
+    std::vector<uint16_t> img_stuff_56;
 
-    image16_type["fill_color"] = &image::Image<uint16_t>::fill_color;
-    image16_type["fill"] = &image::Image<uint16_t>::fill;
-    image16_type["mirror"] = &image::Image<uint16_t>::mirror;
-    image16_type["equalize"] = &image::Image<uint16_t>::equalize;
-    image16_type["white_balance"] = &image::Image<uint16_t>::white_balance;
-    // CROP / CROP-TO
-    image16_type["resize"] = &image::Image<uint16_t>::resize;
-    image16_type["resize_to"] = &image::Image<uint16_t>::resize_to;
-    image16_type["resize_bilinear"] = &image::Image<uint16_t>::resize_bilinear;
-    image16_type["brightness_contrast_old"] = &image::Image<uint16_t>::brightness_contrast_old;
-    image16_type["linear_invert"] = &image::Image<uint16_t>::linear_invert;
-    image16_type["simple_despeckle"] = &image::Image<uint16_t>::simple_despeckle;
-    image16_type["median_blur"] = &image::Image<uint16_t>::median_blur;
+    while (!data_in.eof())
+    {
+        // Read buffer
+        data_in.read((char *)cadu, 1279);
 
-    image16_type["draw_pixel"] = &image::Image<uint16_t>::draw_pixel;
-    image16_type["draw_line"] = &image::Image<uint16_t>::draw_line;
-    image16_type["draw_circle"] = &image::Image<uint16_t>::draw_circle;
-    image16_type["draw_image"] = &image::Image<uint16_t>::draw_image;
-    // image16_type["draw_text"] = &image::Image<uint16_t>::draw_text;
+        //  derand_ccsds(&cadu[4], 1279 - 4);
 
-    image16_type["load_png"] = (void(image::Image<uint16_t>::*)(std::string, bool))(&image::Image<uint16_t>::load_png);
-    image16_type["save_png"] = &image::Image<uint16_t>::save_png;
-    image16_type["load_jpeg"] = (void(image::Image<uint16_t>::*)(std::string))(&image::Image<uint16_t>::load_jpeg);
-    image16_type["save_jpeg"] = &image::Image<uint16_t>::save_jpeg;
-    image16_type["load_img"] = (void(image::Image<uint16_t>::*)(std::string))(&image::Image<uint16_t>::load_img);
-    image16_type["save_img"] = &image::Image<uint16_t>::save_img;
-    ////////////////////////////////////////////////////////////////////////////////
+        // Parse this transport frame
+        ccsds::ccsds_1_0_proba::VCDU vcdu = ccsds::ccsds_1_0_proba::parseVCDU(cadu);
 
-    std::ifstream isf(argv[1]);
-    std::string lua_src(std::istreambuf_iterator<char>{isf}, {});
+        // printf("VCID %d\n", vcdu.vcid);
 
-    lua.script(lua_src);
+        if (vcdu.vcid == 1)
+        {
+            std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid1.work(cadu);
+            for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+            {
+                // logger->critical(pkt.header.apid);
+                // logger->critical(pkt.header.sequence_flag);
+                // logger->critical(pkt.header.secondary_header_flag);
+                // printf("APID %d\n", pkt.header.apid);
+
+                if (pkt.header.apid == 100 /*288*/)
+                {
+
+#if 1
+                    pkt.payload.resize(2000 - 6);
+                    data_out.write((char *)pkt.header.raw, 6);
+                    data_out.write((char *)pkt.payload.data(), 2000 - 6);
+
+                    for (int i = 0; i < 511; i++)
+                    {
+                        img_stuff.push_back(pkt.payload[11 + i * 2 + 1] << 8 | pkt.payload[11 + i * 2 + 0]);
+                    }
+
+#else
+                    if (pkt.header.sequence_flag == 0b01 && pkt.payload.size() > 512)
+                    {
+                        logger->critical(pkt.payload[10]);
+                        wip_payload.clear();
+                        wip_payload.insert(wip_payload.end(), &pkt.payload[64], &pkt.payload[pkt.payload.size() - 2]);
+                    }
+                    else if (pkt.header.sequence_flag == 0b00)
+                    {
+                        wip_payload.insert(wip_payload.end(), &pkt.payload[offset], &pkt.payload[pkt.payload.size() - 2]);
+                    }
+                    else if (pkt.header.sequence_flag == 0b10)
+                    {
+                        wip_payload.insert(wip_payload.end(), &pkt.payload[offset], &pkt.payload[pkt.payload.size() - 2]);
+
+                        nb_img++;
+
+                        std::ofstream output_jpg("/tmp/idk.jpg");
+                        output_jpg.write((char *)wip_payload.data(), wip_payload.size());
+                        std::string command = "ffmpeg -hide_banner -loglevel panic -y -i /tmp/idk.jpg ./mats_idk_" + std::to_string(nb_img) + ".png";
+
+                        system(command.c_str());
+
+                        if (std::filesystem::exists("./mats_idk_" + std::to_string(nb_img) + ".png"))
+                        {
+                            image::Image<uint16_t> img;
+                            img.load_png("./mats_idk_" + std::to_string(nb_img) + ".png");
+
+                            if (img.width() == 56)
+                            {
+
+                                img_stuff_56.insert(img_stuff_56.end(), &img[0], &img[56]);
+                                img_stuff_56.insert(img_stuff_56.end(), &img[56], &img[56 * 2]);
+                            }
+                            // else if (img.width() == 51)
+                            // {
+                            //     for (int x = 0; x < img.width(); x++)
+                            //         for (int y = 0; y < img.height(); y++)
+                            //             img_stuff_51.push_back(img[y * 51 + x]);
+                            // }
+
+                            if (img.width() != 10) // 10, 51, 53, 56
+                                std::filesystem::remove("./mats_idk_" + std::to_string(nb_img) + ".png");
+                        }
+
+                        // image::Image<uint16_t> img;
+                        // img.load_jpeg(wip_payload.data(), wip_payload.size());
+                        // img.save_png("mats_idk_" + std::to_string(nb_img) + ".png");
+                    }
+                    /*  else if (pkt.header.sequence_flag == 0b11)
+                      {
+                          wip_payload.clear();
+                          wip_payload.insert(wip_payload.end(), &pkt.payload[11], &pkt.payload[pkt.payload.size()]);
+
+                          nb_img++;
+
+                          std::ofstream output_jpg("/tmp/idk.jpg");
+                          output_jpg.write((char *)wip_payload.data(), wip_payload.size());
+                          std::string command = "ffmpeg -y -i /tmp/idk.jpg ./mats_idk_" + std::to_string(nb_img) + ".png";
+
+                          system(command.c_str());
+
+                          // image::Image<uint16_t> img;
+                          // img.load_jpeg(wip_payload.data(), wip_payload.size());
+                          // img.save_png("mats_idk_" + std::to_string(nb_img) + ".png");
+                      }*/
+
+                    if (pkt.header.sequence_flag == 0b11)
+                    {
+                        pkt.payload.resize(10000 - 6);
+                        data_out.write((char *)pkt.header.raw, 6);
+                        data_out.write((char *)pkt.payload.data(), 10000 - 6);
+                    }
+#endif
+                }
+            }
+        }
+    }
+
+    // image::Image<uint16_t> test_img(img_stuff.data(), 511, img_stuff.size() / 511, 1);
+    // test_img.save_img("idk_mats.png");
+
+    image::Image<uint16_t> test_img_56(img_stuff_56.data(), 56, img_stuff_56.size() / 56, 1);
+    test_img_56.save_img("idk_mats_scan_56.png");
+
+    // image::Image<uint16_t> test_img_51(img_stuff_51.data(), 255, img_stuff_51.size() / 255, 1);
+    // test_img_51.save_img("idk_mats_scan_51.png");
 }
