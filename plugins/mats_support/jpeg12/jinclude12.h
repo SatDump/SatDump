@@ -20,6 +20,12 @@
 #include "jconfig12.h"		/* auto configuration options */
 #define JCONFIG_INCLUDED	/* so that jpeglib.h doesn't do it again */
 
+// On Android, fortify does NOT work for <string.h>, etc
+#ifdef __ANDROID__
+#undef _FORTIFY_SOURCE
+#define _FORTIFY_SOURCE 0
+#endif
+
 /*
  * We need the NULL macro and size_t typedef.
  * On an ANSI-conforming system it is sufficient to include <stddef.h>.
