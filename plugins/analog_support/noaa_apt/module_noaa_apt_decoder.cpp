@@ -8,6 +8,7 @@
 #include "products/dataset.h"
 
 #include "common/dsp/firdes.h"
+#include "resources.h"
 
 namespace noaa_apt
 {
@@ -158,8 +159,51 @@ namespace noaa_apt
         wip_apt_image_sync.save_png(main_dir + "/raw.png");
 
         // Products ARE not yet being processed properly. Need to parse the wedges!
+        int norad = 0;
+        std::string sat_name = "NOAA";
+        std::optional<satdump::TLE> satellite_tle;
+
+        if (d_parameters.contains("satellite_number"))
+        {
+            double number = 0;
+
+            try
+            {
+                number = d_parameters["satellite_number"];
+            }
+            catch (std::exception &e)
+            {
+                number = std::stoi(d_parameters["satellite_number"].get<std::string>());
+            }
+
+            if (number == 15)
+            { // N15
+                norad = 25338;
+                sat_name = "NOAA-15";
+            }
+            else if (number == 18)
+            { // N18
+                norad = 28654;
+                sat_name = "NOAA-18";
+            }
+            else if (number == 19)
+            { // N19
+                norad = 33591;
+                sat_name = "NOAA-19";
+            }
+
+            satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+
+            // SATELLITE ID
+            {
+                logger->info("----------- Satellite");
+                logger->info("NORAD : " + std::to_string(norad));
+                logger->info("Name  : " + sat_name);
+            }
+        }
+
         satdump::ProductDataSet dataset;
-        dataset.satellite_name = "NOAA";
+        dataset.satellite_name = sat_name;
         dataset.timestamp = time(0);
 
         // AVHRR
@@ -169,16 +213,27 @@ namespace noaa_apt
 
             satdump::ImageProducts avhrr_products;
             avhrr_products.instrument_name = "avhrr_apt";
-            // avhrr_products.has_timestamps = true;
-            // avhrr_products.set_tle(satellite_tle);
             avhrr_products.bit_depth = 8;
-            // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // avhrr_products.set_timestamps(avhrr_reader.timestamps);
-            // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
             // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             // for (int i = 0; i < 6; i++)
             //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+
+            if (d_parameters.contains("start_timestamp") && norad != 0)
+            {
+                double start_tt = d_parameters["start_timestamp"];
+
+                std::vector<double> timestamps;
+
+                for (int i = 0; i < line_cnt; i++)
+                    timestamps.push_back(start_tt + (double(i) * 0.5));
+
+                avhrr_products.has_timestamps = true;
+                avhrr_products.set_tle(satellite_tle);
+                avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                avhrr_products.set_timestamps(timestamps);
+                // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr_apt.json")));
+            }
 
             image::Image<uint8_t> cha, chb;
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);

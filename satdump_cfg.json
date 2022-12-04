@@ -322,8 +322,8 @@
                         "equation": "chb",
                         "equalize": true
                     }
-                },
-                "project_channels": {}
+                }
+                //,"project_channels": {}
             },
             "virr": {
                 "handler": "image_handler",

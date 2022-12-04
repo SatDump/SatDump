@@ -194,6 +194,17 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "15",
+                "name": "NOAA Satellite",
+                "options": [
+                    "15",
+                    "18",
+                    "19"
+                ],
+                "description": "For APT, it is required to know what satellite\nis being received for projections and overlays"
             }
         },
         "work": {
