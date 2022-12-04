@@ -175,6 +175,7 @@ namespace ccsds
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
                 int vitout2 = viterbi2->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out2);
 
+#if 0
                 if (vitout1 > vitout2)
                 {
                     viterbi_out_ptr = viterbi_out;
@@ -190,6 +191,7 @@ namespace ccsds
                     viterbi_lock = viterbi2->getState();
                 }
                 else
+#endif
                 {
                     viterbi_out_ptr = viterbi2->ber() < viterbi->ber() ? viterbi_out2 : viterbi_out;
                     vitout = viterbi2->ber() < viterbi->ber() ? vitout2 : vitout1;
