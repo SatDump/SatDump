@@ -221,8 +221,8 @@ void USRPSource::drawControlUI()
 
     ImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
 
-    if (ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str()))
-        current_samplerate = available_samplerates[selected_samplerate];
+    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    current_samplerate = available_samplerates[selected_samplerate];
 
     if (ImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
                                                        "16-bits\0"))

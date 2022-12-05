@@ -148,8 +148,8 @@ void SDDCSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
 
-    if (ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str()))
-        current_samplerate = available_samplerates[selected_samplerate];
+    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    current_samplerate = available_samplerates[selected_samplerate];
 
     ImGui::Combo("Mode", &mode, "HF\0"
                                 "VHF\0");
