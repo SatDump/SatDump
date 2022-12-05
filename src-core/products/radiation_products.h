@@ -105,5 +105,5 @@ namespace satdump
         v.max = j["max"].get<int>();
     }
 
-    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, float *progress = nullptr);
+    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay = false, float *progress = nullptr);
 }

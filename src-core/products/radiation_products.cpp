@@ -23,10 +23,13 @@ namespace satdump
         channel_counts = contents["counts"].get<std::vector<std::vector<int>>>();
     }
 
-    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, float *progress)
+    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay, float *progress)
     {
         image::Image<uint16_t> map;
-        map.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
+        if (!isOverlay)
+            map.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
+        else
+            map.init(2048, 1024, 4);
         image::Image<uint16_t> color_lut = image::LUT_jet<uint16_t>();
 
         int img_x = map.width();
@@ -39,7 +42,7 @@ namespace satdump
         int lut_size = color_lut.width();
         std::vector<double> timestamps = products.get_timestamps(channel);
 
-        //logger->critical(timestamps.size());
+        // logger->critical(timestamps.size());
 
         SatelliteTracker tracker(products.tle);
 
@@ -60,7 +63,7 @@ namespace satdump
             int image_y = img_y - ((90.0f + satpos.lat) / 180.0f) * img_y;
             int image_x = (satpos.lon / 360) * img_x + (img_x / 2);
 
-            uint16_t color[] = {color_lut.channel(0)[value], color_lut.channel(1)[value], color_lut.channel(2)[value]};
+            uint16_t color[] = {color_lut.channel(0)[value], color_lut.channel(1)[value], color_lut.channel(2)[value], 65535};
 
             map.draw_circle(image_x % img_x, image_y, cfg.radius, color, true);
 

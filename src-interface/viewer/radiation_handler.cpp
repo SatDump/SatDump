@@ -3,6 +3,7 @@
 #include "resources.h"
 #include "core/module.h"
 #include "core/style.h"
+#include "common/projection/reprojector.h"
 
 namespace satdump
 {
@@ -20,7 +21,6 @@ namespace satdump
     {
         if (selected_visualization_id == 0)
         {
-
             RadiationMapCfg cfg;
             cfg.channel = select_channel_image_id + 1;
             cfg.radius = 5;
@@ -88,6 +88,12 @@ namespace satdump
             }
             if (selected_visualization_id != 0)
                 style::endDisabled();
+
+            if (!canBeProjected())
+                style::beginDisabled();
+            ImGui::Checkbox("Project", &should_project);
+            if (!canBeProjected())
+                style::endDisabled();
         }
     }
 
@@ -116,5 +122,54 @@ namespace satdump
     float RadiationViewerHandler::drawTreeMenu()
     {
         return 0;
+    }
+
+    bool RadiationViewerHandler::canBeProjected()
+    {
+        return selected_visualization_id == 0;
+    }
+
+    bool RadiationViewerHandler::hasProjection()
+    {
+        return projection_ready && should_project;
+    }
+
+    bool RadiationViewerHandler::shouldProject()
+    {
+        return should_project;
+    }
+
+    void RadiationViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    {
+        if (canBeProjected())
+        {
+            RadiationMapCfg cfg;
+            cfg.channel = select_channel_image_id + 1;
+            cfg.radius = 5;
+            cfg.min = map_min;
+            cfg.max = map_max;
+            auto map_img = make_radiation_map(*products, cfg, true);
+
+            reprojection::ReprojectionOperation op;
+            op.source_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+            op.target_prj_info = settings;
+            op.img = map_img;
+
+            op.output_width = width;
+            op.output_height = height;
+
+            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
+            projected_img = res.img;
+            projection_ready = true;
+        }
+        else
+        {
+            logger->error("Current image can't be projected!");
+        }
+    }
+
+    image::Image<uint16_t> &RadiationViewerHandler::getProjection()
+    {
+        return projected_img;
     }
 }
