@@ -75,7 +75,7 @@ namespace satdump
         splitter->set_output_3rd(false);
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
-        fft->set_fft_settings(fft_size, current_samplerate);
+        fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
@@ -199,7 +199,7 @@ namespace satdump
                             source_ptr->start();
 
                             current_samplerate = source_ptr->get_samplerate();
-                            fft->set_fft_settings(fft_size, current_samplerate);
+                            fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
 
                             splitter->input_stream = source_ptr->output_stream;
                             splitter->start();
@@ -239,11 +239,19 @@ namespace satdump
                 {
                     fft_size = fft_sizes_lut[selected_fft_size];
 
-                    fft->set_fft_settings(fft_size, current_samplerate);
+                    fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
                     fft_plot->set_size(fft_size);
                     waterfall_plot->set_size(fft_size);
 
                     logger->info("Set FFT size to {:d}", fft_size);
+                }
+                if (ImGui::InputInt("FFT Rate", &fft_rate))
+                {
+                    fft_size = fft_sizes_lut[selected_fft_size];
+
+                    fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
+
+                    logger->info("Set FFT rate to {:d}", fft_rate);
                 }
                 ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
                 ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);

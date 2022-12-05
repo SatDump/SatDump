@@ -29,6 +29,7 @@ namespace satdump
         int selected_fft_size = 0;
         std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
+        int fft_rate = 60;
 
         std::vector<colormaps::Map> waterfall_palettes;
         std::string waterfall_palettes_str;
@@ -80,6 +81,7 @@ namespace satdump
             out["waterfall_ratio"] = waterfall_ratio;
             out["panel_ratio"] = panel_ratio;
             out["fft_size"] = fft_size;
+            out["fft_rate"] = fft_rate;
             out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
             if (fft_plot && waterfall_plot && fft)
             {
@@ -111,6 +113,8 @@ namespace satdump
                     if (fft_sizes_lut[i] == fft_size)
                         selected_fft_size = i;
             }
+            if (in.contains("fft_rate"))
+                fft_rate = in["fft_rate"];
             if (in.contains("waterfall_palette"))
             {
                 std::string name = in["waterfall_palette"].get<std::string>();

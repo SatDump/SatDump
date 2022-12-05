@@ -30,6 +30,8 @@ namespace dsp
         int rbuffer_size = 0;
         int rbuffer_skip = 0;
 
+        int reshape_buffer_size = 0;
+
     public:
         FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input);
         ~FFTPanBlock();

@@ -47,7 +47,8 @@ namespace dsp
         rbuffer_skip = rbuffer_rate - rbuffer_size;
         logger->trace("FFT Rate {:d}, Samplerate {:d}, Final Size {:d}, Skip {:d}", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
 
-        fft_reshape_buffer = create_volk_buffer<complex_t>(rbuffer_rate * 10);
+        reshape_buffer_size = std::max<int>(STREAM_BUFFER_SIZE, rbuffer_rate * 10);
+        fft_reshape_buffer = create_volk_buffer<complex_t>(reshape_buffer_size);
         in_reshape_buffer = 0;
 
         fft_mutex.unlock();
@@ -74,7 +75,7 @@ namespace dsp
 
         fft_mutex.lock();
 
-        if (in_reshape_buffer + nsamples < rbuffer_rate * 10)
+        if (in_reshape_buffer + nsamples < reshape_buffer_size)
         {
             memcpy(&fft_reshape_buffer[in_reshape_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
             in_reshape_buffer += nsamples;
