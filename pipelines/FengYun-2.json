@@ -2,20 +2,39 @@
     "fengyun_svissr": {
         "name": "FengYun-2 S-VISSR",
         "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
+        "live_cfg": {
+            "pkt_size": 44356,
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
             ],
-            [
-                2,
-                0
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
             ],
-            [
-                3,
-                0
+            "client": [
+                [
+                    3,
+                    0
+                ]
             ]
-        ],
+        },
         "frequencies": [
             [
                 "S-VISSR",
