@@ -90,9 +90,9 @@ namespace demod
             fft_splitter->set_output_2nd(show_fft);
 
             fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
-            fft_proc->set_fft_settings(8192);
+            fft_proc->set_fft_settings(8192, final_samplerate);
             fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
-            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 1000);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 500);
         }
 
         std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
@@ -210,7 +210,7 @@ namespace demod
             waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
 
             if (showWaterfall)
-                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 40 * ui_scale) * 2});
+                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 40 * ui_scale) / 2});
 
             ImGui::End();
         }

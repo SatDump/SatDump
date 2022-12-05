@@ -67,6 +67,8 @@ namespace satdump
 
         int pipeline_preset_id = 0;
 
+        uint64_t current_samplerate = 1e6;
+
         //#ifdef BUILD_ZIQ
         int ziq_bit_depth;
         //#endif

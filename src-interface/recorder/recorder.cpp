@@ -75,7 +75,7 @@ namespace satdump
         splitter->set_output_3rd(false);
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
-        fft->set_fft_settings(fft_size);
+        fft->set_fft_settings(fft_size, current_samplerate);
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
@@ -83,7 +83,7 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 2000);
+        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 500);
 
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
@@ -197,6 +197,10 @@ namespace satdump
                         try
                         {
                             source_ptr->start();
+
+                            current_samplerate = source_ptr->get_samplerate();
+                            fft->set_fft_settings(fft_size, current_samplerate);
+
                             splitter->input_stream = source_ptr->output_stream;
                             splitter->start();
                             is_started = true;
@@ -235,7 +239,7 @@ namespace satdump
                 {
                     fft_size = fft_sizes_lut[selected_fft_size];
 
-                    fft->set_fft_settings(fft_size);
+                    fft->set_fft_settings(fft_size, current_samplerate);
                     fft_plot->set_size(fft_size);
                     waterfall_plot->set_size(fft_size);
 
@@ -499,7 +503,7 @@ namespace satdump
             float wf_height = wf_size * waterfall_ratio;
             fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 4), fft_height});
             if (show_waterfall)
-                waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 4), wf_height * 4}, is_started);
+                waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 4), wf_height}, is_started);
 
             float offset = 35 * ui_scale;
 

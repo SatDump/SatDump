@@ -7,14 +7,15 @@ namespace dsp
     FFTPanBlock::FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input)
         : Block(input)
     {
-        // fft_main_buffer = new complex_t[STREAM_BUFFER_SIZE * 4];
     }
 
     FFTPanBlock::~FFTPanBlock()
     {
+        if (fft_output_buffer != nullptr)
+            destroy_fft();
     }
 
-    void FFTPanBlock::set_fft_settings(int size)
+    void FFTPanBlock::set_fft_settings(int size, uint64_t samplerate, int rate)
     {
         fft_mutex.lock();
 
@@ -32,13 +33,24 @@ namespace dsp
         fftw_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fft_size);
         fftw_out = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fft_size);
         fftw_plan = fftwf_plan_dft_1d(fft_size, fftw_in, fftw_out, FFTW_FORWARD, FFTW_ESTIMATE);
-        fft_mutex.unlock();
 
         memset(fftw_in, 0, sizeof(fftwf_complex) * fft_size);
         memset(fftw_out, 0, sizeof(fftwf_complex) * fft_size);
 
         // Output buffer
+        fft_input_buffer = create_volk_buffer<complex_t>(fft_size);
         fft_output_buffer = create_volk_buffer<float>(fft_size);
+
+        // Compute FFT settings
+        rbuffer_rate = (samplerate / rate);
+        rbuffer_size = std::min<int>(rbuffer_rate, fft_size);
+        rbuffer_skip = rbuffer_rate - rbuffer_size;
+        logger->trace("FFT Rate {:d}, Samplerate {:d}, Final Size {:d}, Skip {:d}", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
+
+        fft_reshape_buffer = create_volk_buffer<complex_t>(rbuffer_rate * 10);
+        in_reshape_buffer = 0;
+
+        fft_mutex.unlock();
     }
 
     void FFTPanBlock::destroy_fft()
@@ -46,7 +58,9 @@ namespace dsp
         fftwf_free(fftw_in);
         fftwf_free(fftw_out);
         fftwf_destroy_plan(fftw_plan);
+        volk_free(fft_input_buffer);
         volk_free(fft_output_buffer);
+        volk_free(fft_reshape_buffer);
     }
 
     void FFTPanBlock::work()
@@ -58,41 +72,26 @@ namespace dsp
             return;
         }
 
-#if 1
         fft_mutex.lock();
 
-        complex_t *buffer_ptr = input_stream->readBuf;
-
-        volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps.data(), fft_size);
-
-        input_stream->flush();
-
-        fftwf_execute(fftw_plan);
-
-        volk_32fc_s32f_power_spectrum_32f(fft_output_buffer, (lv_32fc_t *)fftw_out, 1, fft_size);
-
-        for (int i = 0; i < fft_size; i++)
-            output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
-        // output_stream->swap(fft_size);
-
-        fft_mutex.unlock();
-#else
-        if (in_main_buffer + nsamples < STREAM_BUFFER_SIZE * 4)
+        if (in_reshape_buffer + nsamples < rbuffer_rate * 10)
         {
-            memcpy(&fft_main_buffer[in_main_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
-            in_main_buffer += nsamples;
+            memcpy(&fft_reshape_buffer[in_reshape_buffer], input_stream->readBuf, nsamples * sizeof(complex_t));
+            in_reshape_buffer += nsamples;
         }
         input_stream->flush();
 
-        if (in_main_buffer > fft_size)
+        if (in_reshape_buffer > rbuffer_rate)
         {
-            fft_mutex.lock();
-            int position_ptr = 0;
-            while (in_main_buffer - position_ptr > fft_size)
+            int pos_in_buffer = 0;
+            while (in_reshape_buffer - pos_in_buffer > rbuffer_rate)
             {
-                complex_t *buffer_ptr = &fft_main_buffer[position_ptr];
+                memcpy(fft_input_buffer, &fft_reshape_buffer[pos_in_buffer], rbuffer_size * sizeof(complex_t));
+                pos_in_buffer += rbuffer_rate;
 
-                volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps, fft_size);
+                complex_t *buffer_ptr = fft_input_buffer;
+
+                volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps.data(), fft_size);
 
                 fftwf_execute(fftw_plan);
 
@@ -100,13 +99,15 @@ namespace dsp
 
                 for (int i = 0; i < fft_size; i++)
                     output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
-                // output_stream->swap(fft_size);
-
-                position_ptr += fft_size;
             }
-            fft_mutex.unlock();
-            in_main_buffer = 0;
+
+            if (pos_in_buffer < in_reshape_buffer)
+            {
+                memmove(fft_reshape_buffer, &fft_reshape_buffer[pos_in_buffer], in_reshape_buffer - pos_in_buffer);
+                in_reshape_buffer -= pos_in_buffer;
+            }
         }
-#endif
+
+        fft_mutex.unlock();
     }
 }

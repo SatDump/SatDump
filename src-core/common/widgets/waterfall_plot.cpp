@@ -34,7 +34,7 @@ namespace widgets
                     set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
             }
 
-            memmove(&raw_img_buffer[fft_size * 1], &raw_img_buffer[fft_size * 0], fft_size * (fft_lines - 1));
+            memmove(&raw_img_buffer[fft_size * 1], &raw_img_buffer[fft_size * 0], fft_size * (fft_lines - 1) * sizeof(uint32_t));
 
             for (int i = 0; i < fft_size; i++)
             {
