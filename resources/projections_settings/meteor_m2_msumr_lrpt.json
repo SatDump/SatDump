@@ -13,8 +13,8 @@
     ///////////////////////
     "timefilter": {
         "type": "simple",
-        "scan_time": 0.2,
-        "max_diff": 1.0
+        "scan_time": 1.6,
+        "max_diff": 10.0
     },
     ///////////////////////
     "corr_swath": 2800,

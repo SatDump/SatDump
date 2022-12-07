@@ -8,10 +8,13 @@ namespace timestamp_filtering
     {
         std::vector<double> filter_timestamps = timestamps;
         double avg = get_median(filter_timestamps);
-        double last = 0;
+        double last = -1;
         for (double &v : filter_timestamps)
         {
             // logger->critical(abs(avg - v));
+
+            if (v == -1)
+                continue;
 
             if (abs(avg - v) > max_tolerate)
             {
