@@ -18,14 +18,14 @@ namespace dsp
     {
     private:
         // Just remove a DC spike with a moving average
-        const float alpha = 0.0001;
-        const float beta = 1.0f - alpha;
+        float alpha = 0.0001;
+        float beta = 0;
         T acc = 0;
 
         void work();
 
     public:
-        CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input);
+        CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input, float beta = 0.0001);
         ~CorrectIQBlock();
     };
 }

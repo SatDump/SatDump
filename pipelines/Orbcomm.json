@@ -1,0 +1,26 @@
+{
+    "orbcomm_stx": {
+        "name": "Orbcomm STX",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "STX-1",
+                2282.5e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "orbcomm_stx_demod": {
+                    "symbolrate": 4.8e3
+                }
+            }
+        }
+    }
+}

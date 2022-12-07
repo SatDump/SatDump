@@ -3,9 +3,10 @@
 namespace dsp
 {
     template <typename T>
-    CorrectIQBlock<T>::CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input)
+    CorrectIQBlock<T>::CorrectIQBlock(std::shared_ptr<dsp::stream<T>> input, float alpha)
         : Block<T, T>(input)
     {
+        beta = 1.0f - alpha;
     }
 
     template <typename T>
