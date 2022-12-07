@@ -205,6 +205,12 @@
                     "19"
                 ],
                 "description": "For APT, it is required to know what satellite\nis being received for projections and overlays"
+            },
+            "start_timestamp": {
+                "type": "float",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nMust be UTC Unix timestamp in seconds.\nRequired for projections and overlays"
             }
         },
         "work": {

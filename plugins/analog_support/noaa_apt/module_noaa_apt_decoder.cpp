@@ -223,16 +223,24 @@ namespace noaa_apt
             {
                 double start_tt = d_parameters["start_timestamp"];
 
-                std::vector<double> timestamps;
+                if (start_tt != -1)
+                {
+                    std::vector<double> timestamps;
 
-                for (int i = 0; i < line_cnt; i++)
-                    timestamps.push_back(start_tt + (double(i) * 0.5));
+                    for (int i = 0; i < line_cnt; i++)
+                        timestamps.push_back(start_tt + (double(i) * 0.5));
 
-                avhrr_products.has_timestamps = true;
-                avhrr_products.set_tle(satellite_tle);
-                avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                avhrr_products.set_timestamps(timestamps);
-                // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr_apt.json")));
+                    avhrr_products.has_timestamps = true;
+                    avhrr_products.set_tle(satellite_tle);
+                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    avhrr_products.set_timestamps(timestamps);
+                    if (norad == 25338)
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr_apt.json")));
+                    else if (norad == 28654)
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr_apt.json")));
+                    else if (norad == 33591)
+                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr_apt.json")));
+                }
             }
 
             image::Image<uint8_t> cha, chb;
