@@ -23,3 +23,15 @@ T getValueOrDefault(nlohmann::json obj, T v)
         return v;
     }
 }
+
+template <typename T>
+void setValueIfExists(nlohmann::json obj, T &v)
+{
+    try
+    {
+        v = obj.get<T>();
+    }
+    catch (std::exception &e)
+    {
+    }
+}

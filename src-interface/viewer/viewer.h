@@ -9,6 +9,7 @@
 #include "tree.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_image.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
@@ -192,6 +193,69 @@ namespace satdump
         int projections_image_height = 1024;
 
         int projections_mode_radio = 0;
+
+    public:
+        nlohmann::json serialize_projections_config()
+        {
+            nlohmann::json out;
+
+            out["projections_draw_map_overlay"] = projections_draw_map_overlay;
+            out["projections_draw_cities_overlay"] = projections_draw_cities_overlay;
+            out["projections_cities_scale"] = projections_cities_scale;
+
+            out["projections_current_selected_proj"] = projections_current_selected_proj;
+
+            out["projections_equirectangular_tl_lon"] = projections_equirectangular_tl_lon;
+            out["projections_equirectangular_tl_lat"] = projections_equirectangular_tl_lat;
+            out["projections_equirectangular_br_lon"] = projections_equirectangular_br_lon;
+            out["projections_equirectangular_br_lat"] = projections_equirectangular_br_lat;
+
+            out["projections_stereo_center_lon"] = projections_stereo_center_lon;
+            out["projections_stereo_center_lat"] = projections_stereo_center_lat;
+            out["projections_stereo_scale"] = projections_stereo_scale;
+
+            out["projections_tpers_lon"] = projections_tpers_lon;
+            out["projections_tpers_lat"] = projections_tpers_lat;
+            out["projections_tpers_alt"] = projections_tpers_alt;
+            out["projections_tpers_ang"] = projections_tpers_ang;
+            out["projections_tpers_azi"] = projections_tpers_azi;
+
+            out["projections_image_width"] = projections_image_width;
+            out["projections_image_height"] = projections_image_height;
+
+            out["projections_mode_radio"] = projections_mode_radio;
+
+            return out;
+        }
+
+        void deserialize_projections_config(nlohmann::json in)
+        {
+            setValueIfExists(in["projections_draw_map_overlay"], projections_draw_map_overlay);
+            setValueIfExists(in["projections_draw_cities_overlay"], projections_draw_cities_overlay);
+            setValueIfExists(in["projections_cities_scale"], projections_cities_scale);
+
+            setValueIfExists(in["projections_current_selected_proj"], projections_current_selected_proj);
+
+            setValueIfExists(in["projections_equirectangular_tl_lon"], projections_equirectangular_tl_lon);
+            setValueIfExists(in["projections_equirectangular_tl_lat"], projections_equirectangular_tl_lat);
+            setValueIfExists(in["projections_equirectangular_br_lon"], projections_equirectangular_br_lon);
+            setValueIfExists(in["projections_equirectangular_br_lat"], projections_equirectangular_br_lat);
+
+            setValueIfExists(in["projections_stereo_center_lon"], projections_stereo_center_lon);
+            setValueIfExists(in["projections_stereo_center_lat"], projections_stereo_center_lat);
+            setValueIfExists(in["projections_stereo_scale"], projections_stereo_scale);
+
+            setValueIfExists(in["projections_tpers_lon"], projections_tpers_lon);
+            setValueIfExists(in["projections_tpers_lat"], projections_tpers_lat);
+            setValueIfExists(in["projections_tpers_alt"], projections_tpers_alt);
+            setValueIfExists(in["projections_tpers_ang"], projections_tpers_ang);
+            setValueIfExists(in["projections_tpers_azi"], projections_tpers_azi);
+
+            setValueIfExists(in["projections_image_width"], projections_image_width);
+            setValueIfExists(in["projections_image_height"], projections_image_height);
+
+            setValueIfExists(in["projections_mode_radio"], projections_mode_radio);
+        }
 
     public:
         ViewerApplication();

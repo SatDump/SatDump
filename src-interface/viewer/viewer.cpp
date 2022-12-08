@@ -20,8 +20,13 @@ namespace satdump
         : Application("viewer")
     {
         if (config::main_cfg["user"].contains("viewer_state"))
+        {
             if (config::main_cfg["user"]["viewer_state"].contains("panel_ratio"))
                 panel_ratio = config::main_cfg["user"]["viewer_state"]["panel_ratio"].get<float>();
+
+            if (config::main_cfg["user"]["viewer_state"].contains("projections"))
+                deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
+        }
 
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");

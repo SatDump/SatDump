@@ -84,6 +84,9 @@ namespace satdump
                     logger->info("Update projection...");
                     generateProjectionImage();
                     logger->info("Done"); });
+
+                config::main_cfg["user"]["viewer_state"]["projections"] = serialize_projections_config();
+                config::saveUserConfig();
             }
             if ((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("No layers loaded!");
