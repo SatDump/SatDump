@@ -253,8 +253,8 @@ namespace satdump
 
                     logger->info("Set FFT rate to {:d}", fft_rate);
                 }
-                ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -80, 80);
-                ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -80, 80);
+                ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
+                ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
                 ImGui::SliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99);
                 if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                     waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);

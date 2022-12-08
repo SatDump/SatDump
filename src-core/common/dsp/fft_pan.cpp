@@ -24,10 +24,16 @@ namespace dsp
         if (fft_output_buffer != nullptr)
             destroy_fft();
 
+        // Compute FFT settings
+        rbuffer_rate = (samplerate / rate);
+        rbuffer_size = std::min<int>(rbuffer_rate, fft_size);
+        rbuffer_skip = rbuffer_rate - rbuffer_size;
+        logger->trace("FFT Rate {:d}, Samplerate {:d}, Final Size {:d}, Skip {:d}", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
+
         // Init taps, rectangular window
-        fft_taps.resize(fft_size);
-        for (int i = 0; i < fft_size; i++)
-            fft_taps[i] = window::nuttall(i, fft_size) * ((i % 2) ? 1.0f : -1.0f);
+        fft_taps.resize(rbuffer_size);
+        for (int i = 0; i < rbuffer_size; i++)
+            fft_taps[i] = window::nuttall(i, rbuffer_size) * ((i % 2) ? 1.0f : -1.0f);
 
         // Init FFTW
         fftw_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fft_size);
@@ -40,12 +46,6 @@ namespace dsp
         // Output buffer
         fft_input_buffer = create_volk_buffer<complex_t>(fft_size);
         fft_output_buffer = create_volk_buffer<float>(fft_size);
-
-        // Compute FFT settings
-        rbuffer_rate = (samplerate / rate);
-        rbuffer_size = std::min<int>(rbuffer_rate, fft_size);
-        rbuffer_skip = rbuffer_rate - rbuffer_size;
-        logger->trace("FFT Rate {:d}, Samplerate {:d}, Final Size {:d}, Skip {:d}", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
 
         reshape_buffer_size = std::max<int>(STREAM_BUFFER_SIZE, rbuffer_rate * 10);
         fft_reshape_buffer = create_volk_buffer<complex_t>(reshape_buffer_size);
@@ -92,11 +92,11 @@ namespace dsp
 
                 complex_t *buffer_ptr = fft_input_buffer;
 
-                volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps.data(), fft_size);
+                volk_32fc_32f_multiply_32fc((lv_32fc_t *)fftw_in, (lv_32fc_t *)buffer_ptr, fft_taps.data(), rbuffer_size);
 
                 fftwf_execute(fftw_plan);
 
-                volk_32fc_s32f_power_spectrum_32f(fft_output_buffer, (lv_32fc_t *)fftw_out, 1, fft_size);
+                volk_32fc_s32f_power_spectrum_32f(fft_output_buffer, (lv_32fc_t *)fftw_out, fft_size, fft_size);
 
                 for (int i = 0; i < fft_size; i++)
                     output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
