@@ -8,7 +8,7 @@
 void setThreadPriority(std::thread &th, thread_priority_t priority)
 {
 #ifdef _WIN32
-    if (SetThreadPriority(th.native_handle(), priority))
+    if (SetThreadPriority(th.native_handle(), priority) == 0)
         logger->error("Could not set thread priority!");
 #else
     sched_param sch_params;
