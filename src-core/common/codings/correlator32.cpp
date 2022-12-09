@@ -109,7 +109,7 @@ int Correlator32::correlate(int8_t *soft_input, phase_t &phase, bool &swap, int 
         }
 
         // Check the rest
-        for (int i = 0; i < length - 8; i++)
+        for (int i = 0; i < (length / 8) - 8; i++)
         {
             for (int ii = 0; ii < 8; ii += 1)
             {
