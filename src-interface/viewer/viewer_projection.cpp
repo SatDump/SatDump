@@ -460,7 +460,7 @@ namespace satdump
             {
                 projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                      layers_images[i],
-                                                                     projection_layers[i].opacity / 100.0f);
+                                                                     projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
             }
         }
         else
