@@ -50,7 +50,7 @@ protected:
         while (thread_should_run)
         {
             if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
-                continue;
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
             output_stream->swap(sample_buffer_size);
         }
