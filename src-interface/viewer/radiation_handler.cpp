@@ -43,7 +43,7 @@ namespace satdump
 
     void RadiationViewerHandler::drawMenu()
     {
-        if (ImGui::CollapsingHeader("Vizualisation"))
+        if (ImGui::CollapsingHeader("View"))
         {
             if (ImGui::RadioButton(u8"\uf84c   Map", &selected_visualization_id, 0))
                 update();
