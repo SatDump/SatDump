@@ -293,6 +293,12 @@
                         "equation": "ch1, (1-ch3a)^2.5,(1-ch4)",
                         "geo_correct": true,
                         "equalize": true
+                    },
+                    "Snow enhancement": {
+                        "equation": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/ch4)^1.7, (ch1-ch3a)^1.7",
+                        "equalize": true,
+                        "white_balance": true,
+                        "geo_correct": true
                     }
                 },
                 "project_channels": {
