@@ -53,6 +53,11 @@ namespace noaa_apt
             is_stereo = hdr.channel_cnt == 2;
             if (is_stereo)
                 logger->info("File is stereo. Ignoring second channel!");
+
+            wav::FileMetadata md = wav::tryParseFilenameMetadata(d_input_file, true);
+            if (md.timestamp != 0 && !d_parameters.contains("start_timestamp"))
+                d_parameters["start_timestamp"] = md.timestamp;
+
             data_in = std::ifstream(d_input_file, std::ios::binary);
         }
 

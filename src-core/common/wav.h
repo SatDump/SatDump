@@ -72,4 +72,13 @@ namespace wav
     RF64Header parseHeaderFromFileRF64(std::string file);
     bool isValidWav(WavHeader header);
     bool isValidRF64(WavHeader header);
+
+    // Filenames
+    struct FileMetadata
+    {
+        uint64_t frequency = 0;
+        time_t timestamp = 0;
+    };
+
+    FileMetadata tryParseFilenameMetadata(std::string filepath, bool audio = false);
 };

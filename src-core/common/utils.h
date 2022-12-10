@@ -136,3 +136,5 @@ inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 }
 
 double get_median(std::vector<double> values);
+
+extern "C" time_t mktime_utc(const struct tm *timeinfo_utc); // Already in libpredict!
