@@ -74,6 +74,10 @@ namespace satdump
         {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
             {
+                if (compo.value().contains("autogen")) // Skip auto-generating if requested
+                    if (ompo.value()["autogen"].get<bool>() == false)
+                        continue;
+
                 // rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
                 std::string initial_name = compo.key();
                 std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
