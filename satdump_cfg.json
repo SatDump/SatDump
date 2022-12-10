@@ -284,13 +284,13 @@
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "(1-ch5)-(1-ch4),(1-ch4)-(1-ch3b),(1-ch4)",
+                        "equation": "(1-ch5)-(1-ch4),(1-ch4)-(1-ch3a),(1-ch4)",
                         "geo_correct": true,
                         "equalize": true,
                         "white_balance": true
                     },
                     "Day Microphysics": {
-                        "equation": "ch1, (1-ch3a)^2.5,(1-ch4)",
+                        "equation": "ch1, (1-ch3b)^2.5,(1-ch4)",
                         "geo_correct": true,
                         "equalize": true
                     }
