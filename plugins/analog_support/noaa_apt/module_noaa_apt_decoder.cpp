@@ -10,6 +10,8 @@
 #include "common/dsp/firdes.h"
 #include "resources.h"
 
+#include "common/wav.h"
+
 namespace noaa_apt
 {
     NOAAAPTDecoderModule::NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -37,15 +39,28 @@ namespace noaa_apt
         else
             filesize = 0;
 
+        bool is_stereo = false;
+
         std::ifstream data_in;
         if (input_data_type == DATA_FILE)
+        {
+            wav::WavHeader hdr = wav::parseHeaderFromFileWav(d_input_file);
+            if (!wav::isValidWav(hdr))
+                std::runtime_error("File is not WAV!");
+            if (hdr.bits_per_sample != 16)
+                std::runtime_error("Only 16-bits WAV are supported!");
+            d_audio_samplerate = hdr.samplerate;
+            is_stereo = hdr.channel_cnt == 2;
+            if (is_stereo)
+                logger->info("File is stereo. Ignoring second channel!");
             data_in = std::ifstream(d_input_file, std::ios::binary);
+        }
 
         logger->info("Using input wav " + d_input_file);
 
         // Init stream source
         std::shared_ptr<dsp::stream<float>> input_stream = std::make_shared<dsp::stream<float>>();
-        auto feeder_func = [this, &input_stream, &data_in]()
+        auto feeder_func = [this, &input_stream, &data_in, is_stereo]()
         {
             const int buffer_size = 1024;
             int16_t *s16_buf = new int16_t[buffer_size];
@@ -57,8 +72,17 @@ namespace noaa_apt
                 else
                     input_fifo->read((uint8_t *)s16_buf, buffer_size * sizeof(int16_t));
 
-                volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 65535, buffer_size);
-                input_stream->swap(buffer_size);
+                if (is_stereo)
+                {
+                    for (int i = 0; i < buffer_size * 2; i++)
+                        input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
+                    input_stream->swap(buffer_size / 2);
+                }
+                else
+                {
+                    volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 65535, buffer_size);
+                    input_stream->swap(buffer_size);
+                }
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -102,7 +126,7 @@ namespace noaa_apt
             for (int i = 0; i < nsamp; i++)
             {
                 float v = ctm->output_stream->readBuf[i];
-                v = (v / 0.5f) * 255.0f;
+                v = (v / 0.5f) * 65535.0f;
 
                 if (image_i < APT_IMG_WIDTH * APT_IMG_OVERS * APT_MAX_LINES)
                     wip_apt_image[image_i++] = wip_apt_image.clamp(v);
@@ -115,7 +139,7 @@ namespace noaa_apt
             if (textureID != 0 && line_cnt > last_line_cnt)
             {
                 auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 5, wip_apt_image.height() / 5);
-                uchar_to_rgba(preview.data(), textureBuffer, preview.size());
+                ushort_to_rgba(preview.data(), textureBuffer, preview.size());
                 has_to_update = true;
                 last_line_cnt = line_cnt;
             }
@@ -148,7 +172,7 @@ namespace noaa_apt
 
         // Synchronize
         logger->info("Synchronize...");
-        image::Image<uint8_t> wip_apt_image_sync = synchronize(line_cnt);
+        image::Image<uint16_t> wip_apt_image_sync = synchronize(line_cnt);
 
         // Save
         std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
@@ -243,12 +267,12 @@ namespace noaa_apt
                 }
             }
 
-            image::Image<uint8_t> cha, chb;
+            image::Image<uint16_t> cha, chb;
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
-            avhrr_products.images.push_back({"APT-A.png", "a", cha.to16bits()});
-            avhrr_products.images.push_back({"APT-B.png", "b", chb.to16bits()});
+            avhrr_products.images.push_back({"APT-A.png", "a", cha});
+            avhrr_products.images.push_back({"APT-B.png", "b", chb});
 
             avhrr_products.save(main_dir);
             dataset.products_list.push_back(".");
@@ -259,7 +283,7 @@ namespace noaa_apt
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }
 
-    image::Image<uint8_t> NOAAAPTDecoderModule::synchronize(int line_cnt)
+    image::Image<uint16_t> NOAAAPTDecoderModule::synchronize(int line_cnt)
     {
         const int sync_a[] = {0, 0, 0, 0,
                               255, 255, 0, 0,
@@ -277,7 +301,7 @@ namespace noaa_apt
             for (int f = 0; f < APT_IMG_OVERS; f++)
                 final_sync_a.push_back(sync_a[i]);
 
-        image::Image<uint8_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
+        image::Image<uint16_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
 
         for (int line = 0; line < line_cnt - 1; line++)
         {
@@ -287,7 +311,7 @@ namespace noaa_apt
             {
                 int cor = 0;
                 for (int i = 0; i < 40 * APT_IMG_OVERS; i++)
-                    cor += abs(int(wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] - final_sync_a[i]));
+                    cor += abs(int((wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] >> 8) - final_sync_a[i]));
 
                 if (cor < best_cor)
                 {

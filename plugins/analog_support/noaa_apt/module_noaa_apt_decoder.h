@@ -30,7 +30,7 @@ namespace noaa_apt
         std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
         std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 
-        image::Image<uint8_t> wip_apt_image;
+        image::Image<uint16_t> wip_apt_image;
 
         // UI Stuff
         instrument_status_t apt_status = DECODING;
@@ -39,7 +39,7 @@ namespace noaa_apt
         uint32_t *textureBuffer;
 
         // Functions
-        image::Image<uint8_t> synchronize(int line_cnt);
+        image::Image<uint16_t> synchronize(int line_cnt);
 
     public:
         NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
