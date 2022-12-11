@@ -17,7 +17,8 @@ namespace satdump
         if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
             std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
-        std::ofstream outfile(path);
+        std::ofstream outfile(path + ".tmp");
+        bool success = true;
 
         for (int norad : norads_to_fetch)
         {
@@ -31,7 +32,25 @@ namespace satdump
 
             if (perform_http_request(url_str, result) != 1)
                 outfile << result;
+            else
+                success = false;
         }
+
+        outfile.close();
+
+        if (success)
+        {
+            if (std::filesystem::exists(path))
+                std::filesystem::remove(path);
+            std::filesystem::rename(path + ".tmp", path);
+        }
+        else
+        {
+            logger->error("Error updating TLEs. Not updated.");
+        }
+
+        if (std::filesystem::exists(path + ".tmp"))
+            std::filesystem::remove(path + ".tmp");
     }
 
     void loadTLEFileIntoRegistry(std::string path)
