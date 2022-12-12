@@ -76,6 +76,7 @@ namespace satdump
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
+        fft->avg_rate = 0.1;
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);

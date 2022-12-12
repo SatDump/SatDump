@@ -29,7 +29,7 @@ namespace satdump
         int selected_fft_size = 0;
         std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
-        int fft_rate = 60;
+        int fft_rate = 120;
 
         std::vector<colormaps::Map> waterfall_palettes;
         std::string waterfall_palettes_str;
@@ -70,9 +70,9 @@ namespace satdump
 
         uint64_t current_samplerate = 1e6;
 
-        //#ifdef BUILD_ZIQ
+        // #ifdef BUILD_ZIQ
         int ziq_bit_depth;
-        //#endif
+        // #endif
 
         nlohmann::json serialize_config()
         {
