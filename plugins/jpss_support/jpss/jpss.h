@@ -8,6 +8,6 @@
 
 #define SNPP_NORAD 37849
 #define JPSS1_NORAD 43013
-#define JPSS2_NORAD 0 // Not launched yet
+#define JPSS2_NORAD 54234
 #define JPSS3_NORAD 0 // Not launched yet
 #define JPSS4_NORAD 0 // Not launched yet

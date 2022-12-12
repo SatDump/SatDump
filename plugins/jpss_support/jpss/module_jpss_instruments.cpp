@@ -129,6 +129,8 @@ namespace jpss
                 sat_name = "Suomi NPP";
             else if (scid == JPSS1_SCID)
                 sat_name = "NOAA 20 (JPSS-1)";
+            else if (scid == JPSS2_SCID)
+                sat_name = "NOAA 21 (JPSS-2)";
 
             int norad = 0;
             if (scid == SNPP_SCID)
