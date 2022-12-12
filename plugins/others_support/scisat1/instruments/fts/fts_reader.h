@@ -27,7 +27,7 @@ namespace scisat1
             FTSReader();
             ~FTSReader();
 
-            int lines;
+            int lines = 0;
 
             void work(ccsds::CCSDSPacket &packet);
             image::Image<uint16_t> getImg();
