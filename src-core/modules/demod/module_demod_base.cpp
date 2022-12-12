@@ -90,7 +90,8 @@ namespace demod
             fft_splitter->set_output_2nd(show_fft);
 
             fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
-            fft_proc->set_fft_settings(8192, final_samplerate);
+            fft_proc->set_fft_settings(8192, final_samplerate, 120);
+            fft_proc->avg_rate = 0.02;
             fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
             waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 500);
         }
