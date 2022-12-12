@@ -300,7 +300,7 @@
                         "equalize": true
                     },
                     "Snow enhancement": {
-                        "equation": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/ch4)^1.7, (ch1-ch3a)^1.7",
+                        "equation": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
                         "equalize": true,
                         "white_balance": true
                     },
