@@ -197,6 +197,7 @@ namespace satdump
         active_channel_id = -1;
         ui_thread_pool.push([this](int)
                             { 
+                    async_image_mutex.lock();
                     logger->info("Generating RGB Composite");
                     satdump::ImageCompositeCfg cfg;
                     cfg.equation = rgb_compo_cfg.equation;
@@ -212,7 +213,8 @@ namespace satdump
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
-                    rgb_processing = false; });
+                    rgb_processing = false; 
+                    async_image_mutex.unlock(); });
     }
 
     void ImageViewerHandler::drawMenu()
