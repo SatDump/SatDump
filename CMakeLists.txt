@@ -98,7 +98,7 @@ if(MSVC OR BUILD_MSVC)
     endif()
 endif()
 
-project(SatDump VERSION "1.0.3")
+project(SatDump VERSION "1.0.4")
 
 # Check if the current commit has a tag
 execute_process(
