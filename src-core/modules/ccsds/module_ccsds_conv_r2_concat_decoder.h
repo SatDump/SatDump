@@ -70,7 +70,7 @@ namespace ccsds
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
 
-        uint8_t *viterbi_out, *viterbi_out2;
+        uint8_t *viterbi_out;
         int8_t *soft_buffer;
         uint8_t *frame_buffer;
 

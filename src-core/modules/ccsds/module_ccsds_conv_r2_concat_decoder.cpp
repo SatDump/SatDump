@@ -37,8 +37,6 @@ namespace ccsds
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
         viterbi_out = new uint8_t[d_buffer_size * 2];
-        if (d_oqpsk_mode)
-            viterbi_out2 = new uint8_t[d_buffer_size * 2];
         soft_buffer = new int8_t[d_buffer_size];
         frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
         d_bpsk_90 = false;
@@ -86,9 +84,7 @@ namespace ccsds
         if (parameters.count("asm") > 0)
             asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
 
-        viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
-        if (d_oqpsk_mode)
-            viterbi2 = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases);
+        viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_fill_bytes);
@@ -113,8 +109,6 @@ namespace ccsds
     CCSDSConvR2ConcatDecoderModule::~CCSDSConvR2ConcatDecoderModule()
     {
         delete[] viterbi_out;
-        if (d_oqpsk_mode)
-            delete[] viterbi_out2;
         delete[] soft_buffer;
         delete[] frame_buffer;
     }
@@ -166,51 +160,15 @@ namespace ccsds
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 
             // Perform Viterbi decoding
-            int vitout = 0;
-            uint8_t *viterbi_out_ptr = viterbi_out;
-
-            if (d_oqpsk_mode)
-            {
-                int vitout1 = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
-                rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
-                int vitout2 = viterbi2->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out2);
-
-#if 0
-                if (vitout1 > vitout2)
-                {
-                    viterbi_out_ptr = viterbi_out;
-                    vitout = vitout1;
-                    viterbi_ber = viterbi->ber();
-                    viterbi_lock = viterbi->getState();
-                }
-                else if (vitout2 > vitout1)
-                {
-                    viterbi_out_ptr = viterbi_out2;
-                    vitout = vitout2;
-                    viterbi_ber = viterbi2->ber();
-                    viterbi_lock = viterbi2->getState();
-                }
-                else
-#endif
-                {
-                    viterbi_out_ptr = viterbi2->ber() < viterbi->ber() ? viterbi_out2 : viterbi_out;
-                    vitout = viterbi2->ber() < viterbi->ber() ? vitout2 : vitout1;
-                    viterbi_ber = viterbi2->ber() < viterbi->ber() ? viterbi2->ber() : viterbi->ber();
-                    viterbi_lock = viterbi2->ber() < viterbi->ber() ? viterbi2->getState() : viterbi->getState();
-                }
-            }
-            else
-            {
-                vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
-                viterbi_ber = viterbi->ber();
-                viterbi_lock = viterbi->getState();
-            }
+            int vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+            viterbi_ber = viterbi->ber();
+            viterbi_lock = viterbi->getState();
 
             if (d_diff_decode) // Diff decoding if required
-                diff.decode_bits(viterbi_out_ptr, vitout);
+                diff.decode_bits(viterbi_out, vitout);
 
             // Run deframer
-            int frames = deframer->work(viterbi_out_ptr, vitout, frame_buffer);
+            int frames = deframer->work(viterbi_out, vitout, frame_buffer);
 
             for (int i = 0; i < frames; i++)
             {
