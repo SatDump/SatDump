@@ -4,7 +4,7 @@
 #include "core/module.h"
 #include "core/pipeline.h"
 #include <filesystem>
-//#include "tle.h"
+// #include "tle.h"
 #include "core/plugin.h"
 #include "satdump_vars.h"
 #include "core/config.h"
@@ -112,5 +112,19 @@ namespace satdump
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});
+
+#ifdef BUILD_IS_DEBUG
+        // If in debug, warn the user!
+        logger->error("██████╗  █████╗ ███╗   ██╗ ██████╗ ███████╗██████╗ ");
+        logger->error("██╔══██╗██╔══██╗████╗  ██║██╔════╝ ██╔════╝██╔══██╗");
+        logger->error("██║  ██║███████║██╔██╗ ██║██║  ███╗█████╗  ██████╔╝");
+        logger->error("██║  ██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██╔══██╗");
+        logger->error("██████╔╝██║  ██║██║ ╚████║╚██████╔╝███████╗██║  ██║");
+        logger->error("╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝");
+        logger->error("SatDump has NOT been built in Release mode.");
+        logger->error("If you are not a developer but intending to use the software,");
+        logger->error("you probably do not want this. If so, make sure to");
+        logger->error("specify -DCMAKE_BUILD_TYPE=Release in CMake.");
+#endif
     }
 }

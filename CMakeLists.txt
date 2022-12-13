@@ -152,6 +152,20 @@ if(BUILD_ZIQ)
     message("Building with ZIQ Support")
 endif()
 
+# If in debug, set the macro
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(BUILD_IS_DEBUG=1)
+    message("")
+    message("██████╗  █████╗ ███╗   ██╗ ██████╗ ███████╗██████╗ ")
+    message("██╔══██╗██╔══██╗████╗  ██║██╔════╝ ██╔════╝██╔══██╗")
+    message("██║  ██║███████║██╔██╗ ██║██║  ███╗█████╗  ██████╔╝")
+    message("██║  ██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██╔══██╗")
+    message("██████╔╝██║  ██║██║ ╚████║╚██████╔╝███████╗██║  ██║")
+    message("╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝")
+    message("Building SatDump in Debug mode!")
+    message("")
+endif()
+
 # Check system has <filesystem>
 check_cxx_source_compiles("#include <filesystem>\n int main() { return 0; }" STD_HAS_FILESYSTEM)
 
