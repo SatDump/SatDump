@@ -23,8 +23,7 @@
             "soft": {
                 "fsk_demod": {
                     "symbolrate": 512e3,
-                    "rrc_alpha": 0.35,
-                    "buffer_size": 8192
+                    "rrc_alpha": 0.35
                 }
             },
             "cadu": {
@@ -64,8 +63,7 @@
             "soft": {
                 "fsk_demod": {
                     "symbolrate": 128e3,
-                    "rrc_alpha": 0.35,
-                    "buffer_size": 8192
+                    "rrc_alpha": 0.35
                 }
             },
             "cadu": {

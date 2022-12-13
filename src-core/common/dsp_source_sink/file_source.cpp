@@ -56,6 +56,8 @@ void FileSource::start()
 {
     file_path = file_input.getPath();
 
+    buffer_size = std::min<int>(STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
+
     DSPSampleSource::start();
     ns_to_wait = (1e9 / current_samplerate) * float(buffer_size);
 

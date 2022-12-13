@@ -15,8 +15,7 @@
                     "agc_rate": 0.000001,
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
-                    "costas_bw": 0.004,
-                    "buffer_size": 8192
+                    "costas_bw": 0.004
                 }*/
             },
             "cadu": {
@@ -119,8 +118,7 @@
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
                     "costas_bw": 0.001,
-                    "clock_omega_relative_limit": 0.001,
-                    "buffer_size": 8192
+                    "clock_omega_relative_limit": 0.001
                 }
             },
             "cadu": {}
@@ -436,8 +434,7 @@
                     "rrc_alpha": 0.6,
                     "rrc_taps": 31,
                     "costas_bw": 0.005,
-                    "clock_omega_relative_limit": 0.005,
-                    "buffer_size": 8192
+                    "clock_omega_relative_limit": 0.005
                 }
             },
             "cadu": {

@@ -92,8 +92,7 @@
             "soft": {
                 "fsk_demod": {
                     "symbolrate": 1e6,
-                    "rrc_alpha": 0.35,
-                    "buffer_size": 8192
+                    "rrc_alpha": 0.35
                 }
             }
         }

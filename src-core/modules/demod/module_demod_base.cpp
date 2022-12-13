@@ -9,13 +9,15 @@ namespace demod
                                                                                                                         constellation(100.0f / 127.0f, 100.0f / 127.0f, demod_constellation_size)
     {
         // Parameters parsing
-        if (parameters.count("buffer_size") > 0)
-            d_buffer_size = parameters["buffer_size"].get<long>();
-
         if (parameters.count("samplerate") > 0)
             d_samplerate = parameters["samplerate"].get<long>();
         else
             throw std::runtime_error("Samplerate parameter must be present!");
+
+        if (parameters.count("buffer_size") > 0)
+            d_buffer_size = parameters["buffer_size"].get<long>();
+        else
+            d_buffer_size = std::min<int>(STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, d_samplerate / 200));
 
         if (parameters.count("symbolrate") > 0)
             d_symbolrate = parameters["symbolrate"].get<long>();
