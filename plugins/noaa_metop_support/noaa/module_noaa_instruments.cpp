@@ -389,6 +389,7 @@ namespace noaa
                     hirs_products.set_tle(satellite_tle);
                     hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     hirs_products.set_timestamps(hirs_reader.timestamps);
+                    hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
                         hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
