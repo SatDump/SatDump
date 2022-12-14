@@ -360,7 +360,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless(hirs_reader.timestamps);
+                dataset.timestamp = avg_overflowless_timestamps(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
