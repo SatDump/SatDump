@@ -8,6 +8,7 @@
 #include "products/radiation_products.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "common/projection/timestamp_filtering.h"
 
 namespace noaa
 {
@@ -341,17 +342,17 @@ namespace noaa
                 scid_list.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
-                if (scid == 7)
+                if (scid == 8)
                 { // N15
                     norad = 25338;
                     sat_name = "NOAA-15";
                 }
-                else if (scid == 13)
+                else if (scid == 13 || scid == 14)
                 { // N18
                     norad = 28654;
                     sat_name = "NOAA-18";
                 }
-                else if (scid == 15)
+                else if (scid == 15 || scid == 0)
                 { // N19
                     norad = 33591;
                     sat_name = "NOAA-19";
@@ -360,7 +361,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless_timestamps(hirs_reader.timestamps);
+                dataset.timestamp = avg_overflowless_timestamps(timestamp_filtering::filter_timestamps_width_cfg(hirs_reader.timestamps, loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json"))));
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 

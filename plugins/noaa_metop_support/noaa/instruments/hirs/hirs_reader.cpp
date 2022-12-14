@@ -44,20 +44,10 @@ namespace noaa
             uint16_t enct = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
             // std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[i][0] << std::endl;
 
-            if (enct + 1 == (uint8_t)HIRS_data[0] && enct < 56)
-            {
+            if (enct < 56 && (HIRS_data[35] & 0b10) >> 1 && (HIRS_data[3] & 0x40) >> 6)
+            { 
                 int current = ((buffer[22] % (int)pow(2, 5)) << 1) | (buffer[23] >> 7);
                 // std::cout<<last << ", " << enct << ", " << current <<std::endl;
-
-                if (/*last + 1 > 54 && */ current == 55)
-                {
-                    // std::cout<<"yoss"<<std::endl;
-                    line++;
-                    if (!contains(timestamps, last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0)))
-                        timestamps.push_back(last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0));
-                    else timestamps.push_back(-1);
-                }
-                // last = enct;
 
                 uint16_t words13bit[20] = {0};
                 uint8_t tmp[32];
@@ -79,8 +69,17 @@ namespace noaa
                         imageBuffer[i][enct][line] = abs(buffer);
                     }
 
-                    channels[i][55 - enct + 56 * line] = imageBuffer[i][enct][line];
+                    channels[i][55 - enct + 56 * line] = HIRS_data[0] <= 56 ? imageBuffer[i][enct][line] : 0;
                 }
+
+                                if (current == 55)
+                {
+                    line++;
+                    if (!contains(timestamps, last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0)))
+                        timestamps.push_back(last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0));
+                    else timestamps.push_back(-1);
+                }
+                // last = enct;
             }
         }
 
