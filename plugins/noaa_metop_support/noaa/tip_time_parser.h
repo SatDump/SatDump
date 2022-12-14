@@ -28,10 +28,14 @@ namespace noaa
             timeinfo_struct.tm_min = 0;
             timeinfo_struct.tm_hour = 0;
 
+#ifdef _WIN32
+            dayYearValue = _mkgmtime(&timeinfo_struct);
+#else
             dayYearValue = timegm(&timeinfo_struct);
+#endif
         }
 
-        inline double getTimestamp(int doy, uint64_t millisec) { return dayYearValue + ((doy-1) * 86400) + double(millisec) / 1000.0; }
+        inline double getTimestamp(int doy, uint64_t millisec) { return dayYearValue + ((doy - 1) * 86400) + double(millisec) / 1000.0; }
     };
 
 }
