@@ -33,7 +33,7 @@ namespace dsp
         // Init taps, rectangular window
         fft_taps.resize(rbuffer_size);
         for (int i = 0; i < rbuffer_size; i++)
-            fft_taps[i] = window::nuttall(i, rbuffer_size) * ((i % 2) ? 1.0f : -1.0f);
+            fft_taps[i] = window::nuttall(i, rbuffer_size - 1) * ((i % 2) ? 1.0f : -1.0f);
 
         // Init FFTW
         fftw_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fft_size);
