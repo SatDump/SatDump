@@ -13,7 +13,7 @@ namespace noaa
     class NOAADSBDecoderModule : public ProcessingModule
     {
     protected:
-        std::shared_ptr<DSBDeframer> def;
+        std::shared_ptr<DSB_Deframer> def;
 
         int8_t *soft_buffer;
 

@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
+#include "dsb.h"
 
 // Return filesize
 size_t getFilesize(std::string filepath);
@@ -14,7 +15,7 @@ namespace noaa
     NOAADSBDecoderModule::NOAADSBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                   constellation(1.0, 0.15, demod_constellation_size)
     {
-        def = std::make_shared<DSBDeframer>();
+        def = std::make_shared<DSB_Deframer>(DSB_FRAME_SIZE * 8, 0);
         soft_buffer = new int8_t[BUFFER_SIZE];
     }
 
@@ -47,6 +48,8 @@ namespace noaa
         logger->info("Using input symbols " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".tip");
 
+        uint8_t *output_pkts = new uint8_t[BUFFER_SIZE * 2];
+
         time_t lastTime = 0;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -56,17 +59,17 @@ namespace noaa
             else
                 input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
 
-            std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> frames = def->work(soft_buffer, BUFFER_SIZE);
+            int framen = def->work(soft_buffer, BUFFER_SIZE, output_pkts);
 
             // Count frames
-            frame_count += frames.size();
+            frame_count += framen;
 
             // Write to file
-            if (frames.size() > 0)
+            if (framen > 0)
             {
-                for (std::array<uint8_t, DSB_FRAME_SIZE> frm : frames)
+                for (int i = 0; i < framen; i++)
                 {
-                    data_out.write((char *)&frm[0], DSB_FRAME_SIZE);
+                    data_out.write((char *)&output_pkts[i * DSB_FRAME_SIZE], DSB_FRAME_SIZE);
                 }
             }
 
@@ -80,6 +83,8 @@ namespace noaa
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
             }
         }
+
+        delete[] output_pkts;
 
         logger->info("Decoding finished");
 
@@ -107,9 +112,9 @@ namespace noaa
 
                 ImGui::SameLine();
 
-                if (def->getState() == 0)
+                if (def->getState() == def->STATE_NOSYNC)
                     ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
-                else if (def->getState() == 2 || def->getState() == 6)
+                else if (def->getState() == def->STATE_SYNCING)
                     ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
                 else
                     ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");

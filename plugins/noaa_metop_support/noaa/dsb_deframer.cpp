@@ -1,237 +1,121 @@
 #include "dsb_deframer.h"
-
-// Definitely still needs tuning
-#define THRESOLD_STATE_3 10
-#define THRESOLD_STATE_2 0
-#define THRESOLD_STATE_1 2
-#define THRESOLD_STATE_0 0
-
-// Returns the asked bit!
-template <typename T>
-inline bool getBit(T &data, int &bit)
-{
-    return (data >> bit) & 1;
-}
+#include <cstdint>
+#include <cstring>
 
 namespace noaa
 {
-    // Compare 2 32-bits values bit per bit
-    int checkSyncMarker(uint16_t &marker, uint16_t totest)
+    DSB_Deframer::DSB_Deframer(int cadu_size, int padding) : FRM_SIZE(cadu_size),
+                                                             FRM_PADDING(padding)
     {
-        int errors = 0;
-        for (int i = 31; i >= 0; i--)
+        frame_buffer = new uint8_t[FRM_SIZE + FRM_PADDING];
+    }
+
+    DSB_Deframer::~DSB_Deframer()
+    {
+        delete[] frame_buffer;
+    }
+
+    int DSB_Deframer::getState()
+    {
+        return d_state;
+    }
+
+    int DSB_Deframer::work(int8_t *input, int size, uint8_t *output)
+    {
+        int frame_count = 0;
+
+        for (int ibit = 0; ibit < size; ibit++) // We work bit-per-bit
         {
-            bool markerBit, testBit;
-            markerBit = getBit<uint16_t>(marker, i);
-            testBit = getBit<uint16_t>(totest, i);
-            if (markerBit != testBit)
-                errors++;
-        }
-        return errors;
-    }
+            shifter = (shifter << 1 | (input[ibit] > 0)) & 0xFFFF;
 
-    DSBDeframer::DSBDeframer()
-    {
-        // Default values
-        writeFrame = false;
-        numFrames = 0;
-        wroteBits = 8;
-        wroteBytes = 0;
-        skip = 0;
-        good = 0;
-        errors = 0;
-        state = THRESOLD_STATE_0;
-        bit_inversion = false;
-    }
-
-    int DSBDeframer::getFrameCount()
-    {
-        return numFrames;
-    }
-
-    int DSBDeframer::getState()
-    {
-        return state;
-    }
-
-    std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> DSBDeframer::work(int8_t *input, int size)
-    {
-        // Output buffer
-        std::vector<std::array<uint8_t, DSB_FRAME_SIZE>> frames;
-
-        // Loop in all bits!
-        for (int i = 0; i < size; i++)
-        {
-            // Get a bit, perform bit inversion if necessary
-            uint8_t bit = bit_inversion ? !(input[i] > 0) : input[i] > 0;
-            // Push it into out shifter
-            shifter = (shifter << 1) | bit;
-
-            // Are we writing a frame?
-            if (writeFrame)
+            if (in_frame)
             {
-                // First loop : add clean ASM Marker
-                if (wroteBytes == 0)
+                write_bit((input[ibit] > 0) ^ bit_inversion);
+
+                if (bit_of_frame == FRM_SIZE) // Write frame out
                 {
-                    frameBuffer[0] = FRAME_ASM_1;
-                    frameBuffer[1] = FRAME_ASM_2;
-                    wroteBytes += 2;
+                    memcpy(&output[frame_count * ((FRM_SIZE + FRM_PADDING) / 8)], frame_buffer, (FRM_SIZE + FRM_PADDING) / 8);
+                    frame_count++;
                 }
-
-                // Push bit into out own 1-byte shifter
-                outBuffer = (outBuffer << 1) | bit;
-
-                // If we filled the buffer, output it
-                if (--wroteBits == 0)
+                else if (bit_of_frame == FRM_SIZE + FRM_ASM_SIZE - 1) // Skip to the next ASM
                 {
-                    frameBuffer[wroteBytes] = outBuffer; // ^ d_rantab[wroteBytes];
-                    wroteBytes++;
-                    wroteBits = 8;
-                }
-
-                // Did we write the entire frame?
-                if (wroteBytes == DSB_FRAME_SIZE)
-                {
-                    // Exit of this loop, reset values and push the frame
-                    writeFrame = false;
-                    wroteBits = 8;
-                    wroteBytes = 0;
-                    skip = FRAME_ASM_SIZE * 8; // Push back next ASM in shifter
-                    frames.push_back(frameBuffer);
+                    in_frame = false;
                 }
 
                 continue;
             }
 
-            // Skip a few run if necessary
-            if (skip > 1)
+            if (d_state == STATE_NOSYNC)
             {
-                skip--;
-                continue;
-            }
-            else if (skip == 1) // Last run should NOT reset the loop
-                skip--;
-
-            // State 0 : Searches bit-per-bit for a perfect sync marker. If one is found, we jump to state 6!
-            if (state == THRESOLD_STATE_0)
-            {
-                if (shifter == FRAME_ASM)
+                if (shifter == FRM_ASM)
                 {
-                    numFrames++;
-                    writeFrame = true;
-                    state = THRESOLD_STATE_1;
                     bit_inversion = false;
-                    errors = 0;
-                    sep_errors = 0;
-                    good = 0;
+                    reset_frame();
+                    in_frame = true;
+                    d_state = STATE_SYNCING;
+                    d_good_asm = d_invalid_asm = 0;
                 }
-                else if (shifter == FRAME_ASM_INV)
+                else if (shifter == FRM_ASM_INV)
                 {
-                    numFrames++;
-                    writeFrame = true;
-                    state = THRESOLD_STATE_1;
                     bit_inversion = true;
-                    errors = 0;
-                    sep_errors = 0;
-                    good = 0;
+                    reset_frame();
+                    in_frame = true;
+                    d_state = STATE_SYNCING;
+                    d_good_asm = d_invalid_asm = 0;
                 }
             }
-            // State 1 : Each header is expect 1024 bytes away. Only 6 mistmatches tolerated.
-            // If 5 consecutive good frames are found, we hop to state 22, though, 5 consecutive
-            // errors (here's why errors is reset each time a frame is good) means reset to state 0
-            // 2 frame errors pushes us to state 2
-            else if (state == THRESOLD_STATE_1)
+            else if (d_state == STATE_SYNCING)
             {
-                if (checkSyncMarker(shifter, FRAME_ASM) <= state)
+                if (compare_16(shifter, bit_inversion ? FRM_ASM_INV : FRM_ASM) < d_state)
                 {
-                    numFrames++;
-                    writeFrame = true;
-                    good++;
-                    errors = 0;
+                    reset_frame();
+                    in_frame = true;
+                    d_invalid_asm = 0;
+                    d_good_asm++;
 
-                    if (good == 5)
-                    {
-                        state = THRESOLD_STATE_3;
-                        good = 0;
-                        errors = 0;
-                    }
+                    if (d_good_asm > 10)
+                        d_state = STATE_SYNCED;
                 }
                 else
                 {
-                    errors++;
-                    sep_errors++;
+                    d_invalid_asm++;
+                    d_good_asm = 0;
 
-                    if (errors == 5)
+                    if (d_invalid_asm > 2)
                     {
-                        state = THRESOLD_STATE_0;
-                        bit_inversion = false;
-                        //skip = 1;
-                        errors = 0;
-                        sep_errors = 0;
-                        good = 0;
-                    }
-                    else if (sep_errors == 2)
-                    {
-                        state = THRESOLD_STATE_2;
-                        state_2_bits_count = 0;
-                        //bitsToIncrement = 1;
-                        errors = 0;
-                        sep_errors = 0;
-                        good = 0;
+                        d_state = STATE_NOSYNC;
                     }
                 }
             }
-            // State 2 : Goes back to bit-per-bit syncing... 3 frame scanned and we got back to state 0, 1 good and back to 6!
-            else if (state == THRESOLD_STATE_2)
+            else if (d_state == STATE_SYNCED)
             {
-                if (checkSyncMarker(shifter, FRAME_ASM) <= state)
+                if (compare_16(shifter, bit_inversion ? FRM_ASM_INV : FRM_ASM) < d_state)
                 {
-                    numFrames++;
-                    writeFrame = true;
-                    state = THRESOLD_STATE_1;
-                    //skip = 1024 * 8;
-                    errors = 0;
-                    sep_errors = 0;
-                    good = 0;
+                    reset_frame();
+                    in_frame = true;
                 }
                 else
                 {
-                    state_2_bits_count++;
-                    errors++;
-                    //skip = DSB_FRAME_SIZE * 8;
-
-                    if (state_2_bits_count >= 5 * 1024 * 8)
-                    {
-                        state = THRESOLD_STATE_0;
-                        bit_inversion = false;
-                        //bitsToIncrement = 1;
-                        errors = 0;
-                        sep_errors = 0;
-                        good = 0;
-                    }
-                }
-            }
-            // State 3 : We assume perfect lock and allow very high mismatchs.
-            // 1 error and back to state 6
-            // Note : Lowering the thresold seems to yield better of a sync
-            else if (state == THRESOLD_STATE_3)
-            {
-                if (checkSyncMarker(shifter, FRAME_ASM) <= state)
-                {
-                    numFrames++;
-                    writeFrame = true;
-                }
-                else
-                {
-                    errors = 0;
-                    good = 0;
-                    sep_errors = 0;
-                    state = THRESOLD_STATE_1;
+                    d_good_asm = d_invalid_asm = 0;
+                    d_state = STATE_NOSYNC; // Reset to hard NOSYNC, so we correct for a possible new inversion state
                 }
             }
         }
 
-        // Output what we found if anything
-        return frames;
+        return frame_count;
+    }
+
+    void DSB_Deframer::write_bit(uint8_t b)
+    {
+        frame_buffer[bit_of_frame / 8] = frame_buffer[bit_of_frame / 8] << 1 | b;
+        bit_of_frame++;
+    }
+
+    void DSB_Deframer::reset_frame()
+    {
+        memset(frame_buffer, 0, (FRM_SIZE + FRM_PADDING) / 8);
+        bit_of_frame = 0;
+        for (int i = 15; i >= 0; i--)
+            write_bit((FRM_ASM >> i) & 1);
     }
 }
