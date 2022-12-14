@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <cstdint>
+#include <iostream>
 
 namespace noaa
 {
@@ -21,16 +22,16 @@ namespace noaa
 #endif
 
             // Reset to be year
-            timeinfo_struct.tm_mday = 0;
-            timeinfo_struct.tm_wday = 0;
-            timeinfo_struct.tm_yday = 0;
+            timeinfo_struct.tm_mday = 1;
             timeinfo_struct.tm_mon = 0;
+            timeinfo_struct.tm_sec = 0;
+            timeinfo_struct.tm_min = 0;
+            timeinfo_struct.tm_hour = 0;
 
-            dayYearValue = mktime(&timeinfo_struct);
-            dayYearValue = dayYearValue - (dayYearValue % 86400);
+            dayYearValue = timegm(&timeinfo_struct);
         }
 
-        inline double getTimestamp(int doy, uint64_t millisec) { return dayYearValue + (doy * 86400) + double(millisec) / 1000.0; }
+        inline double getTimestamp(int doy, uint64_t millisec) { return dayYearValue + ((doy-1) * 86400) + double(millisec) / 1000.0; }
     };
 
 }

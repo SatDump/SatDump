@@ -326,7 +326,7 @@ namespace noaa
                     data_in.read((char *)&buffer[0], 104);
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
-                    scid_list.push_back(buffer[0] & 0b00001111);
+                    scid_list.push_back(buffer[2] & 0b00001111);
 
                     progress = data_in.tellg();
                     if (time(NULL) % 10 == 0 && lastTime != time(NULL))
