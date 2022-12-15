@@ -3,7 +3,7 @@
     "scan_angle": 104,
     "roll_offset": -1,
     "pitch_offset": 0,
-    "yaw_offset": -5,
+    "yaw_offset": -0,
     "image_width": 98,
     "gcp_spacing_x": 5,
     "gcp_spacing_y": 5,
