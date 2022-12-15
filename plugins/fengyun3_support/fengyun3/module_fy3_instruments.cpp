@@ -13,6 +13,7 @@
 #include "fengyun3.h"
 #include "resources.h"
 #include "instruments/mersi_histmatch.h"
+#include "instruments/mersi_offset_interleaved.h"
 
 namespace fengyun3
 {
@@ -683,6 +684,8 @@ namespace fengyun3
                     logger->debug("Processing channel {:d}", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, i < 2 ? 80 : 10);
+                    if (i < 2)
+                        mersi::mersi_offset_interleaved(image, 40, -3);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
