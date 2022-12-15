@@ -29,18 +29,32 @@ namespace fengyun3
             if (lastMarker == 5 && marker == 1)
             {
                 logger->info("New frame, saving...");
-                imgCount++;
 
-                logger->info("Channel 1...");
-                getChannel(0).save_png(std::string(directory + "/WindRAD-" + band + "1-" + std::to_string(imgCount) + ".png").c_str());
+                if (lastMarker2 == 21)
+                {
+                    imgCount++;
 
-                logger->info("Channel 2...");
-                getChannel(1).save_png(std::string(directory + "/WindRAD-" + band + "2-" + std::to_string(imgCount) + ".png").c_str());
+                    logger->info("Channel 1...");
+                    getChannel(0).save_png(std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+
+                    logger->info("Channel 2...");
+                    getChannel(1).save_png(std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+                }
+                else
+                {
+                    logger->info("Channel 1...");
+                    getChannel(0).save_png(std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+
+                    logger->info("Channel 2...");
+                    getChannel(1).save_png(std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+                }
 
                 lines = 0;
             }
 
             lastMarker = marker;
+            if (marker == 3)
+                lastMarker2 = packet[15] >> 2;
 
             if (marker > 1)
                 return;
@@ -54,7 +68,7 @@ namespace fengyun3
                 float significand = (packet[17 + i * 2 + 0] & 0b11) << 8 | packet[17 + i * 2 + 1];
                 float test = (sign ? -1 : 1) * significand * powf(2, exponent - 15);
 
-                test /= 1000;
+                test /= 500;
 
                 // logger->critical("{:f} - S {:d} - E {:f} - S {:f}", test, (int)sign, exponent - 15, significand);
                 if (test < 0)

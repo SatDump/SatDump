@@ -17,7 +17,7 @@ namespace fengyun3
             const std::string band;
             const std::string directory;
             ResizeableBuffer<unsigned short> channels[2];
-            int lastMarker = 0;
+            int lastMarker = 0, lastMarker2 = 0;
 
         public:
             WindRADReader(int width, std::string bnd, std::string dir);
