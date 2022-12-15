@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    img,
                                    color,
-                                   satdump::reprojection::setupProjectionFunction(img.width(), img.height(), proj_cfg));
+                                   satdump::reprojection::setupProjectionFunction(img.width(), img.height(), proj_cfg, {}));
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");

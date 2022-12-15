@@ -474,7 +474,7 @@ namespace satdump
         layers_images.clear();
 
         // Setup projection to draw stuff on top
-        auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg);
+        auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg, {});
 
         // Draw map borders
         if (projections_draw_map_overlay)

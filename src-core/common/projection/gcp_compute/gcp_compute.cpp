@@ -6,7 +6,7 @@ namespace satdump
 {
     namespace gcp_compute
     {
-        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps, int width, int height)
+        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, nlohmann::json mtd, TLE tle, nlohmann::ordered_json timestamps, int width, int height)
         {
             std::vector<satdump::projection::GCP> gcps;
 
@@ -17,6 +17,10 @@ namespace satdump
                 ratio_x = round((double)projection->img_size_x / (double)width);
             if (height != -1)
                 ratio_y = round((double)projection->img_size_y / (double)height);
+
+            int img_x_offset = 0;
+            if (mtd.contains("img_offset_x"))
+                img_x_offset = mtd["img_offset_x"];
 
             std::vector<int> values;
             for (int x = 0; x < projection->img_size_x; x += projection->gcp_spacing_x)
@@ -43,7 +47,7 @@ namespace satdump
                 {
                     if (y % projection->gcp_spacing_y == 0 || y + 1 == (int)timestamps.size() || last_was_invalid)
                     {
-                        if (projection->get_position(x, y, position))
+                        if (projection->get_position(x + img_x_offset, y, position))
                         {
                             last_was_invalid = true;
                             continue;

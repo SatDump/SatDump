@@ -12,7 +12,7 @@
 
 namespace satdump
 {
-    reprojection::ProjectionResult projectImg(nlohmann::json proj_settings, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
+    reprojection::ProjectionResult projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
     {
         reprojection::ReprojectionOperation op;
         op.source_prj_info = img_products.get_proj_cfg();
@@ -43,7 +43,7 @@ namespace satdump
         {
             if (proj_settings["draw_map"].get<bool>())
             {
-                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
+                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings, metadata);
                 logger->info("Drawing map");
                 unsigned short color[3] = {0, 65535, 0};
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
@@ -85,7 +85,8 @@ namespace satdump
 
                 ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
                 std::vector<double> final_timestamps;
-                image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps);
+                nlohmann::json final_metadata;
+                image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
 
                 std::string name = products->instrument_name +
                                    (rgb_image.channels() == 1 ? "_" : "_rgb_") +
@@ -97,6 +98,7 @@ namespace satdump
                     auto proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
                                                                                     rgb_image.height(),
                                                                                     img_products->get_proj_cfg(),
+                                                                                    final_metadata,
                                                                                     img_products->get_tle(),
                                                                                     final_timestamps);
                     logger->info("Drawing map...");
@@ -115,6 +117,7 @@ namespace satdump
                 {
                     logger->debug("Reprojecting composite {:s}", name.c_str());
                     reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
+                                                                    final_metadata,
                                                                     rgb_image,
                                                                     final_timestamps,
                                                                     *img_products);
@@ -166,6 +169,7 @@ namespace satdump
 
                 logger->debug("Reprojecting channel {:s}", img.channel_name.c_str());
                 reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
+                                                                img_products->get_channel_proj_metdata(chanid),
                                                                 img.image,
                                                                 img_products->get_timestamps(chanid),
                                                                 *img_products);

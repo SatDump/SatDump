@@ -50,9 +50,14 @@ namespace satdump
     void ImageViewerHandler::updateImage()
     {
         if (select_image_id == 0)
+        {
             current_image = rgb_image;
+        }
         else if (select_image_id - 1 < (int)products->images.size())
+        {
             current_image = products->images[select_image_id - 1].image;
+            current_proj_metadata = products->get_channel_proj_metdata(select_image_id - 1);
+        }
 
         if (select_image_id != 0)
             current_timestamps = products->get_timestamps(select_image_id - 1);
@@ -93,6 +98,7 @@ namespace satdump
             auto proj_func = satdump::reprojection::setupProjectionFunction(current_image.width(),
                                                                             current_image.height(),
                                                                             products->get_proj_cfg(),
+                                                                            current_proj_metadata,
                                                                             products->get_tle(),
                                                                             current_timestamps,
                                                                             !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
@@ -209,7 +215,7 @@ namespace satdump
                     normalize_image = rgb_compo_cfg.normalize;
                     white_balance_image = rgb_compo_cfg.white_balance;
 
-                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -501,6 +507,7 @@ namespace satdump
         {
             reprojection::ReprojectionOperation op;
             op.source_prj_info = products->get_proj_cfg();
+            op.source_mtd_info = current_proj_metadata;
             op.target_prj_info = settings;
             op.img = current_image;
             if (rotate_image)

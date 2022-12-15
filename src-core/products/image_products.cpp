@@ -157,7 +157,7 @@ namespace satdump
         return radiance;
     }
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps)
+    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
         std::vector<std::string> channel_numbers;
@@ -167,6 +167,9 @@ namespace satdump
         int max_width_total = 0;
         int max_width_used = 1;
         int min_offset = 100000000;
+
+        if (final_metadata != nullptr)
+            final_metadata->clear();
 
         std::string str_to_find_channels = cfg.equation;
 
@@ -213,6 +216,9 @@ namespace satdump
             img_off.second -= min_offset;
             img_off.second /= ratio;
             logger->trace("Offset for ch{:s} is {:d}", img_off.first.c_str(), img_off.second);
+
+            if (final_metadata != nullptr)
+                (*final_metadata)["img_x_offset"] = min_offset;
         }
 
         if (product.needs_correlation)

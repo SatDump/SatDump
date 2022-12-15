@@ -23,7 +23,7 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch5,ch5,ch5"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "1-ch1,1-ch1,1-ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 
@@ -35,6 +35,7 @@ int main(int /*argc*/, char *argv[])
     satdump::warp::WarpOperation operation;
     operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
     operation.ground_control_points = satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
+                                                                         {}, // TMP
                                                                          img_pro.get_tle(),
                                                                          img_pro.get_timestamps(0),
                                                                          operation.input_image.width(),
@@ -62,7 +63,7 @@ int main(int /*argc*/, char *argv[])
                                        return {x, y};
                                    });
 
-    
+    /*
     for (auto gcp : operation.ground_control_points)
     {
         auto projfunc = [&projector](float lat, float lon, int, int) -> std::pair<int, int>
@@ -79,7 +80,7 @@ int main(int /*argc*/, char *argv[])
 
         result.output_image.draw_circle(pos.first, pos.second, 10, color, true);
     }
-    
+    */
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");

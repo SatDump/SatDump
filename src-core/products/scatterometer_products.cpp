@@ -100,6 +100,7 @@ namespace satdump
                 operation.input_image = make_scatterometer_grayscale(products, cfg1);
                 operation.output_rgba = true;
                 operation.ground_control_points = satdump::gcp_compute::compute_gcps(products.get_proj_cfg(cfg1.channel),
+                                                                                     {},
                                                                                      products.get_tle(),
                                                                                      products.get_timestamps(cfg1.channel),
                                                                                      operation.input_image.width(),
@@ -119,6 +120,7 @@ namespace satdump
                 operation.input_image = make_scatterometer_grayscale(products, cfg2);
                 operation.output_rgba = true;
                 operation.ground_control_points = satdump::gcp_compute::compute_gcps(products.get_proj_cfg(cfg2.channel),
+                                                                                     {},
                                                                                      products.get_tle(),
                                                                                      products.get_timestamps(cfg2.channel),
                                                                                      operation.input_image.width(),

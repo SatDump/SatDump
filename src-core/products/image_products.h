@@ -97,6 +97,14 @@ namespace satdump
             return contents["projection_cfg"];
         }
 
+        nlohmann::ordered_json get_channel_proj_metdata(int ch)
+        {
+            nlohmann::ordered_json mtd;
+            if (images[ch].offset_x != 0)
+                mtd["img_offset_x"] = images[ch].offset_x;
+            return mtd;
+        }
+
         bool has_proj_cfg()
         {
             return contents.contains("projection_cfg");
@@ -229,6 +237,6 @@ namespace satdump
             v.white_balance = j["white_balance"].get<bool>();
     }
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr);
+    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);
 }

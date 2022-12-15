@@ -41,7 +41,12 @@ namespace satdump
                 // Init
                 std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(projected_image.width(),
                                                                                                                         projected_image.height(),
-                                                                                                                        op.target_prj_info);
+                                                                                                                        op.target_prj_info,
+                                                                                                                        {});
+
+                int img_x_offset = 0;
+                if (op.source_mtd_info.contains("img_offset_x"))
+                    img_x_offset = op.source_mtd_info["img_offset_x"];
 
                 // Reproj
                 // ""TPS""" (Mostly LEO)
@@ -60,7 +65,7 @@ namespace satdump
                             geodetic::geodetic_coords_t coords1, coords2, coords3;
                             bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
                             bool ret2 = sat_proj_src->get_position((px + 1) * ratio_x, currentScan * ratio_y, coords2);
-                            sat_proj_src->get_position(px * ratio_x, (currentScan + 1) * ratio_y, coords3);
+                            sat_proj_src->get_position((px - img_x_offset) * ratio_x, (currentScan + 1) * ratio_y, coords3);
 
                             if (ret1 || ret2)
                                 continue;
@@ -175,7 +180,7 @@ namespace satdump
                 else // Means it's a TPS-handled warp.
                 {
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img_tle, op.img_tim, op.img.width(), op.img.height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.source_mtd_info, op.img_tle, op.img_tim, op.img.width(), op.img.height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
@@ -303,6 +308,7 @@ namespace satdump
 
         std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
                                                                                            nlohmann::json params,
+                                                                                           nlohmann::json metad,
                                                                                            TLE tle,
                                                                                            std::vector<double> timestamps,
                                                                                            bool rotate)
@@ -406,7 +412,7 @@ namespace satdump
             }
             else
             {
-                auto gcps = gcp_compute::compute_gcps(params, tle, timestamps, width, height);
+                auto gcps = gcp_compute::compute_gcps(params, metad, tle, timestamps, width, height);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 transform->init(gcps, true, false);
                 return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>

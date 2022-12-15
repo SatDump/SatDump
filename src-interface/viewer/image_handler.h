@@ -50,6 +50,7 @@ namespace satdump
         int select_rgb_presets = -1;
 
         std::vector<double> current_timestamps;
+        nlohmann::json current_proj_metadata;
 
         // Projections
         bool use_draw_proj_algo = false;
