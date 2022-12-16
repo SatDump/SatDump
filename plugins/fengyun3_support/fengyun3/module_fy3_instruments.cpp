@@ -341,7 +341,14 @@ namespace fengyun3
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
-            // dataset.timestamp = avg_overflowless(avhrr_reader.timestamps);
+            if ((d_satellite == FY_AB || d_satellite == FY_3C) && d_downlink == AHRPT)
+                dataset.timestamp = avg_overflowless(virr_reader.timestamps);
+            else if (d_satellite == FY_AB && d_downlink == MPT)
+                dataset.timestamp = avg_overflowless(mersi1_reader.timestamps);
+            else if (d_satellite == FY_3D)
+                dataset.timestamp = avg_overflowless(mersi2_reader.timestamps);
+            else if (d_satellite == FY_3E)
+                dataset.timestamp = avg_overflowless(mersill_reader.timestamps);
 
             // Satellite ID
             {

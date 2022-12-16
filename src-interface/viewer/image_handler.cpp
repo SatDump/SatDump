@@ -80,6 +80,9 @@ namespace satdump
         if (normalize_image)
             current_image.normalize();
 
+        int pre_corrected_width = current_image.width();
+        int pre_corrected_height = current_image.height();
+
         std::vector<float> corrected_stuff;
         if (correct_image)
         {
@@ -95,8 +98,8 @@ namespace satdump
         if (map_overlay || cities_overlay)
         {
             current_image.to_rgb(); // Ensure this is RGB!!
-            auto proj_func = satdump::reprojection::setupProjectionFunction(current_image.width(),
-                                                                            current_image.height(),
+            auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                                                                            pre_corrected_height,
                                                                             products->get_proj_cfg(),
                                                                             current_proj_metadata,
                                                                             products->get_tle(),
