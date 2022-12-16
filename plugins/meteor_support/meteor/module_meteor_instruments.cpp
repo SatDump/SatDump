@@ -34,7 +34,7 @@ namespace meteor
             def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, true);
             def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
 
-            time_t currentDay = time(0);
+            time_t currentDay = time(0) + 3 * 3600.0;            // Moscow Time
             time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
 
             std::vector<double> msumr_timestamps;
@@ -62,7 +62,8 @@ namespace meteor
                 for (std::vector<uint8_t> msumr_frame : msumr_frames)
                 {
                     msumr_reader.work(msumr_frame.data());
-                    double timestamp = dayValue + (msumr_frame[8] - 3.0) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
+                    double timestamp = dayValue + (msumr_frame[8]) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
+                    timestamp -= 3 * 3600.0;
                     msumr_timestamps.push_back(timestamp);
                     mtvza_reader.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);

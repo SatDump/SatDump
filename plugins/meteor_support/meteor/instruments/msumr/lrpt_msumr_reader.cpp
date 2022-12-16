@@ -22,7 +22,7 @@ namespace meteor
                 }
 
                 // Fetch current day
-                time_t currentDay = time(0);
+                time_t currentDay = time(0) + 3 * 3600.0;
                 dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
             }
 
