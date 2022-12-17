@@ -92,8 +92,12 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
-        splitter->stop_tmp();
-        source_ptr->stop();
+        if (is_started)
+        {
+            splitter->stop_tmp();
+            source_ptr->stop();
+            is_started = false;
+        }
         source_ptr->close();
         splitter->input_stream = std::make_shared<dsp::stream<complex_t>>();
         splitter->stop();
