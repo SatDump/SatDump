@@ -292,7 +292,6 @@
                     "pll_bw": 0.006
                 }
             },
-    
             "cadu": {
                 "ccsds_conv_r2_concat_decoder": {
                     "constellation": "qpsk",
@@ -306,6 +305,6 @@
                     "rs_type": "rs223"
                 }
             }
-            }
         }
+    }
 }
