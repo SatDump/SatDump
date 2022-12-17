@@ -92,6 +92,7 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
+        stop_processing();
         if (is_started)
         {
             splitter->stop_tmp();
@@ -327,69 +328,12 @@ namespace satdump
                 if (!is_processing)
                 {
                     if (ImGui::Button("Start###startprocessing"))
-                    {
-                        if (pipeline_selector.outputdirselect.file_valid || automated_live_output_dir)
-                        {
-                            pipeline_params = pipeline_selector.getParameters();
-                            pipeline_params["samplerate"] = source_ptr->get_samplerate();
-                            pipeline_params["baseband_format"] = "f32";
-                            pipeline_params["buffer_size"] = STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
-                            pipeline_params["start_timestamp"] = (double)time(0); // Some pipelines need this
-
-                            if (automated_live_output_dir)
-                            {
-                                const time_t timevalue = time(0);
-                                std::tm *timeReadable = gmtime(&timevalue);
-                                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                                pipeline_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
-                                                      timestamp + "_" +
-                                                      pipelines[pipeline_selector.pipeline_id].name + "_" +
-                                                      std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
-                                std::filesystem::create_directories(pipeline_output_dir);
-                                logger->info("Generated folder name : " + pipeline_output_dir);
-                            }
-                            else
-                            {
-                                pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
-                            }
-
-                            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
-                            splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
-                            live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
-                            splitter->set_output_3rd(true);
-
-                            is_processing = true;
-                        }
-                        else
-                        {
-                            error = "Please select a valid output directory!";
-                        }
-                    }
+                        start_processing();
                 }
                 else
                 {
                     if (ImGui::Button("Stop##stopprocessing"))
-                    {
-                        is_processing = false;
-                        splitter->set_output_3rd(false);
-                        live_pipeline->stop();
-
-                        if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
-                        {
-                            Pipeline pipeline = pipelines[pipeline_selector.pipeline_id];
-                            std::string input_file = live_pipeline->getOutputFiles()[0];
-                            int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
-                            std::string input_level = pipeline.steps[start_level].level_name;
-                            ui_thread_pool.push([=](int)
-                                                { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, pipeline_params); });
-                        }
-
-                        live_pipeline.reset();
-                    }
+                        stop_processing();
                 }
 
                 ImGui::SameLine();
@@ -472,38 +416,12 @@ namespace satdump
                 if (!is_recording)
                 {
                     if (ImGui::Button("Start###startrecording"))
-                    {
-                        splitter->set_output_2nd(true);
-
-                        const time_t timevalue = time(0);
-                        std::tm *timeReadable = gmtime(&timevalue);
-                        std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                                (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                                (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
-                                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-
-                        std::string filename = config::main_cfg["satdump_output_directories"]["recording_path"]["value"].get<std::string>() +
-                                               "/" + timestamp + "_" + std::to_string(source_ptr->get_samplerate()) + "SPS_" +
-                                               std::to_string(long(frequency_mhz * 1e6)) + "Hz";
-
-                        recorder_filename = file_sink->start_recording(filename, source_ptr->get_samplerate(), ziq_bit_depth);
-
-                        logger->info("Recording to " + recorder_filename);
-
-                        is_recording = true;
-                    }
+                        start_recording();
                 }
                 else
                 {
                     if (ImGui::Button("Stop##stoprecording"))
-                    {
-                        file_sink->stop_recording();
-                        splitter->set_output_2nd(false);
-                        recorder_filename = "";
-                        is_recording = false;
-                    }
+                        stop_recording();
                 }
             }
         }

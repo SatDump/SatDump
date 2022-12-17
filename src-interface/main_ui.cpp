@@ -11,7 +11,7 @@
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
 
-//#define ENABLE_DEBUG_MAP
+// #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
 #include "common/widgets/image_view.h"
 float lat = 0, lon = 0, lat1 = 0, lon1 = 0;
@@ -62,6 +62,8 @@ namespace satdump
     void exitMainUI()
     {
         recorder_app->save_settings();
+        recorder_app.reset();
+        viewer_app.reset();
     }
 
     void renderMainUI(int wwidth, int wheight)

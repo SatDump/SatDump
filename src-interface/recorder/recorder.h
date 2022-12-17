@@ -74,83 +74,16 @@ namespace satdump
         int ziq_bit_depth;
         // #endif
 
-        nlohmann::json serialize_config()
-        {
-            nlohmann::json out;
-            out["show_waterfall"] = show_waterfall;
-            out["waterfall_ratio"] = waterfall_ratio;
-            out["panel_ratio"] = panel_ratio;
-            out["fft_size"] = fft_size;
-            out["fft_rate"] = fft_rate;
-            out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
-            if (fft_plot && waterfall_plot && fft)
-            {
-                out["fft_min"] = fft_plot->scale_min;
-                out["fft_max"] = fft_plot->scale_max;
-                out["fft_avg"] = fft->avg_rate;
-            }
-            return out;
-        }
+        nlohmann::json serialize_config();
+        void deserialize_config(nlohmann::json in);
+        void try_load_sdr_settings();
 
-        void deserialize_config(nlohmann::json in)
-        {
-            show_waterfall = in["show_waterfall"].get<bool>();
-            waterfall_ratio = in["waterfall_ratio"].get<float>();
-            panel_ratio = in["panel_ratio"].get<float>();
-            if (fft_plot && waterfall_plot && fft)
-            {
-                if (in.contains("fft_min"))
-                    fft_plot->scale_min = in["fft_min"];
-                if (in.contains("fft_max"))
-                    fft_plot->scale_max = in["fft_max"];
-                if (in.contains("fft_avg"))
-                    fft->avg_rate = in["fft_avg"];
-            }
-            if (in.contains("fft_size"))
-            {
-                fft_size = in["fft_size"].get<int>();
-                for (int i = 0; i < 4; i++)
-                    if (fft_sizes_lut[i] == fft_size)
-                        selected_fft_size = i;
-            }
-            if (in.contains("fft_rate"))
-                fft_rate = in["fft_rate"];
-            if (in.contains("waterfall_palette"))
-            {
-                std::string name = in["waterfall_palette"].get<std::string>();
-                for (int i = 0; i < (int)waterfall_palettes.size(); i++)
-                    if (waterfall_palettes[i].name == name)
-                        selected_waterfall_palette = i;
-                waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
-            }
-        }
+    private:
+        void start_processing();
+        void stop_processing();
 
-        void try_load_sdr_settings()
-        {
-            if (config::main_cfg["user"].contains("recorder_sdr_settings"))
-            {
-                if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
-                {
-                    auto cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
-                    source_ptr->set_settings(cfg);
-                    if (cfg.contains("samplerate"))
-                    {
-                        try
-                        {
-                            source_ptr->set_samplerate(cfg["samplerate"]);
-                        }
-                        catch (std::exception &e)
-                        {
-                        }
-                    }
-                    if (cfg.contains("frequency"))
-                    {
-                        frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
-                    }
-                }
-            }
-        }
+        void start_recording();
+        void stop_recording();
 
     public:
         RecorderApplication();
