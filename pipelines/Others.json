@@ -272,7 +272,7 @@
             }
         }
     },
-    "LandSat_9_Sband": {
+    "LandSat9_tlm": {
         "name": "LandSat 8/9 S-band",
         "live": false,
         "live_cfg": [],
