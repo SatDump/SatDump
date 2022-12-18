@@ -250,7 +250,7 @@ namespace noaa
                 }
 
                 // MHS
-                {
+                if (scid == 15){ //only N19 has operational MHS
                     mhs_status = SAVING;
                     std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MHS";
 
