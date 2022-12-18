@@ -150,6 +150,7 @@ namespace noaa
                 // WARNINGS
                 {
                     if (scid == 13) logger->warn("NOAA-18 detected. MHS data will not be saved!");
+                    if (scid == 7) logger->warn("NOAA-15 detected. No MHS available!");
                 }
 
                 // AVHRR
