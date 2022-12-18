@@ -184,11 +184,16 @@ namespace satdump
                                     text = u8"\uf005";
                                     ImGui::TextColored(color, "%s", text.c_str());
                                     text = u8"\uf006";
+                                    if (is_selected != (pipeline_id == n))
+                                    {
+                                        pipeline_id = n;
+                                        updateSelectedPipeline();
+                                    }
                                 }
                                 if (is_selected)
                                 {
-                                    pipeline_id = n;
-                                    updateSelectedPipeline();
+                                    // pipeline_id = n;
+                                    // updateSelectedPipeline();
                                     ImGui::SetItemDefaultFocus();
                                 }
                             }
