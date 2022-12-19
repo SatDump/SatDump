@@ -24,7 +24,7 @@
             "soft": {
                 "psk_demod": {
                     "constellation": "qpsk",
-                    "symbolrate": 800e3,
+                    "symbolrate": 400e3,
                     "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
