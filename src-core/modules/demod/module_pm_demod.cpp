@@ -11,6 +11,9 @@ namespace demod
         sym_buffer = new int8_t[d_buffer_size * 4];
 
         // Parse params
+        if (parameters.count("resample_after_pll") > 0)
+            d_resample_after_pll = parameters["resample_after_pll"].get<bool>();
+
         if (parameters.count("pll_bw") > 0)
             d_pll_bw = parameters["pll_bw"].get<float>();
         else
@@ -53,16 +56,21 @@ namespace demod
 
     void PMDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::init(!d_resample_after_pll);
 
         // PLL
         pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
 
         // Domain conversion
-        pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream, final_samplerate, d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
+        pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream,
+                                                 d_resample_after_pll ? d_samplerate : final_samplerate,
+                                                 d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
+
+        if (d_resample_after_pll)
+            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
 
         // RRC
-        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(d_resample_after_pll ? resampler->output_stream : pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
         // Costas
         costas = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);

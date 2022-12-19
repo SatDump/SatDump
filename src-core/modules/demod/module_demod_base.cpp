@@ -40,7 +40,7 @@ namespace demod
         showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
     }
 
-    void BaseDemodModule::init()
+    void BaseDemodModule::init(bool resample_here)
     {
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
         resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
@@ -101,11 +101,11 @@ namespace demod
         std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
 
         // Init resampler if required
-        if (resample)
+        if (resample && resample_here)
             resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(input_data_final_fft, final_samplerate, d_samplerate);
 
         // AGC
-        agc = std::make_shared<dsp::AGCBlock<complex_t>>(resample ? resampler->output_stream : input_data_final_fft, d_agc_rate, 1.0f, 1.0f, 65536);
+        agc = std::make_shared<dsp::AGCBlock<complex_t>>((resample && resample_here) ? resampler->output_stream : input_data_final_fft, d_agc_rate, 1.0f, 1.0f, 65536);
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()
