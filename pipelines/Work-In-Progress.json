@@ -736,6 +736,7 @@
                     "cadu_size": 8192,
                     "ccsds": false,
                     "nrzm": true,
+                    "derandomize": false,
                     "asm": "0xa91a8c29",
                     "rs_i": 0
                 }
