@@ -104,7 +104,7 @@ namespace dsp
 
             if (pos_in_buffer < in_reshape_buffer)
             {
-                memmove(fft_reshape_buffer, &fft_reshape_buffer[pos_in_buffer], in_reshape_buffer - pos_in_buffer);
+                memmove(fft_reshape_buffer, &fft_reshape_buffer[pos_in_buffer], (in_reshape_buffer - pos_in_buffer) * sizeof(complex_t));
                 in_reshape_buffer -= pos_in_buffer;
             }
         }
