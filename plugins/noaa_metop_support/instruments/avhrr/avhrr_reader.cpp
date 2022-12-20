@@ -17,6 +17,8 @@ namespace noaa_metop
         {
             for (int i = 0; i < 5; i++)
                 channels[i].clear();
+            prt_buffer.clear();
+            views.clear();
         }
 
         void AVHRRReader::work_metop(ccsds::CCSDSPacket &packet)
@@ -28,7 +30,7 @@ namespace noaa_metop
 
             // Convert AVHRR payload into 10-bits values
             repackBytesTo10bits(&packet.payload[14], 12944, avhrr_buffer);
-            
+
             line2image(avhrr_buffer, 55, 2048, packet.header.apid == 103);
         }
 
@@ -70,6 +72,33 @@ namespace noaa_metop
 
             for (int channel = 0; channel < 6; channel++)
                 channels[channel].resize((lines + 1) * 2048);
+
+            // calibration data extraction (for later, we don't know what sat this is yet!)
+            prt_buffer.push_back((buff[17] + buff[18] + buff[19])/3);
+
+            // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
+            uint16_t avg_blb[3] = {0}; // blackbody average
+            uint16_t avg_spc[3] = {0}; // space average
+            for (int i = 0; i < 10; i++)
+                for (int j = 0; j < 3; j++)
+                {
+                    avg_blb[j] += buff[22 + 3 * i + j];
+                    avg_spc[j] += buff[52 + 5 * i + j + 2];
+                }
+            for (int j = 0; j < 3; j++){
+                avg_blb[j] /= 10;
+                avg_spc[j] /= 10;
+            }
+
+            std::array<view_pair, 3> el;
+            for (int i = 0; i < 3; i++){
+                el[i] = view_pair{avg_spc[i], avg_blb[i]};
+            }
+            views.push_back(el);
+        }
+
+        int AVHRRReader::calibrate(std::string sat_name){ // further calibration
+            
         }
     } // namespace avhrr
 } // namespace metop_noaa
