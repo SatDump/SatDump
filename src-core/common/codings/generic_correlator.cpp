@@ -1,6 +1,8 @@
 #include "generic_correlator.h"
 #include "common/dsp/buffer.h"
 #include "rotation.h"
+#include "resources.h"
+#include "logger.h"
 
 CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<uint8_t> syncword, int max_frm_size) : d_modulation(mod)
 {
@@ -63,6 +65,73 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
         rotate_float_buf(syncwords[6].data(), syncword_length, 180);
         rotate_float_buf(syncwords[7].data(), syncword_length, 270);
     }
+
+#ifdef USE_OPENCL
+    try
+    {
+        corro = new float[max_frm_size];
+        matcho = new int[max_frm_size];
+
+        std::vector<float> full_syncs(syncwords.size() * syncword_length);
+
+        for (int i = 0; i < syncwords.size(); i++)
+            for (int x = 0; x < syncword_length; x++)
+                full_syncs[i * syncword_length + x] = syncwords[i][x];
+
+        satdump::opencl::setupOCLContext();
+
+        corr_program = satdump::opencl::buildCLKernel(resources::getResourcePath("opencl/generic_correlator.cl"));
+
+        cl_int err = 0;
+
+        buffer_syncs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * syncword_length * syncwords.size(), NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        buffer_input = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * max_frm_size, NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        buffer_corrs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * max_frm_size, NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        buffer_matches = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int) * max_frm_size, NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        buffer_nsyncs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        buffer_syncsize = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
+        if (err != CL_SUCCESS)
+            throw std::runtime_error("Couldn't load buffer_map!");
+
+        cl_queue = clCreateCommandQueue(satdump::opencl::ocl_context, satdump::opencl::ocl_device, 0, &err);
+
+        clEnqueueWriteBuffer(cl_queue, buffer_syncs, true, 0, sizeof(float) * syncword_length * syncwords.size(), full_syncs.data(), 0, NULL, NULL);
+
+        int nsync = syncwords.size();
+        clEnqueueWriteBuffer(cl_queue, buffer_nsyncs, true, 0, sizeof(float), &nsync, 0, NULL, NULL);
+        clEnqueueWriteBuffer(cl_queue, buffer_syncsize, true, 0, sizeof(float), &syncword_length, 0, NULL, NULL);
+
+        corr_kernel = clCreateKernel(corr_program, "correlate", &err);
+        clSetKernelArg(corr_kernel, 0, sizeof(cl_mem), &buffer_syncs);
+        clSetKernelArg(corr_kernel, 1, sizeof(cl_mem), &buffer_input);
+        clSetKernelArg(corr_kernel, 2, sizeof(cl_mem), &buffer_corrs);
+        clSetKernelArg(corr_kernel, 3, sizeof(cl_mem), &buffer_matches);
+        clSetKernelArg(corr_kernel, 4, sizeof(cl_mem), &buffer_nsyncs);
+        clSetKernelArg(corr_kernel, 5, sizeof(cl_mem), &buffer_syncsize);
+
+        use_gpu = true;
+        logger->trace("Correlator will use GPU!");
+    }
+    catch (std::exception &e)
+    {
+        logger->warn("Correlator can't use GPU : {:s}", e.what());
+    }
+#endif
 }
 
 void CorrelatorGeneric::rotate_float_buf(float *buf, int size, float rot_deg)
@@ -82,6 +151,26 @@ void CorrelatorGeneric::modulate_soft(float *buf, uint8_t *bit, int size)
 CorrelatorGeneric::~CorrelatorGeneric()
 {
     volk_free(converted_buffer);
+
+#ifdef USE_OPENCL
+    delete[] corro;
+    delete[] matcho;
+
+    if (use_gpu)
+    {
+        clReleaseProgram(corr_program);
+        clReleaseKernel(corr_kernel);
+
+        clReleaseMemObject(buffer_syncs);
+        clReleaseMemObject(buffer_input);
+        clReleaseMemObject(buffer_corrs);
+        clReleaseMemObject(buffer_matches);
+        clReleaseMemObject(buffer_nsyncs);
+        clReleaseMemObject(buffer_syncsize);
+
+        clReleaseCommandQueue(cl_queue);
+    }
+#endif
 }
 
 int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap, float &cor, int length)
@@ -90,19 +179,47 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
 
     float corr = 0;
     int position = 0, best_sync = 0;
-    cor = 0;
 
-    for (int i = 0; i < length - syncword_length; i++)
+#ifdef USE_OPENCL
+    if (use_gpu)
     {
-        for (int s = 0; s < syncwords.size(); s++)
-        {
-            volk_32f_x2_dot_prod_32f(&corr, &converted_buffer[i], syncwords[s].data(), syncword_length);
+        clEnqueueWriteBuffer(cl_queue, buffer_input, true, 0, sizeof(float) * length, converted_buffer, 0, NULL, NULL);
 
-            if (corr > cor)
+        size_t total_wg_size = length - syncword_length;
+        if (clEnqueueNDRangeKernel(cl_queue, corr_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
+            throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+
+        clEnqueueReadBuffer(cl_queue, buffer_corrs, true, 0, sizeof(float) * length, corro, 0, NULL, NULL);
+        clEnqueueReadBuffer(cl_queue, buffer_matches, true, 0, sizeof(int) * length, matcho, 0, NULL, NULL);
+
+        cor = 0;
+        for (int i = 0; i < length - syncword_length; i++)
+        {
+            if (corro[i] > cor)
             {
-                cor = corr;
-                best_sync = s;
+                cor = corro[i];
+                best_sync = matcho[i];
                 position = i;
+            }
+        }
+    }
+    else
+#endif
+    {
+        cor = 0;
+
+        for (int i = 0; i < length - syncword_length; i++)
+        {
+            for (int s = 0; s < syncwords.size(); s++)
+            {
+                volk_32f_x2_dot_prod_32f(&corr, &converted_buffer[i], syncwords[s].data(), syncword_length);
+
+                if (corr > cor)
+                {
+                    cor = corr;
+                    best_sync = s;
+                    position = i;
+                }
             }
         }
     }
