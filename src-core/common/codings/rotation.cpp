@@ -5,10 +5,6 @@ void rotate_soft(int8_t *soft, int size, phase_t phase, bool iqswap)
 {
     int8_t tmp;
 
-    // Scale down to avoid overflows
-    for (int i = 0; i < size; i++)
-        soft[i] = std::max<int>(-127, soft[i]);
-
     // Swap I & Q if requested
     if (iqswap)
     {
@@ -78,7 +74,7 @@ void rotate_soft_arbitrary(int8_t *soft, int size, float phase)
     int8_t vr = 0;
     int8_t vi = 0;
 
-    for (int i = 0; i < size; i += 2)
+    for (int i = 0; i < size / 2; i++)
     {
         vr = clamp((soft[i * 2 + 0] * shift_real) - (soft[i * 2 + 1] * shift_imag));
         vi = clamp((soft[i * 2 + 1] * shift_real) + (soft[i * 2 + 0] * shift_imag));

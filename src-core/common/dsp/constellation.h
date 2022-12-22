@@ -9,6 +9,7 @@ namespace dsp
     {
         BPSK,
         QPSK,
+        OQPSK,
         PSK8,
         APSK16,
         APSK32

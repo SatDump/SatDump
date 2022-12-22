@@ -8,10 +8,10 @@
 
 typedef int8_t code_type;
 
-#include "common/codings/ldpc/simd.hh"
-#include "common/codings/ldpc/layered_decoder.hh"
-#include "common/codings/ldpc/algorithms.hh"
-#include "common/codings/ldpc/encoder.hh"
+#include "common/codings/dvb-s2/ldpc/simd.hh"
+#include "common/codings/dvb-s2/ldpc/layered_decoder.hh"
+#include "common/codings/dvb-s2/ldpc/algorithms.hh"
+#include "common/codings/dvb-s2/ldpc/encoder.hh"
 
 namespace dvbs2
 {
