@@ -207,24 +207,25 @@ namespace ccsds
                         // Write directly
                         if (d_ldpc_asm_size == 32)
                         {
-                            data_out.put(0x1a);
-                            data_out.put(0xcf);
-                            data_out.put(0xfc);
-                            data_out.put(0x1d);
+                            const uint32_t sync = 0x1acffc1d;
+                            if (output_data_type == DATA_FILE)
+                                data_out.write((char *)&sync, 4);
+                            else
+                                output_fifo->write((uint8_t *)&sync, 4);
                         }
                         else if (d_ldpc_asm_size == 64)
                         {
-                            data_out.put(0x03);
-                            data_out.put(0x47);
-                            data_out.put(0x76);
-                            data_out.put(0xc7);
-                            data_out.put(0x27);
-                            data_out.put(0x28);
-                            data_out.put(0x95);
-                            data_out.put(0xb0);
+                            const uint64_t sync = 0x034776c7272895b0;
+                            if (output_data_type == DATA_FILE)
+                                data_out.write((char *)&sync, 8);
+                            else
+                                output_fifo->write((uint8_t *)&sync, 8);
                         }
 
-                        data_out.write((char *)&deframer_buffer[i * (d_ldpc_codeword_size / 8)], (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
+                        if (output_data_type == DATA_FILE)
+                            data_out.write((char *)&deframer_buffer[i * (d_ldpc_codeword_size / 8)], (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
+                        else
+                            output_fifo->write((uint8_t *)&deframer_buffer[i * (d_ldpc_codeword_size / 8)], (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
                     }
                 }
 
