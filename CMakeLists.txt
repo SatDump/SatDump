@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CheckCXXSourceCompiles)
-include(FindSSE41)
-include(FindAVX2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(FindSSE41)
+include(FindAVX2)
 
 project(SatDump)
 
