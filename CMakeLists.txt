@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CheckCXXSourceCompiles)
-include(FindSSE)
+include(FindSSE41)
+include(FindAVX2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -60,15 +61,6 @@ if(UNIX)
         endif()
     endif()
 
-    FindSSE()
-
-    if(SSE4_1_FOUND)
-        message("Found SSE features, enabling building SSE code")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-    else()
-        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
-    endif()
-
     find_package(ZSTD)
 
     if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND(NOT ANDROID))
@@ -87,15 +79,22 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
+endif()
 
-    FindSSE()
+# SSE41
+if(SSE41_FOUND)
+    message("Found SSE features, enabling building SSE code")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+else()
+    message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
+endif()
 
-    if(SSE4_1_FOUND)
-        message("Found SSE features, enabling building SSE code")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /d2archSSE42")
-    else()
-        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
-    endif()
+# AVX2
+if(AVX2_FOUND)
+    message("Found AVX2 features, enabling building AVX2 code")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+else()
+    message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
 endif()
 
 project(SatDump VERSION "1.0.4")

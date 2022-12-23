@@ -4,6 +4,7 @@
 #include <cstring>
 #include "common/dsp/buffer.h"
 #include "make_ccsds.h"
+#include "logger.h"
 
 #define MAX_SIMD_SIZE 32
 
@@ -14,7 +15,28 @@ namespace codings
         CCSDSLDPC::CCSDSLDPC(ldpc_rate_t rate, int block_size)
             : d_rate(rate), d_block_size(block_size)
         {
-            d_simd = 8;
+            cpu_caps = cpu_features::get_cpu_features();
+
+#if defined(__AVX2__)
+            if (cpu_caps.CPU_X86_AVX2)
+            {
+                logger->trace("Using AVX LDPC Decoder");
+                d_simd = 16;
+            }
+            else
+#endif
+#if defined(__SSE4_1__)
+                if (cpu_caps.CPU_X86_SSE41)
+            {
+                logger->trace("Using SSE LDPC Decoder");
+                d_simd = 8;
+            }
+            else
+#endif
+            {
+                logger->trace("Using Generic LDPC Decoder");
+                d_simd = 8;
+            };
 
             if (d_rate == RATE_7_8)
             {
@@ -61,10 +83,16 @@ namespace codings
 
         void CCSDSLDPC::init_dec(Sparse_matrix pcm)
         {
-            ldpc_decoder = new LDPCDecoder(pcm);
-#if defined(__SSE4_1__)
-            ldpc_decoder_sse = new LDPCDecoderSSE(pcm);
+#if defined(__AVX2__)
+            if (cpu_caps.CPU_X86_AVX2)
+                ldpc_decoder_avx = new LDPCDecoderAVX(pcm);
+            else
 #endif
+#if defined(__SSE4_1__)
+                if (cpu_caps.CPU_X86_SSE41)
+                ldpc_decoder_sse = new LDPCDecoderSSE(pcm);
+#endif
+            ldpc_decoder = new LDPCDecoder(pcm);
         }
 
         CCSDSLDPC::~CCSDSLDPC()
@@ -95,14 +123,20 @@ namespace codings
                 }
             }
 
-#if defined(__SSE4_1__)
-            d_corr_errors = ldpc_decoder_sse->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / 8;
-#else
-            for (int i = 0; i < d_simd; i++)
-                d_corr_errors += ldpc_decoder->decode(&depunc_buffer_ou[i * d_codeword_size], &depunc_buffer_in[i * d_codeword_size], iterations);
+#if defined(__AVX2__)
+            if (cpu_caps.CPU_X86_AVX2)
+                d_corr_errors = ldpc_decoder_avx->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / d_simd;
+            else
 #endif
+#if defined(__SSE4_1__)
+                if (cpu_caps.CPU_X86_SSE41)
+                d_corr_errors = ldpc_decoder_sse->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / d_simd;
+            else
+#endif
+                for (int i = 0; i < d_simd; i++)
+                    d_corr_errors += ldpc_decoder->decode(&depunc_buffer_ou[i * d_codeword_size], &depunc_buffer_in[i * d_codeword_size], iterations);
 
-            d_corr_errors = d_corr_errors / 8;
+            d_corr_errors = d_corr_errors / d_simd;
 
             if (d_rate == RATE_7_8)
             {
