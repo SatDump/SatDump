@@ -1,12 +1,11 @@
-#include "ldpc_decoder_avx.h"
+#include "ldpc_decoder_generic.h"
 #include <cassert>
 
-#if defined(__AVX2__)
 namespace codings
 {
     namespace ldpc
     {
-        LDPCDecoderAVX::LDPCDecoderAVX(Sparse_matrix pcm)
+        LDPCDecoderGeneric::LDPCDecoderGeneric(Sparse_matrix pcm) : LDPCDecoder(pcm)
         {
             int max_deg = 0;
             for (size_t rows = 0; rows < pcm.get_n_rows(); rows++)
@@ -25,12 +24,12 @@ namespace codings
             d_pcm_max_cn_degree = max_deg;
             d_pcm_num_edges = pcm.get_n_connections();
 
-            d_vns = new __m256i[d_pcm_num_vn];
-            d_vns_to_cn_msgs = new __m256i[d_pcm_max_cn_degree];
-            d_cn_to_vn_msgs = new __m256i[d_pcm_num_cn * d_pcm_max_cn_degree];
-            d_abs_msgs = new __m256i[d_pcm_max_cn_degree];
+            d_vns = new int16_t[d_pcm_num_vn];
+            d_vns_to_cn_msgs = new int16_t[d_pcm_max_cn_degree];
+            d_cn_to_vn_msgs = new int16_t[d_pcm_num_cn * d_pcm_max_cn_degree];
+            d_abs_msgs = new int16_t[d_pcm_max_cn_degree];
 
-            d_vn_addr = new __m256i *[d_pcm_num_edges];
+            d_vn_addr = new int16_t *[d_pcm_num_edges];
             d_row_pos_deg = new int[d_pcm_num_cn * 2];
 
             /* Precompute VN addresses in the VN buffer. Since each row has a different
@@ -57,7 +56,7 @@ namespace codings
             }
         }
 
-        LDPCDecoderAVX::~LDPCDecoderAVX()
+        LDPCDecoderGeneric::~LDPCDecoderGeneric()
         {
             delete[] d_vns;
             delete[] d_vns_to_cn_msgs;
@@ -67,7 +66,7 @@ namespace codings
             delete[] d_row_pos_deg;
         }
 
-        int LDPCDecoderAVX::decode(uint8_t *out, const int8_t *in, int it)
+        int LDPCDecoderGeneric::decode(uint8_t *out, const int8_t *in, int it)
         {
             int corrections = 0;
 
@@ -78,20 +77,16 @@ namespace codings
             // }
 
             /* Copy the input codeword and give lowest LLR value to each punctured
-             * bit. Also interleave */
+             * bit. */
             for (int i = 0; i < d_pcm_num_vn; i++)
             {
-                // d_vns[i] = (int16_t)in[i];
-                int16_t *ptrVar = (int16_t *)d_vns;
-                for (int z = 0; z < 16; z++)
-                    ptrVar[16 * i + z] = in[z * d_pcm_num_vn + i];
+                d_vns[i] = (int16_t)in[i];
             }
 
             /* Init of CN to VN messages */
             for (int i = 0; i < d_pcm_num_cn * d_pcm_max_cn_degree; i++)
             {
-                // d_cn_to_vn_msgs[i] = 0;
-                d_cn_to_vn_msgs[i] = _mm256_set1_epi16(0);
+                d_cn_to_vn_msgs[i] = 0;
             }
 
             /* Decode step */
@@ -103,23 +98,19 @@ namespace codings
                 }
             }
 
-            /* Hard decision & Deinterleave */
+            /* Hard decision */
             for (int i = 0; i < d_pcm_num_vn; i++)
             {
-                int16_t *ptrVar = (int16_t *)d_vns;
-                for (int z = 0; z < 16; z++)
-                {
-                    out[z * d_pcm_num_vn + i] = (uint8_t)(ptrVar[16 * i + z] >= 0 ? 1 : 0);
+                out[i] = (uint8_t)(d_vns[i] >= 0 ? 1 : 0);
 
-                    if ((out[z * d_pcm_num_vn + i] > 0) != (in[z * d_pcm_num_vn + i] > 0))
-                        corrections++;
-                }
+                if ((out[i] > 0) != (in[i] > 0))
+                    corrections++;
             }
 
             return corrections;
         }
 
-        void LDPCDecoderAVX::generic_cn_kernel(int cn_idx)
+        void LDPCDecoderGeneric::generic_cn_kernel(int cn_idx)
         {
             /* Given an indexed CN, gather the messages of all VNs connected
              * to that CN and determine a new estimation for each of the VNs. */
@@ -131,15 +122,16 @@ namespace codings
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
                 d_vns_to_cn_msgs[vn_idx] =
-                    _mm256_sub_epi16(*d_vn_addr[cn_row_base + vn_idx], d_cn_to_vn_msgs[cn_offset + vn_idx]);
+                    *d_vn_addr[cn_row_base + vn_idx] - d_cn_to_vn_msgs[cn_offset + vn_idx];
+                // printf("%d \n", d_vns_to_cn_msgs[vn_idx]);
             }
 
-            parity = _mm256_set1_epi16(0);
-            min1 = _mm256_set1_epi16(UINT8_MAX);
-            min2 = _mm256_set1_epi16(UINT8_MAX);
+            parity = 0;
+            min1 = UINT8_MAX;
+            min2 = UINT8_MAX;
 
             if (cn_deg & 0x1)
-                parity = _mm256_xor_si256(_mm256_set1_epi16(0xFFFF), parity);
+                parity = ~parity;
 
             /* Compute the parity of all soft bits represented by the VNs to CN
              * messages, the absolute value of each soft bit, and the overall
@@ -149,19 +141,20 @@ namespace codings
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
                 msg = d_vns_to_cn_msgs[vn_idx];
-                parity = _mm256_xor_si256(parity, msg);
+                parity ^= msg;
 
                 /* Bit-hack to compute the absolute value of the message */
                 // abs_mask = msg >> (sizeof(msg) * 8 - 1);
                 // abs_msg = (int16_t)((msg + abs_mask) ^ abs_mask);
-                abs_msg = _mm256_abs_epi16(msg);
+                abs_msg = abs(msg);
 
                 /* Determine the first and second minimum */
-                min2 = _mm256_min_epi16(_mm256_max_epi16(min1, abs_msg), min2);
-                min1 = _mm256_min_epi16(abs_msg, min1);
+                min2 = min2 > abs_msg ? (min1 > abs_msg ? min1 : abs_msg) : min2;
+                min1 = min1 > abs_msg ? abs_msg : min1;
 
                 /* Keep the computed absolute value for later */
                 d_abs_msgs[vn_idx] = abs_msg;
+                // printf("%d \n", d_abs_msgs[vn_idx]);
             }
 
             /* Compute a new soft bit estimation for each VN respectively and send it
@@ -183,17 +176,16 @@ namespace codings
              * 3) Add it to the current soft bit value of a VN */
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
-                for (int i = 0; i < 16; i++)
-                    ((int16_t *)&equ_wip)[i] = ((int16_t *)&d_abs_msgs[vn_idx])[i] == ((int16_t *)&min1)[i];
-                equ_min1 = _mm256_add_epi16(_mm256_xor_si256(_mm256_set1_epi16(0xFFFF), equ_wip), _mm256_set1_epi16(1));
-                min = _mm256_or_si256(_mm256_and_si256(min1, _mm256_xor_si256(_mm256_set1_epi16(0xFFFF), equ_min1)), _mm256_and_si256(min2, equ_min1));
-                sign = _mm256_xor_si256(parity, d_vns_to_cn_msgs[vn_idx]);
+                equ_min1 = (~(d_abs_msgs[vn_idx] == min1)) + 1; // 0 or -1
+                min = (min1 & ~equ_min1) | (min2 & equ_min1);
+                sign = (parity ^ d_vns_to_cn_msgs[vn_idx]);
 
                 /* Bit hack in order to multiply by the sign */
-                new_msg = _mm256_sign_epi16(min, sign);
+                sign = (sign >> (sizeof(sign) * 8 - 1));
+                new_msg = (int16_t)((min + sign) ^ sign);
 
                 /* Add error correction value */
-                to_vn = _mm256_add_epi16(new_msg, d_vns_to_cn_msgs[vn_idx]);
+                to_vn = new_msg + d_vns_to_cn_msgs[vn_idx];
 
                 /* Save new soft bit value and CN to VN message */
                 d_cn_to_vn_msgs[cn_offset + vn_idx] = new_msg;
@@ -202,4 +194,3 @@ namespace codings
         }
     }
 }
-#endif

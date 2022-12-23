@@ -2,9 +2,6 @@
 
 #include <cstdint>
 #include "ldpc_decoder.h"
-#include "ldpc_decoder_sse.h"
-#include "ldpc_decoder_avx.h"
-#include "common/cpu_features.h"
 
 namespace codings
 {
@@ -32,20 +29,13 @@ namespace codings
             int d_codeword_size;
             int d_frame_size;
             int d_data_size;
+            int d_is_geneneric;
             int d_simd;
             int d_M;
 
             int d_corr_errors;
 
-            cpu_features::cpu_features_t cpu_caps;
-
             LDPCDecoder *ldpc_decoder;
-#if defined(__SSE4_1__)
-            LDPCDecoderSSE *ldpc_decoder_sse;
-#endif
-#if defined(__AVX2__)
-            LDPCDecoderAVX *ldpc_decoder_avx;
-#endif
 
             void init_dec(Sparse_matrix pcm);
 

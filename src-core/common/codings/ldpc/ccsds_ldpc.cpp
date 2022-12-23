@@ -15,29 +15,6 @@ namespace codings
         CCSDSLDPC::CCSDSLDPC(ldpc_rate_t rate, int block_size)
             : d_rate(rate), d_block_size(block_size)
         {
-            cpu_caps = cpu_features::get_cpu_features();
-
-#if defined(__AVX2__)
-            if (cpu_caps.CPU_X86_AVX2)
-            {
-                logger->trace("Using AVX LDPC Decoder");
-                d_simd = 16;
-            }
-            else
-#endif
-#if defined(__SSE4_1__)
-                if (cpu_caps.CPU_X86_SSE41)
-            {
-                logger->trace("Using SSE LDPC Decoder");
-                d_simd = 8;
-            }
-            else
-#endif
-            {
-                logger->trace("Using Generic LDPC Decoder");
-                d_simd = 8;
-            };
-
             if (d_rate == RATE_7_8)
             {
                 init_dec(ccsds_78::make_r78_code());
@@ -83,16 +60,12 @@ namespace codings
 
         void CCSDSLDPC::init_dec(Sparse_matrix pcm)
         {
-#if defined(__AVX2__)
-            if (cpu_caps.CPU_X86_AVX2)
-                ldpc_decoder_avx = new LDPCDecoderAVX(pcm);
-            else
-#endif
-#if defined(__SSE4_1__)
-                if (cpu_caps.CPU_X86_SSE41)
-                ldpc_decoder_sse = new LDPCDecoderSSE(pcm);
-#endif
-            ldpc_decoder = new LDPCDecoder(pcm);
+            ldpc_decoder = get_best_ldpc_decoder(pcm);
+
+            d_simd = ldpc_decoder->simd();
+            d_is_geneneric = d_simd == 1;
+            if (d_is_geneneric)
+                d_simd = 1;
         }
 
         CCSDSLDPC::~CCSDSLDPC()
@@ -123,18 +96,11 @@ namespace codings
                 }
             }
 
-#if defined(__AVX2__)
-            if (cpu_caps.CPU_X86_AVX2)
-                d_corr_errors = ldpc_decoder_avx->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / d_simd;
-            else
-#endif
-#if defined(__SSE4_1__)
-                if (cpu_caps.CPU_X86_SSE41)
-                d_corr_errors = ldpc_decoder_sse->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / d_simd;
-            else
-#endif
+            if (d_is_geneneric)
                 for (int i = 0; i < d_simd; i++)
                     d_corr_errors += ldpc_decoder->decode(&depunc_buffer_ou[i * d_codeword_size], &depunc_buffer_in[i * d_codeword_size], iterations);
+            else
+                d_corr_errors = ldpc_decoder->decode(depunc_buffer_ou, depunc_buffer_in, iterations) / d_simd;
 
             d_corr_errors = d_corr_errors / d_simd;
 

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "matrix/sparse_matrix.h"
+#include "common/codings/ldpc/ldpc_decoder.h"
 
-#if defined(__SSE4_1__)
 #include <xmmintrin.h>
 #include <tmmintrin.h>
 #include <smmintrin.h>
@@ -12,13 +11,15 @@ namespace codings
 {
     namespace ldpc
     {
-        class LDPCDecoderSSE //: public decoder
+        class LDPCDecoderSSE : public LDPCDecoder
         {
         public:
             LDPCDecoderSSE(Sparse_matrix pcm);
             ~LDPCDecoderSSE();
 
             int decode(uint8_t *out, const int8_t *in, int it);
+
+            int simd() { return 8; }
 
         private:
             int d_pcm_num_cn;
@@ -62,4 +63,3 @@ namespace codings
         };
     }
 }
-#endif

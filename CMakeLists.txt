@@ -89,16 +89,6 @@ else()
     message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
 
-# AVX2
-#include(FindAVX)
-
-#if(CXX_HAS_AVX_2)
-#    message("Found AVX2 features, enabling building AVX2 code")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
-#else()
-#    message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
-#endif()
-
 project(SatDump VERSION "1.0.4")
 
 # Check if the current commit has a tag

@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(simd_avx2)
+
+include(FindAVX)
+
+if(CXX_HAS_AVX_2)
+    message("Found AVX2 features, enabling AVX2 plugin")
+
+    set(SATDUMP_ROOT "/usr")
+
+    file(GLOB_RECURSE simd_avx2_CPPS *.cpp)
+    add_library(simd_avx2 SHARED ${simd_avx2_CPPS})
+    target_link_libraries(simd_avx2 PUBLIC satdump_core)
+    target_include_directories(simd_avx2 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+    target_compile_options(simd_avx2 PUBLIC ${FINAL_FLAGS_AVX2})
+
+    install(TARGETS simd_avx2 DESTINATION share/satdump/plugins)
+else()
+    message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
+endif()
