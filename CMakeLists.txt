@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-include(FindSSE41)
-include(FindAVX2)
-
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -81,6 +78,9 @@ if(MSVC OR BUILD_MSVC)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
+
+include(FindSSE41)
+include(FindAVX2)
 
 # SSE41
 if(SSE41_FOUND)
