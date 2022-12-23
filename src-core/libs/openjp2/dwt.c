@@ -52,7 +52,7 @@
 #ifdef __SSSE3__
 #include <tmmintrin.h>
 #endif
-#ifdef __AVX2__
+#ifdef __AVX2__OFF
 #include <immintrin.h>
 #endif
 
@@ -66,7 +66,7 @@
 #define OPJ_WS(i) v->mem[(i)*2]
 #define OPJ_WD(i) v->mem[(1+(i)*2)]
 
-#ifdef __AVX2__
+#ifdef __AVX2__OFF
 /** Number of int32 values in a AVX2 register */
 #define VREG_INT_COUNT       8
 #else
@@ -514,7 +514,7 @@ static void opj_idwt53_h(const opj_dwt_t *dwt,
 #if (defined(__SSE2__) || defined(__AVX2__)) && !defined(STANDARD_SLOW_VERSION)
 
 /* Conveniency macros to improve the readabilty of the formulas */
-#if __AVX2__
+#if __AVX2__OFF
 #define VREG        __m256i
 #define LOAD_CST(x) _mm256_set1_epi32(x)
 #define LOAD(x)     _mm256_load_si256((const VREG*)(x))
@@ -576,7 +576,7 @@ static void opj_idwt53_v_cas0_mcols_SSE2_OR_AVX2(
     const VREG two = LOAD_CST(2);
 
     assert(len > 1);
-#if __AVX2__
+#if __AVX2__OFF
     assert(PARALLEL_COLS_53 == 16);
     assert(VREG_INT_COUNT == 8);
 #else
@@ -678,7 +678,7 @@ static void opj_idwt53_v_cas1_mcols_SSE2_OR_AVX2(
     const OPJ_INT32* in_odd = &tiledp_col[0];
 
     assert(len > 2);
-#if __AVX2__
+#if __AVX2__OFF
     assert(PARALLEL_COLS_53 == 16);
     assert(VREG_INT_COUNT == 8);
 #else
@@ -893,7 +893,7 @@ static void opj_idwt53_v(const opj_dwt_t *dwt,
     if (dwt->cas == 0) {
         /* If len == 1, unmodified value */
 
-#if (defined(__SSE2__) || defined(__AVX2__))
+#if (defined(__SSE2__) || defined(__AVX2__OFF))
         if (len > 1 && nb_cols == PARALLEL_COLS_53) {
             /* Same as below general case, except that thanks to SSE2/AVX2 */
             /* we can efficiently process 8/16 columns in parallel */
@@ -936,7 +936,7 @@ static void opj_idwt53_v(const opj_dwt_t *dwt,
             return;
         }
 
-#if (defined(__SSE2__) || defined(__AVX2__))
+#if (defined(__SSE2__) || defined(__AVX2__OFF))
         if (len > 2 && nb_cols == PARALLEL_COLS_53) {
             /* Same as below general case, except that thanks to SSE2/AVX2 */
             /* we can efficiently process 8/16 columns in parallel */

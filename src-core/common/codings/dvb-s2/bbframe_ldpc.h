@@ -15,7 +15,7 @@ typedef int8_t code_type;
 
 namespace dvbs2
 {
-#if defined(__AVX2__)
+#if defined(__AVX2__OFF)
     typedef SIMD<code_type, 32> simd_type;
 #elif defined(__SSE4_1__)
     typedef SIMD<code_type, 16> simd_type;
