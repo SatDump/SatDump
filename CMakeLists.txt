@@ -92,8 +92,8 @@ endif()
 
 # AVX2
 if(AVX2_FOUND)
-    message("Found AVX2 features, enabling building AVX2 code")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+    # message("Found AVX2 features, enabling building AVX2 code")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
 else()
     message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
 endif()
