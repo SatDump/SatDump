@@ -79,10 +79,9 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-include(FindSSE41)
-include(FindAVX2)
-
 # SSE41
+include(FindSSE41)
+
 if(SSE41_FOUND)
     message("Found SSE features, enabling building SSE code")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
@@ -91,12 +90,14 @@ else()
 endif()
 
 # AVX2
-if(AVX2_FOUND)
-    # message("Found AVX2 features, enabling building AVX2 code")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
-else()
-    message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
-endif()
+#include(FindAVX)
+
+#if(CXX_HAS_AVX_2)
+#    message("Found AVX2 features, enabling building AVX2 code")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+#else()
+#    message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
+#endif()
 
 project(SatDump VERSION "1.0.4")
 
