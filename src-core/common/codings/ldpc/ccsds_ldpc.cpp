@@ -96,13 +96,15 @@ namespace codings
                 }
             }
 
+            d_corr_errors = 0;
+
             if (d_is_geneneric)
                 for (int i = 0; i < d_simd; i++)
                     d_corr_errors += ldpc_decoder->decode(&depunc_buffer_ou[i * d_codeword_size], &depunc_buffer_in[i * d_codeword_size], iterations);
             else
                 d_corr_errors = ldpc_decoder->decode(depunc_buffer_ou, depunc_buffer_in, iterations);
 
-            d_corr_errors = d_corr_errors / d_simd;
+            d_corr_errors /= d_simd;
 
             if (d_rate == RATE_7_8)
             {
