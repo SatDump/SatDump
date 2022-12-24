@@ -14,7 +14,7 @@ if(SSE41_FOUND)
     target_include_directories(simd_sse41 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
     if(UNIX)
-        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS} -msse4.1")
+        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} -msse4.1")
     elseif(MSVC OR BUILD_MSVC)
         string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
     endif()
