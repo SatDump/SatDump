@@ -80,7 +80,21 @@ if(MSVC OR BUILD_MSVC)
 endif()
 
 # SSE41
-include(FindSSE41)
+if(NOT ANDROID)
+    include(FindSSE41)
+endif()
+
+if(ANDROID)
+    set(SSE41_FOUND 0)
+
+    if(ANDROID_ABI STREQUAL "x86")
+        set(SSE41_FOUND 1)
+    endif()
+
+    if(ANDROID_ABI STREQUAL "x86_64")
+        set(SSE41_FOUND 1)
+    endif()
+endif()
 
 if(SSE41_FOUND)
     message("Found SSE features, enabling building SSE code")

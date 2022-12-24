@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(simd_avx2)
 
-include(FindAVX)
+if(NOT ANDROID)
+    include(FindAVX)
+endif()
+
+if(ANDROID)
+    set(CXX_HAS_AVX_2 0)
+
+    if(ANDROID_ABI STREQUAL "x86")
+        set(CXX_HAS_AVX_2 1)
+    endif()
+
+    if(ANDROID_ABI STREQUAL "x86_64")
+        set(CXX_HAS_AVX_2 1)
+    endif()
+endif()
 
 if(CXX_HAS_AVX_2)
     message("Found AVX2 features, enabling AVX2 plugin")
@@ -13,7 +27,7 @@ if(CXX_HAS_AVX_2)
     target_link_libraries(simd_avx2 PUBLIC satdump_core)
     target_include_directories(simd_avx2 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
-    if(UNIX)
+    if(UNIX OR ANDROID)
         string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} -mavx2")
     elseif(MSVC OR BUILD_MSVC)
         string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
