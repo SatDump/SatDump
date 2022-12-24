@@ -64,8 +64,6 @@ namespace codings
 
             d_simd = ldpc_decoder->simd();
             d_is_geneneric = d_simd == 1;
-            if (d_is_geneneric)
-                d_simd = 1;
         }
 
         CCSDSLDPC::~CCSDSLDPC()
