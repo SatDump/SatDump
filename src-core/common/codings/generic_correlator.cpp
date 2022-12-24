@@ -74,7 +74,7 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
 
         std::vector<float> full_syncs(syncwords.size() * syncword_length);
 
-        for (int i = 0; i < syncwords.size(); i++)
+        for (int i = 0; i < (int)syncwords.size(); i++)
             for (int x = 0; x < syncword_length; x++)
                 full_syncs[i * syncword_length + x] = syncwords[i][x];
 
@@ -210,7 +210,7 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
 
         for (int i = 0; i < length - syncword_length; i++)
         {
-            for (int s = 0; s < syncwords.size(); s++)
+            for (int s = 0; s < (int)syncwords.size(); s++)
             {
                 volk_32f_x2_dot_prod_32f(&corr, &converted_buffer[i], syncwords[s].data(), syncword_length);
 

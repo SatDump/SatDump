@@ -176,7 +176,7 @@ namespace codings
              * 3) Add it to the current soft bit value of a VN */
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
-                equ_min1 = (~(d_abs_msgs[vn_idx] == min1)) + 1; // 0 or -1
+                equ_min1 = (~(uint16_t(d_abs_msgs[vn_idx] == min1))) + 1; // 0 or -1
                 min = (min1 & ~equ_min1) | (min2 & equ_min1);
                 sign = (parity ^ d_vns_to_cn_msgs[vn_idx]);
 

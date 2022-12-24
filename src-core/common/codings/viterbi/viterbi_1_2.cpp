@@ -10,10 +10,10 @@ namespace viterbi
     Viterbi1_2::Viterbi1_2(float ber_threshold, int max_outsync, int buffer_size, std::vector<phase_t> phases, bool check_iq_swap)
         : d_ber_thresold(ber_threshold),
           d_max_outsync(max_outsync),
+          d_check_iq_swap(check_iq_swap),
           d_buffer_size(buffer_size),
           d_phases_to_check(phases),
           d_state(ST_IDLE),
-          d_check_iq_swap(check_iq_swap),
           cc_decoder_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}),
           cc_encoder_ber(TEST_BITS_LENGTH / 2, 7, 2, {79, 109}),
           cc_decoder(buffer_size / 2, 7, 2, {79, 109})
