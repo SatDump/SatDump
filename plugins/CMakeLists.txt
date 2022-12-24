@@ -153,6 +153,12 @@ if(PLUGIN_SIMD_SSE41)
     add_subdirectory(simd_extensions/simd_sse41)
 endif()
 
+option(PLUGIN_SIMD_NEON "Enable SIMD NEON plugin" ON)
+
+if(PLUGIN_SIMD_NEON)
+    add_subdirectory(simd_extensions/simd_neon)
+endif()
+
 option(PLUGIN_SIMD_AVX2 "Enable SIMD AVX2 plugin" ON)
 
 if(PLUGIN_SIMD_AVX2)
