@@ -13,7 +13,12 @@ if(SSE41_FOUND)
     target_link_libraries(simd_sse41 PUBLIC satdump_core)
     target_include_directories(simd_sse41 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
-    string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+    if(UNIX)
+        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS} -msse4.1")
+    elseif(MSVC OR BUILD_MSVC)
+        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+    endif()
+
     target_compile_options(simd_sse41 PUBLIC ${FINAL_FLAGS_SSE41})
 
     install(TARGETS simd_sse41 DESTINATION share/satdump/plugins)

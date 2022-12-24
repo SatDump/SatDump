@@ -13,7 +13,12 @@ if(CXX_HAS_AVX_2)
     target_link_libraries(simd_avx2 PUBLIC satdump_core)
     target_include_directories(simd_avx2 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
-    string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+    if(UNIX)
+        string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} -mavx2")
+    elseif(MSVC OR BUILD_MSVC)
+        string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} ${AVX2_C_FLAGS}")
+    endif()
+
     target_compile_options(simd_avx2 PUBLIC ${FINAL_FLAGS_AVX2})
 
     install(TARGETS simd_avx2 DESTINATION share/satdump/plugins)

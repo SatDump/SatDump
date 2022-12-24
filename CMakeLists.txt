@@ -84,7 +84,12 @@ include(FindSSE41)
 
 if(SSE41_FOUND)
     message("Found SSE features, enabling building SSE code")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+
+    if(UNIX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    elseif(MSVC OR BUILD_MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+    endif()
 else()
     message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
