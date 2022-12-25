@@ -1,7 +1,7 @@
 #include "hirs_reader.h"
 #include <cmath>
 #include "common/repack.h"
-//#include "iostream"
+// #include "iostream"
 
 namespace noaa
 {
@@ -10,13 +10,13 @@ namespace noaa
         HIRSReader::HIRSReader()
         {
             for (int i = 0; i < 20; i++)
-                channels[i] = new unsigned short[1000 * 56];
+                channels[i].resize(56);
         }
 
         HIRSReader::~HIRSReader()
         {
             for (int i = 0; i < 20; i++)
-                delete[] channels[i];
+                channels[i].clear();
             // delete[] imageBuffer;
         }
 
@@ -42,10 +42,10 @@ namespace noaa
             }
 
             uint16_t enct = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
-            // std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[i][0] << std::endl;
+            //std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
 
-            if (enct < 56 && (HIRS_data[35] & 0b10) >> 1 && (HIRS_data[3] & 0x40) >> 6)
-            { 
+            if (enct < 56 && (HIRS_data[35] & 0b10) >> 1 /*&& (HIRS_data[3] & 0x40) >> 6*/)
+            {
                 int current = ((buffer[22] % (int)pow(2, 5)) << 1) | (buffer[23] >> 7);
                 // std::cout<<last << ", " << enct << ", " << current <<std::endl;
 
@@ -55,29 +55,32 @@ namespace noaa
                 repackBytesTo13bits(tmp, 32, words13bit);
 
                 for (int i = 0; i < 20; i++)
-                    imageBuffer[HIRSChannels[i]][enct][line] = words13bit[i];
+                    channels[HIRSChannels[i]][enct + 56 * line] = words13bit[i];
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if ((imageBuffer[i][enct][line] >> 12) == 1)
+                    if ((channels[i][enct + 56 * line] >> 12) == 1)
                     {
-                        imageBuffer[i][enct][line] = (imageBuffer[i][enct][line] & 0b0000111111111111) + 4095;
+                        channels[i][enct + 56 * line] = (channels[i][enct + 56 * line] & 0b0000111111111111) + 4095;
                     }
                     else
                     {
-                        int buffer = 4096 - ((imageBuffer[i][enct][line] & 0b0000111111111111));
-                        imageBuffer[i][enct][line] = abs(buffer);
+                        int buffer = 4096 - ((channels[i][enct + 56 * line] & 0b0000111111111111));
+                        channels[i][enct + 56 * line] = abs(buffer);
                     }
 
-                    channels[i][55 - enct + 56 * line] = HIRS_data[0] <= 56 ? imageBuffer[i][enct][line] : 0;
+                    channels[i][enct + 56 * line] = HIRS_data[0] > 56 ? 0 : channels[i][enct + 56 * line];
                 }
 
-                                if (current == 55)
+                if (current == 55)
                 {
                     line++;
-                    if (!contains(timestamps, last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0)))
-                        timestamps.push_back(last_timestamp + (double)(mf/64) * (last_timestamp != -1 ? 6.4 : 0));
-                    else timestamps.push_back(-1);
+                    for (int l = 0; l < 20; l++)
+                        channels[l].resize((line + 1) * 56);
+                    if (!contains(timestamps, last_timestamp + (double)(mf / 64) * (last_timestamp != -1 ? 6.4 : 0)))
+                        timestamps.push_back(last_timestamp + (double)(mf / 64) * (last_timestamp != -1 ? 6.4 : 0));
+                    else
+                        timestamps.push_back(-1);
                 }
                 // last = enct;
             }
@@ -85,7 +88,7 @@ namespace noaa
 
         image::Image<uint16_t> HIRSReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], 56, line, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 56, line, 1);
         }
     } // namespace hirs
 } // namespace noaa
