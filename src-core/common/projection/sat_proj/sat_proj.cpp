@@ -10,6 +10,28 @@
 
 namespace satdump
 {
+    void try_interpolate_timestamps(std::vector<double> &timestamps, nlohmann::ordered_json &cfg)
+    {
+        if (cfg.contains("interpolate_timestamps"))
+        {
+            int to_interp = cfg["interpolate_timestamps"];
+            float scantime = cfg["interpolate_timestamps_scantime"];
+
+            auto timestamp_copy = timestamps;
+            timestamps.clear();
+            for (auto timestamp : timestamp_copy)
+            {
+                for (int i = -(to_interp / 2); i < (to_interp / 2); i++)
+                {
+                    if (timestamp != -1)
+                        timestamps.push_back(timestamp + i * scantime);
+                    else
+                        timestamps.push_back(-1);
+                }
+            }
+        }
+    }
+
     class NormalLineSatProj : public SatelliteProjection
     {
     protected:
@@ -37,24 +59,7 @@ namespace satdump
         {
             timestamps = timestamps_raw.get<std::vector<double>>();
 
-            if (cfg.contains("interpolate_timestamps"))
-            {
-                int to_interp = cfg["interpolate_timestamps"];
-                float scantime = cfg["interpolate_timestamps_scantime"];
-
-                auto timestamp_copy = timestamps;
-                timestamps.clear();
-                for (auto timestamp : timestamp_copy)
-                {
-                    for (int i = -(to_interp / 2); i < (to_interp / 2); i++)
-                    {
-                        if (timestamp != -1)
-                            timestamps.push_back(timestamp + i * scantime);
-                        else
-                            timestamps.push_back(-1);
-                    }
-                }
-            }
+            try_interpolate_timestamps(timestamps, cfg);
 
             image_width = cfg["image_width"].get<int>();
             scan_angle = cfg["scan_angle"].get<float>();
@@ -273,6 +278,8 @@ namespace satdump
             : SatelliteProjection(cfg, tle, timestamps_raw)
         {
             timestamps = timestamps_raw.get<std::vector<double>>();
+
+            try_interpolate_timestamps(timestamps, cfg);
 
             image_width = cfg["image_width"].get<int>();
             gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
