@@ -1,4 +1,27 @@
 {
+    "type": "normal_single_line",
+    "scan_angle": 113,
+    "roll_offset": 0, //-0.2,
+    "pitch_offset": 0,
+    "yaw_offset": 2,
+    "timestamp_offset": -0.5,
+    "image_width": 3200,
+    "gcp_spacing_x": 100,
+    "gcp_spacing_y": 100,
+    "interpolate_timestamps": 16,
+    "interpolate_timestamps_scantime": 0.111,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 1.786,
+        "max_diff": 10.0
+    },
+    ///////////////////////
+    "corr_swath": 2900,
+    "corr_resol": 0.25,
+    "corr_altit": 835
+}
+/*{
     "type": "normal_per_ifov",
     "roll_offset": 0, //-0.10,
     "yaw_offset": 3, //3.2,
@@ -12,4 +35,4 @@
     "ifov_x_scan_angle": 116,
     "ifov_y_scan_angle": 1,
     "timestamp_offset": 0 // -0.5
-}
+}*/
