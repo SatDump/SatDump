@@ -29,9 +29,9 @@ namespace codings
 
             if (cpu_caps.CPU_X86_AVX2 && decoder_list.count("avx2") > 0)
                 return decoder_list["avx2"](pcm);
-            else if (cpu_caps.CPU_X86_SSE41)
+            else if (cpu_caps.CPU_X86_SSE41 && decoder_list.count("sse41") > 0)
                 return decoder_list["sse41"](pcm);
-            else if (cpu_caps.CPU_ARM_NEON)
+            else if (cpu_caps.CPU_ARM_NEON && decoder_list.count("neon") > 0)
                 return decoder_list["neon"](pcm);
             else
                 return decoder_list["generic"](pcm);
