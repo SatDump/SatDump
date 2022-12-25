@@ -55,21 +55,21 @@ namespace noaa
                 repackBytesTo13bits(tmp, 32, words13bit);
 
                 for (int i = 0; i < 20; i++)
-                    channels[HIRSChannels[i]][enct + 56 * line] = words13bit[i];
+                    channels[HIRSChannels[i]][55 - enct + 56 * line] = words13bit[i];
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if ((channels[i][enct + 56 * line] >> 12) == 1)
+                    if ((channels[i][55 - enct + 56 * line] >> 12) == 1)
                     {
-                        channels[i][enct + 56 * line] = (channels[i][enct + 56 * line] & 0b0000111111111111) + 4095;
+                        channels[i][55 - enct + 56 * line] = (channels[i][55 - enct + 56 * line] & 0b0000111111111111) + 4095;
                     }
                     else
                     {
-                        int buffer = 4096 - ((channels[i][enct + 56 * line] & 0b0000111111111111));
-                        channels[i][enct + 56 * line] = abs(buffer);
+                        int buffer = 4096 - ((channels[i][55 - enct + 56 * line] & 0b0000111111111111));
+                        channels[i][55 - enct + 56 * line] = abs(buffer);
                     }
 
-                    channels[i][enct + 56 * line] = HIRS_data[0] > 56 ? 0 : channels[i][enct + 56 * line];
+                    channels[i][55 - enct + 56 * line] = HIRS_data[0] > 56 ? 0 : channels[i][55 - enct + 56 * line];
                 }
 
                 if (current == 55)
