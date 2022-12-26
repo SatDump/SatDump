@@ -41,7 +41,7 @@ namespace bluewalker3
 
             if (frame_type == 217)
             {
-                uint16_t frm_id = buffer[18] << 8 | buffer[17];
+                // uint16_t frm_id = buffer[18] << 8 | buffer[17];
                 uint16_t ptr = buffer[20] << 8 | buffer[19];
 
                 // printf("PTR %d %d\n", ptr, ptr2);

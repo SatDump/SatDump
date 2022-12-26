@@ -30,7 +30,7 @@ namespace widgets
                 first_run = false;
                 raw_img_buffer = new uint32_t[fft_size * fft_lines];
                 memset(raw_img_buffer, 0, sizeof(uint32_t) * fft_size * fft_lines);
-                if (palette.size() != resolution)
+                if ((int)palette.size() != resolution)
                     set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
             }
 

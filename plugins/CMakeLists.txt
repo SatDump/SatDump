@@ -147,6 +147,25 @@ if(PLUGIN_GVAR_EXTENDED)
 endif()
 
 # ######################
+option(PLUGIN_SIMD_SSE41 "Enable SIMD SSE41 plugin" ON)
+
+if(PLUGIN_SIMD_SSE41)
+    add_subdirectory(simd_extensions/simd_sse41)
+endif()
+
+option(PLUGIN_SIMD_NEON "Enable SIMD NEON plugin" ON)
+
+if(PLUGIN_SIMD_NEON)
+    add_subdirectory(simd_extensions/simd_neon)
+endif()
+
+option(PLUGIN_SIMD_AVX2 "Enable SIMD AVX2 plugin" ON)
+
+if(PLUGIN_SIMD_AVX2)
+    add_subdirectory(simd_extensions/simd_avx2)
+endif()
+
+# ######################
 option(PLUGIN_AIRSPY_SDR_SUPPORT "Enable Airspy SDR Support plugin" ON)
 
 if(PLUGIN_AIRSPY_SDR_SUPPORT)

@@ -18,6 +18,8 @@ namespace demod
         std::shared_ptr<dsp::CostasLoopBlock> costas;
         std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
+        bool d_resample_after_pll = false;
+
         float d_pll_bw;
         float d_pll_max_offset = 0.5;
         float d_rrc_alpha;

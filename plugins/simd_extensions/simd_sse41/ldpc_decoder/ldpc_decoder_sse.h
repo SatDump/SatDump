@@ -1,0 +1,65 @@
+#pragma once
+
+#include "common/codings/ldpc/ldpc_decoder.h"
+
+#include <xmmintrin.h>
+#include <tmmintrin.h>
+#include <smmintrin.h>
+
+// Based on gr-ccsds, modified to utilize SIMD
+namespace codings
+{
+    namespace ldpc
+    {
+        class LDPCDecoderSSE : public LDPCDecoder
+        {
+        public:
+            LDPCDecoderSSE(Sparse_matrix pcm);
+            ~LDPCDecoderSSE();
+
+            int decode(uint8_t *out, const int8_t *in, int it);
+
+            int simd() { return 8; }
+
+        private:
+            int d_pcm_num_cn;
+            int d_pcm_num_vn;
+            int d_pcm_max_cn_degree;
+            int d_pcm_num_edges;
+
+            /* Buffer holding vn values during decode */
+            __m128i *d_vns;
+            /* Buffer to hold all messages coming from VNs to a single CN */
+            __m128i *d_vns_to_cn_msgs;
+            /* Buffer to hold the absolute value of messages coming from VNs
+             * to CNs */
+            __m128i *d_abs_msgs;
+            /* Buffer to hold all messages from CNs to VNs containing
+             * error correcting values. */
+            __m128i *d_cn_to_vn_msgs;
+
+            /* Buffer representing the parity check matrix. Instead of having all offsets of
+             * each VN in the VN buffer, we store directly its addresses in the buffer */
+            __m128i **d_vn_addr;
+            /* Array of row position and degree of each cn */
+            int *d_row_pos_deg;
+
+            void generic_cn_kernel(int cn_idx);
+
+            // Used by generic_cn_kernel
+            __m128i sign;
+            __m128i parity;
+            __m128i min, min1, min2;
+            __m128i abs_msg;
+            __m128i new_msg;
+            __m128i msg;
+            __m128i equ_wip;
+            __m128i equ_min1;
+            __m128i to_vn;
+            int cn_deg;
+            int cn_row_base; // offset to base of corresponding row in the PCM
+            int vn_offset;
+            int cn_offset; // CN offset in the buffer holding CN to VN messages
+        };
+    }
+}

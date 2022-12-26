@@ -138,3 +138,12 @@ inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 double get_median(std::vector<double> values);
 
 extern "C" time_t mktime_utc(const struct tm *timeinfo_utc); // Already in libpredict!
+
+template <typename T>
+std::vector<uint8_t> unsigned_to_bitvec(T v)
+{
+    std::vector<uint8_t> c;
+    for (int s = (sizeof(T) * 8) - 1; s >= 0; s--)
+        c.push_back((v >> s) & 1);
+    return c;
+}

@@ -12,5 +12,6 @@ enum constellation_t
 {
     BPSK,
     QPSK,
+    OQPSK,
     PSK8,
 };

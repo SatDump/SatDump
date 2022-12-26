@@ -184,15 +184,17 @@
                     "constellation": "oqpsk",
                     "symbolrate": 7.5e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.006,
-                    "clock_gain_omega": 0.8,
-                    "clock_mu": 0.9,
-                    "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001
+                    "pll_bw": 0.006
                 }
             },
             "cadu": {
-                "iris_dump_decoder": {}
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": true,
+                    "internal_cadu_size": 14304
+                }
             }
         }
     },
@@ -650,6 +652,137 @@
                     "derandomize": true,
                     "rs_i": 0,
                     "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "swot_tlm": {
+        "name": "SWOT S-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "SWOT",
+                2282.4e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 932e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "oqpsk_mode": true,
+                    "nrzm": true,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "tiahne1_tlm": {
+        "name": "Tiahne-1 TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 64e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 350e3
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "ccsds": false,
+                    "nrzm": true,
+                    "derandomize": false,
+                    "asm": "0xa91a8c29",
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
+    "orion_link": {
+        "name": "Orion S-Band",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2214e6
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.005
+                }
+            },
+            "cadu": {
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "1/2",
+                    "ldpc_block_size": 1024,
+                    "ldpc_iterations": 10
+                    //"derandomize": false
                 }
             }
         }

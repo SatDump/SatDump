@@ -24,7 +24,7 @@
             "soft": {
                 "psk_demod": {
                     "constellation": "qpsk",
-                    "symbolrate": 800e3,
+                    "symbolrate": 400e3,
                     "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
@@ -303,6 +303,31 @@
                     "oqpsk_mode": true,
                     "rs_i": 5,
                     "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "landsat_ldcm_link": {
+        "name": "LandSat 8/9 X-band",
+        "samplerate": 300e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 220.4e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": true,
+                    "internal_cadu_size": 8272,
+                    "internal_asm": "0x352EF853"
                 }
             }
         }

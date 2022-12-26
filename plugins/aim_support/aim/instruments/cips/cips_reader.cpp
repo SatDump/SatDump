@@ -19,7 +19,7 @@ namespace aim
 
         float nominal_root_2n(uint16_t value)
         {
-            const float alpha = 512;
+            // const float alpha = 512;
             const float delta = 510;
 
             float decompressed_value = 0;
@@ -32,7 +32,7 @@ namespace aim
 
         float optimized_root_2n(uint16_t value)
         {
-            const float alpha = 512;
+            // const float alpha = 512;
             const float delta = 510;
             const float gamma = 543;
 
@@ -60,7 +60,7 @@ namespace aim
                 uint16_t pixels[774];
                 repackBytesTo10bits(&packet.payload[54 - 6], 968, pixels);
 
-                for (int i = science_header.start_pixel, i2 = 0; i < img.size() && i2 < 774; i++, i2++)
+                for (int i = science_header.start_pixel, i2 = 0; i < (int)img.size() && i2 < 774; i++, i2++)
                 {
                     float value = 0;
 
@@ -86,7 +86,7 @@ namespace aim
                 uint32_t pixels[455];
                 repackBytesTo17bits(&packet.payload[54 - 6], 968, pixels);
 
-                for (int i = science_header.start_pixel, i2 = 0; i < img.size() && i2 < 455; i++, i2++)
+                for (int i = science_header.start_pixel, i2 = 0; i < (int)img.size() && i2 < 455; i++, i2++)
                 {
                     float value = pixels[i2];
 

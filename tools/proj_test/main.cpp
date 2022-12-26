@@ -23,7 +23,7 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "chm5,chm4,chm3"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 
@@ -33,11 +33,12 @@ int main(int /*argc*/, char *argv[])
     // filter_timestamps_simple(img_pro.get_timestamps(0), 1e4, 10));
 
     satdump::warp::WarpOperation operation;
-    operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg);
+    std::vector<double> final_tt;
+    operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt);
     operation.ground_control_points = satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
                                                                          {}, // TMP
                                                                          img_pro.get_tle(),
-                                                                         img_pro.get_timestamps(0),
+                                                                         final_tt,
                                                                          operation.input_image.width(),
                                                                          operation.input_image.height());
     operation.output_width = 2048 * 10;
@@ -63,7 +64,6 @@ int main(int /*argc*/, char *argv[])
                                        return {x, y};
                                    });
 
-    /*
     for (auto gcp : operation.ground_control_points)
     {
         auto projfunc = [&projector](float lat, float lon, int, int) -> std::pair<int, int>
@@ -78,9 +78,8 @@ int main(int /*argc*/, char *argv[])
         if (pos.first == -1 || pos.second == -1)
             continue;
 
-        result.output_image.draw_circle(pos.first, pos.second, 10, color, true);
+        result.output_image.draw_circle(pos.first, pos.second, 2, color, true);
     }
-    */
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     logger->info("Saving...");

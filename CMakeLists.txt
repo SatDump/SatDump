@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CheckCXXSourceCompiles)
-include(FindSSE)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -60,15 +59,6 @@ if(UNIX)
         endif()
     endif()
 
-    FindSSE()
-
-    if(SSE4_1_FOUND)
-        message("Found SSE features, enabling building SSE code")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-    else()
-        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
-    endif()
-
     find_package(ZSTD)
 
     if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND(NOT ANDROID))
@@ -87,15 +77,35 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
+endif()
 
-    FindSSE()
+# SSE41
+if(NOT ANDROID)
+    include(FindSSE41)
+endif()
 
-    if(SSE4_1_FOUND)
-        message("Found SSE features, enabling building SSE code")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /d2archSSE42")
-    else()
-        message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
+if(ANDROID)
+    set(SSE41_FOUND 0)
+
+    if(ANDROID_ABI STREQUAL "x86")
+        set(SSE41_FOUND 1)
     endif()
+
+    if(ANDROID_ABI STREQUAL "x86_64")
+        set(SSE41_FOUND 1)
+    endif()
+endif()
+
+if(SSE41_FOUND)
+    message("Found SSE features, enabling building SSE code")
+
+    if(UNIX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    elseif(MSVC OR BUILD_MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+    endif()
+else()
+    message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
 
 project(SatDump VERSION "1.0.4")

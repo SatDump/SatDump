@@ -1,6 +1,6 @@
 #include "constellation.h"
 #include <cmath>
-//#include <iostream>
+// #include <iostream>
 #include <vector>
 
 #define M_SQRT2 1.41421356237309504880
@@ -30,7 +30,7 @@ namespace dsp
             constellation[0] = complex_t(-1, 0);
             constellation[1] = complex_t(1, 0);
         }
-        else if (type == QPSK)
+        else if (type == QPSK || type == OQPSK) // Distinction is NOT at constellation level
         {
             const_states = 4;
             const_bits = 2;
@@ -185,6 +185,10 @@ namespace dsp
             return 2 * (sample.imag > 0) + (sample.real > 0);
             break;
 
+        case OQPSK:
+            return 2 * (sample.imag > 0) + (sample.real > 0);
+            break;
+
         default:
             return 0;
             break;
@@ -200,6 +204,10 @@ namespace dsp
             break;
 
         case QPSK:
+            return 2 * (sample[1] > 0) + (sample[0] > 0);
+            break;
+
+        case OQPSK:
             return 2 * (sample[1] > 0) + (sample[0] > 0);
             break;
 

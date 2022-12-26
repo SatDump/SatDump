@@ -8,14 +8,14 @@
 
 typedef int8_t code_type;
 
-#include "common/codings/ldpc/simd.hh"
-#include "common/codings/ldpc/layered_decoder.hh"
-#include "common/codings/ldpc/algorithms.hh"
-#include "common/codings/ldpc/encoder.hh"
+#include "common/codings/dvb-s2/ldpc/simd.hh"
+#include "common/codings/dvb-s2/ldpc/layered_decoder.hh"
+#include "common/codings/dvb-s2/ldpc/algorithms.hh"
+#include "common/codings/dvb-s2/ldpc/encoder.hh"
 
 namespace dvbs2
 {
-#if defined(__AVX2__)
+#if defined(__AVX2__OFF)
     typedef SIMD<code_type, 32> simd_type;
 #elif defined(__SSE4_1__)
     typedef SIMD<code_type, 16> simd_type;

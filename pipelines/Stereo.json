@@ -19,9 +19,10 @@
             "soft": {
                 "pm_demod": {
                     "symbolrate": 3800,
+                    "resample_after_pll": true,
                     "agc_rate": 0.001,
                     "pll_bw": 0.01,
-                    "pll_max_offset": 0.5,
+                    "pll_max_offset": 3.14,
                     "rrc_alpha": 0.6,
                     "rrc_taps": 31,
                     "costas_bw": 0.005,
