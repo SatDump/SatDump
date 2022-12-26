@@ -164,6 +164,12 @@ namespace noaa
                     logger->info("----------- AVHRR/3");
                     logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
+                    //calibration
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+                    if (calib_coefs.contains(sat_name))
+                        avhrr_reader.calibrate(calib_coefs.at(sat_name));
+
+                    //product generation
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
                     avhrr_products.has_timestamps = true;

@@ -73,32 +73,45 @@ namespace noaa_metop
             for (int channel = 0; channel < 6; channel++)
                 channels[channel].resize((lines + 1) * 2048);
 
-            // calibration data extraction (for later, we don't know what sat this is yet!)
-            prt_buffer.push_back((buff[17] + buff[18] + buff[19])/3);
+            if (!gac_mode) //we don't have info on GAC rn, we'll have to RE
+            {
+                // calibration data extraction (for later, we don't know what sat this is yet!)
+                //prt_buffer.push_back(buff[17]*buff[18]*buff[19] == 0 ? 0 : (buff[17] + buff[18] + buff[19]) / 3);
+                prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
 
-            // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
-            uint16_t avg_blb[3] = {0}; // blackbody average
-            uint16_t avg_spc[3] = {0}; // space average
-            for (int i = 0; i < 10; i++)
+                // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
+                uint16_t avg_blb[3] = {0}; // blackbody average
+                uint16_t avg_spc[3] = {0}; // space average
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 3; j++)
+                    {
+                        avg_blb[j] += buff[22 + 3 * i + j];
+                        avg_spc[j] += buff[52 + 5 * i + j + 2];
+                    }
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] += buff[22 + 3 * i + j];
-                    avg_spc[j] += buff[52 + 5 * i + j + 2];
+                    avg_blb[j] /= 10;
+                    avg_spc[j] /= 10;
                 }
-            for (int j = 0; j < 3; j++){
-                avg_blb[j] /= 10;
-                avg_spc[j] /= 10;
-            }
 
-            std::array<view_pair, 3> el;
-            for (int i = 0; i < 3; i++){
-                el[i] = view_pair{avg_spc[i], avg_blb[i]};
+                std::array<view_pair, 3> el;
+                for (int i = 0; i < 3; i++)
+                {
+                    el[i] = view_pair{avg_spc[i], avg_blb[i]};
+                }
+                views.push_back(el);
             }
-            views.push_back(el);
         }
 
-        int AVHRRReader::calibrate(std::string sat_name){ // further calibration
-            
+        int AVHRRReader::calibrate(nlohmann::json calib_coefs)
+        { // further calibration
+            for (int i = 0; i < prt_buffer.size(); i++){
+                uint16_t mul;
+                for (int n = 0; n < 4; n++) mul *= prt_buffer[i-n];
+                if (prt_buffer[i] == 0 && i > 4 && mul == 0){
+                    
+                }
+            }
         }
     } // namespace avhrr
 } // namespace metop_noaa

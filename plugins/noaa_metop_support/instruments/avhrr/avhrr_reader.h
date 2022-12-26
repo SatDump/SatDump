@@ -3,6 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include "common/image/image.h"
 #include "noaa/tip_time_parser.h"
+#include "nlohmann/json.hpp"
 
 namespace noaa_metop
 {
@@ -34,7 +35,7 @@ namespace noaa_metop
             void work_metop(ccsds::CCSDSPacket &packet);
             void work_noaa(uint16_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
-            int calibrate(std::string sat_name);
+            int calibrate(nlohmann::json calib_coefs);
         };
     } // namespace noaa_metop
 } // namespace metop
