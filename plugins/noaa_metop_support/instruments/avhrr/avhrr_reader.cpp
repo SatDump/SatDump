@@ -73,11 +73,11 @@ namespace noaa_metop
             for (int channel = 0; channel < 6; channel++)
                 channels[channel].resize((lines + 1) * 2048);
 
-            if (!gac_mode) //we don't have info on GAC rn, we'll have to RE
+            if (!gac_mode) // we don't have info on GAC rn, we'll have to RE
             {
                 // calibration data extraction (for later, we don't know what sat this is yet!)
-                //prt_buffer.push_back(buff[17]*buff[18]*buff[19] == 0 ? 0 : (buff[17] + buff[18] + buff[19]) / 3);
-                prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
+                prt_buffer.push_back(buff[17] * buff[18] * buff[19] == 0 ? 0 : (buff[17] + buff[18] + buff[19]) / 3);
+                // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
 
                 // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
                 uint16_t avg_blb[3] = {0}; // blackbody average
@@ -105,12 +105,41 @@ namespace noaa_metop
 
         int AVHRRReader::calibrate(nlohmann::json calib_coefs)
         { // further calibration
-            for (int i = 0; i < prt_buffer.size(); i++){
-                uint16_t mul;
-                for (int n = 0; n < 4; n++) mul *= prt_buffer[i-n];
-                if (prt_buffer[i] == 0 && i > 4 && mul == 0){
+            // read params
+            std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
+            std::vector<std::map<std::string, double>> channel_coefs;
+            for (int i = 0; i < 6; i++)
+                channel_coefs[i] = calib_coefs[std::to_string(i)].get<std::map<std::string, double>>();
+
+            for (int i = 0; i < prt_buffer.size(); i++)
+            {
+                // PRT counts to temperature but NOAA made it annoying
+                if (i >= 4 && prt_buffer[i] == 0)
+                {
+                    uint16_t tbb = 0;
+                    int chk = 0;
+                    for (int n = 1; n <= 4; n++)
+                    {
+                        if (!prt_buffer[i - n] == 0)
+                        {
+                            for (int p = 0; p < 5; p++)
+                                tbb += prt_coefs[4 - n][p] * pow(prt_buffer[i - n], p);
+                            chk++;
+                        }
+                        else
+                            break;
+                    }
+                    tbb /= chk;
+                    for (int n = 1; n <= 4; n++)
+                        for (int c = 3; c < 6; c++){ // replace chk + 1 lines from [i-1]
+                            //struct.channel.nbb = temperature_to_radiance(channel_coefs[c]["A"] + channel_coefs[c]["B"] * tbb, channel_coefs[c]["wavnb"]);
+                        }
                     
                 }
+                //per_line_struct.prt_temp.all_ch.push_back(-1);
+                
+
+                //
             }
         }
     } // namespace avhrr

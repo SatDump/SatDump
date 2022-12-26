@@ -4,6 +4,8 @@
 #include "common/image/image.h"
 #include "noaa/tip_time_parser.h"
 #include "nlohmann/json.hpp"
+#include "src-core/resources.h"
+#include "common/calibration.h"
 
 namespace noaa_metop
 {
