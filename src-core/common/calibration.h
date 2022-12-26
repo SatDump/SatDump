@@ -12,7 +12,5 @@ double temperature_to_radiance(double t, double v);
 double radiance_to_temperature(double L, double v);
 
 struct calibration_metadata {
-    std::map<std::string, double> constants;
-    std::vector<std::vector<std::map<std::string, double>>> line_channel_coefs;
-    std::vector<std::map<std::string, double>> line_coefs;
+
 };
