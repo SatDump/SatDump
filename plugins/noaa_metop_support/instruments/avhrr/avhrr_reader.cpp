@@ -112,7 +112,7 @@ namespace noaa_metop
 
             for (int p = 0; p < 6; p++)
             {
-                calib_out["perChannel"][p] = calib_coefs["channels"][p];
+                calib_out["lua_vars"]["perChannel"][p] = calib_coefs["channels"][p];
             }
             for (int p = 0; p < 6; p++)
                 calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
@@ -152,9 +152,9 @@ namespace noaa_metop
                     for (int n = 0; n <= chk; n++)
                         for (int c = 3; c < 6; c++)
                         { // replace chk + 1 lines from [i] back
-                            calib_out["perLine_perChannel"][i - n][c]["Spc"] = avgpair[c - 3].space;
-                            calib_out["perLine_perChannel"][i - n][c]["Blb"] = avgpair[c - 3].blackbody;
-                            calib_out["perLine_perChannel"][i - n][c]["Nbb"] =
+                            calib_out["lua_vars"]["perLine_perChannel"][i - n][c]["Spc"] = avgpair[c - 3].space;
+                            calib_out["lua_vars"]["perLine_perChannel"][i - n][c]["Blb"] = avgpair[c - 3].blackbody;
+                            calib_out["lua_vars"]["perLine_perChannel"][i - n][c]["Nbb"] =
                                 temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
                                                         calib_coefs["channels"][c]["Vc"].get<double>());
                         }
@@ -167,7 +167,7 @@ namespace noaa_metop
                     ln[c]["Ns"] = calib_coefs["channels"][c]["Ns"].get<double>();
                     ln[c]["b"] = calib_coefs["channels"][c]["b"].get<std::vector<double>>();
                 }
-                calib_out["perLine_perChannel"].push_back(ln);
+                calib_out["lua_vars"]["perLine_perChannel"].push_back(ln);
             }
         }
     } // namespace avhrr
