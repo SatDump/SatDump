@@ -166,9 +166,10 @@ namespace noaa
 
                     //calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
-                    if (calib_coefs.contains(sat_name))
-                        avhrr_reader.calibrate(calib_coefs.at(sat_name));
-
+                    if (calib_coefs.contains(sat_name)){
+                        avhrr_reader.calibrate(calib_coefs[sat_name]);
+                    }
+                    
                     //product generation
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";

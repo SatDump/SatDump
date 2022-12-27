@@ -4,7 +4,7 @@
 #include "common/image/image.h"
 #include "noaa/tip_time_parser.h"
 #include "nlohmann/json.hpp"
-#include "src-core/resources.h"
+#include "resources.h"
 #include "common/calibration.h"
 
 namespace noaa_metop
@@ -15,8 +15,22 @@ namespace noaa_metop
         {
         private:
             struct view_pair{
-                uint16_t space;
-                uint16_t blackbody;
+                uint16_t space = 0;
+                uint16_t blackbody = 0;
+
+                view_pair& operator+=(view_pair const &obj){
+                    this->space += obj.space;
+                    this->blackbody += obj.blackbody;
+
+                    return *this;
+                };
+
+                view_pair& operator/=(int const n){
+                    this->space /= n;
+                    this->blackbody /= n;
+
+                    return *this;
+                };
             };
             uint16_t avhrr_buffer[10355];
             const bool gac_mode;
@@ -30,6 +44,7 @@ namespace noaa_metop
             int lines;
             std::vector<uint16_t> channels[6];
             std::vector<double> timestamps;
+            nlohmann::json calib_out;
 
         public:
             AVHRRReader(bool gac);

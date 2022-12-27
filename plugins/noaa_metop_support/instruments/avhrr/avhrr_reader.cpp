@@ -107,39 +107,61 @@ namespace noaa_metop
         { // further calibration
             // read params
             std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
-            std::vector<std::map<std::string, double>> channel_coefs;
-            for (int i = 0; i < 6; i++)
-                channel_coefs[i] = calib_coefs[std::to_string(i)].get<std::map<std::string, double>>();
+            
+            for (int p = 0; p < 3; p++){
+                calib_out["perChannel"][p] = calib_coefs["channels"][p];
+                calib_out["perChannel"][p+3]["wavnb"] = calib_coefs["channels"][p+3]["wavnb"].get<double>();
+            }
 
+            double ltbb = -1;
+            std::vector<nlohmann::json> ln;
+            ln.resize(6);
             for (int i = 0; i < prt_buffer.size(); i++)
             {
                 // PRT counts to temperature but NOAA made it annoying
                 if (i >= 4 && prt_buffer[i] == 0)
                 {
-                    uint16_t tbb = 0;
+                    double tbb = 0;
                     int chk = 0;
+                    std::array<view_pair, 3> avgpair;
                     for (int n = 1; n <= 4; n++)
                     {
                         if (!prt_buffer[i - n] == 0)
                         {
                             for (int p = 0; p < 5; p++)
-                                tbb += prt_coefs[4 - n][p] * pow(prt_buffer[i - n], p);
+                                tbb += prt_coefs[4 - n][p] * pow(prt_buffer[i - n], p); // convert PRT counts to temperature
+
+                            for (int p = 0; p < 3; p++)
+                                avgpair[p] += views[i - n][p]; // average the views
+
                             chk++;
                         }
                         else
                             break;
                     }
-                    tbb /= chk;
-                    for (int n = 1; n <= 4; n++)
-                        for (int c = 3; c < 6; c++){ // replace chk + 1 lines from [i-1]
-                            //struct.channel.nbb = temperature_to_radiance(channel_coefs[c]["A"] + channel_coefs[c]["B"] * tbb, channel_coefs[c]["wavnb"]);
+                    tbb /= chk != 0 ? chk : 1;
+                    for (int p = 0; p < 3; p++)
+                        avgpair[p] /= chk != 0 ? chk : 1;
+                    ltbb = tbb;
+                    for (int n = 0; n <= chk; n++)
+                        for (int c = 3; c < 6; c++)
+                        { // replace chk + 1 lines from [i] back
+                            calib_out["perLine_perChannel"][i - n][c]["Spc"] = avgpair[c - 3].space;
+                            calib_out["perLine_perChannel"][i - n][c]["Blb"] = avgpair[c - 3].blackbody;
+                            calib_out["perLine_perChannel"][i - n][c]["Nbb"] =
+                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                        calib_coefs["channels"][c]["Vc"].get<double>());
                         }
-                    
                 }
-                //per_line_struct.prt_temp.all_ch.push_back(-1);
-                
-
-                //
+                for (int c = 3; c < 6; c++)
+                {
+                    ln[c]["Nbb"] =
+                        temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * ltbb,
+                                                calib_coefs["channels"][c]["Vc"].get<double>());
+                    ln[c]["Ns"] = calib_coefs["channels"][c]["Ns"].get<double>();
+                    ln[c]["b"] = calib_coefs["channels"][c]["b"].get<std::vector<double>>();
+                }
+                calib_out["perLine_perChannel"].push_back(ln);
             }
         }
     } // namespace avhrr
