@@ -87,7 +87,7 @@ namespace mats
                 mats_nadir_products.has_timestamps = false;
                 // mats_nadir_products.set_tle(satellite_tle);
                 mats_nadir_products.bit_depth = 12;
-                //mats_nadir_products.set_wavenumber(0, 1311.99); //deprecated
+                mats_nadir_products.set_wavenumber(0, 1311.99);
                 // mats_nadir_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // mats_nadir_products.set_timestamps(mhs_reader.timestamps);
                 // mats_nadir_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
