@@ -52,6 +52,14 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `agc` : Enable or disable the AGC
 - `bias` : Enable Bias-Tree power
 
+## RTL-TCP
+
+- `ip_address` : IPv4 Server address
+- `port` : Server port. Usually 1234
+- `gain` : Device Gain in dBs
+- `lna_agc` : Enable or disable the built-in LNA AGC
+- `bias` : Enable Bias-Tree power (if supported)
+
 ## SDDC (RX888, RX999, etc)
 
 *Note : Support for those is experimental. Things may not work as expected!*
