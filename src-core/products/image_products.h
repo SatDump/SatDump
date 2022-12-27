@@ -139,7 +139,10 @@ namespace satdump
 
         double get_wavenumber(int image_index)
         {
-            if (has_calibation() && contents["calibration"].contains("wavenumbers"))
+            if (!has_calibation())
+                return 0;
+
+            if (contents["calibration"].contains("wavenumbers"))
                 return contents["calibration"]["wavenumbers"][image_index].get<double>();
             else
                 return 0;
