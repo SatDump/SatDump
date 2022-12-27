@@ -110,10 +110,9 @@ namespace noaa_metop
             // read params
             std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
 
-            for (int p = 0; p < 3; p++)
+            for (int p = 0; p < 6; p++)
             {
                 calib_out["perChannel"][p] = calib_coefs["channels"][p];
-                calib_out["perChannel"][p + 3] = {};
             }
             for (int p = 0; p < 6; p++)
                 calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
