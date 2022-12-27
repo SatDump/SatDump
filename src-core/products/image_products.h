@@ -134,7 +134,16 @@ namespace satdump
 
         void set_calibration(nlohmann::json calib)
         {
+            bool d = false;
+            nlohmann::json buff;
+            if (has_calibation() && contents["calibration"].contains("wavenumbers"))
+            {
+                buff = contents["calibration"]["wavenumbers"];
+                d = true;
+            }
             contents["calibration"] = calib;
+            if (d)
+                contents["calibration"]["wavenumbers"] = buff;
         }
 
         double get_wavenumber(int image_index)
