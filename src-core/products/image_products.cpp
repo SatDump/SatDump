@@ -4,6 +4,8 @@
 #include "resources.h"
 #include "common/image/earth_curvature.h"
 #include <filesystem>
+#include "libs/sol2/sol.hpp"
+#include "common/lua/lua_utils.h"
 
 namespace satdump
 {
@@ -116,20 +118,30 @@ namespace satdump
 
             images.push_back(img_holder);
         }
-
-        //load and compile the LUA
-        if (contents.contains("calibration"))
-            if (contents["calibration"].contains("lua"))
-                std::string lua_code = contents["calibration"]["lua"].get<std::string>();
     }
 
     double ImageProducts::get_radiance_value(int image_index, int x, int y)
     {
-        // get all the data to LUA
-        // run LUA
-        // ???
-        // return radiance
-        return 0.0;
+        sol::state &lua = *((sol::state *)lua_state_ptr);
+
+        if (lua_state_ptr == nullptr)
+        {
+            lua_state_ptr = new sol::state();
+
+            lua.open_libraries(sol::lib::base);
+            lua.open_libraries(sol::lib::string);
+            lua.open_libraries(sol::lib::math);
+
+            lua["wavenumbers"] = contents["calibration"]["wavenumbers"].get<std::vector<double>>();
+            lua["lua_vars"] = lua_utils::mapJsonToLua(lua, contents["calibration"]["lua_vars"]);
+
+            std::string lua_code = contents["calibration"]["lua"].get<std::string>();
+            lua.script(lua_code);
+
+            lua["init"].call();
+        }
+
+        return lua["compute"].call(image_index + 1, x, y, images[image_index].image[y * images[image_index].image.width() + x]).get<double>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)

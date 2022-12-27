@@ -167,6 +167,9 @@ namespace satdump
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
+
+    private:
+        void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
     };
 
     // Composite handling
