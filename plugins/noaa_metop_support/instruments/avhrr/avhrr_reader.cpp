@@ -123,7 +123,7 @@ namespace noaa_metop
             double ltbb = -1;
             std::vector<nlohmann::json> ln;
             ln.resize(6);
-            for (uint i = 0; i < prt_buffer.size(); i++)
+            for (unsigned int i = 0; i < prt_buffer.size(); i++)
             {
                 // PRT counts to temperature but NOAA made it annoying
                 if (i >= 4 && prt_buffer[i] == 0)
