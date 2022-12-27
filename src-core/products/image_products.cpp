@@ -127,6 +127,7 @@ namespace satdump
         // run LUA
         // ???
         // return radiance
+        return 0.0;
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
