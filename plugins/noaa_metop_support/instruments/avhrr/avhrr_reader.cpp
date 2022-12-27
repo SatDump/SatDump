@@ -163,7 +163,6 @@ namespace noaa_metop
                 }
                 calib_out["perLine_perChannel"].push_back(ln);
             }
-            return 0;
         }
     } // namespace avhrr
 } // namespace metop_noaa
