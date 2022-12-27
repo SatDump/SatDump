@@ -118,7 +118,9 @@ namespace satdump
         }
 
         //load and compile the LUA
-        std::string lua_code = contents["calibration"]["lua"].get<std::string>();
+        if (contents.contains("calibration"))
+            if (contents["calibration"].contains("lua"))
+                std::string lua_code = contents["calibration"]["lua"].get<std::string>();
     }
 
     double ImageProducts::get_radiance_value(int image_index, int x, int y)
