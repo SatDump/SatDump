@@ -103,7 +103,7 @@ namespace noaa_metop
             }
         }
 
-        int AVHRRReader::calibrate(nlohmann::json calib_coefs)
+        void AVHRRReader::calibrate(nlohmann::json calib_coefs)
         { // further calibration
             // read params
             std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
@@ -163,6 +163,7 @@ namespace noaa_metop
                 }
                 calib_out["perLine_perChannel"].push_back(ln);
             }
+            return 0;
         }
     } // namespace avhrr
 } // namespace metop_noaa

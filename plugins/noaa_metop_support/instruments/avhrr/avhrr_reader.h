@@ -52,7 +52,7 @@ namespace noaa_metop
             void work_metop(ccsds::CCSDSPacket &packet);
             void work_noaa(uint16_t *buffer);
             image::Image<uint16_t> getChannel(int channel);
-            int calibrate(nlohmann::json calib_coefs);
+            void calibrate(nlohmann::json calib_coefs);
         };
     } // namespace noaa_metop
 } // namespace metop
