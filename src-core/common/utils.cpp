@@ -193,3 +193,11 @@ double get_median(std::vector<double> values)
     size_t middle = values.size() / 2;
     return values[middle];
 }
+
+std::string loadFileToString(std::string path)
+{
+    std::ifstream f(resources::getResourcePath(path));
+    std::string str = std::string(std::istreambuf_iterator<char>{f}, {});
+    f.close();
+    return str;
+}

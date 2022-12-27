@@ -2,6 +2,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 #include <fstream>
+#include "common/utils.h"
 
 namespace noaa_metop
 {
@@ -108,18 +109,16 @@ namespace noaa_metop
         { // further calibration
             // read params
             std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
-            
-            for (int p = 0; p < 3; p++){
+
+            for (int p = 0; p < 3; p++)
+            {
                 calib_out["perChannel"][p] = calib_coefs["channels"][p];
-                calib_out["perChannel"][p+3] = {};
+                calib_out["perChannel"][p + 3] = {};
             }
             for (int p = 0; p < 6; p++)
                 calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
 
-            std::ifstream lua(resources::getResourcePath("calibration/AVHRR.lua"));
-            calib_out["lua"] =  std::string(std::istreambuf_iterator<char>{lua}, {});
-            lua.close();
-            
+            calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/AVHRR.lua"));
 
             double ltbb = -1;
             std::vector<nlohmann::json> ln;
