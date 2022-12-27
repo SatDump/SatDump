@@ -169,7 +169,12 @@ namespace noaa
                     if (calib_coefs.contains(sat_name)){
                         avhrr_reader.calibrate(calib_coefs[sat_name]);
                     }
-                    
+                    /*
+                    std::ofstream out("AVHRR_calib.json");
+                    out << avhrr_reader.calib_out;
+                    out.close();
+                    */
+
                     //product generation
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
@@ -178,6 +183,8 @@ namespace noaa
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
+                    //calib
+                    avhrr_products.set_calibration(avhrr_reader.calib_out);
 
                     nlohmann::ordered_json proj_settings;
 
@@ -287,12 +294,12 @@ namespace noaa
                     if (scid == 15) // NOAA-19
                         mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
 
-                    for (int i = 0; i < 5; i++)
+                    /*for (int i = 0; i < 5; i++)
                     {
                         mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
                         mhs_products.set_wavenumber(i, noaa_metop::mhs::calibration::wavenumber[i]);
                         mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
-                    }
+                    }*/
 
                     mhs_products.save(directory);
                     dataset.products_list.push_back("MHS");

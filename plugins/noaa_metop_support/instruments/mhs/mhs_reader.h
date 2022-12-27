@@ -21,10 +21,6 @@
 #define DAY_OFFSET 17453
 #define SEC_OFFSET 3600 * 9 - 60 * 10
 
-#define c1 1.191042e-05
-#define c2 1.4387752
-#define e_num 2.7182818
-
 namespace noaa_metop
 {
     namespace mhs

@@ -1,6 +1,7 @@
 #include "avhrr_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
+#include <fstream>
 
 namespace noaa_metop
 {
@@ -110,13 +111,20 @@ namespace noaa_metop
             
             for (int p = 0; p < 3; p++){
                 calib_out["perChannel"][p] = calib_coefs["channels"][p];
-                calib_out["perChannel"][p+3]["wavnb"] = calib_coefs["channels"][p+3]["wavnb"].get<double>();
+                calib_out["perChannel"][p+3] = {};
             }
+            for (int p = 0; p < 6; p++)
+                calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
+
+            std::ifstream lua(resources::getResourcePath("calibration/AVHRR.lua"));
+            calib_out["lua"] =  std::string(std::istreambuf_iterator<char>{lua}, {});
+            lua.close();
+            
 
             double ltbb = -1;
             std::vector<nlohmann::json> ln;
             ln.resize(6);
-            for (int i = 0; i < prt_buffer.size(); i++)
+            for (uint i = 0; i < prt_buffer.size(); i++)
             {
                 // PRT counts to temperature but NOAA made it annoying
                 if (i >= 4 && prt_buffer[i] == 0)

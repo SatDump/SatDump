@@ -60,9 +60,6 @@ namespace satdump
         Products::load(file);
         std::string directory = std::filesystem::path(file).parent_path().string();
 
-        if (has_calibation())
-            calibration_polynomial_coefs.resize(contents["images"].size());
-
         has_timestamps = contents["has_timestamps"].get<bool>();
         if (has_timestamps)
             timestamp_type = (Timestamp_Type)contents["timestamps_type"].get<int>();
@@ -118,43 +115,18 @@ namespace satdump
                 img_holder.offset_x = contents["images"][c]["offset_x"].get<int>();
 
             images.push_back(img_holder);
-
-            // Also load calibration if present
-            if (has_calibation())
-            {
-                if (get_calibration_type(c) == POLYNOMIAL)
-                    calibration_polynomial_coefs[c][0] = contents["calibration"][c]["coefs"].get<std::vector<double>>();
-                else if (get_calibration_type(c) == POLYNOMIAL_PER_LINE)
-                    calibration_polynomial_coefs[c] = contents["calibration"][c]["coefs"].get<std::vector<std::vector<double>>>();
-                // CUSTOM NOT IMPLEMENTED YET
-            }
         }
+
+        //load and compile the LUA
+        std::string lua_code = contents["calibration"]["lua"].get<std::string>();
     }
 
     double ImageProducts::get_radiance_value(int image_index, int x, int y)
     {
-        std::vector<double> coefs;
-
-        if (has_calibation())
-        {
-            if (get_calibration_type(image_index) == POLYNOMIAL)
-                coefs = calibration_polynomial_coefs[image_index][0];
-            else if (get_calibration_type(image_index) == POLYNOMIAL_PER_LINE)
-                coefs = calibration_polynomial_coefs[image_index][y];
-            else
-                return 0;
-        }
-        else
-            return 0;
-
-        double raw_value = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-
-        double radiance = 0;
-        int level = 0;
-        for (double c : coefs)
-            radiance += c * powf(raw_value, level++);
-
-        return radiance;
+        // get all the data to LUA
+        // run LUA
+        // ???
+        // return radiance
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
