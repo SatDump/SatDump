@@ -29,7 +29,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `amp` : Enable the main (non-programmable) amplifier
 - `lna_gain` : LNA Gain in dBs
 - `vga_gain` : VGA Gain in dBs
-- `bias` : Enable Bias-Tree power
+- `bias` : Enable Bias-Tee power
 
 ## BladeRF
 
@@ -50,7 +50,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 
 - `gain` : Device Gain in dBs
 - `agc` : Enable or disable the AGC
-- `bias` : Enable Bias-Tree power
+- `bias` : Enable Bias-Tee power
 
 ## RTL-TCP
 
@@ -58,7 +58,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `port` : Server port. Usually 1234
 - `gain` : Device Gain in dBs
 - `lna_agc` : Enable or disable the built-in LNA AGC
-- `bias` : Enable Bias-Tree power (if supported)
+- `bias` : Enable Bias-Tee power (if supported)
 
 ## SDDC (RX888, RX999, etc)
 
@@ -67,7 +67,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `mode` : 0 for HF, 1 for VHF
 - `rf_gain` : RF Gain in dBs
 - `if_gain` : IF Gain in dBs
-- `bias` : Enable Bias-Tree power
+- `bias` : Enable Bias-Tee power
 
 ## SDRPlay
 
@@ -75,7 +75,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 
 - `lna_gain` : LNA Gain in dBs
 - `if_gain` : IF Gain in dBs
-- `bias` : Enable Bias-Tree power
+- `bias` : Enable Bias-Tee power
 - `am_notch` : Enable the AM notch filter
 - `fm_notch` : Enable the FM notch filter
 - `dab_notch` : Enable the DAB notch filter
@@ -113,4 +113,4 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 ## MiriSDR
 
 - `gain` : Device Gain in dBs
-- `bias` : Enable Bias-Tree power
+- `bias` : Enable Bias-Tee power
