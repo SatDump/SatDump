@@ -484,6 +484,12 @@
                 0
             ]
         ],
+        "frequencies": [
+            [
+                "Main",
+                2216e6
+            ]
+        ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
