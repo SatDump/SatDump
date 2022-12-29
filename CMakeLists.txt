@@ -214,7 +214,7 @@ if(NOT ANDROID)
     configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop @ONLY)
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION /usr/share/applications)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION share/applications)
     endif()
 
     # Create uninstall target
