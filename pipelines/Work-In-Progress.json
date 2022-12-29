@@ -200,7 +200,28 @@
     },
     "smap_s_link": {
         "name": "SMAP S-Band Link",
-        "samplerate": 3e6,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "SMAP",
+                2274e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 3e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -461,6 +482,12 @@
             [
                 2,
                 0
+            ]
+        ],
+        "frequencies": [
+            [
+                "SMOS TLM",
+                2216e6
             ]
         ],
         "samplerate": 6e6,
