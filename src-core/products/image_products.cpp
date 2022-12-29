@@ -122,11 +122,10 @@ namespace satdump
 
     double ImageProducts::get_radiance_value(int image_index, int x, int y)
     {
-        sol::state &lua = *((sol::state *)lua_state_ptr);
-
         if (lua_state_ptr == nullptr)
         {
             lua_state_ptr = new sol::state();
+            sol::state &lua = *((sol::state *)lua_state_ptr);
 
             lua.open_libraries(sol::lib::base);
             lua.open_libraries(sol::lib::string);
@@ -141,7 +140,9 @@ namespace satdump
             lua["init"].call();
         }
 
-        return lua["compute"].call(image_index + 1, x, y, images[image_index].image[y * images[image_index].image.width() + x]).get<double>();
+        sol::state &lua = *((sol::state *)lua_state_ptr);
+
+        return lua["compute"](image_index + 1, x, y, images[image_index].image[y * images[image_index].image.width() + x]).get<double>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)

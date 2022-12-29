@@ -168,6 +168,12 @@ namespace satdump
         virtual void save(std::string directory);
         virtual void load(std::string file);
 
+        ~ImageProducts()
+        {
+            if (lua_state_ptr != nullptr)
+                delete lua_state_ptr;
+        }
+
     private:
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
     };
