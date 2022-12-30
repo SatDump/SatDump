@@ -142,7 +142,7 @@ namespace satdump
 
         sol::state &lua = *((sol::state *)lua_state_ptr);
 
-        return lua["compute"](image_index + 1, x, y, images[image_index].image[y * images[image_index].image.width() + x]).get<double>();
+        return lua["compute"](image_index, x, y, images[image_index].image[y * images[image_index].image.width() + x]).get<double>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
