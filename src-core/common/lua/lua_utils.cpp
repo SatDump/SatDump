@@ -9,14 +9,29 @@ namespace lua_utils
         {
             try
             {
-                if (el.value().is_number_integer())
-                    l[el.key()] = el.value().get<int>();
-                else if (el.value().is_number())
-                    l[el.key()] = el.value().get<double>();
-                else if (el.value().is_string())
-                    l[el.key()] = el.value().get<std::string>();
-                else
-                    l[el.key()] = mapJsonToLua(lua, el.value());
+                try
+                {
+                    int index = std::stoi(el.key());
+                    if (el.value().is_number_integer())
+                        l[index] = el.value().get<int>();
+                    else if (el.value().is_number())
+                        l[index] = el.value().get<double>();
+                    else if (el.value().is_string())
+                        l[index] = el.value().get<std::string>();
+                    else
+                        l[index] = mapJsonToLua(lua, el.value());
+                }
+                catch (std::exception &e)
+                {
+                    if (el.value().is_number_integer())
+                        l[el.key()] = el.value().get<int>();
+                    else if (el.value().is_number())
+                        l[el.key()] = el.value().get<double>();
+                    else if (el.value().is_string())
+                        l[el.key()] = el.value().get<std::string>();
+                    else
+                        l[el.key()] = mapJsonToLua(lua, el.value());
+                }
             }
             catch (std::exception &e)
             {
