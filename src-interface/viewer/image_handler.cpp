@@ -171,14 +171,21 @@ namespace satdump
                 }
 
                 int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
-                double radiance = products->get_radiance_value(active_channel_id, x, y);
+                double radiance = products->get_calibrated_value(active_channel_id, x, y);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
-                    ImGui::Text("Radiance : %.10f", radiance);
-                    ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                    if (products->get_calibration_type(active_channel_id) == products->VISIBLE)
+                    {
+                        ImGui::Text("Albedo : %.2f %%", radiance);
+                    }
+                    else
+                    {
+                        ImGui::Text("Radiance : %.10f", radiance);
+                        ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                    }
                 }
                 ImGui::EndTooltip();
 
@@ -382,7 +389,7 @@ namespace satdump
                     {
                         for (size_t x = 0; x < products->images[active_channel_id].image.width(); x++)
                         {
-                            float temp_c = radiance_to_temperature(products->get_radiance_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
+                            float temp_c = radiance_to_temperature(products->get_calibrated_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
 
                             image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
 

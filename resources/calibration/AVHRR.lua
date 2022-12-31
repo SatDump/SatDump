@@ -2,7 +2,7 @@
 
 function calc_rad(channel, pos_y, px_val)
     local nlin = perLine_perChannel[pos_y][channel]["Ns"] + (perLine_perChannel[pos_y][channel]["Nbb"] - perLine_perChannel[pos_y][channel]["Ns"]) * (perLine_perChannel[pos_y][channel]["Spc"] - px_val) / (perLine_perChannel[pos_y][channel]["Spc"] - perLine_perChannel[pos_y][channel]["Blb"])
-    out_rad = perChannel[channel]["b"][0] + perChannel[channel]["b"][1] * nlin + perChannel[channel]["b"][2] * nlin * nlin;
+    out_rad = nlin + perChannel[channel]["b"][0] + perChannel[channel]["b"][1] * nlin + perChannel[channel]["b"][2] * nlin * nlin;
 end
 
 function init()

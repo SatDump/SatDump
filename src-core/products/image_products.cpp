@@ -120,7 +120,7 @@ namespace satdump
         }
     }
 
-    double ImageProducts::get_radiance_value(int image_index, int x, int y)
+    double ImageProducts::get_calibrated_value(int image_index, int x, int y)
     {
         if (lua_state_ptr == nullptr)
         {
@@ -145,7 +145,7 @@ namespace satdump
 
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
 
-        return lua["compute"](image_index + 1, x, y, val).get<double>();
+        return lua["compute"](image_index, x, y, val).get<double>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)

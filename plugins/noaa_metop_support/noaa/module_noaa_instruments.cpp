@@ -187,6 +187,10 @@ namespace noaa
                     avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
                     //calib
                     avhrr_products.set_calibration(avhrr_reader.calib_out);
+                    for (int n = 0; n < 3; n++){
+                        avhrr_products.set_calibration_type(n, avhrr_products.VISIBLE);
+                        avhrr_products.set_calibration_type(n+3, avhrr_products.IR);
+                    }
 
                     nlohmann::ordered_json proj_settings;
 
@@ -208,6 +212,18 @@ namespace noaa
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
+
+                    /*
+                    image::Image<uint16_t> calib (2048, avhrr_reader.lines + 1, 1);
+                    for (int i = 0; i < avhrr_reader.channels[0].size(); i++){
+                        calib[i] = abs(avhrr_products.get_calibrated_value(0, i % 2048, i / 2048) * 655.36);
+                    }
+                    calib.save_png("test_avhrr.png");
+                    for (int i = 0; i < avhrr_reader.channels[0].size(); i++){
+                        calib[i] = abs(avhrr_products.get_calibrated_value(1, i % 2048, i / 2048) * 655.36);
+                    }
+                    calib.save_png("test_avhrr2.png");
+                    */
 
                     avhrr_status = DONE;
                 }

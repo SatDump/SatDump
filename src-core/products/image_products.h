@@ -127,6 +127,11 @@ namespace satdump
 
         /// CALIBRATION
 
+        enum calib_type{
+            VISIBLE,
+            IR
+        };
+
         bool has_calibation()
         {
             return contents.contains("calibration");
@@ -162,7 +167,22 @@ namespace satdump
             contents["calibration"]["wavenumbers"][image_index] = wavnb;
         }
 
-        double get_radiance_value(int image_index, int x, int y);
+        void set_calibration_type(int image_index, calib_type ct)
+        {
+            contents["calibration"]["type"][image_index] = (int)ct;
+        }
+
+        calib_type get_calibration_type(int image_index)
+        {
+            if (!has_calibation())
+                return VISIBLE;
+            if (contents["calibration"].contains("type"))
+                return (calib_type)contents["calibration"]["type"][image_index].get<int>();
+            else 
+                return VISIBLE;
+        }
+
+        double get_calibrated_value(int image_index, int x, int y);
 
     public:
         virtual void save(std::string directory);
