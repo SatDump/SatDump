@@ -864,6 +864,14 @@
                 "handler": "image_handler",
                 "name": "MTVZA",
                 "rgb_composites": {
+                    "443 (AMSU 221 equivalent)": {
+                        "equation": "ch4, ch4, ch3",
+                        "equalize": true
+                    },
+                    "843 (AMSU 421 equivalent)": {
+                        "equation": "ch8, ch4, ch3",
+                        "equalize": true
+                    },
                     "Basic False Color": {
                         "equation": "ch1, ch8, ch15",
                         "equalize": true
