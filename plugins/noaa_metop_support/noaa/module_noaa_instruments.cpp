@@ -149,8 +149,10 @@ namespace noaa
 
                 // WARNINGS
                 {
-                    if (scid == 13) logger->warn("NOAA-18 detected. MHS data will not be saved!");
-                    if (scid == 7) logger->warn("NOAA-15 detected. No MHS available!");
+                    if (scid == 13)
+                        logger->warn("NOAA-18 detected. MHS data will not be saved!");
+                    if (scid == 7)
+                        logger->warn("NOAA-15 detected. No MHS available!");
                 }
 
                 // AVHRR
@@ -164,11 +166,14 @@ namespace noaa
                     logger->info("----------- AVHRR/3");
                     logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
-                    //calibration
+                    // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
-                    if (calib_coefs.contains(sat_name)){
+                    if (calib_coefs.contains(sat_name))
+                    {
                         avhrr_reader.calibrate(calib_coefs[sat_name]);
-                    } else {
+                    }
+                    else
+                    {
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
                     }
                     /*
@@ -177,7 +182,7 @@ namespace noaa
                     out.close();
                     */
 
-                    //product generation
+                    // product generation
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
                     avhrr_products.has_timestamps = true;
@@ -185,11 +190,12 @@ namespace noaa
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
-                    //calib
+                    // calib
                     avhrr_products.set_calibration(avhrr_reader.calib_out);
-                    for (int n = 0; n < 3; n++){
-                        avhrr_products.set_calibration_type(n, avhrr_products.VISIBLE);
-                        avhrr_products.set_calibration_type(n+3, avhrr_products.IR);
+                    for (int n = 0; n < 3; n++)
+                    {
+                        avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                        avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                     }
 
                     nlohmann::ordered_json proj_settings;

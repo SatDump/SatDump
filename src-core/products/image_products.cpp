@@ -120,7 +120,7 @@ namespace satdump
         }
     }
 
-    double ImageProducts::get_calibrated_value(int image_index, int x, int y)
+    void ImageProducts::init_calibration()
     {
         if (lua_state_ptr == nullptr)
         {
@@ -138,14 +138,25 @@ namespace satdump
             lua.script(lua_code);
 
             lua["init"].call();
+
+            lua_comp_func_ptr = new sol::function();
+            *((sol::function *)lua_comp_func_ptr) = lua["compute"];
         }
+    }
 
-        sol::state &lua = *((sol::state *)lua_state_ptr);
+    ImageProducts::~ImageProducts()
+    {
+        if (lua_state_ptr != nullptr)
+        {
+            delete (sol::function *)lua_comp_func_ptr;
+            delete (sol::state *)lua_state_ptr;
+        }
+    }
 
-
+    double ImageProducts::get_calibrated_value(int image_index, int x, int y)
+    {
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-
-        return lua["compute"](image_index, x, y, val).get<double>();
+        return ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)

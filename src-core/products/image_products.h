@@ -127,15 +127,18 @@ namespace satdump
 
         /// CALIBRATION
 
-        enum calib_type{
-            VISIBLE,
-            IR
+        enum calib_type_t
+        {
+            CALIB_REFLECTANCE,
+            CALIB_RADIANCE,
         };
 
         bool has_calibation()
         {
             return contents.contains("calibration");
         }
+
+        void init_calibration();
 
         void set_calibration(nlohmann::json calib)
         {
@@ -167,19 +170,19 @@ namespace satdump
             contents["calibration"]["wavenumbers"][image_index] = wavnb;
         }
 
-        void set_calibration_type(int image_index, calib_type ct)
+        void set_calibration_type(int image_index, calib_type_t ct)
         {
             contents["calibration"]["type"][image_index] = (int)ct;
         }
 
-        calib_type get_calibration_type(int image_index)
+        calib_type_t get_calibration_type(int image_index)
         {
             if (!has_calibation())
-                return VISIBLE;
+                return CALIB_REFLECTANCE;
             if (contents["calibration"].contains("type"))
-                return (calib_type)contents["calibration"]["type"][image_index].get<int>();
-            else 
-                return VISIBLE;
+                return (calib_type_t)contents["calibration"]["type"][image_index].get<int>();
+            else
+                return CALIB_REFLECTANCE;
         }
 
         double get_calibrated_value(int image_index, int x, int y);
@@ -188,14 +191,11 @@ namespace satdump
         virtual void save(std::string directory);
         virtual void load(std::string file);
 
-        ~ImageProducts()
-        {
-            if (lua_state_ptr != nullptr)
-                delete lua_state_ptr;
-        }
+        ~ImageProducts();
 
     private:
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
+        void *lua_comp_func_ptr = nullptr;
     };
 
     // Composite handling
