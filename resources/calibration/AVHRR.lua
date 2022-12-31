@@ -8,12 +8,15 @@ end
 function init()
     perLine_perChannel = lua_vars["perLine_perChannel"]
     perChannel = lua_vars["perChannel"]
+    crossover = {}
+    for i = 0, 2, 1 do
+        crossover[i] = (perChannel[i]["int_hi"] - perChannel[i]["int_lo"])/(perChannel[i]["slope_lo"] - perChannel[i]["slope_hi"])
+    end
 end
 
 function compute(channel, pos_x, pos_y, px_val)
     if (channel < 3) then
-        local crossover = (perChannel[channel]["int_hi"] - perChannel[channel]["int_lo"])/(perChannel[channel]["slope_lo"] - perChannel[channel]["slope_hi"])
-        if (px_val <= crossover) then
+        if (px_val <= crossover[channel]) then
             return perChannel[channel]["slope_lo"] * px_val + perChannel[channel]["int_lo"]
         else
             return perChannel[channel]["slope_hi"] * px_val + perChannel[channel]["int_hi"]

@@ -177,7 +177,7 @@ namespace satdump
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
-                    if (products->get_calibration_type(active_channel_id) == products->VISIBLE)
+                    if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
                         ImGui::Text("Albedo : %.2f %%", radiance);
                     }
