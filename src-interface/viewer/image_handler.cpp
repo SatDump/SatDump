@@ -19,6 +19,9 @@ namespace satdump
     {
         products = (ImageProducts *)ViewerHandler::products;
 
+        if (products->has_calibation())
+            products->init_calibration();
+
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
