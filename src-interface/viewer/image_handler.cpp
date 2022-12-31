@@ -19,6 +19,9 @@ namespace satdump
     {
         products = (ImageProducts *)ViewerHandler::products;
 
+        if (products->has_calibation())
+            products->init_calibration();
+
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
@@ -177,7 +180,7 @@ namespace satdump
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
-                    if (products->get_calibration_type(active_channel_id) == products->VISIBLE)
+                    if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
                         ImGui::Text("Albedo : %.2f %%", radiance);
                     }
