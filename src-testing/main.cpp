@@ -12,60 +12,57 @@
 
 #include "logger.h"
 
-#include "products/image_products.h"
-
-image::Image<uint16_t> calibrate_channel(satdump::ImageProducts &img_pro, int channel, double range_min, double range_max)
+bool equation_contains(std::string init, std::string match)
 {
-    bool albedo = img_pro.get_calibration_type(channel) == img_pro.CALIB_REFLECTANCE;
-
-    image::Image<uint16_t> output(img_pro.images[channel].image.width(), img_pro.images[channel].image.height(), 1);
-
-    auto dec_start = std::chrono::system_clock::now();
-
-    logger->info("Start calib...");
-
-    // #pragma omp parallel for
-    for (int x = 0; x < img_pro.images[channel].image.width(); x++)
+    size_t pos = init.find(match);
+    if (pos != std::string::npos)
     {
-        for (int y = 0; y < img_pro.images[channel].image.height(); y++)
+        std::string final_ex;
+        while (pos < init.size())
         {
-            if (albedo)
-            {
-                output[y * output.width() + x] = output.clamp(img_pro.get_calibrated_value(channel, x, y) * 0.01 * 65535);
-            }
-            else
-            {
-                // logger->critical(img_pro.get_calibrated_value(channel, x, y));
-                double val = (img_pro.get_calibrated_value(channel, x, y) - range_min) / abs(range_min - range_max);
-                output[y * output.width() + x] = output.clamp(val * 65535);
-            }
+            char v = init[pos];
+            if (v < 48 || v > 57)
+                if (v < 65 || v > 90)
+                    if (v < 97 || v > 122)
+                        break;
+            final_ex += v;
+            pos++;
         }
+
+        if (match == final_ex)
+            return true;
     }
 
-    auto dec_time = (std::chrono::system_clock::now() - dec_start);
-    double time_sec = dec_time.count() / 1e9;
-
-    logger->info("Took {:f} to calibrate!", time_sec);
-
-    return output;
+    return false;
 }
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
-    img_pro.init_calibration();
+    std::vector<int> channel_indexes;
+    std::vector<std::string> channel_numbers;
 
-    auto output = calibrate_channel(img_pro, 0, 0, 1);
-    output = calibrate_channel(img_pro, 1, 0, 1);
-    output = calibrate_channel(img_pro, 2, 0, 1);
-    output = calibrate_channel(img_pro, 3, 0, 1);
-    output = calibrate_channel(img_pro, 4, 0, 1);
-    output = calibrate_channel(img_pro, 5, 0, 1);
-    // auto output = calibrate_channel(img_pro, 5, 0, 120);
-    // auto output = calibrate_channel(img_pro, 4, 0, 120);
+    std::string str_to_find_channels = "ch1, ch2, ch3";
 
-    output.save_png(argv[2]);
+    for (int i = 0; i < 40; i++)
+    {
+        // auto img = product.images[i];
+        std::string equ_str = "ch" + std::to_string(i + 1); // img.channel_name;
+
+        if (equation_contains(str_to_find_channels, equ_str))
+        {
+            channel_indexes.push_back(i);
+            // channel_numbers.push_back(img.channel_name);
+            // images_obj.push_back(img.image);
+            // offsets.emplace(img.channel_name, img.offset_x);
+            logger->debug("Composite needs channel {:s}", equ_str);
+
+            // if (max_width_used < (int)img.image.width())
+            //     max_width_used = img.image.width();
+
+            // if (min_offset > img.offset_x)
+            //     min_offset = img.offset_x;
+        }
+    }
 }

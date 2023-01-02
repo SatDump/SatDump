@@ -203,6 +203,30 @@ namespace satdump
         }
     }
 
+    bool equation_contains(std::string init, std::string match)
+    {
+        size_t pos = init.find(match);
+        if (pos != std::string::npos)
+        {
+            std::string final_ex;
+            while (pos < init.size())
+            {
+                char v = init[pos];
+                if (v < 48 || v > 57)
+                    if (v < 65 || v > 90)
+                        if (v < 97 || v > 122)
+                            break;
+                final_ex += v;
+                pos++;
+            }
+
+            if (match == final_ex)
+                return true;
+        }
+
+        return false;
+    }
+
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
@@ -226,17 +250,33 @@ namespace satdump
         {
             auto img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
+            std::string equ_str_calib = "cch" + img.channel_name;
 
             if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
-            if (str_to_find_channels.find(equ_str) != std::string::npos && img.image.size() > 0)
+            if (equation_contains(str_to_find_channels, equ_str) && img.image.size() > 0)
             {
                 channel_indexes.push_back(i);
-                channel_numbers.push_back(img.channel_name);
+                channel_numbers.push_back(equ_str);
                 images_obj.push_back(img.image);
-                offsets.emplace(img.channel_name, img.offset_x);
+                offsets.emplace(equ_str, img.offset_x);
                 logger->debug("Composite needs channel {:s}", equ_str);
+
+                if (max_width_used < (int)img.image.width())
+                    max_width_used = img.image.width();
+
+                if (min_offset > img.offset_x)
+                    min_offset = img.offset_x;
+            }
+
+            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0)
+            {
+                channel_indexes.push_back(i);
+                channel_numbers.push_back(equ_str_calib);
+                images_obj.push_back(product.get_calibrated_image(i));
+                offsets.emplace(equ_str_calib, img.offset_x);
+                logger->debug("Composite needs calibrated channel {:s}", equ_str);
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();

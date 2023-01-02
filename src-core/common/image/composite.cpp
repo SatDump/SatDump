@@ -28,7 +28,7 @@ namespace image
         for (int i = 0; i < (int)inputChannels.size(); i++)
         {
             channelValues[i] = 0;
-            rgbParser.DefineVar("ch" + channelNumbers[i], &channelValues[i]);
+            rgbParser.DefineVar(channelNumbers[i], &channelValues[i]);
         }
 
         try
