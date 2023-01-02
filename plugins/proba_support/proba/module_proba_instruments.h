@@ -7,6 +7,8 @@
 
 #include "instruments/vegetation/vegs_reader.h"
 
+#include "instruments/gps_ascii/gps_ascii.h"
+
 namespace proba
 {
     namespace instruments
@@ -31,6 +33,7 @@ namespace proba
             std::unique_ptr<hrc::HRCReader> hrc_reader;
             std::unique_ptr<swap::SWAPReader> swap_reader;
             std::unique_ptr<vegetation::VegetationS> vegs_readers[3][6];
+            std::unique_ptr<gps_ascii::GPSASCII> gps_ascii_reader;
 
             // Statuses
             instrument_status_t chris_status = DECODING;

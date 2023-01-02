@@ -11,7 +11,7 @@ namespace ccsds
         struct VCDU
         {
             uint8_t version;
-            uint8_t spacecraft_id;
+            uint16_t spacecraft_id;
             uint8_t vcid;
             uint32_t vcdu_counter;
             bool replay_flag;
