@@ -177,12 +177,12 @@ namespace satdump
                 }
 
                 int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
-                double radiance = products->get_calibrated_value(active_channel_id, x, y);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
+                    double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
                         ImGui::Text("Albedo : %.2f %%", radiance);
