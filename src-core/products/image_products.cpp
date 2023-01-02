@@ -270,7 +270,7 @@ namespace satdump
                     min_offset = img.offset_x;
             }
 
-            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0)
+            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0 && product.has_calibation())
             {
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);

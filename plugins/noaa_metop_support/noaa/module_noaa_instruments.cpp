@@ -169,13 +169,10 @@ namespace noaa
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
                     if (calib_coefs.contains(sat_name))
-                    {
                         avhrr_reader.calibrate(calib_coefs[sat_name]);
-                    }
                     else
-                    {
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-                    }
+
                     /*
                     std::ofstream out("AVHRR_calib.json");
                     out << avhrr_reader.calib_out;

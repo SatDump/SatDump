@@ -181,7 +181,7 @@
             ]
         ]
     },
-    "METOP-B": {
+    "MetOp-B": {
         "channels": [
             {
                 "wavnb": 15879.9236,
@@ -272,7 +272,7 @@
             ]
         ]
     },
-    "METOP-C": {
+    "MetOp-C": {
         "channels": [
             {
                 "wavnb": 15938.6428,
