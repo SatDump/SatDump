@@ -197,6 +197,9 @@ namespace noaa
                         avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
                         avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                     }
+                    avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
+                    avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
+                    avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
 
                     nlohmann::ordered_json proj_settings;
 

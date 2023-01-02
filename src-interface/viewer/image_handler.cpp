@@ -58,7 +58,10 @@ namespace satdump
         }
         else if (select_image_id - 1 < (int)products->images.size())
         {
-            current_image = products->images[select_image_id - 1].image;
+            if (active_channel_calibrated && products->has_calibation())
+                current_image = products->get_calibrated_image(select_image_id - 1);
+            else
+                current_image = products->images[select_image_id - 1].image;
             current_proj_metadata = products->get_channel_proj_metdata(select_image_id - 1);
         }
 
@@ -267,6 +270,22 @@ namespace satdump
                     asyncUpdate();
                 }
             }
+
+            if (!products->has_calibation())
+                style::beginDisabled();
+            if (ImGui::RadioButton("Raw", !active_channel_calibrated))
+            {
+                active_channel_calibrated = false;
+                asyncUpdate();
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Calib", active_channel_calibrated))
+            {
+                active_channel_calibrated = true;
+                asyncUpdate();
+            }
+            if (!products->has_calibation())
+                style::endDisabled();
 
             if (active_channel_id >= 0)
             {

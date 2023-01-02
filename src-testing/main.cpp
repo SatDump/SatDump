@@ -14,23 +14,15 @@
 
 #include "products/image_products.h"
 
-int main(int /*argc*/, char *argv[])
+image::Image<uint16_t> calibrate_channel(satdump::ImageProducts &img_pro, int channel, double range_min, double range_max)
 {
-    initLogger();
-
-    satdump::ImageProducts img_pro;
-    img_pro.load(argv[1]);
-
-    int channel = 1;
-    bool albedo = true;
-    double range_min = -2;
-    double range_max = 92;
+    bool albedo = img_pro.get_calibration_type(channel) == img_pro.CALIB_REFLECTANCE;
 
     image::Image<uint16_t> output(img_pro.images[channel].image.width(), img_pro.images[channel].image.height(), 1);
 
-    img_pro.init_calibration();
-
     auto dec_start = std::chrono::system_clock::now();
+
+    logger->info("Start calib...");
 
     // #pragma omp parallel for
     for (int x = 0; x < img_pro.images[channel].image.width(); x++)
@@ -45,7 +37,7 @@ int main(int /*argc*/, char *argv[])
             {
                 // logger->critical(img_pro.get_calibrated_value(channel, x, y));
                 double val = (img_pro.get_calibrated_value(channel, x, y) - range_min) / abs(range_min - range_max);
-                output[y * output.width() + x] = 65535 - output.clamp(val * 65535);
+                output[y * output.width() + x] = output.clamp(val * 65535);
             }
         }
     }
@@ -54,6 +46,26 @@ int main(int /*argc*/, char *argv[])
     double time_sec = dec_time.count() / 1e9;
 
     logger->info("Took {:f} to calibrate!", time_sec);
+
+    return output;
+}
+
+int main(int /*argc*/, char *argv[])
+{
+    initLogger();
+
+    satdump::ImageProducts img_pro;
+    img_pro.load(argv[1]);
+    img_pro.init_calibration();
+
+    auto output = calibrate_channel(img_pro, 0, 0, 1);
+    output = calibrate_channel(img_pro, 1, 0, 1);
+    output = calibrate_channel(img_pro, 2, 0, 1);
+    output = calibrate_channel(img_pro, 3, 0, 1);
+    output = calibrate_channel(img_pro, 4, 0, 1);
+    output = calibrate_channel(img_pro, 5, 0, 1);
+    // auto output = calibrate_channel(img_pro, 5, 0, 120);
+    // auto output = calibrate_channel(img_pro, 4, 0, 120);
 
     output.save_png(argv[2]);
 }

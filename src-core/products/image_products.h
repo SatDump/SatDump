@@ -2,6 +2,7 @@
 
 #include "products.h"
 #include "common/image/image.h"
+#include <mutex>
 
 namespace satdump
 {
@@ -175,6 +176,23 @@ namespace satdump
             contents["calibration"]["type"][image_index] = (int)ct;
         }
 
+        void set_calibration_default_radiance_range(int image_index, double rad_min, double rad_max)
+        {
+            contents["calibration"]["default_range"][image_index]["min"] = rad_min;
+            contents["calibration"]["default_range"][image_index]["max"] = rad_max;
+        }
+
+        std::pair<double, double> get_calibration_default_radiance_range(int image_index)
+        {
+            if (!has_calibation())
+                return {0, 0};
+            if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                return {0, 0};
+            if (contents["calibration"].contains("default_range"))
+                return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+            return {0, 0};
+        }
+
         calib_type_t get_calibration_type(int image_index)
         {
             if (!has_calibation())
@@ -187,6 +205,8 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
+        image::Image<uint16_t> get_calibrated_image(int image_index);
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
@@ -194,6 +214,8 @@ namespace satdump
         ~ImageProducts();
 
     private:
+        std::map<int, image::Image<uint16_t>> calibrated_img_cache;
+        std::mutex lua_mutex;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };

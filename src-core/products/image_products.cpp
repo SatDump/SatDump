@@ -122,6 +122,7 @@ namespace satdump
 
     void ImageProducts::init_calibration()
     {
+        lua_mutex.lock();
         if (lua_state_ptr == nullptr)
         {
             lua_state_ptr = new sol::state();
@@ -142,6 +143,7 @@ namespace satdump
             lua_comp_func_ptr = new sol::function();
             *((sol::function *)lua_comp_func_ptr) = lua["compute"];
         }
+        lua_mutex.unlock();
     }
 
     ImageProducts::~ImageProducts()
@@ -155,8 +157,50 @@ namespace satdump
 
     double ImageProducts::get_calibrated_value(int image_index, int x, int y)
     {
+        lua_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-        return ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+        double val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+        lua_mutex.unlock();
+        return val2;
+    }
+
+    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index)
+    {
+        if (calibrated_img_cache.count(image_index) > 0)
+        {
+            logger->trace("Cached calibrated image channel {:d}", image_index + 1);
+            return calibrated_img_cache[image_index];
+        }
+        else
+        {
+            bool albedo = get_calibration_type(image_index) == CALIB_REFLECTANCE;
+            auto range = get_calibration_default_radiance_range(image_index);
+
+            logger->trace("Generating calibrated image channel {:d}", image_index + 1);
+
+            calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
+            image::Image<uint16_t> &output = calibrated_img_cache[image_index];
+
+            try
+            {
+                for (size_t x = 0; x < images[image_index].image.width(); x++)
+                {
+                    for (size_t y = 0; y < images[image_index].image.height(); y++)
+                    {
+                        if (albedo)
+                            output[y * output.width() + x] = output.clamp(get_calibrated_value(image_index, x, y) * 0.01 * 65535);
+                        else
+                            output[y * output.width() + x] = output.clamp(((get_calibrated_value(image_index, x, y) - range.first) / abs(range.first - range.second)) * 65535);
+                    }
+                }
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error calibrating image : {:s}", e.what());
+            }
+
+            return output;
+        }
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
