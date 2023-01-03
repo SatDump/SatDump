@@ -4,7 +4,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_1024
+    namespace ccsds_weather
     {
         // Parse VCDU from CADU
         VCDU parseVCDU(uint8_t *cadu)

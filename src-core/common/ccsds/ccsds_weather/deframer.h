@@ -10,7 +10,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_1024
+    namespace ccsds_weather
     {
         /*
     CCSDS Values to use throughout the whole program

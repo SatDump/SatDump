@@ -4,7 +4,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_1024
+    namespace ccsds_weather
     {
         // Parse MPDU from CADU
         MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone, int insertZoneSize)

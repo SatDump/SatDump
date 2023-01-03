@@ -10,7 +10,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_jason
+    namespace ccsds_standard
     {
         /*
     CCSDS Values to use throughout the whole program
@@ -34,8 +34,6 @@ namespace ccsds
             bool bit_inversion;
             // Sync machine state
             int state;
-            // Derandomization values
-            uint8_t d_rantab[CADU_SIZE];
             // Write a frame?
             bool writeFrame;
             // Values used to output a found frame
@@ -48,7 +46,7 @@ namespace ccsds
             int numFrames;
 
         public:
-            CADUDeframer(bool derand = true);
+            CADUDeframer();
             // Get found frame count
             int getFrameCount();
             // Return state

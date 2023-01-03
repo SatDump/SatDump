@@ -1,7 +1,7 @@
 #include "module_fy3_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_weather/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -92,7 +92,7 @@ namespace fengyun3
             }
 
             // Demuxers
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
 
             // Deframer
             def::SimpleDeframer virr_deframer(0b101000010001011011111101011100011001110110000011110010010101, 60, 208400, 0);
@@ -131,7 +131,7 @@ namespace fengyun3
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == FY3_A_SCID ||
                     vcdu.spacecraft_id == FY3_B_SCID ||

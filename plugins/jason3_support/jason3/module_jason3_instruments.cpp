@@ -1,11 +1,11 @@
 #include "module_jason3_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_jason/vcdu.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_1_0_jason/demuxer.h"
+#include "common/ccsds/ccsds_standard/demuxer.h"
 
 #include <thread>
 
@@ -29,8 +29,8 @@ namespace jason3
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_1_0_jason::Demuxer demuxer_vcid1(1101, false);
-            ccsds::ccsds_1_0_jason::Demuxer demuxer_vcid2(1101, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false, 2, 4);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid2(1101, false, 2, 4);
 
             while (!data_in.eof())
             {
@@ -38,7 +38,7 @@ namespace jason3
                 data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_jason::VCDU vcdu = ccsds::ccsds_1_0_jason::parseVCDU(cadu);
+                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
 
                 if (vcdu.vcid == 1) // AMR-2, Poseidon
                 {

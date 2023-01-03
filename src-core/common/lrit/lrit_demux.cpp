@@ -1,5 +1,5 @@
 #include "lrit_demux.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_weather/vcdu.h"
 #include "logger.h"
 #include "crc_table.h"
 
@@ -26,14 +26,14 @@ namespace lrit
     {
         files.clear();
 
-        ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+        ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
 
         if (vcdu.vcid == 63) // Skip filler
             return files;
 
         if (demuxers.count(vcdu.vcid) <= 0) // Add new demux if required
         {
-            demuxers.emplace(std::pair<int, std::unique_ptr<ccsds::ccsds_1_0_1024::Demuxer>>(vcdu.vcid, std::make_unique<ccsds::ccsds_1_0_1024::Demuxer>(d_mpdu_size, false)));
+            demuxers.emplace(std::pair<int, std::unique_ptr<ccsds::ccsds_weather::Demuxer>>(vcdu.vcid, std::make_unique<ccsds::ccsds_weather::Demuxer>(d_mpdu_size, false)));
             wip_files.insert({vcdu.vcid, std::map<int, LRITFile>()});
         }
 

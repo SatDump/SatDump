@@ -4,10 +4,10 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_proba
+    namespace ccsds_standard
     {
         // Parse MPDU from CADU
-        MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone, int insertZoneSize)
+        MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone, int insertZoneSize, int mpdu_insert_zone)
         {
             bool sync_flag = (cadu[8] >> 6) % 2;
             // uint16_t first_header_pointer = (cadu[8] % (int)pow(2, 3)) << 8 | cadu[9];
@@ -23,8 +23,7 @@ namespace ccsds
             //  {
             //     cadu[i] = cadu[i] << 7 | cadu[i + 1] >> (8 - 7);
             // }
-
-            return {sync_flag, first_header_pointer, &cadu[hasVCDUInsertZone ? (10 + insertZoneSize) : 10]};
+            return {sync_flag, first_header_pointer, &cadu[(hasVCDUInsertZone ? (10 + insertZoneSize) : 10) + mpdu_insert_zone]};
         }
 
     } // namespace libccsds

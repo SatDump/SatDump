@@ -1,7 +1,7 @@
 #include "module_goes_grb_data_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_weather/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -59,8 +59,8 @@ namespace goes
 
             logger->info("Demultiplexing and deframing...");
 
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_rhcp(2034, false);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_lhcp(2034, false);
+            ccsds::ccsds_weather::Demuxer demuxer_rhcp(2034, false);
+            ccsds::ccsds_weather::Demuxer demuxer_lhcp(2034, false);
 
             image::ImageSavingThread image_saving_th(input_data_type != DATA_FILE);
 
@@ -79,7 +79,7 @@ namespace goes
                     input_fifo->read((uint8_t *)&cadu, 2048);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
 
                 if (vcdu.vcid == 63)
                     continue;

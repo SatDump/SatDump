@@ -1,7 +1,7 @@
 #include "module_eos_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_weather/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -42,14 +42,14 @@ namespace eos
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid10;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid15;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid20;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid25;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid26;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid30;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid35;
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid42;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid10;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid15;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid20;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid25;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid26;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid30;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid35;
+            ccsds::ccsds_weather::Demuxer demuxer_vcid42;
 
             while (!data_in.eof())
             {
@@ -57,7 +57,7 @@ namespace eos
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
 
                 if (d_satellite == TERRA)
                 {
