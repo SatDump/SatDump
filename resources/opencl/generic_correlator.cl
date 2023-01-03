@@ -3,7 +3,7 @@ void dot_prod_32f(float *result, global float *input, global float *taps,
                   int num_points) {
   float dotProduct = 0;
   global const float *aPtr = input;
-  const float *bPtr = taps;
+  global const float *bPtr = taps;
   unsigned int number = 0;
 
   for (number = 0; number < num_points; number++) {
