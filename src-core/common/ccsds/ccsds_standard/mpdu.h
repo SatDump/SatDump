@@ -10,7 +10,7 @@ namespace ccsds
         // Struct representing a M-PDU
         struct MPDU
         {
-            bool sync_flag;
+            // bool sync_flag;
             uint16_t first_header_pointer;
             uint8_t *data;
         };
