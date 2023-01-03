@@ -185,7 +185,7 @@ namespace satdump
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
-                        ImGui::Text("Albedo : %.2f %%", radiance);
+                        ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
                     }
                     else
                     {

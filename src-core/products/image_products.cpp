@@ -188,7 +188,7 @@ namespace satdump
                     for (size_t y = 0; y < images[image_index].image.height(); y++)
                     {
                         if (albedo)
-                            output[y * output.width() + x] = output.clamp(get_calibrated_value(image_index, x, y) * 0.01 * 65535);
+                            output[y * output.width() + x] = output.clamp(get_calibrated_value(image_index, x, y) * 65535);
                         else
                             output[y * output.width() + x] = output.clamp(((get_calibrated_value(image_index, x, y) - range.first) / abs(range.first - range.second)) * 65535);
                     }
