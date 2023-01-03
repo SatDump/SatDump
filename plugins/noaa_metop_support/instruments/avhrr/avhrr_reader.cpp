@@ -1,7 +1,6 @@
 #include "avhrr_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
-#include <fstream>
 #include "common/utils.h"
 
 namespace noaa_metop
@@ -23,14 +22,10 @@ namespace noaa_metop
             views.clear();
         }
 
-        std::ofstream avhrr_test("avhrr.frm");
-
         void AVHRRReader::work_metop(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 12960)
                 return;
-
-            avhrr_test.write((char *)packet.payload.data(), 12960);
 
             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
