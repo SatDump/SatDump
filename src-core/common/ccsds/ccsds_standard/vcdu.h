@@ -5,7 +5,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_1_0_proba
+    namespace ccsds_standard
     {
         // Struct representing a VCDU
         struct VCDU

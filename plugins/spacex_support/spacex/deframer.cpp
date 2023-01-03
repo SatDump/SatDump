@@ -15,7 +15,7 @@ inline bool getBit(T &data, int &bit)
 
 namespace ccsds
 {
-    namespace ccsds_1_0_jason
+    namespace ccsds_standard
     {
         // Compare 2 32-bits values bit per bit
         int checkSyncMarker(uint32_t &marker, uint32_t totest)
@@ -32,45 +32,8 @@ namespace ccsds
             return errors;
         }
 
-        CADUDeframer::CADUDeframer(bool derand)
+        CADUDeframer::CADUDeframer()
         {
-            d_rantab[0] = 0;
-            d_rantab[1] = 0;
-            d_rantab[2] = 0;
-            d_rantab[3] = 0;
-            if (derand)
-            {
-                // From gr-poes-weather (including comments!)
-                unsigned char feedbk, randm = 0xff;
-                // Original Polynomial is :  1 + x3 + x5 + x7 +x8
-                for (int i = 4; i < CADU_SIZE; i++)
-                { //4ASM bytes + 1020bytes = 32 + 8160 bits in CADU packet
-
-                    d_rantab[i] = 0;
-                    for (int j = 0; j <= 7; j++)
-                    {
-                        d_rantab[i] = d_rantab[i] << 1;
-                        if (randm & 0x80) //80h = 1000 0000b
-                            d_rantab[i]++;
-
-                        //Bit-Wise AND between: Fixed shift register(95h) and the state of the
-                        // feedback register: randm
-                        feedbk = randm & 0x95; //95h = 1001 0101--> bits 1,3,5,8
-                        //feedback contains the contents of the registers masked by the polynomial
-                        //  1 + x3 + x5 + xt +x8 = 95 h
-                        randm = randm << 1;
-
-                        if ((((feedbk & 0x80) ^ (0x80 & feedbk << 3)) ^ (0x80 & (feedbk << 5))) ^ (0x80 & (feedbk << 7)))
-                            randm++;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 4; i < CADU_SIZE; i++)
-                    d_rantab[i] = 0;
-            }
-
             // Default values
             writeFrame = false;
             numFrames = 0;
@@ -128,7 +91,7 @@ namespace ccsds
                         // If we filled the buffer, output it
                         if (--wroteBits == 0)
                         {
-                            frameBuffer[wroteBytes] = outBuffer ^ d_rantab[wroteBytes];
+                            frameBuffer[wroteBytes] = outBuffer; // ^ d_rantab[wroteBytes];
                             wroteBytes++;
                             wroteBits = 8;
                         }
@@ -164,20 +127,22 @@ namespace ccsds
                             numFrames++;
                             writeFrame = true;
                             state = THRESOLD_STATE_1;
-                            bit_inversion = false;
+                            //skip = 1024 * 8;
                             errors = 0;
                             sep_errors = 0;
                             good = 0;
+                            bit_inversion = false;
                         }
                         else if (shifter == CADU_ASM_INV)
                         {
                             numFrames++;
                             writeFrame = true;
                             state = THRESOLD_STATE_1;
-                            bit_inversion = true;
+                            //skip = 1024 * 8;
                             errors = 0;
                             sep_errors = 0;
                             good = 0;
+                            bit_inversion = true;
                         }
                     }
                     // State 1 : Each header is expect 1024 bytes away. Only 6 mistmatches tolerated.
@@ -208,7 +173,6 @@ namespace ccsds
                             if (errors == 5)
                             {
                                 state = THRESOLD_STATE_0;
-                                bit_inversion = false;
                                 //skip = 1;
                                 errors = 0;
                                 sep_errors = 0;
@@ -244,10 +208,9 @@ namespace ccsds
                             errors++;
                             //skip = CADU_SIZE * 8;
 
-                            if (state_2_bits_count >= 5 * 1024 * 8)
+                            if (state_2_bits_count >= 5 * CADU_SIZE * 8)
                             {
                                 state = THRESOLD_STATE_0;
-                                bit_inversion = false;
                                 //bitsToIncrement = 1;
                                 errors = 0;
                                 sep_errors = 0;
@@ -279,5 +242,6 @@ namespace ccsds
             // Output what we found if anything
             return frames;
         }
+
     }
 }

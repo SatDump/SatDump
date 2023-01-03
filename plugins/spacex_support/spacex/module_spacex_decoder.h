@@ -3,7 +3,7 @@
 #include "core/module.h"
 #include <complex>
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_proba/deframer.h"
+#include "deframer.h"
 #include "common/dsp/random.h"
 
 namespace spacex
@@ -14,7 +14,7 @@ namespace spacex
         // Read buffer
         int8_t *buffer;
 
-        ccsds::ccsds_1_0_proba::CADUDeframer deframer;
+        ccsds::ccsds_standard::CADUDeframer deframer;
 
         uint8_t rsWorkBuffer[255];
         int errors[5];

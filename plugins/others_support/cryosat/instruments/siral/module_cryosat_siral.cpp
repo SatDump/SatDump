@@ -1,11 +1,11 @@
 #include "module_cryosat_siral.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_jason/demuxer.h"
-#include "common/ccsds/ccsds_1_0_jason/vcdu.h"
+#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-//#include <iostream>
+// #include <iostream>
 #include <fftw3.h>
 
 #include "common/image/image.h"
@@ -40,11 +40,11 @@ namespace cryosat
             uint8_t buffer[1279];
 
             // CCSDS Demuxer
-            ccsds::ccsds_1_0_jason::Demuxer ccsdsDemuxer(1101, false);
+            ccsds::ccsds_standard::Demuxer ccsdsDemuxer(1101, false, 2, 4);
 
             logger->info("Demultiplexing and deframing...");
 
-            //PoseidonReader readerC, readerKU;
+            // PoseidonReader readerC, readerKU;
             std::ofstream data_out(directory + "/siral.i8");
 
             complex_t fft_input[243];
@@ -53,7 +53,7 @@ namespace cryosat
 
             fftwf_plan p = fftwf_plan_dft_1d(243, (fftwf_complex *)fft_input, (fftwf_complex *)fft_output, FFTW_FORWARD, FFTW_MEASURE);
 
-            //cimg_library::CImg<unsigned char> outputImage(243, 100000, 1, 1, 0);
+            // cimg_library::CImg<unsigned char> outputImage(243, 100000, 1, 1, 0);
             ResizeableBuffer<unsigned char> fftImage;
             fftImage.create(100000 * 243);
             int lines = 0;
@@ -63,7 +63,7 @@ namespace cryosat
                 // Read buffer
                 data_in.read((char *)buffer, 1279);
 
-                int vcid = ccsds::ccsds_1_0_jason::parseVCDU(buffer).vcid;
+                int vcid = ccsds::ccsds_standard::parseVCDU(buffer).vcid;
 
                 // std::cout << "VCID " << vcid << std::endl;
 
@@ -100,9 +100,9 @@ namespace cryosat
                                 if (lines * 243 >= (int)fftImage.size())
                                     fftImage.resize((lines + 10000) * 243);
 
-                                //data_out.write((char *)&pkt.header.raw, 6);
-                                //data_out.write((char *)pkt.payload.data(), 257);
-                                // std::cout << "SEQ " << (int)pkt.header.sequence_flag << std::endl;
+                                // data_out.write((char *)&pkt.header.raw, 6);
+                                // data_out.write((char *)pkt.payload.data(), 257);
+                                //  std::cout << "SEQ " << (int)pkt.header.sequence_flag << std::endl;
                             }
                         }
                     }
