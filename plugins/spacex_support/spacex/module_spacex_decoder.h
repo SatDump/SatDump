@@ -3,7 +3,7 @@
 #include "core/module.h"
 #include <complex>
 #include <fstream>
-#include "common/ccsds/ccsds_standard/deframer.h"
+#include "deframer.h"
 #include "common/dsp/random.h"
 
 namespace spacex
