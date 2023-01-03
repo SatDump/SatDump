@@ -182,8 +182,7 @@ namespace codings
              * 3) Add it to the current soft bit value of a VN */
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
-                for (int i = 0; i < 8; i++)
-                    ((int16_t *)&equ_wip)[i] = ((int16_t *)&d_abs_msgs[vn_idx])[i] == ((int16_t *)&min1)[i];
+                equ_wip = _mm_sign_epi16(_mm_set1_epi16(-1), _mm_cmpeq_epi16(d_abs_msgs[vn_idx], min1));
                 equ_min1 = _mm_add_epi16(_mm_xor_si128(_mm_set1_epi16(0xFFFF), equ_wip), _mm_set1_epi16(1));
                 min = _mm_or_si128(_mm_and_si128(min1, _mm_xor_si128(_mm_set1_epi16(0xFFFF), equ_min1)), _mm_and_si128(min2, equ_min1));
                 sign = _mm_xor_si128(parity, d_vns_to_cn_msgs[vn_idx]);
