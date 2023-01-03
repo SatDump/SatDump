@@ -813,5 +813,50 @@
                 }
             }
         }
+    },
+    "paz_s_tlm": {
+        "name": "PAZ S-band telemetry",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "PAZ TLM",
+                2285e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8952,
+                    "derandomize": true,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }
