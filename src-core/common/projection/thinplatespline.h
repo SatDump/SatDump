@@ -39,6 +39,8 @@
  All credits go to the GDAL Project and the VIZRT Team.
 */
 
+#include <cstdlib>
+
 namespace satdump
 {
     namespace projection
@@ -64,7 +66,7 @@ namespace satdump
             VIZ_GEOREF_SPLINE_POINT_WAS_DELETED
         } vizGeorefInterType;
 
-//#define VIZ_GEOREF_SPLINE_MAX_POINTS 40
+// #define VIZ_GEOREF_SPLINE_MAX_POINTS 40
 #define VIZGEOREF_MAX_VARS 2
 
         class VizGeorefSpline2D
@@ -99,16 +101,16 @@ namespace satdump
 
             ~VizGeorefSpline2D()
             {
-                delete x;
-                delete y;
-                delete u;
-                delete unused;
-                delete index;
+                free(x);
+                free(y);
+                free(u);
+                free(unused);
+                free(index);
 
                 for (int i = 0; i < _nof_vars; i++)
                 {
-                    delete rhs[i];
-                    delete coef[i];
+                    free(rhs[i]);
+                    free(coef[i]);
                 }
             }
 
