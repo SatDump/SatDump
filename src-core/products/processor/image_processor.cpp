@@ -124,7 +124,7 @@ namespace satdump
                     ret.img.save_png(product_path + "/rgb_" + name + "_projected.png");
                 }
 
-                if (compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false)
+                if ((compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false) && rgb_image.size() > 0)
                 {
                     bool success = false;
                     rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
