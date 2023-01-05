@@ -12,7 +12,8 @@ namespace webserver
 
     std::mutex request_mutex;
 
-    std::function<std::string()> handle_callback = []() -> std::string {};
+    std::function<std::string()> handle_callback = []() -> std::string
+    { return ""; };
 
     // HTTP Handler for stats
     void http_handle(nng_aio *aio)
