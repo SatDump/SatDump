@@ -154,5 +154,42 @@
                 }
             }
         }
+    },
+    "probav_x_dump": {
+        "name": "Proba-V X-Band Dump",
+        "frequencies": [
+            [
+                "Main",
+                8300e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 35e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_mode": true,
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_instruments": {
+                    "satellite": "probaV_X"
+                }
+            }
+        }
     }
 }
