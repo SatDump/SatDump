@@ -53,6 +53,8 @@ protected:
             int cnt = usrp_streamer->recv(output_stream->writeBuf, buffer_size, meta, 1.0);
             if (cnt > 0)
                 output_stream->swap(cnt);
+            if (meta.error_code != meta.ERROR_CODE_NONE)
+                logger->error("USRP Stream error {:s}", meta.strerror().c_str());
         }
     }
 

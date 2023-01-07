@@ -133,6 +133,12 @@ if(PLUGIN_ORBCOMM OR PLUGINS_ALL)
     add_subdirectory(orbcomm_support)
 endif()
 
+option(PLUGIN_GCOM "Enable the support plugin for the GCOM satellites" OFF)
+
+if(PLUGIN_GCOM OR PLUGINS_ALL)
+    add_subdirectory(gcom_support)
+endif()
+
 option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)

@@ -176,7 +176,9 @@
             36037, // Proba-2
             39159, // Proba-V
             29107, // CloudSat
-            25544 // ISS (Zarya)
+            25544, // ISS (Zarya)
+            38337, // GCOM-W1
+            43065 // GCOM-C1
         ]
     },
     // Settings for the Viewer. Those also are default settings when generating viewer-less

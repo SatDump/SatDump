@@ -158,6 +158,14 @@ namespace fengyun3
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            // Update module stats
+            module_stats["deframer_lock"] = deframer.getState() == deframer.STATE_SYNCED;
+            module_stats["viterbi1_ber"] = viterbi1.ber();
+            module_stats["viterbi1_lock"] = viterbi1.getState();
+            module_stats["viterbi2_ber"] = viterbi2.ber();
+            module_stats["viterbi2_lock"] = viterbi2.getState();
+            module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
