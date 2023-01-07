@@ -766,5 +766,52 @@
                 }
             }
         }
+    },
+    "gcom_s_band": {
+        "name": "GCOM S-Band link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "GCOM-C",
+                2220e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 500e3,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.005
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+		    "oqpsk_mode": true,
+                    "cadu_size": 2048,
+                    "derandomize": true,
+		    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }
