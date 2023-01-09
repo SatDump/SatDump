@@ -37,10 +37,10 @@ int main(int /*argc*/, char *argv[])
     // rgb_cfg.equation = "(chb - 0.6)*4";
     // rgb_cfg.equation = "(chb - 0.65)*5";
     rgb_cfg.lua = "scripted_compos/underlay_with_clouds.lua";
-    rgb_cfg.channels = "ch4";
-    rgb_cfg.lua_vars["minoffset"] = 0.5;
+    rgb_cfg.channels = "chb";
+    rgb_cfg.lua_vars["minoffset"] = 0.32;
     rgb_cfg.lua_vars["scalar"] = 4.0;
-    rgb_cfg.lua_vars["thresold"] = 0;
+    rgb_cfg.lua_vars["thresold"] = 0.00;
 
     auto input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr);
 

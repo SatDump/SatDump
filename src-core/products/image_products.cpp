@@ -243,7 +243,7 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
-        if (cfg.lut != "" || cfg.lua != "")
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
             str_to_find_channels = cfg.channels;
 
         for (int i = 0; i < (int)product.images.size(); i++)
