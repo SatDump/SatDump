@@ -243,8 +243,8 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
-        if (cfg.lut != "")
-            str_to_find_channels = cfg.lut_channels;
+        if (cfg.lut != "" || cfg.lua != "")
+            str_to_find_channels = cfg.channels;
 
         for (int i = 0; i < (int)product.images.size(); i++)
         {
@@ -301,7 +301,7 @@ namespace satdump
         {
             img_off.second -= min_offset;
             img_off.second /= ratio;
-            logger->trace("Offset for ch{:s} is {:d}", img_off.first.c_str(), img_off.second);
+            logger->trace("Offset for {:s} is {:d}", img_off.first.c_str(), img_off.second);
 
             if (final_metadata != nullptr)
                 (*final_metadata)["img_x_offset"] = min_offset;
@@ -383,10 +383,12 @@ namespace satdump
 
         image::Image<uint16_t> rgb_composite;
 
-        if (cfg.lut == "")
-            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
-        else
+        if (cfg.lua != "")
+            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, progress);
+        else if (cfg.lut != "")
             rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
+        else
+            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
         if (cfg.equalize)
             rgb_composite.equalize();

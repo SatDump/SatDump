@@ -224,7 +224,9 @@ namespace satdump
                     satdump::ImageCompositeCfg cfg;
                     cfg.equation = rgb_compo_cfg.equation;
                     cfg.lut = rgb_compo_cfg.lut;
-                    cfg.lut_channels = rgb_compo_cfg.lut_channels;
+                    cfg.channels = rgb_compo_cfg.channels;
+                    cfg.lua = rgb_compo_cfg.lua;
+                    cfg.lua_vars = rgb_compo_cfg.lua_vars;
 
                     equalize_image = rgb_compo_cfg.equalize;
                     invert_image = rgb_compo_cfg.invert;

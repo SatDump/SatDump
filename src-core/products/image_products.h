@@ -230,7 +230,9 @@ namespace satdump
         bool white_balance = false;
 
         std::string lut = "";
-        std::string lut_channels = "";
+        std::string channels = "";
+        std::string lua = "";
+        nlohmann::json lua_vars;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -242,7 +244,9 @@ namespace satdump
         j["white_balance"] = v.white_balance;
 
         j["lut"] = v.lut;
-        j["lut_channels"] = v.lut_channels;
+        j["channels"] = v.channels;
+        j["lua"] = v.lua;
+        j["lua_vars"] = v.lua_vars;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -254,7 +258,14 @@ namespace satdump
         else if (j.contains("lut"))
         {
             v.lut = j["lut"].get<std::string>();
-            v.lut_channels = j["lut_channels"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+        }
+        else if (j.contains("lua"))
+        {
+            v.lua = j["lua"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("lua_vars"))
+                v.lua_vars = j["lua_vars"];
         }
 
         if (j.contains("equalize"))

@@ -11,58 +11,70 @@
  **********************************************************************/
 
 #include "logger.h"
-
-bool equation_contains(std::string init, std::string match)
-{
-    size_t pos = init.find(match);
-    if (pos != std::string::npos)
-    {
-        std::string final_ex;
-        while (pos < init.size())
-        {
-            char v = init[pos];
-            if (v < 48 || v > 57)
-                if (v < 65 || v > 90)
-                    if (v < 97 || v > 122)
-                        break;
-            final_ex += v;
-            pos++;
-        }
-
-        if (match == final_ex)
-            return true;
-    }
-
-    return false;
-}
+#include "products/image_products.h"
+#include "common/map/map_drawer.h"
+#include "resources.h"
+#include "nlohmann/json_utils.h"
+#include "core/config.h"
+#include "common/projection/reprojector.h"
+#include "common/projection/gcp_compute/gcp_compute.h"
+#include "common/projection/projs/equirectangular.h"
+#include "common/utils.h"
+#include "common/projection/projs/equirectangular.h"
+#include "common/projection/sat_proj/sat_proj.h"
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    std::vector<int> channel_indexes;
-    std::vector<std::string> channel_numbers;
+    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    satdump::config::loadConfig("satdump_cfg.json", user_path);
 
-    std::string str_to_find_channels = "ch1, ch2, ch3";
+    satdump::ImageProducts img_pro;
+    img_pro.load(argv[1]);
 
-    for (int i = 0; i < 40; i++)
+    satdump::ImageCompositeCfg rgb_cfg;
+    // rgb_cfg.equation = "(chb - 0.6)*4";
+    // rgb_cfg.equation = "(chb - 0.65)*5";
+    rgb_cfg.lua = "scripted_compos/underlay_with_clouds.lua";
+    rgb_cfg.channels = "ch4";
+    rgb_cfg.lua_vars["minoffset"] = 0.5;
+    rgb_cfg.lua_vars["scalar"] = 4.0;
+    rgb_cfg.lua_vars["thresold"] = 0;
+
+    auto input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr);
+
+#if 0
+    image::Image<uint16_t> map_image;
+    map_image.load_img("/home/alan/Downloads/world.200408.3x21600x10800 (1).png");
+
+    auto proj_func = satdump::get_sat_proj(img_pro.get_proj_cfg(), img_pro.get_tle(), img_pro.get_timestamps());
+
+    geodetic::projection::EquirectangularProjection equ_proj;
+    equ_proj.init(map_image.width(), map_image.height(), -180, 90, 180, -90);
+
+    input_image.to_rgb();
+
+    for (int x = 0; x < input_image.width(); x++)
     {
-        // auto img = product.images[i];
-        std::string equ_str = "ch" + std::to_string(i + 1); // img.channel_name;
-
-        if (equation_contains(str_to_find_channels, equ_str))
+        for (int y = 0; y < input_image.height(); y++)
         {
-            channel_indexes.push_back(i);
-            // channel_numbers.push_back(img.channel_name);
-            // images_obj.push_back(img.image);
-            // offsets.emplace(img.channel_name, img.offset_x);
-            logger->debug("Composite needs channel {:s}", equ_str);
+            geodetic::geodetic_coords_t pos;
+            if (proj_func->get_position(x, y, pos))
+                continue;
+            int x2, y2;
+            equ_proj.forward(pos.lon, pos.lat, x2, y2);
 
-            // if (max_width_used < (int)img.image.width())
-            //     max_width_used = img.image.width();
-
-            // if (min_offset > img.offset_x)
-            //     min_offset = img.offset_x;
+            int val = input_image[y * input_image.width() + x];
+            if (val < 10)
+                for (int c = 0; c < 3; c++)
+                    input_image.channel(c)[y * input_image.width() + x] = map_image.channel(c)[y2 * map_image.width() + x2];
+            else
+                for (int c = 0; c < 3; c++)
+                    input_image.channel(c)[y * input_image.width() + x] = (map_image.channel(c)[y2 * map_image.width() + x2] * 0.4 + val * 0.6);
         }
     }
+#endif
+
+    input_image.save_png("test2.png");
 }
