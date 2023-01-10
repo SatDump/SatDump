@@ -303,6 +303,11 @@
                         "geo_correct": true,
                         "equalize": true
                     },
+                    "METOP Natural Color": {
+                        "equation": "0.5*max(cch3a,min(cch2,cch1)) + 0.5*cch2, cch2, cch1",
+                        "geo_correct": true,
+                        "equalize": true
+                    },
                     "Clouds Underlay": {
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
