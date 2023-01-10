@@ -43,9 +43,6 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
-# FS
-target_link_libraries(satdump_core PUBLIC stdc++fs)
-
 # Set Spdlog to build the library
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
@@ -147,6 +144,7 @@ else()
     else()
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
+
         # target_link_libraries(satdump_core PUBLIC stdc++fs atomic)
     endif()
 
@@ -181,6 +179,9 @@ else()
         target_link_libraries(satdump_core PUBLIC ${ZSTD_LIBRARY})
         target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
     endif()
+
+    # FS
+    target_link_libraries(satdump_core PUBLIC stdc++fs)
 
     # Dynamic linking
     target_link_libraries(satdump_core PUBLIC dl)
