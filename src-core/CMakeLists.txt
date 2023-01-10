@@ -43,9 +43,6 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
-# FS
-target_link_libraries(satdump_core PUBLIC stdc++fs)
-
 # Set Spdlog to build the library
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
 
@@ -163,6 +160,9 @@ else()
     else()
         target_include_directories(satdump_core PUBLIC libs/lua)
     endif()
+
+    # FS
+    target_link_libraries(satdump_core PUBLIC stdc++fs)
 
     # Dynamic linking
     target_link_libraries(satdump_core PUBLIC dl)
