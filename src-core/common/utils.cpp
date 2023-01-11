@@ -175,6 +175,8 @@ int perform_http_request(std::string url_str, std::string &result)
 
 std::string timestamp_to_string(double timestamp)
 {
+    if (timestamp < 0)
+        timestamp = 0;
     time_t tttime = timestamp;
     std::tm *timeReadable = gmtime(&tttime);
     return std::to_string(timeReadable->tm_year + 1900) + "/" +
