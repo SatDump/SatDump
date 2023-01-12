@@ -1,6 +1,8 @@
 #include "utils.h"
 #include <cmath>
 #include <sstream>
+#include <locale>
+#include <codecvt>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples)
 {
@@ -194,4 +196,18 @@ double get_median(std::vector<double> values)
     std::sort(values.begin(), values.end());
     size_t middle = values.size() / 2;
     return values[middle];
+}
+
+std::string ws2s(const std::wstring &wstr)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.to_bytes(wstr);
+}
+
+std::wstring s2ws(const std::string &str)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.from_bytes(str);
 }
