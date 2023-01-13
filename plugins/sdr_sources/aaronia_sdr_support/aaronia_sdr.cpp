@@ -1,4 +1,5 @@
 #include "aaronia_sdr.h"
+#include "common/utils.h"
 
 #define SPECTRAN_SAMPLERATE_92M 92160000
 #define SPECTRAN_SAMPLERATE_122M 122880000
@@ -8,13 +9,13 @@
 std::wstring get_spectran_samplerate_str(uint64_t rate)
 {
     if (rate == SPECTRAN_SAMPLERATE_92M)
-        return L"92Mhz";
+        return L"92MHz";
     else if (rate == SPECTRAN_SAMPLERATE_122M)
-        return L"122Mhz";
+        return L"122MHz";
     else if (rate == SPECTRAN_SAMPLERATE_184M)
-        return L"184Mhz";
+        return L"184MHz";
     else if (rate == SPECTRAN_SAMPLERATE_245M)
-        return L"245Mhz";
+        return L"245MHz";
     else
         throw std::runtime_error("Invalid samplerate!");
 }
@@ -153,6 +154,7 @@ void AaroniaSource::start()
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate).c_str());
+    logger->info("Set Spectran receiver clock to {:s}", ws2s(get_spectran_samplerate_str(current_samplerate)).c_str());
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/decimation") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Full");

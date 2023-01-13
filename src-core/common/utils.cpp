@@ -2,6 +2,8 @@
 #include <cmath>
 #include <sstream>
 #include "resources.h"
+#include <locale>
+#include <codecvt>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples)
 {
@@ -203,4 +205,18 @@ std::string loadFileToString(std::string path)
     std::string str = std::string(std::istreambuf_iterator<char>{f}, {});
     f.close();
     return str;
+}
+
+std::string ws2s(const std::wstring &wstr)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.to_bytes(wstr);
+}
+
+std::wstring s2ws(const std::string &str)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.from_bytes(str);
 }
