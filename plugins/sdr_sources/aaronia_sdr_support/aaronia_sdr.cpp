@@ -90,6 +90,7 @@ void AaroniaSource::set_settings(nlohmann::json settings)
     d_agc_mode = getValueOrDefault(d_settings["agc_mode"], d_agc_mode);
     d_enable_amp = getValueOrDefault(d_settings["enable_amp"], d_enable_amp);
     d_enable_preamp = getValueOrDefault(d_settings["enable_preamp"], d_enable_preamp);
+    d_rescale = getValueOrDefault(d_settings["rescale"], d_rescale);
 
     if (is_started)
     {
@@ -105,6 +106,7 @@ nlohmann::json AaroniaSource::get_settings()
     d_settings["agc_mode"] = d_agc_mode;
     d_settings["enable_amp"] = d_enable_amp;
     d_settings["enable_preamp"] = d_enable_preamp;
+    d_settings["rescale"] = d_rescale;
 
     return d_settings;
 }
@@ -249,6 +251,9 @@ void AaroniaSource::drawControlUI()
     gain_changed |= ImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
     if (gain_changed)
         set_gains();
+
+    // Rescaling
+    ImGui::Checkbox("Recale##aaronia_rescale", &d_rescale);
 }
 
 void AaroniaSource::set_samplerate(uint64_t samplerate)
