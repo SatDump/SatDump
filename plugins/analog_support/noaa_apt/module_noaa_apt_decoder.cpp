@@ -55,7 +55,7 @@ namespace noaa_apt
                 logger->info("File is stereo. Ignoring second channel!");
 
             wav::FileMetadata md = wav::tryParseFilenameMetadata(d_input_file, true);
-            if (md.timestamp != 0 && !d_parameters.contains("start_timestamp"))
+            if (md.timestamp != 0 && /*!d_parameters.contains("start_timestamp")*/ d_parameters["start_timestamp"] == -1)
                 d_parameters["start_timestamp"] = md.timestamp;
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
