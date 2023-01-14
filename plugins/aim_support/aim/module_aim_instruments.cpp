@@ -1,11 +1,11 @@
 #include "module_aim_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 
@@ -29,7 +29,7 @@ namespace aim
             uint8_t cadu[1244];
 
             // Demuxers
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1062, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1062, true, 12);
 
             // std::ofstream output("file.ccsds");
 
@@ -49,12 +49,10 @@ namespace aim
                 data_in.read((char *)&cadu, 1244);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_proba::VCDU vcdu = ccsds::ccsds_1_0_proba::parseVCDU(cadu);
+                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);
-
-                memmove(&cadu[10 - 2], &cadu[22 - 2], 1062 + 2); // There is some sort of Insert zone
 
                 if (vcdu.vcid == 1) // Replay VCID
                 {

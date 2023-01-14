@@ -39,7 +39,7 @@ namespace satdump
             std::vector<OCLDevice> devices = getAllDevices();
             logger->info("Found OpenCL Devices ({:d}) :", devices.size());
             for (OCLDevice &d : devices)
-                logger->debug(" - " + d.name);
+                logger->debug(" - " + d.name.substr(0, d.name.size() - 1));
         }
 
         bool context_is_init = false;

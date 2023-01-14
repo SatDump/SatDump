@@ -240,6 +240,7 @@ namespace ccsds
                 module_stats["deframer_lock"] = deframer->getState() == deframer->STATE_SYNCED;
             module_stats["correlator_lock"] = correlator_locked;
             module_stats["correlator_corr"] = correlator_cor;
+            module_stats["ldpc_corr"] = ldpc_corr;
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {

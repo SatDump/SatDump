@@ -1,0 +1,70 @@
+{
+    "gcom_w1_link": {
+        "name": "GCOM-W1 Link",
+        "frequencies": [
+            [
+                "Main",
+                8245e6
+            ]
+        ],
+        "samplerate": 20e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 10e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_mode": true,
+                    "cadu_size": 10112,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_fill_bytes": 3,
+                    "rs_type": "rs239"
+                }
+            },
+            "products": {
+                "gcom1_instruments": {}
+            }
+        }
+    },
+    "gcom_c1_link": {
+        "name": "GCOM-C1 Link",
+        "samplerate": 20e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 69.416e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.001
+                }
+            },
+            "cadu": {
+                /*"ccsds_simple_psk_decoder": {
+                "constellation": "qpsk",
+                //  "qpsk_swap_diff": true,
+                "qpsk_swap_iq": true,
+                "cadu_size": 10112,
+                // "oqpsk_method3": true,
+                "nrzm": false,
+                "derandomize": true,
+                "rs_i": 0
+            }*/
+            },
+            "products": {
+                "gcom_amsr2": {}
+            }
+        }
+    }
+}

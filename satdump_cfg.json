@@ -176,7 +176,9 @@
             36037, // Proba-2
             39159, // Proba-V
             29107, // CloudSat
-            25544 // ISS (Zarya)
+            25544, // ISS (Zarya)
+            38337, // GCOM-W1
+            43065 // GCOM-C1
         ]
     },
     // Settings for the Viewer. Those also are default settings when generating viewer-less
@@ -301,10 +303,21 @@
                         "geo_correct": true,
                         "equalize": true
                     },
+                    "Clouds Underlay": {
+                        "channels": "ch4",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "lua_vars": {
+                            "minoffset": 0.4,
+                            "scalar": 4.0,
+                            "thresold": 0
+                        },
+                        "autogen": false
+                    },
                     "Snow enhancement": {
                         "equation": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
                         "equalize": true,
-                        "white_balance": true
+                        "white_balance": true,
+                        "geo_correct": true
                     },
                     "NDVI (Vegetation)": {
                         "equation": "((ch2-ch1)/(ch2+ch1)+1)/2",
@@ -338,17 +351,26 @@
                         "equation": "chb",
                         "equalize": true
                     },
+                    "Clouds Underlay": {
+                        "channels": "chb",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "lua_vars": {
+                            "minoffset": 0.58,
+                            "scalar": 4.0,
+                            "thresold": 0.15
+                        }
+                    },
                     "WXtoImg HVC N15": {
                         "lut": "noaa_apt/WXtoImg-N15-HVC.png",
-                        "lut_channels": "cha, chb"
+                        "channels": "cha, chb"
                     },
                     "WXtoImg HVC N18": {
                         "lut": "noaa_apt/WXtoImg-N18-HVC.png",
-                        "lut_channels": "cha, chb"
+                        "channels": "cha, chb"
                     },
                     "WXtoImg HVC N19": {
                         "lut": "noaa_apt/WXtoImg-N19-HVC.png",
-                        "lut_channels": "cha, chb"
+                        "channels": "cha, chb"
                     }
                 }
                 //,"project_channels": {}
@@ -864,6 +886,14 @@
                 "handler": "image_handler",
                 "name": "MTVZA",
                 "rgb_composites": {
+                    "443 (AMSU 221 equivalent)": {
+                        "equation": "ch4, ch4, ch3",
+                        "equalize": true
+                    },
+                    "843 (AMSU 421 equivalent)": {
+                        "equation": "ch8, ch4, ch3",
+                        "equalize": true
+                    },
                     "Basic False Color": {
                         "equation": "ch1, ch8, ch15",
                         "equalize": true

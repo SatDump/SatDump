@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(aaronia_sdr_support)
+
+set(SATDUMP_ROOT "/usr")
+
+if(MSVC)
+    set(AARONIA_RTSA_SUITE_PATH "C:/Program Files/Aaronia AG/Aaronia RTSA-Suite PRO/" CACHE STRING "Path of RTSA Aaronia SW")
+else()
+    set(AARONIA_RTSA_SUITE_PATH "~/Aaronia/RTSA/Aaronia-RTSA-Suite-PRO" CACHE STRING "Path of RTSA Aaronia SW")
+endif()
+
+if(UNIX OR MSVC)
+    message("Building with Aaronia support")
+    file(GLOB_RECURSE aaronia_sdr_support_CPPS *.cpp)
+    add_library(aaronia_sdr_support SHARED ${aaronia_sdr_support_CPPS})
+
+    if(MSVC)
+        target_link_directories(aaronia_sdr_support PUBLIC "${AARONIA_RTSA_SUITE_PATH}/sdk")
+        target_include_directories(aaronia_sdr_support PUBLIC "${AARONIA_RTSA_SUITE_PATH}/sdk")
+        target_link_libraries(aaronia_sdr_support PUBLIC AaroniaRTSAAPI.dll)
+    else()
+        target_link_libraries(aaronia_sdr_support PUBLIC satdump_core ${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so)
+        target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH})
+    endif()
+
+    target_include_directories(aaronia_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+
+    install(TARGETS aaronia_sdr_support DESTINATION share/satdump/plugins)
+else()
+    message("Aaronia Library could not be found! Not building.")
+endif()

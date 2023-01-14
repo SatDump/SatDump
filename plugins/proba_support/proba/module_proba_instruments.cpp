@@ -1,12 +1,12 @@
 #include "module_proba_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 
@@ -38,10 +38,10 @@ namespace proba
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1103, false);
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid2(1103, false);
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid3(1103, false);
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid4(1103, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1103, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid2(1103, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid3(1103, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid4(1103, false);
 
             // std::ofstream output("file.ccsds");
 
@@ -97,6 +97,8 @@ namespace proba
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = DECODING;
                 }
+
+                gps_ascii_reader = std::make_unique<gps_ascii::GPSASCII>(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/gps_logs.txt");
             }
 
             while (!data_in.eof())
@@ -105,10 +107,11 @@ namespace proba
                 data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_proba::VCDU vcdu = ccsds::ccsds_1_0_proba::parseVCDU(cadu);
+                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);
+                // printf("VCID %d\n", vcdu.vcid);
 
                 if (vcdu.vcid == 1) // Replay VCID
                 {
@@ -128,13 +131,29 @@ namespace proba
                                     chris_reader->work(pkt);
                             }
                         }
+                        else if (d_satellite == PROBA_V)
+                        {
+                            if (pkt.header.apid == 18) // GPS ASCII Logs
+                                gps_ascii_reader->work(pkt);
+                        }
                     }
                 }
                 else if (vcdu.vcid == 2) // IDK VCID
                 {
-                    /*std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
+#if 0
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
+                        if (d_satellite == PROBA_V)
+                        {
+                            printf("APID %d\n", pkt.header.apid);
+
+                            if (pkt.header.apid == 7)
+                            {
+                                pkt.payload.resize(16000);
+                                output.write((char *)pkt.payload.data(), 16000);
+                            }
+                        }
                         // if (pkt.header.apid != 2047)
                         //    logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
 
@@ -152,7 +171,8 @@ namespace proba
                         //     pkt.payload.resize(16000);
                         //     output.write((char *)pkt.payload.data(), 16000);
                         // }
-                    }*/
+                    }
+#endif
                 }
                 else if (vcdu.vcid == 3) // SWAP VCID
                 {

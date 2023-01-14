@@ -1,13 +1,13 @@
 #include "module_metop_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_1024/vcdu.h"
+#include "common/ccsds/ccsds_weather/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_1_0_1024/demuxer.h"
+#include "common/ccsds/ccsds_weather/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
 #include "products/scatterometer_products.h"
@@ -36,13 +36,13 @@ namespace metop
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid3(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid9(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid10(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid12(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid15(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid24(882, true);
-            ccsds::ccsds_1_0_1024::Demuxer demuxer_vcid34(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid3(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid9(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid10(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid15(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid24(882, true);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid34(882, true);
 
             // Setup Admin Message
             {
@@ -66,7 +66,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_1024::VCDU vcdu = ccsds::ccsds_1_0_1024::parseVCDU(cadu);
+                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == METOP_A_SCID ||
                     vcdu.spacecraft_id == METOP_B_SCID ||
@@ -205,6 +205,13 @@ namespace metop
                 logger->info("----------- AVHRR/3");
                 logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
+                // calibration
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+                if (calib_coefs.contains(sat_name))
+                    avhrr_reader.calibrate(calib_coefs[sat_name]);
+                else
+                    logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
                 satdump::ImageProducts avhrr_products;
                 avhrr_products.instrument_name = "avhrr_3";
                 avhrr_products.has_timestamps = true;
@@ -213,6 +220,17 @@ namespace metop
                 avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
                 avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+
+                // calib
+                avhrr_products.set_calibration(avhrr_reader.calib_out);
+                for (int n = 0; n < 3; n++)
+                {
+                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                    avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                }
+                avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
+                avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
+                avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
 
                 std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                 for (int i = 0; i < 6; i++)

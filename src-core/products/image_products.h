@@ -2,6 +2,7 @@
 
 #include "products.h"
 #include "common/image/image.h"
+#include <mutex>
 
 namespace satdump
 {
@@ -175,6 +176,23 @@ namespace satdump
             contents["calibration"]["type"][image_index] = (int)ct;
         }
 
+        void set_calibration_default_radiance_range(int image_index, double rad_min, double rad_max)
+        {
+            contents["calibration"]["default_range"][image_index]["min"] = rad_min;
+            contents["calibration"]["default_range"][image_index]["max"] = rad_max;
+        }
+
+        std::pair<double, double> get_calibration_default_radiance_range(int image_index)
+        {
+            if (!has_calibation())
+                return {0, 0};
+            if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                return {0, 0};
+            if (contents["calibration"].contains("default_range"))
+                return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+            return {0, 0};
+        }
+
         calib_type_t get_calibration_type(int image_index)
         {
             if (!has_calibation())
@@ -187,6 +205,8 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
+        image::Image<uint16_t> get_calibrated_image(int image_index);
+
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
@@ -194,6 +214,8 @@ namespace satdump
         ~ImageProducts();
 
     private:
+        std::map<int, image::Image<uint16_t>> calibrated_img_cache;
+        std::mutex lua_mutex;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };
@@ -208,7 +230,9 @@ namespace satdump
         bool white_balance = false;
 
         std::string lut = "";
-        std::string lut_channels = "";
+        std::string channels = "";
+        std::string lua = "";
+        nlohmann::json lua_vars;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -220,7 +244,9 @@ namespace satdump
         j["white_balance"] = v.white_balance;
 
         j["lut"] = v.lut;
-        j["lut_channels"] = v.lut_channels;
+        j["channels"] = v.channels;
+        j["lua"] = v.lua;
+        j["lua_vars"] = v.lua_vars;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -232,7 +258,14 @@ namespace satdump
         else if (j.contains("lut"))
         {
             v.lut = j["lut"].get<std::string>();
-            v.lut_channels = j["lut_channels"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+        }
+        else if (j.contains("lua"))
+        {
+            v.lua = j["lua"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("lua_vars"))
+                v.lua_vars = j["lua_vars"];
         }
 
         if (j.contains("equalize"))

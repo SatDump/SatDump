@@ -111,6 +111,12 @@ namespace metop
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            // Update module stats
+            module_stats["deframer_lock"] = deframer.getState() == deframer.STATE_SYNCED;
+            module_stats["viterbi_ber"] = viterbi.ber();
+            module_stats["viterbi_lock"] = viterbi.getState();
+            module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);

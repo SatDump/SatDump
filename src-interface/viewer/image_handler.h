@@ -21,6 +21,7 @@ namespace satdump
 
         // Image handling
         int active_channel_id = 0, select_image_id = 1;
+        bool active_channel_calibrated = false;
         std::string select_image_str;
         image::Image<uint16_t> rgb_image, current_image;
         std::vector<image::Image<uint16_t>> images_obj;

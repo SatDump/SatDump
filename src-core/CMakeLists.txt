@@ -64,22 +64,12 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
 
-    if(USE_VIDEO_ENCODER)
-        target_link_libraries(satdump_core PUBLIC libavcodec.dll)
-        target_link_libraries(satdump_core PUBLIC libavformat.dll)
-        target_link_libraries(satdump_core PUBLIC libavutil.dll)
-        target_link_libraries(satdump_core PUBLIC libavfilter.dll)
-
-        # Enable it
-        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
-    endif()
-
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
         target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
     endif()
 
-# target_link_libraries(satdump_core PUBLIC stdc++fs)
+    target_include_directories(satdump_core PUBLIC libs/lua)
 elseif(ANDROID)
     # LibCorrect
     # target_link_libraries(satdump_core PUBLIC correct)
@@ -103,6 +93,8 @@ elseif(ANDROID)
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
     target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
+
+    target_include_directories(satdump_core PUBLIC libs/lua)
 else()
     # LibCorrect
     # find_library(CORRECT_LIBRARY correct REQUIRED)
@@ -144,39 +136,31 @@ else()
     else()
         pkg_check_modules(FFTW3 REQUIRED fftw3f)
         target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-        # target_link_libraries(satdump_core PUBLIC stdc++fs atomic)
+
+        target_link_libraries(satdump_core PUBLIC stdc++fs)
     endif()
 
     # NNG
     find_library(NNG_LIBRARY nng REQUIRED)
     target_link_libraries(satdump_core PUBLIC ${NNG_LIBRARY})
 
-    if(USE_VIDEO_ENCODER)
-        # libavcodec
-        find_library(AVCODEC_LIBRARY avcodec REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVCODEC_LIBRARY})
-
-        # libavformat
-        find_library(AVFORMAT_LIBRARY avformat REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVFORMAT_LIBRARY})
-
-        # libavutil
-        find_library(AVUTIL_LIBRARY avutil REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVUTIL_LIBRARY})
-
-        # libavfilter
-        find_library(AVFILTER_LIBRARY avfilter REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVFILTER_LIBRARY})
-
-        # Enable it
-        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
-    endif()
-
     if(BUILD_ZIQ)
         # zstd
         find_library(ZSTD_LIBRARY zstd REQUIRED)
         target_link_libraries(satdump_core PUBLIC ${ZSTD_LIBRARY})
         target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
+    endif()
+
+    # LuaJIT
+    include(FindLuaJit)
+
+    if(LUAJIT_FOUND)
+        target_compile_definitions(satdump_core PUBLIC SOL_USE_LUAJIT="1")
+        target_link_libraries(satdump_core PUBLIC ${LUAJIT_LIBRARIES})
+        target_include_directories(satdump_core PUBLIC ${LUAJIT_INCLUDE_DIRS})
+        message("-- Building with LuaJIT!")
+    else()
+        target_include_directories(satdump_core PUBLIC libs/lua)
     endif()
 
     # Dynamic linking

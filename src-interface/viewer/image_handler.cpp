@@ -58,7 +58,10 @@ namespace satdump
         }
         else if (select_image_id - 1 < (int)products->images.size())
         {
-            current_image = products->images[select_image_id - 1].image;
+            if (active_channel_calibrated && products->has_calibation())
+                current_image = products->get_calibrated_image(select_image_id - 1);
+            else
+                current_image = products->images[select_image_id - 1].image;
             current_proj_metadata = products->get_channel_proj_metdata(select_image_id - 1);
         }
 
@@ -174,15 +177,15 @@ namespace satdump
                 }
 
                 int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
-                double radiance = products->get_calibrated_value(active_channel_id, x, y);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
+                    double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
-                        ImGui::Text("Albedo : %.2f %%", radiance);
+                        ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
                     }
                     else
                     {
@@ -221,7 +224,9 @@ namespace satdump
                     satdump::ImageCompositeCfg cfg;
                     cfg.equation = rgb_compo_cfg.equation;
                     cfg.lut = rgb_compo_cfg.lut;
-                    cfg.lut_channels = rgb_compo_cfg.lut_channels;
+                    cfg.channels = rgb_compo_cfg.channels;
+                    cfg.lua = rgb_compo_cfg.lua;
+                    cfg.lua_vars = rgb_compo_cfg.lua_vars;
 
                     equalize_image = rgb_compo_cfg.equalize;
                     invert_image = rgb_compo_cfg.invert;
@@ -267,6 +272,22 @@ namespace satdump
                     asyncUpdate();
                 }
             }
+
+            if (!products->has_calibation())
+                style::beginDisabled();
+            if (ImGui::RadioButton("Raw", !active_channel_calibrated))
+            {
+                active_channel_calibrated = false;
+                asyncUpdate();
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Calib", active_channel_calibrated))
+            {
+                active_channel_calibrated = true;
+                asyncUpdate();
+            }
+            if (!products->has_calibation())
+                style::endDisabled();
 
             if (active_channel_id >= 0)
             {

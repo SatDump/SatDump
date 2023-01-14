@@ -1,7 +1,6 @@
 #include "avhrr_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
-#include <fstream>
 #include "common/utils.h"
 
 namespace noaa_metop
@@ -34,6 +33,33 @@ namespace noaa_metop
             repackBytesTo10bits(&packet.payload[14], 12944, avhrr_buffer);
 
             line2image(avhrr_buffer, 55, 2048, packet.header.apid == 103);
+
+            {
+                uint16_t *prts = &avhrr_buffer[10295];
+                prt_buffer.push_back(prts[2] * prts[3] * prts[4] == 0 ? 0 : (prts[2] + prts[3] + prts[4]) / 3);
+
+                // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
+                uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
+                uint16_t avg_spc[3] = {0, 0, 0}; // space average
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 3; j++)
+                    {
+                        avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
+                        avg_spc[j] += avhrr_buffer[0 + 5 * i + j + 2];
+                    }
+                for (int j = 0; j < 3; j++)
+                {
+                    avg_blb[j] /= 10;
+                    avg_spc[j] /= 10;
+                }
+
+                std::array<view_pair, 3> el;
+                for (int i = 0; i < 3; i++)
+                {
+                    el[i] = view_pair{avg_spc[i], avg_blb[i]};
+                }
+                views.push_back(el);
+            }
         }
 
         void AVHRRReader::work_noaa(uint16_t *buffer)
@@ -45,6 +71,35 @@ namespace noaa_metop
 
             int pos = gac_mode ? 1182 : 750; // AVHRR Data
             line2image(buffer, pos, width, buffer[6] & 1);
+
+            if (!gac_mode) // we don't have info on GAC rn, we'll have to RE
+            {
+                // calibration data extraction (for later, we don't know what sat this is yet!)
+                prt_buffer.push_back(buffer[17] * buffer[18] * buffer[19] == 0 ? 0 : (buffer[17] + buffer[18] + buffer[19]) / 3);
+                // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
+
+                // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
+                uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
+                uint16_t avg_spc[3] = {0, 0, 0}; // space average
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 3; j++)
+                    {
+                        avg_blb[j] += buffer[22 + 3 * i + j];
+                        avg_spc[j] += buffer[52 + 5 * i + j + 2];
+                    }
+                for (int j = 0; j < 3; j++)
+                {
+                    avg_blb[j] /= 10;
+                    avg_spc[j] /= 10;
+                }
+
+                std::array<view_pair, 3> el;
+                for (int i = 0; i < 3; i++)
+                {
+                    el[i] = view_pair{avg_spc[i], avg_blb[i]};
+                }
+                views.push_back(el);
+            }
         }
 
         image::Image<uint16_t> AVHRRReader::getChannel(int channel)
@@ -74,35 +129,6 @@ namespace noaa_metop
 
             for (int channel = 0; channel < 6; channel++)
                 channels[channel].resize((lines + 1) * 2048);
-
-            if (!gac_mode) // we don't have info on GAC rn, we'll have to RE
-            {
-                // calibration data extraction (for later, we don't know what sat this is yet!)
-                prt_buffer.push_back(buff[17] * buff[18] * buff[19] == 0 ? 0 : (buff[17] + buff[18] + buff[19]) / 3);
-                // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
-
-                // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
-                uint16_t avg_blb[3] = {0}; // blackbody average
-                uint16_t avg_spc[3] = {0}; // space average
-                for (int i = 0; i < 10; i++)
-                    for (int j = 0; j < 3; j++)
-                    {
-                        avg_blb[j] += buff[22 + 3 * i + j];
-                        avg_spc[j] += buff[52 + 5 * i + j + 2];
-                    }
-                for (int j = 0; j < 3; j++)
-                {
-                    avg_blb[j] /= 10;
-                    avg_spc[j] /= 10;
-                }
-
-                std::array<view_pair, 3> el;
-                for (int i = 0; i < 3; i++)
-                {
-                    el[i] = view_pair{avg_spc[i], avg_blb[i]};
-                }
-                views.push_back(el);
-            }
         }
 
         void AVHRRReader::calibrate(nlohmann::json calib_coefs)

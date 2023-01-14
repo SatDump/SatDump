@@ -5,10 +5,10 @@
 #include "logger.h"
 #include "init.h"
 #include "common/cli_utils.h"
-#include <nng/nng.h>
-#include <nng/supplemental/http/http.h>
-#include <nng/supplemental/util/platform.h>
 #include <filesystem>
+#include "common/dsp/splitter.h"
+#include "common/dsp/fft_pan.h"
+#include "webserver.h"
 
 // Catch CTRL+C to exit live properly!
 bool live_should_exit = false;
@@ -17,57 +17,6 @@ void sig_handler_live(int signo)
     if (signo == SIGINT)
         live_should_exit = true;
 }
-
-// Webserver for stats
-namespace webserver
-{
-    nng_http_server *http_server;
-    nng_url *url;
-    nng_http_handler *handler;
-
-    satdump::LivePipeline *live_pipeline;
-    bool is_active = false;
-
-    std::mutex request_mutex;
-
-    // HTTP Handler for stats
-    void http_handle(nng_aio *aio)
-    {
-        request_mutex.lock();
-        live_pipeline->updateModuleStats();
-        std::string jsonstr = live_pipeline->stats.dump(4);
-
-        nng_http_res *res;
-        nng_http_res_alloc(&res);
-        nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
-        nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
-        nng_aio_set_output(aio, 0, res);
-        nng_aio_finish(aio, 0);
-        request_mutex.unlock();
-    }
-
-    void start(std::string http_server_url)
-    {
-        http_server_url = "http://" + http_server_url;
-        nng_url_parse(&url, http_server_url.c_str());
-        nng_http_server_hold(&http_server, url);
-        nng_http_handler_alloc(&handler, url->u_path, http_handle);
-        nng_http_handler_set_method(handler, "GET");
-        nng_http_server_add_handler(http_server, handler);
-        nng_http_server_start(http_server);
-        nng_url_free(url);
-        is_active = true;
-    }
-
-    void stop()
-    {
-        if (is_active)
-        {
-            nng_http_server_stop(http_server);
-            nng_http_server_release(http_server);
-        }
-    }
-};
 
 int main_live(int argc, char *argv[])
 {
@@ -130,7 +79,11 @@ int main_live(int argc, char *argv[])
         if (parameters.contains("http_server"))
         {
             std::string http_addr = parameters["http_server"].get<std::string>();
-            webserver::live_pipeline = live_pipeline.get();
+            webserver::handle_callback = [&live_pipeline]()
+            {
+                live_pipeline->updateModuleStats();
+                return live_pipeline->stats.dump(4);
+            };
             logger->info("Start webserver on {:s}", http_addr.c_str());
             webserver::start(http_addr);
         }
@@ -220,7 +173,7 @@ int main_live(int argc, char *argv[])
 
         // Init pipeline
         parameters["baseband_format"] = "f32";
-        parameters["buffer_size"] = STREAM_BUFFER_SIZE;       // This is required, as we WILL go over the (usually) default 8192 size
+        parameters["buffer_size"] = STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
         parameters["start_timestamp"] = (double)time(0); // Some pipelines need this
         std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
 
@@ -228,11 +181,46 @@ int main_live(int argc, char *argv[])
 
         bool server_mode = parameters.contains("server_address") || parameters.contains("server_port");
 
+        std::unique_ptr<dsp::SplitterBlock> splitter;
+        std::unique_ptr<dsp::FFTPanBlock> fft;
+        bool webserver_already_set = false;
+
         // Attempt to start the source and pipeline
         try
         {
             source_ptr->start();
-            live_pipeline->start(source_ptr->output_stream, live_thread_pool, server_mode);
+
+            std::shared_ptr<dsp::stream<complex_t>> final_stream = source_ptr->output_stream;
+
+            // Optional FFT
+            if (parameters.contains("fft_enable"))
+            {
+                int fft_size = parameters.contains("fft_size") ? parameters["fft_size"].get<int>() : 512;
+                int fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
+
+                splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
+                splitter->set_output_2nd(true);
+                splitter->set_output_3rd(false);
+                final_stream = splitter->output_stream;
+                fft = std::make_unique<dsp::FFTPanBlock>(splitter->output_stream_2);
+                fft->set_fft_settings(fft_size, samplerate, fft_rate);
+                if (parameters.contains("fft_avg"))
+                    fft->avg_rate = parameters["fft_avg"].get<float>();
+                splitter->start();
+                fft->start();
+
+                webserver::handle_callback = [&live_pipeline, &fft, fft_size]()
+                {
+                    live_pipeline->updateModuleStats();
+                    for (int i = 0; i < fft_size; i++)
+                        live_pipeline->stats["fft_values"][i] = fft->output_stream->writeBuf[i];
+                    return live_pipeline->stats.dump(4);
+                };
+
+                webserver_already_set = true;
+            }
+
+            live_pipeline->start(final_stream, live_thread_pool, server_mode);
         }
         catch (std::exception &e)
         {
@@ -244,7 +232,12 @@ int main_live(int argc, char *argv[])
         if (parameters.contains("http_server"))
         {
             std::string http_addr = parameters["http_server"].get<std::string>();
-            webserver::live_pipeline = live_pipeline.get();
+            if (!webserver_already_set)
+                webserver::handle_callback = [&live_pipeline]()
+                {
+                    live_pipeline->updateModuleStats();
+                    return live_pipeline->stats.dump(4);
+                };
             logger->info("Start webserver on {:s}", http_addr.c_str());
             webserver::start(http_addr);
         }
@@ -279,6 +272,11 @@ int main_live(int argc, char *argv[])
 
         // Stop cleanly
         source_ptr->stop();
+        if (parameters.contains("fft_enable"))
+        {
+            splitter->stop();
+            fft->stop();
+        }
         live_pipeline->stop();
 
         if ((parameters.contains("finish_processing") ? parameters["finish_processing"].get<bool>() : false) &&

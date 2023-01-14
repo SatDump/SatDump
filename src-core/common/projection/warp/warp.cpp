@@ -125,7 +125,7 @@ namespace satdump
             auto cpu_start = std::chrono::system_clock::now();
             {
 #pragma omp parallel for
-                for (size_t xy_ptr = 0; xy_ptr < result.output_image.size(); xy_ptr++)
+                for (size_t xy_ptr = 0; xy_ptr < result.output_image.width() * result.output_image.height(); xy_ptr++)
                 {
                     double xx, yy;
                     double xy[2];

@@ -5,6 +5,9 @@
 #include "common/cli_utils.h"
 #include "common/dsp/file_sink.h"
 #include "init.h"
+#include "common/dsp/splitter.h"
+#include "common/dsp/fft_pan.h"
+#include "webserver.h"
 
 // Catch CTRL+C to exit live properly!
 bool rec_should_exit = false;
@@ -20,7 +23,7 @@ int main_record(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " record [output_baseband (without extension!)] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in sources can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8/w16] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8/w16/ziq] --dc_block --iq_swap");
         logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
         logger->error("As well as --timeout in seconds");
         logger->error("Sample command :");
@@ -90,6 +93,10 @@ int main_record(int argc, char *argv[])
     source_ptr->set_samplerate(samplerate);
     source_ptr->set_settings(parameters);
 
+    std::unique_ptr<dsp::SplitterBlock> splitter;
+    std::unique_ptr<dsp::FFTPanBlock> fft;
+    bool webserver_already_set = false;
+
     // Attempt to start the source
     try
     {
@@ -101,8 +108,44 @@ int main_record(int argc, char *argv[])
         return 1;
     }
 
+    // Optional FFT
+    std::shared_ptr<dsp::stream<complex_t>> final_stream = source_ptr->output_stream;
+
+    int fft_size = 0;
+    if (parameters.contains("fft_enable"))
+    {
+        fft_size = parameters.contains("fft_size") ? parameters["fft_size"].get<int>() : 512;
+        int fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
+
+        splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
+        splitter->set_output_2nd(true);
+        splitter->set_output_3rd(false);
+        final_stream = splitter->output_stream;
+        fft = std::make_unique<dsp::FFTPanBlock>(splitter->output_stream_2);
+        fft->set_fft_settings(fft_size, samplerate, fft_rate);
+        if (parameters.contains("fft_avg"))
+            fft->avg_rate = parameters["fft_avg"].get<float>();
+        splitter->start();
+        fft->start();
+    }
+
     // Setup file sink
-    std::shared_ptr<dsp::FileSinkBlock> file_sink = std::make_shared<dsp::FileSinkBlock>(source_ptr->output_stream);
+    std::shared_ptr<dsp::FileSinkBlock> file_sink = std::make_shared<dsp::FileSinkBlock>(final_stream);
+
+    if (parameters.contains("fft_enable"))
+    {
+        webserver::handle_callback = [&file_sink, &fft, fft_size]()
+        {
+            nlohmann::json stats;
+            stats["written"] = file_sink->get_written();
+            stats["written_raw"] = file_sink->get_written_raw();
+            for (int i = 0; i < fft_size; i++)
+                stats["fft_values"][i] = fft->output_stream->writeBuf[i];
+            return stats.dump(4);
+        };
+
+        webserver_already_set = true;
+    }
 
     int ziq_bit_depth = 8;
     if (parameters.contains("ziq_depth"))
@@ -123,6 +166,22 @@ int main_record(int argc, char *argv[])
 
     file_sink->start();
     file_sink->start_recording(output_file, samplerate, ziq_bit_depth);
+
+    // If requested, boot up webserver
+    if (parameters.contains("http_server"))
+    {
+        std::string http_addr = parameters["http_server"].get<std::string>();
+        if (!webserver_already_set)
+            webserver::handle_callback = [&file_sink]()
+            {
+                nlohmann::json stats;
+                stats["written"] = file_sink->get_written();
+                stats["written_raw"] = file_sink->get_written_raw();
+                return stats.dump(4);
+            };
+        logger->info("Start webserver on {:s}", http_addr.c_str());
+        webserver::start(http_addr);
+    }
 
     // Attach signal
     signal(SIGINT, sig_handler_rec);
@@ -164,7 +223,15 @@ int main_record(int argc, char *argv[])
 
     // Stop cleanly
     source_ptr->stop();
+    if (parameters.contains("fft_enable"))
+    {
+        splitter->stop();
+        fft->stop();
+    }
     file_sink->stop();
+
+    if (parameters.contains("http_server"))
+        webserver::stop();
 
     return 0;
 }

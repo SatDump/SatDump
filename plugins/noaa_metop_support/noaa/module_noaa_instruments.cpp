@@ -169,13 +169,10 @@ namespace noaa
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
                     if (calib_coefs.contains(sat_name))
-                    {
                         avhrr_reader.calibrate(calib_coefs[sat_name]);
-                    }
                     else
-                    {
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-                    }
+
                     /*
                     std::ofstream out("AVHRR_calib.json");
                     out << avhrr_reader.calib_out;
@@ -197,6 +194,9 @@ namespace noaa
                         avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
                         avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                     }
+                    avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
+                    avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
+                    avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
 
                     nlohmann::ordered_json proj_settings;
 

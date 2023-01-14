@@ -1,12 +1,12 @@
 #include "module_scisat1_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_1_0_proba/vcdu.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_1_0_proba/demuxer.h"
+#include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 
@@ -30,9 +30,9 @@ namespace scisat1
             uint8_t cadu[1199];
 
             // Demuxers
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid0(1016, false);
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid1(1016, false);
-            ccsds::ccsds_1_0_proba::Demuxer demuxer_vcid4(1016, false);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid0(1016, false, 2, 7);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1016, false, 2, 7);
+            ccsds::ccsds_standard::Demuxer demuxer_vcid4(1016, false, 2, 7);
 
             // std::ofstream output("file.ccsds");
 
@@ -47,12 +47,10 @@ namespace scisat1
                 data_in.read((char *)&cadu, 1199);
 
                 // Parse this transport frame
-                ccsds::ccsds_1_0_proba::VCDU vcdu = ccsds::ccsds_1_0_proba::parseVCDU(cadu);
+                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);
-
-                memmove(&cadu[10], &cadu[17], 1016); // There is some sort of Insert zone
 
                 if (vcdu.vcid == 0) // FTS
                 {
