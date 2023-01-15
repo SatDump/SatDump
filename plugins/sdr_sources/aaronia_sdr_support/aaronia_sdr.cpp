@@ -253,7 +253,7 @@ void AaroniaSource::drawControlUI()
         set_gains();
 
     // Rescaling
-    ImGui::Checkbox("Recale##aaronia_rescale", &d_rescale);
+    ImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
 }
 
 void AaroniaSource::set_samplerate(uint64_t samplerate)

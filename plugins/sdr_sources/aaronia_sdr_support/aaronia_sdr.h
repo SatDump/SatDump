@@ -69,7 +69,7 @@ protected:
 
                 // Optionally re-scale to be in the more "standard" 1.0f range
                 if (d_rescale)
-                    volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)packet.fp32, 100, cnt);
+                    volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)packet.fp32, 1000, cnt);
                 else
                     memcpy(output_stream->writeBuf, (complex_t *)packet.fp32, cnt * sizeof(complex_t));
 

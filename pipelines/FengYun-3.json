@@ -259,5 +259,83 @@
                 }
             }
         }
+    },
+    "fengyun3_d_dpt": {
+        "name": "FengYun-3 D DPT",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 150e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.26,
+                    "invert_second_viterbi": true
+                }
+            },
+            "products": {
+                "fy3_instruments": {
+                    "satellite": "fy3d",
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
+                }
+            }
+        }
+    },
+    "fengyun3_e_dpt": {
+        "name": "FengYun-3 E DPT",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 225e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "nrzm": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "fy3_instruments": {
+                    "satellite": "fy3e",
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
+                }
+            }
+        }
     }
 }
