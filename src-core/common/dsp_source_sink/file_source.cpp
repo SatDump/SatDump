@@ -29,13 +29,13 @@ void FileSource::run_thread()
     {
         if (is_started)
         {
-            baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
+            int read = baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
 
             if (iq_swap)
-                for (int i = 0; i < buffer_size; i++)
+                for (int i = 0; i < read; i++)
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
 
-            output_stream->swap(buffer_size);
+            output_stream->swap(read);
             file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
 
             std::this_thread::sleep_for(std::chrono::nanoseconds(int(ns_to_wait)));
@@ -125,7 +125,7 @@ void FileSource::drawControlUI()
 #ifdef BUILD_ZIQ
                                                                              "ziq\0"
 #endif
-                     ) ||
+                                                                             "ziq2\0") ||
         update_format)
     {
         if (select_sample_format == 0)
@@ -140,6 +140,8 @@ void FileSource::drawControlUI()
         else if (select_sample_format == 4)
             baseband_type = "ziq";
 #endif
+        else if (select_sample_format == 5)
+            baseband_type = "ziq2";
     }
 
     ImGui::Checkbox("IQ Swap", &iq_swap);

@@ -12,14 +12,10 @@
 
 #include "logger.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include <cmath>
-#include "common/image/image.h"
-#include "common/repack.h"
-#include "common/codings/randomization.h"
-#include "common/image/image.h"
-#include <filesystem>
+#include "common/dsp/complex.h"
+#include "volk/volk.h"
+#include <volk/volk_alloc.hh>
+#include "common/dsp/buffer.h"
 
 int main(int /*argc*/, char *argv[])
 {
@@ -28,96 +24,22 @@ int main(int /*argc*/, char *argv[])
     std::ifstream data_in(argv[1], std::ios::binary);
     std::ofstream data_out(argv[2], std::ios::binary);
 
-    uint8_t cadu[1264];
+    complex_t *input_buffer = new complex_t[STREAM_BUFFER_SIZE];
+    uint8_t *ziq_output_buffer = new uint8_t[STREAM_BUFFER_SIZE * 2];
 
-    ccsds::ccsds_weather::Demuxer demuxer_vcid1(1092, false);
-
-    int lines = 0;
-    int pkts = 0;
-    std::vector<image::Image<uint16_t>> img_out;
-    for (int i = 0; i < 20; i++)
-        img_out.push_back(image::Image<uint16_t>(243, 50, 1));
+    uint32_t pkt_size = 0;
 
     while (!data_in.eof())
     {
-        // Read buffer
-        data_in.read((char *)cadu, 1264);
+        data_in.read((char *)ziq_output_buffer, 12);
 
-        //  derand_ccsds(&cadu[4], 1264 - 4);
+        pkt_size = *((uint32_t *)&ziq_output_buffer[4]);
+        float scale = *((float *)&ziq_output_buffer[8]);
 
-        // Parse this transport frame
-        ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+        data_in.read((char *)&ziq_output_buffer[12], pkt_size * 2);
 
-        printf("VCID %d\n", vcdu.vcid);
+        volk_8i_s32f_convert_32f((float *)input_buffer, (int8_t *)&ziq_output_buffer[12], scale, pkt_size * 2);
 
-        if (vcdu.vcid == 17)
-        {
-            std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid1.work(cadu);
-            for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-            {
-                // logger->critical(pkt.header.apid);
-                // logger->critical(pkt.header.sequence_flag);
-                // logger->critical(pkt.header.secondary_header_flag);
-                printf("APID %d\n", pkt.header.apid);
-
-                if (pkt.header.apid == 1576 /*288*/)
-                {
-#if 1
-                    if (pkts < 20)
-                    {
-                        int nch = 20;
-                        int npx = 25;
-                        for (int i = 0; i < npx; i++)
-                        {
-                            for (int c = 0; c < 20; c++)
-                            // int c = 4;
-                            {
-                                int off = 10 + 2 * (i * nch + c);
-
-                                uint16_t val = pkt.payload[off + 0] << 8 | pkt.payload[off + 1];
-
-                                bool sign = (val >> 11) & 1;
-                                val = val & 0b11111111111;
-
-                                if (!sign)
-                                    val = 2048 + val;
-                                // else
-                                //     val = 2048 - val;
-
-                                int px = pkts * npx + i;
-                                if (px < 243)
-                                    img_out[c][lines * 243 + px] = val << 4;
-                            }
-                        }
-                    }
-#else
-                    for (int i = 0; i < 500; i++)
-                        img_out[lines * 5000 + (pkts)*500 + i] = pkt.payload[10 + 2 * i + 0] << 8 | pkt.payload[10 + 2 * i + 1];
-#endif
-
-                    pkts++;
-
-                    if (pkt.header.sequence_flag == 0b01)
-                    {
-                        lines++;
-                        pkts = 0;
-                    }
-
-                    {
-                        printf("LEN %d\n", pkt.payload.size());
-                        pkt.payload.resize(1018);
-                        data_out.write((char *)pkt.header.raw, 6);
-                        data_out.write((char *)pkt.payload.data(), 1018);
-                    }
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < 20; i++)
-    {
-        img_out[i].crop(0, 0, 243, lines);
-        img_out[i].equalize();
-        img_out[i].save_png("idk_" + std::to_string(i) + ".png");
+        data_out.write((char *)input_buffer, pkt_size * sizeof(complex_t));
     }
 }

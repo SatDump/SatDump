@@ -32,6 +32,8 @@ namespace dsp
         std::shared_ptr<ziq::ziq_writer> ziqWriter;
 #endif
 
+        float *mag_buffer;
+
         std::unique_ptr<WavWriter> wav_writer;
 
     public:
@@ -59,6 +61,8 @@ namespace dsp
             else if (d_sample_format == ZIQ)
                 finalt = path_without_ext + ".ziq";
 #endif
+            else if (d_sample_format == ZIQ2)
+                finalt = path_without_ext + ".ziq2";
 
             if (override_filename)
                 finalt = path_without_ext;

@@ -23,6 +23,7 @@ namespace dsp
 #ifdef BUILD_ZIQ
         ZIQ,
 #endif
+        ZIQ2,
     };
 
     BasebandType basebandTypeFromString(std::string type);
@@ -143,6 +144,29 @@ namespace dsp
                 ziqReader->read(output_buffer, buffer_size);
                 break;
 #endif
+            case ZIQ2:
+            {
+                input_file.read((char *)buffer_u8, 14);
+
+                // *((uint8_t *)&buffer_u8[4]);
+                int bit_depth = *((uint8_t *)&buffer_u8[5]);
+                buffer_size = *((uint32_t *)&buffer_u8[6]);
+                float scale = *((float *)&buffer_u8[10]);
+
+                int sz = 0;
+                if (bit_depth == 8)
+                    sz = buffer_size * sizeof(int8_t) * 2;
+                if (bit_depth == 16)
+                    sz = buffer_size * sizeof(int16_t) * 2;
+
+                input_file.read((char *)&buffer_u8[14], sz);
+
+                if (bit_depth == 8)
+                    volk_8i_s32f_convert_32f((float *)output_buffer, (int8_t *)&buffer_u8[12], scale, buffer_size * 2);
+                else if (bit_depth == 16)
+                    volk_16i_s32f_convert_32f((float *)output_buffer, (int16_t *)&buffer_u8[12], scale, buffer_size * 2);
+            }
+            break;
 
             default:
                 break;

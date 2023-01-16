@@ -18,6 +18,8 @@ namespace dsp
         else if (type == "ziq")
             return ZIQ;
 #endif
+        else if (type == "ziq2")
+            return ZIQ2;
         else
             throw std::runtime_error("Unknown baseband type " + type);
     }
