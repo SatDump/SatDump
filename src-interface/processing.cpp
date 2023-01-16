@@ -13,6 +13,8 @@ namespace satdump
     extern std::shared_ptr<Application> current_app;
     extern bool in_app;
 
+    std::mutex processing_mutex;
+
     namespace processing
     {
         void process(std::string downlink_pipeline,
@@ -21,6 +23,7 @@ namespace satdump
                      std::string output_file,
                      nlohmann::json parameters)
         {
+            processing_mutex.lock();
             is_processing = true;
 
             logger->info("Starting processing pipeline " + downlink_pipeline + "...");
@@ -62,6 +65,7 @@ namespace satdump
                     viewer_app->loadDatasetInViewer(output_file + "/dataset.json");
                 }
             }
+            processing_mutex.unlock();
         }
 
         std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();

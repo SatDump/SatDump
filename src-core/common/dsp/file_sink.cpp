@@ -27,18 +27,6 @@ namespace dsp
         rec_mutex.lock();
         if (should_work)
         {
-            for (int i = 0; i < nsamples; i++)
-            {
-                if (input_stream->readBuf[i].real > 1.0f)
-                    input_stream->readBuf[i].real = 1.0f;
-                if (input_stream->readBuf[i].real < -1.0f)
-                    input_stream->readBuf[i].real = -1.0f;
-                if (input_stream->readBuf[i].imag > 1.0f)
-                    input_stream->readBuf[i].imag = 1.0f;
-                if (input_stream->readBuf[i].imag < -1.0f)
-                    input_stream->readBuf[i].imag = -1.0f;
-            }
-
             if (d_sample_format == CF_32)
             {
                 output_file.write((char *)input_stream->readBuf, nsamples * sizeof(complex_t));
