@@ -109,6 +109,8 @@ void FileSource::drawControlUI()
                     select_sample_format = 1;
                 else if (hdr.type == "ziq")
                     select_sample_format = 4;
+                else if (hdr.type == "ziq2")
+                    select_sample_format = 5;
 
                 current_samplerate = hdr.samplerate;
 
@@ -122,9 +124,9 @@ void FileSource::drawControlUI()
                                                                              "s16\0"
                                                                              "s8\0"
                                                                              "u8\0"
-#ifdef BUILD_ZIQ
+                                                                             // #ifdef BUILD_ZIQ
                                                                              "ziq\0"
-#endif
+                                                                             // #endif
                                                                              "ziq2\0") ||
         update_format)
     {

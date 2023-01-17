@@ -356,7 +356,7 @@ namespace satdump
                                                                   "ziq s16\0"
                                                                   "ziq f32\0"
 #endif
-                                 ))
+                                                                  "ziq2\0"))
                 {
                     if (select_sample_format == 0)
                         file_sink->set_output_sample_type(dsp::CF_32);
@@ -383,6 +383,11 @@ namespace satdump
                         ziq_bit_depth = 32;
                     }
 #endif
+                    else if (select_sample_format == 7)
+                    {
+                        file_sink->set_output_sample_type(dsp::ZIQ2);
+                        ziq_bit_depth = 8;
+                    }
                 }
                 if (is_recording)
                     style::endDisabled();
