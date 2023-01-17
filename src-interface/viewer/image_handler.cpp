@@ -398,6 +398,7 @@ namespace satdump
             ImGui::ProgressBar(rgb_progress);
         }
 
+#if 0
         if (ImGui::CollapsingHeader("Products"))
         {
             if (products->has_calibation())
@@ -435,6 +436,7 @@ namespace satdump
                 }
             }
         }
+#endif
 
         if (products->has_proj_cfg())
         {
