@@ -87,14 +87,20 @@ namespace image
 
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (!png)
-            abort();
+            return;
 
         png_infop info = png_create_info_struct(png);
         if (!info)
-            abort();
+        {
+            png_destroy_read_struct(&png, NULL, NULL);
+            return;
+        }
 
         if (setjmp(png_jmpbuf(png)))
-            abort();
+        {
+            png_destroy_read_struct(&png, &info, NULL);
+            return;
+        }
 
         png_init_io(png, fp);
         png_read_info(png, info);
@@ -192,14 +198,20 @@ namespace image
     {
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (!png)
-            abort();
+            return;
 
         png_infop info = png_create_info_struct(png);
         if (!info)
-            abort();
+        {
+            png_destroy_read_struct(&png, NULL, NULL);
+            return;
+        }
 
         if (setjmp(png_jmpbuf(png)))
-            abort();
+        {
+            png_destroy_read_struct(&png, &info, NULL);
+            return;
+        }
 
         png_src png_io_v{buffer, size, 0};
         png_set_read_fn(png, &png_io_v, png_src::read);

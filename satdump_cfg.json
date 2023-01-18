@@ -1038,6 +1038,21 @@
                         "equalize": true
                     }
                 }
+            },
+            "tubin_vis": {
+                "handler": "image_handler",
+                "name": "TUBIN Visible",
+                "rgb_composites": {
+                    "241": {
+                        "equation": "ch2 * 6 - 0.4, ch4 * 6 - 0.43, ch1 * 6 - 0.4"
+                    },
+                    "231": {
+                        "equation": "ch2 * 6 - 0.4, ch3 * 6 - 0.43, ch1 * 6 - 0.4"
+                    },
+                    "321": {
+                        "equation": "ch3 * 6 - 0.4, ch2 * 6 - 0.43, ch1 * 6 - 0.4"
+                    }
+                }
             }
         }
     }
