@@ -804,10 +804,10 @@
             "cadu": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "qpsk",
-		    "oqpsk_mode": true,
+                    "oqpsk_mode": true,
                     "cadu_size": 2048,
                     "derandomize": true,
-		    "nrzm": false,
+                    "nrzm": false,
                     "rs_i": 1,
                     "rs_type": "rs223"
                 }
