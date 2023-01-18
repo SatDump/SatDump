@@ -21,7 +21,7 @@ end
 function compute(channel, pos_x, pos_y, px_val)
     if (channel < 3) then
         if (px_val <= crossover[channel]) then
-            return perChannel[channel]["slope_lo"] * px_val + perChannel[channel]["int_lo"]
+            return (perChannel[channel]["slope_lo"] * px_val + perChannel[channel]["int_lo"]) / 100.0
         else
             return (perChannel[channel]["slope_hi"] * px_val + perChannel[channel]["int_hi"]) / 100.0
         end
