@@ -107,7 +107,7 @@ void PlutoSDRSource::drawControlUI()
 
     if (!is_usb)
     {
-        ImGui::InputText("Adress", &ip_address);
+        ImGui::InputText("Address", &ip_address);
         ImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
     }
 
@@ -137,7 +137,7 @@ void PlutoSDRSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw std::runtime_error("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t PlutoSDRSource::get_samplerate()

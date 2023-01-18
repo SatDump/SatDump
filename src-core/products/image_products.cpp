@@ -272,6 +272,7 @@ namespace satdump
 
             if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0 && product.has_calibation())
             {
+                product.init_calibration();
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);
                 images_obj.push_back(product.get_calibrated_image(i));

@@ -58,8 +58,8 @@ int main_record(int argc, char *argv[])
     }
 
     // Create output dir
-    if (!std::filesystem::exists(output_file))
-        std::filesystem::create_directories(output_file);
+    if (!std::filesystem::exists(std::filesystem::path(output_file).parent_path().string()))
+        std::filesystem::create_directories(std::filesystem::path(output_file).parent_path().string());
 
     // Get all sources
     dsp::registerAllSources();

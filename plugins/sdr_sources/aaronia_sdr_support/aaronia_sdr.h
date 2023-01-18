@@ -27,6 +27,7 @@ protected:
     int d_agc_mode = 0;
     bool d_enable_amp = 0;
     bool d_enable_preamp = 0;
+    bool d_rescale = 0;
 
     void set_others();
     void set_gains();
@@ -66,7 +67,12 @@ protected:
                     continue;
                 }
 
-                memcpy(output_stream->writeBuf, (complex_t *)packet.fp32, cnt * sizeof(complex_t));
+                // Optionally re-scale to be in the more "standard" 1.0f range
+                if (d_rescale)
+                    volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)packet.fp32, 1000, cnt);
+                else
+                    memcpy(output_stream->writeBuf, (complex_t *)packet.fp32, cnt * sizeof(complex_t));
+
                 output_stream->swap(cnt);
 
                 AARTSAAPI_ConsumePackets(&aaronia_device, 0, 1);
