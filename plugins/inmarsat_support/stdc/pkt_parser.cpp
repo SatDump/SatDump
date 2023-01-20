@@ -267,15 +267,10 @@ namespace inmarsat
             int logical_channel_no = pkt[3];
             int packet_no = pkt[4];
 
-            int j = 5;
-            for (int i = 0; j < pkt_len - 2; i++)
-            {
-                char c = pkt[j];
-                wip_payload.push_back(c);
-                j++;
-            }
+            std::vector<uint8_t> payload(pkt_len - 2 - 4);
+            memcpy(payload.data(), &pkt[5], pkt_len - 2 - 5);
 
-            // wip_payload_presentation = is_binary(payload, true) ? 7 : 0;
+            int payload_presentation = is_binary(payload, true) ? 7 : 0;
 
             output["sat"] = sat;
             output["sat_name"] = get_sat_name(sat);
@@ -285,6 +280,8 @@ namespace inmarsat
             output["packet_no"] = packet_no;
             // output["payload"] = payload;
             // output["payload_presentation"] = wip_payload_presentation;
+
+            wip_message += message_to_string(payload, payload_presentation);
         }
 
         void STDPacketParser::parse_pkt_ab(uint8_t *pkt, nlohmann::json &output)
@@ -413,6 +410,8 @@ namespace inmarsat
 
         void STDPacketParser::parse_pkt_be(uint8_t *pkt, int pkt_len, nlohmann::json &output)
         {
+            if (!wip_multi_frame_has_start)
+                return;
             int actual_length = pkt_len - 2 - 2;
             memcpy(&wip_multi_frame_pkt[wip_multi_frame_gotten_size], &pkt[2], actual_length);
             wip_multi_frame_gotten_size += actual_length;
@@ -421,7 +420,7 @@ namespace inmarsat
         void STDPacketParser::parse_main_pkt(uint8_t *main_pkt, int main_pkt_len)
         {
             bool has_message = false;
-            wip_payload.clear();
+            wip_message.clear();
             output_meta.clear();
 
             double timestamp = time(0);
@@ -590,9 +589,7 @@ namespace inmarsat
 
         void STDPacketParser::process_message()
         {
-            wip_payload_presentation = is_binary(wip_payload, true) ? 7 : 0;
-            output_meta["message"] = message_to_string(wip_payload, wip_payload_presentation);
-            output_meta["payload_presentation"] = wip_payload_presentation;
+            output_meta["message"] = wip_message;
             on_packet(output_meta);
         }
     }

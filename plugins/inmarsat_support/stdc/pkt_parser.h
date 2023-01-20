@@ -25,8 +25,7 @@ namespace inmarsat
         class STDPacketParser
         {
         private:
-            std::vector<uint8_t> wip_payload;
-            int wip_payload_presentation;
+            std::string wip_message;
             nlohmann::json output_meta;
 
             bool wip_multi_frame_has_start = false;
