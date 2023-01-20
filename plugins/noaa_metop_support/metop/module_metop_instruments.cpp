@@ -258,8 +258,7 @@ namespace metop
                 for (int i = 0; i < 5; i++)
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
 
-                // calibration
-                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
                     if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
                     {
                         mhs_reader.calibrate(calib_coefs[sat_name]);
@@ -267,10 +266,14 @@ namespace metop
                         for (int c = 0; c < 5; c++){
                             mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
                         }
+                        mhs_products.set_calibration_default_radiance_range(0, 0.013, 0.022);
+                        mhs_products.set_calibration_default_radiance_range(1, 0.039, 0.068);
+                        mhs_products.set_calibration_default_radiance_range(2, 0.0713, 0.0868);
+                        mhs_products.set_calibration_default_radiance_range(3, 0.059, 0.090);
+                        mhs_products.set_calibration_default_radiance_range(4, 0.060, 0.096);
                     }
                     else
                         logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-
                 mhs_products.save(directory);
                 dataset.products_list.push_back("MHS");
 
