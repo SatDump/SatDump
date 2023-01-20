@@ -91,7 +91,7 @@ namespace inmarsat
                         descramble(buffer_vitdecoded);
 
                         uint16_t frm_num = buffer_vitdecoded[2] << 8 | buffer_vitdecoded[3];
-                        logger->trace("Got frame {:d} {:d} {:f} {:d}", best_match, (int)inverted, viterbi.ber(), frm_num);
+                        logger->trace("Got STD-C Frame Corr {:d} Inv {:d} Ber {:f} No {:d}", best_match, (int)inverted, viterbi.ber(), frm_num);
 
                         if (output_data_type == DATA_FILE)
                             data_out.write((char *)buffer_vitdecoded, ENCODED_FRAME_SIZE_NOSYNC / 16);
