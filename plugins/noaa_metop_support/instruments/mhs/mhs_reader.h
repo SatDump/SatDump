@@ -51,6 +51,7 @@ namespace noaa_metop
             //calib values
             nlohmann::json calib;
             std::vector<calib_line> calib_lines;
+            std::vector<uint8_t> PIE_buff;
 
             //calib functions
             std::array<uint8_t, SCI_PACKET_SIZE> get_SCI_packet(int PKT);

@@ -67,6 +67,8 @@ namespace noaa_metop
                 }
             }
 
+            PIE_buff.push_back((buffer[0] >> 3) & 1);
+
             calib_lines.push_back(cl);
         }
 
@@ -86,26 +88,26 @@ namespace noaa_metop
 
         double MHSReader::get_u(double temp, int ch)
         {
-            if (temp == calib["u_temps"][0].get<double>())
-                return calib["u"][0][ch].get<double>();
+            if (temp == calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>())
+                return calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][0][ch].get<double>();
 
-            if (temp == calib["u_temps"][1].get<double>())
-                return calib["u"][1][ch].get<double>();
+            if (temp == calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>())
+                return calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][1][ch].get<double>();
 
-            if (temp == calib["u_temps"][2].get<double>())
-                return calib["u"][2][ch].get<double>();
+            if (temp == calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>())
+                return calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][2][ch].get<double>();
 
-            if (temp < calib["u_temps"][0].get<double>())
-                return interpolate(calib["u_temps"][0].get<double>(), calib["u"][0][ch].get<double>(), calib["u_temps"][1].get<double>(), calib["u"][1][ch].get<double>(), temp, 0);
+            if (temp < calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>())
+                return interpolate(calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][0][ch].get<double>(), calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][1][ch].get<double>(), temp, 0);
 
-            if (temp > calib["u_temps"][0].get<double>() && temp < calib["u_temps"][1].get<double>())
-                return interpolate(calib["u_temps"][0].get<double>(), calib["u"][0][ch].get<double>(), calib["u_temps"][1].get<double>(), calib["u"][1][ch].get<double>(), temp, 0);
+            if (temp > calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>() && temp < calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>())
+                return interpolate(calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][0][ch].get<double>(), calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][1][ch].get<double>(), temp, 0);
 
-            if (temp > calib["u_temps"][1].get<double>() && temp < calib["u_temps"][2].get<double>())
-                return interpolate(calib["u_temps"][1].get<double>(), calib["u"][1][ch].get<double>(), calib["u_temps"][2].get<double>(), calib["u"][2][ch].get<double>(), temp, 0);
+            if (temp > calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>() && temp < calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>())
+                return interpolate(calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][1][ch].get<double>(), calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][2][ch].get<double>(), temp, 0);
 
             else
-                return interpolate(calib["u_temps"][1].get<double>(), calib["u"][1][ch].get<double>(), calib["u_temps"][2].get<double>(), calib["u"][2][ch].get<double>(), temp, 1);
+                return interpolate(calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][1][ch].get<double>(), calib["u_temps"][calib["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["u"][calib["instrument_temerature_sensor_backup"].get<bool>()][2][ch].get<double>(), temp, 1);
         }
 
         double MHSReader::interpolate(double a1x, double a1y, double a2x, double a2y, double bx, int mode)
@@ -121,6 +123,9 @@ namespace noaa_metop
             // declare all the variables
             calib = calib_coefs;
             calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+
+            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end());
+            PIE_buff.clear();
 
             double a, b;
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw;
@@ -155,7 +160,7 @@ namespace noaa_metop
                     Tk[i] = 0;
                     for (int j = 0; j <= 3; j++)
                     {
-                        Tk[i] += calib["f"][i][j].get<double>() * pow(R[i], (double)j);
+                        Tk[i] += calib["f"][PIE][i][j].get<double>() * pow(R[i], (double)j);
                     }
                     WTk += (calib["W"][i].get<double>() * Tk[i]);
                     Wk += calib["W"][i].get<double>();
@@ -177,7 +182,7 @@ namespace noaa_metop
                 for (int i = 0; i < 5; i++)
                 {
                     double Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>()*Tw;
-                    double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i], calib["wavenumber"][i].get<double>()));
+                    double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
                     ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (calib_lines[l].calibration_views[i][1] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][1] * calib_lines[l].calibration_views[i][0]) / pow(G, 2.0));
                     ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
                     ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
