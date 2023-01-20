@@ -50,7 +50,6 @@ protected:
     std::thread convertThread;
 
     bool convertShouldRun = false;
-    bool convertShouldExit = false;
 
     int process(int count, const uint8_t *in, complex_t *out)
     {
@@ -81,19 +80,12 @@ protected:
 
     void convertFunction()
     {
-        while (!convertShouldExit)
+        while (convertShouldRun)
         {
-            if (convertShouldRun)
-            {
-                int count = client_output_stream->read();
-                int outCount = process(count, client_output_stream->readBuf, output_stream->writeBuf);
-                client_output_stream->flush();
-                output_stream->swap(outCount);
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
+            int count = client_output_stream->read();
+            int outCount = process(count, client_output_stream->readBuf, output_stream->writeBuf);
+            client_output_stream->flush();
+            output_stream->swap(outCount);
         }
     }
 
@@ -115,7 +107,6 @@ protected:
 public:
     SDRPPServerSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
-        convertThread = std::thread(&SDRPPServerSource::convertFunction, this);
     }
 
     ~SDRPPServerSource()

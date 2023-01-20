@@ -60,6 +60,20 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `lna_agc` : Enable or disable the built-in LNA AGC
 - `bias` : Enable Bias-Tee power (if supported)
 
+## Aaronia Spectran V6
+
+- `ref_level` : Reference Level, in dBs
+- `usb_compression` : 
+    - 0 is auto
+    - 1 is raw
+    - 2 is compressed
+- `agc_mode` : 
+    - 0 is manual
+    - 1 is peak
+    - 2 is power
+- `enable_amp` : Enable the amp
+- `enable_preamp` : Enable the preamp
+
 ## SDDC (RX888, RX999, etc)
 
 *Note : Support for those is experimental. Things may not work as expected!*
@@ -93,6 +107,15 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `bit_depth` : Bit depth to stream at. Options are 8/16/32
 - `gain` : Device gain in dBs
 - `digital_gain` : Software gain, in dBs
+
+## SDR++ Server
+
+*Note : Using SDR++ in CLI mode as a source is possible, but all settings have to be setup from an UI connecting to the server beforehand, including samplerate!*
+
+- `ip_address` : IPv4 Server address
+- `port` : Server port. Usually 5259
+- `bit_depth` : Bit depth to stream at. Options are 8/16/32
+- `compression` : Use SDR++ Server compression (true / false)
 
 ## PlutoSDR
 

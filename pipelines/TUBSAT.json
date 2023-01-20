@@ -1,0 +1,50 @@
+{
+    "tubin_x_dump": {
+        "name": "TUBIN X-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "check_crc": {
+                "type": "bool",
+                "value": true,
+                "name": "Check CRC",
+                "description": "Checks frames for errors. This is usually \ndesireable, but sometimes ignoring \nerrors may decode a bit more!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 12.3e6,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "ccsds_conv_r2_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 4416,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {
+                "tubin_decoder": {
+                    "check_crc": true
+                }
+            }
+        }
+    }
+}
