@@ -205,7 +205,6 @@ namespace inmarsat
 
             std::string unknown1_hex;
 
-            std::ostringstream os;
             if (pkt_len >= 38)
             {
                 int j = 13;
