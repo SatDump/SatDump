@@ -74,7 +74,14 @@ namespace inmarsat
                 outf << msg.dump(4);
                 outf.close();
 
-                logger->info("Packet :\n" + msg.dump(4));
+                if (msg["pkt_id"].get<int>() == 0xAA)
+                    logger->info("Message : \n" + msg["message"].get<std::string>());
+                else if (msg["pkt_id"].get<int>() == 0xb1)
+                    logger->info("EGC Double Header 1 : \n" + msg["message"].get<std::string>());
+                else if (msg["pkt_id"].get<int>() == 0xb2)
+                    logger->info("EGC Double Header 2 : \n" + msg["message"].get<std::string>());
+                else
+                    logger->info("Packet : " + msg["pkt_type"].get<std::string>());
 
                 pkt_history_mtx.lock();
                 pkt_history.push_back(msg);
@@ -158,6 +165,16 @@ namespace inmarsat
                                 ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
                                 ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                            }
+                            else if (msg["pkt_id"].get<int>() == 0xb1 || msg["pkt_id"].get<int>() == 0xb2)
+                            {
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TableSetColumnIndex(2);
+                                ImGui::TextColored(ImColor(255, 0, 0), "%s", msg["message"].get<std::string>().c_str());
                             }
                             else if (!pkt_show_others)
                             {
