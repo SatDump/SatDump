@@ -72,34 +72,31 @@ namespace noaa_metop
             int pos = gac_mode ? 1182 : 750; // AVHRR Data
             line2image(buffer, pos, width, buffer[6] & 1);
 
-            if (!gac_mode) // we don't have info on GAC rn, we'll have to RE
-            {
-                // calibration data extraction (for later, we don't know what sat this is yet!)
-                prt_buffer.push_back(buffer[17] * buffer[18] * buffer[19] == 0 ? 0 : (buffer[17] + buffer[18] + buffer[19]) / 3);
-                // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
+            // calibration data extraction (for later, we don't know what sat this is yet!)
+            prt_buffer.push_back(buffer[17] * buffer[18] * buffer[19] == 0 ? 0 : (buffer[17] + buffer[18] + buffer[19]) / 3);
+            // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
 
-                // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
-                uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
-                uint16_t avg_spc[3] = {0, 0, 0}; // space average
-                for (int i = 0; i < 10; i++)
-                    for (int j = 0; j < 3; j++)
-                    {
-                        avg_blb[j] += buffer[22 + 3 * i + j];
-                        avg_spc[j] += buffer[52 + 5 * i + j + 2];
-                    }
+            // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
+            uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
+            uint16_t avg_spc[3] = {0, 0, 0}; // space average
+            for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] /= 10;
-                    avg_spc[j] /= 10;
+                    avg_blb[j] += buffer[22 + 3 * i + j];
+                    avg_spc[j] += buffer[52 + 5 * i + j + 2];
                 }
-
-                std::array<view_pair, 3> el;
-                for (int i = 0; i < 3; i++)
-                {
-                    el[i] = view_pair{avg_spc[i], avg_blb[i]};
-                }
-                views.push_back(el);
+            for (int j = 0; j < 3; j++)
+            {
+                avg_blb[j] /= 10;
+                avg_spc[j] /= 10;
             }
+
+            std::array<view_pair, 3> el;
+            for (int i = 0; i < 3; i++)
+            {
+                el[i] = view_pair{avg_spc[i], avg_blb[i]};
+            }
+            views.push_back(el);
         }
 
         image::Image<uint16_t> AVHRRReader::getChannel(int channel)
