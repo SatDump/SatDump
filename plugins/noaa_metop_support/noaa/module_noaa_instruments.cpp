@@ -166,19 +166,6 @@ namespace noaa
                     logger->info("----------- AVHRR/3");
                     logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
-                    // calibration
-                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
-                    if (calib_coefs.contains(sat_name))
-                        avhrr_reader.calibrate(calib_coefs[sat_name]);
-                    else
-                        logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-
-                    /*
-                    std::ofstream out("AVHRR_calib.json");
-                    out << avhrr_reader.calib_out;
-                    out.close();
-                    */
-
                     // product generation
                     satdump::ImageProducts avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
@@ -187,16 +174,24 @@ namespace noaa
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
-                    // calib
-                    avhrr_products.set_calibration(avhrr_reader.calib_out);
-                    for (int n = 0; n < 3; n++)
+
+                    // calibration
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+                    if (calib_coefs.contains(sat_name))
                     {
-                        avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
-                        avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                        avhrr_reader.calibrate(calib_coefs[sat_name]);
+                        avhrr_products.set_calibration(avhrr_reader.calib_out);
+                        for (int n = 0; n < 3; n++)
+                        {
+                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                            avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                        }
+                        avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
+                        avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
+                        avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
                     }
-                    avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
-                    avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
-                    avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
+                    else
+                        logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                     nlohmann::ordered_json proj_settings;
 
@@ -313,17 +308,28 @@ namespace noaa
                     mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     mhs_products.set_timestamps(mhs_reader.timestamps);
 
-                    if (scid == 13) // NOAA-18
-                        mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_mhs.json")));
-                    if (scid == 15) // NOAA-19
-                        mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
-
-                    /*for (int i = 0; i < 5; i++)
-                    {
-                        mhs_products.set_calibration_polynomial_per_line(i, mhs_reader.calibration_coefs[i]);
-                        mhs_products.set_wavenumber(i, noaa_metop::mhs::calibration::wavenumber[i]);
+                    for (int i = 0; i < 5; i++)
                         mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
-                    }*/
+
+                    mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
+
+                    // calibration
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
+                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                    {
+                        mhs_reader.calibrate(calib_coefs[sat_name]);
+                        mhs_products.set_calibration(mhs_reader.calib_out);
+                        for (int c = 0; c < 5; c++){
+                            mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
+                        }
+                        mhs_products.set_calibration_default_radiance_range(0, 0.013, 0.022);
+                        mhs_products.set_calibration_default_radiance_range(1, 0.039, 0.068);
+                        mhs_products.set_calibration_default_radiance_range(2, 0.0713, 0.0868);
+                        mhs_products.set_calibration_default_radiance_range(3, 0.059, 0.090);
+                        mhs_products.set_calibration_default_radiance_range(4, 0.060, 0.096);
+                    }
+                    else
+                        logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                     mhs_products.save(directory);
                     dataset.products_list.push_back("MHS");

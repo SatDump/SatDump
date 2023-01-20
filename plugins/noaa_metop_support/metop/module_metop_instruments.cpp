@@ -89,14 +89,7 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 34)
-                        {
-                            if (vcdu.spacecraft_id == METOP_A_SCID)
-                                mhs_reader.work_metop(pkt, 1);
-                            else if (vcdu.spacecraft_id == METOP_B_SCID)
-                                mhs_reader.work_metop(pkt, 2);
-                            else if (vcdu.spacecraft_id == METOP_C_SCID)
-                                mhs_reader.work_metop(pkt, 3);
-                        }
+                            mhs_reader.work_metop(pkt);
                 }
                 else if (vcdu.vcid == 15) // ASCAT
                 {
@@ -264,6 +257,19 @@ namespace metop
 
                 for (int i = 0; i < 5; i++)
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+
+                // calibration
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
+                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                    {
+                        mhs_reader.calibrate(calib_coefs[sat_name]);
+                        mhs_products.set_calibration(mhs_reader.calib_out);
+                        for (int c = 0; c < 5; c++){
+                            mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
+                        }
+                    }
+                    else
+                        logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                 mhs_products.save(directory);
                 dataset.products_list.push_back("MHS");
