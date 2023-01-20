@@ -17,6 +17,10 @@ namespace inmarsat
             std::atomic<size_t> filesize;
             std::atomic<size_t> progress;
 
+            std::mutex pkt_history_mtx;
+            std::vector<nlohmann::json> pkt_history;
+            bool pkt_show_others = false;
+
         public:
             STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~STDCParserModule();
