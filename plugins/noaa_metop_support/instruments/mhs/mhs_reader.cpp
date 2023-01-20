@@ -145,12 +145,12 @@ namespace noaa_metop
                     Tk[r] = 0;
                 }
 
-                double RCALn = calib["RCAL"][0].get<double>() + calib["RCAL"][1].get<double>() + calib["RCAL"][2].get<double>();
+                double RCALn = calib["RCAL"][PIE][0].get<double>() + calib["RCAL"][PIE][1].get<double>() + calib["RCAL"][PIE][2].get<double>();
 
                 // math for calculating PRT temperature
                 double CCALn = calib_lines[l].PRT_calib[0] + calib_lines[l].PRT_calib[1] + calib_lines[l].PRT_calib[2];
                 double C2CALn = pow((double)calib_lines[l].PRT_calib[0], 2.0) + pow((double)calib_lines[l].PRT_calib[1], 2.0) + pow((double)calib_lines[l].PRT_calib[2], 2.0);
-                double RCCALn = (double)calib_lines[l].PRT_calib[0] * calib["RCAL"][0].get<double>() + (double)calib_lines[l].PRT_calib[1] * calib["RCAL"][1].get<double>() + (double)calib_lines[l].PRT_calib[2] * calib["RCAL"][2].get<double>();
+                double RCCALn = (double)calib_lines[l].PRT_calib[0] * calib["RCAL"][PIE][0].get<double>() + (double)calib_lines[l].PRT_calib[1] * calib["RCAL"][PIE][1].get<double>() + (double)calib_lines[l].PRT_calib[2] * calib["RCAL"][PIE][2].get<double>();
                 a = (RCALn * C2CALn - CCALn * RCCALn) / (3 * C2CALn - pow(CCALn, 2.0));
                 b = (3 * RCCALn - RCALn * CCALn) / (3 * C2CALn - pow(CCALn, 2.0));
 
