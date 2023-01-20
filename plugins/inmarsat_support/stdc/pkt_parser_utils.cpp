@@ -1,4 +1,5 @@
 #include "pkt_parser.h"
+#include <stringstream>
 
 namespace inmarsat
 {
