@@ -1,6 +1,6 @@
 {
     "inmarsat_std_c": {
-        "name": "Inmarsat STC-C",
+        "name": "Inmarsat STD-C",
         "live": true,
         "live_cfg": [
             [

@@ -141,7 +141,7 @@ namespace inmarsat
                 {
                     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
-                    ImGui::TableSetupColumn("Contents", NULL, -1);
+                    ImGui::TableSetupColumn("Contents", 0, -1);
                     ImGui::TableHeadersRow();
 
                     for (int i = pkt_history.size() - 1; i >= 0; i--)
@@ -153,9 +153,9 @@ namespace inmarsat
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(0, 0, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
                                 ImGui::TableSetColumnIndex(1);
-                                ImGui::TextColored(ImColor(255, 0, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
                                 ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                             }
@@ -163,9 +163,9 @@ namespace inmarsat
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(0, 0, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
                                 ImGui::TableSetColumnIndex(1);
-                                ImGui::TextColored(ImColor(255, 0, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
                                 ImGui::TextColored(ImColor(255, 255, 255), "%s", msg.dump().c_str());
                             }
