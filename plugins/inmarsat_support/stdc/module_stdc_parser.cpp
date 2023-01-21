@@ -6,6 +6,7 @@
 #include "common/utils.h"
 #include "pkt_parser.h"
 #include "msg_parser.h"
+#include "egc_parser.h"
 
 namespace inmarsat
 {
@@ -77,12 +78,16 @@ namespace inmarsat
 
             STDPacketParser pkt_parser;
             MessageParser msg_parser;
+            EGCMessageParser egc_parser;
 
             pkt_parser.on_packet = [&](nlohmann::json msg)
             {
                 double time_d = msg["timestamp"].get<double>();
                 if (msg["pkt_id"].get<int>() == 0x7D)
+                {
                     msg_parser.push_current_time(time_d);
+                    egc_parser.push_current_time(time_d);
+                }
 
                 if (msg["pkt_id"].get<int>() != 0xAA)
                     write_pkt_file_out(msg);
@@ -93,9 +98,15 @@ namespace inmarsat
                     msg_parser.push_message(msg);
                 }
                 else if (msg["pkt_id"].get<int>() == 0xb1)
+                {
                     logger->info("EGC Double Header 1 : \n" + msg["message"].get<std::string>());
+                    egc_parser.push_message(msg);
+                }
                 else if (msg["pkt_id"].get<int>() == 0xb2)
+                {
                     logger->info("EGC Double Header 2 : \n" + msg["message"].get<std::string>());
+                    egc_parser.push_message(msg);
+                }
                 else
                     logger->info("Packet : " + msg["pkt_type"].get<std::string>());
 
@@ -113,6 +124,23 @@ namespace inmarsat
                 write_pkt_file_out(msg);
 
                 logger->info("Full Message : \n" + msg["message"].get<std::string>());
+
+                pkt_history_mtx.lock();
+                pkt_history_msg.push_back(msg);
+                if (pkt_history_msg.size() > 1000)
+                    pkt_history_msg.erase(pkt_history_msg.begin());
+                pkt_history_mtx.unlock();
+
+                msg_id++;
+            };
+
+            egc_parser.on_message = [&](nlohmann::json msg)
+            {
+                msg["pkt_type"] = "EGC Message";
+
+                write_pkt_file_out(msg);
+
+                logger->info("EGC Message : \n" + msg["message"].get<std::string>());
 
                 pkt_history_mtx.lock();
                 pkt_history_msg.push_back(msg);
@@ -185,6 +213,34 @@ namespace inmarsat
                     for (int i = pkt_history_msg.size() - 1; i >= 0; i--)
                     {
                         auto &msg = pkt_history_msg[i];
+                        try
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                        }
+                        catch (std::exception &e)
+                        {
+                        }
+                    }
+                    ImGui::EndTable();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("EGC Messages"))
+                {
+                    ImGui::BeginTable("##stdmessagetable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
+                    ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
+                    ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
+                    ImGui::TableSetupColumn("Contents", 0, -1);
+                    ImGui::TableHeadersRow();
+
+                    for (int i = pkt_history_egc.size() - 1; i >= 0; i--)
+                    {
+                        auto &msg = pkt_history_egc[i];
                         try
                         {
                             ImGui::TableNextRow();

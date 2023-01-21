@@ -1,22 +1,22 @@
-#include "msg_parser.h"
+#include "egc_parser.h"
 #include "logger.h"
 
 namespace inmarsat
 {
     namespace stdc
     {
-        msg_t MessageParser::parse_to_msg(nlohmann::json &msg)
+        egc_t EGCMessageParser::parse_to_msg(nlohmann::json &msg)
         {
-            msg_t v;
+            egc_t v;
             v.pkt = msg;
-            v.logical_channel = msg["logical_channel_no"].get<int>();
+            v.msg_id = msg["message_id"].get<int>();
             v.pkt_no = msg["packet_no"].get<int>();
             v.timestamp = msg["timestamp"].get<double>();
             v.message = msg["message"].get<std::string>();
             return v;
         }
 
-        nlohmann::json MessageParser::serialize_from_msg(msg_t m, std::string ms)
+        nlohmann::json EGCMessageParser::serialize_from_msg(egc_t m, std::string ms)
         {
             nlohmann::json v;
             v = m.pkt;
@@ -26,20 +26,26 @@ namespace inmarsat
             return v;
         }
 
-        void MessageParser::push_message(nlohmann::json msg)
+        void EGCMessageParser::push_message(nlohmann::json msg)
         {
-            msg_t m = parse_to_msg(msg);
+            egc_t m = parse_to_msg(msg);
 
-            if (wip_messages.count(m.logical_channel) == 0)
-                wip_messages.insert({m.logical_channel, std::vector<msg_t>()});
+            if (wip_messages.count(m.msg_id) == 0)
+                wip_messages.insert({m.msg_id, std::vector<egc_t>()});
 
-            wip_messages[m.logical_channel].push_back(m);
+            bool has_id = false;
+            for (auto d : wip_messages[m.msg_id])
+                if (d.pkt_no == m.pkt_no)
+                    has_id = true;
 
-            std::sort(wip_messages[m.logical_channel].begin(), wip_messages[m.logical_channel].end(), [](const msg_t &v1, const msg_t &v2)
+            if (!has_id)
+                wip_messages[m.msg_id].push_back(m);
+
+            std::sort(wip_messages[m.msg_id].begin(), wip_messages[m.msg_id].end(), [](const egc_t &v1, const egc_t &v2)
                       { return v1.pkt_no < v2.pkt_no; });
         }
 
-        void MessageParser::check_curr_messages()
+        void EGCMessageParser::check_curr_messages()
         {
         recheck:
             for (auto &el : wip_messages)
@@ -57,7 +63,7 @@ namespace inmarsat
             }
         }
 
-        void MessageParser::push_current_time(double current_time)
+        void EGCMessageParser::push_current_time(double current_time)
         {
             this->current_time = current_time;
             check_curr_messages();

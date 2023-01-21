@@ -315,7 +315,7 @@ namespace inmarsat
             bool presentation = pkt[7];
 
             output["message_type"] = message_type;
-            output["service_code_and_addressName"] = get_service_code_and_address_name(message_type);
+            output["service_code_and_address_name"] = get_service_code_and_address_name(message_type);
             output["continuation"] = continuation;
             output["priority"] = priority;
             output["priority_text"] = get_priority(priority);
@@ -358,7 +358,7 @@ namespace inmarsat
             bool presentation = pkt[7];
 
             output["message_type"] = message_type;
-            output["service_code_and_addressName"] = get_service_code_and_address_name(message_type);
+            output["service_code_and_address_name"] = get_service_code_and_address_name(message_type);
             output["continuation"] = continuation;
             output["priority"] = priority;
             output["priority_text"] = get_priority(priority);
@@ -528,7 +528,7 @@ namespace inmarsat
                     parse_pkt_be(pkt, pkt_len, output_meta);
 
                     // Check packet is usable
-                    if (wip_multi_frame_has_start && (wip_multi_frame_gotten_size == wip_multi_frame_pkt.size() - 2))
+                    if (wip_multi_frame_has_start && (wip_multi_frame_gotten_size == (int)wip_multi_frame_pkt.size() - 2))
                     {
                         STDPacketParser dec;
                         dec.on_packet = on_packet;
