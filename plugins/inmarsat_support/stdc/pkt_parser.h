@@ -25,7 +25,6 @@ namespace inmarsat
         class STDPacketParser
         {
         private:
-            std::string wip_message;
             nlohmann::json output_meta;
 
             bool wip_multi_frame_has_start = false;
@@ -58,11 +57,8 @@ namespace inmarsat
         public:
             void parse_main_pkt(uint8_t *main_pkt, int main_pkt_len = 640);
 
-        private:
-            void process_message();
-
         public:
-            // Callback for all packets, including messages
+            // Callback for all packets
             std::function<void(nlohmann::json)> on_packet = [](nlohmann::json) {};
         };
     }

@@ -472,10 +472,17 @@ namespace inmarsat
                 }
             }
 
+            // Ensure it's all ASCII just in case
+            for (char &c : ret)
+                if (!isascii(c))
+                    c = ' ';
+
             // Remove duplicate spaces
-            auto it = std::unique(ret.begin(), ret.end(), [](char const &lhs, char const &rhs)
-                                  { return lhs == rhs && iswspace(lhs); });
-            ret.erase(it, ret.end());
+            // auto it = std::unique(ret.begin(), ret.end(), [](char const &lhs, char const &rhs)
+            //                      { return lhs == rhs && iswspace(lhs); });
+            // ret.erase(it, ret.end());
+
+            ret.erase(ret.end() - 1, ret.end());
 
             return ret;
         }

@@ -278,10 +278,9 @@ namespace inmarsat
             output["les_name"] = get_les_name(sat, les_id);
             output["logical_channel_no"] = logical_channel_no;
             output["packet_no"] = packet_no;
+            output["message"] = message_to_string(payload, payload_presentation);
             // output["payload"] = payload;
             // output["payload_presentation"] = wip_payload_presentation;
-
-            wip_message += message_to_string(payload, payload_presentation);
         }
 
         void STDPacketParser::parse_pkt_ab(uint8_t *pkt, nlohmann::json &output)
@@ -419,10 +418,6 @@ namespace inmarsat
 
         void STDPacketParser::parse_main_pkt(uint8_t *main_pkt, int main_pkt_len)
         {
-            bool has_message = false;
-            wip_message.clear();
-            output_meta.clear();
-
             double timestamp = time(0);
 
             int pos = 0;
@@ -461,14 +456,8 @@ namespace inmarsat
 
                 // logger->warn("Packet 0x{:X} ({:s}) : ", id, get_id_name(id).c_str());
 
-                if (id != 0xaa) // Not a message, so if we had one, process it right now!
-                {
-                    if (has_message)
-                        process_message();
-
-                    output_meta.clear();
-                    has_message = false;
-                }
+                // Clear output
+                output_meta.clear();
 
                 output_meta["pkt_id"] = id;
                 output_meta["pkt_type"] = get_id_name(id);
@@ -516,7 +505,6 @@ namespace inmarsat
                     break;
                 case 0xaa: // Message
                     parse_pkt_aa(pkt, pkt_len, output_meta);
-                    has_message = true;
                     break;
                 case 0xab:
                     parse_pkt_ab(pkt, output_meta);
@@ -533,10 +521,10 @@ namespace inmarsat
                 case 0xb2:
                     parse_pkt_b2(pkt, pkt_len, output_meta);
                     break;
-                case 0xbd:
+                case 0xbd: // Multiframe start
                     parse_pkt_bd(pkt, pkt_len, output_meta);
                     break;
-                case 0xbe:
+                case 0xbe: // Multiframe end
                     parse_pkt_be(pkt, pkt_len, output_meta);
 
                     // Check packet is usable
@@ -570,8 +558,8 @@ namespace inmarsat
                 // Timestamp packet
                 output_meta["timestamp"] = timestamp + ((double)pos / (double)main_pkt_len) * 8.64;
 
-                // Not a message, or multiframe PKT, process it now.
-                if (id != 0xaa && id != 0xbd && id != 0xbe)
+                // Not a multiframe PKT, process it now.
+                if (id != 0xbd && id != 0xbe)
                 {
                     on_packet(output_meta);
                     output_meta.clear();
@@ -579,18 +567,6 @@ namespace inmarsat
 
                 pos += pkt_len;
             }
-
-            if (has_message)
-            {
-                process_message();
-                output_meta.clear();
-            }
-        }
-
-        void STDPacketParser::process_message()
-        {
-            output_meta["message"] = wip_message;
-            on_packet(output_meta);
         }
     }
 }

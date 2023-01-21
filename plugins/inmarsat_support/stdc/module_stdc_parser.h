@@ -19,7 +19,9 @@ namespace inmarsat
 
             std::mutex pkt_history_mtx;
             std::vector<nlohmann::json> pkt_history;
-            bool pkt_show_others = false;
+            std::vector<nlohmann::json> pkt_history_msg;
+
+            void write_pkt_file_out(nlohmann::json &msg);
 
         public:
             STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
