@@ -33,7 +33,7 @@ namespace noaa_metop
             struct calib_line{
                 std::array<uint16_t, 3> PRT_calib;
                 std::array<uint16_t, 5> PRT_readings;
-                std::array<uint8_t, 24> HKTH;
+                std::array<uint8_t, 39> HK;
                 std::array<std::array<uint16_t, 2>, 5> calibration_views;
             };
         private:
@@ -69,6 +69,7 @@ namespace noaa_metop
             image::Image<uint16_t> getChannel(int channel);
             nlohmann::json calib_out;
             void calibrate(nlohmann::json calib_coefs);
+            nlohmann::json dump_telemetry(nlohmann::json calib_coefs);
         };
     } // namespace hirs
 } // namespace noaa

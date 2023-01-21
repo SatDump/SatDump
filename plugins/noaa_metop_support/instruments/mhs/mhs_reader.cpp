@@ -21,12 +21,12 @@ namespace noaa_metop
         MHSReader::MHSReader()
         {
             std::memset(MIU_data, 0, 80 * 50);
-            //deb_out.open("test.bin");
+            // deb_out.open("test.bin");
         }
 
         void MHSReader::work(uint8_t *buffer)
         {
-            //deb_out.write((char *)buffer, SCI_PACKET_SIZE);
+            // deb_out.write((char *)buffer, SCI_PACKET_SIZE);
             std::array<std::array<uint16_t, MHS_WIDTH>, 5> linebuff;
             std::memset(&linebuff, 0, MHS_WIDTH * 5 * 2); // make some room
 
@@ -51,8 +51,8 @@ namespace noaa_metop
             for (int i = 0; i < 5; i++)
                 cl.PRT_readings[i] = buffer[PRT_OFFSET + i * 2] << 8 | buffer[PRT_OFFSET + i * 2 + 1];
 
-            for (int i = 0; i < 24; i++)
-                cl.HKTH[i] = buffer[i + HKTH_offset];
+            for (int i = 0; i < 39; i++)
+                cl.HK[i] = buffer[i];
 
             // get the calibration views from the blackbody and space
             for (int c = 0; c < 5; c++)
@@ -140,7 +140,8 @@ namespace noaa_metop
                 Wk = 0;
                 Tw = 0;
 
-                for (int r = 0; r <5; r++){
+                for (int r = 0; r < 5; r++)
+                {
                     R[r] = 0;
                     Tk[r] = 0;
                 }
@@ -173,7 +174,7 @@ namespace noaa_metop
                     Tth[i] = 0.0;
                     for (int j = 0; j <= 4; j++)
                     {
-                        Tth[i] += (calib["g"][j].get<double>() * pow((double)calib_lines[l].HKTH[i], (double)j));
+                        Tth[i] += (calib["g"][j].get<double>() * pow((double)calib_lines[l].HK[i + HKTH_offset], (double)j));
                     }
                 }
 
@@ -181,7 +182,7 @@ namespace noaa_metop
                 nlohmann::json ln;
                 for (int i = 0; i < 5; i++)
                 {
-                    double Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>()*Tw;
+                    double Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>() * Tw;
                     double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
                     ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (calib_lines[l].calibration_views[i][1] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][1] * calib_lines[l].calibration_views[i][0]) / pow(G, 2.0));
                     ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
@@ -192,7 +193,6 @@ namespace noaa_metop
             }
         }
         // NOAA specific functions
-
         double MHSReader::get_timestamp(int pkt, int offset, int /*ms_scale*/)
         {
             if (pkt == 2)
@@ -315,9 +315,7 @@ namespace noaa_metop
                     MIU_data[cycle][i] = buffer[i + 48]; // reading MIU data from AIP
             }
         }
-
         // metop specific functions
-
         void MHSReader::work_metop(ccsds::CCSDSPacket &packet)
         {
             if (packet.payload.size() < 1302)
@@ -325,6 +323,131 @@ namespace noaa_metop
             timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
 
             work(&packet.payload[14]);
+        }
+
+        // telemetry dump
+        nlohmann::json MHSReader::dump_telemetry(nlohmann::json calib_coefs)
+        {
+            std::function AB = [](bool i)
+            { return (i ? "B" : "A"); };
+            std::string mode[16] = {"power on",
+                                    "warm up",
+                                    "stand by",
+                                    "scan",
+                                    "fixed view",
+                                    "self test",
+                                    "safeing",
+                                    "fault",
+                                    "INVALID",
+                                    "INVALID",
+                                    "INVALID",
+                                    "INVALID",
+                                    "INVALID",
+                                    "INVALID",
+                                    "INVALID",
+                                    "memory data packet ID"};
+
+            std::string temperature_id[24] = {"LO H1",
+                                              "LO H2",
+                                              "LO H3/H4",
+                                              "LO H5",
+                                              "Mixer/LNA/Multiplexer H1",
+                                              "Mixer/LNA/Multiplexer H2",
+                                              "Mixer/LNA/Multiplexer H3/4",
+                                              "Mixer/LNA/Multiplexer H5",
+                                              "Quasi-optics baseplate #1 (dichroic D1(A) or polarizer(B))",
+                                              "Quasi-optics baseplate #2 (dichroic D2(A) or mirror(B))",
+                                              "IF baseplate #1",
+                                              "IF baseplate #2",
+                                              "scan mechanism core",
+                                              "scan mechanism housing",
+                                              "RDM SSHM",
+                                              "FDM SSHM",
+                                              "Structure 1 (-A edge, next to baseplate cutout)",
+                                              "Structure 2 (-A edge, in-between Rx and SM)",
+                                              "Structure 3 (-V edge, in-between EE and SM)",
+                                              "processor module",
+                                              "Main DC/DC converter module",
+                                              "SCE RDM module",
+                                              "SCE FDM module",
+                                              "RF DC/DC converter module"};
+
+            std::string current_id[6] = {"EE and SM +5V ",
+                                          "receiver +8V",
+                                          "receiver +15V",
+                                          "receiver -15V",
+                                          "RDM motor",
+                                          "FDM motor"};
+            nlohmann::json telemetry;
+            for (calib_line cl : calib_lines)
+            {
+                // word 0
+                telemetry["misc"]["mode"].push_back(mode[(cl.HK[0] >> 4)]);
+                telemetry["misc"]["PIE ID"].push_back(AB((cl.HK[0] >> 3) & 1));
+                telemetry["misc"]["sub-commutation code"].push_back(cl.HK[0] & 3);
+                // word 1-2
+                telemetry["misc"]["TC"]["clean"].push_back((bool)(cl.HK[1] >> 7));
+                telemetry["misc"]["TC"]["conforms to CCSDS"].push_back((bool)((cl.HK[1] >> 6) & 1));
+                telemetry["misc"]["TC"]["ecognized as command"].push_back((bool)((cl.HK[1] >> 5) & 1));
+                telemetry["misc"]["TC"]["legal"].push_back((bool)((cl.HK[1] >> 4) & 1));
+                telemetry["misc"]["flags"]["FDM motor current trip"].push_back((bool)((cl.HK[1] >> 3) & 1));
+                telemetry["misc"]["TC"]["APID"].push_back(((cl.HK[1] & 3) << 8) & cl.HK[2]);
+                // word 3-4
+                telemetry["misc"]["TC"]["sequence count"].push_back((cl.HK[3] << 6) & (cl.HK[4] >> 2));
+                telemetry["misc"]["TC"]["received count"].push_back(cl.HK[4] & 3);
+                // word 5
+                telemetry["misc"]["flags"]["current monitor fault (PSU)"].push_back((bool)(cl.HK[5] >> 7));
+                telemetry["misc"]["flags"]["thermistor monitor fault"].push_back((bool)((cl.HK[5] >> 6) & 1));
+                telemetry["misc"]["flags"]["switch fault"].push_back((bool)((cl.HK[5] >> 5) & 1));
+                telemetry["misc"]["flags"]["processor fault"].push_back((bool)((cl.HK[5] >> 4) & 1));
+                telemetry["misc"]["flags"]["RDM motor current trip"].push_back((bool)((cl.HK[5] >> 3) & 1));
+                telemetry["misc"]["flags"]["DC offset error"].push_back((bool)((cl.HK[5] >> 2) & 1));
+                telemetry["misc"]["flags"]["scan control error"].push_back((bool)((cl.HK[5] >> 1) & 1));
+                telemetry["misc"]["flags"]["reference clock error"].push_back((bool)(cl.HK[5] & 1));
+                // word 6
+                telemetry["switches"]["receiver channel H4 backend"].push_back((bool)(cl.HK[6] >> 7));
+                telemetry["switches"]["receiver channel H3 backend"].push_back((bool)((cl.HK[6] >> 6) & 1));
+                telemetry["switches"]["receiver channel  H3/H4 local oscillator selected"].push_back(AB((cl.HK[6] >> 5) & 1));
+                telemetry["switches"]["receiver channel H3/H4 front-end"].push_back((bool)((cl.HK[6] >> 4) & 1));
+                telemetry["switches"]["receiver channel H2 local oscillator selected"].push_back(AB((cl.HK[6] >> 3) & 1));
+                telemetry["switches"]["receiver channel H2"].push_back((bool)((cl.HK[6] >> 2) & 1));
+                telemetry["switches"]["receiver channel H1 local oscillator selected"].push_back(AB((cl.HK[6] >> 1) & 1));
+                telemetry["switches"]["receiver channel H1"].push_back((bool)(cl.HK[6] & 1));
+                // word 7
+                telemetry["switches"]["PROM"].push_back((bool)(cl.HK[7] >> 7));
+                telemetry["switches"]["signal processing electronics/scan control electronics"].push_back((bool)((cl.HK[7] >> 6) & 1));
+                telemetry["switches"]["auxiliary operational heaters"].push_back((bool)((cl.HK[7] >> 5) & 1));
+                telemetry["switches"]["scan mechanism operational heaters"].push_back((bool)((cl.HK[7] >> 4) & 1));
+                telemetry["switches"]["receiver operational heaters"].push_back((bool)((cl.HK[7] >> 3) & 1));
+                telemetry["switches"]["Rx CV"].push_back((bool)((cl.HK[7] >> 2) & 1));
+                telemetry["switches"]["receiver channel H5 local oscillator selected"].push_back(AB((cl.HK[7] >> 1) & 1));
+                telemetry["switches"]["receiver channel H5"].push_back((bool)(cl.HK[7] & 1));
+                // word 8
+                telemetry["switches"]["FDM motor current trip status enabled"].push_back(!(bool)(cl.HK[8] >> 7));
+                telemetry["switches"]["RDM motor current trip status enabled"].push_back(!(bool)((cl.HK[8] >> 6) & 1));
+                telemetry["switches"]["FDM motor supply"].push_back((bool)((cl.HK[8] >> 5) & 1));
+                telemetry["switches"]["RDM motor supply"].push_back((bool)((cl.HK[8] >> 4) & 1));
+                telemetry["switches"]["FDM motor sensors selected"].push_back(AB((cl.HK[8] >> 3) & 1));
+                telemetry["switches"]["RDM motor sensors selected"].push_back(AB((cl.HK[8] >> 2) & 1));
+                telemetry["switches"]["FDM zero position sensors"].push_back(AB((cl.HK[8] >> 1) & 1));
+                telemetry["switches"]["RDM zero position sensors"].push_back(AB(cl.HK[8] & 1));
+                // temperature
+                for (int i = 0; i < 24; i++)
+                {
+                    double Tt = 0.0;
+                    for (int j = 0; j <= 4; j++)
+                    {
+                        Tt += (calib_coefs["g"][j].get<double>() * pow((double)cl.HK[i + HKTH_offset], (double)j));
+                    }
+                    telemetry["temperatures"][temperature_id[i]].push_back(Tt);
+                }
+                // current
+                for (int c = 0; c < 6; c++)
+                {
+                    telemetry["currents"][current_id[c]].push_back(calib_coefs["current_coefs"][c][0].get<double>() + calib_coefs["current_coefs"][c][1].get<double>() * cl.HK[c + 33]);
+                }
+            }
+            return telemetry;
         }
     }
 }

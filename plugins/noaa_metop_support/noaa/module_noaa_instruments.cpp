@@ -331,6 +331,7 @@ namespace noaa
                     else
                         logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
+                    saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));
                     mhs_products.save(directory);
                     dataset.products_list.push_back("MHS");
 
