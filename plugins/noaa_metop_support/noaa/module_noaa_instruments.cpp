@@ -186,9 +186,9 @@ namespace noaa
                             avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
                             avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                         }
-                        avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
-                        avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
-                        avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
+                        for (int c = 0; c < 6; c++)
+                            avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_radiance_range"][c][1].get<double>());
+
                     }
                     else
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
@@ -213,18 +213,6 @@ namespace noaa
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
-
-                    /*
-                    image::Image<uint16_t> calib (2048, avhrr_reader.lines + 1, 1);
-                    for (int i = 0; i < avhrr_reader.channels[0].size(); i++){
-                        calib[i] = abs(avhrr_products.get_calibrated_value(0, i % 2048, i / 2048) * 655.36);
-                    }
-                    calib.save_png("test_avhrr.png");
-                    for (int i = 0; i < avhrr_reader.channels[0].size(); i++){
-                        calib[i] = abs(avhrr_products.get_calibrated_value(1, i % 2048, i / 2048) * 655.36);
-                    }
-                    calib.save_png("test_avhrr2.png");
-                    */
 
                     avhrr_status = DONE;
                 }
@@ -321,12 +309,8 @@ namespace noaa
                         mhs_products.set_calibration(mhs_reader.calib_out);
                         for (int c = 0; c < 5; c++){
                             mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
+                            mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_radiance_range"][c][1].get<double>());
                         }
-                        mhs_products.set_calibration_default_radiance_range(0, 0.013, 0.022);
-                        mhs_products.set_calibration_default_radiance_range(1, 0.039, 0.068);
-                        mhs_products.set_calibration_default_radiance_range(2, 0.0713, 0.0868);
-                        mhs_products.set_calibration_default_radiance_range(3, 0.059, 0.090);
-                        mhs_products.set_calibration_default_radiance_range(4, 0.060, 0.096);
                     }
                     else
                         logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
