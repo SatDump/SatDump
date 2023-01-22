@@ -48,7 +48,7 @@ namespace satdump
         {
             for (int x = 0; x < 25; x++)
             {
-                uint16_t color[3] = {(511 - i) << 7, (511 - i) << 7, (511 - i) << 7};
+                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
                 scale_image.draw_pixel(x, i, color);
             }
         }

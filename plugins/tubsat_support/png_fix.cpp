@@ -14,7 +14,7 @@ namespace png_fix
     bool str_match_bin(uint8_t *in, std::vector<uint8_t> signature)
     {
         bool match = true;
-        for (int i = 0; i < signature.size(); i++)
+        for (unsigned int i = 0; i < signature.size(); i++)
             if (in[i] != signature[i])
                 match = false;
         return match;
@@ -124,7 +124,7 @@ namespace png_fix
         bool has_idat = false;
 
         // Find block using headers
-        for (int i = 8; i < in.size(); i++)
+        for (unsigned int i = 8; i < in.size(); i++)
         {
             uint32_t length = pack32_bits(&in[i + 0]);
             char *chunk_type = (char *)&in[i + 4];

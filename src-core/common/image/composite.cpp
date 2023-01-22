@@ -22,7 +22,7 @@ namespace image
     };
 
     template <typename T>
-    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, nlohmann::json &offsets_cfg)
+    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, /*std::vector<std::string> &channelNumbers, */nlohmann::json &offsets_cfg)
     {
         bool hasOffsets = !offsets_cfg.empty();
         std::map<std::string, int> offsets;
@@ -109,7 +109,7 @@ namespace image
         mu::Parser rgbParser;
         int outValsCnt = 0;
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -206,7 +206,7 @@ namespace image
         Image<T> lut;
         lut.load_png(lut_path);
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -281,7 +281,7 @@ namespace image
     template <typename T>
     Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, float *progress)
     {
-        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
