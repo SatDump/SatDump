@@ -337,9 +337,12 @@ namespace satdump
 
             if (range_window)
             {
-                ImGui::Begin("Display Range Control", &range_window);
+                ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::SetWindowSize(ImVec2(200*ui_scale, 115*ui_scale));
                 bool buff = false;
+                ImGui::SetNextItemWidth(115*ui_scale);
                 buff |= ImGui::InputDouble("Minium", &disaplay_ranges[active_channel_id].first, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
+                ImGui::SetNextItemWidth(115*ui_scale);
                 buff |= ImGui::InputDouble("Maximum", &disaplay_ranges[active_channel_id].second, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
                 if (buff){
                     update_needed = true;
