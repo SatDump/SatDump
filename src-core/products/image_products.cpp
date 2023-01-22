@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "libs/sol2/sol.hpp"
 #include "common/lua/lua_utils.h"
+#include "common/calibration.h"
 
 namespace satdump
 {
@@ -199,6 +200,15 @@ namespace satdump
 
             return output;
         }
+    }
+
+    image::Image<uint16_t> ImageProducts::get_temperature_image(int image_index, bool force, std::pair<double, double> rad_range)
+    {
+        std::pair<double, double> temp_range = {radiance_to_temperature(rad_range.first, get_wavenumber(image_index)), radiance_to_temperature(rad_range.second, get_wavenumber(image_index))};
+        image::Image<uint16_t> temperature_image = get_calibrated_image(image_index, force, rad_range);
+        for (unsigned int i = 0; i < temperature_image.size(); i++)
+            temperature_image[i] = temperature_image.clamp(((radiance_to_temperature((double)temperature_image[i]/65535.0 * abs(rad_range.first - rad_range.second) + rad_range.first, get_wavenumber(image_index)) - temp_range.first) / abs(temp_range.first - temp_range.second)) * 65535);
+        return temperature_image;
     }
 
     bool equation_contains(std::string init, std::string match)

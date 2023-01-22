@@ -60,9 +60,12 @@ namespace satdump
         }
         else if (select_image_id - 1 < (int)products->images.size())
         {
-            if (active_channel_calibrated && products->has_calibation()){
+            if (active_channel_calibrated && products->has_calibation())
+            {
                 current_image = products->get_calibrated_image(select_image_id - 1, update_needed, disaplay_ranges[select_image_id - 1]);
                 update_needed = false;
+                if (is_temp)
+                    current_image = products->get_temperature_image(select_image_id - 1, false, disaplay_ranges[select_image_id - 1]);
             }
             else
                 current_image = products->images[select_image_id - 1].image;
@@ -306,77 +309,103 @@ namespace satdump
                     ImGui::EndTooltip();
                 }
             }
-
-            ImGui::SameLine();
-            if (!products->has_calibation())
-                style::beginDisabled();
-            if (range_window)
+            if (products->has_calibation())
             {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-            }
-            else
-            {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
-            }
-            if (!active_channel_calibrated)
-                ImGui::BeginDisabled();
-            if (ImGui::Button(u8"\uf07e"))
-                range_window = !range_window;
-            if (!active_channel_calibrated)
-                ImGui::EndDisabled();
-            
-            ImGui::PopStyleColor(2);
-
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Diaplay Range Control");
-
-            if (!products->has_calibation())
-                style::endDisabled();
-
-            if (range_window)
-            {
-                ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-                ImGui::SetWindowSize(ImVec2(200*ui_scale, 115*ui_scale));
-                bool buff = false;
-                ImGui::SetNextItemWidth(115*ui_scale);
-                buff |= ImGui::InputDouble("Minium", &disaplay_ranges[active_channel_id].first, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
-                ImGui::SetNextItemWidth(115*ui_scale);
-                buff |= ImGui::InputDouble("Maximum", &disaplay_ranges[active_channel_id].second, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
-                if (buff){
-                    update_needed = true;
-                    asyncUpdate();
+                ImGui::SameLine();
+                if (!products->has_calibation())
+                    style::beginDisabled();
+                if (range_window)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
                 }
-                if(ImGui::Button("Default")){
-                    disaplay_ranges[active_channel_id] = products->get_calibration_default_radiance_range(active_channel_id);
-                    update_needed = true;
-                    asyncUpdate();
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
                 }
-                ImGui::End();
+                if (!active_channel_calibrated)
+                    ImGui::BeginDisabled();
+                if (ImGui::Button(u8"\uf07e"))
+                    range_window = !range_window;
+                if (!active_channel_calibrated)
+                    ImGui::EndDisabled();
+
+                ImGui::PopStyleColor(2);
+
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Diaplay Range Control");
+
+                if (range_window)
+                {
+                    ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                    ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
+                    bool buff = false;
+                    double tmp_min = is_temp ? radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_max = is_temp ? radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    ImGui::SetNextItemWidth(120 * ui_scale);
+                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    ImGui::SetNextItemWidth(120 * ui_scale);
+                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    if (buff)
+                    {
+                        disaplay_ranges[active_channel_id].first = is_temp ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 0 : 100));
+                        disaplay_ranges[active_channel_id].second = is_temp ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 0 : 100));
+                        update_needed = true;
+                        asyncUpdate();
+                    }
+                    if (ImGui::Button("Default"))
+                    {
+                        disaplay_ranges[active_channel_id] = products->get_calibration_default_radiance_range(active_channel_id);
+                        update_needed = true;
+                        asyncUpdate();
+                    }
+                    ImGui::End();
+                }
+
+                ImGui::Spacing();
+
+                ImGui::BeginGroup();
+                if (products->get_calibration_type(active_channel_id))
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY()+ 3*ui_scale);
+                ImGui::Text("Raw Counts");
+                ImGui::SameLine();
+
+                ImGui::SetNextItemWidth(50);
+                ToggleButton("##caltog", (int *)&active_channel_calibrated);
+                if (ImGui::IsItemClicked())
+                    asyncUpdate();
+                ImGui::SameLine();
+                //ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
+                if (products->get_calibration_type(active_channel_id)){
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3*ui_scale);
+                    ImGui::SetNextItemWidth(90 * ui_scale);
+                    //ImGui::Combo("##temp_rad", &tst, "Radiance\0Temperature");
+                    if(ImGui::BeginCombo("##temp_rad", is_temp ? "Temperature" : "Radiance", ImGuiComboFlags_NoArrowButton)){
+                        if (ImGui::Selectable("Radiance", !is_temp)){
+                            asyncUpdate();
+                            is_temp = false;
+                        }
+                        if(!is_temp)
+                            ImGui::SetItemDefaultFocus();
+
+                        if (ImGui::Selectable("Temperature", is_temp)){
+                            asyncUpdate();
+                            is_temp = true;
+                        }
+                        if(is_temp)
+                            ImGui::SetItemDefaultFocus();
+                        ImGui::EndCombo();
+                    }
+                }
+                else
+                    ImGui::Text("Albedo");
+                ImGui::EndGroup();
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
             }
-
-            ImGui::Spacing();
-            if (!products->has_calibation())
-                style::beginDisabled();
-
-            ImGui::BeginGroup();
-            ImGui::Text(" Raw Counts");
-            ImGui::SameLine();
-
-            ImGui::SetNextItemWidth(50);
-            ToggleButton("##caltog", (int *)&active_channel_calibrated);
-            if (ImGui::IsItemClicked())
-                asyncUpdate();
-            ImGui::SameLine();
-            ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
-            ImGui::EndGroup();
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            if (!products->has_calibation())
-                style::endDisabled();
 
             if (ImGui::Checkbox("Median Blur", &median_blur))
                 asyncUpdate();

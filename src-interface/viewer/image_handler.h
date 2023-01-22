@@ -45,6 +45,7 @@ namespace satdump
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
+        bool is_temp = false;
 
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;
