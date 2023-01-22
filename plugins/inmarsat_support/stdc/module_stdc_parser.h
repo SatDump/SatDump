@@ -24,6 +24,8 @@ namespace inmarsat
 
             void write_pkt_file_out(nlohmann::json &msg);
 
+            int last_pkt_count = 0;
+
         public:
             STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~STDCParserModule();

@@ -160,6 +160,8 @@ namespace inmarsat
                 else
                     input_fifo->read((uint8_t *)buffer, FRAME_SIZE_BYTES);
 
+                last_pkt_count = buffer[2] << 8 | buffer[3];
+
                 try
                 {
                     // logger->critical("new pkt");
@@ -190,6 +192,13 @@ namespace inmarsat
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
             ImGui::Text("Credits go to Paul Maxan (microp11) for the \nreverse-engineering work that went into Scytale-C!");
+            ImGui::Spacing();
+            ImGui::TextColored(ImColor(255, 0, 0), "Note : EGC Parsing is untested!");
+
+            ImGui::Spacing();
+            ImGui::Text("Last packet count : ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImColor(0, 255, 0), "%d", last_pkt_count);
 
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
