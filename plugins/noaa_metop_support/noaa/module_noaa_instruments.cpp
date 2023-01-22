@@ -228,6 +228,9 @@ namespace noaa
                     logger->info("----------- HIRS");
                     logger->info("Lines : " + std::to_string(hirs_reader.line));
 
+                    if (hirs_reader.sync < hirs_reader.line * 28)
+                        logger->error("(HIRS) Possible filter wheel synchronization loss detected! Radiometric data may be invalid.");
+
                     satdump::ImageProducts hirs_products;
                     hirs_products.instrument_name = "hirs";
                     hirs_products.bit_depth = 13;
