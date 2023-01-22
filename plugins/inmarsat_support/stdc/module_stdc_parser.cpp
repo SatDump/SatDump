@@ -94,8 +94,10 @@ namespace inmarsat
 
                 if (msg["pkt_id"].get<int>() == 0xAA)
                 {
-                    logger->info("Message : \n" + msg["message"].get<std::string>());
-                    msg_parser.push_message(msg);
+                    std::string m = msg["message"].get<std::string>();
+                    logger->info("Message : \n" + m);
+                    if (m != "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ-!") // Remove those periodic ones
+                        msg_parser.push_message(msg);
                 }
                 else if (msg["pkt_id"].get<int>() == 0xb1)
                 {
