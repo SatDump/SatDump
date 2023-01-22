@@ -221,9 +221,8 @@ namespace metop
                     avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
                     avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                 }
-                avhrr_products.set_calibration_default_radiance_range(3, 0, 1);   // FIX
-                avhrr_products.set_calibration_default_radiance_range(4, 0, 120); // FIX
-                avhrr_products.set_calibration_default_radiance_range(5, 0, 120); // FIX
+                for (int c = 0; c < 6; c++)
+                    avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
 
                 std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                 for (int i = 0; i < 6; i++)
@@ -259,21 +258,18 @@ namespace metop
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
-                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                {
+                    mhs_reader.calibrate(calib_coefs[sat_name]);
+                    mhs_products.set_calibration(mhs_reader.calib_out);
+                    for (int c = 0; c < 5; c++)
                     {
-                        mhs_reader.calibrate(calib_coefs[sat_name]);
-                        mhs_products.set_calibration(mhs_reader.calib_out);
-                        for (int c = 0; c < 5; c++){
-                            mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
-                        }
-                        mhs_products.set_calibration_default_radiance_range(0, 0.013, 0.022);
-                        mhs_products.set_calibration_default_radiance_range(1, 0.039, 0.068);
-                        mhs_products.set_calibration_default_radiance_range(2, 0.0713, 0.0868);
-                        mhs_products.set_calibration_default_radiance_range(3, 0.059, 0.090);
-                        mhs_products.set_calibration_default_radiance_range(4, 0.060, 0.096);
+                        mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
+                        mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                     }
-                    else
-                        logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+                }
+                else
+                    logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                 saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));
                 mhs_products.save(directory);

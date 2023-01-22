@@ -164,17 +164,18 @@ namespace satdump
         return val2;
     }
 
-    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index)
+    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index, bool force, std::pair<double, double> range)
     {
-        if (calibrated_img_cache.count(image_index) > 0)
+        if (calibrated_img_cache.count(image_index) > 0 && !force)
         {
             logger->trace("Cached calibrated image channel {:d}", image_index + 1);
             return calibrated_img_cache[image_index];
         }
         else
         {
-            bool albedo = get_calibration_type(image_index) == CALIB_REFLECTANCE;
-            auto range = get_calibration_default_radiance_range(image_index);
+            if (range == std::pair<double, double>{0, 0}){
+                range = get_calibration_default_radiance_range(image_index);
+            }
 
             logger->trace("Generating calibrated image channel {:d}", image_index + 1);
 
@@ -187,10 +188,7 @@ namespace satdump
                 {
                     for (size_t y = 0; y < images[image_index].image.height(); y++)
                     {
-                        if (albedo)
-                            output[y * output.width() + x] = output.clamp(get_calibrated_value(image_index, x, y) * 65535);
-                        else
-                            output[y * output.width() + x] = output.clamp(((get_calibrated_value(image_index, x, y) - range.first) / abs(range.first - range.second)) * 65535);
+                        output[y * output.width() + x] = output.clamp(((get_calibrated_value(image_index, x, y) - range.first) / abs(range.first - range.second)) * 65535);
                     }
                 }
             }

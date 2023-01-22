@@ -12,6 +12,7 @@
 #include "resources.h"
 #include "common/projection/reprojector.h"
 #include "core/opencl.h"
+#include "common/widgets/switch.h"
 
 namespace satdump
 {
@@ -35,6 +36,7 @@ namespace satdump
             select_image_str += "Channel " + img.channel_name + '\0';
             channel_numbers.push_back(img.channel_name);
             images_obj.push_back(img.image);
+            disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
         }
 
         for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
@@ -58,8 +60,10 @@ namespace satdump
         }
         else if (select_image_id - 1 < (int)products->images.size())
         {
-            if (active_channel_calibrated && products->has_calibation())
-                current_image = products->get_calibrated_image(select_image_id - 1);
+            if (active_channel_calibrated && products->has_calibation()){
+                current_image = products->get_calibrated_image(select_image_id - 1, update_needed, disaplay_ranges[select_image_id - 1]);
+                update_needed = false;
+            }
             else
                 current_image = products->images[select_image_id - 1].image;
             current_proj_metadata = products->get_channel_proj_metdata(select_image_id - 1);
@@ -273,26 +277,11 @@ namespace satdump
                 }
             }
 
-            if (!products->has_calibation())
-                style::beginDisabled();
-            if (ImGui::RadioButton("Raw", !active_channel_calibrated))
-            {
-                active_channel_calibrated = false;
-                asyncUpdate();
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("Calib", active_channel_calibrated))
-            {
-                active_channel_calibrated = true;
-                asyncUpdate();
-            }
-            if (!products->has_calibation())
-                style::endDisabled();
-
-            if (active_channel_id >= 0)
+            if (ImGui::IsItemHovered() && active_channel_id >= 0)
             {
                 if (products->get_wavenumber(active_channel_id) != 0)
                 {
+                    ImGui::BeginTooltip();
                     ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
                     double wl_nm = 1e7 / products->get_wavenumber(active_channel_id);
                     double frequency = 299792458.0 / (wl_nm * 10e-10);
@@ -314,8 +303,77 @@ namespace satdump
                         ImGui::Text("Frequency : %f MHz", frequency / 1e6);
                     else
                         ImGui::Text("Frequency : %f GHz", frequency / 1e9);
+                    ImGui::EndTooltip();
                 }
             }
+
+            ImGui::SameLine();
+            if (!products->has_calibation())
+                style::beginDisabled();
+            if (range_window)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
+            }
+            else
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+            }
+            if (!active_channel_calibrated)
+                ImGui::BeginDisabled();
+            if (ImGui::Button(u8"\uf07e"))
+                range_window = !range_window;
+            if (!active_channel_calibrated)
+                ImGui::EndDisabled();
+            
+            ImGui::PopStyleColor(2);
+
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Diaplay Range Control");
+
+            if (!products->has_calibation())
+                style::endDisabled();
+
+            if (range_window)
+            {
+                ImGui::Begin("Display Range Control", &range_window);
+                bool buff = false;
+                buff |= ImGui::InputDouble("Minium", &disaplay_ranges[active_channel_id].first, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
+                buff |= ImGui::InputDouble("Maximum", &disaplay_ranges[active_channel_id].second, 0, 0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue);
+                if (buff){
+                    update_needed = true;
+                    asyncUpdate();
+                }
+                if(ImGui::Button("Default")){
+                    disaplay_ranges[active_channel_id] = products->get_calibration_default_radiance_range(active_channel_id);
+                    update_needed = true;
+                    asyncUpdate();
+                }
+                ImGui::End();
+            }
+
+            ImGui::Spacing();
+            if (!products->has_calibation())
+                style::beginDisabled();
+
+            ImGui::BeginGroup();
+            ImGui::Text(" Raw Counts");
+            ImGui::SameLine();
+
+            ImGui::SetNextItemWidth(50);
+            ToggleButton("##caltog", (int *)&active_channel_calibrated);
+            if (ImGui::IsItemClicked())
+                asyncUpdate();
+            ImGui::SameLine();
+            ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
+            ImGui::EndGroup();
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            if (!products->has_calibation())
+                style::endDisabled();
 
             if (ImGui::Checkbox("Median Blur", &median_blur))
                 asyncUpdate();

@@ -186,10 +186,10 @@ namespace satdump
         {
             if (!has_calibation())
                 return {0, 0};
-            if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
-                return {0, 0};
             if (contents["calibration"].contains("default_range"))
                 return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+            if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                return {0, 1};
             return {0, 0};
         }
 
@@ -205,7 +205,7 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index);
+        image::Image<uint16_t> get_calibrated_image(int image_index, bool force = false, std::pair<double, double> range = {0, 0});
 
     public:
         virtual void save(std::string directory);

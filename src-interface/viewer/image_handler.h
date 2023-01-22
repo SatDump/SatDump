@@ -41,6 +41,11 @@ namespace satdump
 
         float cities_scale = 0.5;
 
+        // GUI
+        bool range_window = false;
+        std::vector<std::pair<double, double>> disaplay_ranges;
+        bool update_needed;
+
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;
         std::vector<std::string> channel_numbers;

@@ -187,7 +187,7 @@ namespace noaa
                             avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                         }
                         for (int c = 0; c < 6; c++)
-                            avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_radiance_range"][c][1].get<double>());
+                            avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
 
                     }
                     else
@@ -309,7 +309,7 @@ namespace noaa
                         mhs_products.set_calibration(mhs_reader.calib_out);
                         for (int c = 0; c < 5; c++){
                             mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
-                            mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_radiance_range"][c][1].get<double>());
+                            mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                         }
                     }
                     else
