@@ -11,8 +11,27 @@
  **********************************************************************/
 
 #include "logger.h"
+<<<<<<< HEAD
+=======
+#include <fstream>
+#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_weather/demuxer.h"
+#include <cmath>
+#include "common/image/image.h"
+#include "common/repack.h"
+#include "common/codings/randomization.h"
+#include "common/image/image.h"
+#include <filesystem>
+
+#include <map>
+>>>>>>> master
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
+<<<<<<< HEAD
+=======
+
+   
+>>>>>>> master
 }

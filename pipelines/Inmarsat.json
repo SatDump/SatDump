@@ -1,0 +1,39 @@
+{
+    "inmarsat_std_c": {
+        "name": "Inmarsat STD-C",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "agc_rate": 0.1,
+                    "symbolrate": 1200,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.03
+                }
+            },
+            "frm": {
+                "inmarsat_stdc_decoder": {}
+            },
+            "msg": {
+                "inmarsat_stdc_parser": {}
+            }
+        }
+    }
+}
