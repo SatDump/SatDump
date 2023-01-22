@@ -77,7 +77,7 @@ namespace satdump
             {
                 current_image = products->get_calibrated_image(select_image_id - 1, update_needed, disaplay_ranges[select_image_id - 1]);
                 update_needed = false;
-                if (is_temp)
+                if (is_temp && products->get_calibration_type(active_channel_id))
                     current_image = products->get_temperature_image(select_image_id - 1, false, disaplay_ranges[select_image_id - 1]);
             }
             else
@@ -375,16 +375,16 @@ namespace satdump
                     ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                     ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
                     bool buff = false;
-                    double tmp_min = is_temp ? radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                    double tmp_max = is_temp ? radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_min = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_max = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
-                        disaplay_ranges[active_channel_id].first = is_temp ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                        disaplay_ranges[active_channel_id].second = is_temp ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].first = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].second = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
                         update_needed = true;
                         asyncUpdate();
                     }
