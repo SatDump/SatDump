@@ -10,7 +10,7 @@
 #include <filesystem>
 #include "main_ui.h"
 #include "satdump_vars.h"
-//#include "tle.h"
+// #include "tle.h"
 #include "common/cli_utils.h"
 
 #include "common/tile_map/map.h"
@@ -214,9 +214,14 @@ int main(int argc, char *argv[])
     }
 
     // Main loop
-    while (!glfwWindowShouldClose(window))
+    do
     {
         glfwPollEvents();
+        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED)){
+            glfwRestoreWindow(window);
+            glfwWaitEvents();
+            glfwPollEvents();
+        }
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -224,7 +229,8 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         int wwidth, wheight;
-        glfwGetWindowSize(window, &wwidth, &wheight);
+        glfwGetFramebufferSize(window, &wwidth, &wheight);
+        //std::cout<<wwidth<<std::endl;
 
         // User rendering
         satdump::renderMainUI(wwidth, wheight);
@@ -245,7 +251,7 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
-    }
+    } while (!glfwWindowShouldClose(window));
 
     satdump::exitMainUI();
 

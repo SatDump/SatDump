@@ -374,7 +374,9 @@ namespace satdump
                 drawPanel();
             }
             ImGui::EndChild();
-            panel_ratio = ImGui::GetColumnWidth() / viewer_size[0];
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != viewer_size.x)
+                panel_ratio = ImGui::GetColumnWidth() / viewer_size[0];
+            last_width = viewer_size.x;
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
             if (current_selected_tab == 0)

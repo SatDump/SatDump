@@ -432,7 +432,9 @@ namespace satdump
             ImGui::EndChild();
             ImGui::EndGroup();
 
-            panel_ratio = ImGui::GetColumnWidth() / recorder_size[0];
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != recorder_size.x)
+                panel_ratio = ImGui::GetColumnWidth() / recorder_size[0];
+            last_width = recorder_size.x;
             ImGui::TableNextColumn();
 
             ImGui::SameLine();
@@ -443,20 +445,21 @@ namespace satdump
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio);
                 bool t = true;
-                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio)), 0), ImVec2((recorder_size.x * (1.0 - panel_ratio)), recorder_size.y));
-                ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio + 10 * ui_scale, 30 * ui_scale));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), 0), ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), recorder_size.y));
+                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), show_waterfall ? waterfall_ratio * recorder_size.y : recorder_size.y));
+                ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio + 10 * ui_scale, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
-                    fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio)), fft_height});
-                    ImVec2 mouse_pos = ImGui::GetMousePos();
-                    if (show_waterfall && (mouse_pos.x > recorder_size.x * panel_ratio && mouse_pos.x < recorder_size.x && mouse_pos.y > waterfall_ratio * recorder_size.y - 15 * ui_scale + 30 * ui_scale && mouse_pos.y < waterfall_ratio * recorder_size.y + 15 * ui_scale + 30 * ui_scale) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 10*ui_scale), fft_height});
+                    if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / recorder_size.y;
                     ImGui::EndChild();
                 }
-                if (show_waterfall)
-                    waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio)), wf_height}, is_started);
+                if (show_waterfall){
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
+                    waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio)-8*ui_scale), wf_height}, is_started);
+                }
 
-                float offset = 35 * ui_scale;
             }
             ImGui::EndChild();
             ImGui::EndGroup();
