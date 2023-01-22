@@ -29,6 +29,7 @@ public:
     ~ImageViewWidget();
 
     std::function<void(int x, int y)> mouseCallback = [](int, int) {}; // Function that can be used to handle mouse events
+    bool allow_zoom_and_move = true;
 
     void update(image::Image<uint16_t> image);
     void update(image::Image<uint8_t> image);

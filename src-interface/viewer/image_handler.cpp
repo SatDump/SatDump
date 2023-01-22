@@ -42,6 +42,19 @@ namespace satdump
         for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
             rgb_presets_str += compo.first + '\0';
 
+        // generate scale iamge
+        scale_image = image::Image<uint16_t>(25, 512, 3);
+        for (int i = 0; i < 512; i++)
+        {
+            for (int x = 0; x < 25; x++)
+            {
+                uint16_t color[3] = {(511 - i) << 7, (511 - i) << 7, (511 - i) << 7};
+                scale_image.draw_pixel(x, i, color);
+            }
+        }
+        scale_view.update(scale_image);
+        scale_view.allow_zoom_and_move = false;
+
         asyncUpdate();
 
 #ifdef USE_OPENCL
@@ -314,29 +327,50 @@ namespace satdump
                 ImGui::SameLine();
                 if (!products->has_calibation())
                     style::beginDisabled();
-                if (range_window)
+                if (range_window && active_channel_calibrated)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
                     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
                 }
                 else
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
                 }
                 if (!active_channel_calibrated)
                     ImGui::BeginDisabled();
                 if (ImGui::Button(u8"\uf07e"))
                     range_window = !range_window;
-                if (!active_channel_calibrated)
-                    ImGui::EndDisabled();
-
-                ImGui::PopStyleColor(2);
-
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Diaplay Range Control");
 
-                if (range_window)
+                if (show_scale && active_channel_calibrated)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                }
+                if (!products->get_calibration_type(active_channel_id))
+                    ImGui::BeginDisabled();
+                ImGui::SameLine();
+                if (ImGui::Button(u8"\uf2c9"))
+                    show_scale = !show_scale;
+                if (!products->get_calibration_type(active_channel_id))
+                    ImGui::EndDisabled();
+
+                if (!active_channel_calibrated)
+                    ImGui::EndDisabled();
+
+                ImGui::PopStyleColor(4);
+
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Show Scale");
+
+                if (range_window && active_channel_calibrated)
                 {
                     ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                     ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
@@ -349,8 +383,8 @@ namespace satdump
                     buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
-                        disaplay_ranges[active_channel_id].first = is_temp ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 0 : 100));
-                        disaplay_ranges[active_channel_id].second = is_temp ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 0 : 100));
+                        disaplay_ranges[active_channel_id].first = is_temp ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].second = is_temp ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
                         update_needed = true;
                         asyncUpdate();
                     }
@@ -363,11 +397,33 @@ namespace satdump
                     ImGui::End();
                 }
 
+                if (show_scale && active_channel_calibrated && products->get_calibration_type(active_channel_id))
+                {
+                    int w = ImGui::GetWindowSize()[0];
+                    ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                    ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
+                    ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
+                    scale_view.draw(ImVec2(22 * ui_scale, 460 * ui_scale));
+                    ImGui::SameLine();
+                    ImGui::BeginGroup();
+                    int y = ImGui::GetCursorPosY();
+                    for (int i = 0; i < 10; i++){
+                        ImGui::SetCursorPosY(y + i * 49 * ui_scale);
+                        std::pair<double, double> actual_ranges = disaplay_ranges[active_channel_id];
+                        if (is_temp)
+                            actual_ranges = {radiance_to_temperature(actual_ranges.first, products->get_wavenumber(active_channel_id)), radiance_to_temperature(actual_ranges.second, products->get_wavenumber(active_channel_id))};
+                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second)/9.0);
+                    }
+                    ImGui::EndGroup();
+                    ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
+                    ImGui::End();
+                }
+
                 ImGui::Spacing();
 
                 ImGui::BeginGroup();
                 if (products->get_calibration_type(active_channel_id))
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY()+ 3*ui_scale);
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3 * ui_scale);
                 ImGui::Text("Raw Counts");
                 ImGui::SameLine();
 
@@ -376,24 +432,28 @@ namespace satdump
                 if (ImGui::IsItemClicked())
                     asyncUpdate();
                 ImGui::SameLine();
-                //ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
-                if (products->get_calibration_type(active_channel_id)){
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3*ui_scale);
+                // ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
+                if (products->get_calibration_type(active_channel_id))
+                {
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3 * ui_scale);
                     ImGui::SetNextItemWidth(90 * ui_scale);
-                    //ImGui::Combo("##temp_rad", &tst, "Radiance\0Temperature");
-                    if(ImGui::BeginCombo("##temp_rad", is_temp ? "Temperature" : "Radiance", ImGuiComboFlags_NoArrowButton)){
-                        if (ImGui::Selectable("Radiance", !is_temp)){
+                    // ImGui::Combo("##temp_rad", &tst, "Radiance\0Temperature");
+                    if (ImGui::BeginCombo("##temp_rad", is_temp ? "Temperature" : "Radiance", ImGuiComboFlags_NoArrowButton))
+                    {
+                        if (ImGui::Selectable("Radiance", !is_temp))
+                        {
                             asyncUpdate();
                             is_temp = false;
                         }
-                        if(!is_temp)
+                        if (!is_temp)
                             ImGui::SetItemDefaultFocus();
 
-                        if (ImGui::Selectable("Temperature", is_temp)){
+                        if (ImGui::Selectable("Temperature", is_temp))
+                        {
                             asyncUpdate();
                             is_temp = true;
                         }
-                        if(is_temp)
+                        if (is_temp)
                             ImGui::SetItemDefaultFocus();
                         ImGui::EndCombo();
                     }

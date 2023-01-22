@@ -46,6 +46,9 @@ namespace satdump
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
         bool is_temp = false;
+        bool show_scale = false;
+        image::Image<uint16_t> scale_image; //512x25
+        ImageViewWidget scale_view;
 
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;

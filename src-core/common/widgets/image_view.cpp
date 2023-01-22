@@ -73,7 +73,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
     ImGuiContext &g = *ImGui::GetCurrentContext();
     ImGuiWindow *window = g.CurrentWindow;
 
-    if (ImGui::IsWindowHovered())
+    if (ImGui::IsWindowHovered() && allow_zoom_and_move)
     {
         if (ImGui::GetIO().MouseWheel > 0)
             img_scale *= 1.05;
