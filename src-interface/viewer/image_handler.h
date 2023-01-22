@@ -47,7 +47,7 @@ namespace satdump
         bool update_needed;
         bool is_temp = false;
         bool show_scale = false;
-        image::Image<uint16_t> scale_image; //512x25
+        image::Image<uint16_t> scale_image; // 512x25
         ImageViewWidget scale_view;
 
         // RGB Handling

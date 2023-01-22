@@ -174,9 +174,8 @@ namespace satdump
         }
         else
         {
-            if (range == std::pair<double, double>{0, 0}){
+            if (range.first == 0 && range.second == 0)
                 range = get_calibration_default_radiance_range(image_index);
-            }
 
             logger->trace("Generating calibrated image channel {:d}", image_index + 1);
 
@@ -207,7 +206,7 @@ namespace satdump
         std::pair<double, double> temp_range = {radiance_to_temperature(rad_range.first, get_wavenumber(image_index)), radiance_to_temperature(rad_range.second, get_wavenumber(image_index))};
         image::Image<uint16_t> temperature_image = get_calibrated_image(image_index, force, rad_range);
         for (unsigned int i = 0; i < temperature_image.size(); i++)
-            temperature_image[i] = temperature_image.clamp(((radiance_to_temperature((double)temperature_image[i]/65535.0 * abs(rad_range.first - rad_range.second) + rad_range.first, get_wavenumber(image_index)) - temp_range.first) / abs(temp_range.first - temp_range.second)) * 65535);
+            temperature_image[i] = temperature_image.clamp(((radiance_to_temperature((double)temperature_image[i] / 65535.0 * abs(rad_range.first - rad_range.second) + rad_range.first, get_wavenumber(image_index)) - temp_range.first) / abs(temp_range.first - temp_range.second)) * 65535);
         return temperature_image;
     }
 

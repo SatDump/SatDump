@@ -322,11 +322,10 @@ namespace satdump
                     ImGui::EndTooltip();
                 }
             }
+
             if (products->has_calibation())
             {
                 ImGui::SameLine();
-                if (!products->has_calibation())
-                    style::beginDisabled();
                 if (range_window && active_channel_calibrated)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
@@ -407,12 +406,13 @@ namespace satdump
                     ImGui::SameLine();
                     ImGui::BeginGroup();
                     int y = ImGui::GetCursorPosY();
-                    for (int i = 0; i < 10; i++){
+                    for (int i = 0; i < 10; i++)
+                    {
                         ImGui::SetCursorPosY(y + i * 49 * ui_scale);
                         std::pair<double, double> actual_ranges = disaplay_ranges[active_channel_id];
                         if (is_temp)
                             actual_ranges = {radiance_to_temperature(actual_ranges.first, products->get_wavenumber(active_channel_id)), radiance_to_temperature(actual_ranges.second, products->get_wavenumber(active_channel_id))};
-                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second)/9.0);
+                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second) / 9.0);
                     }
                     ImGui::EndGroup();
                     ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");

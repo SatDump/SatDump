@@ -1,7 +1,8 @@
 -- MHS Calibration
 
 function calc_rad(channel, pos_y, px_val)
-    out_rad = perLine_perChannel[pos_y][channel]["a0"] + perLine_perChannel[pos_y][channel]["a1"] * px_val + perLine_perChannel[pos_y][channel]["a2"] * px_val * px_val;
+    out_rad = perLine_perChannel[pos_y][channel]["a0"] + perLine_perChannel[pos_y][channel]["a1"] * px_val +
+        perLine_perChannel[pos_y][channel]["a2"] * px_val * px_val;
 end
 
 function init()
