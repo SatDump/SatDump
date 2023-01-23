@@ -18,6 +18,7 @@ namespace satdump
 {
     SATDUMP_DLL std::string user_path;
     SATDUMP_DLL std::string tle_file_override = "";
+    SATDUMP_DLL bool tle_do_update_on_init = true;
 
     void initSatdump()
     {
@@ -90,10 +91,10 @@ namespace satdump
         // TLEs
         if (tle_file_override == "")
         {
-            if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>())
+            if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() && tle_do_update_on_init)
                 updateTLEFile(user_path + "/satdump_tles.txt");
             loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
-            if (general_tle_registry.size() == 0) // NO TLEs? Download now.
+            if (general_tle_registry.size() == 0 && tle_do_update_on_init) // NO TLEs? Download now.
             {
                 updateTLEFile(user_path + "/satdump_tles.txt");
                 loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
