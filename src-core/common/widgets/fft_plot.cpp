@@ -20,8 +20,8 @@ namespace widgets
         ImGuiContext &g = *GImGui;
         const ImGuiStyle &style = g.Style;
         const ImRect frame_bb(window->DC.CursorPos, {window->DC.CursorPos.x + size.x, window->DC.CursorPos.y + size.y});
-        const ImRect inner_bb({frame_bb.Min.x + style.FramePadding.x, frame_bb.Min.y + style.FramePadding.y},
-                              {frame_bb.Max.x - style.FramePadding.x, frame_bb.Max.y - style.FramePadding.y});
+        const ImRect inner_bb({frame_bb.Min.x, frame_bb.Min.y + style.FramePadding.y},
+                              {frame_bb.Max.x - 1, frame_bb.Max.y - style.FramePadding.y});
 
         int res_w = /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
         int item_count = values_size - 1;
