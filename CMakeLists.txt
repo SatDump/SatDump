@@ -108,7 +108,7 @@ else()
     message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
 
-project(SatDump VERSION "1.0.4")
+project(SatDump VERSION "1.1.0")
 
 # Check if the current commit has a tag
 execute_process(

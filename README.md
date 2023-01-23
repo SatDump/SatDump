@@ -98,12 +98,12 @@ Here are some generic (Debian-oriented) build instructions.
 
 ```
 # Linux: Install dependencies
-sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
-sudo apt install libnng-dev                                                                 # If this packages is not found, follow build instructions below for NNG
-sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                  # All libraries required for live processing (optional)
-sudo apt install libglew-dev libglfw3-dev                                                   # Only if you want to build the GUI Version (optional)
-sudo apt install libzstd-dev                                                                # Only if you want to build with ZIQ Recording compression 
-sudo apt install libomp-dev                                                                 # Shouldn't be required in general, but in case you have errors with OMP
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
+sudo apt install libnng-dev                                                                                   # If this packages is not found, follow build instructions below for NNG
+sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
+sudo apt install libglew-dev libglfw3-dev                                                                     # Only if you want to build the GUI Version (optional)
+sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
+sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
 (optional)
 
 # Optional, but recommended as it drastically 
@@ -123,7 +123,7 @@ cd ../..
 rm -rf nng
 
 # macOS: Install dependencies
-brew install cmake volk libpng glew glfw nng pkg-config llvm libomp
+brew install cmake volk libpng glew glfw nng pkg-config llvm libomp luajit
 
 # macOS ONLY: build and install libfftw3
 # if you install fftw via brew, cmake won't be able to find it
