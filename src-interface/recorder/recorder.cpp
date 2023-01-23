@@ -459,6 +459,11 @@ namespace satdump
                     fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / recorder_size.y;
+                    if (ImGui::IsWindowHovered()){
+                        ImVec2 mouse_pos = ImGui::GetMousePos();
+                        float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale)/(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale)-0.5;
+                        ImGui::SetTooltip(((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio)*current_samplerate)).c_str());
+                    }
                     ImGui::EndChild();
                 }
                 if (show_waterfall)
