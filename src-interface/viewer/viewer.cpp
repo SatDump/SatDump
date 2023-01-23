@@ -311,6 +311,7 @@ namespace satdump
 
     void ViewerApplication::drawUI()
     {
+        /*
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
         ImGui::BeginGroup();
         ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y)}, false);
@@ -361,6 +362,43 @@ namespace satdump
             projection_image_widget.draw({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
         }
         ImGui::EndGroup();
+        */
+
+        ImVec2 viewer_size = ImGui::GetContentRegionAvail();
+
+        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_Resizable))
+        {
+            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, viewer_size.x * panel_ratio);
+            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextColumn();
+            ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y - 10)}, false);
+            {
+                drawPanel();
+            }
+            ImGui::EndChild();
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != viewer_size.x)
+                panel_ratio = ImGui::GetColumnWidth() / viewer_size[0];
+            last_width = viewer_size.x;
+            ImGui::TableNextColumn();
+            ImGui::BeginGroup();
+            if (current_selected_tab == 0)
+            {
+                if (products_and_handlers.size() > 0)
+                    products_and_handlers[current_handler_id]->handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
+                else
+                    ImGui::GetWindowDrawList()
+                        ->AddRectFilled(ImGui::GetCursorScreenPos(),
+                                        ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
+                                               ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
+                                        ImColor::HSV(0, 0, 0));
+            }
+            else if (current_selected_tab == 1)
+            {
+                projection_image_widget.draw({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
+            }
+            ImGui::EndGroup();
+            ImGui::EndTable();
+        }
     }
 
     std::map<std::string, std::function<std::shared_ptr<ViewerHandler>()>> viewer_handlers_registry;
