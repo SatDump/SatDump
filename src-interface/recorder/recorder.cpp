@@ -450,15 +450,15 @@ namespace satdump
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), 50), ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), recorder_size.y));
-                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), show_waterfall ? waterfall_ratio * recorder_size.y : recorder_size.y));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), 50), ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), wf_size));
+                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8 * ui_scale);
                     fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-                        waterfall_ratio = ImGui::GetWindowHeight() / recorder_size.y;
+                        waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered()){
                         ImVec2 mouse_pos = ImGui::GetMousePos();
                         float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale)/(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale)-0.5;
