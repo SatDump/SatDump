@@ -445,12 +445,13 @@ namespace satdump
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio);
                 bool t = true;
-                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), 0), ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), recorder_size.y));
-                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 15*ui_scale), show_waterfall ? waterfall_ratio * recorder_size.y : recorder_size.y));
-                ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio + 10 * ui_scale, 25 * ui_scale));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 30*ui_scale), 0), ImVec2((recorder_size.x * (1.0 - panel_ratio) + 30*ui_scale), recorder_size.y));
+                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + 30*ui_scale), show_waterfall ? waterfall_ratio * recorder_size.y : recorder_size.y));
+                ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
-                    fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 10*ui_scale), fft_height});
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8 * ui_scale);
+                    fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8*ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / recorder_size.y;
                     ImGui::EndChild();
