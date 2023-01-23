@@ -79,6 +79,7 @@ And additionally, on the UI side :
 - Piefadase
 - Blobtoe
 - lego11
+- crosswalkersam
 
 # Thanks
 
