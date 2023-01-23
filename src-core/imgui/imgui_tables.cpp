@@ -257,7 +257,7 @@ static const int TABLE_DRAW_CHANNEL_BG0 = 0;
 static const int TABLE_DRAW_CHANNEL_BG2_FROZEN = 1;
 static const int TABLE_DRAW_CHANNEL_NOCLIP = 2;                     // When using ImGuiTableFlags_NoClip (this becomes the last visible channel)
 static const float TABLE_BORDER_SIZE                     = 1.0f;    // FIXME-TABLE: Currently hard-coded because of clipping assumptions with outer borders rendering.
-#ifdef _ANDROID_
+#ifdef __ANDROID__
 static const float TABLE_RESIZE_SEPARATOR_HALF_THICKNESS = 40.0f;    // Extend outside inner borders.
 #else
 static const float TABLE_RESIZE_SEPARATOR_HALF_THICKNESS = 8.0f;    // Extend outside inner borders.
