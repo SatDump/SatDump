@@ -6,6 +6,7 @@
 #include "imgui/imgui_internal.h"
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp/rational_resampler.h"
 #include "common/dsp/splitter.h"
 #include "common/dsp/fft_pan.h"
 #include "common/dsp/file_sink.h"
@@ -48,6 +49,7 @@ namespace satdump
         std::string sdr_error, error;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
+        std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> decim_ptr;
         std::shared_ptr<dsp::SplitterBlock> splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft;
         std::shared_ptr<dsp::FileSinkBlock> file_sink;
@@ -70,6 +72,7 @@ namespace satdump
         int pipeline_preset_id = 0;
 
         uint64_t current_samplerate = 1e6;
+        int current_decimation = 1;
 
         // #ifdef BUILD_ZIQ
         int ziq_bit_depth;
@@ -80,11 +83,16 @@ namespace satdump
         void try_load_sdr_settings();
 
     private:
+        void start();
+        void stop();
+
         void start_processing();
         void stop_processing();
 
         void start_recording();
         void stop_recording();
+
+        uint64_t get_samplerate() { return current_samplerate / current_decimation; }
 
     public:
         RecorderApplication();

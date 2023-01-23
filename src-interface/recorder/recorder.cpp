@@ -75,7 +75,7 @@ namespace satdump
         splitter->set_output_3rd(false);
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
-        fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
+        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
         fft->avg_rate = 0.1;
         fft->start();
 
@@ -94,11 +94,7 @@ namespace satdump
     {
         stop_processing();
         if (is_started)
-        {
-            splitter->stop_tmp();
-            source_ptr->stop();
-            is_started = false;
-        }
+            stop();
         source_ptr->close();
         splitter->input_stream = std::make_shared<dsp::stream<complex_t>>();
         splitter->stop();
@@ -187,6 +183,11 @@ namespace satdump
                             ImGui::EndTooltip();
                         }
                     */
+
+                    ImGui::InputInt("Decimation##recorderdecimation", &current_decimation);
+                    if (current_decimation < 1)
+                        current_decimation = 1;
+
                     if (is_started)
                         style::endDisabled();
 
@@ -202,39 +203,12 @@ namespace satdump
                     if (!is_started)
                     {
                         if (ImGui::Button("Start"))
-                        {
-                            source_ptr->set_frequency(frequency_mhz * 1e6);
-                            try
-                            {
-                                source_ptr->start();
-
-                                current_samplerate = source_ptr->get_samplerate();
-                                fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
-
-                                splitter->input_stream = source_ptr->output_stream;
-                                splitter->start();
-                                is_started = true;
-                                sdr_error = "";
-                            }
-                            catch (std::runtime_error &e)
-                            {
-                                sdr_error = e.what();
-                                logger->error(e.what());
-                            }
-                        }
+                            start();
                     }
                     else
                     {
                         if (ImGui::Button("Stop"))
-                        {
-                            splitter->stop_tmp();
-                            source_ptr->stop();
-                            is_started = false;
-                            config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
-                            config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
-                            config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
-                            config::saveUserConfig();
-                        }
+                            stop();
                     }
                     ImGui::SameLine();
                     ImGui::TextColored(ImColor(255, 0, 0), "%s", sdr_error.c_str());
@@ -249,7 +223,7 @@ namespace satdump
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 
-                        fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
+                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
                         fft_plot->set_size(fft_size);
                         waterfall_plot->set_size(fft_size);
 
@@ -259,7 +233,7 @@ namespace satdump
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 
-                        fft->set_fft_settings(fft_size, current_samplerate, fft_rate);
+                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
 
                         logger->info("Set FFT rate to {:d}", fft_rate);
                     }
@@ -461,8 +435,8 @@ namespace satdump
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered()){
                         ImVec2 mouse_pos = ImGui::GetMousePos();
-                        float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale)/(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale)-0.5;
-                        ImGui::SetTooltip(((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio)*current_samplerate)).c_str());
+                        float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale) / (recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale) - 0.5;
+                        ImGui::SetTooltip(((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio) * get_samplerate())).c_str());
                     }
                     ImGui::EndChild();
                 }
