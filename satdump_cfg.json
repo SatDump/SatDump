@@ -303,13 +303,23 @@
                         "geo_correct": true,
                         "equalize": true
                     },
-                    "Clouds Underlay": {
+                    "Clouds Underlay (Merge)": {
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "lua_vars": {
                             "minoffset": 0.4,
                             "scalar": 4.0,
                             "thresold": 0
+                        },
+                        "autogen": false
+                    },
+                    "Clouds Underlay (Isolate)": {
+                        "channels": "ch4",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "lua_vars": {
+                            "minoffset": 0.58,
+                            "scalar": 4.0,
+                            "thresold": 0.15
                         },
                         "autogen": false
                     },

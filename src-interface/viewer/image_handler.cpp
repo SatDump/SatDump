@@ -323,7 +323,7 @@ namespace satdump
                 }
             }
 
-            if (products->has_calibation())
+            if (products->has_calibation() && active_channel_id >= 0)
             {
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
