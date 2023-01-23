@@ -450,7 +450,7 @@ namespace satdump
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), 0), ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), recorder_size.y));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), 50), ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), recorder_size.y));
                 ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), show_waterfall ? waterfall_ratio * recorder_size.y : recorder_size.y));
                 ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
