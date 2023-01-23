@@ -417,7 +417,7 @@ namespace satdump
             ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * (1.0 - panel_ratio)), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
-                float wf_height = wf_size * (1 - waterfall_ratio);
+                float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
                 bool t = true;
 #ifdef __ANDROID__
                 int offset = 8;
