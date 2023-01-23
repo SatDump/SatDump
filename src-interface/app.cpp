@@ -25,7 +25,7 @@ namespace satdump
 
     void Application::draw()
     {
-        ImGui::BeginChild(app_id.c_str(), ImGui::GetContentRegionAvail(), false);
+        ImGui::BeginChild(app_id.c_str(), ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         drawUI();
         ImGui::EndChild();
     }
