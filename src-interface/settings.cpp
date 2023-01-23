@@ -118,6 +118,7 @@ namespace satdump
                         ui_thread_pool.push([](int)
                                             {   tles_are_update = true;
                                                 updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
+                                                loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); 
                                                 tles_are_update = false; });
                     }
                     if (tles_are_update)
