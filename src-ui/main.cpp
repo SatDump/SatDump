@@ -10,11 +10,8 @@
 #include <filesystem>
 #include "main_ui.h"
 #include "satdump_vars.h"
-// #include "tle.h"
+
 #include "common/cli_utils.h"
-
-#include "common/tile_map/map.h"
-
 #include "../src-core/resources.h"
 
 extern bool recorder_running;
@@ -182,6 +179,7 @@ int main(int argc, char *argv[])
     ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
 
     // Init SatDump
+    satdump::tle_do_update_on_init = false;
     satdump::initSatdump();
 
     // Setup Icon
@@ -212,6 +210,12 @@ int main(int argc, char *argv[])
         satdump::ui_thread_pool.push([&](int)
                                      { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
     }
+
+    // TLE
+    if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
+        satdump::ui_thread_pool.push([&](int)
+                                     {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
+                                        satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
 
     // Main loop
     do
