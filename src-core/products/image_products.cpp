@@ -253,6 +253,21 @@ namespace satdump
         return false;
     }
 
+    void get_calib_cfg_from_json(nlohmann::json v, ImageProducts::calib_vtype_t &type, std::pair<double, double> &range)
+    {
+        std::string vtype = v["type"].get<std::string>();
+        range.first = v["min"].get<double>();
+        range.second = v["max"].get<double>();
+        if (vtype == "auto")
+            vtype = ImageProducts::CALIB_VTYPE_AUTO;
+        else if (vtype == "albedo")
+            vtype = ImageProducts::CALIB_VTYPE_ALBEDO;
+        else if (vtype == "radiance")
+            vtype = ImageProducts::CALIB_VTYPE_RADIANCE;
+        else if (vtype == "temperature")
+            vtype = ImageProducts::CALIB_VTYPE_TEMPERATURE;
+    }
+
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
@@ -301,7 +316,17 @@ namespace satdump
                 product.init_calibration();
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);
-                images_obj.push_back(product.get_calibrated_image(i));
+                if (cfg.calib_cfg.contains(equ_str_calib))
+                {
+                    ImageProducts::calib_vtype_t type;
+                    std::pair<double, double> range;
+                    get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                    images_obj.push_back(product.get_calibrated_image(i, type, range));
+                }
+                else
+                {
+                    images_obj.push_back(product.get_calibrated_image(i));
+                }
                 offsets.emplace(equ_str_calib, img.offset_x);
                 logger->debug("Composite needs calibrated channel {:s}", equ_str);
 

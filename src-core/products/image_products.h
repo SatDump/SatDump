@@ -241,6 +241,7 @@ namespace satdump
         std::string channels = "";
         std::string lua = "";
         nlohmann::json lua_vars;
+        nlohmann::json calib_cfg;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -255,6 +256,8 @@ namespace satdump
         j["channels"] = v.channels;
         j["lua"] = v.lua;
         j["lua_vars"] = v.lua_vars;
+
+        j["calib_cfg"] = v.calib_cfg;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -275,6 +278,9 @@ namespace satdump
             if (j.contains("lua_vars"))
                 v.lua_vars = j["lua_vars"];
         }
+
+        if (j.contains("calib_cfg"))
+            v.calib_cfg = j["calib_cfg"];
 
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
