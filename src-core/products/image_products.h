@@ -213,7 +213,7 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
+        image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
         virtual void save(std::string directory);

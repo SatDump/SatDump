@@ -76,6 +76,7 @@ namespace satdump
             if (active_channel_calibrated && products->has_calibation())
             {
                 current_image = products->get_calibrated_image(select_image_id - 1,
+                                                               &rgb_progress,
                                                                is_temp ? ImageProducts::CALIB_VTYPE_TEMPERATURE : ImageProducts::CALIB_VTYPE_AUTO,
                                                                disaplay_ranges[select_image_id - 1]);
                 update_needed = false;
