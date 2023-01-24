@@ -75,10 +75,11 @@ namespace satdump
         {
             if (active_channel_calibrated && products->has_calibation())
             {
-                current_image = products->get_calibrated_image(select_image_id - 1, update_needed, disaplay_ranges[select_image_id - 1]);
+                current_image = products->get_calibrated_image(select_image_id - 1,
+                                                               &rgb_progress,
+                                                               is_temp ? ImageProducts::CALIB_VTYPE_TEMPERATURE : ImageProducts::CALIB_VTYPE_AUTO,
+                                                               disaplay_ranges[select_image_id - 1]);
                 update_needed = false;
-                if (is_temp && products->get_calibration_type(active_channel_id))
-                    current_image = products->get_temperature_image(select_image_id - 1, false, disaplay_ranges[select_image_id - 1]);
             }
             else
                 current_image = products->images[select_image_id - 1].image;

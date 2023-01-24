@@ -165,22 +165,38 @@ namespace satdump
         return val2;
     }
 
-    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index, bool force, std::pair<double, double> range)
+    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index, float *progress, calib_vtype_t vtype, std::pair<double, double> range)
     {
-        if (calibrated_img_cache.count(image_index) > 0 && !force)
+        bool is_default = vtype == CALIB_VTYPE_AUTO && range.first == 0 && range.second == 0;
+        if (calibrated_img_cache.count(image_index) > 0 && is_default)
         {
             logger->trace("Cached calibrated image channel {:d}", image_index + 1);
             return calibrated_img_cache[image_index];
         }
         else
         {
+            double wn = get_wavenumber(image_index);
+
             if (range.first == 0 && range.second == 0)
                 range = get_calibration_default_radiance_range(image_index);
 
-            logger->trace("Generating calibrated image channel {:d}", image_index + 1);
+            if (get_calibration_type(image_index) == CALIB_RADIANCE)
+            {
+                if (vtype == CALIB_VTYPE_TEMPERATURE)
+                    range = {radiance_to_temperature(range.first, wn),
+                             radiance_to_temperature(range.second, wn)};
+            }
 
-            calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
-            image::Image<uint16_t> &output = calibrated_img_cache[image_index];
+            logger->trace("Generating calibrated image channel {:d}. Range {:f} {:f}. Type {:d}", image_index + 1, range.first, range.second, vtype);
+
+            // calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
+            // image::Image<uint16_t> &output = calibrated_img_cache[image_index];
+            image::Image<uint16_t> output(images[image_index].image.width(), images[image_index].image.height(), 1);
+
+            if (vtype == CALIB_VTYPE_AUTO && get_calibration_type(image_index) == CALIB_RADIANCE)
+                vtype = CALIB_VTYPE_RADIANCE;
+            else if (vtype == CALIB_VTYPE_AUTO && get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                vtype = CALIB_VTYPE_ALBEDO;
 
             try
             {
@@ -188,8 +204,20 @@ namespace satdump
                 {
                     for (size_t y = 0; y < images[image_index].image.height(); y++)
                     {
-                        output[y * output.width() + x] = output.clamp(((get_calibrated_value(image_index, x, y) - range.first) / abs(range.first - range.second)) * 65535);
+                        double cal_val = get_calibrated_value(image_index, x, y);
+
+                        if (vtype == CALIB_VTYPE_TEMPERATURE)
+                            cal_val = radiance_to_temperature(cal_val, wn);
+
+                        output[y * output.width() + x] =
+                            output.clamp(
+                                ((cal_val - range.first) /
+                                 abs(range.first - range.second)) *
+                                65535);
                     }
+
+                    if (progress != nullptr)
+                        *progress = float(x) / float(images[image_index].image.width());
                 }
             }
             catch (std::exception &e)
@@ -197,17 +225,11 @@ namespace satdump
                 logger->error("Error calibrating image : {:s}", e.what());
             }
 
+            if (is_default)
+                calibrated_img_cache.insert({image_index, output});
+
             return output;
         }
-    }
-
-    image::Image<uint16_t> ImageProducts::get_temperature_image(int image_index, bool force, std::pair<double, double> rad_range)
-    {
-        std::pair<double, double> temp_range = {radiance_to_temperature(rad_range.first, get_wavenumber(image_index)), radiance_to_temperature(rad_range.second, get_wavenumber(image_index))};
-        image::Image<uint16_t> temperature_image = get_calibrated_image(image_index, force, rad_range);
-        for (unsigned int i = 0; i < temperature_image.size(); i++)
-            temperature_image[i] = temperature_image.clamp(((radiance_to_temperature((double)temperature_image[i] / 65535.0 * abs(rad_range.first - rad_range.second) + rad_range.first, get_wavenumber(image_index)) - temp_range.first) / abs(temp_range.first - temp_range.second)) * 65535);
-        return temperature_image;
     }
 
     bool equation_contains(std::string init, std::string match)
@@ -232,6 +254,21 @@ namespace satdump
         }
 
         return false;
+    }
+
+    void get_calib_cfg_from_json(nlohmann::json v, ImageProducts::calib_vtype_t &type, std::pair<double, double> &range)
+    {
+        std::string vtype = v["type"].get<std::string>();
+        range.first = v["min"].get<double>();
+        range.second = v["max"].get<double>();
+        if (vtype == "auto")
+            type = ImageProducts::CALIB_VTYPE_AUTO;
+        else if (vtype == "albedo")
+            type = ImageProducts::CALIB_VTYPE_ALBEDO;
+        else if (vtype == "radiance")
+            type = ImageProducts::CALIB_VTYPE_RADIANCE;
+        else if (vtype == "temperature")
+            type = ImageProducts::CALIB_VTYPE_TEMPERATURE;
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
@@ -282,7 +319,17 @@ namespace satdump
                 product.init_calibration();
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);
-                images_obj.push_back(product.get_calibrated_image(i));
+                if (cfg.calib_cfg.contains(equ_str_calib))
+                {
+                    ImageProducts::calib_vtype_t type;
+                    std::pair<double, double> range;
+                    get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                    images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                }
+                else
+                {
+                    images_obj.push_back(product.get_calibrated_image(i, progress));
+                }
                 offsets.emplace(equ_str_calib, img.offset_x);
                 logger->debug("Composite needs calibrated channel {:s}", equ_str);
 
