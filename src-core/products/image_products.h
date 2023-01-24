@@ -134,6 +134,14 @@ namespace satdump
             CALIB_RADIANCE,
         };
 
+        enum calib_vtype_t
+        {
+            CALIB_VTYPE_AUTO,
+            CALIB_VTYPE_ALBEDO,
+            CALIB_VTYPE_RADIANCE,
+            CALIB_VTYPE_TEMPERATURE,
+        };
+
         bool has_calibation()
         {
             return contents.contains("calibration");
@@ -205,8 +213,7 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index, bool force = false, std::pair<double, double> range = {0, 0});
-        image::Image<uint16_t> get_temperature_image(int image_index, bool force = false, std::pair<double, double> rad_range = {0, 0});
+        image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
         virtual void save(std::string directory);
@@ -234,6 +241,7 @@ namespace satdump
         std::string channels = "";
         std::string lua = "";
         nlohmann::json lua_vars;
+        nlohmann::json calib_cfg;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -248,6 +256,8 @@ namespace satdump
         j["channels"] = v.channels;
         j["lua"] = v.lua;
         j["lua_vars"] = v.lua_vars;
+
+        j["calib_cfg"] = v.calib_cfg;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -268,6 +278,9 @@ namespace satdump
             if (j.contains("lua_vars"))
                 v.lua_vars = j["lua_vars"];
         }
+
+        if (j.contains("calib_cfg"))
+            v.calib_cfg = j["calib_cfg"];
 
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
