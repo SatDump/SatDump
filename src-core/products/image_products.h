@@ -134,6 +134,14 @@ namespace satdump
             CALIB_RADIANCE,
         };
 
+        enum calib_vtype_t
+        {
+            CALIB_VTYPE_AUTO,
+            CALIB_VTYPE_ALBEDO,
+            CALIB_VTYPE_RADIANCE,
+            CALIB_VTYPE_TEMPERATURE,
+        };
+
         bool has_calibation()
         {
             return contents.contains("calibration");
@@ -205,8 +213,7 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index, bool force = false, std::pair<double, double> range = {0, 0});
-        image::Image<uint16_t> get_temperature_image(int image_index, bool force = false, std::pair<double, double> rad_range = {0, 0});
+        image::Image<uint16_t> get_calibrated_image(int image_index, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
         virtual void save(std::string directory);
