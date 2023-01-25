@@ -268,6 +268,12 @@ if(PLUGIN_AARONIA_SDR_SUPPORT)
     add_subdirectory(sdr_sources/aaronia_sdr_support)
 endif()
 
+option(PLUGIN_RTAUDIO_SDR_SUPPORT "Enable RtAudio Source Support plugin" OFF)
+
+if(PLUGIN_RTAUDIO_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/rtaudio_sdr_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 
