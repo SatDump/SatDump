@@ -11,7 +11,7 @@ function init()
     cfg_offset = lua_vars["minoffset"]
     cfg_scalar = lua_vars["scalar"]
     cfg_thresold = lua_vars["thresold"]
-    return 3;
+    return 3
 end
 
 function process()

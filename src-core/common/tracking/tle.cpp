@@ -87,11 +87,8 @@ namespace satdump
                 norad = std::stoi(noradstr);
 
                 // Delete duplicates
-                auto it = std::find_if(general_tle_registry.rbegin(),
-                                       general_tle_registry.rend(), [norad](TLE &c)
-                                       { return norad == c.norad; });
-                if (it.base() != general_tle_registry.end())
-                    general_tle_registry.erase(it.base());
+                std::remove_if(general_tle_registry.begin(), general_tle_registry.end(), [norad](TLE t)
+                               { return t.norad == norad; });
 
                 logger->trace("Add satellite " + name);
                 general_tle_registry.push_back({norad, name, tle1, tle2});
