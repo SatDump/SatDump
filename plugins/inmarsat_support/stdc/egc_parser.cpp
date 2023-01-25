@@ -9,6 +9,7 @@ namespace inmarsat
         {
             egc_t v;
             v.pkt = msg;
+            v.is_p2 = msg["pkt_id"].get<int>() == 178;
             v.msg_id = msg["message_id"].get<int>();
             v.pkt_no = msg["packet_no"].get<int>();
             v.timestamp = msg["timestamp"].get<double>();
@@ -30,21 +31,48 @@ namespace inmarsat
         {
             egc_t m = parse_to_msg(msg);
 
-            if (wip_messages.count(m.msg_id) == 0)
-                wip_messages.insert({m.msg_id, std::vector<egc_t>()});
+            // if (wip_messages.count(m.msg_id) == 0)
+            //     wip_messages.insert({m.msg_id, std::vector<egc_t>()});
+
+            if (m.msg_id != current_id)
+            {
+                if (current_id != -1)
+                {
+                    std::string final_msg;
+                    for (auto &mp : wip_message)
+                        final_msg += mp.message;
+                    on_message(serialize_from_msg(wip_message[wip_message.size() - 1], final_msg));
+                    wip_message.clear();
+                }
+
+                current_id = m.msg_id;
+            }
 
             bool has_id = false;
-            for (auto d : wip_messages[m.msg_id])
-                if (d.pkt_no == m.pkt_no)
+            for (auto d : wip_message)
+                if (d.pkt_no == m.pkt_no && d.is_p2 == m.is_p2)
                     has_id = true;
 
             if (!has_id)
-                wip_messages[m.msg_id].push_back(m);
+                wip_message.push_back(m);
 
-            std::sort(wip_messages[m.msg_id].begin(), wip_messages[m.msg_id].end(), [](const egc_t &v1, const egc_t &v2)
-                      { return v1.pkt_no < v2.pkt_no; });
+            std::sort(wip_message.begin(), wip_message.end(), [](const egc_t &v1, const egc_t &v2)
+                      { return v1.pkt_no < v2.pkt_no && v2.is_p2; });
         }
 
+        void EGCMessageParser::force_finish()
+        {
+            if (current_id != -1)
+            {
+                std::string final_msg;
+                for (auto &mp : wip_message)
+                    final_msg += mp.message;
+                on_message(serialize_from_msg(wip_message[wip_message.size() - 1], final_msg));
+                wip_message.clear();
+            }
+        }
+
+        /*
         void EGCMessageParser::check_curr_messages()
         {
         recheck:
@@ -68,5 +96,6 @@ namespace inmarsat
             this->current_time = current_time;
             check_curr_messages();
         }
+        */
     }
 }

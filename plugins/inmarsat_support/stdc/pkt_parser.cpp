@@ -183,7 +183,7 @@ namespace inmarsat
             if (login_ack_length > 7)
             {
                 int station_count = pkt[8];
-                std::string stations = get_stations(&pkt[9], station_count);
+                nlohmann::json stations = get_stations(&pkt[9], station_count);
                 output["station_count"] = station_count;
                 output["stations"] = stations;
             }
@@ -287,7 +287,7 @@ namespace inmarsat
         {
             int les_list_length = pkt[1];
             int station_count = pkt[3];
-            std::string stations = get_stations(&pkt[4], station_count);
+            nlohmann::json stations = get_stations(&pkt[4], station_count);
             output["les_list_length"] = les_list_length;
             output["station_start_hex"] = buf_to_hex_str(&pkt[2], 1);
             output["stations"] = stations;

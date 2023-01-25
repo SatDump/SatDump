@@ -86,7 +86,7 @@ namespace inmarsat
                 if (msg["pkt_id"].get<int>() == 0x7D)
                 {
                     msg_parser.push_current_time(time_d);
-                    egc_parser.push_current_time(time_d);
+                    // egc_parser.push_current_time(time_d);
                 }
 
                 if (msg["pkt_id"].get<int>() != 0xAA)
@@ -142,7 +142,7 @@ namespace inmarsat
 
                 write_pkt_file_out(msg);
 
-                logger->info("EGC Message : \n" + msg["message"].get<std::string>());
+                logger->info("Full EGC Message : \n" + msg["message"].get<std::string>());
 
                 pkt_history_mtx.lock();
                 pkt_history_msg.push_back(msg);
@@ -183,6 +183,8 @@ namespace inmarsat
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
+
+            egc_parser.force_finish();
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
