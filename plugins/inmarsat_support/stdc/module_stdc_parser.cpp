@@ -42,7 +42,11 @@ namespace inmarsat
 
         void STDCParserModule::write_pkt_file_out(nlohmann::json &msg)
         {
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/" + msg["pkt_type"].get<std::string>();
+            std::string pkt_name = get_id_name(get_packet_frm_id(msg));
+            if (msg.contains("pkt_name"))
+                pkt_name = msg["pkt_name"];
+
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/" + pkt_name;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -74,8 +78,6 @@ namespace inmarsat
 
             logger->info("Using input frames " + d_input_file);
 
-            int msg_id = 0;
-
             STDPacketParser pkt_parser;
             MessageParser msg_parser;
             EGCMessageParser egc_parser;
@@ -83,34 +85,36 @@ namespace inmarsat
             pkt_parser.on_packet = [&](nlohmann::json msg)
             {
                 double time_d = msg["timestamp"].get<double>();
-                if (msg["pkt_id"].get<int>() == 0x7D)
+                int id = get_packet_frm_id(msg);
+
+                if (id == pkts::PacketBulletinBoard::FRM_ID)
                 {
                     msg_parser.push_current_time(time_d);
                     // egc_parser.push_current_time(time_d);
                 }
 
-                if (msg["pkt_id"].get<int>() != 0xAA)
+                if (id != pkts::PacketMessageData::FRM_ID)
                     write_pkt_file_out(msg);
 
-                if (msg["pkt_id"].get<int>() == 0xAA)
+                if (id == pkts::PacketMessageData::FRM_ID)
                 {
                     std::string m = msg["message"].get<std::string>();
                     logger->info("Message : \n" + m);
                     if (m != "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ-!") // Remove those periodic ones
                         msg_parser.push_message(msg);
                 }
-                else if (msg["pkt_id"].get<int>() == 0xb1)
+                else if (id == pkts::PacketEGCDoubleHeader1::FRM_ID)
                 {
                     logger->info("EGC Double Header 1 : \n" + msg["message"].get<std::string>());
                     egc_parser.push_message(msg);
                 }
-                else if (msg["pkt_id"].get<int>() == 0xb2)
+                else if (id == pkts::PacketEGCDoubleHeader2::FRM_ID)
                 {
                     logger->info("EGC Double Header 2 : \n" + msg["message"].get<std::string>());
                     egc_parser.push_message(msg);
                 }
                 else
-                    logger->info("Packet : " + msg["pkt_type"].get<std::string>());
+                    logger->info("Packet : " + get_id_name(id));
 
                 pkt_history_mtx.lock();
                 pkt_history.push_back(msg);
@@ -118,11 +122,13 @@ namespace inmarsat
                     pkt_history.erase(pkt_history.begin());
                 pkt_history_mtx.unlock();
 
-                msg_id++;
+                // logger->info("Packet IDK : \n" + msg.dump(4));
             };
 
             msg_parser.on_message = [&](nlohmann::json msg)
             {
+                msg["pkt_name"] = "Full Message";
+
                 write_pkt_file_out(msg);
 
                 logger->info("Full Message : \n" + msg["message"].get<std::string>());
@@ -132,13 +138,11 @@ namespace inmarsat
                 if (pkt_history_msg.size() > 1000)
                     pkt_history_msg.erase(pkt_history_msg.begin());
                 pkt_history_mtx.unlock();
-
-                msg_id++;
             };
 
             egc_parser.on_message = [&](nlohmann::json msg)
             {
-                msg["pkt_type"] = "EGC Message";
+                msg["pkt_name"] = "EGC Message";
 
                 write_pkt_file_out(msg);
 
@@ -149,8 +153,6 @@ namespace inmarsat
                 if (pkt_history_msg.size() > 1000)
                     pkt_history_msg.erase(pkt_history_msg.begin());
                 pkt_history_mtx.unlock();
-
-                msg_id++;
             };
 
             time_t lastTime = 0;

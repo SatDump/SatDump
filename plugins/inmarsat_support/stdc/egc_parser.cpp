@@ -1,5 +1,6 @@
 #include "egc_parser.h"
 #include "logger.h"
+#include "packets_structs.h"
 
 namespace inmarsat
 {
@@ -9,9 +10,9 @@ namespace inmarsat
         {
             egc_t v;
             v.pkt = msg;
-            v.is_p2 = msg["pkt_id"].get<int>() == 178;
-            v.msg_id = msg["message_id"].get<int>();
-            v.pkt_no = msg["packet_no"].get<int>();
+            v.is_p2 = get_packet_frm_id(msg) == pkts::PacketEGCDoubleHeader2::FRM_ID;
+            v.msg_id = msg["message_sequence_number"].get<int>();
+            v.pkt_no = msg["packet_sequence_number"].get<int>();
             v.timestamp = msg["timestamp"].get<double>();
             v.message = msg["message"].get<std::string>();
             return v;
@@ -22,8 +23,8 @@ namespace inmarsat
             nlohmann::json v;
             v = m.pkt;
             v["message"] = ms;
-            if (v.contains("packet_no"))
-                v.erase("packet_no");
+            if (v.contains("packet_sequence_number"))
+                v.erase("packet_sequence_number");
             return v;
         }
 

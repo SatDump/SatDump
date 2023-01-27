@@ -1,76 +1,78 @@
-#include "pkt_parser.h"
+#include "packets_structs.h"
 #include <sstream>
 
 namespace inmarsat
 {
     namespace stdc
     {
-        uint16_t compute_crc(uint8_t *buf, int size)
-        {
-            short C0 = 0;
-            short C1 = 0;
-            uint8_t CB1;
-            uint8_t CB2;
-            uint8_t B;
-            int i = 0;
-            while (i < size)
-            {
-                if (i < size - 2)
-                    B = buf[i];
-                else
-                    B = 0;
-                C0 += B;
-                C1 += C0;
-                i++;
-            }
-            CB1 = (uint8_t)(C0 - C1);
-            CB2 = (uint8_t)(C1 - 2 * C0);
-            return (CB1 << 8) | CB2;
-        }
-
         std::string get_id_name(uint8_t id)
         {
-            if (id == 0x27)
-                return "Logical Channel Clear";
-            else if (id == 0x2A)
-                return "Inbound Message Ack";
-            else if (id == 0x08)
+            if (id == 0x00)
                 return "Acknowledgement Request";
-            else if (id == 0x6C)
-                return "Signalling Channel";
-            else if (id == 0x7D)
-                return "Bulletin Board";
-            else if (id == 0x81)
+            else if (id == 0x01)
                 return "Announcement";
-            else if (id == 0x83)
+            else if (id == 0x02)
+                return "Logical Channel Clear";
+            else if (id == 0x03)
                 return "Logical Channel Assignment";
-            else if (id == 0x91)
-                return "Distress Alert Ack";
-            else if (id == 0x92)
-                return "Login Ack";
-            else if (id == 0x9A)
-                return "Enhanced Data Report Ack";
-            else if (id == 0xA0)
+            else if (id == 0x04)
+                return "LES TDM Channel Descriptor Packet";
+            else if (id == 0x05)
+                return "Network Monitor Packet";
+            else if (id == 0x06)
+                return "Signalling Channel";
+            else if (id == 0x07)
+                return "Bulletin Board";
+            ////////////
+            else if (id == 0x10)
+                return "Acknowledgement";
+            else if (id == 0x11)
+                return "Distress Alert Acknowledgement";
+            else if (id == 0x12)
+                return "Login Acknowledgement";
+            else if (id == 0x13)
+                return "Logout Acknowledgement";
+            ////////////
+            if (id == 0x19)
+                return "LES Forced Clear";
+            else if (id == 0x1a)
+                return "Enhanced Data Report Acknowledgement";
+            ////////////
+            else if (id == 0x20)
                 return "Distress Test Request";
-            else if (id == 0xA3)
+            else if (id == 0x21)
+                return "Area Poll";
+            else if (id == 0x22)
+                return "Group Poll";
+            else if (id == 0x23)
                 return "Individual Poll";
-            else if (id == 0xA8)
+            else if (id == 0x24)
+                return "Mobile To Base Station Poll";
+            else if (id == 0x25)
+                return "Mobile To Mobile Poll";
+            ////////////
+            else if (id == 0x28)
                 return "Confirmation";
-            else if (id == 0xAA)
-                return "Message";
-            else if (id == 0xAB)
-                return "Les List";
-            else if (id == 0xAC)
+            else if (id == 0x29)
+                return "Message Status";
+            else if (id == 0x2a)
+                return "Message Data";
+            else if (id == 0x2b)
+                return "Network Update";
+            else if (id == 0x2c)
                 return "Request Status";
-            else if (id == 0xAD)
+            else if (id == 0x2d)
                 return "Test Result";
-            else if (id == 0xB1)
+            else if (id == 0x30)
+                return "EGC Packet, single header";
+            else if (id == 0x31)
                 return "EGC double header, part 1";
-            else if (id == 0xB2)
+            else if (id == 0x32)
                 return "EGC double header, part 2";
-            else if (id == 0xBD)
+            ////////////
+            else if (id == 0x3D)
                 return "Multiframe Packet Start";
-            else if (id == 0xBE)
+            else if (id == 0x3E)
                 return "Multiframe Packet Continue";
             else
                 return "Unknown";
@@ -254,10 +256,10 @@ namespace inmarsat
             {
                 // stations [": ]+=std::to_string(i) ;
                 int sat = data[j] >> 6 & 0x03;
-                stations[i]["sat"] = sat;
+                stations[i]["sa_id"] = sat;
                 stations[i]["sat_name"] = get_sat_name(sat);
                 int lesId = data[j] & 0x3F;
-                stations[i]["lesId"] = lesId;
+                stations[i]["les_id"] = lesId;
                 stations[i]["les_name"] = get_les_name(sat, lesId);
                 int servicesStart = data[j + 1];
                 stations[i]["servicesStart"] = servicesStart;
@@ -284,14 +286,6 @@ namespace inmarsat
                 j += 6;
             }
             return stations;
-        }
-
-        std::string buf_to_hex_str(uint8_t *buf, int len)
-        {
-            std::ostringstream os;
-            for (int i = 0; i < len; i++)
-                os << std::setfill('0') << std::setw(2) << std::right << std::hex << (uint16_t)buf[6 + i];
-            return os.str();
         }
 
         bool is_binary(std::vector<uint8_t> data, bool checkAll)
@@ -448,6 +442,22 @@ namespace inmarsat
             //{0x7F, '∇'}
         };
 
+        std::string string_from_ia5(uint8_t *buf, int len)
+        {
+            std::string ret = "";
+            for (int i = 0; i < len; i++)
+            {
+                uint8_t b = buf[i] & 0x7F;
+                char c = ' ';
+                if (table_xia5.count(b))
+                    c = table_xia5[b];
+                if (!isascii(c))
+                    c = ' ';
+                ret.push_back(c);
+            }
+            return ret;
+        }
+
         std::string message_to_string(std::vector<uint8_t> buf, int presentation)
         {
             std::string ret = "";
@@ -569,6 +579,49 @@ namespace inmarsat
             default:
                 return 3;
             }
+        }
+
+        double parse_uplink_freq_mhz(uint8_t *b)
+        {
+            return ((b[0] << 8 | (uint16_t)b[1]) - 6000) * 0.0025 + 1626.5;
+        }
+
+        double parse_downlink_freq_mhz(uint8_t *b)
+        {
+            return ((b[0] << 8 | (uint16_t)b[1]) - 8000) * 0.0025 + 1530.5;
+        }
+
+        std::string service4_name(uint8_t service_b)
+        {
+            if (service_b == 0)
+                return "Store And Forward";
+            else if (service_b == 1)
+                return "Half Duplex Data";
+            else if (service_b == 2)
+                return "Circuit Switched Data (no ARQ)";
+            else if (service_b == 3)
+                return "Circuit Switched Data (ARQ)";
+            else if (service_b == 0xE)
+                return "Message Performance Verification";
+            else
+                return "Unknown";
+        }
+
+        std::string direction2_name(uint8_t direction_b)
+        {
+            if (direction_b == 0)
+                return "To Mobile";
+            else if (direction_b == 1)
+                return "From Mobile";
+            else if (direction_b == 3)
+                return "Both";
+            else
+                return "Unknown";
+        }
+
+        int get_packet_frm_id(nlohmann::json pkt)
+        {
+            return pkt["descriptor"].get<pkts::PacketDescriptor>().type;
         }
     }
 }

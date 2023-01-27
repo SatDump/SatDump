@@ -9,8 +9,8 @@ namespace inmarsat
         {
             msg_t v;
             v.pkt = msg;
-            v.logical_channel = msg["logical_channel_no"].get<int>();
-            v.pkt_no = msg["packet_no"].get<int>();
+            v.logical_channel = msg["logical_channel_number"].get<int>();
+            v.pkt_no = msg["packet_sequence_number"].get<int>();
             v.timestamp = msg["timestamp"].get<double>();
             v.message = msg["message"].get<std::string>();
             return v;
@@ -21,8 +21,8 @@ namespace inmarsat
             nlohmann::json v;
             v = m.pkt;
             v["message"] = ms;
-            if (v.contains("packet_no"))
-                v.erase("packet_no");
+            if (v.contains("packet_sequence_number"))
+                v.erase("packet_sequence_number");
             return v;
         }
 
