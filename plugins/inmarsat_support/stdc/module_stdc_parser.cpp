@@ -286,21 +286,22 @@ namespace inmarsat
                         auto &msg = pkt_history[i];
                         try
                         {
-                            if (msg["pkt_id"].get<int>() == 0xAA)
+                            int id = get_packet_frm_id(msg);
+                            if (id == pkts::PacketMessageData::FRM_ID)
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
                                 ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                             }
-                            else if (msg["pkt_id"].get<int>() == 0xb1 || msg["pkt_id"].get<int>() == 0xb2)
+                            else if (id == pkts::PacketEGCDoubleHeader1 || id == pkts::PacketEGCDoubleHeader2)
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).get<std::string>().c_str());
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
@@ -310,7 +311,7 @@ namespace inmarsat
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).get<std::string>().c_str());
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
