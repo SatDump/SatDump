@@ -297,7 +297,7 @@ namespace inmarsat
                                 ImGui::TableSetColumnIndex(2);
                                 ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                             }
-                            else if (id == pkts::PacketEGCDoubleHeader1 || id == pkts::PacketEGCDoubleHeader2)
+                            else if (id == pkts::PacketEGCDoubleHeader1::FRM_ID || id == pkts::PacketEGCDoubleHeader2::FRM_ID)
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
