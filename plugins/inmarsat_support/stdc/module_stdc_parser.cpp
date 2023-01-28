@@ -150,9 +150,9 @@ namespace inmarsat
                 logger->info("Full EGC Message : \n" + msg["message"].get<std::string>());
 
                 pkt_history_mtx.lock();
-                pkt_history_msg.push_back(msg);
-                if (pkt_history_msg.size() > 1000)
-                    pkt_history_msg.erase(pkt_history_msg.begin());
+                pkt_history_egc.push_back(msg);
+                if (pkt_history_egc.size() > 1000)
+                    pkt_history_egc.erase(pkt_history_egc.begin());
                 pkt_history_mtx.unlock();
             };
 
