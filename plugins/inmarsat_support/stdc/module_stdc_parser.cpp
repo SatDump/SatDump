@@ -14,7 +14,8 @@ namespace inmarsat
     {
         STDCParserModule::STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
-            buffer = new uint8_t[FRAME_SIZE_BYTES];
+            buffer = new uint8_t[FRAME_SIZE_BYTES * 4];
+            memset(buffer, 0, FRAME_SIZE_BYTES * 4);
         }
 
         std::vector<ModuleDataType> STDCParserModule::getInputTypes()
