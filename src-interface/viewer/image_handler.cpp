@@ -54,6 +54,8 @@ namespace satdump
         }
         scale_view.update(scale_image);
         scale_view.allow_zoom_and_move = false;
+        correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
+        correction_factors.push_back(products->images[0].image.width());
 
         asyncUpdate();
 
@@ -197,13 +199,20 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
+                int raw_value = products->images[active_channel_id].image[y * products->images[active_channel_id].image.width() + (correct_image ? correction_factors[x] : x)] >> (16 - products->bit_depth);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
+                    if (correct_image){
+                        if(correction_factors[correction_factors.size() - 1] != products->images[active_channel_id].image.width()){
+                            correction_factors = generate_horizontal_corr_lut(*products, products->images[active_channel_id].image.width());
+                            correction_factors.push_back(products->images[active_channel_id].image.width());
+                        }
+                        radiance = products->get_calibrated_value(active_channel_id, correction_factors[x], y);
+                    }
                     if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
                     {
                         ImGui::Text("Albedo : %.2f %%", radiance * 100.0);

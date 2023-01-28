@@ -490,4 +490,47 @@ namespace satdump
 
         return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
     }
+
+    std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width)
+    {
+        if (!product.contents.contains("projection_cfg"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_swath"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_resol"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_altit"))
+            return {-1};
+
+        float swath = product.get_proj_cfg()["corr_swath"].get<float>();
+        float resol = product.get_proj_cfg()["corr_resol"].get<float>();
+        float altit = product.get_proj_cfg()["corr_altit"].get<float>();
+
+        resol *= float(product.images[0].image.width()) / float(width);
+
+        if (product.get_proj_cfg().contains("corr_width"))
+        {
+            if ((int)width != product.get_proj_cfg()["corr_width"].get<int>())
+            {
+                logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), width);
+                resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(width);
+            }
+        }
+
+        float satellite_orbit_radius = 6371.0f + altit;                                                                                        // Compute the satellite's orbit radius
+        int corrected_width = round(swath / resol);                                                                                                    // Compute the output image size, or number of samples from the imager
+        float satellite_view_angle = swath / 6371.0f;                                                                                                     // Compute the satellite's view angle
+        float edge_angle = -atanf(6371.0f * sinf(satellite_view_angle / 2) / ((cosf(satellite_view_angle / 2)) * 6371.0f - satellite_orbit_radius)); // Max angle relative to the satellite
+
+        std::vector<int> correction_factors(corrected_width);
+
+        // Generate them
+        for (int i = 0; i < corrected_width; i++)
+        {
+            float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                    // Get the satellite's angle
+            float satellite_angle = -atanf(6371.0f * sinf(angle) / ((cosf(angle)) * 6371.0f - satellite_orbit_radius)); // Convert to an angle relative to earth
+            correction_factors[i] = width * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
+        }
+        return correction_factors;
+    }
 }

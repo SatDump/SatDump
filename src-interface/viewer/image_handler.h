@@ -49,6 +49,7 @@ namespace satdump
         bool show_scale = false;
         image::Image<uint16_t> scale_image; // 512x25
         ImageViewWidget scale_view;
+        std::vector<int> correction_factors;
 
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;
