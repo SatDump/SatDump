@@ -230,9 +230,10 @@ namespace inmarsat
                         auto &msg = pkt_history_msg[i];
                         try
                         {
+                            int id = get_packet_frm_id(msg);
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                            ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
@@ -258,9 +259,10 @@ namespace inmarsat
                         auto &msg = pkt_history_egc[i];
                         try
                         {
+                            int id = get_packet_frm_id(msg);
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["pkt_type"].get<std::string>().c_str());
+                            ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);

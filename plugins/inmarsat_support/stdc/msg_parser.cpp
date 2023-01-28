@@ -23,6 +23,8 @@ namespace inmarsat
             v["message"] = ms;
             if (v.contains("packet_sequence_number"))
                 v.erase("packet_sequence_number");
+            if (v.contains("data"))
+                v.erase("data");
             return v;
         }
 
