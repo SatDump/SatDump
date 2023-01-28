@@ -246,13 +246,15 @@ namespace image
     template <typename T>
     void Image<T>::resize_bilinear(int width, int height, bool text_mode)
     {
-        int a, b, c, d, x, y, index;
+        int a, b, c, d, x, y;
+        size_t index;
         double x_scale = double(d_width - 1) / double(width);
         double y_scale = double(d_height - 1) / double(height);
         float x_diff, y_diff, val;
 
         Image<T> tmp = *this;
         init(width, height, d_channels);
+        size_t max_index = tmp.width() * tmp.height();
 
         for (int cc = 0; cc < d_channels; cc++)
         {
@@ -269,9 +271,12 @@ namespace image
                     index = (y * tmp.width() + x);
 
                     a = tmp.channel(cc)[index];
-                    b = tmp.channel(cc)[index + 1];
-                    c = tmp.channel(cc)[index + tmp.width()];
-                    d = tmp.channel(cc)[index + tmp.width() + 1];
+                    if (index + 1 < max_index)
+                        b = tmp.channel(cc)[index + 1];
+                    if (index + tmp.width() < max_index)
+                        c = tmp.channel(cc)[index + tmp.width()];
+                    if (index + tmp.width() + 1 < max_index)
+                        d = tmp.channel(cc)[index + tmp.width() + 1];
 
                     val = a * (1 - x_diff) * (1 - y_diff) +
                           b * (x_diff) * (1 - y_diff) +
