@@ -16,6 +16,16 @@ namespace inmarsat
         {
             buffer = new uint8_t[FRAME_SIZE_BYTES * 4];
             memset(buffer, 0, FRAME_SIZE_BYTES * 4);
+
+            if (parameters.contains("udp_sinks"))
+            {
+                for (auto &sinks : parameters["udp_sinks"].items())
+                {
+                    std::string address = sinks.value()["address"].get<std::string>();
+                    int port = sinks.value()["port"].get<int>();
+                    udp_clients.push_back(std::make_shared<net::UDPClient>((char *)address.c_str(), port));
+                }
+            }
         }
 
         std::vector<ModuleDataType> STDCParserModule::getInputTypes()
@@ -41,31 +51,50 @@ namespace inmarsat
                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));           // Seconds ss
         }
 
-        void STDCParserModule::write_pkt_file_out(nlohmann::json &msg)
+        void STDCParserModule::process_final_pkt(nlohmann::json &msg)
         {
-            std::string pkt_name = get_id_name(get_packet_frm_id(msg));
-            if (msg.contains("pkt_name"))
-                pkt_name = msg["pkt_name"];
+            // UDP
+            {
+                for (auto &c : udp_clients)
+                {
+                    try
+                    {
+                        std::string m = msg.dump();
+                        c->send((uint8_t *)m.data(), m.size());
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error sending to UDP! {:s}", e.what());
+                    }
+                }
+            }
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/" + pkt_name;
+            // File
+            {
+                std::string pkt_name = get_id_name(get_packet_frm_id(msg));
+                if (msg.contains("pkt_name"))
+                    pkt_name = msg["pkt_name"];
 
-            if (!std::filesystem::exists(directory))
-                std::filesystem::create_directory(directory);
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/" + pkt_name;
 
-            double time_d = msg["timestamp"].get<double>();
-            time_t time_v = time_d;
-            std::tm *timeReadable = gmtime(&time_v);
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
 
-            std::string utc_filename = std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+                double time_d = msg["timestamp"].get<double>();
+                time_t time_v = time_d;
+                std::tm *timeReadable = gmtime(&time_v);
 
-            std::ofstream outf(directory + "/" + utc_filename + ".json", std::ios::binary);
-            outf << msg.dump(4);
-            outf.close();
+                std::string utc_filename = std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                           (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                           (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                           (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                           (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                           (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+
+                std::ofstream outf(directory + "/" + utc_filename + ".json", std::ios::binary);
+                outf << msg.dump(4);
+                outf.close();
+            }
         }
 
         void STDCParserModule::process()
@@ -95,7 +124,7 @@ namespace inmarsat
                 }
 
                 if (id != pkts::PacketMessageData::FRM_ID)
-                    write_pkt_file_out(msg);
+                    process_final_pkt(msg);
 
                 if (id == pkts::PacketMessageData::FRM_ID)
                 {
@@ -130,7 +159,7 @@ namespace inmarsat
             {
                 msg["pkt_name"] = "Full Message";
 
-                write_pkt_file_out(msg);
+                process_final_pkt(msg);
 
                 logger->info("Full Message : \n" + msg["message"].get<std::string>());
 
@@ -145,7 +174,7 @@ namespace inmarsat
             {
                 msg["pkt_name"] = "EGC Message";
 
-                write_pkt_file_out(msg);
+                process_final_pkt(msg);
 
                 logger->info("Full EGC Message : \n" + msg["message"].get<std::string>());
 

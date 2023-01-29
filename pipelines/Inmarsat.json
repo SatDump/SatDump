@@ -32,7 +32,14 @@
                 "inmarsat_stdc_decoder": {}
             },
             "msg": {
-                "inmarsat_stdc_parser": {}
+                "inmarsat_stdc_parser": {
+                    //"udp_sinks": {
+                        //"test": {
+                        //    "address": "0.0.0.0",
+                        //    "port": 8899
+                        //}
+                    //}
+                }
             }
         }
     }
