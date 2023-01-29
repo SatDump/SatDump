@@ -8,4 +8,8 @@ add_library(inmarsat_support SHARED ${inmarsat_support_CPPS})
 target_link_libraries(inmarsat_support PUBLIC satdump_core)
 target_include_directories(inmarsat_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
 
+if(MSVC)
+    target_link_libraries(sdrpp_server_support PUBLIC ws2_32)
+endif()
+
 install(TARGETS inmarsat_support DESTINATION share/satdump/plugins)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string.h>
-#include <exception>
+#include <stdexcept>
 
 #if defined(_WIN32)
 #include <stdio.h>
@@ -59,7 +59,7 @@ namespace net
         int send(uint8_t *data, int len)
         {
             int slen = sizeof(sockaddr);
-            int r = sendto(sock, data, len, 0, (sockaddr *)&sock_addr, slen);
+            int r = sendto(sock, (char *)data, len, 0, (sockaddr *)&sock_addr, slen);
             if (r == -1)
                 throw std::runtime_error("Error sending to UDP socket!");
             return r;
@@ -67,8 +67,12 @@ namespace net
 
         int recv(uint8_t *data, int len)
         {
+#if defined(_WIN32)
+            int slen = sizeof(sockaddr);
+#else
             socklen_t slen = sizeof(sockaddr);
-            int r = recvfrom(sock, data, len, 0, (struct sockaddr *)&sock_addr, &slen);
+#endif
+            int r = recvfrom(sock, (char *)data, len, 0, (struct sockaddr *)&sock_addr, &slen);
             if (r == -1)
                 throw std::runtime_error("Error receiving from UDP socket!");
             return r;
