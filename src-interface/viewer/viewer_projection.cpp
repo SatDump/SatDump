@@ -36,7 +36,8 @@ namespace satdump
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "Mercator\0"
                                                                              "Stereo\0"
-                                                                             "Satellite (TPERS)\0");
+                                                                             "Satellite (TPERS)\0"
+                                                                             "Azimuthal Equidistant\0");
 
             if (projections_current_selected_proj == 0)
             {
@@ -68,6 +69,11 @@ namespace satdump
                 ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+            }else if (projections_current_selected_proj == 4)
+            {
+                ImGui::Text("Center Coordinates :");
+                ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
+                ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
             }
 
             ImGui::Spacing();
@@ -419,6 +425,12 @@ namespace satdump
             cfg["alt"] = projections_tpers_alt;
             cfg["ang"] = projections_tpers_ang;
             cfg["azi"] = projections_tpers_azi;
+        }
+        else if (projections_current_selected_proj == 4)
+        {
+            cfg["type"] = "azeq";
+            cfg["lon"] = projections_azeq_lon;
+            cfg["lat"] = projections_azeq_lat;
         }
 
         // Setup final image
