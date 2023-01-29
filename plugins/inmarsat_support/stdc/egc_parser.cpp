@@ -60,7 +60,7 @@ namespace inmarsat
                 wip_message.push_back(m);
 
             std::sort(wip_message.begin(), wip_message.end(), [](const egc_t &v1, const egc_t &v2)
-                      { return v1.pkt_no < v2.pkt_no && v2.is_p2; });
+                      { return (v1.pkt_no * 2 + v1.is_p2) < (v2.pkt_no * 2 + v2.is_p2); });
         }
 
         void EGCMessageParser::force_finish()
