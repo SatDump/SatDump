@@ -302,6 +302,14 @@ namespace satdump
                                                    op.target_prj_info["azi"].get<float>(),
                                                    progress);
                 }
+                else if (op.target_prj_info["type"] == "azeq")
+                {
+                    reproj::reproject_equ_to_azeq(warped_image,
+                                                  tl_lon, tl_lat, br_lon, br_lat, projected_image,
+                                                  op.target_prj_info["lon"].get<float>(),
+                                                  op.target_prj_info["lat"].get<float>(),
+                                                  progress);
+                }
             }
 
             return result_prj;
