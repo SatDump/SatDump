@@ -35,6 +35,8 @@ protected:
 
     dsp::BasebandReader baseband_reader;
 
+    bool is_ui = false;
+
 public:
     FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
