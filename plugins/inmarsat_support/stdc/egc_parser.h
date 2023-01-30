@@ -13,6 +13,7 @@ namespace inmarsat
             int msg_id;
             int pkt_no;
             double timestamp;
+            bool is_cont;
             std::string message;
         };
 
@@ -24,10 +25,7 @@ namespace inmarsat
             nlohmann::json serialize_from_msg(egc_t m, std::string ms);
 
         private:
-            // double current_time;
-            // std::map<int, std::vector<egc_t>> wip_messages;
-            int current_id = -1;
-            std::vector<egc_t> wip_message;
+            std::map<int, std::vector<egc_t>> wip_messages;
 
         public:
             void push_message(nlohmann::json msg);

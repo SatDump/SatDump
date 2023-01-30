@@ -492,7 +492,8 @@ namespace inmarsat
             //                      { return lhs == rhs && iswspace(lhs); });
             // ret.erase(it, ret.end());
 
-            ret.erase(ret.end() - 1, ret.end());
+            if (ret.size() > 0)
+                ret.erase(ret.end() - 1, ret.end());
 
             return ret;
         }
