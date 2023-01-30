@@ -52,25 +52,28 @@ namespace inmarsat
             if (m.is_p2 && !m.is_cont)
             {
                 auto &fmsg = wip_messages[m.msg_id];
-
-                std::string final_msg;
-                for (auto &mp : fmsg)
-                    final_msg += mp.message;
-                on_message(serialize_from_msg(fmsg[fmsg.size() - 1], final_msg));
-                fmsg.clear();
+                if (fmsg.size() > 0)
+                {
+                    std::string final_msg;
+                    for (auto &mp : fmsg)
+                        final_msg += mp.message;
+                    on_message(serialize_from_msg(fmsg[fmsg.size() - 1], final_msg));
+                    wip_messages.erase(m.msg_id);
+                }
             }
         }
 
         void EGCMessageParser::force_finish()
         {
-            for (auto fmsg : wip_messages)
+            for (auto &fmsg : wip_messages)
             {
-                if (fmsg.second.size() < 2)
-                    continue;
-                std::string final_msg;
-                for (auto &mp : fmsg.second)
-                    final_msg += mp.message;
-                on_message(serialize_from_msg(fmsg.second[fmsg.second.size() - 1], final_msg));
+                if (fmsg.second.size() > 0)
+                {
+                    std::string final_msg;
+                    for (auto &mp : fmsg.second)
+                        final_msg += mp.message;
+                    on_message(serialize_from_msg(fmsg.second[fmsg.second.size() - 1], final_msg));
+                }
                 fmsg.second.clear();
             }
         }

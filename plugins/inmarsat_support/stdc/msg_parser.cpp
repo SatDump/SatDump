@@ -49,10 +49,13 @@ namespace inmarsat
                 double diff = current_time - el.second[el.second.size() - 1].timestamp;
                 if (diff > 30)
                 {
-                    std::string final_msg;
-                    for (auto &mp : el.second)
-                        final_msg += mp.message;
-                    on_message(serialize_from_msg(el.second[el.second.size() - 1], final_msg));
+                    if (el.second.size() > 0)
+                    {
+                        std::string final_msg;
+                        for (auto &mp : el.second)
+                            final_msg += mp.message;
+                        on_message(serialize_from_msg(el.second[el.second.size() - 1], final_msg));
+                    }
                     wip_messages.erase(el.first);
                     goto recheck;
                 }
