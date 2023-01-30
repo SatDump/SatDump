@@ -18,7 +18,7 @@ namespace inmarsat
 
         std::string buf_to_hex_str(uint8_t *buf, int len);
         bool is_binary(std::vector<uint8_t> data, bool checkAll);
-        std::string message_to_string(std::vector<uint8_t> buf, int presentation);
+        std::string message_to_string(std::vector<uint8_t> buf, int presentation, bool egc);
         std::string get_service_code_and_address_name(int code);
         std::string get_priority(int priority);
         int get_address_length(int messageType);
@@ -645,7 +645,7 @@ namespace inmarsat
                             k++;
                         }
 
-                        message = message_to_string(data, presentation);
+                        message = message_to_string(data, presentation, true);
                     }
                 }
             };
@@ -841,7 +841,7 @@ namespace inmarsat
 
                     sat_name = get_sat_name(sat_id);
                     les_name = get_les_name(sat_id, les_id);
-                    message = message_to_string(data, is_binary(data, true) ? 7 : 0);
+                    message = message_to_string(data, is_binary(data, true) ? 7 : 0, false);
                 }
 
                 NLOHMANN_DEFINE_TYPE_INTRUSIVE(PacketMessageData, descriptor,
