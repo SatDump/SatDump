@@ -26,6 +26,11 @@ namespace inmarsat
                     udp_clients.push_back(std::make_shared<net::UDPClient>((char *)address.c_str(), port));
                 }
             }
+
+            if (parameters.contains("save_files"))
+                do_save_files = parameters["save_files"].get<bool>();
+            else
+                do_save_files = true;
         }
 
         std::vector<ModuleDataType> STDCParserModule::getInputTypes()
@@ -70,6 +75,7 @@ namespace inmarsat
             }
 
             // File
+            if (do_save_files)
             {
                 std::string pkt_name = get_id_name(get_packet_frm_id(msg));
                 if (msg.contains("pkt_name"))
@@ -148,7 +154,7 @@ namespace inmarsat
 
                 pkt_history_mtx.lock();
                 pkt_history.push_back(msg);
-                if (pkt_history.size() > 1000)
+                if (pkt_history.size() > 500)
                     pkt_history.erase(pkt_history.begin());
                 pkt_history_mtx.unlock();
 
@@ -165,7 +171,7 @@ namespace inmarsat
 
                 pkt_history_mtx.lock();
                 pkt_history_msg.push_back(msg);
-                if (pkt_history_msg.size() > 1000)
+                if (pkt_history_msg.size() > 100)
                     pkt_history_msg.erase(pkt_history_msg.begin());
                 pkt_history_mtx.unlock();
             };
@@ -180,7 +186,7 @@ namespace inmarsat
 
                 pkt_history_mtx.lock();
                 pkt_history_egc.push_back(msg);
-                if (pkt_history_egc.size() > 1000)
+                if (pkt_history_egc.size() > 100)
                     pkt_history_egc.erase(pkt_history_egc.begin());
                 pkt_history_mtx.unlock();
             };

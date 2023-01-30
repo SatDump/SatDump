@@ -33,11 +33,12 @@
             },
             "msg": {
                 "inmarsat_stdc_parser": {
-                    //"udp_sinks": {
-                        //"test": {
-                        //    "address": "0.0.0.0",
-                        //    "port": 8899
-                        //}
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
                     //}
                 }
             }

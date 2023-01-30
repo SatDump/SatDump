@@ -27,6 +27,7 @@ namespace inmarsat
 
             int last_pkt_count = 0;
 
+            bool do_save_files;
             std::vector<std::shared_ptr<net::UDPClient>> udp_clients;
 
         public:
