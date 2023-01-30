@@ -82,6 +82,53 @@
             }
         }
     },
+    "sentinel6_tlm": {
+        "name": "Sentinel 6 S-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2256.75e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 500e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.001
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+		    "oqpsk_mode": true,
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
     "iris_dump": {
         "name": "IRIS X-Band Dump",
         "samplerate": 20e6,
