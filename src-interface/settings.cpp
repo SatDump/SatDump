@@ -30,6 +30,8 @@ namespace satdump
 
         bool tles_are_update = false;
 
+        bool show_imgui_demo = false;
+
         void setup()
         {
             nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"];
@@ -86,6 +88,15 @@ namespace satdump
                 {
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
                         p.second.draw();
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Show ImGui Demo");
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("For developers only!");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Checkbox("##showimguidebugcheckbox", &show_imgui_demo);
+
                     ImGui::EndTable();
                 }
             }

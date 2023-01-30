@@ -204,6 +204,9 @@ namespace satdump
 
             if (error::hasError)
                 error::render();
+
+            if (settings::show_imgui_demo)
+                ImGui::ShowDemoWindow();
         }
     }
 
