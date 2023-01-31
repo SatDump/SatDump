@@ -32,7 +32,7 @@ namespace dsp
 
             if (rsamp_in != fout)
             {
-                float t; // Ensure it's all integer
+                double t; // Ensure it's all integer
                 while (modf(rsamp_in, &t) != 0 || modf(fout, &t) != 0)
                 {
                     rsamp_in *= 10;
