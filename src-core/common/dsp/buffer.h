@@ -7,9 +7,9 @@
 
 namespace dsp
 {
-// 1MB buffers
-#define STREAM_BUFFER_SIZE 1000000
-#define RING_BUF_SZ 1000000
+    // Default buffer sizes
+    extern int STREAM_BUFFER_SIZE;
+    extern int RING_BUF_SZ;
 
     /*
     Util function to create a volk aligned buffer

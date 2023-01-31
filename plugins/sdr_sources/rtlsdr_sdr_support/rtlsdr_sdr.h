@@ -36,7 +36,7 @@ protected:
 
     void mainThread()
     {
-        int buffer_size = std::min<int>(roundf(current_samplerate / (250 * 512)) * 512, STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(roundf(current_samplerate / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {

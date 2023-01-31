@@ -30,6 +30,8 @@ namespace inmarsat
             bool do_save_files;
             std::vector<std::shared_ptr<net::UDPClient>> udp_clients;
 
+            bool is_gui = false;
+
         public:
             STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             ~STDCParserModule();

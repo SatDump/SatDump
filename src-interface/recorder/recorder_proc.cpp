@@ -134,7 +134,7 @@ namespace satdump
             pipeline_params = pipeline_selector.getParameters();
             pipeline_params["samplerate"] = get_samplerate();
             pipeline_params["baseband_format"] = "f32";
-            pipeline_params["buffer_size"] = STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
+            pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
             pipeline_params["start_timestamp"] = (double)time(0); // Some pipelines need this
 
             if (automated_live_output_dir)

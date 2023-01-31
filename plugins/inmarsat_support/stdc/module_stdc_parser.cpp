@@ -152,11 +152,14 @@ namespace inmarsat
                 else
                     logger->info("Packet : " + get_id_name(id));
 
-                pkt_history_mtx.lock();
-                pkt_history.push_back(msg);
-                if (pkt_history.size() > 500)
-                    pkt_history.erase(pkt_history.begin());
-                pkt_history_mtx.unlock();
+                if (is_gui)
+                {
+                    pkt_history_mtx.lock();
+                    pkt_history.push_back(msg);
+                    if (pkt_history.size() > 500)
+                        pkt_history.erase(pkt_history.begin());
+                    pkt_history_mtx.unlock();
+                }
 
                 // logger->info("Packet IDK : \n" + msg.dump(4));
             };
@@ -169,11 +172,14 @@ namespace inmarsat
 
                 logger->info("Full Message : \n" + msg["message"].get<std::string>());
 
-                pkt_history_mtx.lock();
-                pkt_history_msg.push_back(msg);
-                if (pkt_history_msg.size() > 100)
-                    pkt_history_msg.erase(pkt_history_msg.begin());
-                pkt_history_mtx.unlock();
+                if (is_gui)
+                {
+                    pkt_history_mtx.lock();
+                    pkt_history_msg.push_back(msg);
+                    if (pkt_history_msg.size() > 100)
+                        pkt_history_msg.erase(pkt_history_msg.begin());
+                    pkt_history_mtx.unlock();
+                }
             };
 
             egc_parser.on_message = [&](nlohmann::json msg)
@@ -184,11 +190,14 @@ namespace inmarsat
 
                 logger->info("Full EGC Message : \n" + msg["message"].get<std::string>());
 
-                pkt_history_mtx.lock();
-                pkt_history_egc.push_back(msg);
-                if (pkt_history_egc.size() > 100)
-                    pkt_history_egc.erase(pkt_history_egc.begin());
-                pkt_history_mtx.unlock();
+                if (is_gui)
+                {
+                    pkt_history_mtx.lock();
+                    pkt_history_egc.push_back(msg);
+                    if (pkt_history_egc.size() > 100)
+                        pkt_history_egc.erase(pkt_history_egc.begin());
+                    pkt_history_mtx.unlock();
+                }
             };
 
             time_t lastTime = 0;
@@ -230,6 +239,8 @@ namespace inmarsat
 
         void STDCParserModule::drawUI(bool window)
         {
+            is_gui = true;
+
             ImGui::Begin("Inmarsat STD-C Parser", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::Text("Decoded packets can be seen in a floating window.");

@@ -181,6 +181,18 @@
             43065 // GCOM-C1
         ]
     },
+    // Advanced user settings
+    // Should NOT be touched by the average user
+    "advanced_settings": {
+        // DSP Buffer size. The default 1MB uses 
+        // too much RAM for operation on some SBCs
+        // with only 256MB or such.
+        // Changing this will drastically reduce
+        // RAM utilization, but be careful to NOT go
+        // too low or things will break!
+        // ------------------------------------------------------
+        // "default_buffer_size": 100e3
+    },
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {

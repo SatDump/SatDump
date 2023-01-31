@@ -14,6 +14,8 @@
 
 #include "core/opencl.h"
 
+#include "common/dsp/buffer.h"
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
@@ -110,6 +112,18 @@ namespace satdump
 
         // Products
         registerProducts();
+
+        // Set DSP buffer sizes if they have been changed
+        if (config::main_cfg.contains("advanced_settings"))
+        {
+            if (config::main_cfg["advanced_settings"].contains("default_buffer_size"))
+            {
+                int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
+                dsp::STREAM_BUFFER_SIZE = new_sz;
+                dsp::RING_BUF_SZ = new_sz;
+                logger->warn("DSP Buffer size was changed to {:d}", new_sz);
+            }
+        }
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});
