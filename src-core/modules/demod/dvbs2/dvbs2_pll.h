@@ -2,7 +2,7 @@
 
 #include "common/dsp/block.h"
 #include "s2_defs.h"
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 
 /*
 DVB-S2 PLL, meant to frequency & phase-recover

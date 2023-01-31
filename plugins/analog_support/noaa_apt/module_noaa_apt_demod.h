@@ -1,7 +1,7 @@
 #pragma once
 
 #include "modules/demod/module_demod_base.h"
-#include "common/dsp/quadrature_demod.h"
+#include "common/dsp/demod/quadrature_demod.h"
 
 // Handle the FM demodulation part of APT
 

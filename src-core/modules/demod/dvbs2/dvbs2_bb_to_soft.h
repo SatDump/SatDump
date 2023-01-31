@@ -2,7 +2,7 @@
 
 #include "common/dsp/block.h"
 #include "s2_defs.h"
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 #include "common/codings/dvb-s2/s2_scrambling.h"
 #include "common/codings/dvb-s2/s2_deinterleaver.h"
 #include "common/utils.h"

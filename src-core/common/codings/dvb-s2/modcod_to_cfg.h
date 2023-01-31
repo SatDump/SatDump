@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dvbs2.h"
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 
 namespace dvbs2
 {

@@ -2,11 +2,11 @@
 
 #include "core/module.h"
 
-#include "common/dsp/real_to_complex.h"
-#include "common/dsp/freq_shift.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/rational_resampler.h"
-#include "common/dsp/complex_to_mag.h"
+#include "common/dsp/utils/real_to_complex.h"
+#include "common/dsp/utils/freq_shift.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/utils/complex_to_mag.h"
 
 #include "common/image/image.h"
 

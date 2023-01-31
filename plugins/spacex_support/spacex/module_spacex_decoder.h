@@ -4,7 +4,7 @@
 #include <complex>
 #include <fstream>
 #include "deframer.h"
-#include "common/dsp/random.h"
+#include "common/dsp/utils/random.h"
 
 namespace spacex
 {

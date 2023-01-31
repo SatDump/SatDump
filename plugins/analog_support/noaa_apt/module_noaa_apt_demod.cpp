@@ -1,9 +1,9 @@
 #include "module_noaa_apt_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
-#include "common/dsp/wav_writer.h"
+#include "common/dsp/io/wav_writer.h"
 
 namespace noaa_apt
 {

@@ -1,5 +1,5 @@
 #include "module_pm_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 

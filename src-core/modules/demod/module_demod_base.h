@@ -1,18 +1,17 @@
 #pragma once
 
 #include "core/module.h"
-#include <complex>
 #include <thread>
 #include <fstream>
 #include <atomic>
-#include "common/dsp/agc.h"
-#include "common/dsp/file_source.h"
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
-#include "common/dsp/correct_iq.h"
-#include "common/dsp/rational_resampler.h"
-#include "common/dsp/freq_shift.h"
-#include "common/dsp/snr_estimator.h"
+#include "common/dsp/utils/agc.h"
+#include "common/dsp/io/file_source.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
+#include "common/dsp/utils/correct_iq.h"
+#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/utils/freq_shift.h"
+#include "common/dsp/utils/snr_estimator.h"
 #include "common/widgets/constellation.h"
 #include "common/widgets/snr_plot.h"
 #include "common/widgets/fft_plot.h"

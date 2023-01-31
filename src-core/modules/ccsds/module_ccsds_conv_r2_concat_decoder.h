@@ -5,9 +5,9 @@
 #include "common/codings/viterbi/viterbi_1_2.h"
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include <fstream>
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
-#include "common/dsp/random.h"
+#include "common/dsp/utils/random.h"
 
 namespace ccsds
 {

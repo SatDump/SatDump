@@ -1,10 +1,10 @@
 #pragma once
 
 #include "module_demod_base.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/costas_loop.h"
-#include "common/dsp/clock_recovery_mm.h"
-#include "common/dsp/delay_one_imag.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/pll/costas_loop.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
+#include "common/dsp/demod/delay_one_imag.h"
 #include "dvbs/viterbi_all.h"
 #include "common/codings/deframing/dvbs_ts_deframer.h"
 #include "dvbs/dvbs_syms_to_soft.h"

@@ -6,8 +6,8 @@
 #include "init.h"
 #include "common/cli_utils.h"
 #include <filesystem>
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
 #include "webserver.h"
 
 // Catch CTRL+C to exit live properly!

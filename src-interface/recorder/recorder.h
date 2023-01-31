@@ -6,10 +6,10 @@
 #include "imgui/imgui_internal.h"
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/rational_resampler.h"
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
-#include "common/dsp/file_sink.h"
+#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
+#include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "module_demod_base.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
 
-#include "common/dsp/freq_shift.h"
+#include "common/dsp/utils/freq_shift.h"
 
 #include "dvbs2/dvbs2_pl_sync.h"
 #include "dvbs2/dvbs2_pll.h"
@@ -14,7 +14,7 @@
 #include "common/codings/dvb-s2/bbframe_bch.h"
 #include "common/codings/dvb-s2/bbframe_ldpc.h"
 
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 
 #include "common/widgets/constellation_s2.h"
 #include "common/widgets/value_plot.h"

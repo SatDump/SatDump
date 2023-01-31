@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "types.h"
 #include <volk/volk_alloc.hh>
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 #include "core/opencl.h"
 
 /*

@@ -7,7 +7,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "resources.h"
 
 #include "common/wav.h"

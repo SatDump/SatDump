@@ -1,5 +1,5 @@
 #include "module_dvbs2_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/codings/dvb-s2/modcod_to_cfg.h"
