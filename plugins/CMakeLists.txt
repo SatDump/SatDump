@@ -139,7 +139,7 @@ if(PLUGIN_GCOM OR PLUGINS_ALL)
     add_subdirectory(gcom_support)
 endif()
 
-option(PLUGIN_TUBSAT "Enable the support plugin for the TUBSAT satellites (TUBIN, etc)" ON)
+option(PLUGIN_TUBSAT "Enable the support plugin for the TUBSAT satellites (TUBIN, etc)" OFF)
 
 if(PLUGIN_TUBSAT OR PLUGINS_ALL)
     add_subdirectory(tubsat_support)
