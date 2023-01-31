@@ -4,12 +4,13 @@
 #include <volk/volk.h>
 #include <string.h>
 #include "common/dsp/complex.h"
+#include "dll_export.h"
 
 namespace dsp
 {
     // Default buffer sizes
-    extern int STREAM_BUFFER_SIZE;
-    extern int RING_BUF_SZ;
+    SATDUMP_DLL extern int STREAM_BUFFER_SIZE;
+    SATDUMP_DLL extern int RING_BUF_SZ;
 
     /*
     Util function to create a volk aligned buffer
