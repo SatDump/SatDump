@@ -121,7 +121,7 @@ void BladeRFSource::start()
     bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
 
     // Setup and start streaming
-    sample_buffer_size = std::min<int>(current_samplerate / 250, STREAM_BUFFER_SIZE);
+    sample_buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
     sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;

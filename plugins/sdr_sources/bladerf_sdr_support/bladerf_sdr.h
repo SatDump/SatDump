@@ -45,7 +45,7 @@ protected:
     {
         bladerf_metadata meta;
 
-        sample_buffer = new int16_t[STREAM_BUFFER_SIZE * 2];
+        sample_buffer = new int16_t[dsp::STREAM_BUFFER_SIZE * 2];
 
         while (thread_should_run)
         {
