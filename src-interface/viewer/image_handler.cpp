@@ -206,8 +206,10 @@ namespace satdump
                 if (products->has_calibation())
                 {
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
-                    if (correct_image){
-                        if(correction_factors[correction_factors.size() - 1] != products->images[active_channel_id].image.width()){
+                    if (correct_image)
+                    {
+                        if (correction_factors[correction_factors.size() - 1] != (int)products->images[active_channel_id].image.width())
+                        {
                             correction_factors = generate_horizontal_corr_lut(*products, products->images[active_channel_id].image.width());
                             correction_factors.push_back(products->images[active_channel_id].image.width());
                         }

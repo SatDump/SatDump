@@ -67,7 +67,7 @@ namespace satdump
 
             if (current_decimation > 1)
             {
-                decim_ptr = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(source_ptr->output_stream, 1, current_decimation);
+                decim_ptr = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, current_decimation);
                 decim_ptr->start();
                 logger->info("Setting up resampler...");
             }

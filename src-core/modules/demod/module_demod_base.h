@@ -9,7 +9,7 @@
 #include "common/dsp/utils/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/utils/correct_iq.h"
-#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/resamp/smart_resampler.h"
 #include "common/dsp/utils/freq_shift.h"
 #include "common/dsp/utils/snr_estimator.h"
 #include "common/widgets/constellation.h"
@@ -34,7 +34,7 @@ namespace demod
         std::shared_ptr<dsp::SplitterBlock> fft_splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft_proc;
         std::shared_ptr<dsp::CorrectIQBlock<complex_t>> dc_blocker;
-        std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> resampler;
+        std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> resampler;
         std::shared_ptr<dsp::AGCBlock<complex_t>> agc;
 
         std::string name = "Demodulator";

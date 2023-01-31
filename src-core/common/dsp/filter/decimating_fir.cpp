@@ -76,6 +76,8 @@ namespace dsp
             }
         }
 
+        inc -= nsamples;
+
         memmove(&buffer[0], &buffer[nsamples], ntaps * sizeof(T));
         return outc;
     }

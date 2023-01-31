@@ -6,7 +6,7 @@
 #include "imgui/imgui_internal.h"
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/resamp/smart_resampler.h"
 #include "common/dsp/utils/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/io/file_sink.h"
@@ -49,7 +49,7 @@ namespace satdump
         std::string sdr_error, error;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
-        std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> decim_ptr;
+        std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
         std::shared_ptr<dsp::SplitterBlock> splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft;
         std::shared_ptr<dsp::FileSinkBlock> file_sink;
