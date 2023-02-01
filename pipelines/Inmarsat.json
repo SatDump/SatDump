@@ -44,4 +44,68 @@
             }
         }
     }
+    /*,
+    "inmarsat_aero_105": {
+        "name": "Inmarsat Aero 10.5k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    //"agc_rate": 0.01,
+                    "constellation": "oqpsk",
+                    "symbolrate": 10.5e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.03
+                }
+            }
+        }
+    },
+    "inmarsat_aero_84": {
+        "name": "Inmarsat Aero 8.4k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    //"agc_rate": 0.01,
+                    "constellation": "oqpsk",
+                    "symbolrate": 8.4e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.03
+                }
+            }
+        }
+    },
+    "inmarsat_aero_6": {
+        "name": "Inmarsat Aero 0.6k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "sdpsk_demod": {
+                    "symbolrate": 600,
+                    "rrc_alpha": 0.4
+                }
+            }
+        }
+    }*/
 }
