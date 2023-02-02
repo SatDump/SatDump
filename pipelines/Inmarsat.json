@@ -43,8 +43,7 @@
                 }
             }
         }
-    }
-    /*,
+    },
     "inmarsat_aero_105": {
         "name": "Inmarsat Aero 10.5k",
         "live": true,
@@ -61,7 +60,7 @@
                     //"agc_rate": 0.01,
                     "constellation": "oqpsk",
                     "symbolrate": 10.5e3,
-                    "rrc_alpha": 0.5,
+                    "rrc_alpha": 0.6,
                     "pll_bw": 0.03
                 }
             }
@@ -105,7 +104,32 @@
                     "symbolrate": 600,
                     "rrc_alpha": 0.4
                 }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {}
             }
         }
-    }*/
+    },
+    "inmarsat_aero_12": {
+        "name": "Inmarsat Aero 1.2k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "sdpsk_demod": {
+                    "symbolrate": 1200,
+                    "rrc_alpha": 0.4
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {}
+            }
+        }
+    }
 }
