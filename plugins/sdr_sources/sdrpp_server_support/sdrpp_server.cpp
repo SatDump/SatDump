@@ -79,7 +79,7 @@ void SDRPPServerSource::drawControlUI()
 
     if (is_connected)
         style::beginDisabled();
-    ImGui::InputText("Adress", &ip_address);
+    ImGui::InputText("Address", &ip_address);
     ImGui::InputInt("Port", &port);
     if (is_connected)
         style::endDisabled();
