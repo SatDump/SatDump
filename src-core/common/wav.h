@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <ctime>
 
 /*
 Simple class to read a WAV header,

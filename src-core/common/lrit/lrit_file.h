@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include "libs/others/strptime.h"
+#include <ctime>
 
 namespace lrit
 {

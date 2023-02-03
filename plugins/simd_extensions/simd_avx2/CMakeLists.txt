@@ -20,12 +20,11 @@ endif()
 if(CXX_HAS_AVX_2)
     message("Found AVX2 features, enabling AVX2 plugin")
 
-    set(SATDUMP_ROOT "/usr")
-
+    
     file(GLOB_RECURSE simd_avx2_CPPS *.cpp)
     add_library(simd_avx2 SHARED ${simd_avx2_CPPS})
     target_link_libraries(simd_avx2 PUBLIC satdump_core)
-    target_include_directories(simd_avx2 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(simd_avx2 PUBLIC src)
 
     if(UNIX OR ANDROID)
         string(REPLACE " " ";" FINAL_FLAGS_AVX2 "${CMAKE_CXX_FLAGS} -mavx2")

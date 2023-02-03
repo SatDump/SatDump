@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0.0)
 project(bladerf_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(BLADERF_LIBRARY bladeRF)
 
@@ -19,7 +18,7 @@ if(BLADERF_LIBRARY OR MSVC)# OR ANDROID)
         target_link_libraries(bladerf_sdr_support PUBLIC satdump_core ${BLADERF_LIBRARY})
     endif()
 
-    target_include_directories(bladerf_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(bladerf_sdr_support PUBLIC src)
 
     install(TARGETS bladerf_sdr_support DESTINATION share/satdump/plugins)
 else()

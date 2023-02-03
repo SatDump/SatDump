@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(sdrplay_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 if(APPLE)
     include_directories("/usr/local/include")
@@ -21,7 +20,7 @@ if(SDRPLAY_LIBRARY OR MSVC)
         target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core ${SDRPLAY_LIBRARY})
     endif()
 
-    target_include_directories(sdrplay_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(sdrplay_sdr_support PUBLIC src)
 
     install(TARGETS sdrplay_sdr_support DESTINATION share/satdump/plugins)
 else()

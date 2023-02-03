@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(mirisdr_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(USB_LIBRARY usb-1.0)
 
@@ -20,7 +19,7 @@ if(USB_LIBRARY OR MSVC OR ANDROID)
         target_link_libraries(mirisdr_sdr_support PUBLIC satdump_core ${USB_LIBRARY})
     endif()
 
-    target_include_directories(mirisdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(mirisdr_sdr_support PUBLIC src)
 
     install(TARGETS mirisdr_sdr_support DESTINATION share/satdump/plugins)
 else()
