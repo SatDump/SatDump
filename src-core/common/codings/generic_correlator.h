@@ -24,7 +24,7 @@ private:
 
     bool use_gpu = false;
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     // OpenCL stuff
     cl_program corr_program;
     cl_command_queue cl_queue;

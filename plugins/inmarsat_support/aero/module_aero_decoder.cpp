@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
+#include "common/codings/generic_correlator.h"
 
 namespace inmarsat
 {
@@ -84,6 +85,10 @@ namespace inmarsat
                 }
             }
 
+            auto correlator = std::make_unique<CorrelatorGeneric>(dsp::OQPSK,
+                                                                  (std::vector<uint8_t>){1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1},
+                                                                  100);
+
             time_t lastTime = 0;
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -99,6 +104,14 @@ namespace inmarsat
                 {
                     memmove(&buffer_shifter[0], &buffer_shifter[1], ENCODED_FRAME_SIZE - 1);
                     buffer_shifter[ENCODED_FRAME_SIZE - 1] = buffer[i];
+
+                    phase_t phase;
+                    bool swap;
+                    float correlator_cor = 0;
+                    int pos = correlator->correlate((int8_t *)buffer_shifter, phase, swap, correlator_cor, 64+1);
+
+                     if (correlator_cor > 22)
+                    logger->critical(correlator_cor);
 
                     bool inverted = false;
                     int best_match = compute_frame_match(buffer_shifter, inverted);

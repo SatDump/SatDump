@@ -66,7 +66,7 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
         rotate_float_buf(syncwords[7].data(), syncword_length, 270);
     }
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     try
     {
         corro = new float[max_frm_size];
@@ -152,7 +152,7 @@ CorrelatorGeneric::~CorrelatorGeneric()
 {
     volk_free(converted_buffer);
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     delete[] corro;
     delete[] matcho;
 
@@ -180,7 +180,7 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
     float corr = 0;
     int position = 0, best_sync = 0;
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     if (use_gpu)
     {
         clEnqueueWriteBuffer(cl_queue, buffer_input, true, 0, sizeof(float) * length, converted_buffer, 0, NULL, NULL);

@@ -63,6 +63,9 @@
                     "rrc_alpha": 0.6,
                     "pll_bw": 0.03
                 }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {}
             }
         }
     },
