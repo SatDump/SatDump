@@ -27,7 +27,7 @@
                 "type": "bool",
                 "value": false,
                 "name": "DC Blocking",
-                "description": "DC Blocking allows removing a DC Spike / Offset present on some SDR.\n A classic example would the HackRF which often has this sort of issues."
+                "description": "DC Blocking allows removing a DC Spike / Offset present on some SDRs.\n A classic example would be the HackRF which often has this sort of issue."
             },
             "iq_swap": {
                 "type": "bool",

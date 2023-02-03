@@ -512,8 +512,11 @@ namespace satdump
             if (ImGui::Checkbox("Normalize", &normalize_image))
                 asyncUpdate();
 
-            if (ImGui::Checkbox("Invert", &invert_image))
+            if (ImGui::Checkbox("Invert", &invert_image)){
+                scale_image.mirror(false, true);
+                scale_view.update(scale_image);
                 asyncUpdate();
+            }
 
             if (ImGui::Button("Save"))
             {

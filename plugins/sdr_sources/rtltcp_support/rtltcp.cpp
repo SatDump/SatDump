@@ -136,7 +136,7 @@ void RTLTCPSource::drawControlUI()
 
     if (is_started)
         style::beginDisabled();
-    ImGui::InputText("Adress", &ip_address);
+    ImGui::InputText("Address", &ip_address);
     ImGui::InputInt("Port", &port);
     if (is_started)
         style::endDisabled();
