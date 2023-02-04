@@ -113,10 +113,8 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        if (pkt.header.apid == 39)
-                            amsu_a1_reader.work(pkt);
-                        else if (pkt.header.apid == 40)
-                            amsu_a2_reader.work(pkt);
+                        if (pkt.header.apid == 39 || pkt.header.apid == 40)
+                            amsu_reader.work_metop(pkt);
                         else if (pkt.header.apid == 37)
                             sem_reader.work(pkt);
                     }
@@ -408,8 +406,8 @@ namespace metop
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- AMSU");
-                logger->info("Lines (AMSU A1) : " + std::to_string(amsu_a1_reader.lines));
-                logger->info("Lines (AMSU A2) : " + std::to_string(amsu_a2_reader.lines));
+                logger->info("Lines (AMSU A1) : " + std::to_string(amsu_reader.linesA1));
+                logger->info("Lines (AMSU A2) : " + std::to_string(amsu_reader.linesA2));
 
                 satdump::ImageProducts amsu_products;
                 amsu_products.instrument_name = "amsu_a";
@@ -420,11 +418,8 @@ namespace metop
                 // amsu_products.set_timestamps(mhs_reader.timestamps);
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
-                for (int i = 0; i < 2; i++)
-                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
-
-                for (int i = 0; i < 13; i++)
-                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1) + ".png", std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
+                for (int i = 0; i < 15; i++)
+                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
@@ -545,7 +540,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a1_reader.lines);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -553,7 +548,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a2_reader.lines);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 

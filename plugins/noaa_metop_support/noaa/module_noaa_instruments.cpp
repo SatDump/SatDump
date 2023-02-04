@@ -65,7 +65,7 @@ namespace noaa
                                     }
                                     else
                                     {
-                                        amsu_reader.work(frameBuffer);
+                                        amsu_reader.work_noaa(frameBuffer);
                                         mhs_reader.work_NOAA(frameBuffer);
                                     }
                                 }
@@ -97,7 +97,7 @@ namespace noaa
                                 {
                                     frameBuffer[j] = buffer[104 * (i + 6) + j - 1] >> 2;
                                 }
-                                amsu_reader.work(frameBuffer);
+                                amsu_reader.work_noaa(frameBuffer);
                                 mhs_reader.work_NOAA(frameBuffer);
                             }
                         }
@@ -347,7 +347,7 @@ namespace noaa
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
+                        amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");

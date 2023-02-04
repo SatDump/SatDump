@@ -6,8 +6,7 @@
 #include "instruments/ascat/ascat_reader.h"
 #include "instruments/iasi/iasi_reader.h"
 #include "instruments/iasi/iasi_imaging_reader.h"
-#include "instruments/amsu/amsu_a1_reader.h"
-#include "instruments/amsu/amsu_a2_reader.h"
+#include "../instruments/amsu/amsu_reader.h"
 #include "instruments/gome/gome_reader.h"
 #include "instruments/sem/sem_reader.h"
 #include "instruments/admin_msg/admin_msg_reader.h"
@@ -31,8 +30,7 @@ namespace metop
             ascat::ASCATReader ascat_reader;
             iasi::IASIReader iasi_reader;
             iasi::IASIIMGReader iasi_reader_img;
-            amsu::AMSUA1Reader amsu_a1_reader;
-            amsu::AMSUA2Reader amsu_a2_reader;
+            noaa_metop::amsu::AMSUReader amsu_reader;
             gome::GOMEReader gome_reader;
             sem::SEMReader sem_reader;
             admin_msg::AdminMsgReader admin_msg_reader;
