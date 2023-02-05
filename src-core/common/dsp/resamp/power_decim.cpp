@@ -45,7 +45,7 @@ namespace dsp
 
         T *curr_data = input;
 
-        for (int i = 0; i < fir_stages.size(); i++)
+        for (int i = 0; i < (int)fir_stages.size(); i++)
         {
             nsamples = fir_stages[i]->process(curr_data, nsamples, output);
             curr_data = output;

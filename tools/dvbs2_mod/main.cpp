@@ -19,14 +19,14 @@
 #include "common/codings/dvb-s2/bbframe_bch.h"
 #include "common/codings/dvb-s2/bbframe_ldpc.h"
 #include "common/codings/dvb-s2/s2_deinterleaver.h"
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod//constellation.h"
 #include "common/codings/dvb-s2/s2_scrambling.h"
 #include "modules/demod/dvbs2/s2_defs.h"
 #include "common/codings/dvb-s2/modcod_to_cfg.h"
 
-#include "common/dsp/rational_resampler.h"
-#include "common/dsp/firdes.h"
-#include "common/dsp/file_sink.h"
+#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/filter/firdes.h"
+#include "common/dsp/io/file_sink.h"
 
 #include "common/cli_utils.h"
 

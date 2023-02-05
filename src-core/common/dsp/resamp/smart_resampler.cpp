@@ -25,10 +25,10 @@ namespace dsp
                 rsamp_in = (double)decimation / (double)best_decim;
                 pdecim = std::make_unique<PowerDecimatorBlock<T>>(nullptr, best_decim);
                 use_decim = true;
-                logger->info("Using Decim ratio {:d}", best_decim);
+                // logger->info("Using Decim ratio {:d}", best_decim);
             }
 
-            logger->info("SampRate {:f} {:f}", rsamp_in, fout);
+            // logger->info("SampRate {:f} {:f}", rsamp_in, fout);
 
             if (rsamp_in != fout)
             {
@@ -41,7 +41,7 @@ namespace dsp
 
                 rresamp = std::make_unique<RationalResamplerBlock<T>>(nullptr, fout, rsamp_in);
                 use_resamp = true;
-                logger->info("Using Rsamp {:f} / {:f}", fout, rsamp_in);
+                // logger->info("Using Rsamp {:f} / {:f}", fout, rsamp_in);
             }
         }
         else if (d_decimation < d_interpolation)
@@ -51,7 +51,7 @@ namespace dsp
 
             rresamp = std::make_unique<RationalResamplerBlock<T>>(nullptr, interpolation, decimation);
 
-            logger->info("Using Rsamp {:d} / {:d}", interpolation, decimation);
+            // logger->info("Using Rsamp {:d} / {:d}", interpolation, decimation);
         }
         else
         {

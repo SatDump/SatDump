@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(hackrf_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(HACKRF_LIBRARY hackrf)
 
@@ -19,7 +18,7 @@ if(HACKRF_LIBRARY OR MSVC OR ANDROID)
         target_link_libraries(hackrf_sdr_support PUBLIC satdump_core ${HACKRF_LIBRARY})
     endif()
 
-    target_include_directories(hackrf_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(hackrf_sdr_support PUBLIC src)
 
     install(TARGETS hackrf_sdr_support DESTINATION share/satdump/plugins)
 else()
