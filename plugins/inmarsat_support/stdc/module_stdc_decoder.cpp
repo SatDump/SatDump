@@ -66,6 +66,8 @@ namespace inmarsat
 
                 gotFrame = false;
 
+                uint16_t frm_num = 0;
+
                 for (int i = 0; i < ENCODED_FRAME_SIZE; i++)
                 {
                     memmove(&buffer_shifter[0], &buffer_shifter[1], ENCODED_FRAME_SIZE - 1);
@@ -90,7 +92,7 @@ namespace inmarsat
                         viterbi.work(buffer_synchronized, buffer_vitdecoded);
                         descramble(buffer_vitdecoded);
 
-                        uint16_t frm_num = buffer_vitdecoded[2] << 8 | buffer_vitdecoded[3];
+                        frm_num = buffer_vitdecoded[2] << 8 | buffer_vitdecoded[3];
                         logger->trace("Got STD-C Frame Corr {:d} Inv {:d} Ber {:f} No {:d}", best_match, (int)inverted, viterbi.ber(), frm_num);
 
                         if (output_data_type == DATA_FILE)
@@ -104,6 +106,11 @@ namespace inmarsat
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
+
+                // Update module stats
+                module_stats["deframer_lock"] = gotFrame;
+                module_stats["viterbi_ber"] = viterbi.ber();
+                module_stats["last_count"] = frm_num;
 
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {

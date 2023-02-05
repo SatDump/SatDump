@@ -44,28 +44,65 @@
             }
         }
     },
-    "inmarsat_aero_105": {
-        "name": "Inmarsat Aero 10.5k",
+    "inmarsat_aero_6": {
+        "name": "Inmarsat Aero 0.6k",
         "live": true,
         "live_cfg": [
             [
                 1,
+                0
+            ],
+            [
+                2,
                 0
             ]
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
-                    //"agc_rate": 0.01,
-                    "constellation": "oqpsk",
-                    "symbolrate": 10.5e3,
-                    "rrc_alpha": 0.6,
-                    "pll_bw": 0.03
+                "sdpsk_demod": {
+                    "symbolrate": 600,
+                    "rrc_alpha": 0.4
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {}
+                "inmarsat_aero_decoder": {
+                    "oqpsk": false,
+                    "dummy_bits": 0,
+                    "inter_cols": 6,
+                    "inter_blocks": 3
+                }
+            }
+        }
+    },
+    "inmarsat_aero_12": {
+        "name": "Inmarsat Aero 1.2k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "sdpsk_demod": {
+                    "symbolrate": 1200,
+                    "rrc_alpha": 0.4
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "oqpsk": false,
+                    "dummy_bits": 0,
+                    "inter_cols": 9,
+                    "inter_blocks": 2
+                }
             }
         }
     },
@@ -82,56 +119,44 @@
             "baseband": {},
             "soft": {
                 "psk_demod": {
-                    //"agc_rate": 0.01,
                     "constellation": "oqpsk",
-                    "symbolrate": 8.4e3,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.03
+                    "symbolrate": 4.2e3,
+                    "rrc_alpha": 1.0,
+                    "pll_bw": 0.01
                 }
             }
         }
     },
-    "inmarsat_aero_6": {
-        "name": "Inmarsat Aero 0.6k",
+    "inmarsat_aero_105": {
+        "name": "Inmarsat Aero 10.5k",
         "live": true,
         "live_cfg": [
             [
                 1,
+                0
+            ],
+            [
+                2,
                 0
             ]
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "sdpsk_demod": {
-                    "symbolrate": 600,
-                    "rrc_alpha": 0.4
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 5.25e3, //10.5e3,
+                    "rrc_alpha": 1.0,
+                    "pll_bw": 0.01
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {}
-            }
-        }
-    },
-    "inmarsat_aero_12": {
-        "name": "Inmarsat Aero 1.2k",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
-        ],
-        "work": {
-            "baseband": {},
-            "soft": {
-                "sdpsk_demod": {
-                    "symbolrate": 1200,
-                    "rrc_alpha": 0.4
+                "inmarsat_aero_decoder": {
+                    "oqpsk": true,
+                    "dummy_bits": 178,
+                    "inter_cols": 78,
+                    "inter_blocks": 1
                 }
-            },
-            "frm": {
-                "inmarsat_aero_decoder": {}
             }
         }
     }

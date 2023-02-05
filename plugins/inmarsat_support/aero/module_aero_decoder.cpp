@@ -4,20 +4,60 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/codings/generic_correlator.h"
+#include "common/codings/rotation.h"
 
 namespace inmarsat
 {
     namespace aero
     {
-        AeroDecoderModule::AeroDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                viterbi((ENCODED_FRAME_SIZE_NOSYNC - 16) / 2, {109, 79})
+        AeroDecoderModule::AeroDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
-            buffer = new int8_t[ENCODED_FRAME_SIZE];
-            buffer_shifter = new int8_t[ENCODED_FRAME_SIZE];
-            buffer_synchronized = new int8_t[ENCODED_FRAME_SIZE];
-            buffer_depermuted = new int8_t[ENCODED_FRAME_SIZE];
-            buffer_vitdecoded = new uint8_t[ENCODED_FRAME_SIZE];
+            d_aero_oqpsk = parameters["oqpsk"].get<bool>();
+            d_aero_dummy_bits = parameters["dummy_bits"].get<int>();
+            d_aero_interleaver_cols = parameters["inter_cols"].get<int>();
+            d_aero_interleaver_blocks = parameters["inter_blocks"].get<int>();
+
+            d_aero_sync_size = d_aero_oqpsk ? 64 : 32;
+            d_aero_hdr_size = 16 + d_aero_dummy_bits;
+            d_aero_interleaver_block_size = 64 * d_aero_interleaver_cols;
+            d_aero_info_size = d_aero_interleaver_block_size * d_aero_interleaver_blocks;
+            d_aero_total_frm_size = d_aero_sync_size + d_aero_hdr_size + d_aero_info_size;
+
+            logger->info("Aero Sync Size : {:d}", d_aero_sync_size);
+            logger->info("Aero Header Size : {:d}", d_aero_hdr_size);
+            logger->info("Aero Info Size : {:d}", d_aero_info_size);
+            logger->info("Aero Frame Size : {:d}", d_aero_total_frm_size);
+
+            correlator = std::make_unique<CorrelatorGeneric>(d_aero_oqpsk ? dsp::OQPSK : dsp::BPSK,
+                                                             d_aero_oqpsk ? unsigned_to_bitvec<uint64_t>(0b1111110000000011001100111100110011111100110000001100001100001111)
+                                                                          : unsigned_to_bitvec<uint32_t>(0b11100001010110101110100010010011),
+                                                             d_aero_total_frm_size);
+            viterbi = std::make_unique<viterbi::Viterbi27>(d_aero_info_size / 2, std::vector<int>{109, 79}, d_aero_info_size / 5);
+
+            // Generate randomization sequence
+            {
+                uint16_t shifter = 0b100110101001011; /// 0b110100101011001;
+                int cpos = 0;
+                uint8_t shifter2 = 0;
+                for (int i = 0; i < d_aero_info_size; i++)
+                {
+                    uint8_t x1 = (shifter >> 0) & 1;
+                    uint8_t x15 = (shifter >> 14) & 1;
+                    uint8_t newb = x1 ^ x15;
+                    shifter = shifter << 1 | newb;
+                    shifter2 = shifter2 << 1 | newb;
+                    cpos++;
+                    if (cpos == 8)
+                    {
+                        cpos = 0;
+                        randomization_seq.push_back(shifter2);
+                    }
+                }
+            }
+
+            soft_buffer = new int8_t[d_aero_total_frm_size];
+            buffer_deinterleaved = new int8_t[d_aero_info_size];
+            buffer_vitdecoded = new uint8_t[d_aero_info_size];
         }
 
         std::vector<ModuleDataType> AeroDecoderModule::getInputTypes()
@@ -32,10 +72,8 @@ namespace inmarsat
 
         AeroDecoderModule::~AeroDecoderModule()
         {
-            delete[] buffer;
-            delete[] buffer_shifter;
-            delete[] buffer_synchronized;
-            delete[] buffer_depermuted;
+            delete[] soft_buffer;
+            delete[] buffer_deinterleaved;
             delete[] buffer_vitdecoded;
         }
 
@@ -64,106 +102,80 @@ namespace inmarsat
             logger->info("Using input symbols " + d_input_file);
             logger->info("Decoding to " + d_output_file_hint + ".frm");
 
-            std::vector<uint8_t> rand_seq;
-            {
-                uint16_t shifter = 0b100110101001011; /// 0b110100101011001;
-                int cpos = 0;
-                uint8_t shifter2 = 0;
-                for (int i = 0; i < 72 * 8; i++)
-                {
-                    uint8_t x1 = (shifter >> 0) & 1;
-                    uint8_t x15 = (shifter >> 14) & 1;
-                    uint8_t newb = x1 ^ x15;
-                    shifter = shifter << 1 | newb;
-                    shifter2 = shifter2 << 1 | newb;
-                    cpos++;
-                    if (cpos == 8)
-                    {
-                        cpos = 0;
-                        rand_seq.push_back(shifter2);
-                    }
-                }
-            }
-
-            auto correlator = std::make_unique<CorrelatorGeneric>(dsp::OQPSK,
-                                                                  (std::vector<uint8_t>){1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1},
-                                                                  100);
+            phase_t phase;
+            bool swap;
 
             time_t lastTime = 0;
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
                 if (input_data_type == DATA_FILE)
-                    data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
+                    data_in.read((char *)soft_buffer, d_aero_total_frm_size);
                 else
-                    input_fifo->read((uint8_t *)buffer, ENCODED_FRAME_SIZE);
+                    input_fifo->read((uint8_t *)soft_buffer, d_aero_total_frm_size);
 
-                gotFrame = false;
+                int pos = correlator->correlate((int8_t *)soft_buffer, phase, swap, correlator_cor, d_aero_total_frm_size);
 
-                for (int i = 0; i < ENCODED_FRAME_SIZE; i++)
+                correlator_locked = pos == 0; // Update locking state
+
+                if (pos != 0 && pos < d_aero_total_frm_size) // Safety
                 {
-                    memmove(&buffer_shifter[0], &buffer_shifter[1], ENCODED_FRAME_SIZE - 1);
-                    buffer_shifter[ENCODED_FRAME_SIZE - 1] = buffer[i];
+                    memmove(soft_buffer, &soft_buffer[pos], d_aero_total_frm_size - pos);
 
-                    phase_t phase;
-                    bool swap;
-                    float correlator_cor = 0;
-                    int pos = correlator->correlate((int8_t *)buffer_shifter, phase, swap, correlator_cor, 64+1);
+                    if (input_data_type == DATA_FILE)
+                        data_in.read((char *)&soft_buffer[d_aero_total_frm_size - pos], pos);
+                    else
+                        input_fifo->read((uint8_t *)&soft_buffer[d_aero_total_frm_size - pos], pos);
+                }
 
-                     if (correlator_cor > 22)
-                    logger->critical(correlator_cor);
+                // Correct phase ambiguity
+                if (d_aero_oqpsk)
+                {
+                    rotate_soft((int8_t *)soft_buffer, d_aero_total_frm_size, phase, false);
 
-                    bool inverted = false;
-                    int best_match = compute_frame_match(buffer_shifter, inverted);
-                    if (best_match > 28)
+                    if (swap)
                     {
-                        for (int b = 0; b < ENCODED_FRAME_SIZE; b++)
+                        int8_t last_q_oqpsk = 0;
+                        for (int i = (d_aero_total_frm_size / 2) - 1; i >= 0; i--)
                         {
-                            if (inverted)
-                                buffer_synchronized[b] = ~buffer_shifter[b];
-                            else
-                                buffer_synchronized[b] = buffer_shifter[b];
+                            int8_t back = soft_buffer[i * 2 + 1];
+                            soft_buffer[i * 2 + 1] = last_q_oqpsk;
+                            last_q_oqpsk = back;
                         }
-
-                        cor = best_match;
-
-#if 0
-                        deinterleave(&buffer_synchronized[32 + 16 + 384 * 0], &buffer_depermuted[384 * 0],6);
-                        deinterleave(&buffer_synchronized[32 + 16 + 384 * 1], &buffer_depermuted[384 * 1],6);
-                        deinterleave(&buffer_synchronized[32 + 16 + 384 * 2], &buffer_depermuted[384 * 2], 6);
-#endif
-
-#if 1
-                        deinterleave(&buffer_synchronized[32 + 16 + 576 * 0], &buffer_depermuted[576 * 0], 9);
-                        deinterleave(&buffer_synchronized[32 + 16 + 576 * 1], &buffer_depermuted[576 * 1], 9);
-                        // inter.deinterleave_ba(&buffer_synchronized[32 + 16 + 384 * 2], 0);
-#endif
-
-                        viterbi.work(buffer_depermuted, buffer_vitdecoded);
-
-                        for (int i = 0; i < 72; i++)
-                        {
-                            buffer_vitdecoded[i] ^= rand_seq[i];
-                            buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
-                        }
-
-                        if (output_data_type == DATA_FILE)
-                            data_out.write((char *)buffer_vitdecoded, (ENCODED_FRAME_SIZE_NOSYNC - 16) / 16);
-                        else
-                            output_fifo->write((uint8_t *)buffer_vitdecoded, (ENCODED_FRAME_SIZE_NOSYNC - 16) / 16);
-
-                        gotFrame = true;
                     }
                 }
+
+                // Deinterleave
+                for (int i = 0; i < d_aero_interleaver_blocks; i++)
+                    deinterleave(&soft_buffer[d_aero_sync_size + d_aero_hdr_size + d_aero_interleaver_block_size * i],
+                                 &buffer_deinterleaved[d_aero_interleaver_block_size * i],
+                                 d_aero_interleaver_cols);
+
+                // Viterbi
+                viterbi->work(buffer_deinterleaved, buffer_vitdecoded);
+
+                // Derand
+                for (int i = 0; i < d_aero_info_size / 16; i++)
+                {
+                    buffer_vitdecoded[i] ^= randomization_seq[i];
+                    buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
+                }
+
+                data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
 
+                // Update module stats
+                module_stats["correlator_lock"] = correlator_locked;
+                module_stats["correlator_corr"] = correlator_cor;
+                module_stats["viterbi_ber"] = viterbi->ber();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    std::string lock_state = gotFrame ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi BER : " + std::to_string(viterbi.ber() * 100) + "%, Lock : " + lock_state);
+                    std::string lock_state = correlator_locked ? "SYNCED" : "NOSYNC";
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%, Lock : " + lock_state);
                 }
             }
 
@@ -177,7 +189,7 @@ namespace inmarsat
         {
             ImGui::Begin("Inmarsat Aero Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            float ber = viterbi.ber();
+            float ber = viterbi->ber();
 
             ImGui::BeginGroup();
             {
@@ -185,15 +197,13 @@ namespace inmarsat
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(gotFrame ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                    ImGui::TextColored(correlator_locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(correlator_cor));
 
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
-                    cor_history[200 - 1] = cor;
+                    cor_history[200 - 1] = correlator_cor;
 
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 60.0f, 128.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
-
-                ImGui::Spacing();
 
                 ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
                 {
