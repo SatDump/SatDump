@@ -6,6 +6,7 @@
 #include "common/image/image.h"
 #include "common/ccsds/ccsds.h"
 #include "common/simple_deframer.h"
+#include "nlohmann/json.hpp"
 
 namespace noaa_metop
 {
@@ -20,11 +21,20 @@ namespace noaa_metop
             int linesA1 = 0, linesA2 = 0;
 
         private:
+            struct view_pair
+            {
+                uint16_t blackbody;
+                uint16_t space;
+            };
             std::vector<uint16_t> channels[15];
             def::SimpleDeframer amsuA2Deframer = def::SimpleDeframer(0xFFFFFF, 24, 9920, 0);
             def::SimpleDeframer amsuA1Deframer = def::SimpleDeframer(0xFFFFFF, 24, 2496, 0);
             std::vector<std::vector<uint8_t>> amsuA2Data;
             std::vector<std::vector<uint8_t>> amsuA1Data;
+            std::vector<view_pair> calibration_views_A1[13];
+            std::vector<view_pair> calibration_views_A2[2];
+            std::vector<uint16_t> temperature_counts_A1[45];
+            std::vector<uint16_t> temperature_counts_A2[19];
 
         public:
             AMSUReader();
@@ -37,6 +47,7 @@ namespace noaa_metop
                 img.mirror(true, false);
                 return img;
             }
+            void calibrate(nlohmann::json coefs);
 
         private:
             void work_A1(uint8_t *buffer);
