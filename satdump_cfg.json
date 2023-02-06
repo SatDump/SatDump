@@ -543,6 +543,11 @@
                         "equation": "1 - ch6",
                         "equalize": true
                     },
+                    "Day Microphysics": {
+                        "equation": "ch1, ch4^2.5, ch5",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
                     "654": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
                         "equalize": true
