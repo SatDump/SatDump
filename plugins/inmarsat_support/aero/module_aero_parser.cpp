@@ -253,8 +253,6 @@ namespace inmarsat
                 }
             }
 
-            // egc_parser.force_finish();
-
             if (input_data_type == DATA_FILE)
                 data_in.close();
         }
@@ -268,11 +266,6 @@ namespace inmarsat
             ImGui::Text("Decoded packets can be seen in a floating window.");
             ImGui::Spacing();
             ImGui::TextColored(ImColor(255, 0, 0), "Note : Still WIP!");
-
-            // ImGui::Spacing();
-            // ImGui::Text("Last packet count : ");
-            // ImGui::SameLine();
-            // ImGui::TextColored(ImColor(0, 255, 0), "%d", last_pkt_count);
 
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
