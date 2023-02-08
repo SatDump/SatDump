@@ -161,7 +161,10 @@ namespace inmarsat
                     buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
                 }
 
-                data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
+                if (output_data_type == DATA_FILE)
+                    data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
+                else
+                    output_fifo->write((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
