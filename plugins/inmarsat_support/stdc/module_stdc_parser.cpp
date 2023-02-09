@@ -244,9 +244,7 @@ namespace inmarsat
             ImGui::Begin("Inmarsat STD-C Parser", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
-            ImGui::Text("Credits go to Paul Maxan (microp11) for the \nreverse-engineering work that went into Scytale-C!");
-            ImGui::Spacing();
-            ImGui::TextColored(ImColor(255, 0, 0), "Note : EGC Parsing is untested!");
+            ImGui::Text("Do remember you should nor read nor keep messages that are\nnot intended for you.");
 
             ImGui::Spacing();
             ImGui::Text("Last packet count : ");
