@@ -19,6 +19,9 @@ namespace dsp
     {
         fft_mutex.lock();
 
+        if (rate < 1)
+            rate = 1;
+
         fft_size = size;
 
         if (fft_output_buffer != nullptr)
