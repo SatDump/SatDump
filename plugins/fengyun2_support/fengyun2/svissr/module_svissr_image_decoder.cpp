@@ -26,9 +26,13 @@ namespace fengyun_svissr
         return utc_filename;
     }
 
-    void SVISSRImageDecoderModule::writeImages(std::string directory)
+    void SVISSRImageDecoderModule::writeImages(SVISSRBuffer &buffer)
     {
-        const time_t timevalue = time(0);
+        writingImage = true;
+
+        logger->info("Found SCID " + std::to_string(buffer.scid));
+
+        const time_t timevalue = buffer.timestamp; // time(0);
         std::tm *timeReadable = gmtime(&timevalue);
         std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                 (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
@@ -36,47 +40,46 @@ namespace fengyun_svissr
                                 (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                 (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
 
-        std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait a bit
         logger->info("Full disk finished, saving at " + timestamp + "...");
 
-        std::filesystem::create_directory(directory + "/" + timestamp);
+        std::filesystem::create_directory(buffer.directory + "/" + timestamp);
 
-        std::string disk_folder = directory + "/" + timestamp;
+        std::string disk_folder = buffer.directory + "/" + timestamp;
 
         logger->info("Channel 1... " + getSvissrFilename(timeReadable, "1") + ".png");
-        image5.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1") + ".png").c_str());
+        buffer.image5.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1") + ".png").c_str());
 
         logger->info("Channel 2... " + getSvissrFilename(timeReadable, "2") + ".png");
-        image1.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2") + ".png").c_str());
+        buffer.image1.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2") + ".png").c_str());
 
         logger->info("Channel 3... " + getSvissrFilename(timeReadable, "3") + ".png");
-        image2.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3") + ".png").c_str());
+        buffer.image2.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3") + ".png").c_str());
 
         logger->info("Channel 4... " + getSvissrFilename(timeReadable, "4") + ".png");
-        image3.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4") + ".png").c_str());
+        buffer.image3.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4") + ".png").c_str());
 
         logger->info("Channel 5... " + getSvissrFilename(timeReadable, "5") + ".png");
-        image4.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5") + ".png").c_str());
+        buffer.image4.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5") + ".png").c_str());
 
         // We are done with all channels but 1 and 4. Clear others to free up memory!
-        image1.clear();
-        image2.clear();
-        image3.clear();
+        buffer.image1.clear();
+        buffer.image2.clear();
+        buffer.image3.clear();
 
         // If we can, generate false color
         if (resources::resourceExists("fy2/svissr/lut.png"))
         {
             logger->trace("Scale Ch1 to 8-bits...");
-            image::Image<uint16_t> channel1(image5.width(), image5.height(), 1);
+            image::Image<uint16_t> channel1(buffer.image5.width(), buffer.image5.height(), 1);
             for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-                channel1[i] = image5[i] / 255;
-            image5.clear(); // We're done with Ch1. Free up memory
+                channel1[i] = buffer.image5[i] / 255;
+            buffer.image5.clear(); // We're done with Ch1. Free up memory
 
             logger->trace("Scale Ch4 to 8-bits...");
-            image::Image<uint16_t> channel5(image4.width(), image4.height(), 1);
+            image::Image<uint16_t> channel5(buffer.image4.width(), buffer.image4.height(), 1);
             for (size_t i = 0; i < channel5.width() * channel5.height(); i++)
-                channel5[i] = image4[i] / 255;
-            image4.clear(); // We're done with Ch4. Free up memory
+                channel5[i] = buffer.image4[i] / 255;
+            buffer.image4.clear(); // We're done with Ch4. Free up memory
 
             logger->trace("Resize images...");
             channel5.resize(channel1.width(), channel1.height());
@@ -115,16 +118,9 @@ namespace fengyun_svissr
         frame = new uint8_t[FRAME_SIZE];
 
         // Counters and so
-        writingImage = false;
-        endCount = 0;
-        nonEndCount = 0;
-        lastNonZero = 0;
         backwardScan = false;
 
         vissrImageReader.reset();
-
-        // Init thread pool
-        imageSavingThreadPool = std::make_shared<ctpl::thread_pool>(1);
     }
 
     std::vector<ModuleDataType> SVISSRImageDecoderModule::getInputTypes()
@@ -167,6 +163,19 @@ namespace fengyun_svissr
 
         time_t lastTime = 0;
 
+        uint8_t last_status[20];
+        memset(last_status, 0, 20);
+
+        valid_lines = 0;
+
+        bool is_live = input_data_type != DATA_FILE;
+
+        if (is_live)
+        {
+            images_thread_should_run = true;
+            images_queue_thread = std::thread(&SVISSRImageDecoderModule::image_saving_thread_f, this);
+        }
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
@@ -190,64 +199,61 @@ namespace fengyun_svissr
                     continue;
 
                 // Parse scan status
-                int status = frame[3] % (int)pow(2, 2); // Decoder scan status
+                int status = frame[3] & 0b11; // Decoder scan status
 
                 // We only want forward scan data
-                if (status != 3)
-                {
-                    backwardScan = true;
-                    continue;
-                }
+                backwardScan = status == 0;
 
-                backwardScan = false;
+                memmove(last_status, &last_status[1], 19);
+                last_status[19] = backwardScan;
 
                 // std::cout << counter << std::endl;
 
                 // Try to detect a new scan
-                // This is not the best way, but it works...
-                if (counter > 2490 && counter <= 2500)
-                {
-                    endCount++;
-                    nonEndCount = 0;
+                uint8_t is_back = most_common(&last_status[0], &last_status[20]);
 
-                    if (endCount > 5)
+                if (is_back && valid_lines > 40)
+                {
+                    logger->info("Full disk end detected!");
+
+                    std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
+
+                    // Backup images
+                    buffer->image1 = vissrImageReader.getImageIR1();
+                    buffer->image2 = vissrImageReader.getImageIR2();
+                    buffer->image3 = vissrImageReader.getImageIR3();
+                    buffer->image4 = vissrImageReader.getImageIR4();
+                    buffer->image5 = vissrImageReader.getImageVIS();
+
+                    buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+                    scid_stats.clear();
+
+                    buffer->timestamp = time(0);
+                    buffer->directory = directory;
+
+                    // Write those
+                    if (is_live)
                     {
-                        endCount = 0;
-                        logger->info("Full disk end detected!");
-
-                        if (!writingImage)
-                        {
-                            writingImage = true;
-
-                            // Backup images
-                            image1 = vissrImageReader.getImageIR1();
-                            image2 = vissrImageReader.getImageIR2();
-                            image3 = vissrImageReader.getImageIR3();
-                            image4 = vissrImageReader.getImageIR4();
-                            image5 = vissrImageReader.getImageVIS();
-
-                            int scid = most_common(scid_stats.begin(), scid_stats.end());
-                            logger->info("Found SCID " + std::to_string(scid));
-                            scid_stats.clear();
-
-                            // Write those
-                            imageSavingThreadPool->push([&](int)
-                                                        { writeImages(directory); });
-
-                            // Reset readers
-                            vissrImageReader.reset();
-                        }
+                        images_queue_mtx.lock();
+                        images_queue.push_back(buffer);
+                        images_queue_mtx.unlock();
                     }
+                    else
+                    {
+                        writeImages(*buffer);
+                    }
+
+                    // Reset readers
+                    vissrImageReader.reset();
+                    valid_lines = 0;
                 }
-                else
-                {
-                    nonEndCount++;
-                    if (endCount > 0)
-                        endCount -= 1;
-                }
+
+                if (backwardScan)
+                    continue;
 
                 // Process it
                 vissrImageReader.pushFrame(frame);
+                valid_lines++;
 
                 approx_progess = round(((float)counter / 2500.0f) * 1000.0f) / 10.0f;
             }
@@ -269,31 +275,33 @@ namespace fengyun_svissr
         if (input_data_type == DATA_FILE)
             data_in.close();
 
-        logger->info("Wait for in-progress images...");
-        while (writingImage)
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        logger->info("Dump remaining data...");
-        if (input_data_type == DATA_FILE)
+        if (is_live)
         {
-            writingImage = true;
+            images_thread_should_run = false;
+            if (images_queue_thread.joinable())
+                images_queue_thread.join();
+        }
+        else if (valid_lines > 40)
+        {
+            logger->info("Full disk end detected!");
+
+            std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
             // Backup images
-            image1 = vissrImageReader.getImageIR1();
-            image2 = vissrImageReader.getImageIR2();
-            image3 = vissrImageReader.getImageIR3();
-            image4 = vissrImageReader.getImageIR4();
-            image5 = vissrImageReader.getImageVIS();
+            buffer->image1 = vissrImageReader.getImageIR1();
+            buffer->image2 = vissrImageReader.getImageIR2();
+            buffer->image3 = vissrImageReader.getImageIR3();
+            buffer->image4 = vissrImageReader.getImageIR4();
+            buffer->image5 = vissrImageReader.getImageVIS();
 
-            // Write those
-            imageSavingThreadPool->push([directory, this](int)
-                                        { writeImages(directory); });
+            buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+            scid_stats.clear();
+
+            buffer->timestamp = time(0);
+            buffer->directory = directory;
+
+            writeImages(*buffer);
         }
-
-        while (writingImage)
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        imageSavingThreadPool->stop();
     }
 
     void SVISSRImageDecoderModule::drawUI(bool window)
@@ -323,17 +331,12 @@ namespace fengyun_svissr
             ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
             ImGui::Text("State : ");
             ImGui::SameLine();
-            if (backwardScan)
-            {
+            if (writingImage)
+                ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
+            else if (backwardScan)
                 ImGui::TextColored(IMCOLOR_NOSYNC, "Imager rollback...");
-            }
             else
-            {
-                if (writingImage)
-                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
-                else
-                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-            }
+                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
         }
         ImGui::EndGroup();
 
