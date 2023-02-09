@@ -14,7 +14,6 @@ namespace dsp
     private:
         // Buffer
         T *buffer;
-        int in_buffer;
 
         // Variables
         float mu;
