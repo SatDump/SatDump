@@ -28,6 +28,8 @@ namespace dsp
         T zc_sample;
         T last_sample;
 
+        int bufs;
+
         void work();
 
         PolyphaseBank pfb;
