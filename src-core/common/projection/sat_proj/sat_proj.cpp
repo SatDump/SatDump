@@ -358,7 +358,7 @@ namespace satdump
             geodetic::geodetic_coords_t pos_curr = sat_positions[y];
             double az_angle = az_angles[y];
 
-            bool ascending = sat_ascendings[y];
+            // bool ascending = sat_ascendings[y];
 
 #if 0
             spline_roll.get_point(x, 0, roll_v);
@@ -376,7 +376,7 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             satellite_pointing.roll = roll_pitch_v[0];
             satellite_pointing.pitch = roll_pitch_v[1];
-            satellite_pointing.yaw = 90 - az_angle + (!ascending ? yaw_offset : -yaw_offset);
+            satellite_pointing.yaw = 90 + yaw_offset /*+ (!ascending ? yaw_offset : -yaw_offset)*/ - az_angle;
 
             // logger->critical("{:f} {:f} {:f} ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
 
