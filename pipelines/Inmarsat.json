@@ -46,7 +46,7 @@
     },
     // Aero-P
     "inmarsat_aero_6": {
-        "name": "Inmarsat Aero 0.6k",
+        "name": "Inmarsat Aero 0.6k (WIP)",
         "live": true,
         "live_cfg": [
             [
@@ -92,7 +92,7 @@
         }
     },
     "inmarsat_aero_12": {
-        "name": "Inmarsat Aero 1.2k",
+        "name": "Inmarsat Aero 1.2k (WIP)",
         "live": true,
         "live_cfg": [
             [
@@ -138,7 +138,7 @@
         }
     },
     "inmarsat_aero_105": {
-        "name": "Inmarsat Aero 10.5k",
+        "name": "Inmarsat Aero 10.5k (WIP)",
         "live": true,
         "live_cfg": [
             [
