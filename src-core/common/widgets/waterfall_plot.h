@@ -17,13 +17,19 @@ namespace widgets
         int fft_lines;
         const int resolution = 2000; // Number of colors
         unsigned int texture_id;
-        uint32_t *raw_img_buffer;
+        uint32_t *raw_img_buffer = nullptr;
 
         std::vector<uint32_t> palette;
 
         std::mutex work_mtx;
 
         bool first_run = true;
+
+        int last_curr_width = -1;
+        int last_curr_height = -1;
+
+        int curr_width;
+        int curr_height;
 
     public:
         float scale_min, scale_max;
