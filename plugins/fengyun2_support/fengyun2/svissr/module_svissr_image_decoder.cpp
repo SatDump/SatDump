@@ -277,6 +277,27 @@ namespace fengyun_svissr
 
         if (is_live)
         {
+            logger->info("Full disk end detected!");
+
+            std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
+
+            // Backup images
+            buffer->image1 = vissrImageReader.getImageIR1();
+            buffer->image2 = vissrImageReader.getImageIR2();
+            buffer->image3 = vissrImageReader.getImageIR3();
+            buffer->image4 = vissrImageReader.getImageIR4();
+            buffer->image5 = vissrImageReader.getImageVIS();
+
+            buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+            scid_stats.clear();
+
+            buffer->timestamp = time(0);
+            buffer->directory = directory;
+
+            images_queue_mtx.lock();
+            images_queue.push_back(buffer);
+            images_queue_mtx.unlock();
+
             images_thread_should_run = false;
             if (images_queue_thread.joinable())
                 images_queue_thread.join();
