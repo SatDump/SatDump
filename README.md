@@ -9,20 +9,19 @@ There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room 
 
 # Introduction
 
-*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced usecases, please see the detailed documention.* 
+*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the detailed documentation.* 
 
 ## GUI Version
 
 ### Offline processing (recorded data)
-
-![Img](gui_example.png)
-
 Quick-Start :
-- Chose the appropriate pipeline for what you want to process
+- Choose the appropriate pipeline for what you want to process
 - Select the input file (baseband, frames, soft symbols...)
 - Set the appropriate input level (what your file is)
 - Check settings shown below are right (such as samplerate)
 - Press "Start"!
+
+![Img](gui_example.png)
 
 ![Img](gui_example2.png)  
 *SatDump demodulating a DVB-S2 Baseband*
@@ -31,8 +30,8 @@ Quick-Start :
 
 Quick-Start :
 - Go in the "Recorder" Tab
-- Select and start your SDR Devices
-- Chose a pipeline
+- Select and start your SDR Device
+- Choose a pipeline
 - Start it, and done!
 - For recording, use the recording tab instead. Both processing and recording can be used at once.
 
@@ -82,7 +81,7 @@ satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3
 
 ### Windows
 
-On Windows the recommend method of running SatDump is getting the latest pre-built release off the [Release](https://github.com/altillimity/SatDump/releases) page, which includes everything you will need to run it.  
+On Windows the recommended method of running SatDump is getting the latest pre-built release off the [Release](https://github.com/altillimity/SatDump/releases) page, which includes everything you will need to run it.  
 Those builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   
 
 From there, just run either satdump-ui.exe or satdump.exe (CLI) and everything will work.
@@ -99,7 +98,7 @@ Here are some generic (Debian-oriented) build instructions.
 ```
 # Linux: Install dependencies
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
-sudo apt install libnng-dev                                                                                   # If this packages is not found, follow build instructions below for NNG
+sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
 sudo apt install libglew-dev libglfw3-dev                                                                     # Only if you want to build the GUI Version (optional)
 sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
@@ -167,7 +166,7 @@ On Android, the preferred source is F-Droid [INSERT LINK WHEN POSSIBLE].
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
-Do keep in mind that while pretty much all features are perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.  
+Do keep in mind that while pretty much all features perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.  
 Supported SDR devices are :
 - RTL-SDR
 - Airspy
