@@ -15,7 +15,7 @@ There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room 
 
 ### Offline processing (recorded data)
 Quick-Start :
-- Chose the appropriate pipeline for what you want to process
+- Choose the appropriate pipeline for what you want to process
 - Select the input file (baseband, frames, soft symbols...)
 - Set the appropriate input level (what your file is)
 - Check settings shown below are right (such as samplerate)
