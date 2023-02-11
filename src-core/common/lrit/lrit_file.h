@@ -103,6 +103,8 @@ namespace lrit
 
     struct LRITFile
     {
+        int vcid = -1;
+
         bool file_in_progress = false;
         bool header_parsed = false;
 
