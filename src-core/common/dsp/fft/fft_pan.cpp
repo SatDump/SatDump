@@ -103,6 +103,8 @@ namespace dsp
 
                 for (int i = 0; i < fft_size; i++)
                     output_stream->writeBuf[i] = output_stream->writeBuf[i] * (1.0 - avg_rate) + fft_output_buffer[i] * avg_rate;
+
+                on_fft(output_stream->writeBuf);
             }
 
             if (pos_in_buffer < in_reshape_buffer)
