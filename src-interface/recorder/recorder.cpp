@@ -84,7 +84,7 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_sizes_lut[0], 500);
+        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         fft->on_fft = [this](float *v)
