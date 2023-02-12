@@ -4,14 +4,14 @@
 #include <cmath>
 #include <cstdint>
 #include <complex>
-#include "dvbs2.h"
+#include "common/codings/dvb-s2/dvbs2.h"
 
 typedef int8_t code_type;
 
-#include "common/codings/dvb-s2/ldpc/simd.hh"
-#include "common/codings/dvb-s2/ldpc/layered_decoder.hh"
-#include "common/codings/dvb-s2/ldpc/algorithms.hh"
-#include "common/codings/dvb-s2/ldpc/encoder.hh"
+#include "codings/dvb-s2/ldpc/simd.hh"
+#include "codings/dvb-s2/ldpc/layered_decoder.hh"
+#include "codings/dvb-s2/ldpc/algorithms.hh"
+#include "codings/dvb-s2/ldpc/encoder.hh"
 
 namespace dvbs2
 {

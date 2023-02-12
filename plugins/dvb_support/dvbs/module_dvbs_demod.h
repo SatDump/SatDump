@@ -1,19 +1,19 @@
 #pragma once
 
-#include "module_demod_base.h"
+#include "modules/demod/module_demod_base.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/pll/costas_loop.h"
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/demod/delay_one_imag.h"
-#include "dvbs/viterbi_all.h"
+#include "viterbi_all.h"
 #include "common/codings/deframing/dvbs_ts_deframer.h"
-#include "dvbs/dvbs_syms_to_soft.h"
-#include "dvbs/dvbs_vit.h"
-#include "dvbs/dvbs_defra.h"
+#include "dvbs_syms_to_soft.h"
+#include "dvbs_vit.h"
+#include "dvbs_defra.h"
 
-namespace demod
+namespace dvb
 {
-    class DVBSDemodModule : public BaseDemodModule
+    class DVBSDemodModule : public demod::BaseDemodModule
     {
     protected:
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;

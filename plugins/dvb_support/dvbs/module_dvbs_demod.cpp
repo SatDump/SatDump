@@ -7,7 +7,7 @@
 #include "dvbs/dvbs_scrambling.h"
 #include "dvbs/dvbs_defines.h"
 
-namespace demod
+namespace dvb
 {
     DVBSDemodModule::DVBSDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : BaseDemodModule(input_file, output_file_hint, parameters),

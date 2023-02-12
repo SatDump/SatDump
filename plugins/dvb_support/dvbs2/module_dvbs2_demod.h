@@ -1,27 +1,27 @@
 #pragma once
 
-#include "module_demod_base.h"
+#include "modules/demod/module_demod_base.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 
 #include "common/dsp/utils/freq_shift.h"
 
-#include "dvbs2/dvbs2_pl_sync.h"
-#include "dvbs2/dvbs2_pll.h"
-#include "dvbs2/dvbs2_bb_to_soft.h"
+#include "dvbs2_pl_sync.h"
+#include "dvbs2_pll.h"
+#include "dvbs2_bb_to_soft.h"
 
-#include "common/codings/dvb-s2/bbframe_descramble.h"
-#include "common/codings/dvb-s2/bbframe_bch.h"
-#include "common/codings/dvb-s2/bbframe_ldpc.h"
+#include "codings/dvb-s2/bbframe_descramble.h"
+#include "codings/dvb-s2/bbframe_bch.h"
+#include "codings/dvb-s2/bbframe_ldpc.h"
 
 #include "common/dsp/demod/constellation.h"
 
 #include "common/widgets/constellation_s2.h"
 #include "common/widgets/value_plot.h"
 
-namespace demod
+namespace dvb
 {
-    class DVBS2DemodModule : public BaseDemodModule
+    class DVBS2DemodModule : public demod::BaseDemodModule
     {
     protected:
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;

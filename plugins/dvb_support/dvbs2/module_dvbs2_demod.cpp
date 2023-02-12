@@ -2,9 +2,9 @@
 #include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
-#include "common/codings/dvb-s2/modcod_to_cfg.h"
+#include "codings/dvb-s2/modcod_to_cfg.h"
 
-namespace demod
+namespace dvb
 {
     DVBS2DemodModule::DVBS2DemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters),
                                                                                                                           constellation_s2(90.0f / 127.0f, 90.0f / 127.0f, demod_constellation_size)

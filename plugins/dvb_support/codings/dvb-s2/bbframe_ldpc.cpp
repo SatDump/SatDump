@@ -19,7 +19,7 @@
  */
 
 #include "bbframe_ldpc.h"
-#include "common/codings/dvb-s2/ldpc/dvb_s2_tables.hh"
+#include "codings/dvb-s2/ldpc/dvb_s2_tables.hh"
 #include <cstring>
 
 namespace dvbs2

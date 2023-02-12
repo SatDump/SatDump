@@ -61,8 +61,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_pm_demod.h"
 #include "modules/demod/module_psk_demod.h"
 #include "modules/demod/module_sdpsk_demod.h"
-#include "modules/demod/module_dvbs_demod.h"
-#include "modules/demod/module_dvbs2_demod.h"
 
 #include "modules/network/module_network_server.h"
 #include "modules/network/module_network_client.h"
@@ -88,8 +86,6 @@ void registerModules()
     REGISTER_MODULE(demod::PMDemodModule);
     REGISTER_MODULE(demod::PSKDemodModule);
     REGISTER_MODULE(demod::SDPSKDemodModule);
-    REGISTER_MODULE(demod::DVBSDemodModule);
-    REGISTER_MODULE(demod::DVBS2DemodModule);
 
     // Network
     REGISTER_MODULE(network::NetworkServerModule);

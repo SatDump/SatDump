@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "common/dsp/complex.h"
-#include "dvbs2.h"
+#include "common/codings/dvb-s2/dvbs2.h"
 
 /*
 Adapted from LeanDVB

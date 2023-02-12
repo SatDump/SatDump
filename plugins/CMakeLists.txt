@@ -157,6 +157,12 @@ if(PLUGIN_OTHERS OR PLUGINS_ALL)
     add_subdirectory(others_support)
 endif()
 
+option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)" OFF)
+
+if(PLUGIN_DVB OR PLUGINS_ALL)
+    add_subdirectory(dvb_support)
+endif()
+
 # add_subdirectory(sample)
 option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)
 

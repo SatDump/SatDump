@@ -23,7 +23,7 @@
  */
 
 #include <cstdint>
-#include "dvbs2.h"
+#include "common/codings/dvb-s2/dvbs2.h"
 
 namespace dvbs2
 {
