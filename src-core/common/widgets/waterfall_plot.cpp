@@ -47,6 +47,7 @@ namespace widgets
 
             if (need_update)
                 updateImageTexture(texture_id, raw_img_buffer, curr_width, curr_height);
+            need_update = false;
         }
 
         ImGui::Image((void *)(intptr_t)texture_id, size);
@@ -55,6 +56,9 @@ namespace widgets
 
     void WaterfallPlot::push_fft(float *values)
     {
+        if (texture_id == 0)
+            return;
+
         work_mtx.lock();
         if ((waterfall_i++ % waterfall_i_mod) == 0)
         {
@@ -85,6 +89,8 @@ namespace widgets
 
                 raw_img_buffer[i] = palette[v];
             }
+
+            need_update = true;
         }
         work_mtx.unlock();
     }
