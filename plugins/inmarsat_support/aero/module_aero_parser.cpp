@@ -183,7 +183,11 @@ namespace inmarsat
                                                 final_pkt = ac.value();
                                                 final_pkt["msg_name"] = "ACARS";
                                                 final_pkt["signal_unit"] = wip_user_data.isu;
-                                                logger->info("ACARS message ({:s}) : \n {:s}",
+                                                auto libac = acars::parse_libacars(ac.value(), la_msg_dir::LA_MSG_DIR_GND2AIR);
+                                                if (!libac.empty())
+                                                    final_pkt["libacars"] = libac;
+                                                // logger->critical(final_pkt["libacars"].dump(4));
+                                                logger->info("ACARS message ({:s}) : \n{:s}",
                                                              final_pkt["plane_reg"].get<std::string>().c_str(),
                                                              final_pkt["message"].get<std::string>().c_str());
                                             }
