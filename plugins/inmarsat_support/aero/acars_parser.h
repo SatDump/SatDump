@@ -6,6 +6,10 @@
 #include "pkt_structs.h"
 #include <optional>
 
+#include "libacars/libacars.h"
+#include "libacars/acars.h"
+#include "libacars/vstring.h"
+
 namespace inmarsat
 {
     namespace aero
@@ -43,6 +47,8 @@ namespace inmarsat
             public:
                 std::optional<ACARSPacket> parse(std::vector<uint8_t> &payload);
             };
+
+            nlohmann::json parse_libacars(ACARSPacket &pkt, la_msg_dir dir);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace inmarsat
                 return payload.size() > 16 && payload[0] == 0xFF && payload[1] == 0xFF;
             }
 
-            // Yes, I did end peeking in JAERO a bit to figure this
+            // Yes, I did end up peeking in JAERO a bit to figure this
             // part out. 0 documentation apparently!
             ACARSPacket::ACARSPacket(std::vector<uint8_t> pkt)
             {
@@ -46,8 +46,6 @@ namespace inmarsat
                         throw std::runtime_error("Acars Text Parity Error");
                     plane_reg += pkt[k] & 0x7F;
                 }
-
-                plane_reg.erase(std::remove(plane_reg.begin(), plane_reg.end(), '.'), plane_reg.end());
 
                 if (pkt[15] == 0x02)
                 {
@@ -96,6 +94,20 @@ namespace inmarsat
 
                     return acar;
                 }
+            }
+
+            nlohmann::json parse_libacars(ACARSPacket &pkt, la_msg_dir dir)
+            {
+                la_proto_node *node = la_acars_decode_apps(pkt.label.data(), pkt.message.data(), dir);
+                if (node != NULL)
+                {
+                    la_vstring *str = la_proto_tree_format_json(NULL, node);
+                    auto v = nlohmann::json::parse(std::string(str->str));
+                    la_vstring_destroy(str, true);
+                    return v;
+                }
+                la_proto_tree_destroy(node);
+                return nlohmann::json();
             }
         }
     }
