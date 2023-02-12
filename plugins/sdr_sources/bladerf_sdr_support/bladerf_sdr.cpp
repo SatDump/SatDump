@@ -151,7 +151,11 @@ void BladeRFSource::start()
     sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;
+#ifdef BLADERF_HAS_WIDEBAND
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#else
+    bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#endif
     bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), true);
 
     thread_should_run = true;
