@@ -80,13 +80,14 @@ namespace fengyun_svissr
                         pushBit(getBit<SYNC_T>(syncAsm, y));
                         outputBits++;
                     }*/
-                        //pushBit(0);
-                        //outputBits++;
+                        // pushBit(0);
+                        // outputBits++;
                     }
 
+#if 0
                     // New ASM, ABORT! and process the new one
                     if (outputBits > 10000)
-                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 5)
+                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 8)
                         {
                             // Fill up what we're missing
                             for (int b = 0; b < 354848 - outputBits; b++)
@@ -102,6 +103,7 @@ namespace fengyun_svissr
 
                             continue;
                         }
+#endif
 
                     // Push current bit
                     pushBit(bit);
@@ -121,7 +123,7 @@ namespace fengyun_svissr
                 }
 
                 // Otherwise search for markers
-                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 5)
+                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 7)
                     writeFrame = true;
             }
         }
