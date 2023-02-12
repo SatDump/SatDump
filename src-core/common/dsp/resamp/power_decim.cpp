@@ -13,14 +13,14 @@ namespace dsp
         {
             int id = log2(d_decimation) - 1;
 
-            if (id > power_decim::plans_len)
+            if (id > (int)power_decim::plans_len)
                 throw std::runtime_error("Power Decimator Plan ID over 13!");
             if ((d_decimation & (d_decimation - 1)) != 0)
                 throw std::runtime_error("Power Decimator Plan decimation is NOT a power of 2!");
 
             power_decim::plan plan = power_decim::plans[id];
 
-            for (int i = 0; i < plan.stageCount; i++)
+            for (int i = 0; i < (int)plan.stageCount; i++)
             {
                 auto &s = plan.stages[i];
                 std::vector<float> taps = std::vector<float>(s.taps, s.taps + s.tapcount);
