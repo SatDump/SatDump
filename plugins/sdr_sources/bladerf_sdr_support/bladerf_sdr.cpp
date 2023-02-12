@@ -116,8 +116,34 @@ void BladeRFSource::start()
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
         throw std::runtime_error("Could not open BladeRF device!");
 
+#ifdef BLADERF_HAS_WIDEBAND
+    if (current_samplerate > 61.44e6)
+    {
+        is_8bit = true;
+        if (bladerf_set_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE) != 0)
+            logger->error("Could not set Oversample mode");
+        logger->debug("Using BladeRF Wideband mode");
+    }
+    else
+    {
+        is_8bit = false;
+        if (bladerf_set_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT) != 0)
+            logger->error("Could not set Default mode");
+        logger->debug("Using BladeRF Default mode");
+    }
+#endif
+
     logger->debug("Set BladeRF samplerate to " + std::to_string(current_samplerate));
-    bladerf_set_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), current_samplerate, NULL);
+
+    // bladerf_set_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), current_samplerate, NULL);
+    struct bladerf_rational_rate rational_rate, actual;
+    rational_rate.integer = static_cast<uint32_t>(current_samplerate);
+    rational_rate.den = 10000;
+    rational_rate.num = (current_samplerate - rational_rate.integer) * rational_rate.den;
+    bladerf_set_rational_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), &rational_rate, &actual);
+    uint64_t actuals = actual.integer + (actual.num / static_cast<double>(actual.den));
+    logger->info("Actual samplerate {:d}", actuals);
+
     bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
 
     // Setup and start streaming
@@ -125,7 +151,7 @@ void BladeRFSource::start()
     sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;
-    bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+    bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
     bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), true);
 
     thread_should_run = true;

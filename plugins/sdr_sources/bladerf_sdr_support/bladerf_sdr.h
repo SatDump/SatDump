@@ -37,25 +37,45 @@ protected:
     void set_bias();
 
     int sample_buffer_size = 8192;
-    int16_t *sample_buffer;
+
+    bool is_8bit = false;
 
     std::thread work_thread;
     bool thread_should_run = false;
     void mainThread()
     {
+        int16_t *sample_buffer;
+        int8_t *sample_buffer_8;
         bladerf_metadata meta;
 
-        sample_buffer = new int16_t[dsp::STREAM_BUFFER_SIZE * 2];
-
-        while (thread_should_run)
+        if (is_8bit)
         {
-            if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
-            output_stream->swap(sample_buffer_size);
-        }
+            sample_buffer_8 = new int8_t[dsp::STREAM_BUFFER_SIZE * 2];
 
-        delete[] sample_buffer;
+            while (thread_should_run)
+            {
+                if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer_8, sample_buffer_size, &meta, 4000) != 0)
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                volk_8i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer_8, 127.0f, sample_buffer_size * 2);
+                output_stream->swap(sample_buffer_size);
+            }
+
+            delete[] sample_buffer_8;
+        }
+        else
+        {
+            sample_buffer = new int16_t[dsp::STREAM_BUFFER_SIZE * 2];
+
+            while (thread_should_run)
+            {
+                if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, sample_buffer, 4096.0f, sample_buffer_size * 2);
+                output_stream->swap(sample_buffer_size);
+            }
+
+            delete[] sample_buffer;
+        }
     }
 
 public:
