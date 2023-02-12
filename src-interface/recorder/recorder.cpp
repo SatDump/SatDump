@@ -84,7 +84,11 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 500);
+        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
+        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+
+        fft->on_fft = [this](float *v)
+        { waterfall_plot->push_fft(v); };
 
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
@@ -216,10 +220,11 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    if (ImGui::Combo("FFT Size", &selected_fft_size, "8192\0"
-                                                                     "4096\0"
-                                                                     "2048\0"
-                                                                     "1024\0"))
+                    if (ImGui::Combo("FFT Size", &selected_fft_size, //"65536\0"
+                                     "8192\0"
+                                     "4096\0"
+                                     "2048\0"
+                                     "1024\0"))
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 
@@ -234,8 +239,14 @@ namespace satdump
                         fft_size = fft_sizes_lut[selected_fft_size];
 
                         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
                         logger->info("Set FFT rate to {:d}", fft_rate);
+                    }
+                    if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
+                    {
+                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                        logger->info("Set Waterfall rate to {:d}", fft_rate);
                     }
                     ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);

@@ -5,7 +5,7 @@ namespace inmarsat
 {
     namespace stdc
     {
-        void STDPacketParser::parse_pkt_bd(uint8_t *pkt, int pkt_len, nlohmann::json &output)
+        void STDPacketParser::parse_pkt_bd(uint8_t *pkt, int pkt_len, nlohmann::json &)
         {
             uint8_t mid = pkt[2] & 0xFF;
 
@@ -24,7 +24,7 @@ namespace inmarsat
             wip_multi_frame_has_start = true;
         }
 
-        void STDPacketParser::parse_pkt_be(uint8_t *pkt, int pkt_len, nlohmann::json &output)
+        void STDPacketParser::parse_pkt_be(uint8_t *pkt, int pkt_len, nlohmann::json &)
         {
             if (!wip_multi_frame_has_start)
                 return;

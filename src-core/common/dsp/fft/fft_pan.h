@@ -3,6 +3,7 @@
 #include "common/dsp/block.h"
 #include <fftw3.h>
 #include <volk/volk_alloc.hh>
+#include <functional>
 
 namespace dsp
 {
@@ -36,6 +37,8 @@ namespace dsp
         FFTPanBlock(std::shared_ptr<dsp::stream<complex_t>> input);
         ~FFTPanBlock();
         void set_fft_settings(int size, uint64_t samplerate, int rate = 60);
+
+        std::function<void(float *)> on_fft = [](float *) {};
 
         float avg_rate = 0.01;
     };

@@ -95,7 +95,10 @@ namespace demod
             fft_proc->set_fft_settings(8192, final_samplerate, 120);
             fft_proc->avg_rate = 0.02;
             fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
-            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 500);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
+            waterfall_plot->set_rate(120, 30);
+            fft_proc->on_fft = [this](float *v)
+            { waterfall_plot->push_fft(v); };
         }
 
         std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
