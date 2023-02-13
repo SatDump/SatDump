@@ -87,7 +87,7 @@ namespace fengyun_svissr
 #if 0
                     // New ASM, ABORT! and process the new one
                     if (outputBits > 10000)
-                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 8)
+                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 7)
                         {
                             // Fill up what we're missing
                             for (int b = 0; b < 354848 - outputBits; b++)
