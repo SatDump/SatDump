@@ -116,7 +116,7 @@ void BladeRFSource::start()
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
         throw std::runtime_error("Could not open BladeRF device!");
 
-#ifdef BLADERF_HAS_WIDEBAND
+#if (LIBBLADERF_API_VERSION >= 0x2040000)
     if (current_samplerate > 61.44e6)
     {
         is_8bit = true;
@@ -151,7 +151,7 @@ void BladeRFSource::start()
     sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;
-#ifdef BLADERF_HAS_WIDEBAND
+#if (LIBBLADERF_API_VERSION >= 0x2040000)
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
 #else
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
