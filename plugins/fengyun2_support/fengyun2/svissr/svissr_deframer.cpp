@@ -9,6 +9,8 @@ inline bool getBit(T &data, int &bit)
     return (data >> bit) & 1;
 }
 
+#define MAX_ERROR 7
+
 namespace fengyun_svissr
 {
     // Compare 2 32-bits values bit per bit
@@ -23,7 +25,7 @@ namespace fengyun_svissr
             if (markerBit != testBit)
                 errors++;
 
-            if (errors > 5)
+            if (errors > MAX_ERROR)
                 return errors;
         }
         return errors;
@@ -87,7 +89,7 @@ namespace fengyun_svissr
 #if 0
                     // New ASM, ABORT! and process the new one
                     if (outputBits > 10000)
-                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 7)
+                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < MAX_ERROR)
                         {
                             // Fill up what we're missing
                             for (int b = 0; b < 354848 - outputBits; b++)
@@ -123,7 +125,7 @@ namespace fengyun_svissr
                 }
 
                 // Otherwise search for markers
-                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < 7)
+                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < MAX_ERROR)
                     writeFrame = true;
             }
         }
