@@ -14,7 +14,7 @@
 #include <aero/libacars/vstring.h>                           // la_vstring
 
 // Forward declarations
-static la_asn1_formatter const la_asn1_cpdlc_text_formatter_table[];
+static la_asn1_formatter const la_asn1_cpdlc_text_formatter_table[209];
 static size_t la_asn1_cpdlc_text_formatter_table_len;
 
 la_dict const FANSATCUplinkMsgElementId_labels[] = {
@@ -568,7 +568,7 @@ static LA_ASN1_FORMATTER_FUNC(la_asn1_format_FANSATCUplinkMsgElementId_as_text) 
 	la_format_CHOICE_as_text(p, FANSATCUplinkMsgElementId_labels, la_asn1_output_cpdlc_as_text);
 }
 
-static la_asn1_formatter const la_asn1_cpdlc_text_formatter_table[] = {
+static la_asn1_formatter const la_asn1_cpdlc_text_formatter_table[209] = {
 	{ .type = &asn_DEF_FANSAircraftEquipmentCode, .format = la_asn1_format_SEQUENCE_cpdlc_as_text, .label = NULL },
 	{ .type = &asn_DEF_FANSAircraftFlightIdentification, .format = la_asn1_format_any_as_text, .label = "Flight ID" },
 	{ .type = &asn_DEF_FANSAircraftType, .format = la_asn1_format_any_as_text, .label = "Aircraft type" },

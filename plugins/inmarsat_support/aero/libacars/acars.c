@@ -5,7 +5,10 @@
  */
 
 #include <string.h>                         // memcpy(), strdup()
+#ifdef WIN32
+#else
 #include <sys/time.h>                       // struct timeval
+#endif
 #include "config.h"                         // WITH_LIBXML2
 #ifdef WITH_LIBXML2
 #include <libxml/tree.h>                    // xmlBufferPtr, xmlBufferFree()

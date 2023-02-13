@@ -17,7 +17,7 @@
 #include <aero/libacars/json.h>                          /* la_json_*() */
 
 // Forward declarations
-static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[];
+static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[209];
 static size_t la_asn1_cpdlc_json_formatter_table_len;
 
 /************************
@@ -204,7 +204,7 @@ static LA_ASN1_FORMATTER_FUNC(la_asn1_format_FANSATCUplinkMsgElementId_as_json) 
 	la_format_CHOICE_as_json(p, FANSATCUplinkMsgElementId_labels, la_asn1_output_cpdlc_as_json);
 }
 
-static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[] = {
+static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[209] = {
 	{ .type = &asn_DEF_FANSAircraftEquipmentCode, .format = la_asn1_format_SEQUENCE_cpdlc_as_json, .label = "ac_equipment_code" },
 	{ .type = &asn_DEF_FANSAircraftFlightIdentification, .format = la_asn1_format_any_as_string_as_json, .label = "ac_flight_id" },
 	{ .type = &asn_DEF_FANSAircraftType, .format = la_asn1_format_any_as_string_as_json, .label = "ac_type" },

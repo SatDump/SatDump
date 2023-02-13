@@ -103,7 +103,7 @@ static void ASN_DEBUG(const char *fmt, ...) { (void)fmt; }
  * Check stack against overflow, if limit is set.
  */
 #define	ASN__DEFAULT_STACK_MAX	(30000)
-static int __attribute__((unused))
+static int /*__attribute__((unused))*/
 ASN__STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx) {
 	if(ctx && ctx->max_stack_size) {
 

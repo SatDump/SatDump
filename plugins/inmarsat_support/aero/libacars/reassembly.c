@@ -4,7 +4,10 @@
  *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 
+#ifdef WIN32
+#else
 #include <sys/time.h>                   // struct timeval
+#endif
 #include <string.h>                     // strdup
 #include <aero/libacars/macros.h>            // la_assert
 #include <aero/libacars/hash.h>              // la_hash
