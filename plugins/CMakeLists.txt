@@ -151,6 +151,12 @@ if(PLUGIN_INMARSAT OR PLUGINS_ALL)
     add_subdirectory(inmarsat_support)
 endif()
 
+option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" ON)
+
+if(PLUGIN_CUBESAT OR PLUGINS_ALL)
+    add_subdirectory(cubesat_support)
+endif()
+
 option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)

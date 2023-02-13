@@ -49,7 +49,9 @@ namespace demod
 
         final_samplerate = d_samplerate;
 
-        if (MAX_SPS == MIN_SPS)
+        if (d_parameters.count("custom_samplerate") > 0)
+            final_samplerate = d_parameters["custom_samplerate"].get<long>();
+        else if (MAX_SPS == MIN_SPS)
             final_samplerate = d_symbolrate * MAX_SPS;
         else if (input_sps > MAX_SPS)
             final_samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
