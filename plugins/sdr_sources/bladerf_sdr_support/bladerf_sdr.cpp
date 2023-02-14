@@ -120,14 +120,14 @@ void BladeRFSource::start()
     if (current_samplerate > 61.44e6)
     {
         is_8bit = true;
-        if (bladerf_set_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE) != 0)
+        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE, true) != 0)
             logger->error("Could not set Oversample mode");
         logger->debug("Using BladeRF Wideband mode");
     }
     else
     {
         is_8bit = false;
-        if (bladerf_set_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT) != 0)
+        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT, true) != 0)
             logger->error("Could not set Default mode");
         logger->debug("Using BladeRF Default mode");
     }

@@ -14,7 +14,7 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
         #include <libbladeRF.h>
         int main() {
             bladerf *bladerf_dev_obj;
-            bladerf_set_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE);
+            bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE);
         }
         ")
 
