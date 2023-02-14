@@ -145,13 +145,13 @@ if(PLUGIN_TUBSAT OR PLUGINS_ALL)
     add_subdirectory(tubsat_support)
 endif()
 
-option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" ON)
+option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
 
 if(PLUGIN_INMARSAT OR PLUGINS_ALL)
     add_subdirectory(inmarsat_support)
 endif()
 
-option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" ON)
+option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" OFF)
 
 if(PLUGIN_CUBESAT OR PLUGINS_ALL)
     add_subdirectory(cubesat_support)
