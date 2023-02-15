@@ -13,6 +13,7 @@ option(BUILD_GUI "Build the GUI" ON)
 option(BUILD_TESTING "Build the testing program" OFF)
 option(BUILD_TOOLS "Build the tools programs" OFF)
 option(BUILD_ZIQ "Build support for the custom ZIQ format" ON)
+option(BUILD_ZIQ "Build support for the custom ZIQ2 format (Very WIP)" OFF)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)

@@ -42,6 +42,7 @@ HeaderInfo try_parse_header(std::string file)
         info.samplerate = ziq::getCfgFromFile(file).samplerate;
     }
 #endif
+#ifdef BUILD_ZIQ2
     else if (ziq2::ziq2_is_valid_ziq2(file))
     {
         logger->debug("File is ZIQ2!");
@@ -49,6 +50,7 @@ HeaderInfo try_parse_header(std::string file)
         info.valid = true;
         info.samplerate = ziq2::ziq2_try_parse_header(file);
     }
+#endif
 
     return info;
 }

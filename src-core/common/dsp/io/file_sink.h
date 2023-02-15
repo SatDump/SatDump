@@ -96,6 +96,7 @@ namespace dsp
                 ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
             }
 #endif
+#ifdef BUILD_ZIQ2
             if (d_sample_format == ZIQ2)
             {
                 int sz = ziq2::ziq2_write_file_hdr((uint8_t *)buffer_s8, samplerate);
@@ -104,6 +105,7 @@ namespace dsp
                 if (mag_buffer == nullptr)
                     mag_buffer = create_volk_buffer<float>(STREAM_BUFFER_SIZE);
             }
+#endif
 
             should_work = true;
             rec_mutex.unlock();

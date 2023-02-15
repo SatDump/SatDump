@@ -1,7 +1,5 @@
 #pragma once
 
-#define BUILD_ZIQ2
-
 #ifdef BUILD_ZIQ2
 #include <string>
 #include <cstdint>

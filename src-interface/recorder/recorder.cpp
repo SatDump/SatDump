@@ -345,6 +345,9 @@ namespace satdump
                                                                       "ziq s16\0"
                                                                       "ziq f32\0"
 #endif
+#ifdef BUILD_ZIQ2
+                                                                      "ziq2 s8\0"
+#endif
                                      ))
                     {
                         if (select_sample_format == 0)

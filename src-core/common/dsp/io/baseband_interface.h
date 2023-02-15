@@ -152,6 +152,7 @@ namespace dsp
                 ziqReader->read(output_buffer, buffer_size);
                 break;
 #endif
+#ifdef BUILD_ZIQ2
             case ZIQ2:
             {
                 input_file.read((char *)buffer_u8, 4 + sizeof(ziq2::ziq2_pkt_hdr_t));
@@ -164,6 +165,7 @@ namespace dsp
                     buffer_size = 0;
             }
             break;
+#endif
 
             default:
                 break;

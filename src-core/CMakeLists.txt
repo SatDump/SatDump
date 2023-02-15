@@ -56,9 +56,11 @@ if(APPLE AND BUILD_OPENMP)
     target_link_libraries(satdump_core PUBLIC omp)
 endif()
 
+if(BUILD_ZIQ2)
+    target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ2="1")
+endif()
+
 if(MSVC)
-    # target_link_libraries(satdump_core PUBLIC correct.dll)
-    # target_link_libraries(satdump_core PUBLIC jpeg)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
@@ -71,12 +73,6 @@ if(MSVC)
 
     target_include_directories(satdump_core PUBLIC libs/lua)
 elseif(ANDROID)
-    # LibCorrect
-    # target_link_libraries(satdump_core PUBLIC correct)
-
-    # LibJpeg
-    # target_link_libraries(satdump_core PUBLIC jpeg)
-
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
     target_include_directories(satdump_core PUBLIC ../volk_includes)
@@ -96,14 +92,6 @@ elseif(ANDROID)
 
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
-    # LibCorrect
-    # find_library(CORRECT_LIBRARY correct REQUIRED)
-    # target_link_libraries(satdump_core PUBLIC ${CORRECT_LIBRARY})
-
-    # LibJpeg
-    # find_library(JPEG_LIBRARY jpeg REQUIRED)
-    # target_link_libraries(satdump_core PUBLIC ${JPEG_LIBRARY})
-
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
     check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)
