@@ -6,34 +6,22 @@
             [
                 1,
                 0
-            ],
-            [
-                2,
-                0
             ]
         ],
         "frequencies": [
             [
                 "Main",
-                2245e6
+                437.525e3
             ]
         ],
         "work": {
             "baseband": {},
-            "soft": {
-                "fsk_demod": {
+            "frm": {
+                "lucky7_demod": {
                     "symbolrate": 4800,
                     "custom_samplerate": 48e3,
-                    "basic_shaping": true,
-                    // "rrc_alpha": 0.8,
-                    "clock_gain_omega": 0.004375,
-                    "clock_mu": 0.5,
-                    "clock_omega_relative_limit": 0,
-                    "clock_gain_mu": 0.1
+                    "corr_thresold": 60
                 }
-            },
-            "frm": {
-                "lucky7_decoder": {}
             } /*,
             "products": {
             }*/
