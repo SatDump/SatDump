@@ -6,9 +6,10 @@
 #include "imgui/imgui_internal.h"
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
-#include "common/dsp/file_sink.h"
+#include "common/dsp/resamp/smart_resampler.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
+#include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 
@@ -27,9 +28,10 @@ namespace satdump
         bool is_started = false, is_recording = false, is_processing = false;
 
         int selected_fft_size = 0;
-        std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
+        std::vector<int> fft_sizes_lut = {/*65536,*/ 8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
         int fft_rate = 120;
+        int waterfall_rate = 60;
 
         std::vector<colormaps::Map> waterfall_palettes;
         std::string waterfall_palettes_str;
@@ -40,6 +42,7 @@ namespace satdump
 
         bool dragging_panel = false;
         float panel_ratio = 0.2;
+        unsigned int last_width = 0;
 
         std::string recorder_filename;
         int select_sample_format = 0;
@@ -47,6 +50,7 @@ namespace satdump
         std::string sdr_error, error;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
+        std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
         std::shared_ptr<dsp::SplitterBlock> splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft;
         std::shared_ptr<dsp::FileSinkBlock> file_sink;
@@ -69,6 +73,7 @@ namespace satdump
         int pipeline_preset_id = 0;
 
         uint64_t current_samplerate = 1e6;
+        int current_decimation = 1;
 
         // #ifdef BUILD_ZIQ
         int ziq_bit_depth;
@@ -79,11 +84,16 @@ namespace satdump
         void try_load_sdr_settings();
 
     private:
+        void start();
+        void stop();
+
         void start_processing();
         void stop_processing();
 
         void start_recording();
         void stop_recording();
+
+        uint64_t get_samplerate() { return current_samplerate / current_decimation; }
 
     public:
         RecorderApplication();

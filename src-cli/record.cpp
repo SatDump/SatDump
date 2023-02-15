@@ -3,10 +3,10 @@
 #include <signal.h>
 #include "logger.h"
 #include "common/cli_utils.h"
-#include "common/dsp/file_sink.h"
+#include "common/dsp/io/file_sink.h"
 #include "init.h"
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
 #include "webserver.h"
 
 // Catch CTRL+C to exit live properly!

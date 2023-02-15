@@ -9,13 +9,19 @@
 #include "common/projection/gcp_compute/gcp_compute.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/utils.h"
+#include "init.h"
 
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
 
-    std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
-    satdump::config::loadConfig("satdump_cfg.json", user_path);
+    // std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
+    // satdump::config::loadConfig("satdump_cfg.json", user_path);
+
+    // We don't wanna spam with init this time around
+    logger->set_level(spdlog::level::level_enum::off);
+    satdump::initSatdump();
+    logger->set_level(spdlog::level::level_enum::trace);
 
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
@@ -23,7 +29,7 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "chm5,chm4,chm3"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "chb,chb,chb"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 

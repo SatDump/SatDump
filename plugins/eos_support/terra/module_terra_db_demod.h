@@ -1,9 +1,9 @@
 #pragma once
 
 #include "modules/demod/module_demod_base.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/costas_loop.h"
-#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/pll/costas_loop.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
 
 namespace terra
 {

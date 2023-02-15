@@ -2,7 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "common/dsp/complex.h"
-#include "common/dsp/random.h"
+#include "common/dsp/utils/random.h"
 
 namespace widgets
 {

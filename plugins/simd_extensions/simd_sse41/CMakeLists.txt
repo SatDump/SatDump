@@ -20,12 +20,11 @@ endif()
 if(SSE41_FOUND)
     message("Found SSE41 features, enabling SSE41 plugin")
 
-    set(SATDUMP_ROOT "/usr")
-
+    
     file(GLOB_RECURSE simd_sse41_CPPS *.cpp)
     add_library(simd_sse41 SHARED ${simd_sse41_CPPS})
     target_link_libraries(simd_sse41 PUBLIC satdump_core)
-    target_include_directories(simd_sse41 PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(simd_sse41 PUBLIC src)
 
     if(UNIX OR ANDROID)
         string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} -msse4.1")

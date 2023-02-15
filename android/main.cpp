@@ -256,7 +256,14 @@ void android_main(struct android_app *app)
         chdir(path.c_str());
 
         initLogger();
+        satdump::tle_do_update_on_init = false;
         satdump::initSatdump();
+
+        // TLE
+        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
+            satdump::ui_thread_pool.push([&](int)
+                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
+                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
     }
 
     app->onAppCmd = handleAppCmd;

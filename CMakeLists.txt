@@ -79,36 +79,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-# SSE41
-if(NOT ANDROID)
-    include(FindSSE41)
-endif()
-
-if(ANDROID)
-    set(SSE41_FOUND 0)
-
-    if(ANDROID_ABI STREQUAL "x86")
-        set(SSE41_FOUND 1)
-    endif()
-
-    if(ANDROID_ABI STREQUAL "x86_64")
-        set(SSE41_FOUND 1)
-    endif()
-endif()
-
-if(SSE41_FOUND)
-    message("Found SSE features, enabling building SSE code")
-
-    if(UNIX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-    elseif(MSVC OR BUILD_MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
-    endif()
-else()
-    message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
-endif()
-
-project(SatDump VERSION "1.0.4")
+project(SatDump VERSION "1.1.0")
 
 # Check if the current commit has a tag
 execute_process(

@@ -1,5 +1,5 @@
 #include "module_orbcomm_stx_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>

@@ -13,6 +13,7 @@ namespace satdump
         out["panel_ratio"] = panel_ratio;
         out["fft_size"] = fft_size;
         out["fft_rate"] = fft_rate;
+        out["waterfall_rate"] = waterfall_rate;
         out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
         if (fft_plot && waterfall_plot && fft)
         {
@@ -46,6 +47,8 @@ namespace satdump
         }
         if (in.contains("fft_rate"))
             fft_rate = in["fft_rate"];
+        if (in.contains("waterfall_rate"))
+            waterfall_rate = in["waterfall_rate"];
         if (in.contains("waterfall_palette"))
         {
             std::string name = in["waterfall_palette"].get<std::string>();
@@ -54,6 +57,50 @@ namespace satdump
                     selected_waterfall_palette = i;
             waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
         }
+    }
+
+    void RecorderApplication::start()
+    {
+        source_ptr->set_frequency(frequency_mhz * 1e6);
+        try
+        {
+            source_ptr->start();
+
+            current_samplerate = source_ptr->get_samplerate();
+
+            if (current_decimation > 1)
+            {
+                decim_ptr = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, current_decimation);
+                decim_ptr->start();
+                logger->info("Setting up resampler...");
+            }
+
+            fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+            waterfall_plot->set_rate(fft_rate, waterfall_rate);
+
+            splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
+            splitter->start();
+            is_started = true;
+            sdr_error = "";
+        }
+        catch (std::runtime_error &e)
+        {
+            sdr_error = e.what();
+            logger->error(e.what());
+        }
+    }
+
+    void RecorderApplication::stop()
+    {
+        splitter->stop_tmp();
+        if (current_decimation > 1)
+            decim_ptr->stop();
+        source_ptr->stop();
+        is_started = false;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
+        config::saveUserConfig();
     }
 
     void RecorderApplication::try_load_sdr_settings()
@@ -89,10 +136,10 @@ namespace satdump
         {
             logger->trace("Start pipeline...");
             pipeline_params = pipeline_selector.getParameters();
-            pipeline_params["samplerate"] = source_ptr->get_samplerate();
+            pipeline_params["samplerate"] = get_samplerate();
             pipeline_params["baseband_format"] = "f32";
-            pipeline_params["buffer_size"] = STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
-            pipeline_params["start_timestamp"] = (double)time(0); // Some pipelines need this
+            pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
+            pipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
             if (automated_live_output_dir)
             {
@@ -165,10 +212,10 @@ namespace satdump
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
         std::string filename = config::main_cfg["satdump_output_directories"]["recording_path"]["value"].get<std::string>() +
-                               "/" + timestamp + "_" + std::to_string(source_ptr->get_samplerate()) + "SPS_" +
+                               "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
                                std::to_string(long(frequency_mhz * 1e6)) + "Hz";
 
-        recorder_filename = file_sink->start_recording(filename, source_ptr->get_samplerate(), ziq_bit_depth);
+        recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
 
         logger->info("Recording to " + recorder_filename);
 

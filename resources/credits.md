@@ -33,6 +33,7 @@ Those libraries above are included directly as they are either header-only, not 
 - [gr-dvbs2rx](https://github.com/igorauad/gr-dvbs2rx), for TS Parsing and a few other bits
 - [GNU Radio](https://github.com/gnuradio/gnuradio), for the convolutional decoding / encoding (quite heavily modified) and a few other bits
 - [SDR++](https://github.com/AlexandreRouma/SDRPlusPlus), for the DSP stream implementation (thanks Ryzerth for the tip back then!) and a few other things, such as the SpyServer client
+- [Scytale-C](https://bitbucket.org/scytalec/scytalec), for STD-C packet formats and parsing
 
 **Libraries linked against :**
 - [Volk](https://github.com/gnuradio/volk), to simplify SIMD utilization
@@ -77,6 +78,12 @@ And additionally, on the UI side :
 - Jpjonte
 - Piefadase
 - Blobtoe
+- lego11
+- crosswalkersam
+
+# Thanks
+
+- microp11 (Paul Maxan), for the reverse-engineering work & Scytale-C
 
 **GNU**
 - 

@@ -6,8 +6,8 @@
 #include "init.h"
 #include "common/cli_utils.h"
 #include <filesystem>
-#include "common/dsp/splitter.h"
-#include "common/dsp/fft_pan.h"
+#include "common/dsp/utils/splitter.h"
+#include "common/dsp/fft/fft_pan.h"
 #include "webserver.h"
 
 // Catch CTRL+C to exit live properly!
@@ -173,7 +173,7 @@ int main_live(int argc, char *argv[])
 
         // Init pipeline
         parameters["baseband_format"] = "f32";
-        parameters["buffer_size"] = STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
+        parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
         parameters["start_timestamp"] = (double)time(0); // Some pipelines need this
         std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
 

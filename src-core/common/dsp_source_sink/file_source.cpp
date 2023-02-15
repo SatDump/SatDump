@@ -54,9 +54,10 @@ void FileSource::open()
 
 void FileSource::start()
 {
-    file_path = file_input.getPath();
+    if (is_ui)
+        file_path = file_input.getPath();
 
-    buffer_size = std::min<int>(STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
+    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
 
     DSPSampleSource::start();
     ns_to_wait = (1e9 / current_samplerate) * float(buffer_size);
@@ -89,6 +90,8 @@ void FileSource::set_frequency(uint64_t frequency)
 
 void FileSource::drawControlUI()
 {
+    is_ui = true;
+
     if (is_started)
         style::beginDisabled();
 

@@ -14,10 +14,13 @@
 
 #include "core/opencl.h"
 
+#include "common/dsp/buffer.h"
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
     SATDUMP_DLL std::string tle_file_override = "";
+    SATDUMP_DLL bool tle_do_update_on_init = true;
 
     void initSatdump()
     {
@@ -90,10 +93,10 @@ namespace satdump
         // TLEs
         if (tle_file_override == "")
         {
-            if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>())
+            if (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() && tle_do_update_on_init)
                 updateTLEFile(user_path + "/satdump_tles.txt");
             loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
-            if (general_tle_registry.size() == 0) // NO TLEs? Download now.
+            if (general_tle_registry.size() == 0 && tle_do_update_on_init) // NO TLEs? Download now.
             {
                 updateTLEFile(user_path + "/satdump_tles.txt");
                 loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
@@ -109,6 +112,18 @@ namespace satdump
 
         // Products
         registerProducts();
+
+        // Set DSP buffer sizes if they have been changed
+        if (config::main_cfg.contains("advanced_settings"))
+        {
+            if (config::main_cfg["advanced_settings"].contains("default_buffer_size"))
+            {
+                int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
+                dsp::STREAM_BUFFER_SIZE = new_sz;
+                dsp::RING_BUF_SZ = new_sz;
+                logger->warn("DSP Buffer size was changed to {:d}", new_sz);
+            }
+        }
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});

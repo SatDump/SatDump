@@ -40,6 +40,7 @@ void SDRPPServerSource::start()
 
     client->start();
     convertShouldRun = true;
+    convertThread = std::thread(&SDRPPServerSource::convertFunction, this);
 
     set_frequency(d_frequency);
 
@@ -48,9 +49,11 @@ void SDRPPServerSource::start()
 
 void SDRPPServerSource::stop()
 {
+    convertShouldRun = false;
+    if (convertThread.joinable())
+        convertThread.join();
     if (is_started)
         client->stop();
-    convertShouldRun = false;
     is_started = false;
 }
 
@@ -76,7 +79,7 @@ void SDRPPServerSource::drawControlUI()
 
     if (is_connected)
         style::beginDisabled();
-    ImGui::InputText("Adress", &ip_address);
+    ImGui::InputText("Address", &ip_address);
     ImGui::InputInt("Port", &port);
     if (is_connected)
         style::endDisabled();

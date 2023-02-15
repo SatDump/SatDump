@@ -12,12 +12,16 @@
 #include "resources.h"
 #include "common/projection/reprojector.h"
 #include "core/opencl.h"
+#include "common/widgets/switch.h"
 
 namespace satdump
 {
     void ImageViewerHandler::init()
     {
         products = (ImageProducts *)ViewerHandler::products;
+
+        if (products->has_calibation())
+            products->init_calibration();
 
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
@@ -32,10 +36,26 @@ namespace satdump
             select_image_str += "Channel " + img.channel_name + '\0';
             channel_numbers.push_back(img.channel_name);
             images_obj.push_back(img.image);
+            disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
         }
 
         for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
             rgb_presets_str += compo.first + '\0';
+
+        // generate scale iamge
+        scale_image = image::Image<uint16_t>(25, 512, 3);
+        for (int i = 0; i < 512; i++)
+        {
+            for (int x = 0; x < 25; x++)
+            {
+                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
+                scale_image.draw_pixel(x, i, color);
+            }
+        }
+        scale_view.update(scale_image);
+        scale_view.allow_zoom_and_move = false;
+        correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
+        correction_factors.push_back(products->images[0].image.width());
 
         asyncUpdate();
 
@@ -55,7 +75,16 @@ namespace satdump
         }
         else if (select_image_id - 1 < (int)products->images.size())
         {
-            current_image = products->images[select_image_id - 1].image;
+            if (active_channel_calibrated && products->has_calibation())
+            {
+                current_image = products->get_calibrated_image(select_image_id - 1,
+                                                               &rgb_progress,
+                                                               is_temp ? ImageProducts::CALIB_VTYPE_TEMPERATURE : ImageProducts::CALIB_VTYPE_AUTO,
+                                                               disaplay_ranges[select_image_id - 1]);
+                update_needed = false;
+            }
+            else
+                current_image = products->images[select_image_id - 1].image;
             current_proj_metadata = products->get_channel_proj_metdata(select_image_id - 1);
         }
 
@@ -170,15 +199,31 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = products->images[active_channel_id].image[y * current_image.width() + x] >> (16 - products->bit_depth);
-                double radiance = products->get_radiance_value(active_channel_id, x, y);
+                int raw_value = products->images[active_channel_id].image[y * products->images[active_channel_id].image.width() + (correct_image ? correction_factors[x] : x)] >> (16 - products->bit_depth);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
                 if (products->has_calibation())
                 {
-                    ImGui::Text("Radiance : %.10f", radiance);
-                    ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                    double radiance = products->get_calibrated_value(active_channel_id, x, y);
+                    if (correct_image)
+                    {
+                        if (correction_factors[correction_factors.size() - 1] != (int)products->images[active_channel_id].image.width())
+                        {
+                            correction_factors = generate_horizontal_corr_lut(*products, products->images[active_channel_id].image.width());
+                            correction_factors.push_back(products->images[active_channel_id].image.width());
+                        }
+                        radiance = products->get_calibrated_value(active_channel_id, correction_factors[x], y);
+                    }
+                    if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
+                    {
+                        ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
+                    }
+                    else
+                    {
+                        ImGui::Text("Radiance : %.10f", radiance);
+                        ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                    }
                 }
                 ImGui::EndTooltip();
 
@@ -211,7 +256,9 @@ namespace satdump
                     satdump::ImageCompositeCfg cfg;
                     cfg.equation = rgb_compo_cfg.equation;
                     cfg.lut = rgb_compo_cfg.lut;
-                    cfg.lut_channels = rgb_compo_cfg.lut_channels;
+                    cfg.channels = rgb_compo_cfg.channels;
+                    cfg.lua = rgb_compo_cfg.lua;
+                    cfg.lua_vars = rgb_compo_cfg.lua_vars;
 
                     equalize_image = rgb_compo_cfg.equalize;
                     invert_image = rgb_compo_cfg.invert;
@@ -258,10 +305,11 @@ namespace satdump
                 }
             }
 
-            if (active_channel_id >= 0)
+            if (ImGui::IsItemHovered() && active_channel_id >= 0)
             {
                 if (products->get_wavenumber(active_channel_id) != 0)
                 {
+                    ImGui::BeginTooltip();
                     ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
                     double wl_nm = 1e7 / products->get_wavenumber(active_channel_id);
                     double frequency = 299792458.0 / (wl_nm * 10e-10);
@@ -283,7 +331,152 @@ namespace satdump
                         ImGui::Text("Frequency : %f MHz", frequency / 1e6);
                     else
                         ImGui::Text("Frequency : %f GHz", frequency / 1e9);
+                    ImGui::EndTooltip();
                 }
+            }
+
+            if (products->has_calibation() && active_channel_id >= 0)
+            {
+                ImGui::SameLine();
+                if (range_window && active_channel_calibrated)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                }
+                if (!active_channel_calibrated)
+                    ImGui::BeginDisabled();
+                if (ImGui::Button(u8"\uf07e"))
+                    range_window = !range_window;
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Diaplay Range Control");
+
+                if (show_scale && active_channel_calibrated)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                }
+                if (!products->get_calibration_type(active_channel_id))
+                    ImGui::BeginDisabled();
+                ImGui::SameLine();
+                if (ImGui::Button(u8"\uf2c9"))
+                    show_scale = !show_scale;
+                if (!products->get_calibration_type(active_channel_id))
+                    ImGui::EndDisabled();
+
+                if (!active_channel_calibrated)
+                    ImGui::EndDisabled();
+
+                ImGui::PopStyleColor(4);
+
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Show Scale");
+
+                if (range_window && active_channel_calibrated)
+                {
+                    ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                    ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
+                    bool buff = false;
+                    double tmp_min = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_max = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    ImGui::SetNextItemWidth(120 * ui_scale);
+                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    ImGui::SetNextItemWidth(120 * ui_scale);
+                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    if (buff)
+                    {
+                        disaplay_ranges[active_channel_id].first = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].second = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        update_needed = true;
+                        asyncUpdate();
+                    }
+                    if (ImGui::Button("Default"))
+                    {
+                        disaplay_ranges[active_channel_id] = products->get_calibration_default_radiance_range(active_channel_id);
+                        update_needed = true;
+                        asyncUpdate();
+                    }
+                    ImGui::End();
+                }
+
+                if (show_scale && active_channel_calibrated && products->get_calibration_type(active_channel_id))
+                {
+                    int w = ImGui::GetWindowSize()[0];
+                    ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                    ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
+                    ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
+                    scale_view.draw(ImVec2(22 * ui_scale, 460 * ui_scale));
+                    ImGui::SameLine();
+                    ImGui::BeginGroup();
+                    int y = ImGui::GetCursorPosY();
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ImGui::SetCursorPosY(y + i * 49 * ui_scale);
+                        std::pair<double, double> actual_ranges = disaplay_ranges[active_channel_id];
+                        if (is_temp)
+                            actual_ranges = {radiance_to_temperature(actual_ranges.first, products->get_wavenumber(active_channel_id)), radiance_to_temperature(actual_ranges.second, products->get_wavenumber(active_channel_id))};
+                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second) / 9.0);
+                    }
+                    ImGui::EndGroup();
+                    ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
+                    ImGui::End();
+                }
+
+                ImGui::Spacing();
+
+                ImGui::BeginGroup();
+                if (products->get_calibration_type(active_channel_id))
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3 * ui_scale);
+                ImGui::Text("Raw Counts");
+                ImGui::SameLine();
+
+                ImGui::SetNextItemWidth(50);
+                ToggleButton("##caltog", (int *)&active_channel_calibrated);
+                if (ImGui::IsItemClicked())
+                    asyncUpdate();
+                ImGui::SameLine();
+                // ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
+                if (products->get_calibration_type(active_channel_id))
+                {
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3 * ui_scale);
+                    ImGui::SetNextItemWidth(90 * ui_scale);
+                    // ImGui::Combo("##temp_rad", &tst, "Radiance\0Temperature");
+                    if (ImGui::BeginCombo("##temp_rad", is_temp ? "Temperature" : "Radiance", ImGuiComboFlags_NoArrowButton))
+                    {
+                        if (ImGui::Selectable("Radiance", !is_temp))
+                        {
+                            asyncUpdate();
+                            is_temp = false;
+                        }
+                        if (!is_temp)
+                            ImGui::SetItemDefaultFocus();
+
+                        if (ImGui::Selectable("Temperature", is_temp))
+                        {
+                            asyncUpdate();
+                            is_temp = true;
+                        }
+                        if (is_temp)
+                            ImGui::SetItemDefaultFocus();
+                        ImGui::EndCombo();
+                    }
+                }
+                else
+                    ImGui::Text("Albedo");
+                ImGui::EndGroup();
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
             }
 
             if (ImGui::Checkbox("Median Blur", &median_blur))
@@ -319,8 +512,11 @@ namespace satdump
             if (ImGui::Checkbox("Normalize", &normalize_image))
                 asyncUpdate();
 
-            if (ImGui::Checkbox("Invert", &invert_image))
+            if (ImGui::Checkbox("Invert", &invert_image)){
+                scale_image.mirror(false, true);
+                scale_view.update(scale_image);
                 asyncUpdate();
+            }
 
             if (ImGui::Button("Save"))
             {
@@ -367,6 +563,7 @@ namespace satdump
             ImGui::ProgressBar(rgb_progress);
         }
 
+#if 0
         if (ImGui::CollapsingHeader("Products"))
         {
             if (products->has_calibation())
@@ -382,7 +579,7 @@ namespace satdump
                     {
                         for (size_t x = 0; x < products->images[active_channel_id].image.width(); x++)
                         {
-                            float temp_c = radiance_to_temperature(products->get_radiance_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
+                            float temp_c = radiance_to_temperature(products->get_calibrated_value(active_channel_id, x, y), products->get_wavenumber(active_channel_id)) - 273.15;
 
                             image::Image<uint16_t> lut = image::LUT_jet<uint16_t>();
 
@@ -404,6 +601,7 @@ namespace satdump
                 }
             }
         }
+#endif
 
         if (products->has_proj_cfg())
         {

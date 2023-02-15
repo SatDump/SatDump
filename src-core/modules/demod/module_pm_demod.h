@@ -1,11 +1,11 @@
 #pragma once
 
 #include "module_demod_base.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/costas_loop.h"
-#include "common/dsp/clock_recovery_mm.h"
-#include "common/dsp/pll_carrier_tracking.h"
-#include "common/dsp/pm_to_bpsk.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/pll/costas_loop.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
+#include "common/dsp/pll/pll_carrier_tracking.h"
+#include "common/dsp/demod/pm_to_bpsk.h"
 
 namespace demod
 {

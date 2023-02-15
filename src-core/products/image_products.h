@@ -2,6 +2,7 @@
 
 #include "products.h"
 #include "common/image/image.h"
+#include <mutex>
 
 namespace satdump
 {
@@ -125,69 +126,106 @@ namespace satdump
             return true;
         }
 
-        ///////////////////////// Calibration to radiance
-        enum Calibration_Type
+        /// CALIBRATION
+
+        enum calib_type_t
         {
-            POLYNOMIAL,
-            CUSTOM,
-            POLYNOMIAL_PER_LINE,
-            CUSTOM_PER_LINE,
+            CALIB_REFLECTANCE,
+            CALIB_RADIANCE,
         };
 
-        void set_calibration_polynomial(int image_index, std::vector<double> coefficients)
+        enum calib_vtype_t
         {
-            contents["calibration"][image_index]["type"] = POLYNOMIAL;
-            contents["calibration"][image_index]["coefs"] = coefficients;
-        }
-
-        void set_calibration_polynomial_per_line(int image_index, std::vector<std::vector<double>> coefficients_per_line)
-        {
-            contents["calibration"][image_index]["type"] = POLYNOMIAL_PER_LINE;
-            contents["calibration"][image_index]["coefs"] = coefficients_per_line;
-        }
-
-        void set_calibration_custom(int image_index, std::string equation)
-        {
-            contents["calibration"][image_index]["type"] = CUSTOM;
-            contents["calibration"][image_index]["equ"] = equation;
-        }
-
-        void set_calibration_custom_per_line(int image_index, std::vector<std::string> equation)
-        {
-            contents["calibration"][image_index]["type"] = CUSTOM_PER_LINE;
-            contents["calibration"][image_index]["equ"] = equation;
-        }
+            CALIB_VTYPE_AUTO,
+            CALIB_VTYPE_ALBEDO,
+            CALIB_VTYPE_RADIANCE,
+            CALIB_VTYPE_TEMPERATURE,
+        };
 
         bool has_calibation()
         {
             return contents.contains("calibration");
         }
 
-        Calibration_Type get_calibration_type(int image_index)
-        {
-            return (Calibration_Type)contents["calibration"][image_index]["type"].get<int>();
-        }
+        void init_calibration();
 
-        void set_wavenumber(int image_index, double waveumber)
+        void set_calibration(nlohmann::json calib)
         {
-            contents["wavenumbers"][image_index] = waveumber;
+            bool d = false;
+            nlohmann::json buff;
+            if (has_calibation() && contents["calibration"].contains("wavenumbers"))
+            {
+                buff = contents["calibration"]["wavenumbers"];
+                d = true;
+            }
+            contents["calibration"] = calib;
+            if (d)
+                contents["calibration"]["wavenumbers"] = buff;
         }
 
         double get_wavenumber(int image_index)
         {
-            if (contents.contains("wavenumbers"))
-                return contents["wavenumbers"][image_index].get<double>();
+            if (!has_calibation())
+                return 0;
+
+            if (contents["calibration"].contains("wavenumbers"))
+                return contents["calibration"]["wavenumbers"][image_index].get<double>();
             else
                 return 0;
         }
 
-        std::vector<std::vector<std::vector<double>>> calibration_polynomial_coefs;
+        void set_wavenumber(int image_index, double wavnb)
+        {
+            contents["calibration"]["wavenumbers"][image_index] = wavnb;
+        }
 
-        double get_radiance_value(int image_index, int x, int y);
+        void set_calibration_type(int image_index, calib_type_t ct)
+        {
+            contents["calibration"]["type"][image_index] = (int)ct;
+        }
+
+        void set_calibration_default_radiance_range(int image_index, double rad_min, double rad_max)
+        {
+            contents["calibration"]["default_range"][image_index]["min"] = rad_min;
+            contents["calibration"]["default_range"][image_index]["max"] = rad_max;
+        }
+
+        std::pair<double, double> get_calibration_default_radiance_range(int image_index)
+        {
+            if (!has_calibation())
+                return {0, 0};
+            if (contents["calibration"].contains("default_range"))
+                return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+            if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                return {0, 1};
+            return {0, 0};
+        }
+
+        calib_type_t get_calibration_type(int image_index)
+        {
+            if (!has_calibation())
+                return CALIB_REFLECTANCE;
+            if (contents["calibration"].contains("type"))
+                return (calib_type_t)contents["calibration"]["type"][image_index].get<int>();
+            else
+                return CALIB_REFLECTANCE;
+        }
+
+        double get_calibrated_value(int image_index, int x, int y);
+
+        image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
+
+        ~ImageProducts();
+
+    private:
+        std::map<int, image::Image<uint16_t>> calibrated_img_cache;
+        std::mutex lua_mutex;
+        void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
+        void *lua_comp_func_ptr = nullptr;
     };
 
     // Composite handling
@@ -200,7 +238,10 @@ namespace satdump
         bool white_balance = false;
 
         std::string lut = "";
-        std::string lut_channels = "";
+        std::string channels = "";
+        std::string lua = "";
+        nlohmann::json lua_vars;
+        nlohmann::json calib_cfg;
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -212,7 +253,11 @@ namespace satdump
         j["white_balance"] = v.white_balance;
 
         j["lut"] = v.lut;
-        j["lut_channels"] = v.lut_channels;
+        j["channels"] = v.channels;
+        j["lua"] = v.lua;
+        j["lua_vars"] = v.lua_vars;
+
+        j["calib_cfg"] = v.calib_cfg;
     }
 
     inline void from_json(const nlohmann::json &j, ImageCompositeCfg &v)
@@ -224,8 +269,18 @@ namespace satdump
         else if (j.contains("lut"))
         {
             v.lut = j["lut"].get<std::string>();
-            v.lut_channels = j["lut_channels"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
         }
+        else if (j.contains("lua"))
+        {
+            v.lua = j["lua"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("lua_vars"))
+                v.lua_vars = j["lua_vars"];
+        }
+
+        if (j.contains("calib_cfg"))
+            v.calib_cfg = j["calib_cfg"];
 
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
@@ -239,4 +294,6 @@ namespace satdump
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);
+
+    std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width);
 }

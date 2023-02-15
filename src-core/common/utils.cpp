@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <cmath>
 #include <sstream>
+#include "resources.h"
 #include <locale>
 #include <codecvt>
 
@@ -196,6 +197,14 @@ double get_median(std::vector<double> values)
     std::sort(values.begin(), values.end());
     size_t middle = values.size() / 2;
     return values[middle];
+}
+
+std::string loadFileToString(std::string path)
+{
+    std::ifstream f(path);
+    std::string str = std::string(std::istreambuf_iterator<char>{f}, {});
+    f.close();
+    return str;
 }
 
 std::string ws2s(const std::wstring &wstr)

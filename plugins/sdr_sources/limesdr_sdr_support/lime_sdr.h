@@ -47,7 +47,7 @@ protected:
         lms_stream_meta_t md;
 #endif
 
-        int buffer_size = std::min<int>(current_samplerate / 250, STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {

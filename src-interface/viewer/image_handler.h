@@ -21,6 +21,7 @@ namespace satdump
 
         // Image handling
         int active_channel_id = 0, select_image_id = 1;
+        bool active_channel_calibrated = false;
         std::string select_image_str;
         image::Image<uint16_t> rgb_image, current_image;
         std::vector<image::Image<uint16_t>> images_obj;
@@ -39,6 +40,16 @@ namespace satdump
         bool cities_overlay = false;
 
         float cities_scale = 0.5;
+
+        // GUI
+        bool range_window = false;
+        std::vector<std::pair<double, double>> disaplay_ranges;
+        bool update_needed;
+        bool is_temp = false;
+        bool show_scale = false;
+        image::Image<uint16_t> scale_image; // 512x25
+        ImageViewWidget scale_view;
+        std::vector<int> correction_factors;
 
         // RGB Handling
         ImageCompositeCfg rgb_compo_cfg;

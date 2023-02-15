@@ -67,6 +67,7 @@ namespace lrit
                 current_file.lrit_data.clear();
 
                 processLRITHeader(current_file, pkt);
+                current_file.vcid = vcdu.vcid;
                 current_file.header_parsed = false;
                 current_file.file_in_progress = true;
             }

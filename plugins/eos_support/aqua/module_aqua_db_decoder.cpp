@@ -4,7 +4,7 @@
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 #include "common/utils.h"
 
 #define BUFFER_SIZE (1024 * 8 * 8)

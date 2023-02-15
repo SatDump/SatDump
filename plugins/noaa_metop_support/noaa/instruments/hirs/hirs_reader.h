@@ -28,6 +28,7 @@ namespace noaa
             double last_timestamp = -1;
             TIPTimeParser ttp;
             std::vector<double> timestamps;
+            int sync = 0;
         };
     } // namespace hirs
 } // namespace noaa

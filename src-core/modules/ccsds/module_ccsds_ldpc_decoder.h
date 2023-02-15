@@ -4,9 +4,9 @@
 #include <complex>
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include <fstream>
-#include "common/dsp/constellation.h"
+#include "common/dsp/demod/constellation.h"
 #include "common/codings/generic_correlator.h"
-#include "common/dsp/random.h"
+#include "common/dsp/utils/random.h"
 #include "common/codings/ldpc/ccsds_ldpc.h"
 
 namespace ccsds

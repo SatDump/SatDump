@@ -3,7 +3,7 @@
 #include "smgui.h"
 #include "common/dsp/complex.h"
 
-#define SERVER_MAX_PACKET_SIZE  (STREAM_BUFFER_SIZE * sizeof(complex_t) * 2)
+#define SERVER_MAX_PACKET_SIZE  (dsp::STREAM_BUFFER_SIZE * sizeof(complex_t) * 2)
 
 namespace server {
     enum PacketType {

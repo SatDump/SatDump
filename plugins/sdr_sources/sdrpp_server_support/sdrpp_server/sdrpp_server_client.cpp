@@ -251,7 +251,7 @@ namespace server
         }
         else if (_this->r_pkt_hdr->type == PACKET_TYPE_BASEBAND_COMPRESSED)
         {
-            size_t outCount = ZSTD_decompressDCtx(_this->dctx, _this->output->writeBuf, STREAM_BUFFER_SIZE, _this->r_pkt_data, _this->r_pkt_hdr->size - sizeof(PacketHeader));
+            size_t outCount = ZSTD_decompressDCtx(_this->dctx, _this->output->writeBuf, dsp::STREAM_BUFFER_SIZE, _this->r_pkt_data, _this->r_pkt_hdr->size - sizeof(PacketHeader));
             if (outCount)
             {
                 _this->output->swap(outCount);

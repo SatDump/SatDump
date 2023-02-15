@@ -4,6 +4,9 @@
 #include "resources.h"
 #include "common/image/earth_curvature.h"
 #include <filesystem>
+#include "libs/sol2/sol.hpp"
+#include "common/lua/lua_utils.h"
+#include "common/calibration.h"
 
 namespace satdump
 {
@@ -60,9 +63,6 @@ namespace satdump
         Products::load(file);
         std::string directory = std::filesystem::path(file).parent_path().string();
 
-        if (has_calibation())
-            calibration_polynomial_coefs.resize(contents["images"].size());
-
         has_timestamps = contents["has_timestamps"].get<bool>();
         if (has_timestamps)
             timestamp_type = (Timestamp_Type)contents["timestamps_type"].get<int>();
@@ -118,43 +118,157 @@ namespace satdump
                 img_holder.offset_x = contents["images"][c]["offset_x"].get<int>();
 
             images.push_back(img_holder);
-
-            // Also load calibration if present
-            if (has_calibation())
-            {
-                if (get_calibration_type(c) == POLYNOMIAL)
-                    calibration_polynomial_coefs[c][0] = contents["calibration"][c]["coefs"].get<std::vector<double>>();
-                else if (get_calibration_type(c) == POLYNOMIAL_PER_LINE)
-                    calibration_polynomial_coefs[c] = contents["calibration"][c]["coefs"].get<std::vector<std::vector<double>>>();
-                // CUSTOM NOT IMPLEMENTED YET
-            }
         }
     }
 
-    double ImageProducts::get_radiance_value(int image_index, int x, int y)
+    void ImageProducts::init_calibration()
     {
-        std::vector<double> coefs;
-
-        if (has_calibation())
+        lua_mutex.lock();
+        if (lua_state_ptr == nullptr)
         {
-            if (get_calibration_type(image_index) == POLYNOMIAL)
-                coefs = calibration_polynomial_coefs[image_index][0];
-            else if (get_calibration_type(image_index) == POLYNOMIAL_PER_LINE)
-                coefs = calibration_polynomial_coefs[image_index][y];
-            else
-                return 0;
+            lua_state_ptr = new sol::state();
+            sol::state &lua = *((sol::state *)lua_state_ptr);
+
+            lua.open_libraries(sol::lib::base);
+            lua.open_libraries(sol::lib::string);
+            lua.open_libraries(sol::lib::math);
+
+            lua["wavenumbers"] = contents["calibration"]["wavenumbers"].get<std::vector<double>>();
+            lua["lua_vars"] = lua_utils::mapJsonToLua(lua, contents["calibration"]["lua_vars"]);
+
+            std::string lua_code = contents["calibration"]["lua"].get<std::string>();
+            lua.script(lua_code);
+
+            lua["init"].call();
+
+            lua_comp_func_ptr = new sol::function();
+            *((sol::function *)lua_comp_func_ptr) = lua["compute"];
+        }
+        lua_mutex.unlock();
+    }
+
+    ImageProducts::~ImageProducts()
+    {
+        if (lua_state_ptr != nullptr)
+        {
+            delete (sol::function *)lua_comp_func_ptr;
+            delete (sol::state *)lua_state_ptr;
+        }
+    }
+
+    double ImageProducts::get_calibrated_value(int image_index, int x, int y)
+    {
+        lua_mutex.lock();
+        uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
+        double val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+        lua_mutex.unlock();
+        return val2;
+    }
+
+    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index, float *progress, calib_vtype_t vtype, std::pair<double, double> range)
+    {
+        bool is_default = vtype == CALIB_VTYPE_AUTO && range.first == 0 && range.second == 0;
+        if (calibrated_img_cache.count(image_index) > 0 && is_default)
+        {
+            logger->trace("Cached calibrated image channel {:d}", image_index + 1);
+            return calibrated_img_cache[image_index];
         }
         else
-            return 0;
+        {
+            double wn = get_wavenumber(image_index);
 
-        double raw_value = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
+            if (range.first == 0 && range.second == 0)
+                range = get_calibration_default_radiance_range(image_index);
 
-        double radiance = 0;
-        int level = 0;
-        for (double c : coefs)
-            radiance += c * powf(raw_value, level++);
+            if (get_calibration_type(image_index) == CALIB_RADIANCE)
+            {
+                if (vtype == CALIB_VTYPE_TEMPERATURE)
+                    range = {radiance_to_temperature(range.first, wn),
+                             radiance_to_temperature(range.second, wn)};
+            }
 
-        return radiance;
+            logger->trace("Generating calibrated image channel {:d}. Range {:f} {:f}. Type {:d}", image_index + 1, range.first, range.second, vtype);
+
+            // calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
+            // image::Image<uint16_t> &output = calibrated_img_cache[image_index];
+            image::Image<uint16_t> output(images[image_index].image.width(), images[image_index].image.height(), 1);
+
+            if (vtype == CALIB_VTYPE_AUTO && get_calibration_type(image_index) == CALIB_RADIANCE)
+                vtype = CALIB_VTYPE_RADIANCE;
+            else if (vtype == CALIB_VTYPE_AUTO && get_calibration_type(image_index) == CALIB_REFLECTANCE)
+                vtype = CALIB_VTYPE_ALBEDO;
+
+            try
+            {
+                for (size_t x = 0; x < images[image_index].image.width(); x++)
+                {
+                    for (size_t y = 0; y < images[image_index].image.height(); y++)
+                    {
+                        double cal_val = get_calibrated_value(image_index, x, y);
+
+                        if (vtype == CALIB_VTYPE_TEMPERATURE)
+                            cal_val = radiance_to_temperature(cal_val, wn);
+
+                        output[y * output.width() + x] =
+                            output.clamp(
+                                ((cal_val - range.first) /
+                                 abs(range.first - range.second)) *
+                                65535);
+                    }
+
+                    if (progress != nullptr)
+                        *progress = float(x) / float(images[image_index].image.width());
+                }
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error calibrating image : {:s}", e.what());
+            }
+
+            if (is_default)
+                calibrated_img_cache.insert({image_index, output});
+
+            return output;
+        }
+    }
+
+    bool equation_contains(std::string init, std::string match)
+    {
+        size_t pos = init.find(match);
+        if (pos != std::string::npos)
+        {
+            std::string final_ex;
+            while (pos < init.size())
+            {
+                char v = init[pos];
+                if (v < 48 || v > 57)
+                    if (v < 65 || v > 90)
+                        if (v < 97 || v > 122)
+                            break;
+                final_ex += v;
+                pos++;
+            }
+
+            if (match == final_ex)
+                return true;
+        }
+
+        return false;
+    }
+
+    void get_calib_cfg_from_json(nlohmann::json v, ImageProducts::calib_vtype_t &type, std::pair<double, double> &range)
+    {
+        std::string vtype = v["type"].get<std::string>();
+        range.first = v["min"].get<double>();
+        range.second = v["max"].get<double>();
+        if (vtype == "auto")
+            type = ImageProducts::CALIB_VTYPE_AUTO;
+        else if (vtype == "albedo")
+            type = ImageProducts::CALIB_VTYPE_ALBEDO;
+        else if (vtype == "radiance")
+            type = ImageProducts::CALIB_VTYPE_RADIANCE;
+        else if (vtype == "temperature")
+            type = ImageProducts::CALIB_VTYPE_TEMPERATURE;
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
@@ -173,24 +287,51 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
-        if (cfg.lut != "")
-            str_to_find_channels = cfg.lut_channels;
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+            str_to_find_channels = cfg.channels;
 
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
+            std::string equ_str_calib = "cch" + img.channel_name;
 
             if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
-            if (str_to_find_channels.find(equ_str) != std::string::npos && img.image.size() > 0)
+            if (equation_contains(str_to_find_channels, equ_str) && img.image.size() > 0)
             {
                 channel_indexes.push_back(i);
-                channel_numbers.push_back(img.channel_name);
+                channel_numbers.push_back(equ_str);
                 images_obj.push_back(img.image);
-                offsets.emplace(img.channel_name, img.offset_x);
+                offsets.emplace(equ_str, img.offset_x);
                 logger->debug("Composite needs channel {:s}", equ_str);
+
+                if (max_width_used < (int)img.image.width())
+                    max_width_used = img.image.width();
+
+                if (min_offset > img.offset_x)
+                    min_offset = img.offset_x;
+            }
+
+            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0 && product.has_calibation())
+            {
+                product.init_calibration();
+                channel_indexes.push_back(i);
+                channel_numbers.push_back(equ_str_calib);
+                if (cfg.calib_cfg.contains(equ_str_calib))
+                {
+                    ImageProducts::calib_vtype_t type;
+                    std::pair<double, double> range;
+                    get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                    images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                }
+                else
+                {
+                    images_obj.push_back(product.get_calibrated_image(i, progress));
+                }
+                offsets.emplace(equ_str_calib, img.offset_x);
+                logger->debug("Composite needs calibrated channel {:s}", equ_str);
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
@@ -215,7 +356,7 @@ namespace satdump
         {
             img_off.second -= min_offset;
             img_off.second /= ratio;
-            logger->trace("Offset for ch{:s} is {:d}", img_off.first.c_str(), img_off.second);
+            logger->trace("Offset for {:s} is {:d}", img_off.first.c_str(), img_off.second);
 
             if (final_metadata != nullptr)
                 (*final_metadata)["img_x_offset"] = min_offset;
@@ -297,10 +438,12 @@ namespace satdump
 
         image::Image<uint16_t> rgb_composite;
 
-        if (cfg.lut == "")
-            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
-        else
+        if (cfg.lua != "")
+            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, progress);
+        else if (cfg.lut != "")
             rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
+        else
+            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
         if (cfg.equalize)
             rgb_composite.equalize();
@@ -346,5 +489,48 @@ namespace satdump
         }
 
         return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
+    }
+
+    std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width)
+    {
+        if (!product.contents.contains("projection_cfg"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_swath"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_resol"))
+            return {-1};
+        if (!product.get_proj_cfg().contains("corr_altit"))
+            return {-1};
+
+        float swath = product.get_proj_cfg()["corr_swath"].get<float>();
+        float resol = product.get_proj_cfg()["corr_resol"].get<float>();
+        float altit = product.get_proj_cfg()["corr_altit"].get<float>();
+
+        resol *= float(product.images[0].image.width()) / float(width);
+
+        if (product.get_proj_cfg().contains("corr_width"))
+        {
+            if ((int)width != product.get_proj_cfg()["corr_width"].get<int>())
+            {
+                logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), width);
+                resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(width);
+            }
+        }
+
+        float satellite_orbit_radius = 6371.0f + altit;                                                                                        // Compute the satellite's orbit radius
+        int corrected_width = round(swath / resol);                                                                                                    // Compute the output image size, or number of samples from the imager
+        float satellite_view_angle = swath / 6371.0f;                                                                                                     // Compute the satellite's view angle
+        float edge_angle = -atanf(6371.0f * sinf(satellite_view_angle / 2) / ((cosf(satellite_view_angle / 2)) * 6371.0f - satellite_orbit_radius)); // Max angle relative to the satellite
+
+        std::vector<int> correction_factors(corrected_width);
+
+        // Generate them
+        for (int i = 0; i < corrected_width; i++)
+        {
+            float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                    // Get the satellite's angle
+            float satellite_angle = -atanf(6371.0f * sinf(angle) / ((cosf(angle)) * 6371.0f - satellite_orbit_radius)); // Convert to an angle relative to earth
+            correction_factors[i] = width * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
+        }
+        return correction_factors;
     }
 }

@@ -89,14 +89,7 @@ namespace metop
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 34)
-                        {
-                            if (vcdu.spacecraft_id == METOP_A_SCID)
-                                mhs_reader.work_metop(pkt, 1);
-                            else if (vcdu.spacecraft_id == METOP_B_SCID)
-                                mhs_reader.work_metop(pkt, 2);
-                            else if (vcdu.spacecraft_id == METOP_C_SCID)
-                                mhs_reader.work_metop(pkt, 3);
-                        }
+                            mhs_reader.work_metop(pkt);
                 }
                 else if (vcdu.vcid == 15) // ASCAT
                 {
@@ -205,6 +198,13 @@ namespace metop
                 logger->info("----------- AVHRR/3");
                 logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
+                // calibration
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+                if (calib_coefs.contains(sat_name))
+                    avhrr_reader.calibrate(calib_coefs[sat_name]);
+                else
+                    logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
                 satdump::ImageProducts avhrr_products;
                 avhrr_products.instrument_name = "avhrr_3";
                 avhrr_products.has_timestamps = true;
@@ -213,6 +213,16 @@ namespace metop
                 avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 avhrr_products.set_timestamps(avhrr_reader.timestamps);
                 avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+
+                // calib
+                avhrr_products.set_calibration(avhrr_reader.calib_out);
+                for (int n = 0; n < 3; n++)
+                {
+                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                    avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                }
+                for (int c = 0; c < 6; c++)
+                    avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
 
                 std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                 for (int i = 0; i < 6; i++)
@@ -247,6 +257,21 @@ namespace metop
                 for (int i = 0; i < 5; i++)
                     mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
 
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
+                if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                {
+                    mhs_reader.calibrate(calib_coefs[sat_name]);
+                    mhs_products.set_calibration(mhs_reader.calib_out);
+                    for (int c = 0; c < 5; c++)
+                    {
+                        mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
+                        mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    }
+                }
+                else
+                    logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
+                saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));
                 mhs_products.save(directory);
                 dataset.products_list.push_back("MHS");
 

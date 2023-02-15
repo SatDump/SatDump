@@ -148,5 +148,16 @@ std::vector<uint8_t> unsigned_to_bitvec(T v)
     return c;
 }
 
+template <typename T>
+std::vector<T> oversample_vector(std::vector<T> data, int oversampling)
+{
+    std::vector<T> r;
+    for (T &v : data)
+        for (int i = 0; i < oversampling; i++)
+            r.push_back(v);
+    return r;
+}
+
+std::string loadFileToString(std::string path);
 std::string ws2s(const std::wstring &wstr);
 std::wstring s2ws(const std::string &str);

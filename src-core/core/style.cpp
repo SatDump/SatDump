@@ -188,9 +188,9 @@ namespace style
         static ImFontConfig config;
         baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * ui_scale, &config, def);
         config.MergeMode = true;
-        static const ImWchar list[5][3] = {{0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0}, {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}};   
+        static const ImWchar list[6][3] = {{0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0}, {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0}};   
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
             baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * ui_scale, &config, list[i]); 
 
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * ui_scale);   //, &config, ranges);

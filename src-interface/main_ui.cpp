@@ -61,9 +61,9 @@ namespace satdump
 
     void exitMainUI()
     {
+        viewer_app.reset();
         recorder_app->save_settings();
         recorder_app.reset();
-        viewer_app.reset();
     }
 
     void renderMainUI(int wwidth, int wheight)
@@ -204,6 +204,9 @@ namespace satdump
 
             if (error::hasError)
                 error::render();
+
+            if (settings::show_imgui_demo)
+                ImGui::ShowDemoWindow();
         }
     }
 
