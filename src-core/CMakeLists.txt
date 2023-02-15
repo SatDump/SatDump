@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 include(CheckLibraryExists)
-include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
 include(CheckCSourceCompiles)
 include(CMakePushCheckState)
 include(CheckCCompilerFlag)
@@ -106,8 +106,7 @@ else()
 
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
-    set(CMAKE_REQUIRED_INCLUDES "/usr/include;/usr/local/includes")
-    check_include_file("volk/volk_alloc.h" VOLK_HAS_ALLOC)
+    check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)
 
     if(NOT VOLK_HAS_ALLOC)
         message(STATUS "VOLK does not have volk_alloc.hh, including volk_includes")
