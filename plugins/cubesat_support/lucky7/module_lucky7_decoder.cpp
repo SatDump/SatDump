@@ -2,131 +2,95 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/repack_bits_byte.h"
-#include "common/scrambling.h"
-#include "common/codings/crc/crc_generic.h"
-
-#define BUFFER_SIZE 100
-#define FRAME_SIZE_FULL 312
-#define FRAME_SIZE_PAYLOAD 280
+#include "common/image/image.h"
 
 namespace lucky7
 {
-    Lucky7DecoderModule::Lucky7DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                constellation(1.0, 0.15, demod_constellation_size)
+    Lucky7DecoderModule::Lucky7DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
-        soft_buffer = new int8_t[BUFFER_SIZE];
-        byte_buffers = new uint8_t[BUFFER_SIZE];
-    }
-
-    std::vector<ModuleDataType> Lucky7DecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
-
-    std::vector<ModuleDataType> Lucky7DecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
+        frame_buffer = new uint8_t[35];
     }
 
     Lucky7DecoderModule::~Lucky7DecoderModule()
     {
-        delete[] soft_buffer;
-        delete[] byte_buffers;
+        delete[] frame_buffer;
     }
 
     void Lucky7DecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
+        filesize = getFilesize(d_input_file);
+        std::ifstream data_in(d_input_file, std::ios::binary);
 
-        logger->info("Using input symbols " + d_input_file);
-        logger->info("Decoding to " + d_output_file_hint + ".frm");
+        std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
 
-        RepackBitsByte repacker;
-        def::SimpleDeframer deframer(0b0010110111010100, 16, FRAME_SIZE_FULL * 8, 0);
-        codings::crc::GenericCRC crc_check(16, 0x8005, 0xFFFF, 0x0000, false, false);
+        logger->info("Using input frames " + d_input_file);
+        logger->info("Decoding to " + directory);
+
+        std::map<int, ImagePayload> wip_image_payloads;
 
         time_t lastTime = 0;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
-            // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)soft_buffer, BUFFER_SIZE);
-            else
-                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
+            // Read buffer
+            data_in.read((char *)frame_buffer, 35);
 
-            for (int i = 0; i < BUFFER_SIZE; i++)
-                soft_buffer[i] = soft_buffer[i] > 0;
-
-            int b = repacker.work((uint8_t *)soft_buffer, BUFFER_SIZE, byte_buffers);
-
-            auto frames = deframer.work(byte_buffers, b);
-
-            for (auto &frm : frames)
+            if (frame_buffer[1] == 0x00)
             {
-                cubesat::scrambling::si4462_scrambling(&frm[2], FRAME_SIZE_PAYLOAD);
+                std::string callsign(&frame_buffer[6], &frame_buffer[12]);
+                logger->info("Telemetry " + callsign);
+            }
+            else
+            {
+                uint16_t current_chunk = (frame_buffer[1] & 0xF) << 8 | frame_buffer[2];
+                uint16_t total_chunks = frame_buffer[5] << 8 | frame_buffer[6];
+                // logger->info("{:d}/{:d}", current_chunk, total_chunks);
 
-                uint16_t crc_frm1 = crc_check.compute(&frm[2], 35);
-                uint16_t crc_frm2 = frm[2 + 35 + 0] << 8 | frm[2 + 35 + 1];
+                if (wip_image_payloads.count(total_chunks) == 0)
+                {
+                    ImagePayload newp;
+                    newp.total_chunks = total_chunks + 1; // Need to account for 0
+                    newp.has_chunks = std::vector<bool>(newp.total_chunks, false);
+                    newp.payload.resize(newp.total_chunks * 28);
+                    wip_image_payloads.insert({total_chunks, newp});
+                }
 
-                if (crc_frm1 == crc_frm2)
-                {
-                    data_out.write((char *)&frm[2], 35);
-                    frm_cnt++;
-                }
-                else
-                {
-                    logger->error("Invalid CRC!");
-                }
+                ImagePayload &payload = wip_image_payloads[total_chunks];
+
+                memcpy(&payload.payload[current_chunk * 28], &frame_buffer[7], 28);
+                payload.has_chunks[current_chunk] = true;
             }
 
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
+            progress = data_in.tellg();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames : " + std::to_string(frm_cnt));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
             }
         }
 
         logger->info("Decoding finished");
 
-        data_out.close();
-        if (input_data_type == DATA_FILE)
-            data_in.close();
+        data_in.close();
+
+        for (auto imgp : wip_image_payloads)
+        {
+            logger->info("Image Payload {:d}. Got {:d}/{:d}", imgp.first, imgp.second.get_present(), imgp.second.total_chunks);
+
+            image::Image<uint8_t> img;
+            img.load_jpeg(imgp.second.payload.data(), imgp.second.payload.size());
+
+            std::string name = "Img_" + std::to_string(imgp.first) + ".png";
+
+            logger->info("Saving to " + name);
+
+            img.save_png(directory + "/" + name);
+        }
     }
 
     void Lucky7DecoderModule::drawUI(bool window)
     {
         ImGui::Begin("Lucky-7 Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
-
-        ImGui::BeginGroup();
-        constellation.pushSofttAndGaussian(soft_buffer, 127, BUFFER_SIZE);
-        constellation.draw();
-        ImGui::EndGroup();
-
-        ImGui::SameLine();
-
-        ImGui::BeginGroup();
-        {
-            ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
-            {
-                ImGui::Text("Frames : ");
-
-                ImGui::SameLine();
-
-                ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frm_cnt));
-            }
-        }
-        ImGui::EndGroup();
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));

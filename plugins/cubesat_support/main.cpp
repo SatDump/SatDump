@@ -2,8 +2,8 @@
 #include "logger.h"
 #include "core/module.h"
 
-// #include "lucky7/module_lucky7_decoder.h"
 #include "lucky7/module_lucky7_demod.h"
+#include "lucky7/module_lucky7_decoder.h"
 
 class CubeSatSupport : public satdump::Plugin
 {
@@ -21,7 +21,7 @@ public:
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DemodModule);
-        // REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DecoderModule);
     }
 };
 

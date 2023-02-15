@@ -12,26 +12,41 @@ namespace lucky7
     class Lucky7DecoderModule : public ProcessingModule
     {
     protected:
-        int8_t *soft_buffer;
-        uint8_t *byte_buffers;
+        uint8_t *frame_buffer;
 
         std::ifstream data_in;
-        std::ofstream data_out;
 
-        int frm_cnt = 0;
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
-        // UI Stuff
-        widgets::ConstellationViewer constellation;
+        struct ImagePayload
+        {
+            int total_chunks;
+            std::vector<bool> has_chunks;
+            std::vector<uint8_t> payload;
+
+            int get_missing()
+            {
+                int m = 0;
+                for (bool v : has_chunks)
+                    m += !v;
+                return m;
+            }
+
+            int get_present()
+            {
+                int m = 0;
+                for (bool v : has_chunks)
+                    m += v;
+                return m;
+            }
+        };
 
     public:
         Lucky7DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~Lucky7DecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();
