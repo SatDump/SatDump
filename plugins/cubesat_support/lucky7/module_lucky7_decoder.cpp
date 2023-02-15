@@ -34,12 +34,12 @@ namespace lucky7
             // Read buffer
             data_in.read((char *)frame_buffer, 35);
 
-            if (frame_buffer[1] == 0x00)
+            if (frame_buffer[1] == 0x00) // TLM
             {
                 std::string callsign(&frame_buffer[6], &frame_buffer[12]);
                 logger->info("Telemetry " + callsign);
             }
-            else
+            else if ((frame_buffer[1] & 0xC0) == 0xC0) // Imagery
             {
                 uint16_t current_chunk = (frame_buffer[1] & 0xF) << 8 | frame_buffer[2];
                 uint16_t total_chunks = frame_buffer[5] << 8 | frame_buffer[6];
@@ -58,6 +58,9 @@ namespace lucky7
 
                 memcpy(&payload.payload[current_chunk * 28], &frame_buffer[7], 28);
                 payload.has_chunks[current_chunk] = true;
+            }
+            else if ((frame_buffer[1] & 0x20) == 0x20) // Dosimetry?
+            {
             }
 
             progress = data_in.tellg();
