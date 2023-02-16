@@ -347,39 +347,63 @@ namespace satdump
 #endif
 #ifdef BUILD_ZIQ2
                                                                       "ziq2 s8\0"
+                                                                      "ziq2 s16\0"
 #endif
                                      ))
                     {
-                        if (select_sample_format == 0)
+                        int type_lut[] = {
+                            0,
+                            1,
+                            2,
+                            3,
+#ifdef BUILD_ZIQ
+                            4,
+                            5,
+                            6,
+#endif
+#ifdef BUILD_ZIQ2
+                            7,
+                            8,
+#endif
+                        };
+
+                        int f = type_lut[select_sample_format];
+
+                        if (f == 0)
                             file_sink->set_output_sample_type(dsp::CF_32);
-                        else if (select_sample_format == 1)
+                        else if (f == 1)
                             file_sink->set_output_sample_type(dsp::IS_16);
-                        else if (select_sample_format == 2)
+                        else if (f == 2)
                             file_sink->set_output_sample_type(dsp::IS_8);
-                        else if (select_sample_format == 3)
+                        else if (f == 3)
                             file_sink->set_output_sample_type(dsp::WAV_16);
 #ifdef BUILD_ZIQ
-                        else if (select_sample_format == 4)
+                        else if (f == 4)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 8;
                         }
-                        else if (select_sample_format == 5)
+                        else if (f == 5)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 16;
                         }
-                        else if (select_sample_format == 6)
+                        else if (f == 6)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 32;
                         }
 #endif
 #ifdef BUILD_ZIQ2
-                        else if (select_sample_format == 7)
+                        else if (f == 7)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ2);
                             ziq_bit_depth = 8;
+                        }
+                        else if (f == 8)
+                        {
+                            file_sink->set_output_sample_type(dsp::ZIQ2);
+                            ziq_bit_depth = 16;
                         }
 #endif
                     }
