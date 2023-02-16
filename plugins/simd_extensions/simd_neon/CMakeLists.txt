@@ -26,9 +26,9 @@ if(NEON_FOUND)
     target_include_directories(simd_neon PUBLIC src)
 
     if(UNIX OR ANDROID)
-        string(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
+        set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
     elseif(MSVC OR BUILD_MSVC)
-        string(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
+        set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
     endif()
 
     # Enable on all files but main.cpp
