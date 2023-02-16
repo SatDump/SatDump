@@ -20,19 +20,23 @@ endif()
 if(SSE41_FOUND)
     message("Found SSE41 features, enabling SSE41 plugin")
 
-    
     file(GLOB_RECURSE simd_sse41_CPPS *.cpp)
     add_library(simd_sse41 SHARED ${simd_sse41_CPPS})
     target_link_libraries(simd_sse41 PUBLIC satdump_core)
     target_include_directories(simd_sse41 PUBLIC src)
 
     if(UNIX OR ANDROID)
-        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} -msse4.1")
+        set(FINAL_FLAGS_SSE41 "-msse4.1")
     elseif(MSVC OR BUILD_MSVC)
-        string(REPLACE " " ";" FINAL_FLAGS_SSE41 "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
+        set(FINAL_FLAGS_SSE41 "${SSE41_C_FLAGS}")
     endif()
 
-    target_compile_options(simd_sse41 PUBLIC ${FINAL_FLAGS_SSE41})
+    # Enable on all files but main.cpp
+    foreach(_file ${simd_sse41_CPPS})
+        if(NOT(${_file} MATCHES "main.cpp$"))
+            set_source_files_properties(${_file} PROPERTIES COMPILE_FLAGS "${FINAL_FLAGS_SSE41}")
+        endif()
+    endforeach()
 
     install(TARGETS simd_sse41 DESTINATION share/satdump/plugins)
 else()
