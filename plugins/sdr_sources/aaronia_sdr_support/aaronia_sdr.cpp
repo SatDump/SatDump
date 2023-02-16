@@ -60,7 +60,7 @@ void AaroniaSource::set_gains()
         else
             AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"None");
 
-        if (d_enable_amp)
+        if (d_enable_preamp)
             d_min_level = -38;
     }
 
