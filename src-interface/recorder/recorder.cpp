@@ -346,8 +346,8 @@ namespace satdump
                                                                       "ziq f32\0"
 #endif
 #ifdef BUILD_ZIQ2
-                                                                      "ziq2 s8\0"
-                                                                      "ziq2 s16\0"
+                                                                      "ziq2 s8 (WIP)\0"
+                                                                      "ziq2 s16 (WIP)\0"
 #endif
                                      ))
                     {
