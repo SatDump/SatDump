@@ -4,6 +4,8 @@
 #include "decode_utils.h"
 #include <fstream>
 #include "common/net/udp.h"
+#include "pkt_structs.h"
+#include "acars_parser.h"
 
 namespace inmarsat
 {
@@ -13,6 +15,8 @@ namespace inmarsat
         {
         protected:
             uint8_t *buffer;
+
+            bool is_c_channel = false;
 
             std::ifstream data_in;
             std::atomic<size_t> filesize;
@@ -28,6 +32,11 @@ namespace inmarsat
             std::vector<std::shared_ptr<net::UDPClient>> udp_clients;
 
             bool is_gui = false;
+
+            bool has_wip_user_data = false;
+            pkts::MessageUserDataFinal wip_user_data;
+            acars::ACARSParser acars_parser;
+            void process_pkt();
 
         public:
             AeroParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

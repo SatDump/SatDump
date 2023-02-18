@@ -12,13 +12,21 @@ namespace inmarsat
     {
         AeroDecoderModule::AeroDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            is_c_channel = parameters.contains("is_c") ? parameters["is_c"].get<bool>() : false;
+
             d_aero_oqpsk = parameters["oqpsk"].get<bool>();
             d_aero_dummy_bits = parameters["dummy_bits"].get<int>();
             d_aero_interleaver_cols = parameters["inter_cols"].get<int>();
             d_aero_interleaver_blocks = parameters["inter_blocks"].get<int>();
 
-            d_aero_sync_size = d_aero_oqpsk ? 64 : 32;
-            d_aero_hdr_size = 16 + d_aero_dummy_bits;
+            if (is_c_channel)
+                d_aero_sync_size = 52 * 2;
+            else
+                d_aero_sync_size = d_aero_oqpsk ? 64 : 32;
+            if (is_c_channel)
+                d_aero_hdr_size = d_aero_dummy_bits;
+            else
+                d_aero_hdr_size = 16 + d_aero_dummy_bits;
             d_aero_interleaver_block_size = 64 * d_aero_interleaver_cols;
             d_aero_info_size = d_aero_interleaver_block_size * d_aero_interleaver_blocks;
             d_aero_total_frm_size = d_aero_sync_size + d_aero_hdr_size + d_aero_info_size;
@@ -28,10 +36,36 @@ namespace inmarsat
             logger->info("Aero Info Size : {:d}", d_aero_info_size);
             logger->info("Aero Frame Size : {:d}", d_aero_total_frm_size);
 
-            correlator = std::make_unique<CorrelatorGeneric>(d_aero_oqpsk ? dsp::OQPSK : dsp::BPSK,
-                                                             d_aero_oqpsk ? unsigned_to_bitvec<uint64_t>(0b1111110000000011001100111100110011111100110000001100001100001111)
-                                                                          : unsigned_to_bitvec<uint32_t>(0b11100001010110101110100010010011),
-                                                             d_aero_total_frm_size);
+            if (is_c_channel)
+            {
+                std::vector<uint8_t> bits = {
+                    1, 0, 0, 0, 1, 0, 0, 0, //
+                    1, 1, 0, 1, 1, 0, 1, 0, //
+                    0, 0, 0, 1, 1, 0, 1, 1, //
+                    0, 0, 1, 0, 1, 1, 1, 1, //
+                    0, 1, 1, 1, 1, 0, 0, 1, //
+                    1, 0, 0, 0, 0, 0, 1, 1, //
+                    0, 1, 0, 1, 1, 0, 1, 0, //
+                    1, 1, 0, 0, 0, 0, 0, 1, //
+                    1, 0, 0, 1, 1, 1, 1, 0, //
+                    1, 1, 1, 1, 0, 1, 0, 0, //
+                    1, 1, 0, 1, 1, 0, 0, 0, //
+                    0, 1, 0, 1, 1, 0, 1, 1, //
+                    0, 0, 0, 1, 0, 0, 0, 1, //
+                };
+                correlator = std::make_unique<CorrelatorGeneric>(d_aero_oqpsk ? dsp::OQPSK : dsp::BPSK,
+                                                                 bits,
+                                                                 d_aero_total_frm_size);
+                d_aero_info_size = 5460;
+            }
+            else
+            {
+                correlator = std::make_unique<CorrelatorGeneric>(d_aero_oqpsk ? dsp::OQPSK : dsp::BPSK,
+                                                                 d_aero_oqpsk ? unsigned_to_bitvec<uint64_t>(0b1111110000000011001100111100110011111100110000001100001100001111)
+                                                                              : unsigned_to_bitvec<uint32_t>(0b11100001010110101110100010010011),
+                                                                 d_aero_total_frm_size);
+            }
+
             viterbi = std::make_unique<viterbi::Viterbi27>(d_aero_info_size / 2, std::vector<int>{109, 79}, d_aero_info_size / 5);
 
             // Generate randomization sequence
@@ -105,6 +139,11 @@ namespace inmarsat
             phase_t phase;
             bool swap;
 
+            uint8_t *depunc_out = nullptr;
+
+            if (is_c_channel)
+                depunc_out = new uint8_t[d_aero_info_size];
+
             time_t lastTime = 0;
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -151,20 +190,43 @@ namespace inmarsat
                                  &buffer_deinterleaved[d_aero_interleaver_block_size * i],
                                  d_aero_interleaver_cols);
 
-                // Viterbi
-                viterbi->work(buffer_deinterleaved, buffer_vitdecoded);
-
-                // Derand
-                for (int i = 0; i < d_aero_info_size / 16; i++)
+                if (is_c_channel) // Call packets
                 {
-                    buffer_vitdecoded[i] ^= randomization_seq[i];
-                    buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
-                }
+                    depuncture(buffer_deinterleaved, depunc_out, 2, d_aero_interleaver_block_size * d_aero_interleaver_blocks - 1);
 
-                if (output_data_type == DATA_FILE)
-                    data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
-                else
-                    output_fifo->write((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);
+                    viterbi->work((int8_t *)depunc_out, buffer_vitdecoded, true);
+
+                    // Derand
+                    for (int i = 0; i < d_aero_info_size / 16; i++)
+                        buffer_vitdecoded[i] ^= randomization_seq[i];
+
+                    std::vector<uint8_t> voice_data(300), blocks_data(36);
+                    unpack_areo_c84_packet(buffer_vitdecoded, voice_data.data(), blocks_data.data());
+
+                    memcpy(buffer_vitdecoded, blocks_data.data(), blocks_data.size());
+                    memcpy(&buffer_vitdecoded[36], voice_data.data(), voice_data.size());
+
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)buffer_vitdecoded, 336);
+                    else
+                        output_fifo->write((uint8_t *)buffer_vitdecoded, 336);
+                }
+                else // Normal
+                {
+                    viterbi->work(buffer_deinterleaved, buffer_vitdecoded);
+
+                    // Derand
+                    for (int i = 0; i < d_aero_info_size / 16; i++)
+                    {
+                        buffer_vitdecoded[i] ^= randomization_seq[i];
+                        buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
+                    }
+
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
+                    else
+                        output_fifo->write((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);
+                }
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -181,6 +243,9 @@ namespace inmarsat
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%, Lock : " + lock_state);
                 }
             }
+
+            if (is_c_channel)
+                delete[] depunc_out;
 
             if (input_data_type == DATA_FILE)
                 data_in.close();

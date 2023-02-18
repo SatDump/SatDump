@@ -13,6 +13,8 @@ namespace inmarsat
         class AeroDecoderModule : public ProcessingModule
         {
         protected:
+            bool is_c_channel = false;
+
             bool d_aero_oqpsk;
             int d_aero_dummy_bits;
             int d_aero_interleaver_cols;

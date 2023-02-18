@@ -20,11 +20,15 @@
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 - [imgui_markdown](https://github.com/juliettef/imgui_markdown), to render this very file!
 
-**Libraries included in plugins :**
+**Libraries included in plugins / Code taken from and in plugins :**
 - Elektro/Arktika, [DecompWT](https://gitlab.eumetsat.int/open-source/PublicDecompWT), custom wavelet compression/decompression library originally used for MSG xRIT
 - GK-2A, [libtomcrypt](https://github.com/libtom/libtomcrypt), for DES decryption
 - GOES, [OpenJP2](https://github.com/uclouvain/openjpeg), for decompressiong J2K on GRB
 - MetOp, [bzip2](https://github.com/libarchive/bzip2), for BZIP2 decompression utilized on MetOp admin messages
+- Inmarsat, [libacars](https://github.com/szpajder/libacars), for ACARS parsing
+- Inmarsat, [mbelib](https://github.com/szechyjs/mbelib), for AMBE audio decompression
+- Inmarsat, [libaeroambe](https://github.com/jontio/libaeroambe), not the library itself, but the code was adapted (for Ambe decoding)
+- Inmarsat, [Scytale-C](https://bitbucket.org/scytalec/scytalec), for STD-C packet formats and parsing
 
 Those libraries above are included directly as they are either header-only, not already present on most systems or required some modifications for the purpose of this software. For the code included, the licenses of each respective library applies.
 
@@ -33,7 +37,6 @@ Those libraries above are included directly as they are either header-only, not 
 - [gr-dvbs2rx](https://github.com/igorauad/gr-dvbs2rx), for TS Parsing and a few other bits
 - [GNU Radio](https://github.com/gnuradio/gnuradio), for the convolutional decoding / encoding (quite heavily modified) and a few other bits
 - [SDR++](https://github.com/AlexandreRouma/SDRPlusPlus), for the DSP stream implementation (thanks Ryzerth for the tip back then!) and a few other things, such as the SpyServer client
-- [Scytale-C](https://bitbucket.org/scytalec/scytalec), for STD-C packet formats and parsing
 
 **Libraries linked against :**
 - [Volk](https://github.com/gnuradio/volk), to simplify SIMD utilization

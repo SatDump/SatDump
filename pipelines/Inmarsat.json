@@ -159,6 +159,7 @@
             "soft": {
                 "psk_demod": {
                     "constellation": "oqpsk",
+                    "agc_rate": 0.2,
                     "symbolrate": 5.25e3, //10.5e3,
                     "rrc_alpha": 1.0,
                     "pll_bw": 0.01
@@ -184,14 +185,22 @@
                 }
             }
         }
-    }
-    // Aero C
-    /*"inmarsat_aero_84": {
+    },
+    // Aero-C
+    "inmarsat_aero_84": {
         "name": "Inmarsat Aero 8.4k",
         "live": true,
         "live_cfg": [
             [
                 1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
                 0
             ]
         ],
@@ -200,11 +209,33 @@
             "soft": {
                 "psk_demod": {
                     "constellation": "oqpsk",
+                    "agc_rate": 0.2,
                     "symbolrate": 4.2e3,
                     "rrc_alpha": 1.0,
                     "pll_bw": 0.01
                 }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "is_c": true,
+                    "oqpsk": true,
+                    "dummy_bits": 0,
+                    "inter_cols": 4,
+                    "inter_blocks": 16
+                }
+            },
+            "msg": {
+                "inmarsat_aero_parser": {
+                    "is_c": true,
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
             }
         }
-    },*/
+    }
 }
