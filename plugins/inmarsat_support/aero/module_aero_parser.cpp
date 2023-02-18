@@ -238,11 +238,11 @@ namespace inmarsat
 
             logger->info("Using input frames " + d_input_file);
 
-            uint8_t *voice_data;
-            AmbeDecoder *ambed;
-            int16_t *audio_out;
-            std::ofstream *file_wav;
-            dsp::WavWriter *wav_out;
+            uint8_t *voice_data = nullptr;
+            AmbeDecoder *ambed = nullptr;
+            int16_t *audio_out = nullptr;
+            std::ofstream *file_wav = nullptr;
+            dsp::WavWriter *wav_out = nullptr;
             size_t final_wav_size = 0;
             if (is_c_channel)
             {
