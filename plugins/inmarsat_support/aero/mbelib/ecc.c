@@ -15,6 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "ecc_const.h"
 

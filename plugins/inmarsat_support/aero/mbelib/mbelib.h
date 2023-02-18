@@ -18,7 +18,6 @@
 #ifndef _MBELIB_H
 #define _MBELIB_H
 
-#define _USE_MATH_DEFINES
 #define MBELIB_VERSION "1.3.0"
 
 struct mbe_parameters
