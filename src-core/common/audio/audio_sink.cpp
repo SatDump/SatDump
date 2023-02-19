@@ -31,15 +31,15 @@ namespace audio
 
     std::shared_ptr<AudioSink> get_default_sink()
     {
-        if (sink_registry.count("rtaudio"))
-        {
-            logger->info("Using RTAudio Sink");
-            return sink_registry["rtaudio"]();
-        }
-        else if (sink_registry.count("portaudio"))
+        if (sink_registry.count("portaudio"))
         {
             logger->info("Using PortAudio Sink");
             return sink_registry["portaudio"]();
+        }
+        else if (sink_registry.count("rtaudio"))
+        {
+            logger->info("Using RTAudio Sink");
+            return sink_registry["rtaudio"]();
         }
         else
             return std::make_shared<DummyAudioSink>();

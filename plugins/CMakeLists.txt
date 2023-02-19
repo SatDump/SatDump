@@ -299,3 +299,15 @@ option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" ON)
 if(PLUGIN_RTAUDIO_SINK)
     add_subdirectory(audio_sinks/rtaudio_audio_sink)
 endif()
+
+option(PLUGIN_PORTAUDIO_SINK "Enable PortAudio Audio Sink plugin" ON)
+
+if(PLUGIN_PORTAUDIO_SINK)
+    add_subdirectory(audio_sinks/portaudio_audio_sink)
+endif()
+
+option(PLUGIN_AAUDIO_SINK "Enable AAudio Audio Sink plugin" ON)
+
+if(PLUGIN_AAUDIO_SINK)
+    add_subdirectory(audio_sinks/aaudio_audio_sink)
+endif()

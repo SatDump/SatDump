@@ -3,6 +3,7 @@
 #include "rtaudio/RtAudio.h"
 #include "common/audio/audio_sink.h"
 #include <mutex>
+#include <vector>
 
 class RtAudioSink : public audio::AudioSink
 {
