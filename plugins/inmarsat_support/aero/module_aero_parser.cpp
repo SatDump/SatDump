@@ -6,6 +6,7 @@
 #include "common/utils.h"
 #include "decode_utils.h"
 #include "common/dsp/io/wav_writer.h"
+#include "common/audio/audio_sink.h"
 
 #define SIGNAL_UNIT_SIZE_BYTES 12
 
@@ -34,30 +35,6 @@ namespace inmarsat
                 do_save_files = parameters["save_files"].get<bool>();
             else
                 do_save_files = true;
-
-#ifdef ENABLE_AUDIO
-            if (rt_dac.getDeviceCount() < 1)
-            {
-                std::cout << "\nNo audio devices found!\n";
-            }
-
-            rt_parameters.deviceId = rt_dac.getDefaultOutputDevice();
-            rt_parameters.nChannels = 1;
-            rt_parameters.firstChannel = 0;
-            unsigned int sampleRate = 8000;
-            unsigned int bufferFrames = 256; // 256 sample frames
-            try
-            {
-                rt_dac.openStream(&rt_parameters, NULL, RTAUDIO_SINT16,
-                                  sampleRate, &bufferFrames, &AeroParserModule::audio_callback, (void *)this);
-                rt_dac.startStream();
-            }
-            catch (RtAudioError &e)
-            {
-                e.printMessage();
-                exit(0);
-            }
-#endif
         }
 
         std::vector<ModuleDataType> AeroParserModule::getInputTypes()
@@ -279,6 +256,15 @@ namespace inmarsat
                 wav_out->write_header(8000, 1);
             }
 
+            std::shared_ptr<audio::AudioSink> audio_sink;
+            if (input_data_type != DATA_FILE && audio::has_sink())
+            {
+                enable_audio = true;
+                audio_sink = audio::get_default_sink();
+                audio_sink->set_samplerate(8000);
+                audio_sink->start();
+            }
+
             time_t lastTime = 0;
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -306,14 +292,8 @@ namespace inmarsat
                     file_wav->write((char *)audio_out, 320 * 25);
                     final_wav_size += 320 * 25;
 
-#ifdef ENABLE_AUDIO
-                    if (input_data_type != DATA_FILE)
-                    {
-                        audio_mtx.lock();
-                        audio_buff.insert(audio_buff.end(), audio_out, audio_out + 160 * 25);
-                        audio_mtx.unlock();
-                    }
-#endif
+                    if (enable_audio)
+                        audio_sink->push_samples(audio_out, 160 * 25);
                 }
                 else
                 {
@@ -335,6 +315,9 @@ namespace inmarsat
                     logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
                 }
             }
+
+            if (enable_audio)
+                audio_sink->stop();
 
             if (is_c_channel)
             {

@@ -292,3 +292,10 @@ option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plug
 if(PLUGIN_SDDC_SDR_SUPPORT)
     add_subdirectory(sdr_sources/sddc_sdr_support)
 endif()
+
+# ######################
+option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" ON)
+
+if(PLUGIN_RTAUDIO_SINK)
+    add_subdirectory(audio_sinks/rtaudio_audio_sink)
+endif()

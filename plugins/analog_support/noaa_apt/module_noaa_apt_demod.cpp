@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 #include "common/dsp/io/wav_writer.h"
+#include "common/audio/audio_sink.h"
 
 namespace noaa_apt
 {
@@ -71,6 +72,15 @@ namespace noaa_apt
         if (output_data_type == DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);
 
+        std::shared_ptr<audio::AudioSink> audio_sink;
+        if (input_data_type != DATA_FILE && audio::has_sink())
+        {
+            enable_audio = true;
+            audio_sink = audio::get_default_sink();
+            audio_sink->set_samplerate(d_symbolrate);
+            audio_sink->start();
+        }
+
         int dat_size = 0;
         while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
         {
@@ -95,6 +105,9 @@ namespace noaa_apt
 
             volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535, dat_size);
 
+            if (enable_audio)
+                audio_sink->push_samples(output_wav_buffer, dat_size);
+
             if (output_data_type == DATA_FILE)
             {
                 data_out.write((char *)output_wav_buffer, dat_size * sizeof(int16_t));
@@ -116,6 +129,9 @@ namespace noaa_apt
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
             }
         }
+
+        if (enable_audio)
+            audio_sink->stop();
 
         // Finish up WAV
         if (output_data_type == DATA_FILE)
