@@ -7,6 +7,10 @@
 #include "pkt_structs.h"
 #include "acars_parser.h"
 
+#ifdef ENABLE_AUDIO
+#include "rtaudio/RtAudio.h"
+#endif
+
 namespace inmarsat
 {
     namespace aero
@@ -37,6 +41,38 @@ namespace inmarsat
             pkts::MessageUserDataFinal wip_user_data;
             acars::ACARSParser acars_parser;
             void process_pkt();
+
+#ifdef ENABLE_AUDIO
+            std::mutex audio_mtx;
+            std::vector<int16_t> audio_buff;
+
+            RtAudio rt_dac;
+            RtAudio::StreamParameters rt_parameters;
+
+            static int audio_callback(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData)
+            {
+                AeroParserModule *tthis = (AeroParserModule *)userData;
+                int16_t *buffer = (int16_t *)outputBuffer;
+
+                tthis->audio_mtx.lock();
+                int in_vec = tthis->audio_buff.size();
+                tthis->audio_mtx.unlock();
+
+                if (in_vec > nBufferFrames)
+                {
+                    tthis->audio_mtx.lock();
+                    memcpy(buffer, tthis->audio_buff.data(), nBufferFrames * sizeof(int16_t));
+                    tthis->audio_buff.erase(tthis->audio_buff.begin(), tthis->audio_buff.begin() + nBufferFrames);
+                    tthis->audio_mtx.unlock();
+                }
+                else
+                {
+                    memset(buffer, 0, nBufferFrames * sizeof(int16_t));
+                }
+
+                return 0;
+            }
+#endif
 
         public:
             AeroParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
