@@ -71,15 +71,15 @@ namespace satdump
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
-        splitter->set_output_2nd(false);
-        splitter->set_output_3rd(false);
+        splitter->add_output("record");
+        splitter->add_output("live");
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
         fft->avg_rate = 0.1;
         fft->start();
 
-        file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
+        file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
         file_sink->set_output_sample_type(dsp::CF_32);
         file_sink->start();
 

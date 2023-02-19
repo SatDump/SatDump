@@ -250,7 +250,7 @@ namespace dvb
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_output_2nd(show_fft);
+                    fft_splitter->set_enabled("fft", show_fft);
 
             ImGui::Spacing();
 

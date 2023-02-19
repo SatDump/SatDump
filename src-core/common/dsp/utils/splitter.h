@@ -1,6 +1,8 @@
 #pragma once
 
 #include "common/dsp/block.h"
+#include <map>
+#include <string>
 
 namespace dsp
 {
@@ -8,30 +10,28 @@ namespace dsp
     {
     private:
         std::mutex state_mutex;
-        bool enable_second = false;
-        bool enable_third = false;
         void work();
 
+        struct OutputCFG
+        {
+            std::shared_ptr<dsp::stream<complex_t>> output_stream;
+            bool enabled;
+        };
+
+        std::map<std::string, OutputCFG> outputs;
+
+        bool enable_main = true;
+
     public:
-        std::shared_ptr<dsp::stream<complex_t>> output_stream_2;
-        std::shared_ptr<dsp::stream<complex_t>> output_stream_3;
+        void add_output(std::string id);
+        void del_output(std::string id);
+        void reset_output(std::string id);
+        std::shared_ptr<dsp::stream<complex_t>> get_output(std::string id);
+        void set_enabled(std::string id, bool enable);
+        void set_main_enabled(bool enable);
 
     public:
         SplitterBlock(std::shared_ptr<dsp::stream<complex_t>> input);
-
-        void set_output_2nd(bool value)
-        {
-            state_mutex.lock();
-            enable_second = value;
-            state_mutex.unlock();
-        }
-
-        void set_output_3rd(bool value)
-        {
-            state_mutex.lock();
-            enable_third = value;
-            state_mutex.unlock();
-        }
 
         void stop_tmp()
         {

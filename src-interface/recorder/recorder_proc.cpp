@@ -163,9 +163,9 @@ namespace satdump
             }
 
             live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
-            splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
-            live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
-            splitter->set_output_3rd(true);
+            splitter->reset_output("live");
+            live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
+            splitter->set_enabled("live", true);
 
             is_processing = true;
         }
@@ -181,7 +181,7 @@ namespace satdump
         {
             logger->trace("Stop pipeline...");
             is_processing = false;
-            splitter->set_output_3rd(false);
+            splitter->set_enabled("live", false);
             live_pipeline->stop();
 
             if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
@@ -200,7 +200,7 @@ namespace satdump
 
     void RecorderApplication::start_recording()
     {
-        splitter->set_output_2nd(true);
+        splitter->set_enabled("record", true);
 
         const time_t timevalue = time(0);
         std::tm *timeReadable = gmtime(&timevalue);
@@ -227,7 +227,7 @@ namespace satdump
         if (is_recording)
         {
             file_sink->stop_recording();
-            splitter->set_output_2nd(false);
+            splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
         }

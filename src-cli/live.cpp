@@ -173,8 +173,8 @@ int main_live(int argc, char *argv[])
 
         // Init pipeline
         parameters["baseband_format"] = "f32";
-        parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
-        parameters["start_timestamp"] = (double)time(0); // Some pipelines need this
+        parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
+        parameters["start_timestamp"] = (double)time(0);     // Some pipelines need this
         std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
 
         ctpl::thread_pool live_thread_pool(8);
@@ -199,10 +199,10 @@ int main_live(int argc, char *argv[])
                 int fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
 
                 splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
-                splitter->set_output_2nd(true);
-                splitter->set_output_3rd(false);
+                splitter->add_output("fft");
+                splitter->set_enabled("fft", true);
                 final_stream = splitter->output_stream;
-                fft = std::make_unique<dsp::FFTPanBlock>(splitter->output_stream_2);
+                fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
                 fft->set_fft_settings(fft_size, samplerate, fft_rate);
                 if (parameters.contains("fft_avg"))
                     fft->avg_rate = parameters["fft_avg"].get<float>();
