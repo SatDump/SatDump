@@ -221,7 +221,8 @@
                     "oqpsk": true,
                     "dummy_bits": 0,
                     "inter_cols": 4,
-                    "inter_blocks": 16
+                    "inter_blocks": 16,
+                    "ber_thresold": 0.25
                 }
             },
             "msg": {

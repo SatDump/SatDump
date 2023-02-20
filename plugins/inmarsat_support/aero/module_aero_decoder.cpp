@@ -19,6 +19,8 @@ namespace inmarsat
             d_aero_interleaver_cols = parameters["inter_cols"].get<int>();
             d_aero_interleaver_blocks = parameters["inter_blocks"].get<int>();
 
+            d_aero_ber_thresold = parameters.contains("ber_thresold") ? parameters["ber_thresold"].get<float>() : 1.0;
+
             if (is_c_channel)
                 d_aero_sync_size = 52 * 2;
             else
@@ -196,36 +198,42 @@ namespace inmarsat
 
                     viterbi->work((int8_t *)depunc_out, buffer_vitdecoded, true);
 
-                    // Derand
-                    for (int i = 0; i < d_aero_info_size / 16; i++)
-                        buffer_vitdecoded[i] ^= randomization_seq[i];
+                    if (viterbi->ber() < d_aero_ber_thresold)
+                    {
+                        // Derand
+                        for (int i = 0; i < d_aero_info_size / 16; i++)
+                            buffer_vitdecoded[i] ^= randomization_seq[i];
 
-                    std::vector<uint8_t> voice_data(300), blocks_data(36);
-                    unpack_areo_c84_packet(buffer_vitdecoded, voice_data.data(), blocks_data.data());
+                        std::vector<uint8_t> voice_data(300), blocks_data(36);
+                        unpack_areo_c84_packet(buffer_vitdecoded, voice_data.data(), blocks_data.data());
 
-                    memcpy(buffer_vitdecoded, blocks_data.data(), blocks_data.size());
-                    memcpy(&buffer_vitdecoded[36], voice_data.data(), voice_data.size());
+                        memcpy(buffer_vitdecoded, blocks_data.data(), blocks_data.size());
+                        memcpy(&buffer_vitdecoded[36], voice_data.data(), voice_data.size());
 
-                    if (output_data_type == DATA_FILE)
-                        data_out.write((char *)buffer_vitdecoded, 336);
-                    else
-                        output_fifo->write((uint8_t *)buffer_vitdecoded, 336);
+                        if (output_data_type == DATA_FILE)
+                            data_out.write((char *)buffer_vitdecoded, 336);
+                        else
+                            output_fifo->write((uint8_t *)buffer_vitdecoded, 336);
+                    }
                 }
                 else // Normal
                 {
                     viterbi->work(buffer_deinterleaved, buffer_vitdecoded);
 
-                    // Derand
-                    for (int i = 0; i < d_aero_info_size / 16; i++)
+                    if (viterbi->ber() < d_aero_ber_thresold)
                     {
-                        buffer_vitdecoded[i] ^= randomization_seq[i];
-                        buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
-                    }
+                        // Derand
+                        for (int i = 0; i < d_aero_info_size / 16; i++)
+                        {
+                            buffer_vitdecoded[i] ^= randomization_seq[i];
+                            buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
+                        }
 
-                    if (output_data_type == DATA_FILE)
-                        data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
-                    else
-                        output_fifo->write((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);
+                        if (output_data_type == DATA_FILE)
+                            data_out.write((char *)buffer_vitdecoded, d_aero_info_size / 16);
+                        else
+                            output_fifo->write((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);
+                    }
                 }
 
                 if (input_data_type == DATA_FILE)

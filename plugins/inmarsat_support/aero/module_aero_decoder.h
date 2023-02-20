@@ -26,6 +26,8 @@ namespace inmarsat
             int d_aero_info_size;
             int d_aero_total_frm_size;
 
+            float d_aero_ber_thresold = 1.0;
+
             int8_t *soft_buffer;
             int8_t *buffer_deinterleaved;
             uint8_t *buffer_vitdecoded;
