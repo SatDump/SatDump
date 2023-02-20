@@ -68,7 +68,7 @@ void PortAudioSink::start()
 
 void PortAudioSink::stop()
 {
-    PaError err = Pa_StartStream(stream);
+    PaError err = Pa_StopStream(stream);
     if (err != paNoError)
         logger->error("Couldn't stop PortAudio! {:s}", Pa_GetErrorText(err));
 
