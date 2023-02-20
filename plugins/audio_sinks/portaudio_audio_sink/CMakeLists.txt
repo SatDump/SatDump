@@ -3,7 +3,7 @@ project(portaudio_audio_sink)
 
 find_library(PORTAUDIO_LIBRARY portaudio)
 
-if(PORTAUDIO_LIBRARY) # OR MSVC
+if(PORTAUDIO_LIBRARY OR MSVC)
     message("Building with RtAudio sink")
     file(GLOB_RECURSE portaudio_audio_sink *.cpp)
     add_library(portaudio_audio_sink SHARED ${portaudio_audio_sink})
