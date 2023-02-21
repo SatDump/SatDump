@@ -5,7 +5,7 @@
 #include "common/cli_utils.h"
 #include "common/dsp/io/file_sink.h"
 #include "init.h"
-#include "common/dsp/utils/splitter.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "webserver.h"
 

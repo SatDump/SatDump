@@ -6,7 +6,7 @@
 #include <atomic>
 #include "common/dsp/utils/agc.h"
 #include "common/dsp/io/file_source.h"
-#include "common/dsp/utils/splitter.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/utils/correct_iq.h"
 #include "common/dsp/resamp/smart_resampler.h"

@@ -7,7 +7,7 @@
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp/resamp/smart_resampler.h"
-#include "common/dsp/utils/splitter.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
