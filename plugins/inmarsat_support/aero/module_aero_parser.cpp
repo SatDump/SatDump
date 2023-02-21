@@ -344,6 +344,8 @@ namespace inmarsat
             ImGui::Spacing();
             ImGui::TextColored(ImColor(255, 0, 0), "Note : Still WIP!");
 
+            ImGui::Text("Do remember you should not keep nor share data that is\nnot intended for you.");
+
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
