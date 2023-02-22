@@ -257,7 +257,7 @@ namespace inmarsat
             }
 
             std::shared_ptr<audio::AudioSink> audio_sink;
-            if (input_data_type != DATA_FILE && audio::has_sink())
+            if (input_data_type != DATA_FILE && audio::has_sink() && is_c_channel)
             {
                 enable_audio = true;
                 audio_sink = audio::get_default_sink();
