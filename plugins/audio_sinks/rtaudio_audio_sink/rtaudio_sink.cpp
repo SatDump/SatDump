@@ -56,9 +56,9 @@ void RtAudioSink::start()
                           sampleRate, &bufferFrames, &RtAudioSink::audio_callback, (void *)this);
         rt_dac.startStream();
     }
-    catch (RtAudioError &e)
+    catch (std::exception &e)
     {
-        e.printMessage();
+        logger->error(e.what());
         exit(0);
     }
 }
