@@ -23,9 +23,9 @@
 int main(int argc, char *argv[])
 {
     initLogger();
-    logger->set_level(spdlog::level::level_enum::off);
+    logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
-    logger->set_level(spdlog::level::level_enum::trace);
+    logger->set_level(slog::LOG_TRACE);
 
     dsp::registerAllSinks();
     std::vector<dsp::SinkDescriptor> all_sinks = dsp::getAllAvailableSinks();

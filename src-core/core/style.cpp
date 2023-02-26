@@ -3,7 +3,7 @@
 #include "imgui/imgui_internal.h"
 //#include <config.h>
 //#include <options.h>
-#include <spdlog/spdlog.h>
+#include "logger.h"
 #include <filesystem>
 #include "core/module.h"
 #include "resources.h"

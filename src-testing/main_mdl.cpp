@@ -28,9 +28,9 @@ int main(int /*argc*/, char *argv[])
     initLogger();
 
 #if 0
-    logger->set_level(spdlog::level::level_enum::off);
+    logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
-    logger->set_level(spdlog::level::level_enum::trace);
+    logger->set_level(slog::LOG_TRACE);
 
     tileMap tile_map;
 
