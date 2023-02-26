@@ -7,7 +7,7 @@
 #endif
 
 #if !defined(SPDLOG_FMT_EXTERNAL) && !defined(SPDLOG_USE_STD_FORMAT)
-#    include <spdlog/fmt/bundled/format-inl.h>
+#    include <libs/fmt/bundled/format-inl.h>
 
 FMT_BEGIN_NAMESPACE
 namespace detail {

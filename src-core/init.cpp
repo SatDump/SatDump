@@ -57,17 +57,17 @@ namespace satdump
         {
             std::string log_level = config::main_cfg["satdump_general"]["log_level"]["value"];
             if (log_level == "trace")
-                setConsoleLevel(spdlog::level::level_enum::trace);
+                setConsoleLevel(slog::LOG_TRACE);
             else if (log_level == "debug")
-                setConsoleLevel(spdlog::level::level_enum::debug);
+                setConsoleLevel(slog::LOG_DEBUG);
             else if (log_level == "info")
-                setConsoleLevel(spdlog::level::level_enum::info);
+                setConsoleLevel(slog::LOG_INFO);
             else if (log_level == "warn")
-                setConsoleLevel(spdlog::level::level_enum::warn);
+                setConsoleLevel(slog::LOG_WARN);
             else if (log_level == "error")
-                setConsoleLevel(spdlog::level::level_enum::err);
+                setConsoleLevel(slog::LOG_ERROR);
             else if (log_level == "critical")
-                setConsoleLevel(spdlog::level::level_enum::critical);
+                setConsoleLevel(slog::LOG_CRIT);
         }
 
         loadPlugins();
