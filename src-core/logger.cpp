@@ -27,15 +27,21 @@ namespace slog
         time_t ct = time(0);
         std::tm *tmr = gmtime(&ct);
 
+        std::string timestamp =
+            (tmr->tm_hour < 10 ? "0" : "") + std::to_string(tmr->tm_hour) + ":" + // Hour
+            (tmr->tm_min < 10 ? "0" : "") + std::to_string(tmr->tm_min) + ":" +   // Min
+            (tmr->tm_sec < 10 ? "0" : "") + std::to_string(tmr->tm_sec) + " - " + // Sec
+            (tmr->tm_mday < 10 ? "0" : "") + std::to_string(tmr->tm_mday) + "/" + // Day
+            (tmr->tm_mon < 10 ? "0" : "") + std::to_string(tmr->tm_mon) + "/" +   // Mon
+            (tmr->tm_year < 10 ? "0" : "") + std::to_string(tmr->tm_year + 1900); // Year
+
         if (color)
-            return fmt::format("[{:d}:{:d}:{:d} - {:d}/{:d}/{:d}] {:s}({:s}) {:s}\033[m\n",
-                               tmr->tm_hour, tmr->tm_min, tmr->tm_sec,
-                               tmr->tm_mday, tmr->tm_mon, tmr->tm_year + 1900,
+            return fmt::format("[{:s}] {:s}({:s}) {:s}\033[m\n",
+                               timestamp.c_str(),
                                colors[m.lvl].c_str(), log_schar[m.lvl].c_str(), m.str.c_str());
         else
-            return fmt::format("[{:d}:{:d}:{:d} - {:d}/{:d}/{:d}] ({:s}) {:s}\n",
-                               tmr->tm_hour, tmr->tm_min, tmr->tm_sec,
-                               tmr->tm_mday, tmr->tm_mon, tmr->tm_year + 1900,
+            return fmt::format("[{:s}] ({:s}) {:s}\n",
+                               timestamp.c_str(),
                                log_schar[m.lvl].c_str(), m.str.c_str());
     }
 
