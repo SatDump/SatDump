@@ -33,8 +33,8 @@ namespace widgets
 
             for (LogLine &ll : all_lines)
             {
-                std::string timestamp = ll.str.substr(0, 22);
-                std::string text = ll.str.substr(22, ll.str.size());
+                std::string timestamp = ll.str.substr(0, 24);
+                std::string text = ll.str.substr(24, ll.str.size());
 
                 ImGui::Text("%s", timestamp.c_str());
                 ImGui::SameLine();
