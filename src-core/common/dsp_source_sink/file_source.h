@@ -17,7 +17,7 @@ protected:
 
     int current_samplerate = 0;
 
-    std::chrono::_V2::steady_clock::time_point start_time_point;
+    std::chrono::steady_clock::time_point start_time_point;
     std::chrono::duration<double> sample_time_period;
     int buffer_size = 8192;
     std::string file_path;
