@@ -8,6 +8,7 @@
 #include "common/dsp/io/baseband_interface.h"
 #include <thread>
 #include "imgui/pfd/widget.h"
+#include <chrono>
 
 class FileSource : public dsp::DSPSampleSource
 {
@@ -16,10 +17,13 @@ protected:
 
     int current_samplerate = 0;
 
-    int ns_to_wait;
+    std::chrono::_V2::steady_clock::time_point start_time_point;
+    std::chrono::duration<double> sample_time_period;
     int buffer_size = 8192;
     std::string file_path;
     bool iq_swap = false;
+
+    long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
 

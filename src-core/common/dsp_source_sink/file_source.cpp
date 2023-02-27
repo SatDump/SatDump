@@ -38,7 +38,12 @@ void FileSource::run_thread()
             output_stream->swap(read);
             file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
 
-            std::this_thread::sleep_for(std::chrono::nanoseconds(int(ns_to_wait)));
+            total_samples += read;
+            auto now = std::chrono::steady_clock::now();
+            auto expected_time = start_time_point + sample_time_period * total_samples;
+
+            if (expected_time > now)
+                std::this_thread::sleep_until(expected_time);
         }
         else
         {
@@ -60,7 +65,9 @@ void FileSource::start()
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
 
     DSPSampleSource::start();
-    ns_to_wait = (1e9 / current_samplerate) * float(buffer_size);
+    sample_time_period = std::chrono::duration<double>(1.0 / (double)current_samplerate);
+    start_time_point = std::chrono::steady_clock::now();
+    total_samples = 0;
 
     baseband_type_e = dsp::basebandTypeFromString(baseband_type);
     baseband_reader.set_file(file_path, baseband_type_e);
