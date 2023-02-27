@@ -329,6 +329,9 @@
                     "internal_cadu_size": 8272,
                     "internal_asm": "0x352EF853"
                 }
+            },
+            "products": {
+                "ldcm_instruments": {}
             }
         }
     }

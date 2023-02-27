@@ -109,6 +109,12 @@ if(PLUGIN_OCEANSAT OR PLUGINS_ALL)
     add_subdirectory(oceansat_support)
 endif()
 
+option(PLUGIN_LANDSAT "Enable the LandSat support plugin" OFF)
+
+if(PLUGIN_LANDSAT OR PLUGINS_ALL)
+    add_subdirectory(landsat_support)
+endif()
+
 option(PLUGIN_HIMAWARI "Enable the Himawari (HimawariCast) support plugin" OFF)
 
 if(PLUGIN_HIMAWARI OR PLUGINS_ALL)
