@@ -69,12 +69,28 @@ namespace slog
     }
 
 #if defined(_WIN32)
-    const int colors[] = {FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+    const int colors_win[] = {FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
                           FOREGROUND_GREEN | FOREGROUND_BLUE,
                           FOREGROUND_GREEN,
                           FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
                           FOREGROUND_RED | FOREGROUND_INTENSITY,
                           BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY};
+
+    int win_set_foreground_color(HANDLE &out_handle_,int attribs)
+    {
+        CONSOLE_SCREEN_BUFFER_INFO orig_buffer_info;
+        if (!::GetConsoleScreenBufferInfo(out_handle_, &orig_buffer_info))
+        {
+            // just return white if failed getting console info
+            return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+        }
+
+        // change only the foreground bits (lowest 4 bits)
+        auto new_attribs = static_cast<int>(attribs) | (orig_buffer_info.wAttributes & 0xfff0);
+        auto ignored = ::SetConsoleTextAttribute(out_handle_, static_cast<WORD>(new_attribs));
+        (void)(ignored);
+        return orig_buffer_info.wAttributes; // return orig attribs
+    }
 
     void WinOutSink::receive(LogMsg log)
     {
@@ -83,9 +99,14 @@ namespace slog
             int color_pos = 0;
             std::string s = format_log(log, false, &color_pos);
             std::string s1 = s.substr(0, color_pos);
-            std::string s2 = s.substr(color_pos, s.size() - color_pos);
-            // HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            fwrite(s.c_str(), sizeof(char), s.size(), stderr);
+            std::string s2 = s.substr(color_pos, s.size() - color_pos - 1);
+            std::string s3 = s.substr(s.size() - 1, 1);
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+            fwrite(s1.c_str(), sizeof(char), s1.size(), stderr);
+            int rst = win_set_foreground_color(hConsole, colors_win[log.lvl]);
+            fwrite(s2.c_str(), sizeof(char), s2.size(), stderr);
+            SetConsoleTextAttribute(hConsole, rst);
+            fwrite(s3.c_str(), sizeof(char), s3.size(), stderr);
         }
     }
 #endif
