@@ -35,7 +35,7 @@ namespace slog
     protected:
         LogLevel sink_lvl = LOG_TRACE;
 
-        std::string format_log(LogMsg m, bool color);
+        std::string format_log(LogMsg m, bool color, int *cpos = nullptr);
 
     public:
         virtual void receive(LogMsg log) = 0;
@@ -97,6 +97,14 @@ namespace slog
     public:
         void receive(LogMsg log);
     };
+
+#if defined(_WIN32)
+    class WinOutSink : public LoggerSink
+    {
+    public:
+        void receive(LogMsg log);
+    };
+#endif
 
 #ifdef __ANDROID__
     class AndroidSink : public LoggerSink

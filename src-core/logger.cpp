@@ -7,10 +7,16 @@
 #include <android/log.h>
 static char ag_LogTag[] = "SatDump";
 #endif
+#if defined(_WIN32)
+#include <windows.h>
+#include <wincon.h>
+#endif
 
 // Logger and sinks. We got a console sink and file sink
 #ifdef __ANDROID__
 std::shared_ptr<slog::AndroidSink> console_sink;
+#elif defined(_WIN32)
+std::shared_ptr<slog::WinOutSink> console_sink;
 #else
 std::shared_ptr<slog::StdOutSink> console_sink;
 #endif
@@ -20,9 +26,14 @@ SATDUMP_DLL std::shared_ptr<slog::Logger> logger;
 namespace slog
 {
     const std::string log_schar[] = {"T", "D", "I", "W", "E", "C"};
-    const std::string colors[] = {"\033[37m", "\033[36m", "\033[32m", "\033[33m\033[1m", "\033[31m\033[1m", "\033[1m\033[41m"};
+    const std::string colors[] = {"\033[37m",
+                                  "\033[36m",
+                                  "\033[32m",
+                                  "\033[33m\033[1m",
+                                  "\033[31m\033[1m",
+                                  "\033[1m\033[41m"};
 
-    std::string LoggerSink::format_log(LogMsg m, bool color)
+    std::string LoggerSink::format_log(LogMsg m, bool color, int *cpos)
     {
         time_t ct = time(0);
         std::tm *tmr = gmtime(&ct);
@@ -34,6 +45,9 @@ namespace slog
             (tmr->tm_mday < 10 ? "0" : "") + std::to_string(tmr->tm_mday) + "/" + // Day
             (tmr->tm_mon < 10 ? "0" : "") + std::to_string(tmr->tm_mon) + "/" +   // Mon
             (tmr->tm_year < 10 ? "0" : "") + std::to_string(tmr->tm_year + 1900); // Year
+
+        if (cpos != nullptr)
+            *cpos = timestamp.size() + 3;
 
         if (color)
             return fmt::format("[{:s}] {:s}({:s}) {:s}\033[m\n",
@@ -53,6 +67,28 @@ namespace slog
             fwrite(s.c_str(), sizeof(char), s.size(), stderr);
         }
     }
+
+#if defined(_WIN32)
+    const int colors[] = {FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+                          FOREGROUND_GREEN | FOREGROUND_BLUE,
+                          FOREGROUND_GREEN,
+                          FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+                          FOREGROUND_RED | FOREGROUND_INTENSITY,
+                          BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY};
+
+    void WinOutSink::receive(LogMsg log)
+    {
+        if (log.lvl >= sink_lvl)
+        {
+            int color_pos = 0;
+            std::string s = format_log(log, false, &color_pos);
+            std::string s1 = s.substr(0, color_pos);
+            std::string s2 = s.substr(color_pos, s.size() - color_pos);
+            // HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+            fwrite(s.c_str(), sizeof(char), s.size(), stderr);
+        }
+    }
+#endif
 
     FileSink::FileSink(std::string path)
     {
@@ -93,6 +129,7 @@ namespace slog
         ANDROID_LOG_ERROR,
         ANDROID_LOG_FATAL,
     };
+
     void AndroidSink::receive(LogMsg log)
     {
         if (log.lvl >= sink_lvl)
@@ -130,6 +167,8 @@ void initLogger()
 // Initialize everything
 #ifdef __ANDROID__
         console_sink = std::make_shared<slog::AndroidSink>();
+#elif defined(_WIN32)
+        console_sink = std::make_shared<slog::WinOutSink>();
 #else
         console_sink = std::make_shared<slog::StdOutSink>();
 #endif
