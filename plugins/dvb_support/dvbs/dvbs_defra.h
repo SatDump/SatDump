@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/dsp/block.h"
-#include "common/codings/deframing/dvbs_ts_deframer.h"
+#include "codings/dvbs_ts_deframer.h"
 
 namespace dvbs
 {

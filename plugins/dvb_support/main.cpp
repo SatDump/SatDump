@@ -4,6 +4,7 @@
 
 #include "dvbs/module_dvbs_demod.h"
 #include "dvbs2/module_dvbs2_demod.h"
+#include "dvbs2/module_s2_ts2tcp.h"
 
 class DVBSupport : public satdump::Plugin
 {
@@ -22,6 +23,7 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvb::DVBSDemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvb::DVBS2DemodModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvbs2::S2TStoTCPModule);
     }
 };
 
