@@ -5,6 +5,12 @@
 #include <vector>
 #include "resources.h"
 
+#define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
+#include "common/image/font/imstb_truetype.h"
+
+#include "font/utf8.h"
+#include <fstream>
+
 namespace image
 {
     template <typename T>
@@ -117,11 +123,11 @@ namespace image
 
     template <typename T>
     void Image<T>::draw_image(int c, Image<T> image, int x0, int y0)
-    {   
+    {
         // Get min height and width, mostly for safety
         int width = std::min<int>(d_width, x0 + image.width()) - x0;
         int height = std::min<int>(d_height, y0 + image.height()) - y0;
-        
+
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 if (y + y0 >= 0 && x + x0 >= 0)
@@ -161,6 +167,56 @@ namespace image
     }
 
     template <typename T>
+    void Image<T>::draw_text(int xs0, int ys0, T color[], int s, std::string text)
+    {
+        unsigned char *bitmap;
+        int w, h, CP = 0;
+        std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
+        char *c = cstr.data();
+        float SF = stbtt_ScaleForPixelHeight(&font.fontp, s);
+        int cx0, cx1, cy0, cy1;
+        int BL = SF * font.y1;
+
+        while (c < c + cstr.size())
+        {
+            try
+            {
+                utf8::peek_next(c, c + cstr.size());
+            }
+            catch (utf8::invalid_utf8 e)
+            {
+                break;
+            }
+
+            if (utf8::peek_next(c, c + cstr.size()) == '\0')
+                break;
+
+            stbtt_GetCodepointBox(&font.fontp, utf8::peek_next(c, c + cstr.size()), &cx0, &cy0, &cx1, &cy1);
+            stbtt_GetCodepointHMetrics(&font.fontp, utf8::peek_next(c, c + cstr.size()), &font.advance, &font.lsb);
+
+            bitmap = stbtt_GetCodepointBitmap(&font.fontp, 0, SF, utf8::peek_next(c, c + cstr.size()), &w, &h, 0, 0);
+            if (utf8::next(c, c + cstr.size()) == 0xA)
+            { // EOL
+                ys0 += SF * (font.asc - font.dsc + font.lg);
+                CP = 0;
+                continue;
+            }
+            for (int j = 0; j < h; ++j)
+                for (int i = 0; i < w; ++i)
+                {
+                    T m = bitmap[j * w + i];
+                    if (m != 0)
+                    {
+                        T col[] = {color[0] * m / 255, color[1] * m / 255, color[2] * m / 255};
+                        draw_pixel(i + CP + SF * font.lsb, j + BL - cy1 * SF + ys0, col);
+                    }
+                }
+
+            CP += SF * font.advance;
+        }
+    }
+
+        template <typename T>
     void Image<T>::draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text)
     {
         int pos = x0;
@@ -193,6 +249,27 @@ namespace image
         }
 
         delete[] colorf;
+    }
+
+    template <typename T>
+    void Image<T>::init_font(std::string font_path){
+        std::ifstream infile(font_path);
+        // get length of file
+        infile.seekg(0, std::ios::end);
+        size_t length = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+        uint8_t ttf_buffer[length];
+        // read file
+        infile.read((char *)ttf_buffer, length);
+
+        stbtt_fontinfo fontp;
+        stbtt_InitFont(&fontp, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
+
+        stbtt_GetFontBoundingBox(&fontp, &font.x0, &font.y0, &font.x1, &font.y1);
+        stbtt_GetFontVMetrics(&fontp, &font.asc, &font.dsc, &font.lg);
+
+        font.fontp = fontp;
+        infile.close();
     }
 
     template <typename T>

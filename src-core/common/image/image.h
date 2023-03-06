@@ -6,6 +6,16 @@
 #include <vector>
 #include <functional>
 
+#include "common/image/font/imstb_truetype.h"
+
+struct font_info{
+    struct stbtt_fontinfo fontp;
+
+    std::string path;
+
+    int x0, x1, y0, y1, advance, lsb, asc, dsc, lg;
+};
+
 namespace image
 {
     template <typename T>
@@ -23,10 +33,13 @@ namespace image
         size_t d_height = 0;
         int d_channels = 0;
 
+        font_info font;
+
     public:
         // Init
         void init(size_t width, size_t height, int channels); // Init image buffer
         void clear();                                         // Delete current buffer. To clear the image with a color instead, use fill()
+        void init_font(std::string font_path);
 
         // Operators
         T &operator[](size_t i) { return d_data[i]; }
@@ -74,7 +87,8 @@ namespace image
         void draw_line(int x0, int y0, int x1, int y1, T color[]);                                     // Draw a line with Bresenham's algorithm
         void draw_circle(int x0, int y0, int radius, T color[], bool fill = false);                    // Draw a circle with Bresenham's Midpoint algorithm
         void draw_image(int channel, Image<T> image, int x = 0, int y = 0);                            // Draw a B&W Image onto a channel
-        void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // Draw text onto the image
+        void draw_text(int xs0, int ys0, T color[], int size, std::string text); // Draw text onto the image
+        void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); //old
 
     public:
         Image();                                                     // Init null image
