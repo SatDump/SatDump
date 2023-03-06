@@ -14,6 +14,9 @@ struct font_info{
     std::string path;
 
     int x0, x1, y0, y1, advance, lsb, asc, dsc, lg;
+
+    std::vector<int> chars;
+    std::vector<unsigned char *> bitmaps;
 };
 
 namespace image
@@ -34,6 +37,7 @@ namespace image
         int d_channels = 0;
 
         font_info font;
+        unsigned char *bitmap;
 
     public:
         // Init

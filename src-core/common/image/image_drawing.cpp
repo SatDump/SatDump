@@ -169,38 +169,57 @@ namespace image
     template <typename T>
     void Image<T>::draw_text(int xs0, int ys0, T color[], int s, std::string text)
     {
-        unsigned char *bitmap;
+
         int w, h, CP = 0;
         std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
         char *c = cstr.data();
         float SF = stbtt_ScaleForPixelHeight(&font.fontp, s);
         int cx0, cx1, cy0, cy1;
         int BL = SF * font.y1;
+        int ch = 0;
 
         while (c < c + cstr.size())
         {
             try
             {
-                utf8::peek_next(c, c + cstr.size());
+                ch = utf8::next(c, c + cstr.size());
             }
             catch (utf8::invalid_utf8 e)
             {
                 break;
             }
 
-            if (utf8::peek_next(c, c + cstr.size()) == '\0')
+            if (ch == '\0')
                 break;
 
-            stbtt_GetCodepointBox(&font.fontp, utf8::peek_next(c, c + cstr.size()), &cx0, &cy0, &cx1, &cy1);
-            stbtt_GetCodepointHMetrics(&font.fontp, utf8::peek_next(c, c + cstr.size()), &font.advance, &font.lsb);
+            stbtt_GetCodepointBox(&font.fontp, ch, &cx0, &cy0, &cx1, &cy1);
+            stbtt_GetCodepointHMetrics(&font.fontp, ch, &font.advance, &font.lsb);
 
-            bitmap = stbtt_GetCodepointBitmap(&font.fontp, 0, SF, utf8::peek_next(c, c + cstr.size()), &w, &h, 0, 0);
-            if (utf8::next(c, c + cstr.size()) == 0xA)
+            if (ch == 0xA)
             { // EOL
                 ys0 += SF * (font.asc - font.dsc + font.lg);
                 CP = 0;
                 continue;
             }
+
+            bool f = false;
+            for (int k = 0; k < font.chars.size(); k++)
+                if (font.chars[k] == ch)
+                {
+                    f = true;
+                    bitmap = font.bitmaps[k];
+                    break;
+                }
+
+            if (!f)
+            {
+                bitmap = stbtt_GetCodepointBitmap(&font.fontp, 0, SF, ch, &w, &h, 0, 0);
+                font.chars.push_back(ch);
+                unsigned char cpy[w*h];
+                std::memcpy(cpy, bitmap, w*h);
+                font.bitmaps.push_back(cpy);
+            }
+
             for (int j = 0; j < h; ++j)
                 for (int i = 0; i < w; ++i)
                 {
@@ -211,12 +230,14 @@ namespace image
                         draw_pixel(i + CP + SF * font.lsb, j + BL - cy1 * SF + ys0, col);
                     }
                 }
+            if (!f)
+                stbtt_FreeBitmap(bitmap, font.fontp.userdata);
 
             CP += SF * font.advance;
         }
     }
 
-        template <typename T>
+    template <typename T>
     void Image<T>::draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text)
     {
         int pos = x0;
@@ -252,7 +273,8 @@ namespace image
     }
 
     template <typename T>
-    void Image<T>::init_font(std::string font_path){
+    void Image<T>::init_font(std::string font_path)
+    {
         std::ifstream infile(font_path);
         // get length of file
         infile.seekg(0, std::ios::end);
