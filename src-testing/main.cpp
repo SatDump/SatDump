@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
     uint8_t color[] = {255, 255, 255};
 
 #if 1
-    img.init_font(resources::getResourcePath("fonts/font.ttf"));
+    img.init_font(resources::getResourcePath("fonts/ComicSansMS3.ttf"));
     for (int i = 0; i < 1000; i ++)
-       img.draw_text(0, 0, color, 30, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+       img.draw_text(0, 0, color, 100, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 #endif    
 #if 0
     std::vector<image::Image<uint8_t>> font = image::make_font(30);

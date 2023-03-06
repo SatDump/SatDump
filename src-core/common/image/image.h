@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <utility>
 
 #include "common/image/font/imstb_truetype.h"
 
@@ -16,7 +17,8 @@ struct font_info{
     int x0, x1, y0, y1, advance, lsb, asc, dsc, lg;
 
     std::vector<int> chars;
-    std::vector<unsigned char *> bitmaps;
+    std::vector<unsigned char*> bitmaps;
+    std::vector<std::pair<int, int>> wh;
 };
 
 namespace image
@@ -36,8 +38,10 @@ namespace image
         size_t d_height = 0;
         int d_channels = 0;
 
+        // font rendering stuff
         font_info font;
         unsigned char *bitmap;
+        bool has_font = false;
 
     public:
         // Init

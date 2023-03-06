@@ -177,6 +177,7 @@ namespace image
         int cx0, cx1, cy0, cy1;
         int BL = SF * font.y1;
         int ch = 0;
+        bitmap = NULL;
 
         while (c < c + cstr.size())
         {
@@ -184,7 +185,7 @@ namespace image
             {
                 ch = utf8::next(c, c + cstr.size());
             }
-            catch (utf8::invalid_utf8 e)
+            catch (utf8::invalid_utf8)
             {
                 break;
             }
@@ -203,11 +204,13 @@ namespace image
             }
 
             bool f = false;
-            for (int k = 0; k < font.chars.size(); k++)
+            for (unsigned int k = 0; k < font.chars.size(); k++)
                 if (font.chars[k] == ch)
                 {
                     f = true;
                     bitmap = font.bitmaps[k];
+                    w = font.wh[k].first;
+                    h = font.wh[k].second;
                     break;
                 }
 
@@ -215,8 +218,9 @@ namespace image
             {
                 bitmap = stbtt_GetCodepointBitmap(&font.fontp, 0, SF, ch, &w, &h, 0, 0);
                 font.chars.push_back(ch);
-                unsigned char cpy[w*h];
-                std::memcpy(cpy, bitmap, w*h);
+                font.wh.push_back({w, h});
+                unsigned char *cpy = new unsigned char[w * h];
+                std::memcpy(cpy, bitmap, w * h);
                 font.bitmaps.push_back(cpy);
             }
 
@@ -226,8 +230,10 @@ namespace image
                     T m = bitmap[j * w + i];
                     if (m != 0)
                     {
-                        T col[] = {color[0] * m / 255, color[1] * m / 255, color[2] * m / 255};
-                        draw_pixel(i + CP + SF * font.lsb, j + BL - cy1 * SF + ys0, col);
+                        T col[] = {static_cast<unsigned char>(color[0] * m / 255),
+                                   static_cast<unsigned char>(color[1] * m / 255),
+                                   static_cast<unsigned char>(color[2] * m / 255)};
+                        draw_pixel(xs0 + i + CP + SF * font.lsb, j + BL - cy1 * SF + ys0, col);
                     }
                 }
             if (!f)
@@ -292,6 +298,7 @@ namespace image
 
         font.fontp = fontp;
         infile.close();
+        has_font = true;
     }
 
     template <typename T>

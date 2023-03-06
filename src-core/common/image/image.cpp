@@ -88,6 +88,12 @@ namespace image
     {
         if (has_data)
             delete[] d_data;
+        
+        if (has_font){
+            font.chars.clear();
+            font.bitmaps.clear();
+            font.wh.clear();
+        }
     }
 
     template <typename T>
