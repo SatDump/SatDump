@@ -9,6 +9,7 @@
 #include "common/image/font/imstb_truetype.h"
 
 #include "font/utf8.h"
+#include <iostream>
 #include <fstream>
 
 namespace image
@@ -170,33 +171,30 @@ namespace image
     void Image<T>::draw_text(int xs0, int ys0, T color[], int s, std::string text)
     {
 
-        int w, h, CP = 0;
+        int CP = 0;
         std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
         char *c = cstr.data();
         float SF = stbtt_ScaleForPixelHeight(&font.fontp, s);
-        int cx0, cx1, cy0, cy1;
         int BL = SF * font.y1;
-        int ch = 0;
-        bitmap = NULL;
+        std::ofstream outtest("testout.bin");
+
+        char_el info;
 
         while (c < c + cstr.size())
         {
             try
             {
-                ch = utf8::next(c, c + cstr.size());
+                info.char_nb = utf8::next(c, c + cstr.size());
             }
             catch (utf8::invalid_utf8)
             {
                 break;
             }
 
-            if (ch == '\0')
+            if (info.char_nb == '\0')
                 break;
 
-            stbtt_GetCodepointBox(&font.fontp, ch, &cx0, &cy0, &cx1, &cy1);
-            stbtt_GetCodepointHMetrics(&font.fontp, ch, &font.advance, &font.lsb);
-
-            if (ch == 0xA)
+            if (info.char_nb == 0xA)
             { // EOL
                 ys0 += SF * (font.asc - font.dsc + font.lg);
                 CP = 0;
@@ -205,42 +203,50 @@ namespace image
 
             bool f = false;
             for (unsigned int k = 0; k < font.chars.size(); k++)
-                if (font.chars[k] == ch)
+                if (font.chars[k].char_nb == info.char_nb)
                 {
                     f = true;
-                    bitmap = font.bitmaps[k];
-                    w = font.wh[k].first;
-                    h = font.wh[k].second;
+                    info = font.chars[k];
                     break;
                 }
 
             if (!f)
             {
-                bitmap = stbtt_GetCodepointBitmap(&font.fontp, 0, SF, ch, &w, &h, 0, 0);
-                font.chars.push_back(ch);
-                font.wh.push_back({w, h});
-                unsigned char *cpy = new unsigned char[w * h];
-                std::memcpy(cpy, bitmap, w * h);
-                font.bitmaps.push_back(cpy);
+                // bitmap = stbtt_GetGlyphBitmap(&font.fontp, 0, SF, info.char_nb, &info.w, &info.h, 0, 0);
+                info.glyph_nb = stbtt_FindGlyphIndex(&font.fontp, info.char_nb);
+                stbtt_GetGlyphBox(&font.fontp, info.glyph_nb, &info.cx0, &info.cy0, &info.cx1, &info.cy1);
+                stbtt_GetGlyphHMetrics(&font.fontp, info.glyph_nb, &info.advance, &info.lsb);
+                info.w = abs(info.cx1 - info.cx0) * SF;
+                info.h = abs(info.cy1 - info.cy0) * SF;
+                info.bitmap = (unsigned char *)malloc(info.w * info.h);
+                memset(info.bitmap, 0, info.w * info.h);
+                stbtt_MakeGlyphBitmap(&font.fontp, info.bitmap, info.w, info.h, info.w, SF, SF, info.glyph_nb);
+                font.chars.push_back(info);
             }
 
-            for (int j = 0; j < h; ++j)
-                for (int i = 0; i < w; ++i)
+            int pos = 0;
+            for (int j = 0; j < info.h; ++j)
+                for (int i = 0; i < info.w; ++i)
                 {
-                    T m = bitmap[j * w + i];
+                    T m = info.bitmap[pos];
+                    int x = xs0 + i + CP + SF * info.lsb, y = j + BL - info.cy1 * SF + ys0;
                     if (m != 0)
                     {
-                        T col[] = {static_cast<unsigned char>(color[0] * m / 255),
-                                   static_cast<unsigned char>(color[1] * m / 255),
-                                   static_cast<unsigned char>(color[2] * m / 255)};
-                        draw_pixel(xs0 + i + CP + SF * font.lsb, j + BL - cy1 * SF + ys0, col);
-                    }
-                }
-            if (!f)
-                stbtt_FreeBitmap(bitmap, font.fontp.userdata);
+                        float mf = m / 255.0;
+                        T col[] = {static_cast<unsigned char>((color[0] - channel(0)[pos]) * mf + channel(0)[pos]),
+                                   static_cast<unsigned char>((color[1] - channel(1)[pos]) * mf + channel(1)[pos]),
+                                   static_cast<unsigned char>((color[2] - channel(2)[pos]) * mf + channel(2)[pos])};
 
-            CP += SF * font.advance;
+                        draw_pixel(x, y, col);
+                    }
+                    pos++;
+                }
+            // if (!f)
+            // stbtt_FreeBitmap(bitmap, font.fontp.userdata);
+
+            CP += SF * info.advance;
         }
+        outtest.close();
     }
 
     template <typename T>
@@ -276,29 +282,6 @@ namespace image
         }
 
         delete[] colorf;
-    }
-
-    template <typename T>
-    void Image<T>::init_font(std::string font_path)
-    {
-        std::ifstream infile(font_path);
-        // get length of file
-        infile.seekg(0, std::ios::end);
-        size_t length = infile.tellg();
-        infile.seekg(0, std::ios::beg);
-        uint8_t ttf_buffer[length];
-        // read file
-        infile.read((char *)ttf_buffer, length);
-
-        stbtt_fontinfo fontp;
-        stbtt_InitFont(&fontp, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
-
-        stbtt_GetFontBoundingBox(&fontp, &font.x0, &font.y0, &font.x1, &font.y1);
-        stbtt_GetFontVMetrics(&fontp, &font.asc, &font.dsc, &font.lg);
-
-        font.fontp = fontp;
-        infile.close();
-        has_font = true;
     }
 
     template <typename T>

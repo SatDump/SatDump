@@ -9,16 +9,18 @@
 
 #include "common/image/font/imstb_truetype.h"
 
+struct char_el{
+    int char_nb;
+    int glyph_nb;
+    unsigned char* bitmap;
+    int cx0, cx1, cy0, cy1, advance, lsb, w, h;
+};
+
 struct font_info{
     struct stbtt_fontinfo fontp;
-
     std::string path;
-
-    int x0, x1, y0, y1, advance, lsb, asc, dsc, lg;
-
-    std::vector<int> chars;
-    std::vector<unsigned char*> bitmaps;
-    std::vector<std::pair<int, int>> wh;
+    int x0, x1, y0, y1, asc, dsc, lg, wdh, hht;
+    std::vector<char_el> chars;
 };
 
 namespace image
@@ -40,7 +42,6 @@ namespace image
 
         // font rendering stuff
         font_info font;
-        unsigned char *bitmap;
         bool has_font = false;
 
     public:
