@@ -17,6 +17,7 @@
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
 - [Nlhohmann's JSON](https://github.com/nlohmann/json), for JSON and CBOR encoding/parsing
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), alongside ImGui for native files dialogs
+- [UTF-8 CPP](https://utfcpp.sourceforge.net/), for UTF-8 handling
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 - [imgui_markdown](https://github.com/juliettef/imgui_markdown), to render this very file!
 
