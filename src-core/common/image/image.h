@@ -13,7 +13,7 @@ struct char_el{
     int char_nb;
     int glyph_nb;
     unsigned char* bitmap;
-    int cx0, cx1, cy0, cy1, advance, lsb, w, h;
+    int cx0, cx1, cy0, cy1, advance, lsb, w, h, ix0, ix1, iy0, iy1;
 };
 
 struct font_info{

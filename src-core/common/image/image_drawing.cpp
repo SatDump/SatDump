@@ -170,7 +170,8 @@ namespace image
     template <typename T>
     void Image<T>::draw_text(int xs0, int ys0, T color[], int s, std::string text)
     {
-
+        if (!has_font)
+            return;
         int CP = 0;
         std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
         char *c = cstr.data();
@@ -215,9 +216,10 @@ namespace image
                 // bitmap = stbtt_GetGlyphBitmap(&font.fontp, 0, SF, info.char_nb, &info.w, &info.h, 0, 0);
                 info.glyph_nb = stbtt_FindGlyphIndex(&font.fontp, info.char_nb);
                 stbtt_GetGlyphBox(&font.fontp, info.glyph_nb, &info.cx0, &info.cy0, &info.cx1, &info.cy1);
+                stbtt_GetGlyphBitmapBox(&font.fontp, info.glyph_nb, SF, SF, &info.ix0, &info.iy0, &info.ix1, &info.iy1);
                 stbtt_GetGlyphHMetrics(&font.fontp, info.glyph_nb, &info.advance, &info.lsb);
-                info.w = abs(info.cx1 - info.cx0) * SF;
-                info.h = abs(info.cy1 - info.cy0) * SF;
+                info.w = abs(info.ix1 - info.ix0);
+                info.h = abs(info.iy1 - info.iy0);
                 info.bitmap = (unsigned char *)malloc(info.w * info.h);
                 memset(info.bitmap, 0, info.w * info.h);
                 stbtt_MakeGlyphBitmap(&font.fontp, info.bitmap, info.w, info.h, info.w, SF, SF, info.glyph_nb);
@@ -236,7 +238,6 @@ namespace image
                         T col[] = {static_cast<unsigned char>((color[0] - channel(0)[pos]) * mf + channel(0)[pos]),
                                    static_cast<unsigned char>((color[1] - channel(1)[pos]) * mf + channel(1)[pos]),
                                    static_cast<unsigned char>((color[2] - channel(2)[pos]) * mf + channel(2)[pos])};
-
                         draw_pixel(x, y, col);
                     }
                     pos++;
