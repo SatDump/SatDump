@@ -43,6 +43,7 @@ namespace image
         // font rendering stuff
         font_info font;
         bool has_font = false;
+        uint8_t *ttf_buffer;
 
     public:
         // Init

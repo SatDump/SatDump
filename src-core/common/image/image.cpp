@@ -91,6 +91,7 @@ namespace image
         
         if (has_font){
             font.chars.clear();
+            delete[] ttf_buffer;
         }
     }
 
@@ -102,7 +103,7 @@ namespace image
         infile.seekg(0, std::ios::end);
         size_t length = infile.tellg();
         infile.seekg(0, std::ios::beg);
-        uint8_t ttf_buffer[length];
+        ttf_buffer = new uint8_t[length];
         // read file
         infile.read((char *)ttf_buffer, length);
 
