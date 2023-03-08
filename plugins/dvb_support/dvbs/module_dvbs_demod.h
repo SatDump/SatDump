@@ -6,7 +6,7 @@
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/demod/delay_one_imag.h"
 #include "viterbi_all.h"
-#include "common/codings/deframing/dvbs_ts_deframer.h"
+#include "codings/dvbs_ts_deframer.h"
 #include "dvbs_syms_to_soft.h"
 #include "dvbs_vit.h"
 #include "dvbs_defra.h"

@@ -40,8 +40,8 @@ nlohmann::ordered_json run_standalone_tests_offline(nlohmann::ordered_json confi
         if (catch_logs)
             command += " > \"" + output_path + "/logs.txt\"";
 
-        //spdlog::info("Running {:s}", name.c_str());
-        //spdlog::trace("Command {:s}", command.c_str());
+        logger->info("Running {:s}", name.c_str());
+        logger->trace("Command {:s}", command.c_str());
 
         auto test_start = std::chrono::system_clock::now();
         int return_value = system(command.c_str());
@@ -50,7 +50,7 @@ nlohmann::ordered_json run_standalone_tests_offline(nlohmann::ordered_json confi
         if (return_value == 256)
             return_value = 0;
 
-        //spdlog::info("Done! Return was {:d}. Time was {:f}", return_value, test_time.count() / 1e9);
+        logger->info("Done! Return was {:d}. Time was {:f}", return_value, test_time.count() / 1e9);
 
         report[name]["command"] = command;
         report[name]["time"] = test_time.count() / 1e9;
@@ -86,8 +86,13 @@ nlohmann::ordered_json run_singleinstance_tests_offline(nlohmann::ordered_json c
         if (!std::filesystem::exists(output_path))
             std::filesystem::create_directories(output_path);
 
+<<<<<<< HEAD
+        logger->info("Running {:s}", name.c_str());
+        // logger->trace("Command {:s}", command.c_str());
+=======
         //spdlog::info("Running {:s}", name.c_str());
         // spdlog::trace("Command {:s}", command.c_str());
+>>>>>>> c5bed0d0ef3fdee724114dee0a9f17e44917b2ed
 
         auto test_start = std::chrono::system_clock::now();
         // int return_value = system(command.c_str());
@@ -118,7 +123,11 @@ nlohmann::ordered_json run_singleinstance_tests_offline(nlohmann::ordered_json c
         // if (return_value == 256)
         //     return_value = 0;
 
+<<<<<<< HEAD
+        logger->info("Done! Time was {:f}", test_time.count() / 1e9);
+=======
         //spdlog::info("Done! Time was {:f}", test_time.count() / 1e9);
+>>>>>>> c5bed0d0ef3fdee724114dee0a9f17e44917b2ed
 
         // report[name]["command"] = command;
         report[name]["time"] = test_time.count() / 1e9;
