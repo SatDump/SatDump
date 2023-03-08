@@ -8,6 +8,7 @@
 #include "goes/grb/module_goes_grb_cadu_extractor.h"
 #include "goes/grb/module_goes_grb_data_decoder.h"
 #include "goes/mdl/module_goes_mdl_decoder.h"
+#include "goes/sd/module_goesn_sd_decoder.h"
 
 class GOESSupport : public satdump::Plugin
 {
@@ -30,6 +31,7 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::grb::GOESGRBCADUextractor);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::grb::GOESGRBDataDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::mdl::GOESMDLDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::GOESNSDDecoderModule);
     }
 };
 
