@@ -164,19 +164,19 @@ namespace goes
                     std::filesystem::create_directories(dir);
 
                 logger->info("Saving VIS...");
-                getChannel(0).save_png(dir + "/VIS.png");
+                getChannel(0).save_png(dir + "/VIS.png", false);
 
                 logger->info("Saving IR1...");
-                getChannel(1).save_png(dir + "/IR1.png");
+                getChannel(1).save_png(dir + "/IR1.png", false);
 
                 logger->info("Saving IR2...");
-                getChannel(2).save_png(dir + "/IR2.png");
+                getChannel(2).save_png(dir + "/IR2.png", false);
 
                 logger->info("Saving IR3...");
-                getChannel(3).save_png(dir + "/IR3.png");
+                getChannel(3).save_png(dir + "/IR3.png", false);
 
                 logger->info("Saving IR4...");
-                getChannel(4).save_png(dir + "/IR4.png");
+                getChannel(4).save_png(dir + "/IR4.png", false);
 
                 lines = 0;
                 image_vis.clear();
