@@ -4,6 +4,8 @@
 #include <vector>
 #include "common/image/image.h"
 
+#define FULL_BUF_SZ 200
+
 namespace goes
 {
     namespace sd
@@ -21,7 +23,7 @@ namespace goes
 
             std::vector<uint16_t> wip_scanline;
 
-            int last_status[2000];
+            int last_status[FULL_BUF_SZ];
             int images_lines = 0;
 
             bool should_save = false;

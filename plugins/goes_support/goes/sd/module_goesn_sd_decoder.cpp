@@ -90,6 +90,10 @@ namespace goes
                             output_frames[x * 60 + i] ^= pm_sequence[i];
 
                     data_out.write((char *)output_frames, nframes * SD_FRAME_SIZE);
+                    if (output_data_type == DATA_FILE)
+                        ; //
+                    else
+                        output_fifo->write(output_frames, nframes * SD_FRAME_SIZE);
                 }
 
                 if (input_data_type == DATA_FILE)

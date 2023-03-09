@@ -11,17 +11,17 @@ namespace goes
     {
         SDImagerReader::SDImagerReader()
         {
-            memset(last_status, 0, 2000 * sizeof(int));
+            memset(last_status, 0, FULL_BUF_SZ * sizeof(int));
         }
 
         void SDImagerReader::work(uint16_t *words)
         {
             int type = words[1];
 
-            memmove(last_status, &last_status[1], (2000 - 1) * sizeof(int));
-            last_status[2000 - 1] = type;
+            memmove(last_status, &last_status[1], (FULL_BUF_SZ - 1) * sizeof(int));
+            last_status[FULL_BUF_SZ - 1] = type;
 
-            int last_types = most_common(&last_status[0], &last_status[2000]);
+            int last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ]);
 
             if (last_types == 16 && images_lines > 10)
             {
@@ -145,7 +145,7 @@ namespace goes
 
             img.resize_bilinear(img.width(), img.height() * 1.75);
 
-            img.mirror(true, false);
+            // img.mirror(true, false);
 
             return img;
         }
