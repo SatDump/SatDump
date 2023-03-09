@@ -116,6 +116,8 @@ namespace goes
                 images_lines++;
 
                 wip_scanline.clear();
+
+                logger->info("Lines {:d}", lines);
             }
 
             wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);
