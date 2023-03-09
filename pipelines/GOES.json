@@ -503,7 +503,9 @@
             "frm": {
                 "goesn_sd_decoder": {}
             },
-            "products": {}
+            "products": {
+                "goes_sd_image_decoder": {}
+            }
         }
     }
 }
