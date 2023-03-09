@@ -1,4 +1,7 @@
 #include "sd_imager_reader.h"
+#include "logger.h"
+#include "common/utils.h"
+#include <filesystem>
 
 #define IMG_WIDTH 40000
 
@@ -6,9 +9,30 @@ namespace goes
 {
     namespace sd
     {
+        SDImagerReader::SDImagerReader()
+        {
+            memset(last_status, 0, 2000 * sizeof(int));
+        }
+
         void SDImagerReader::work(uint16_t *words)
         {
             int type = words[1];
+
+            memmove(last_status, &last_status[1], (2000 - 1) * sizeof(int));
+            last_status[2000 - 1] = type;
+
+            int last_types = most_common(&last_status[0], &last_status[2000]);
+
+            if (last_types == 16 && images_lines > 10)
+            {
+                logger->critical("END OF FRAME");
+                images_lines = 0;
+                should_save = true;
+            }
+            else if (last_types == 16)
+            {
+                images_lines = 0;
+            }
 
             if (type == 21)
             {
@@ -89,6 +113,7 @@ namespace goes
                 }
 
                 lines++;
+                images_lines++;
 
                 wip_scanline.clear();
             }
@@ -123,6 +148,43 @@ namespace goes
             img.mirror(true, false);
 
             return img;
+        }
+
+        void SDImagerReader::try_save(std::string directory, bool force)
+        {
+            if (should_save || force)
+            {
+                nsaved++;
+
+                std::string dir = directory + "/" + std::to_string(nsaved) + "/";
+
+                if (!std::filesystem::exists(dir))
+                    std::filesystem::create_directories(dir);
+
+                logger->info("Saving VIS...");
+                getChannel(0).save_png(dir + "/VIS.png");
+
+                logger->info("Saving IR1...");
+                getChannel(1).save_png(dir + "/IR1.png");
+
+                logger->info("Saving IR2...");
+                getChannel(2).save_png(dir + "/IR2.png");
+
+                logger->info("Saving IR3...");
+                getChannel(3).save_png(dir + "/IR3.png");
+
+                logger->info("Saving IR4...");
+                getChannel(4).save_png(dir + "/IR4.png");
+
+                lines = 0;
+                image_vis.clear();
+                image_ir1.clear();
+                image_ir2.clear();
+                image_ir3.clear();
+                image_ir4.clear();
+
+                should_save = false;
+            }
         }
     }
 }

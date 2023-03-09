@@ -47,6 +47,8 @@ namespace goes
 
             time_t lastTime = 0;
 
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
@@ -58,6 +60,8 @@ namespace goes
                 repackBytesTo10bits(frame, 60, frame_words);
 
                 img_reader.work(frame_words);
+
+                img_reader.try_save(directory);
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -76,25 +80,7 @@ namespace goes
             if (input_data_type == DATA_FILE)
                 data_in.close();
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
-
-            if (!std::filesystem::exists(directory))
-                std::filesystem::create_directory(directory);
-
-            logger->info("Saving VIS...");
-            img_reader.getChannel(0).save_png(directory + "/VIS.png");
-
-            logger->info("Saving IR1...");
-            img_reader.getChannel(1).save_png(directory + "/IR1.png");
-
-            logger->info("Saving IR2...");
-            img_reader.getChannel(2).save_png(directory + "/IR2.png");
-
-            logger->info("Saving IR3...");
-            img_reader.getChannel(3).save_png(directory + "/IR3.png");
-
-            logger->info("Saving IR4...");
-            img_reader.getChannel(4).save_png(directory + "/IR4.png");
+            img_reader.try_save(directory, true);
         }
 
         void SDImageDecoderModule::drawUI(bool window)

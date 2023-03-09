@@ -21,9 +21,18 @@ namespace goes
 
             std::vector<uint16_t> wip_scanline;
 
+            int last_status[2000];
+            int images_lines = 0;
+
+            bool should_save = false;
+
+            int nsaved = 0;
+
         public:
+            SDImagerReader();
             void work(uint16_t *words);
             image::Image<uint16_t> getChannel(int c);
+            void try_save(std::string directory, bool force = false);
         };
     }
 }
