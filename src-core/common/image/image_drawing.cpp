@@ -177,7 +177,6 @@ namespace image
         char *c = cstr.data();
         float SF = stbtt_ScaleForPixelHeight(&font.fontp, s);
         int BL = SF * font.y1;
-        std::ofstream outtest("testout.bin");
 
         char_el info;
 
@@ -206,6 +205,11 @@ namespace image
             for (unsigned int k = 0; k < font.chars.size(); k++)
                 if (font.chars[k].char_nb == info.char_nb)
                 {
+                    if (font.chars[k].size != s)
+                    {
+                        font.chars.erase(font.chars.begin() + k);
+                        break;
+                    }
                     f = true;
                     info = font.chars[k];
                     break;
@@ -221,6 +225,7 @@ namespace image
                 info.w = abs(info.ix1 - info.ix0);
                 info.h = abs(info.iy1 - info.iy0);
                 info.bitmap = (unsigned char *)malloc(info.w * info.h);
+                info.size = s;
                 memset(info.bitmap, 0, info.w * info.h);
                 stbtt_MakeGlyphBitmap(&font.fontp, info.bitmap, info.w, info.h, info.w, SF, SF, info.glyph_nb);
                 font.chars.push_back(info);
@@ -230,14 +235,15 @@ namespace image
             for (int j = 0; j < info.h; ++j)
                 for (int i = 0; i < info.w; ++i)
                 {
-                    T m = info.bitmap[pos];
+                    unsigned char m = info.bitmap[pos];
                     int x = xs0 + i + CP + SF * info.lsb, y = j + BL - info.cy1 * SF + ys0;
+                    int pos2 = y*width() + x;
                     if (m != 0)
                     {
                         float mf = m / 255.0;
-                        T col[] = {static_cast<unsigned char>((color[0] - channel(0)[pos]) * mf + channel(0)[pos]),
-                                   static_cast<unsigned char>((color[1] - channel(1)[pos]) * mf + channel(1)[pos]),
-                                   static_cast<unsigned char>((color[2] - channel(2)[pos]) * mf + channel(2)[pos])};
+                        T col[] = {static_cast<T>((color[0] - channel(0)[pos2]) * mf + channel(0)[pos2]),
+                                   static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]),
+                                   static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2])};
                         draw_pixel(x, y, col);
                     }
                     pos++;
@@ -247,7 +253,6 @@ namespace image
 
             CP += SF * info.advance;
         }
-        outtest.close();
     }
 
     template <typename T>

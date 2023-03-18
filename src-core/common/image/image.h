@@ -13,7 +13,7 @@ struct char_el{
     int char_nb;
     int glyph_nb;
     unsigned char* bitmap;
-    int cx0, cx1, cy0, cy1, advance, lsb, w, h, ix0, ix1, iy0, iy1;
+    int cx0, cx1, cy0, cy1, advance, lsb, w, h, ix0, ix1, iy0, iy1, size;
 };
 
 struct font_info{
@@ -72,6 +72,9 @@ namespace image
         void to_rgba();             // Convert this image from to RGBA (if it is B&W / RGB)
         Image<uint8_t> to8bits();   // Convert to 8-bits. Returns the current image if it's already 8-bits
         Image<uint16_t> to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
+
+        // Info access functions
+        bool font_ready(){return has_font;}
 
         // Image processing functions
         void fill_color(T color[]);                                          // Fill image with a single color
