@@ -57,6 +57,9 @@ namespace satdump
         correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
         correction_factors.push_back(products->images[0].image.width());
 
+        //font
+        current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
+
         asyncUpdate();
 
 #ifdef USE_OPENCL
@@ -179,7 +182,7 @@ namespace satdump
                                                   current_image,
                                                   color,
                                                   proj_func,
-                                                  cities_scale);
+                                                  cities_size);
             }
         }
 
@@ -615,7 +618,7 @@ namespace satdump
                     asyncUpdate();
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                ImGui::SliderFloat("Cities Scale", &cities_scale, 0.1, 10);
+                ImGui::SliderInt("Cities Font Size", &cities_size, 10, 500);
             }
 
             if (ImGui::CollapsingHeader("Projection"))

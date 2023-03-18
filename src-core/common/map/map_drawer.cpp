@@ -159,9 +159,10 @@ namespace map
     template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
-    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    void drawProjectedCapitalsGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size)
     {
-        std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
+        if (!map_image.font_ready())
+            return;
 
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -190,20 +191,21 @@ namespace map
                         if (cc.first == -1 || cc.first == -1)
                             continue;
 
-                        map_image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
-                        map_image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
-                        map_image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
+                        map_image.draw_line(cc.first - font_size*0.3, cc.second - font_size*0.3, cc.first + font_size*0.3, cc.second + font_size*0.3, color);
+                        map_image.draw_line(cc.first + font_size*0.3, cc.second - font_size*0.3, cc.first - font_size*0.3, cc.second + font_size*0.3, color);
+                        map_image.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
 
                         std::string name = mapStruct["properties"]["nameascii"];
-                        map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
+                        //map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
+                        map_image.draw_text(cc.first, cc.second + font_size*0.15, color, font_size, name);
                     }
                 }
             }
         }
     }
 
-    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
     void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
