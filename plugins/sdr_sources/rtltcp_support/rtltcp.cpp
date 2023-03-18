@@ -34,6 +34,7 @@ void RTLTCPSource::set_settings(nlohmann::json settings)
     if (is_open && is_started)
     {
         set_gains();
+        set_bias();
     }
 }
 
@@ -43,7 +44,7 @@ nlohmann::json RTLTCPSource::get_settings()
     d_settings["port"] = port;
     d_settings["gain"] = gain;
     d_settings["lna_agc"] = lna_agc_enabled;
-    d_settings["bias"] = lna_agc_enabled;
+    d_settings["bias"] = bias;
 
     return d_settings;
 }
@@ -150,6 +151,9 @@ void RTLTCPSource::drawControlUI()
         set_gains();
     if (!is_started)
         style::endDisabled();
+
+    if (ImGui::Checkbox("Bias-Tee", &bias))
+        set_bias();
 }
 
 void RTLTCPSource::set_samplerate(uint64_t samplerate)
