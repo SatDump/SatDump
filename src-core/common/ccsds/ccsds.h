@@ -19,6 +19,7 @@ namespace ccsds
 
         CCSDSHeader();
         CCSDSHeader(uint8_t *rawi);
+        void encodeHDR();
     };
 
     // Struct representing
@@ -26,6 +27,7 @@ namespace ccsds
     {
         CCSDSHeader header;
         std::vector<uint8_t> payload;
+        void encodeHDR();
     };
 
     // Parse CCSDS header

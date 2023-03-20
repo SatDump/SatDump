@@ -17,6 +17,7 @@ option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
+option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
     # Build settings
@@ -178,7 +179,7 @@ endif()
 add_subdirectory(plugins)
 
 # Install configuration
-if(NOT ANDROID)
+if((NOT ANDROID) AND ENABLE_INSTALL)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
     install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/satdump)
