@@ -109,6 +109,12 @@ if(PLUGIN_OCEANSAT OR PLUGINS_ALL)
     add_subdirectory(oceansat_support)
 endif()
 
+option(PLUGIN_LANDSAT "Enable the LandSat support plugin" OFF)
+
+if(PLUGIN_LANDSAT OR PLUGINS_ALL)
+    add_subdirectory(landsat_support)
+endif()
+
 option(PLUGIN_HIMAWARI "Enable the Himawari (HimawariCast) support plugin" OFF)
 
 if(PLUGIN_HIMAWARI OR PLUGINS_ALL)
@@ -139,22 +145,34 @@ if(PLUGIN_GCOM OR PLUGINS_ALL)
     add_subdirectory(gcom_support)
 endif()
 
-option(PLUGIN_TUBSAT "Enable the support plugin for the TUBSAT satellites (TUBIN, etc)" ON)
+option(PLUGIN_TUBSAT "Enable the support plugin for the TUBSAT satellites (TUBIN, etc)" OFF)
 
 if(PLUGIN_TUBSAT OR PLUGINS_ALL)
     add_subdirectory(tubsat_support)
 endif()
 
-option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" ON)
+option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
 
 if(PLUGIN_INMARSAT OR PLUGINS_ALL)
     add_subdirectory(inmarsat_support)
+endif()
+
+option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" OFF)
+
+if(PLUGIN_CUBESAT OR PLUGINS_ALL)
+    add_subdirectory(cubesat_support)
 endif()
 
 option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)
     add_subdirectory(others_support)
+endif()
+
+option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)" OFF)
+
+if(PLUGIN_DVB OR PLUGINS_ALL)
+    add_subdirectory(dvb_support)
 endif()
 
 # add_subdirectory(sample)
@@ -279,4 +297,23 @@ option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plug
 
 if(PLUGIN_SDDC_SDR_SUPPORT)
     add_subdirectory(sdr_sources/sddc_sdr_support)
+endif()
+
+# ######################
+option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" ON)
+
+if(PLUGIN_RTAUDIO_SINK)
+    add_subdirectory(audio_sinks/rtaudio_audio_sink)
+endif()
+
+option(PLUGIN_PORTAUDIO_SINK "Enable PortAudio Audio Sink plugin" ON)
+
+if(PLUGIN_PORTAUDIO_SINK)
+    add_subdirectory(audio_sinks/portaudio_audio_sink)
+endif()
+
+option(PLUGIN_AAUDIO_SINK "Enable AAudio Audio Sink plugin" ON)
+
+if(PLUGIN_AAUDIO_SINK)
+    add_subdirectory(audio_sinks/aaudio_audio_sink)
 endif()

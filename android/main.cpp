@@ -16,7 +16,7 @@ static EGLSurface g_EglSurface = EGL_NO_SURFACE;
 static EGLContext g_EglContext = EGL_NO_CONTEXT;
 static struct android_app *g_App = NULL;
 static bool g_Initialized = false;
-static char g_LogTag[] = "ImGuiExample";
+static char g_LogTag[] = "SatDump";
 
 // Forward declarations of helper functions
 static int ShowSoftKeyboardInput();

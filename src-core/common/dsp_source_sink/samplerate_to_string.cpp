@@ -1,5 +1,5 @@
 #include "samplerate_to_string.h"
-#include "spdlog/fmt/fmt.h"
+#include "libs/fmt/fmt.h"
 
 std::string formatSamplerateToString(uint64_t samplerate)
 {

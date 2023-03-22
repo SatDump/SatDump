@@ -218,11 +218,19 @@ namespace elektro
                         }
                         else if (sat_name == "GOMS4") // Not launched yet, but we can expect it to be the same anyway
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
+                            image_id = getHRITImageFilename(&scanTimestamp, "L4", channel);
                             elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L4", "221");
                             elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L4", "321");
                             elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L4", "231");
                             elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L4", "NC");
+                        }
+                        else if (sat_name == "GOMS5") // Not launched yet, but we can expect it to be the same anyway
+                        {
+                            image_id = getHRITImageFilename(&scanTimestamp, "L5", channel);
+                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L5", "221");
+                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L5", "321");
+                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L5", "231");
+                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L5", "NC");
                         }
                     }
 

@@ -32,7 +32,210 @@
                 "inmarsat_stdc_decoder": {}
             },
             "msg": {
-                "inmarsat_stdc_parser": {}
+                "inmarsat_stdc_parser": {
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
+            }
+        }
+    },
+    // Aero-P
+    "inmarsat_aero_6": {
+        "name": "Inmarsat Aero 0.6k (WIP)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "sdpsk_demod": {
+                    "symbolrate": 600,
+                    "rrc_alpha": 0.4
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "oqpsk": false,
+                    "dummy_bits": 0,
+                    "inter_cols": 6,
+                    "inter_blocks": 3
+                }
+            },
+            "msg": {
+                "inmarsat_aero_parser": {
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
+            }
+        }
+    },
+    "inmarsat_aero_12": {
+        "name": "Inmarsat Aero 1.2k (WIP)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "sdpsk_demod": {
+                    "symbolrate": 1200,
+                    "rrc_alpha": 0.4
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "oqpsk": false,
+                    "dummy_bits": 0,
+                    "inter_cols": 9,
+                    "inter_blocks": 2
+                }
+            },
+            "msg": {
+                "inmarsat_aero_parser": {
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
+            }
+        }
+    },
+    "inmarsat_aero_105": {
+        "name": "Inmarsat Aero 10.5k (WIP)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "agc_rate": 0.2,
+                    "symbolrate": 5.25e3, //10.5e3,
+                    "rrc_alpha": 1.0,
+                    "pll_bw": 0.01
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "oqpsk": true,
+                    "dummy_bits": 178,
+                    "inter_cols": 78,
+                    "inter_blocks": 1
+                }
+            },
+            "msg": {
+                "inmarsat_aero_parser": {
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
+            }
+        }
+    },
+    // Aero-C
+    "inmarsat_aero_84": {
+        "name": "Inmarsat Aero 8.4k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "agc_rate": 0.2,
+                    "symbolrate": 4.2e3,
+                    "rrc_alpha": 1.0,
+                    "pll_bw": 0.01
+                }
+            },
+            "frm": {
+                "inmarsat_aero_decoder": {
+                    "is_c": true,
+                    "oqpsk": true,
+                    "dummy_bits": 0,
+                    "inter_cols": 4,
+                    "inter_blocks": 16,
+                    "ber_thresold": 0.25
+                }
+            },
+            "msg": {
+                "inmarsat_aero_parser": {
+                    "is_c": true,
+                    "save_files": true
+                    //,"udp_sinks": {
+                    //"test": {
+                    //    "address": "0.0.0.0",
+                    //    "port": 8899
+                    //}
+                    //}
+                }
             }
         }
     }

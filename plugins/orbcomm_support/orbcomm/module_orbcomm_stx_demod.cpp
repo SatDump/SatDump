@@ -1,5 +1,5 @@
 #include "module_orbcomm_stx_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -166,7 +166,7 @@ namespace orbcomm
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_output_2nd(show_fft);
+                    fft_splitter->set_enabled("fft", show_fft);
 
             ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
             {

@@ -49,15 +49,6 @@ void AaroniaSource::set_gains()
     if (!is_started)
         return;
 
-    // Set the reference level of the receiver
-    if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/reflevel") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, d_level);
-    logger->debug("Set Aaronia reflevel to {:f}", d_level);
-
-    if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/gaincontrol") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_agc_str(d_agc_mode).c_str());
-    logger->debug("Set Aaronia AGC mode to {:d}", d_agc_mode);
-
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"calibration/preamp") == AARTSAAPI_OK)
     {
         if (d_enable_amp && d_enable_preamp)
@@ -68,7 +59,19 @@ void AaroniaSource::set_gains()
             AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Amp");
         else
             AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"None");
+
+        if (d_enable_preamp)
+            d_min_level = -38;
     }
+
+    // Set the reference level of the receiver
+    if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/reflevel") == AARTSAAPI_OK)
+        AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, d_level);
+    logger->debug("Set Aaronia reflevel to {:f}", d_level);
+
+    if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/gaincontrol") == AARTSAAPI_OK)
+        AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_agc_str(d_agc_mode).c_str());
+    logger->debug("Set Aaronia AGC mode to {:d}", d_agc_mode);
 }
 
 void AaroniaSource::set_others()
@@ -243,7 +246,7 @@ void AaroniaSource::drawControlUI()
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, -20.0f, 10.0f);
+    gain_changed |= ImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
     gain_changed |= ImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
                                                                             "Peak\0"
                                                                             "Power\0");

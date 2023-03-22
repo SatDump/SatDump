@@ -1,6 +1,6 @@
 #include "rtaudio_sdr.h"
 
-int RtAudioSource::callback_stereo(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData)
+int RtAudioSource::callback_stereo(void */*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)userData);
     int16_t *buffer = (int16_t *)inputBuffer;
@@ -10,7 +10,7 @@ int RtAudioSource::callback_stereo(void *outputBuffer, void *inputBuffer, unsign
     return 0;
 }
 
-int RtAudioSource::callback_mono(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData)
+int RtAudioSource::callback_mono(void */*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)userData);
     int16_t *buffer = (int16_t *)inputBuffer;

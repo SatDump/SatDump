@@ -14,6 +14,8 @@
 
 #include "core/opencl.h"
 
+#include "common/dsp/buffer.h"
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
@@ -55,17 +57,17 @@ namespace satdump
         {
             std::string log_level = config::main_cfg["satdump_general"]["log_level"]["value"];
             if (log_level == "trace")
-                setConsoleLevel(spdlog::level::level_enum::trace);
+                setConsoleLevel(slog::LOG_TRACE);
             else if (log_level == "debug")
-                setConsoleLevel(spdlog::level::level_enum::debug);
+                setConsoleLevel(slog::LOG_DEBUG);
             else if (log_level == "info")
-                setConsoleLevel(spdlog::level::level_enum::info);
+                setConsoleLevel(slog::LOG_INFO);
             else if (log_level == "warn")
-                setConsoleLevel(spdlog::level::level_enum::warn);
+                setConsoleLevel(slog::LOG_WARN);
             else if (log_level == "error")
-                setConsoleLevel(spdlog::level::level_enum::err);
+                setConsoleLevel(slog::LOG_ERROR);
             else if (log_level == "critical")
-                setConsoleLevel(spdlog::level::level_enum::critical);
+                setConsoleLevel(slog::LOG_CRIT);
         }
 
         loadPlugins();
@@ -110,6 +112,18 @@ namespace satdump
 
         // Products
         registerProducts();
+
+        // Set DSP buffer sizes if they have been changed
+        if (config::main_cfg.contains("advanced_settings"))
+        {
+            if (config::main_cfg["advanced_settings"].contains("default_buffer_size"))
+            {
+                int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
+                dsp::STREAM_BUFFER_SIZE = new_sz;
+                dsp::RING_BUF_SZ = new_sz;
+                logger->warn("DSP Buffer size was changed to {:d}", new_sz);
+            }
+        }
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});

@@ -1,7 +1,7 @@
 #include "sdrpp_server_client.h"
 #include <volk/volk.h>
 #include <cstring>
-#include <spdlog/spdlog.h>
+#include "logger.h"
 //#include <core.h>
 
 using namespace std::chrono_literals;
@@ -88,7 +88,7 @@ namespace server
             // Send
             if (syncRequired)
             {
-                spdlog::warn("Action requires resync");
+                logger->warn("Action requires resync");
                 auto waiter = awaitCommandAck(COMMAND_UI_ACTION);
                 sendCommand(COMMAND_UI_ACTION, size);
                 if (waiter->await(PROTOCOL_TIMEOUT_MS))
@@ -98,14 +98,14 @@ namespace server
                 }
                 else
                 {
-                    spdlog::error("Timeout out after asking for UI");
+                    logger->error("Timeout out after asking for UI");
                 }
                 waiter->handled();
-                spdlog::warn("Resync done");
+                logger->warn("Resync done");
             }
             else
             {
-                spdlog::warn("Action does not require resync");
+                logger->warn("Action does not require resync");
                 sendCommand(COMMAND_UI_ACTION, size);
             }
         }
@@ -204,7 +204,7 @@ namespace server
             }
             else if (_this->r_cmd_hdr->cmd == COMMAND_DISCONNECT)
             {
-                spdlog::error("Asked to disconnect by the server");
+                logger->error("Asked to disconnect by the server");
                 _this->serverBusy = true;
 
                 // Cancel waiters
@@ -251,7 +251,7 @@ namespace server
         }
         else if (_this->r_pkt_hdr->type == PACKET_TYPE_BASEBAND_COMPRESSED)
         {
-            size_t outCount = ZSTD_decompressDCtx(_this->dctx, _this->output->writeBuf, STREAM_BUFFER_SIZE, _this->r_pkt_data, _this->r_pkt_hdr->size - sizeof(PacketHeader));
+            size_t outCount = ZSTD_decompressDCtx(_this->dctx, _this->output->writeBuf, dsp::STREAM_BUFFER_SIZE, _this->r_pkt_data, _this->r_pkt_hdr->size - sizeof(PacketHeader));
             if (outCount)
             {
                 _this->output->swap(outCount);
@@ -259,11 +259,11 @@ namespace server
         }
         else if (_this->r_pkt_hdr->type == PACKET_TYPE_ERROR)
         {
-            spdlog::error("SDR++ Server Error: {0}", buf[sizeof(PacketHeader)]);
+            logger->error("SDR++ Server Error: {0}", buf[sizeof(PacketHeader)]);
         }
         else
         {
-            spdlog::error("Invalid packet type: {0}", _this->r_pkt_hdr->type);
+            logger->error("Invalid packet type: {0}", _this->r_pkt_hdr->type);
         }
 
         // Restart an async read
@@ -283,7 +283,7 @@ namespace server
         {
             if (!serverBusy)
             {
-                spdlog::error("Timeout out after asking for UI");
+                logger->error("Timeout out after asking for UI");
             };
             waiter->handled();
             return serverBusy ? -2 : -1;

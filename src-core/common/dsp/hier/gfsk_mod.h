@@ -1,9 +1,9 @@
 #pragma once
 
 #include "common/dsp/block.h"
-#include "common/dsp/vco.h"
-#include "common/dsp/firdes.h"
-#include "common/dsp/rational_resampler.h"
+#include "common/dsp/utils/vco.h"
+#include "common/dsp/filter/firdes.h"
+#include "common/dsp/resamp/rational_resampler.h"
 
 namespace dsp
 {

@@ -8,6 +8,10 @@
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
 #include "resources.h"
+#include "key_decryptor.h"
+#include "libs/miniz/miniz.h"
+#include "libs/miniz/miniz_zip.h"
+#include "init.h"
 
 namespace gk2a
 {
@@ -69,10 +73,60 @@ namespace gk2a
             logger->warn("All credits for decoding GK-2A encrypted xRIT files goes to @sam210723, and xrit-rx over on Github.");
             logger->warn("See https://vksdr.com/xrit-rx for a lot more information!");
 
-            if (resources::resourceExists("gk2a/EncryptionKeyMessage.bin"))
+            std::string key_path = "";
+
+            if (resources::resourceExists("gk2a/EncryptionKeyMessage.bin")) // Do we have it locally?
+            {
+                key_path = resources::getResourcePath("gk2a/EncryptionKeyMessage.bin");
+            }
+            else // We don't attempt to download and decrypt
+            {
+                std::string out_enc = satdump::user_path + "/encrypted_key.bin";
+                std::string out_dec = satdump::user_path + "/gk2a_keys.bin";
+
+                if (!std::filesystem::exists(out_dec))
+                {
+                    // Try to download
+                    std::string download_url = "http://web.archive.org/web/20210502102522if_/http://nmsc.kma.go.kr/resources/enhome/resources/satellites/coms/COMS_Decryption_Sample_Cpp.zip";
+                    std::string file_data;
+                    if (!perform_http_request(download_url, file_data))
+                    {
+                        logger->info("Downloaded COMS Decryption sample! Decompressing...");
+
+                        mz_zip_archive zipFile;
+                        MZ_CLEAR_OBJ(zipFile);
+
+                        // Extract ZIP
+                        if (mz_zip_reader_init_mem(&zipFile, file_data.c_str(), file_data.size(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+                        {
+                            if (mz_zip_reader_extract_file_to_file(&zipFile, "EncryptionKeyMessage_001F2904C905.bin", out_enc.c_str(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+                            {
+                                logger->info("Extracted!");
+
+                                // Decrypt
+                                if (!decrypt_key_file(out_enc, "001F2904C905", out_dec))
+                                    key_path = out_dec;
+
+                                if (std::filesystem::exists(out_enc))
+                                    std::filesystem::remove(out_enc);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        logger->info("Key Download failed!");
+                    }
+                }
+                else
+                {
+                    key_path = out_dec;
+                }
+            }
+
+            if (key_path != "")
             {
                 // Load decryption keys
-                std::ifstream keyFile(resources::getResourcePath("gk2a/EncryptionKeyMessage.bin"), std::ios::binary);
+                std::ifstream keyFile(key_path, std::ios::binary);
 
                 // Read key count
                 uint16_t key_count = 0;

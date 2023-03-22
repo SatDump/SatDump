@@ -1,10 +1,10 @@
 #pragma once
 
 #include "module_demod_base.h"
-#include "common/dsp/random.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/quadrature_demod.h"
-#include "common/dsp/clock_recovery_mm.h"
+#include "common/dsp/utils/random.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/demod/quadrature_demod.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
 
 namespace demod
 {
@@ -17,6 +17,7 @@ namespace demod
         std::shared_ptr<dsp::FIRBlock<float>> rrc;
         std::shared_ptr<dsp::MMClockRecoveryBlock<float>> rec;
 
+        bool d_basic_shaping = false;
         float d_rrc_alpha;
         int d_rrc_taps = 31;
 

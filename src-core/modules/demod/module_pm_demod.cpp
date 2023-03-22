@@ -1,5 +1,5 @@
 #include "module_pm_demod.h"
-#include "common/dsp/firdes.h"
+#include "common/dsp/filter/firdes.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 
@@ -67,7 +67,7 @@ namespace demod
                                                  d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
 
         if (d_resample_after_pll)
-            resampler = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
+            resampler = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
 
         // RRC
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(d_resample_after_pll ? resampler->output_stream : pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));

@@ -19,9 +19,9 @@ int main(int /*argc*/, char *argv[])
     // satdump::config::loadConfig("satdump_cfg.json", user_path);
 
     // We don't wanna spam with init this time around
-    logger->set_level(spdlog::level::level_enum::off);
+    logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
-    logger->set_level(spdlog::level::level_enum::trace);
+    logger->set_level(slog::LOG_TRACE);
 
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);

@@ -29,16 +29,21 @@ void FileSource::run_thread()
     {
         if (is_started)
         {
-            baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
+            int read = baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
 
             if (iq_swap)
-                for (int i = 0; i < buffer_size; i++)
+                for (int i = 0; i < read; i++)
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
 
-            output_stream->swap(buffer_size);
+            output_stream->swap(read);
             file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
 
-            std::this_thread::sleep_for(std::chrono::nanoseconds(int(ns_to_wait)));
+            total_samples += read;
+            auto now = std::chrono::steady_clock::now();
+            auto expected_time = start_time_point + sample_time_period * total_samples;
+
+            if (expected_time > now)
+                std::this_thread::sleep_until(expected_time);
         }
         else
         {
@@ -54,12 +59,15 @@ void FileSource::open()
 
 void FileSource::start()
 {
-    file_path = file_input.getPath();
+    if (is_ui)
+        file_path = file_input.getPath();
 
-    buffer_size = std::min<int>(STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
+    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
 
     DSPSampleSource::start();
-    ns_to_wait = (1e9 / current_samplerate) * float(buffer_size);
+    sample_time_period = std::chrono::duration<double>(1.0 / (double)current_samplerate);
+    start_time_point = std::chrono::steady_clock::now();
+    total_samples = 0;
 
     baseband_type_e = dsp::basebandTypeFromString(baseband_type);
     baseband_reader.set_file(file_path, baseband_type_e);
@@ -89,6 +97,8 @@ void FileSource::set_frequency(uint64_t frequency)
 
 void FileSource::drawControlUI()
 {
+    is_ui = true;
+
     if (is_started)
         style::beginDisabled();
 
@@ -109,6 +119,8 @@ void FileSource::drawControlUI()
                     select_sample_format = 1;
                 else if (hdr.type == "ziq")
                     select_sample_format = 4;
+                else if (hdr.type == "ziq2")
+                    select_sample_format = 5;
 
                 current_samplerate = hdr.samplerate;
 
@@ -122,10 +134,10 @@ void FileSource::drawControlUI()
                                                                              "s16\0"
                                                                              "s8\0"
                                                                              "u8\0"
-#ifdef BUILD_ZIQ
+                                                                             // #ifdef BUILD_ZIQ
                                                                              "ziq\0"
-#endif
-                     ) ||
+                                                                             // #endif
+                                                                             "ziq2\0") ||
         update_format)
     {
         if (select_sample_format == 0)
@@ -140,6 +152,8 @@ void FileSource::drawControlUI()
         else if (select_sample_format == 4)
             baseband_type = "ziq";
 #endif
+        else if (select_sample_format == 5)
+            baseband_type = "ziq2";
     }
 
     ImGui::Checkbox("IQ Swap", &iq_swap);

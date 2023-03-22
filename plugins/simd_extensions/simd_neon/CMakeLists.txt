@@ -20,20 +20,23 @@ endif()
 if(NEON_FOUND)
     message("Found NEON features, enabling NEON plugin")
 
-    set(SATDUMP_ROOT "/usr")
-
     file(GLOB_RECURSE simd_neon_CPPS *.cpp)
     add_library(simd_neon SHARED ${simd_neon_CPPS})
     target_link_libraries(simd_neon PUBLIC satdump_core)
-    target_include_directories(simd_neon PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(simd_neon PUBLIC src)
 
     if(UNIX OR ANDROID)
-        string(REPLACE " " ";" FINAL_FLAGS_NEON "${CMAKE_CXX_FLAGS} ${NEON_C_FLAGS}")
+        set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
     elseif(MSVC OR BUILD_MSVC)
-        string(REPLACE " " ";" FINAL_FLAGS_NEON "${CMAKE_CXX_FLAGS} ${NEON_C_FLAGS}")
+        set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
     endif()
 
-    target_compile_options(simd_neon PUBLIC ${FINAL_FLAGS_NEON})
+    # Enable on all files but main.cpp
+    foreach(_file ${simd_neon_CPPS})
+        if(NOT(${_file} MATCHES "main.cpp$"))
+            set_source_files_properties(${_file} PROPERTIES COMPILE_FLAGS "${FINAL_FLAGS_NEON}")
+        endif()
+    endforeach()
 
     install(TARGETS simd_neon DESTINATION share/satdump/plugins)
 else()

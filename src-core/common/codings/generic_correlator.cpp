@@ -34,9 +34,9 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
     }
     else if (d_modulation == dsp::OQPSK)
     {
-        syncwords.resize(8);
+        syncwords.resize(4);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 2; i++)
         {
             syncwords[i].resize(syncword_length);
             modulate_soft(syncwords[i].data(), syncword.data(), syncword_length);
@@ -51,22 +51,19 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
             last_q_oqpsk = back;
         }
 
-        for (int i = 4; i < 8; i++)
+        for (int i = 2; i < 4; i++)
         {
             syncwords[i].resize(syncword_length);
             modulate_soft(syncwords[i].data(), syncword.data(), syncword_length);
         }
 
-        rotate_float_buf(syncwords[1].data(), syncword_length, 90);
-        rotate_float_buf(syncwords[2].data(), syncword_length, 180);
-        rotate_float_buf(syncwords[3].data(), syncword_length, 270);
+        rotate_float_buf(syncwords[0].data(), syncword_length, 90);
+        rotate_float_buf(syncwords[1].data(), syncword_length, 270);
 
-        rotate_float_buf(syncwords[5].data(), syncword_length, 90);
-        rotate_float_buf(syncwords[6].data(), syncword_length, 180);
-        rotate_float_buf(syncwords[7].data(), syncword_length, 270);
+        rotate_float_buf(syncwords[3].data(), syncword_length, 180);
     }
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     try
     {
         corro = new float[max_frm_size];
@@ -152,7 +149,7 @@ CorrelatorGeneric::~CorrelatorGeneric()
 {
     volk_free(converted_buffer);
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     delete[] corro;
     delete[] matcho;
 
@@ -180,7 +177,7 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
     float corr = 0;
     int position = 0, best_sync = 0;
 
-#ifdef USE_OPENCL
+#ifdef USE_OPENCL1
     if (use_gpu)
     {
         clEnqueueWriteBuffer(cl_queue, buffer_input, true, 0, sizeof(float) * length, converted_buffer, 0, NULL, NULL);
@@ -231,8 +228,15 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
     }
     else if (d_modulation == dsp::QPSK || d_modulation == dsp::OQPSK)
     {
-        phase = (phase_t)(best_sync % 4);
-        swap = (best_sync / 4);
+        if (best_sync == 0)
+            phase = PHASE_90;
+        else if (best_sync == 1)
+            phase = PHASE_270;
+        else if (best_sync == 2)
+            phase = PHASE_0;
+        else if (best_sync == 3)
+            phase = PHASE_180;
+        swap = (best_sync / 2);
     }
 
     return position;

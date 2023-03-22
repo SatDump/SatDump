@@ -1,7 +1,7 @@
 #pragma once
 
 #include "modules/demod/module_demod_base.h"
-#include "common/dsp/quadrature_demod.h"
+#include "common/dsp/demod/quadrature_demod.h"
 
 // Handle the FM demodulation part of APT
 
@@ -19,6 +19,8 @@ namespace noaa_apt
         void init();
         void stop();
         void process();
+
+        bool enable_audio = false;
 
     public:
         static std::string getID();

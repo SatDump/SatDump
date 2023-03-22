@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(usrp_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(UHD_LIBRARY uhd)
 
@@ -19,7 +18,7 @@ if(UHD_LIBRARY OR MSVC) # OR ANDROID)
         target_link_libraries(usrp_sdr_support PUBLIC satdump_core ${UHD_LIBRARY})
     endif()
 
-    target_include_directories(usrp_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(usrp_sdr_support PUBLIC src)
 
     install(TARGETS usrp_sdr_support DESTINATION share/satdump/plugins)
 else()

@@ -61,7 +61,7 @@
     },
     "timestamp_offset": 0,
     "image_width": 909,
-    "yaw_offset": 1.8,
+    "yaw_offset": 2.8,
     "roll_offset": -0.01,
     "gcp_spacing_x": 50,
     "gcp_spacing_y": 50

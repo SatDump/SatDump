@@ -20,7 +20,7 @@ namespace products
         std::vector<ModuleDataType> getInputTypes();
         std::vector<ModuleDataType> getOutputTypes();
 
-        std::shared_ptr<widgets::LoggerSinkWidget<std::mutex>> logger_sink;
+        std::shared_ptr<widgets::LoggerSinkWidget> logger_sink;
 
     public:
         static std::string getID();

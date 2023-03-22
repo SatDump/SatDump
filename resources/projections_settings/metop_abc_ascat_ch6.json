@@ -33,6 +33,7 @@
         ]
     },
     "yaw_offset": -45,
+    "yaw_swap": false,
     "timestamp_offset": 0,
     "image_width": 256,
     "gcp_spacing_x": 1,

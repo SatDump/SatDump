@@ -1,10 +1,10 @@
 #pragma once
 
 #include "module_demod_base.h"
-#include "common/dsp/fir.h"
-#include "common/dsp/costas_loop.h"
-#include "common/dsp/clock_recovery_mm.h"
-#include "common/dsp/delay_one_imag.h"
+#include "common/dsp/filter/fir.h"
+#include "common/dsp/pll/costas_loop.h"
+#include "common/dsp/clock_recovery/clock_recovery_gardner.h"
+#include "common/dsp/demod/delay_one_imag.h"
 
 namespace demod
 {
@@ -15,7 +15,7 @@ namespace demod
         std::shared_ptr<dsp::CostasLoopBlock> pll;
         std::shared_ptr<dsp::CorrectIQBlock<complex_t>> post_pll_dc;
         std::shared_ptr<dsp::DelayOneImagBlock> delay;
-        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
+        std::shared_ptr<dsp::GardnerClockRecoveryBlock<complex_t>> rec;
 
         std::string constellation_type;
         bool is_bpsk, is_oqpsk;

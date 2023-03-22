@@ -60,8 +60,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_fsk_demod.h"
 #include "modules/demod/module_pm_demod.h"
 #include "modules/demod/module_psk_demod.h"
-#include "modules/demod/module_dvbs_demod.h"
-#include "modules/demod/module_dvbs2_demod.h"
+#include "modules/demod/module_sdpsk_demod.h"
 
 #include "modules/network/module_network_server.h"
 #include "modules/network/module_network_client.h"
@@ -74,8 +73,6 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/ccsds/module_ccsds_ldpc_decoder.h"
 #include "modules/ccsds/module_ccsds_turbo_r6_k8920_decoder.h"
 
-#include "modules/dvbs2/module_s2_ts2tcp.h"
-
 #include "modules/products/module_products_processor.h"
 
 void registerModules()
@@ -86,8 +83,7 @@ void registerModules()
     REGISTER_MODULE(demod::FSKDemodModule);
     REGISTER_MODULE(demod::PMDemodModule);
     REGISTER_MODULE(demod::PSKDemodModule);
-    REGISTER_MODULE(demod::DVBSDemodModule);
-    REGISTER_MODULE(demod::DVBS2DemodModule);
+    REGISTER_MODULE(demod::SDPSKDemodModule);
 
     // Network
     REGISTER_MODULE(network::NetworkServerModule);
@@ -102,9 +98,6 @@ void registerModules()
     REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSLDPCDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSTurboR6K8920DecoderModule);
-
-    // S2
-    REGISTER_MODULE(dvbs2::S2TStoTCPModule);
 
     // Products Processor. This one is a bit different!
     REGISTER_MODULE(products::ProductsProcessorModule);

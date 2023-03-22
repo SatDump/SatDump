@@ -22,6 +22,8 @@ protected:
     std::vector<uint64_t> available_samplerates;
     uint64_t current_samplerate = 0;
 
+    float d_min_level = -20;
+
     float d_level = -20;
     int d_usb_compression = 0;
     int d_agc_mode = 0;
@@ -55,13 +57,13 @@ protected:
                 if (cnt <= 0)
                     continue;
 
-                if (cnt > STREAM_BUFFER_SIZE)
+                if (cnt > dsp::STREAM_BUFFER_SIZE)
                 {
                     logger->critical("Spectran buffer too big!", cnt);
                     continue;
                 }
 
-                if (cnt > STREAM_BUFFER_SIZE)
+                if (cnt > dsp::STREAM_BUFFER_SIZE)
                 {
                     logger->critical("Spectran buffer too big!", cnt);
                     continue;

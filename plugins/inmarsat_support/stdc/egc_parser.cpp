@@ -15,6 +15,7 @@ namespace inmarsat
             v.pkt_no = msg["packet_sequence_number"].get<int>();
             v.timestamp = msg["timestamp"].get<double>();
             v.message = msg["message"].get<std::string>();
+            v.is_cont = msg["continuation"].get<bool>();
             return v;
         }
 
@@ -25,6 +26,8 @@ namespace inmarsat
             v["message"] = ms;
             if (v.contains("packet_sequence_number"))
                 v.erase("packet_sequence_number");
+            if (v.contains("data"))
+                v.erase("data");
             return v;
         }
 
@@ -32,44 +35,46 @@ namespace inmarsat
         {
             egc_t m = parse_to_msg(msg);
 
-            // if (wip_messages.count(m.msg_id) == 0)
-            //     wip_messages.insert({m.msg_id, std::vector<egc_t>()});
-
-            if (m.msg_id != current_id)
-            {
-                if (current_id != -1)
-                {
-                    std::string final_msg;
-                    for (auto &mp : wip_message)
-                        final_msg += mp.message;
-                    on_message(serialize_from_msg(wip_message[wip_message.size() - 1], final_msg));
-                    wip_message.clear();
-                }
-
-                current_id = m.msg_id;
-            }
+            if (wip_messages.count(m.msg_id) == 0)
+                wip_messages.insert({m.msg_id, std::vector<egc_t>()});
 
             bool has_id = false;
-            for (auto d : wip_message)
+            for (auto d : wip_messages[m.msg_id])
                 if (d.pkt_no == m.pkt_no && d.is_p2 == m.is_p2)
                     has_id = true;
 
             if (!has_id)
-                wip_message.push_back(m);
+                wip_messages[m.msg_id].push_back(m);
 
-            std::sort(wip_message.begin(), wip_message.end(), [](const egc_t &v1, const egc_t &v2)
-                      { return v1.pkt_no < v2.pkt_no && v2.is_p2; });
+            std::sort(wip_messages[m.msg_id].begin(), wip_messages[m.msg_id].end(), [](const egc_t &v1, const egc_t &v2)
+                      { return (v1.pkt_no * 2 + v1.is_p2) < (v2.pkt_no * 2 + v2.is_p2); });
+
+            if (m.is_p2 && !m.is_cont)
+            {
+                auto &fmsg = wip_messages[m.msg_id];
+                if (fmsg.size() > 0)
+                {
+                    std::string final_msg;
+                    for (auto &mp : fmsg)
+                        final_msg += mp.message;
+                    on_message(serialize_from_msg(fmsg[fmsg.size() - 1], final_msg));
+                    wip_messages.erase(m.msg_id);
+                }
+            }
         }
 
         void EGCMessageParser::force_finish()
         {
-            if (current_id != -1)
+            for (auto &fmsg : wip_messages)
             {
-                std::string final_msg;
-                for (auto &mp : wip_message)
-                    final_msg += mp.message;
-                on_message(serialize_from_msg(wip_message[wip_message.size() - 1], final_msg));
-                wip_message.clear();
+                if (fmsg.second.size() > 0)
+                {
+                    std::string final_msg;
+                    for (auto &mp : fmsg.second)
+                        final_msg += mp.message;
+                    on_message(serialize_from_msg(fmsg.second[fmsg.second.size() - 1], final_msg));
+                }
+                fmsg.second.clear();
             }
         }
 

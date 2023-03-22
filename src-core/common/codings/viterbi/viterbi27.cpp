@@ -28,10 +28,13 @@ namespace viterbi
         delete[] buffer_enco;
     }
 
-    void Viterbi27::work(int8_t *in, uint8_t *out)
+    void Viterbi27::work(int8_t *in, uint8_t *out, bool isHard)
     {
         // Convert to hard symbols
-        char_array_to_uchar(in, hard_buffer, d_frame_size * 2);
+        if (isHard)
+            memcpy(hard_buffer, in, d_frame_size * 2);
+        else
+            signed_soft_to_unsigned(in, hard_buffer, d_frame_size * 2);
 
         // Decode
         cc_decoder_in.work(hard_buffer, buffer_deco);
@@ -56,9 +59,10 @@ namespace viterbi
 
         float errors = 0;
         for (int i = 0; i < d_ber_test_size; i++)
-            errors += (hard_buffer[i] > 0) != (buffer_enco[i] > 0);
+            if (hard_buffer[i] != 128)
+                errors += (hard_buffer[i] > 127) != buffer_enco[i];
 
-        d_ber = (errors / ((float)d_ber_test_size * 2.0f)) * 4.0f;
+        d_ber = (errors / float(d_ber_test_size)) * 4.0f;
     }
 
     float Viterbi27::ber()

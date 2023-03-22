@@ -5,9 +5,10 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <fstream>
-#include "common/dsp/baseband_interface.h"
+#include "common/dsp/io/baseband_interface.h"
 #include <thread>
 #include "imgui/pfd/widget.h"
+#include <chrono>
 
 class FileSource : public dsp::DSPSampleSource
 {
@@ -16,10 +17,13 @@ protected:
 
     int current_samplerate = 0;
 
-    int ns_to_wait;
+    std::chrono::steady_clock::time_point start_time_point;
+    std::chrono::duration<double> sample_time_period;
     int buffer_size = 8192;
     std::string file_path;
     bool iq_swap = false;
+
+    long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
 
@@ -34,6 +38,8 @@ protected:
     float file_progress = 0;
 
     dsp::BasebandReader baseband_reader;
+
+    bool is_ui = false;
 
 public:
     FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)

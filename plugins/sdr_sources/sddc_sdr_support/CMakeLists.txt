@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(sddc_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 message("Building with SDDC support")
 
@@ -25,6 +24,6 @@ if(UNIX)
 endif()
 
 target_link_libraries(sddc_sdr_support PUBLIC satdump_core)
-target_include_directories(sddc_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+target_include_directories(sddc_sdr_support PUBLIC src)
 
 install(TARGETS sddc_sdr_support DESTINATION share/satdump/plugins)

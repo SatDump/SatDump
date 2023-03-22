@@ -15,18 +15,18 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "common/codings/dvb-s2/bbframe_descramble.h"
-#include "common/codings/dvb-s2/bbframe_bch.h"
-#include "common/codings/dvb-s2/bbframe_ldpc.h"
-#include "common/codings/dvb-s2/s2_deinterleaver.h"
-#include "common/dsp/constellation.h"
-#include "common/codings/dvb-s2/s2_scrambling.h"
-#include "modules/demod/dvbs2/s2_defs.h"
-#include "common/codings/dvb-s2/modcod_to_cfg.h"
+#include "codings/dvb-s2/bbframe_descramble.h"
+#include "codings/dvb-s2/bbframe_bch.h"
+#include "codings/dvb-s2/bbframe_ldpc.h"
+#include "codings/dvb-s2/s2_deinterleaver.h"
+#include "common/dsp/demod/constellation.h"
+#include "codings/dvb-s2/s2_scrambling.h"
+#include "dvbs2/s2_defs.h"
+#include "codings/dvb-s2/modcod_to_cfg.h"
 
-#include "common/dsp/rational_resampler.h"
-#include "common/dsp/firdes.h"
-#include "common/dsp/file_sink.h"
+#include "common/dsp/resamp/rational_resampler.h"
+#include "common/dsp/filter/firdes.h"
+#include "common/dsp/io/file_sink.h"
 
 #include "common/cli_utils.h"
 
@@ -89,7 +89,7 @@ namespace
     }
 }
 
-#include "common/codings/dvb-s2/bbframe_ts_parser.h"
+// #include "codings/dvb-s2/bbframe_ts_parser.h"
 
 int main(int argc, char *argv[])
 {

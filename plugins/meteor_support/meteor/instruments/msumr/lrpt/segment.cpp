@@ -4,6 +4,7 @@
 #include "tables.h"
 #include "idct.h"
 #include "common/ccsds/ccsds_time.h"
+#include <iostream>
 
 namespace meteor
 {
@@ -15,12 +16,12 @@ namespace meteor
             {
                 return QT == 0x00 && DC == 0x00 && AC == 0x00 && QFM == 0xFFF0 &&
                        valid; // &&
-                              //day_time == 0 && us_time == 0;
+                              // day_time == 0 && us_time == 0;
             }
 
             Segment::Segment(uint8_t *data, int length)
             {
-                //buffer = new bool[length * 8];
+                // buffer = new bool[length * 8];
                 buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
                                                { delete[] p; });
 
@@ -42,6 +43,8 @@ namespace meteor
                     QFM = data[11] << 8 | data[12];
                     QF = data[13];
 
+                    // printf("MCUN %d\n", MCUN);
+
                     decode(&data[14], length - 14);
 
                     valid = true;
@@ -55,19 +58,19 @@ namespace meteor
 
             Segment::~Segment()
             {
-                //delete[] buffer;
+                // delete[] buffer;
             }
 
             void Segment::decode(uint8_t *data, int length)
             {
-                //std::cout << "START " << length << std::endl;
-                //std::cout << "DC SEGBUFLEN " << length << std::endl;
+                // std::cout << "START " << length << std::endl;
+                // std::cout << "DC SEGBUFLEN " << length << std::endl;
                 convertToArray(buffer.get(), data, length);
                 length = length * 8;
                 std::array<int64_t, 64> qTable = GetQuantizationTable((float)QF);
                 int64_t lastDC = 0;
 
-                //std::cout << "START2" << std::endl;
+                // std::cout << "START2" << std::endl;
 
                 bool *buf = &buffer.get()[0];
 
@@ -77,23 +80,23 @@ namespace meteor
                     std::fill(&block[0], &block[64], 0);
                     int index = 1;
 
-                    //std::cout << "START3" << std::endl;
+                    // std::cout << "START3" << std::endl;
 
                     int64_t val = FindDC(buf, length);
 
-                    //std::cout << "START4" << std::endl;
+                    // std::cout << "START4" << std::endl;
 
-                    //std::cout << "DC " << i << " = " << val << std::endl;
+                    // std::cout << "DC " << i << " = " << val << std::endl;
 
                     if (val == CFC[0])
                     {
                         valid = false;
                         // Invalid
-                        //std::cout << "INVALID DC" << std::endl;
+                        // std::cout << "INVALID DC" << std::endl;
                         return;
                     }
 
-                    //std::cout << "VALID DC" << std::endl;
+                    // std::cout << "VALID DC" << std::endl;
 
                     lastDC += val;
                     block[0] = lastDC;
@@ -106,12 +109,12 @@ namespace meteor
                         if (vals[0] == CFC[0])
                         {
                             // Invalid
-                            //std::cout << "INVALID AC" << std::endl;
+                            //  std::cout << "INVALID AC" << std::endl;
                             valid = false;
                             return;
                         }
 
-                        //std::cout << "VALID AC" << std::endl;
+                        // std::cout << "VALID AC" << std::endl;
 
                         if (vals[0] != EOB[0] && index + vals.size() < 64)
                         {
@@ -123,11 +126,11 @@ namespace meteor
                             break;
                         }
 
-                        //std::cout << "VALID AC 2" << std::endl;
-                        //detect.write((char *)vals.data(), vals.size() * sizeof(int64_t));
+                        // std::cout << "VALID AC 2" << std::endl;
+                        //  detect.write((char *)vals.data(), vals.size() * sizeof(int64_t));
                     }
 
-                    //detect.write((char *)&block, 64 * sizeof(int64_t));
+                    // detect.write((char *)&block, 64 * sizeof(int64_t));
 
                     int64_t idctBlock[64];
                     std::fill(&idctBlock[0], &idctBlock[64], 0);
@@ -136,11 +139,11 @@ namespace meteor
                         idctBlock[x] = block[Zigzag[x]] * qTable[x];
                     }
 
-                    //std::cout << "Start IDCT" << std::endl;
+                    // std::cout << "Start IDCT" << std::endl;
 
                     Idct(idctBlock);
 
-                    //std::cout << "End IDCT" << std::endl;
+                    // std::cout << "End IDCT" << std::endl;
 
                     for (int x = 0; x < 64; x++)
                     {
@@ -153,7 +156,7 @@ namespace meteor
 
                         lines[x / 8][(i * 8) + (x % 8)] = (uint8_t)normalizedPixel;
                     }
-                    //std::cout << "fully decoded" << std::endl;
+                    //  std::cout << "fully decoded" << std::endl;
                 }
             }
         } // namespace lrpt

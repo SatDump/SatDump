@@ -458,7 +458,7 @@ namespace inmarsat
             return ret;
         }
 
-        std::string message_to_string(std::vector<uint8_t> buf, int presentation)
+        std::string message_to_string(std::vector<uint8_t> buf, int presentation, bool egc)
         {
             std::string ret = "";
 
@@ -492,7 +492,8 @@ namespace inmarsat
             //                      { return lhs == rhs && iswspace(lhs); });
             // ret.erase(it, ret.end());
 
-            ret.erase(ret.end() - 1, ret.end());
+            if (ret.size() > 0 && !egc)
+                ret.erase(ret.end() - 1, ret.end());
 
             return ret;
         }
