@@ -9,6 +9,11 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 
+extern "C"
+{
+#include "libs/aec/szlib.h"
+}
+
 namespace ldcm
 {
     namespace instruments
@@ -30,8 +35,11 @@ namespace ldcm
 
             // Demuxers
             ccsds::ccsds_weather::Demuxer demuxer_vcid5(1022, true, 0);
+            ccsds::ccsds_weather::Demuxer demuxer_vcid12(1022, true, 0);
 
             // std::ofstream output("file.ccsds");
+
+            //  std::ofstream idk_test_out(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/test_idk.bin", std::ios::binary);
 
             while (!data_in.eof())
             {
@@ -55,10 +63,41 @@ namespace ldcm
                             tirs_reader2.work(pkt);
                         else if (pkt.header.apid == 1794)
                             tirs_reader3.work(pkt);
-                        else
-                            logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+                        // else
+                        //     logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
                     }
                 }
+#if 0
+                else if (vcdu.vcid == 12) // OLI VCID
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    {
+                        logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+
+                        if (pkt.header.apid == 299)
+                        {
+                            std::vector<uint8_t> output_buf(6000 * 4);
+
+                            SZ_com_t opts;
+                            opts.bits_per_pixel = 16;
+                            opts.pixels_per_scanline = 6000;
+                            opts.pixels_per_block = 16;
+                            opts.options_mask = SZ_ALLOW_K13_OPTION_MASK | SZ_MSB_OPTION_MASK | SZ_NN_OPTION_MASK | SZ_RAW_OPTION_MASK;
+
+                            size_t outsize = output_buf.size();
+                            int off = 20 - 6;
+                            SZ_BufftoBuffDecompress(output_buf.data(), &outsize, &pkt.payload[off], pkt.payload.size() - off, &opts);
+
+                            pkt.payload = output_buf;
+
+                            idk_test_out.write((char *)pkt.header.raw, 6);
+                            pkt.payload.resize(10000 - 6);
+                            idk_test_out.write((char *)pkt.payload.data(), pkt.payload.size());
+                        }
+                    }
+                }
+#endif
 
                 progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
