@@ -184,7 +184,7 @@ namespace satdump
         float projections_tpers_azi = 0;
         /////////////
         float projections_azeq_lon = 0;
-        float projections_azeq_lat = 0;
+        float projections_azeq_lat = 90;
 
         bool projections_are_generating = false;
         void generateProjectionImage();

@@ -33,12 +33,19 @@ namespace satdump
             ImGui::Spacing();
 
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.96f);
-            ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
+            /*ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "Mercator\0"
                                                                              "Stereo\0"
                                                                              "Satellite (TPERS)\0"
                                                                              "Azimuthal Equidistant\0");
+                                                                             */
 
+            ImGui::Combo("##targetproj", &projections_current_selected_proj, "Azimuthal Equidistant\0"
+                                                                             "Azimuthal Equidistant\0"
+                                                                             "Azimuthal Equidistant\0"
+                                                                             "Azimuthal Equidistant\0"
+                                                                             "Azimuthal Equidistant\0");
+            /*
             if (projections_current_selected_proj == 0)
             {
                 ImGui::Text("Top Left Coordinates :");
@@ -70,7 +77,9 @@ namespace satdump
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
             }else if (projections_current_selected_proj == 4)
+            */
             {
+                projections_current_selected_proj = 4;
                 ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
                 ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
