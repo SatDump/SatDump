@@ -5,6 +5,7 @@
 #include "dll_export.h"
 #include <vector>
 #include <fstream>
+#include <mutex>
 
 namespace slog
 {
@@ -46,6 +47,7 @@ namespace slog
     {
     private:
         LogLevel logger_lvl = LOG_TRACE;
+        std::mutex sink_mtx;
         std::vector<std::shared_ptr<LoggerSink>> sinks;
 
     public:

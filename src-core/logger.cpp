@@ -70,13 +70,13 @@ namespace slog
 
 #if defined(_WIN32)
     const int colors_win[] = {FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
-                          FOREGROUND_GREEN | FOREGROUND_BLUE,
-                          FOREGROUND_GREEN,
-                          FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
-                          FOREGROUND_RED | FOREGROUND_INTENSITY,
-                          BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY};
+                              FOREGROUND_GREEN | FOREGROUND_BLUE,
+                              FOREGROUND_GREEN,
+                              FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+                              FOREGROUND_RED | FOREGROUND_INTENSITY,
+                              BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY};
 
-    int win_set_foreground_color(HANDLE &out_handle_,int attribs)
+    int win_set_foreground_color(HANDLE &out_handle_, int attribs)
     {
         CONSOLE_SCREEN_BUFFER_INFO orig_buffer_info;
         if (!::GetConsoleScreenBufferInfo(out_handle_, &orig_buffer_info))
@@ -133,12 +133,14 @@ namespace slog
 
     void Logger::log(LogLevel lvl, std::string v)
     {
+        sink_mtx.lock();
         LogMsg m;
         m.str = v;
         m.lvl = lvl;
         if (m.lvl >= logger_lvl)
             for (auto &l : sinks)
                 l->receive(m);
+        sink_mtx.unlock();
     }
 
 #ifdef __ANDROID__
@@ -168,16 +170,20 @@ namespace slog
 
     void Logger::add_sink(std::shared_ptr<LoggerSink> sink)
     {
+        sink_mtx.lock();
         sinks.push_back(sink);
+        sink_mtx.unlock();
     }
 
     void Logger::del_sink(std::shared_ptr<LoggerSink> sink)
     {
+        sink_mtx.lock();
         auto it = std::find_if(sinks.rbegin(), sinks.rend(), [&sink](std::shared_ptr<LoggerSink> &c)
                                { return sink.get() == c.get(); })
                       .base();
         if (it != sinks.end())
             sinks.erase(it);
+        sink_mtx.unlock();
     }
 }
 
