@@ -33,19 +33,13 @@ namespace satdump
             ImGui::Spacing();
 
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.96f);
-            /*ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
+            ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "Mercator\0"
                                                                              "Stereo\0"
                                                                              "Satellite (TPERS)\0"
                                                                              "Azimuthal Equidistant\0");
-                                                                             */
 
-            ImGui::Combo("##targetproj", &projections_current_selected_proj, "Azimuthal Equidistant\0"
-                                                                             "Azimuthal Equidistant\0"
-                                                                             "Azimuthal Equidistant\0"
-                                                                             "Azimuthal Equidistant\0"
-                                                                             "Azimuthal Equidistant\0");
-            /*
+                                                                             
             if (projections_current_selected_proj == 0)
             {
                 ImGui::Text("Top Left Coordinates :");
@@ -77,9 +71,7 @@ namespace satdump
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
             }else if (projections_current_selected_proj == 4)
-            */
             {
-                projections_current_selected_proj = 4;
                 ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
                 ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
@@ -387,7 +379,7 @@ namespace satdump
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::InputFloat("Cities Scale##Projs", &projections_cities_scale);
+            ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
         }
 
         if (projections_should_refresh) // Refresh in the UI thread!
@@ -444,6 +436,7 @@ namespace satdump
 
         // Setup final image
         projected_image_result.init(projections_image_width, projections_image_height, 3);
+        projected_image_result.init_font(resources::getResourcePath("fonts/font.ttf"));
 
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;

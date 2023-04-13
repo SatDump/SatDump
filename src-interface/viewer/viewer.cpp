@@ -6,6 +6,7 @@
 #include "products/dataset.h"
 #include "common/utils.h"
 #include "error.h"
+#include "resources.h"
 
 void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komówki w tabelii na wybrany kolor w RGBA
 {
@@ -23,6 +24,13 @@ namespace satdump
         {
             if (config::main_cfg["user"]["viewer_state"].contains("panel_ratio"))
                 panel_ratio = config::main_cfg["user"]["viewer_state"]["panel_ratio"].get<float>();
+            
+            if (config::main_cfg["user"]["viewer_state"].contains("borders_color")){
+                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["borders_color"].get<std::vector<float>>();
+                color_borders.x = color[0];
+                color_borders.y = color[1];
+                color_borders.z = color[2];
+            }
 
             if (config::main_cfg["user"]["viewer_state"].contains("projections"))
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
@@ -121,6 +129,7 @@ namespace satdump
     ViewerApplication::~ViewerApplication()
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
+        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};  
     }
 
     ImRect ViewerApplication::renderHandler(ProductsHandler &ph, int index)
