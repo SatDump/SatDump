@@ -16,21 +16,31 @@
 #include "resources.h"
 #include <vector>
 
+#include "common/codings/reedsolomon/reedsolomon.h"
+#include <fstream>
+
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint8_t> img = image::Image<uint8_t>(10000, 300, 3);
-    uint8_t color[] = {255, 255, 255};
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_out(argv[2], std::ios::binary);
 
-#if 1
-    img.init_font(resources::getResourcePath("fonts/ComicSansMS3.ttf"));
-    for (int i = 0; i < 100; i ++)
-       img.draw_text(0, 0, color, 500, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-#else
-    std::vector<image::Image<uint8_t>> font = image::make_font(500);
-    for (int i = 0; i < 100; i ++)
-        img.draw_text(0, 0, color, font, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-#endif   
-    img.save_png("test_font.png");
+    reedsolomon::ReedSolomon reed_solomon(reedsolomon::RS223);
+
+    int errors[5];
+
+    uint8_t cadu[1279];
+    while (!data_in.eof())
+    {
+        data_in.read((char *)cadu, 1279);
+
+        reed_solomon.decode_interlaved(&cadu[4], true, 5, errors);
+
+        for (int i = 0; i < 5; i++)
+            if (errors[i] != 0)
+                printf("ERROR\n");
+
+        data_out.write((char *)cadu, 1279);
+    }
 }
