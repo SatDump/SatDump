@@ -56,6 +56,7 @@ protected:
                 volk_32f_s32f_convert_8i(sample_buffer_8, (float *)input_stream->readBuf, 127.0f, nsamples * 2);
                 if (bladerf_sync_tx(bladerf_dev_obj, sample_buffer_8, nsamples, &meta, 4000) != 0)
                     std::this_thread::sleep_for(std::chrono::seconds(1));
+                input_stream->flush();
             }
 
             delete[] sample_buffer_8;
@@ -70,6 +71,7 @@ protected:
                 volk_32f_s32f_convert_16i(sample_buffer, (float *)input_stream->readBuf, 4096.0f, nsamples * 2);
                 if (bladerf_sync_tx(bladerf_dev_obj, sample_buffer, nsamples, &meta, 4000) != 0)
                     std::this_thread::sleep_for(std::chrono::seconds(1));
+                input_stream->flush();
             }
 
             delete[] sample_buffer;
