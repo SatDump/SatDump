@@ -4,6 +4,8 @@
 #include "offline.h"
 #include "record.h"
 
+#include "sdr_probe.h"
+
 int main(int argc, char *argv[])
 {
     // Init logger
@@ -27,6 +29,12 @@ int main(int argc, char *argv[])
         if (ret != 0)
             return ret;
     }
+    //////////////
+    else if (std::string(argv[1]) == "sdr_probe")
+    {
+        sdr_probe();
+    }
+    //////////////
     else
     {
         int ret = main_offline(argc, argv);

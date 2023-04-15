@@ -116,6 +116,7 @@ int main_live(int argc, char *argv[])
         uint64_t frequency;
         uint64_t timeout;
         std::string handler_id;
+        uint64_t hdl_dev_id = 0;
 
         try
         {
@@ -123,6 +124,8 @@ int main_live(int argc, char *argv[])
             frequency = parameters["frequency"].get<uint64_t>();
             timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
             handler_id = parameters["source"].get<std::string>();
+            if (parameters.contains("source_id"))
+                hdl_dev_id = parameters["source_id"].get<uint64_t>();
         }
         catch (std::exception &e)
         {
@@ -148,8 +151,19 @@ int main_live(int argc, char *argv[])
         {
             if (handler_id == src.source_type)
             {
-                selected_src = src;
-                src_found = true;
+                if (parameters.contains("source_id"))
+                {
+                    if (hdl_dev_id == src.unique_id)
+                    {
+                        selected_src = src;
+                        src_found = true;
+                    }
+                }
+                else
+                {
+                    selected_src = src;
+                    src_found = true;
+                }
             }
         }
 
