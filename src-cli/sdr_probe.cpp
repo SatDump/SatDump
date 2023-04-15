@@ -7,7 +7,7 @@
 void sdr_probe()
 {
     // We don't wanna spam with init this time around
-    logger->set_level(slog::LOG_OFF);
+    logger->set_level(slog::LOG_ERROR);
     satdump::initSatdump();
     logger->set_level(slog::LOG_TRACE);
 
