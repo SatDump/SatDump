@@ -45,9 +45,9 @@ namespace dmsp
         }
 
         if (sat_num == 17)
-            ols_reader.set_offset(9);
+            ols_reader.set_offsets(9, -8);
         else if (sat_num == 18)
-            ols_reader.set_offset(0);
+            ols_reader.set_offsets(0, 14);
 
         uint8_t rtd_words[19];
 
