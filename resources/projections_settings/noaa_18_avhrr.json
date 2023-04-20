@@ -15,6 +15,7 @@
         "max_diff": 1.0
     },
     ///////////////////////
+    "corr_width": 2048,
     "corr_swath": 2900,
     "corr_resol": 1.1,
     "corr_altit": 865
