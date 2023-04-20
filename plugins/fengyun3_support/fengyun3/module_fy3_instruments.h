@@ -30,6 +30,7 @@ namespace fengyun3
                 FY_3C,
                 FY_3D,
                 FY_3E,
+                FY_3G,
             };
 
             enum fy3_downlink_t
@@ -66,6 +67,8 @@ namespace fengyun3
             mersi::MERSI1Reader mersi1_reader;
             mersi::MERSI2Reader mersi2_reader;
             mersi::MERSILLReader mersill_reader;
+            // mersi::MERSIRMReader mersirm_reader;
+            mersi::SIPMAIReader sipmai_reader;
             gas::GASReader gas_reader;
             virr::VIRRToC10 *virr_to_c10;
 
@@ -73,6 +76,8 @@ namespace fengyun3
             instrument_status_t mersi1_status = DECODING;
             instrument_status_t mersi2_status = DECODING;
             instrument_status_t mersill_status = DECODING;
+            // instrument_status_t mersirm_status = DECODING;
+            instrument_status_t sipmai_status = DECODING;
             instrument_status_t erm_status = DECODING;
             instrument_status_t virr_status = DECODING;
             instrument_status_t wai_status = DECODING;

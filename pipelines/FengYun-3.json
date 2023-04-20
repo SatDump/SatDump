@@ -221,6 +221,44 @@
             }
         }
     },
+    "fengyun3_g_ahrpt": {
+        "name": "FengYun-3 G AHRPT",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 6e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.008
+                }
+            },
+            "cadu": {
+                "fengyun_ahrpt_decoder": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.26,
+                    "invert_second_viterbi": true
+                }
+            },
+            "products": {
+                "fy3_instruments": {
+                    "satellite": "fy3g",
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
+                }
+            }
+        }
+    },
     "fengyun3_abc_dpt": {
         "name": "FengYun-3 A/B/C DPT",
         "live": false,

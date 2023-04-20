@@ -32,6 +32,8 @@ namespace fengyun3
                 d_satellite = FY_3D;
             else if (parameters["satellite"] == "fy3e")
                 d_satellite = FY_3E;
+            else if (parameters["satellite"] == "fy3g")
+                d_satellite = FY_3G;
             else
                 throw std::runtime_error("FY3 Instruments Decoder : FY3 satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
 
@@ -137,7 +139,8 @@ namespace fengyun3
                     vcdu.spacecraft_id == FY3_B_SCID ||
                     vcdu.spacecraft_id == FY3_C_SCID ||
                     vcdu.spacecraft_id == FY3_D_SCID ||
-                    vcdu.spacecraft_id == FY3_E_SCID)
+                    vcdu.spacecraft_id == FY3_E_SCID ||
+                    vcdu.spacecraft_id == FY3_G_SCID)
                     fy_scids.push_back(vcdu.spacecraft_id);
 
                 if (d_satellite == FY_AB)
@@ -294,6 +297,41 @@ namespace fengyun3
                                 mwts3_reader.work(pkt);
                     }
                 }
+                else if (d_satellite == FY_3G)
+                {
+                    // printf("VCID %d\n", vcdu.vcid);
+                    /* if (vcdu.vcid == 27) // 3) // MERSI-LL
+                     {
+                         //  mersirm_reader.work(&cadu[14], 882);
+                         //  if (d_dump_mersi)
+                         //      mersi_bin.write((char *)&cadu[14], 882);
+                         idk_out.write((char *)&cadu[14], 882);
+                         // logger->info("MERSI!!");
+                     }
+                     else if (vcdu.vcid == 10) // MWRI
+                     {
+                         // logger->info("MWRI!");
+                         //   std::vector<std::vector<uint8_t>> out = mwri_deframer.work(&cadu[14], 882);
+                         //   for (std::vector<uint8_t> frameVec : out)
+                         //       mwri_reader.work(frameVec);
+                     }
+                     else */
+                    if (vcdu.vcid == 35) // SIPMAI
+                    {
+                        sipmai_reader.work(&cadu[14], 882);
+                    }
+#if 0
+                    else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
+                    {
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
+                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                            if (pkt.header.apid == 16) // MWHS-2
+                                mwhs2_reader.work(pkt, true);
+                            else if (pkt.header.apid == 7) // MWTS-3
+                                mwts3_reader.work(pkt);
+                    }
+#endif
+                }
 
                 progress = data_in.tellg();
 
@@ -323,6 +361,8 @@ namespace fengyun3
                 sat_name = "FengYun-3D";
             else if (scid == FY3_E_SCID)
                 sat_name = "FengYun-3E";
+            else if (scid == FY3_G_SCID)
+                sat_name = "FengYun-3G";
 
             int norad = 0;
             if (scid == FY3_A_SCID)
@@ -335,6 +375,8 @@ namespace fengyun3
                 norad = FY3_D_NORAD;
             else if (scid == FY3_E_SCID)
                 norad = FY3_E_NORAD;
+            else if (scid == FY3_G_SCID)
+                norad = FY3_G_NORAD;
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
@@ -708,6 +750,125 @@ namespace fengyun3
                 mersill_status = DONE;
             }
 
+#if 0
+            if (d_satellite == FY_3G) // MERSI-RM
+            {
+                mersirm_status = PROCESSING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-RM";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_250 = 40;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- MERSI-RM");
+                logger->info("Segments : " + std::to_string(mersirm_reader.segments));
+
+                satdump::ImageProducts mersirm_products;
+                mersirm_products.instrument_name = "mersirm";
+                mersirm_products.has_timestamps = true;
+                mersirm_products.set_tle(satellite_tle);
+                mersirm_products.bit_depth = 12;
+                mersirm_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                mersirm_products.set_timestamps(mersirm_reader.timestamps);
+                mersirm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mersirm.json")));
+
+                // Channel offsets relative to Ch1
+                int offset[8] = {
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                };
+
+                for (int i = 0; i < 8; i++)
+                {
+                    image::Image<uint16_t> image = mersirm_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, 10);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    mersirm_products.images.push_back({"MERSIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                }
+
+                // mersirm_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersirm_status = SAVING;
+
+                mersirm_products.save(directory);
+                dataset.products_list.push_back("MERSI-RM");
+
+                mersirm_status = DONE;
+            }
+#endif
+
+            if (d_satellite == FY_3G) // SIPMAI
+            {
+                sipmai_status = PROCESSING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SIPMAI";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- SIPMAI");
+                logger->info("Segments : " + std::to_string(sipmai_reader.segments));
+
+                satdump::ImageProducts sipmai_products;
+                sipmai_products.instrument_name = "sipmai";
+                sipmai_products.has_timestamps = true;
+                sipmai_products.set_tle(satellite_tle);
+                sipmai_products.bit_depth = 12;
+                sipmai_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                sipmai_products.set_timestamps(sipmai_reader.timestamps);
+                sipmai_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_sipmai.json")));
+
+                // Channel offsets relative to Ch1
+                int offset[8] = {
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                };
+
+                for (int i = 0; i < 8; i++)
+                {
+                    image::Image<uint16_t> image = sipmai_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, 10);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    sipmai_products.images.push_back({"SIPMAI-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                }
+
+                // sipmai_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                sipmai_status = SAVING;
+
+                sipmai_products.save(directory);
+                dataset.products_list.push_back("SIPMAI");
+
+                sipmai_status = DONE;
+            }
+
             if (d_satellite == FY_3D) // MWRI
             {
                 mwri_status = SAVING;
@@ -934,6 +1095,26 @@ namespace fengyun3
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", mersill_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersill_status);
+                }
+
+                if (d_satellite == FY_3G)
+                {
+#if 0
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MERSI-RM");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mersirm_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mersirm_status);
+#endif
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("SIPMAI");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", sipmai_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(sipmai_status);
                 }
 
                 if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == AHRPT || d_downlink == DPT))

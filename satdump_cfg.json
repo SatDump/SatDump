@@ -700,6 +700,22 @@
                     }
                 }
             },
+            "sipmai": {
+                "handler": "image_handler",
+                "name": "SIPMAI",
+                "rgb_composites": {
+                    "321": {
+                        "equation": "ch3, ch2, ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "221": {
+                        "equation": "ch2, ch2, ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    }
+                }
+            },
             "mhs": {
                 "handler": "image_handler",
                 "name": "MHS",
