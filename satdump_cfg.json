@@ -713,6 +713,11 @@
                         "equation": "ch2, ch2, ch1",
                         "equalize": true,
                         "geo_correct": true
+                    },
+                    "nat": {
+                        "equation": "((ch2*0.75 + ch1*0.25)-0.1)*1.2, (ch2-0.1)*1.2, (ch1-0.1)*1.2",
+                        "equalize": false,
+                        "geo_correct": true
                     }
                 }
             },
