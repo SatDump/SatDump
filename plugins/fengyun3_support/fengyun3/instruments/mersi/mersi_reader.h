@@ -12,13 +12,11 @@ namespace fengyun3
         public:
             // MERSI Configuration
             int ch_cnt_250;
-            // int ch_cnt_500;
             int ch_cnt_1000;
             int ch250_width;
 
             int frame_head_size;
             int frame_scan_250_size;
-            // int frame_scan_500_size;
             int frame_scan_1000_size;
 
             int imagery_offset_bytes;
@@ -30,7 +28,6 @@ namespace fengyun3
             // Computed stuff
             int counter_250_end;
             int counter_max;
-            // int ch500_width;
             int ch1000_width;
 
             // Timestamp stuff
@@ -47,16 +44,13 @@ namespace fengyun3
                 mersi_line_buffer = new uint8_t[frame_scan_250_size / 8];
 
                 counter_250_end = ch_cnt_250 * 40;
-                counter_max = ch_cnt_250 * 40 /*+ ch_cnt_500 * 20*/ + ch_cnt_1000 * 10;
-                // ch500_width = ch250_width / 2;
+                counter_max = ch_cnt_250 * 40 + ch_cnt_1000 * 10;
                 ch1000_width = ch250_width / 4;
 
                 repacked_calib = new uint16_t[calib_length * 2];
 
                 for (int i = 0; i < ch_cnt_250; i++)
                     channels_250m[i].resize(ch250_width * 40 * 2);
-                // for (int i = 0; i < ch_cnt_500; i++)
-                //      channels_500m[i].resize(ch500_width * 20 * 2);
                 for (int i = 0; i < ch_cnt_1000; i++)
                     channels_1000m[i].resize(ch1000_width * 10 * 2);
                 calibration.resize(calib_length * 3);
@@ -68,7 +62,6 @@ namespace fengyun3
             uint16_t *repacked_calib;
 
             std::vector<std::vector<uint16_t>> channels_250m;
-            // std::vector<std::vector<uint16_t>> channels_500m;
             std::vector<std::vector<uint16_t>> channels_1000m;
 
             uint16_t *repacked_mersi_line;
@@ -110,7 +103,6 @@ namespace fengyun3
             {
                 // Configuration for MERSI-1
                 ch_cnt_250 = 5;
-                // ch_cnt_500 = 0;
                 ch_cnt_1000 = 15;
                 ch250_width = 8192;
 
@@ -135,7 +127,6 @@ namespace fengyun3
             {
                 // Configuration for MERSI-2
                 ch_cnt_250 = 6;
-                // ch_cnt_500 = 0;
                 ch_cnt_1000 = 19;
                 ch250_width = 8192;
 
@@ -160,7 +151,6 @@ namespace fengyun3
             {
                 // Configuration for MERSI-LL
                 ch_cnt_250 = 2;
-                // ch_cnt_500 = 0;
                 ch_cnt_1000 = 16;
                 ch250_width = 6144;
 
@@ -180,24 +170,22 @@ namespace fengyun3
             }
         };
 
-        class SIPMAIReader : public MERSIReader
+        class MERSIRMReader : public MERSIReader
         {
         public:
-            SIPMAIReader()
+            MERSIRMReader()
             {
                 // Configuration for MERSI-RM
                 ch_cnt_250 = 0;
-                // ch_cnt_500 = 0;
                 ch_cnt_1000 = 8;
                 ch250_width = 1560 * 4;
 
                 frame_head_size = 42864;
                 frame_scan_250_size = 18816;
-                // frame_scan_500_size = 18816;
                 frame_scan_1000_size = 18816;
 
-                imagery_offset_bytes = 6;
-                imagery_offset_bits = 0;
+                imagery_offset_bytes = 5;
+                imagery_offset_bits = 7;
 
                 calib_byte_offset = 0;
                 calib_length = 5358;

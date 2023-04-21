@@ -700,9 +700,9 @@
                     }
                 }
             },
-            "sipmai": {
+            "mersirm": {
                 "handler": "image_handler",
-                "name": "SIPMAI",
+                "name": "MERSI-RM",
                 "rgb_composites": {
                     "321": {
                         "equation": "ch3, ch2, ch1",
