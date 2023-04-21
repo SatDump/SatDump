@@ -9,6 +9,7 @@
 #include "instruments/mwts2/mwts2_reader.h"
 #include "instruments/mwts3/mwts3_reader.h"
 #include "instruments/mwri/mwri_reader.h"
+#include "instruments/mwrirm/mwrirm_reader.h"
 #include "instruments/wai/wai_reader.h"
 #include "instruments/virr/virr_reader.h"
 #include "instruments/mwhs/mwhs_reader.h"
@@ -57,6 +58,7 @@ namespace fengyun3
             virr::VIRRReader virr_reader;
             std::unique_ptr<wai::WAIReader> wai_reader;
             mwri::MWRIReader mwri_reader;
+            mwrirm::MWRIRMReader mwrirm_reader;
             mwts::MWTSReader mwts1_reader;
             mwts2::MWTS2Reader mwts2_reader;
             mwts3::MWTS3Reader mwts3_reader;
@@ -81,6 +83,7 @@ namespace fengyun3
             instrument_status_t wai_status = DECODING;
             instrument_status_t gas_status = DECODING;
             instrument_status_t mwri_status = DECODING;
+            instrument_status_t mwrirm_status = DECODING;
             instrument_status_t mwts1_status = DECODING;
             instrument_status_t mwts2_status = DECODING;
             instrument_status_t mwts3_status = DECODING;

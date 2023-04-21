@@ -711,7 +711,10 @@
                     },
                     "221": {
                         "equation": "ch2, ch2, ch1",
-                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "521": {
+                        "equation": "ch5, ch2, ch1",
                         "geo_correct": true
                     }
                 }
@@ -863,6 +866,11 @@
                         "type": "equirectangular"
                     }
                 }
+            },
+            "mwri_rm": {
+                "handler": "image_handler",
+                "name": "MWRI-RM",
+                "rgb_composites": {}
             },
             "atms": {
                 "handler": "image_handler",
