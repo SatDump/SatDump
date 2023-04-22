@@ -92,6 +92,20 @@ namespace fengyun3
                     std::filesystem::create_directory(wai_directory);
                 wai_reader = std::make_unique<wai::WAIReader>(wai_directory);
             }
+            else if (d_satellite == FY_3G)
+            {
+                std::string pmr1_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/PMR-1";
+                if (!std::filesystem::exists(pmr1_directory))
+                    std::filesystem::create_directory(pmr1_directory);
+                pmr1_reader = std::make_unique<pmr::PMRReader>(pmr1_directory);
+                pmr1_reader->offset = 1;
+
+                std::string pmr2_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/PMR-2";
+                if (!std::filesystem::exists(pmr2_directory))
+                    std::filesystem::create_directory(pmr2_directory);
+                pmr2_reader = std::make_unique<pmr::PMRReader>(pmr2_directory);
+                pmr2_reader->offset = 1;
+            }
 
             // Demuxers
             ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
@@ -105,6 +119,8 @@ namespace fengyun3
             def::SimpleDeframer windrad_deframer1(0xfaf355aa, 32, 13160, 0);
             def::SimpleDeframer windrad_deframer2(0xfaf3aabb, 32, 18072, 0);
             def::SimpleDeframer gas_deframer(0x1acffc7d, 32, 5363264, 0);
+            def::SimpleDeframer pmr1_deframer(0xcc5afe5a, 32, 29536, 0);
+            def::SimpleDeframer pmr2_deframer(0xcc5afe5a, 32, 29536, 0);
 
             std::vector<uint8_t> fy_scids;
 
@@ -124,7 +140,7 @@ namespace fengyun3
                 virr_to_c10->open(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/tmp.c10");
             }
 
-            // std::ofstream idk_out("idk_frm.bin");
+            std::ofstream idk_out("idk_frm.bin");
 
             is_init = true;
 
@@ -300,17 +316,39 @@ namespace fengyun3
                 }
                 else if (d_satellite == FY_3G)
                 {
-                    //  printf("VCID %d\n", vcdu.vcid);
-                    /*if (vcdu.vcid == 2) // 3) // MERSI-LL
+                    // printf("VCID %d\n", vcdu.vcid);
+                    /* if (vcdu.vcid == 47) // 3) // MERSI-LL
+                     {
+                         //  mersirm_reader.work(&cadu[14], 882);
+                         //  if (d_dump_mersi)
+                         //      mersi_bin.write((char *)&cadu[14], 882);
+
+                         std::vector<std::vector<uint8_t>> out = pmr_deframer.work(&cadu[14], 882);
+                         for (std::vector<uint8_t> frameVec : out)
+                         {
+                             pmr_reader->work(frameVec);
+                             // if (frameVec[5] == 0xee)
+                             //     idk_out.write((char *)&frameVec[0], frameVec.size());
+                         }
+                         // idk_out.write((char *)&cadu[14], 882);
+                         // logger->info("MERSI!!");
+                     } else */
+                    if (vcdu.vcid == 38) // PMR-1
                     {
-                        //  mersirm_reader.work(&cadu[14], 882);
-                        //  if (d_dump_mersi)
-                        //      mersi_bin.write((char *)&cadu[14], 882);
-                        idk_out.write((char *)&cadu[14], 882);
-                        // logger->info("MERSI!!");
+                        std::vector<std::vector<uint8_t>> out = pmr1_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                        {
+                            pmr1_reader->work(frameVec);
+                            idk_out.write((char *)&frameVec[0], frameVec.size());
+                        }
                     }
-                     else*/
-                    if (vcdu.vcid == 42) // MWRI-RM
+                    else if (vcdu.vcid == 47) // PMR-2
+                    {
+                        std::vector<std::vector<uint8_t>> out = pmr2_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                            pmr2_reader->work(frameVec);
+                    }
+                    else if (vcdu.vcid == 42) // MWRI-RM
                     {
                         std::vector<std::vector<uint8_t>> out = mwrirm_deframer.work(&cadu[14], 882);
                         for (std::vector<uint8_t> frameVec : out)
@@ -319,6 +357,8 @@ namespace fengyun3
                     else if (vcdu.vcid == 35) // MERSI-RM
                     {
                         mersirm_reader.work(&cadu[14], 882);
+                        if (d_dump_mersi)
+                            mersi_bin.write((char *)&cadu[14], 882);
                     }
 #if 0
                     else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
@@ -1083,6 +1123,22 @@ namespace fengyun3
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", mwrirm_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwrirm_status);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("PMR-1");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", pmr1_reader->images_count);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(pmr1_status);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("PMR-2");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", pmr2_reader->images_count);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(pmr2_status);
                 }
 
                 if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == AHRPT || d_downlink == DPT))

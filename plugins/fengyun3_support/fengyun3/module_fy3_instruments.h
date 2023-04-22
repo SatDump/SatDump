@@ -17,6 +17,7 @@
 #include "instruments/mersi/mersi_reader.h"
 #include "instruments/gas/gas_reader.h"
 #include "instruments/virr/virr_to_c10.h"
+#include "instruments/pmr/pmr_reader.h"
 
 namespace fengyun3
 {
@@ -66,6 +67,8 @@ namespace fengyun3
             mwhs2::MWHS2Reader mwhs2_reader;
             std::unique_ptr<windrad::WindRADReader> windrad_reader1, windrad_reader2;
             std::unique_ptr<xeuvi::XEUVIReader> xeuvi_reader;
+            std::unique_ptr<pmr::PMRReader> pmr1_reader;
+            std::unique_ptr<pmr::PMRReader> pmr2_reader;
             mersi::MERSI1Reader mersi1_reader;
             mersi::MERSI2Reader mersi2_reader;
             mersi::MERSILLReader mersill_reader;
@@ -90,6 +93,8 @@ namespace fengyun3
             instrument_status_t mwhs1_status = DECODING;
             instrument_status_t mwhs2_status = DECODING;
             instrument_status_t xeuvi_status = DECODING;
+            instrument_status_t pmr1_status = DECODING;
+            instrument_status_t pmr2_status = DECODING;
             instrument_status_t windrad_C_status = DECODING;
             instrument_status_t windrad_Ku_status = DECODING;
 

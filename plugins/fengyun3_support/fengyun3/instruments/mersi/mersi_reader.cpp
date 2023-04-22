@@ -52,6 +52,8 @@ namespace fengyun3
                                  double(milliseconds_of_day) / ms_scale +
                                  double(subsecond_cnt) / 3950 + 12 * 3600;
 
+            // printf("%f\n",currentTime);
+
             last_timestamp = currentTime;
         }
 
