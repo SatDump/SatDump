@@ -337,10 +337,7 @@ namespace fengyun3
                     {
                         std::vector<std::vector<uint8_t>> out = pmr1_deframer.work(&cadu[14], 882);
                         for (std::vector<uint8_t> frameVec : out)
-                        {
                             pmr1_reader->work(frameVec);
-                            idk_out.write((char *)&frameVec[0], frameVec.size());
-                        }
                     }
                     else if (vcdu.vcid == 47) // PMR-2
                     {
