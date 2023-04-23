@@ -12,35 +12,41 @@
 
 #include "logger.h"
 
-#include "common/image/image.h"
-#include "resources.h"
-#include <vector>
+// #include "common/image/image.h"
+#include "common/dsp/filter/firdes.h"
 
-#include "common/codings/reedsolomon/reedsolomon.h"
-#include <fstream>
+#include "common/dsp/window/window.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream data_in(argv[1], std::ios::binary);
-    std::ofstream data_out(argv[2], std::ios::binary);
+    std::vector<float> taps = /* dsp::windowed_sinc(361, 4, dsp::window::nuttall); //*/
+        dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.6, 361);
+    // dsp::firdes::design_resampler_filter_float(2, 1, 0.2);
 
-    reedsolomon::ReedSolomon reed_solomon(reedsolomon::RS223);
+    //  image::Image<uint8_t> plot(taps.size(), taps.size(), 1);
 
-    int errors[5];
+    std::string array;
 
-    uint8_t cadu[1279];
-    while (!data_in.eof())
+    array += "[";
+
+    // uint8_t color[] = {255};
+    for (int x = 0; x < taps.size(); x++)
     {
-        data_in.read((char *)cadu, 1279);
-
-        reed_solomon.decode_interlaved(&cadu[4], true, 5, errors);
-
-        for (int i = 0; i < 5; i++)
-            if (errors[i] != 0)
-                printf("ERROR\n");
-
-        data_out.write((char *)cadu, 1279);
+        if (x < taps.size() - 1)
+            array += std::to_string(taps[x]) + ", ";
+        else
+            array += std::to_string(taps[x]);
+        //  plot.draw_line(x, 0, x, taps[x] * taps.size() * 50, color);
     }
+    // plot.mirror(false, true);
+    // plot.save_img("taps_plot.png");
+
+    array += "]";
+
+    std::string command = "octave --eval \'taps = " + array + "\n freqz(taps)\n\' --persist";
+
+    // printf("%s\n", command.c_str());
+    system(command.c_str());
 }
