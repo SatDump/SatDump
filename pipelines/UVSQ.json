@@ -34,7 +34,14 @@
                     "pll_bw": 0.1
                 }
             },
-            "frm": {},
+            "frm": {
+                "ax25_decoder": {
+                    "nrzi": true,
+                    "g3ruh": true,
+                    "min_sz": 10,
+                    "max_sz": 1000
+                }
+            },
             "products": {}
         }
     }

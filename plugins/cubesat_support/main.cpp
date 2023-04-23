@@ -5,6 +5,8 @@
 #include "lucky7/module_lucky7_demod.h"
 #include "lucky7/module_lucky7_decoder.h"
 
+#include "common/module_ax25_decoder.h"
+
 class CubeSatSupport : public satdump::Plugin
 {
 public:
@@ -22,6 +24,8 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, ax25::AX25DecoderModule);
     }
 };
 
