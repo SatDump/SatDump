@@ -26,13 +26,13 @@ namespace dsp
     {
         if (!baseband_reader.is_eof())
         {
-            baseband_reader.read_samples(output_stream->writeBuf, d_buffer_size);
+            int read = baseband_reader.read_samples(output_stream->writeBuf, d_buffer_size);
 
             if (d_iq_swap)
-                for (int i = 0; i < d_buffer_size; i++)
+                for (int i = 0; i < read; i++)
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
 
-            output_stream->swap(d_buffer_size);
+            output_stream->swap(read);
 
             d_progress = baseband_reader.progress;
         }

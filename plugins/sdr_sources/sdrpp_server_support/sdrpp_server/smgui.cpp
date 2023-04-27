@@ -1,7 +1,7 @@
 #include "smgui.h"
 #include "core/style.h"
 #include "stepped_slider.h"
-#include <spdlog/spdlog.h>
+#include "logger.h"
 //#include <gui/gui.h>
 
 namespace SmGui {
@@ -196,7 +196,7 @@ namespace SmGui {
                 i++;
             }
             else {
-                spdlog::error("Invalid widget in Drawlist");
+                logger->error("Invalid widget in Drawlist");
             }
 
             if (elem.step != DRAW_STEP_FILL_WIDTH) { nextItemFillWidth = false; }
@@ -294,7 +294,7 @@ namespace SmGui {
 
         // Validate and clear if invalid
         if (!validate()) {
-            spdlog::error("Drawlist validation failed");
+            logger->error("Drawlist validation failed");
             //elements.clear();
             return -1;
         }

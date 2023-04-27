@@ -7,6 +7,8 @@
 #endif
 #include "wav_writer.h"
 
+#include "common/ziq2.h"
+
 namespace dsp
 {
     class FileSinkBlock : public Block<complex_t, float>
@@ -27,10 +29,14 @@ namespace dsp
         int8_t *buffer_s8;
         int16_t *buffer_s16;
 
+        int bit_depth = 0;
+
 #ifdef BUILD_ZIQ
         ziq::ziq_cfg ziqcfg;
         std::shared_ptr<ziq::ziq_writer> ziqWriter;
 #endif
+
+        float *mag_buffer = nullptr;
 
         std::unique_ptr<WavWriter> wav_writer;
 
@@ -46,6 +52,9 @@ namespace dsp
         std::string start_recording(std::string path_without_ext, uint64_t samplerate, int depth = 0, bool override_filename = false) // Depth is only for compressed non-raw formats
         {
             rec_mutex.lock();
+
+            bit_depth = depth;
+
             std::string finalt;
             if (d_sample_format == CF_32)
                 finalt = path_without_ext + ".f32";
@@ -59,6 +68,8 @@ namespace dsp
             else if (d_sample_format == ZIQ)
                 finalt = path_without_ext + ".ziq";
 #endif
+            else if (d_sample_format == ZIQ2)
+                finalt = path_without_ext + ".ziq";
 
             if (override_filename)
                 finalt = path_without_ext;
@@ -83,6 +94,16 @@ namespace dsp
                 ziqcfg.annotation = "";
 
                 ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
+            }
+#endif
+#ifdef BUILD_ZIQ2
+            if (d_sample_format == ZIQ2)
+            {
+                int sz = ziq2::ziq2_write_file_hdr((uint8_t *)buffer_s8, samplerate);
+                output_file.write((char *)buffer_s8, sz);
+
+                if (mag_buffer == nullptr)
+                    mag_buffer = create_volk_buffer<float>(STREAM_BUFFER_SIZE);
             }
 #endif
 

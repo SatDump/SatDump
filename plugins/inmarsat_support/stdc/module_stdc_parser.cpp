@@ -157,7 +157,10 @@ namespace inmarsat
                     pkt_history_mtx.lock();
                     pkt_history.push_back(msg);
                     if (pkt_history.size() > 500)
+                    {
                         pkt_history.erase(pkt_history.begin());
+                        pkt_history.shrink_to_fit();
+                    }
                     pkt_history_mtx.unlock();
                 }
 
@@ -177,7 +180,10 @@ namespace inmarsat
                     pkt_history_mtx.lock();
                     pkt_history_msg.push_back(msg);
                     if (pkt_history_msg.size() > 100)
-                        pkt_history_msg.erase(pkt_history_msg.begin());
+                    {
+                        pkt_history.erase(pkt_history.begin());
+                        pkt_history.shrink_to_fit();
+                    }
                     pkt_history_mtx.unlock();
                 }
             };
@@ -195,7 +201,10 @@ namespace inmarsat
                     pkt_history_mtx.lock();
                     pkt_history_egc.push_back(msg);
                     if (pkt_history_egc.size() > 100)
+                    {
                         pkt_history_egc.erase(pkt_history_egc.begin());
+                        pkt_history.shrink_to_fit();
+                    }
                     pkt_history_mtx.unlock();
                 }
             };
@@ -244,9 +253,7 @@ namespace inmarsat
             ImGui::Begin("Inmarsat STD-C Parser", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
-            ImGui::Text("Credits go to Paul Maxan (microp11) for the \nreverse-engineering work that went into Scytale-C!");
-            ImGui::Spacing();
-            ImGui::TextColored(ImColor(255, 0, 0), "Note : EGC Parsing is untested!");
+            ImGui::Text("Do remember you should nor read nor keep messages that are\nnot intended for you.");
 
             ImGui::Spacing();
             ImGui::Text("Last packet count : ");

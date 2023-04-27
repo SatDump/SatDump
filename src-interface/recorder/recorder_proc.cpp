@@ -13,6 +13,7 @@ namespace satdump
         out["panel_ratio"] = panel_ratio;
         out["fft_size"] = fft_size;
         out["fft_rate"] = fft_rate;
+        out["waterfall_rate"] = waterfall_rate;
         out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
         if (fft_plot && waterfall_plot && fft)
         {
@@ -46,6 +47,8 @@ namespace satdump
         }
         if (in.contains("fft_rate"))
             fft_rate = in["fft_rate"];
+        if (in.contains("waterfall_rate"))
+            waterfall_rate = in["waterfall_rate"];
         if (in.contains("waterfall_palette"))
         {
             std::string name = in["waterfall_palette"].get<std::string>();
@@ -73,6 +76,7 @@ namespace satdump
             }
 
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+            waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
@@ -134,8 +138,8 @@ namespace satdump
             pipeline_params = pipeline_selector.getParameters();
             pipeline_params["samplerate"] = get_samplerate();
             pipeline_params["baseband_format"] = "f32";
-            pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE;  // This is required, as we WILL go over the (usually) default 8192 size
-            pipeline_params["start_timestamp"] = (double)time(0); // Some pipelines need this
+            pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
+            pipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
             if (automated_live_output_dir)
             {
@@ -159,9 +163,9 @@ namespace satdump
             }
 
             live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
-            splitter->output_stream_3 = std::make_shared<dsp::stream<complex_t>>();
-            live_pipeline->start(splitter->output_stream_3, ui_thread_pool);
-            splitter->set_output_3rd(true);
+            splitter->reset_output("live");
+            live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
+            splitter->set_enabled("live", true);
 
             is_processing = true;
         }
@@ -177,7 +181,7 @@ namespace satdump
         {
             logger->trace("Stop pipeline...");
             is_processing = false;
-            splitter->set_output_3rd(false);
+            splitter->set_enabled("live", false);
             live_pipeline->stop();
 
             if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
@@ -196,7 +200,7 @@ namespace satdump
 
     void RecorderApplication::start_recording()
     {
-        splitter->set_output_2nd(true);
+        splitter->set_enabled("record", true);
 
         const time_t timevalue = time(0);
         std::tm *timeReadable = gmtime(&timevalue);
@@ -223,7 +227,7 @@ namespace satdump
         if (is_recording)
         {
             file_sink->stop_recording();
-            splitter->set_output_2nd(false);
+            splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
         }

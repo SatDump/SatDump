@@ -8,9 +8,9 @@ int main(/*int argc, char *argv[]*/)
     initLogger();
 
     // We don't wanna spam with init this time around
-    logger->set_level(spdlog::level::level_enum::off);
+    logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
-    logger->set_level(spdlog::level::level_enum::trace);
+    logger->set_level(slog::LOG_TRACE);
 
     dsp::registerAllSources();
     dsp::registerAllSinks();

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(aaronia_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 if(MSVC)
     set(AARONIA_RTSA_SUITE_PATH "C:/Program Files/Aaronia AG/Aaronia RTSA-Suite PRO/" CACHE STRING "Path of RTSA Aaronia SW")
@@ -23,7 +22,7 @@ if(UNIX OR MSVC)
         target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH})
     endif()
 
-    target_include_directories(aaronia_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(aaronia_sdr_support PUBLIC src)
 
     install(TARGETS aaronia_sdr_support DESTINATION share/satdump/plugins)
 else()

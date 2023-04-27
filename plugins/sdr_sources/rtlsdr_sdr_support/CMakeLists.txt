@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(rtlsdr_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(RTLSDR_LIBRARY rtlsdr)
 
@@ -19,7 +18,7 @@ if(RTLSDR_LIBRARY OR MSVC OR ANDROID)
         target_link_libraries(rtlsdr_sdr_support PUBLIC satdump_core ${RTLSDR_LIBRARY})
     endif()
 
-    target_include_directories(rtlsdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(rtlsdr_sdr_support PUBLIC src)
 
     install(TARGETS rtlsdr_sdr_support DESTINATION share/satdump/plugins)
 else()

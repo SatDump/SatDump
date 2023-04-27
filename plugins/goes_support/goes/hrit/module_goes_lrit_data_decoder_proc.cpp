@@ -243,22 +243,21 @@ namespace goes
 
                 if (file.hasHeader<SegmentIdentificationHeader>())
                 {
-
                     SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
 
-                    if (all_wip_images.count(segment_id_header.image_identifier) == 0)
-                        all_wip_images.insert({segment_id_header.image_identifier, std::make_unique<wip_images>()});
+                    if (all_wip_images.count(file.vcid) == 0)
+                        all_wip_images.insert({file.vcid, std::make_unique<wip_images>()});
 
-                    std::unique_ptr<wip_images> &wip_img = all_wip_images[segment_id_header.image_identifier];
+                    std::unique_ptr<wip_images> &wip_img = all_wip_images[file.vcid];
 
                     wip_img->imageStatus = RECEIVING;
 
-                    if (segmentedDecoders.count(segment_id_header.image_identifier) == 0)
-                        segmentedDecoders.insert({segment_id_header.image_identifier, SegmentedLRITImageDecoder()});
+                    if (segmentedDecoders.count(file.vcid) == 0)
+                        segmentedDecoders.insert({file.vcid, SegmentedLRITImageDecoder()});
 
-                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[segment_id_header.image_identifier];
+                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[file.vcid];
 
-                    if (segmentedDecoder.image_id != segment_id_header.image_identifier)
+                    if (segmentedDecoder.image_id != file.vcid)
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
@@ -292,7 +291,7 @@ namespace goes
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
-                                                                     segment_id_header.image_identifier);
+                                                                     file.vcid);
                         segmentedDecoder.filename = current_filename;
                     }
 

@@ -27,7 +27,7 @@ namespace viterbi
         Viterbi27(int frame_size, std::vector<int> polys, int ber_test_size = 1024);
         ~Viterbi27();
 
-        void work(int8_t *in, uint8_t *out);
+        void work(int8_t *in, uint8_t *out, bool isHard = false);
 
         float ber();
     };

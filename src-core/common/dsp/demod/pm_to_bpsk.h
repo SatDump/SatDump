@@ -10,11 +10,7 @@ namespace dsp
     class PMToBPSK : public Block<complex_t, complex_t>
     {
     private:
-        float phase_real = 0;
-        float phase_shift = 0;
-
-        // Work variables
-        complex_t shf;
+        complex_t phase_delta, phase;
 
         void work();
 

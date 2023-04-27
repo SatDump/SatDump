@@ -273,6 +273,8 @@ namespace satdump
         projection::VizGeorefSpline2D spline_roll_pitch = projection::VizGeorefSpline2D(2);
         double roll_pitch_v[2] = {0, 0};
 
+        bool yaw_swap;
+
     public:
         NormalLineManualSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
             : SatelliteProjection(cfg, tle, timestamps_raw)
@@ -288,6 +290,8 @@ namespace satdump
             yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
 
             timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
+
+            yaw_swap = getValueOrDefault(cfg["yaw_swap"], true);
 
 #if 0
             for (auto item : cfg["points"].items())
@@ -376,7 +380,7 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             satellite_pointing.roll = roll_pitch_v[0];
             satellite_pointing.pitch = roll_pitch_v[1];
-            satellite_pointing.yaw = 90 - az_angle + (!ascending ? yaw_offset : -yaw_offset);
+            satellite_pointing.yaw = 90 + (yaw_swap ? (!ascending ? yaw_offset : -yaw_offset) : yaw_offset) - az_angle;
 
             // logger->critical("{:f} {:f} {:f} ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
 

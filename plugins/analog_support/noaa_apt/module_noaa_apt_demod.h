@@ -20,6 +20,8 @@ namespace noaa_apt
         void stop();
         void process();
 
+        bool enable_audio = false;
+
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };

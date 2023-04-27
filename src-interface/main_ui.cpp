@@ -10,6 +10,7 @@
 #include "core/style.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
+#include "common/audio/audio_sink.h"
 
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
@@ -31,6 +32,8 @@ namespace satdump
 
     void initMainUI()
     {
+        audio::registerSinks();
+
         offline::setup();
         settings::setup();
 

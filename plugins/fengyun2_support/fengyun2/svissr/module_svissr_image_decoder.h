@@ -3,8 +3,8 @@
 #include "core/module.h"
 #include <complex>
 #include <fstream>
-#include "libs/ctpl/ctpl_stl.h"
 #include "image/svissr_reader.h"
+#include <thread>
 
 namespace fengyun_svissr
 {
@@ -22,28 +22,59 @@ namespace fengyun_svissr
         std::atomic<size_t> progress;
 
         // Utils values
-        bool writingImage;
         bool backwardScan;
-        int endCount;
-        int nonEndCount;
-        int lastNonZero;
+        bool writingImage = false;
+        int valid_lines;
         float approx_progess;
+
+        struct SVISSRBuffer
+        {
+            int scid;
+
+            double timestamp;
+
+            image::Image<uint16_t> image1;
+            image::Image<uint16_t> image2;
+            image::Image<uint16_t> image3;
+            image::Image<uint16_t> image4;
+            image::Image<uint16_t> image5;
+
+            std::string directory;
+        };
 
         // Image readers
         SVISSRReader vissrImageReader;
 
-        // Images used as a buffer when writing it out
-        image::Image<uint16_t> image1;
-        image::Image<uint16_t> image2;
-        image::Image<uint16_t> image3;
-        image::Image<uint16_t> image4;
-        image::Image<uint16_t> image5;
-
         // Saving is multithreaded
-        std::shared_ptr<ctpl::thread_pool> imageSavingThreadPool;
+        std::mutex images_queue_mtx;
+        std::vector<std::shared_ptr<SVISSRBuffer>> images_queue;
+        std::thread images_queue_thread;
+
+        bool images_thread_should_run;
+        void image_saving_thread_f()
+        {
+            while (images_thread_should_run || images_queue.size() > 0)
+            {
+                images_queue_mtx.lock();
+                bool has_images = images_queue.size() > 0;
+                images_queue_mtx.unlock();
+
+                if (has_images)
+                {
+                    images_queue_mtx.lock();
+                    auto img = images_queue[0];
+                    images_queue.erase(images_queue.begin());
+                    images_queue_mtx.unlock();
+                    writeImages(*img);
+                    continue;
+                }
+
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
 
         std::string getSvissrFilename(std::tm *timeReadable, std::string channel);
-        void writeImages(std::string directory);
+        void writeImages(SVISSRBuffer &buffer);
 
         // Stats
         std::vector<int> scid_stats;

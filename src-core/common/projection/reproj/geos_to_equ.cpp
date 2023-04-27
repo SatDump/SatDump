@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "resources.h"
 #include "core/opencl.h"
+#include <chrono>
 
 namespace satdump
 {

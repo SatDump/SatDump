@@ -7,7 +7,7 @@
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp/resamp/smart_resampler.h"
-#include "common/dsp/utils/splitter.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
@@ -28,9 +28,10 @@ namespace satdump
         bool is_started = false, is_recording = false, is_processing = false;
 
         int selected_fft_size = 0;
-        std::vector<int> fft_sizes_lut = {8192, 4096, 2048, 1024};
+        std::vector<int> fft_sizes_lut = {/*65536,*/ 8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
         int fft_rate = 120;
+        int waterfall_rate = 60;
 
         std::vector<colormaps::Map> waterfall_palettes;
         std::string waterfall_palettes_str;

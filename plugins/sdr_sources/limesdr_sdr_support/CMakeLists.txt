@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(limesdr_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(LIMESDR_LIBRARY LimeSuite)
 
@@ -19,7 +18,7 @@ if(LIMESDR_LIBRARY OR MSVC OR ANDROID)
         target_link_libraries(limesdr_sdr_support PUBLIC satdump_core ${LIMESDR_LIBRARY})
     endif()
 
-    target_include_directories(limesdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(limesdr_sdr_support PUBLIC src)
 
     install(TARGETS limesdr_sdr_support DESTINATION share/satdump/plugins)
 else()

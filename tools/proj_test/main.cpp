@@ -19,9 +19,9 @@ int main(int /*argc*/, char *argv[])
     // satdump::config::loadConfig("satdump_cfg.json", user_path);
 
     // We don't wanna spam with init this time around
-    logger->set_level(spdlog::level::level_enum::off);
+    logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
-    logger->set_level(spdlog::level::level_enum::trace);
+    logger->set_level(slog::LOG_TRACE);
 
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
@@ -29,7 +29,7 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "chb,chb,chb"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "ch5,ch2,ch1"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.equalize = true;
     rgb_cfg.white_balance = true;
 

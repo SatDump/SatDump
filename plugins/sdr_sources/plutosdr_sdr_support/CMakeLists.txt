@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(plutosdr_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(IIO_LIBRARY iio)
 find_library(AD9361_LIBRARY ad9361)
@@ -28,7 +27,7 @@ if((IIO_LIBRARY AND AD9361_LIBRARY) OR MSVC OR ANDROID)
         target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core ${IIO_LIBRARY} ${AD9361_LIBRARY})
     endif()
 
-    target_include_directories(plutosdr_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(plutosdr_sdr_support PUBLIC src)
 
     install(TARGETS plutosdr_sdr_support DESTINATION share/satdump/plugins)
 else()

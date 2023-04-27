@@ -5,7 +5,7 @@
 #include "common/cli_utils.h"
 #include "common/dsp/io/file_sink.h"
 #include "init.h"
-#include "common/dsp/utils/splitter.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "webserver.h"
 
@@ -118,10 +118,10 @@ int main_record(int argc, char *argv[])
         int fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
 
         splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
-        splitter->set_output_2nd(true);
-        splitter->set_output_3rd(false);
+        splitter->add_output("fft");
+        splitter->set_enabled("fft", true);
         final_stream = splitter->output_stream;
-        fft = std::make_unique<dsp::FFTPanBlock>(splitter->output_stream_2);
+        fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
         fft->set_fft_settings(fft_size, samplerate, fft_rate);
         if (parameters.contains("fft_avg"))
             fft->avg_rate = parameters["fft_avg"].get<float>();

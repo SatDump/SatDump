@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(airspyhf_sdr_support)
 
-set(SATDUMP_ROOT "/usr")
 
 find_library(AIRSPYHF_LIBRARY airspyhf)
 
@@ -19,7 +18,7 @@ if(AIRSPYHF_LIBRARY OR MSVC OR ANDROID)
         target_link_libraries(airspyhf_sdr_support PUBLIC satdump_core ${AIRSPYHF_LIBRARY})
     endif()
 
-    target_include_directories(airspyhf_sdr_support PUBLIC src ${SATDUMP_ROOT}/include/satdump)
+    target_include_directories(airspyhf_sdr_support PUBLIC src)
 
     install(TARGETS airspyhf_sdr_support DESTINATION share/satdump/plugins)
 else()

@@ -72,7 +72,7 @@ protected:
     }
 
 public:
-    HackRFSink(dsp::SinkDescriptor source) : DSPSampleSink(source)
+    HackRFSink(dsp::SinkDescriptor sink) : DSPSampleSink(sink)
     {
         fifo_out.init(262144 * 10);
         repack_buffer = new int8_t[8192 * 100];

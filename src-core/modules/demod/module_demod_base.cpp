@@ -49,7 +49,9 @@ namespace demod
 
         final_samplerate = d_samplerate;
 
-        if (MAX_SPS == MIN_SPS)
+        if (d_parameters.count("custom_samplerate") > 0)
+            final_samplerate = d_parameters["custom_samplerate"].get<long>();
+        else if (MAX_SPS == MIN_SPS)
             final_samplerate = d_symbolrate * MAX_SPS;
         else if (input_sps > MAX_SPS)
             final_samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
@@ -89,13 +91,17 @@ namespace demod
         if (input_data_type == DATA_FILE)
         {
             fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data_final);
-            fft_splitter->set_output_2nd(show_fft);
+            fft_splitter->add_output("fft");
+            fft_splitter->set_enabled("fft", show_fft);
 
-            fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->output_stream_2);
+            fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->get_output("fft"));
             fft_proc->set_fft_settings(8192, final_samplerate, 120);
             fft_proc->avg_rate = 0.02;
             fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
-            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_proc->output_stream->writeBuf, 8192, 500);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
+            waterfall_plot->set_rate(120, 10);
+            fft_proc->on_fft = [this](float *v)
+            { waterfall_plot->push_fft(v); };
         }
 
         std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
@@ -181,7 +187,7 @@ namespace demod
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_output_2nd(show_fft);
+                    fft_splitter->set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
 

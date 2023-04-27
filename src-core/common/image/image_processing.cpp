@@ -246,7 +246,7 @@ namespace image
     template <typename T>
     void Image<T>::resize_bilinear(int width, int height, bool text_mode)
     {
-        int a, b, c, d, x, y;
+        int a = 0, b = 0, c = 0, d = 0, x = 0, y = 0;
         size_t index;
         double x_scale = double(d_width - 1) / double(width);
         double y_scale = double(d_height - 1) / double(height);

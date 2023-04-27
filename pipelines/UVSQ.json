@@ -1,0 +1,53 @@
+{
+    "inspiresat7_tlm": {
+        "name": "INSPIRE-Sat7",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.1e6
+            ],
+            [
+                "Backup",
+                137.9e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 9.6e3,
+                    "agc_rate": 2,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.1
+                }
+            },
+            "frm": {
+                "ax25_decoder": {
+                    "nrzi": true,
+                    "g3ruh": true,
+                    "min_sz": 10,
+                    "max_sz": 1000
+                }
+            },
+            "products": {}
+        }
+    }
+}

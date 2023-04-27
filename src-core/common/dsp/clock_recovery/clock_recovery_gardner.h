@@ -14,7 +14,6 @@ namespace dsp
     private:
         // Buffer
         T *buffer;
-        int in_buffer;
 
         // Variables
         float mu;
@@ -28,6 +27,8 @@ namespace dsp
         T sample;
         T zc_sample;
         T last_sample;
+
+        int bufs;
 
         void work();
 

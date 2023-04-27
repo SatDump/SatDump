@@ -10,6 +10,8 @@
 #include "common/ziq.h"
 #endif
 
+#include "common/ziq2.h"
+
 namespace dsp
 {
     enum BasebandType
@@ -23,6 +25,7 @@ namespace dsp
 #ifdef BUILD_ZIQ
         ZIQ,
 #endif
+        ZIQ2,
     };
 
     BasebandType basebandTypeFromString(std::string type);
@@ -99,6 +102,9 @@ namespace dsp
                 ziqReader = std::make_shared<ziq::ziq_reader>(input_file);
 #endif
 
+            if (format == ZIQ2)
+                input_file.seekg(4);
+
             main_mtx.unlock();
         }
 
@@ -109,6 +115,9 @@ namespace dsp
             {
                 input_file.clear();
                 input_file.seekg(0);
+
+                if (format == ZIQ2)
+                    input_file.seekg(4);
             }
 
             switch (format)
@@ -143,6 +152,20 @@ namespace dsp
                 ziqReader->read(output_buffer, buffer_size);
                 break;
 #endif
+#ifdef BUILD_ZIQ2
+            case ZIQ2:
+            {
+                input_file.read((char *)buffer_u8, 4 + sizeof(ziq2::ziq2_pkt_hdr_t));
+                ziq2::ziq2_pkt_hdr_t *mdr = (ziq2::ziq2_pkt_hdr_t *)&buffer_u8[4];
+                input_file.read((char *)&buffer_u8[4 + sizeof(ziq2::ziq2_pkt_hdr_t)], mdr->pkt_size);
+
+                if (mdr->pkt_type == ziq2::ZIQ2_PKT_IQ)
+                    ziq2::ziq2_read_iq_pkt(&buffer_u8[4], output_buffer, &buffer_size);
+                else
+                    buffer_size = 0;
+            }
+            break;
+#endif
 
             default:
                 break;
@@ -166,7 +189,26 @@ namespace dsp
                 return;
 #endif
 
+            if (format == ZIQ2)
+            {
+                main_mtx.lock();
+                size_t pos = filesize * (progress / 100.0f);
+                uint8_t sync[4];
+                while (pos < filesize)
+                {
+                    input_file.seekg(pos);
+                    input_file.read((char *)sync, 4);
+                    if (sync[0] == 0x1a && sync[1] == 0xcf && sync[2] == 0xfc && sync[3] == 0x1d)
+                        break;
+                    pos++;
+                }
+                input_file.seekg(pos);
+                main_mtx.unlock();
+                return;
+            }
+
             main_mtx.lock();
+
             int samplesize = sizeof(complex_t);
 
             switch (format)

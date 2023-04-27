@@ -160,6 +160,7 @@
             39260, // FengYun-3C
             43010, // FengYun-3D
             49008, // FengYun-3E
+            56232, // FengYun-3G
             35865, // METEOR-M1
             40069, // METEOR-M2
             44387, // METEOR-M2-2
@@ -304,26 +305,21 @@
                             }
                         }
                     },
-                    "4 Equalized": {
-                        "equation": "ch4",
+                    "Thermal Channel": {
+                        "equation": "cch4",
                         "equalize": true,
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "(1-ch5)-(1-ch4),(1-ch4)-(1-ch3a),(1-ch4)",
+                        "equation": "cch5-cch4,cch4-cch3b,cch4",
                         "geo_correct": true,
                         "equalize": true,
-                        "white_balance": true,
-                        "autogen": false
+                        "white_balance": true
                     },
                     "Day Microphysics": {
-                        "equation": "ch1, (1-ch3b)^2.5,(1-ch4)",
+                        "equation": "cch1, cch3b^2.5,cch4",
                         "geo_correct": true,
-                        "equalize": true,
-                        "autogen": false
-                    },
-                    "Automatic Microphysics": {
-                        "equation": "ch3a == 0 ? cch5-cch4 : cch1,  ch3a == 0 ? cch4-cch3a : cch3b^2.5, cch4"
+                        "equalize": true
                     },
                     "Clouds Underlay (Merge)": {
                         "channels": "ch4",
@@ -354,7 +350,8 @@
                     },
                     "NDVI (Vegetation)": {
                         "equation": "((cch2-cch1)/(cch2+cch1)+1)/2",
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "autogen": false
                     }
                 },
                 "project_channels": {
@@ -513,7 +510,8 @@
                     },
                     "321 Equalized": {
                         "equation": "ch3, ch2, ch1",
-                        "equalize": true
+                        "equalize": true,
+                        "autogen": false
                     },
                     "Natural Color": {
                         "equation": "((0.5*max(ch4,min(ch2,ch1)) + 0.5*ch2)+0.3*ch3)*0.85, ch2, ch1",
@@ -522,9 +520,10 @@
                     },
                     "4 Equalized": {
                         "equation": "1 - ch4",
-                        "equalize": true
+                        "equalize": true,
+                        "autogen": false
                     },
-                    "5 Equalized": {
+                    "Thermal Channel": {
                         "equation": "1 - ch5",
                         "equalize": true,
                         "geo_correct": true,
@@ -541,11 +540,18 @@
                     },
                     "6 Equalized": {
                         "equation": "1 - ch6",
-                        "equalize": true
+                        "equalize": true,
+                        "autogen": false
+                    },
+                    "Day Microphysics": {
+                        "equation": "ch1, ch4^2.5, ch5",
+                        "equalize": true,
+                        "geo_correct": true
                     },
                     "654": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
-                        "equalize": true
+                        "equalize": true,
+                        "autogen": true
                     }
                 }
             },
@@ -691,6 +697,30 @@
                     "1 Equalized": {
                         "equation": "1.0 - ch1",
                         "equalize": true,
+                        "geo_correct": true
+                    }
+                }
+            },
+            "mersirm": {
+                "handler": "image_handler",
+                "name": "MERSI-RM",
+                "rgb_composites": {
+                    "321": {
+                        "equation": "ch3, ch2, ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "221": {
+                        "equation": "ch2, ch2, ch1",
+                        "geo_correct": true
+                    },
+                    "521": {
+                        "equation": "ch5, ch2, ch1",
+                        "geo_correct": true
+                    },
+                    "nat": {
+                        "equation": "((ch2*0.75 + ch1*0.25)-0.1)*1.2, (ch2-0.1)*1.2, (ch1-0.1)*1.2",
+                        "equalize": false,
                         "geo_correct": true
                     }
                 }
@@ -842,6 +872,11 @@
                         "type": "equirectangular"
                     }
                 }
+            },
+            "mwri_rm": {
+                "handler": "image_handler",
+                "name": "MWRI-RM",
+                "rgb_composites": {}
             },
             "atms": {
                 "handler": "image_handler",

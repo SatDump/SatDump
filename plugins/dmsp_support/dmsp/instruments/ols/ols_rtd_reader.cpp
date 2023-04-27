@@ -80,8 +80,8 @@ namespace dmsp
                     {
                         for (int i = 0; i < 15; i++)
                         {
-                            int px1 = current_pos * 15 - i - (line_sync_code / 10) + 14;
-                            int px2 = current_pos * 15 - i - (line_sync_code / 10);
+                            int px1 = current_pos * 15 - i - (line_sync_code / 10) + offset_vis;
+                            int px2 = current_pos * 15 - i - (line_sync_code / 10) + offset_ir;
                             if (px1 > 0 && px1 < width)
                                 vis_ch[lines * width + ((width - 1) - px1)] = tag_bit ? smooth_channel_px[14 - i] : fine_channel_px[14 - i];
                             if (px2 > 0 && px2 < width)

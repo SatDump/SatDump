@@ -17,6 +17,7 @@ namespace demod
         std::shared_ptr<dsp::FIRBlock<float>> rrc;
         std::shared_ptr<dsp::MMClockRecoveryBlock<float>> rec;
 
+        bool d_basic_shaping = false;
         float d_rrc_alpha;
         int d_rrc_taps = 31;
 

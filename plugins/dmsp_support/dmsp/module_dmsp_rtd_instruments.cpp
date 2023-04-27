@@ -33,6 +33,22 @@ namespace dmsp
         filesize = getFilesize(d_input_file);
         data_in = std::ifstream(d_input_file, std::ios::binary);
 
+        int sat_num = 0;
+
+        try
+        {
+            sat_num = d_parameters["satellite_number"];
+        }
+        catch (std::exception &e)
+        {
+            sat_num = std::stoi(d_parameters["satellite_number"].get<std::string>());
+        }
+
+        if (sat_num == 17)
+            ols_reader.set_offsets(9, -8);
+        else if (sat_num == 18)
+            ols_reader.set_offsets(0, 14);
+
         uint8_t rtd_words[19];
 
         time_t lastTime = 0;

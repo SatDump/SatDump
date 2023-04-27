@@ -10,7 +10,7 @@ namespace fengyun3
             for (int i = 0; i < 18; i++)
                 channels[i].resize(98);
 
-            lines = -1;
+            lines = 0;
         }
 
         MWTS3Reader::~MWTS3Reader()

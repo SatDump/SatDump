@@ -13,9 +13,11 @@ option(BUILD_GUI "Build the GUI" ON)
 option(BUILD_TESTING "Build the testing program" OFF)
 option(BUILD_TOOLS "Build the tools programs" OFF)
 option(BUILD_ZIQ "Build support for the custom ZIQ format" ON)
+option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
+option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
     # Build settings
@@ -77,35 +79,6 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
-endif()
-
-# SSE41
-if(NOT ANDROID)
-    include(FindSSE41)
-endif()
-
-if(ANDROID)
-    set(SSE41_FOUND 0)
-
-    if(ANDROID_ABI STREQUAL "x86")
-        set(SSE41_FOUND 1)
-    endif()
-
-    if(ANDROID_ABI STREQUAL "x86_64")
-        set(SSE41_FOUND 1)
-    endif()
-endif()
-
-if(SSE41_FOUND)
-    message("Found SSE features, enabling building SSE code")
-
-    if(UNIX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-    elseif(MSVC OR BUILD_MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE41_C_FLAGS}")
-    endif()
-else()
-    message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
 
 project(SatDump VERSION "1.1.0")
@@ -206,7 +179,7 @@ endif()
 add_subdirectory(plugins)
 
 # Install configuration
-if(NOT ANDROID)
+if((NOT ANDROID) AND ENABLE_INSTALL)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
     install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/satdump)

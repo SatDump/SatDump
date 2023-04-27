@@ -227,7 +227,7 @@ namespace goes
 
                         hasImage = true;
 
-                        if (ImGui::BeginTabItem(std::string("Img " + std::to_string(decMap.first)).c_str()))
+                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
                         {
                             ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
                             ImGui::SameLine();

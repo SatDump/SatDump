@@ -39,7 +39,7 @@ namespace satdump
         bool map_overlay = false;
         bool cities_overlay = false;
 
-        float cities_scale = 0.5;
+        int cities_size = 50;
 
         // GUI
         bool range_window = false;

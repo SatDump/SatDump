@@ -12,9 +12,12 @@ namespace demod
         sym_buffer = new int8_t[d_buffer_size * 4];
 
         // Parse params
+        if (parameters.count("basic_shaping") > 0)
+            d_basic_shaping = parameters["basic_shaping"].get<bool>();
+
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
-        else
+        else if (!d_basic_shaping)
             throw std::runtime_error("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
@@ -63,7 +66,14 @@ namespace demod
         agc2 = std::make_shared<dsp::AGCBlock<float>>(dcb2->output_stream, 0.1f, 0.5f, 1.0f, 65535.0f);
 
         // LPF
-        rrc = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        std::vector<float> taps = dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps);
+        if (d_basic_shaping)
+        {
+            taps.clear();
+            for (int i = 0; i < final_sps; i++)
+                taps.push_back(0.1f);
+        }
+        rrc = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, taps);
 
         // Clock recovery
         rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(rrc->output_stream,

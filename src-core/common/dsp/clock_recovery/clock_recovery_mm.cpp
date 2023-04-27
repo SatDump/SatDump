@@ -1,6 +1,8 @@
 #include "clock_recovery_mm.h"
 #include "common/dsp/window/window.h"
 
+#define DO_BRANCH 0
+
 namespace dsp
 {
     template <typename T>
@@ -26,7 +28,11 @@ namespace dsp
         pfb.init(windowed_sinc(nfilt * ntaps, hz_to_rad(0.5 / (double)nfilt, 1.0), window::nuttall, nfilt), nfilt);
 
         // Buffer
+#if DO_BRANCH
         buffer = create_volk_buffer<T>(pfb.ntaps * 4);
+#else
+        buffer = create_volk_buffer<T>(STREAM_BUFFER_SIZE);
+#endif
     }
 
     template <typename T>
@@ -46,7 +52,11 @@ namespace dsp
         }
 
         // Copy NTAPS samples in the buffer from input, as that's required for the last samples
+#if DO_BRANCH
         memcpy(&buffer[pfb.ntaps - 1], Block<T, T>::input_stream->readBuf, (pfb.ntaps - 1) * sizeof(T));
+#else
+        memcpy(&buffer[pfb.ntaps - 1], Block<T, T>::input_stream->readBuf, nsamples * sizeof(T));
+#endif
         ouc = 0;
 
         for (; inc < nsamples && ouc < STREAM_BUFFER_SIZE;)
@@ -69,10 +79,14 @@ namespace dsp
 
             if constexpr (std::is_same_v<T, float>)
             {
+#if DO_BRANCH
                 if (inc < (pfb.ntaps - 1))
                     volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
                 else
                     volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
+#else
+                volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
+#endif
 
                 // Phase error
                 phase_error = (last_sample < 0 ? -1.0f : 1.0f) * sample - (sample < 0 ? -1.0f : 1.0f) * last_sample;
@@ -84,10 +98,14 @@ namespace dsp
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {
+#if DO_BRANCH
                 if (inc < (pfb.ntaps - 1))
                     volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
                 else
                     volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
+#else
+                volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+#endif
 
                 // Slice it
                 c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
@@ -117,8 +135,12 @@ namespace dsp
         if (inc < 0)
             inc = 0;
 
-        // We need some history for the next run, so copy it over into our buffer
+            // We need some history for the next run, so copy it over into our buffer
+#if DO_BRANCH
         memcpy(buffer, &Block<T, T>::input_stream->readBuf[nsamples - pfb.ntaps + 1], (pfb.ntaps - 1) * sizeof(T));
+#else
+        memmove(&buffer[0], &buffer[nsamples], pfb.ntaps * sizeof(T));
+#endif
 
         Block<T, T>::input_stream->flush();
         Block<T, T>::output_stream->swap(ouc);

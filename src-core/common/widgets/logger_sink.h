@@ -2,33 +2,27 @@
 
 #include <vector>
 #include <iostream>
-#include "spdlog/sinks/base_sink.h"
+#include "logger.h"
 #include "imgui/imgui.h"
 
 namespace widgets
 {
-    template <typename Mutex>
-    class LoggerSinkWidget : public spdlog::sinks::base_sink<Mutex>
+    class LoggerSinkWidget : public slog::LoggerSink
     {
     private:
         struct LogLine
         {
-            spdlog::level::level_enum lvl;
+            slog::LogLevel lvl;
             std::string str;
         };
 
         std::vector<LogLine> all_lines;
 
     protected:
-        void sink_it_(const spdlog::details::log_msg &msg) override
+        void receive(slog::LogMsg log)
         {
-            spdlog::memory_buf_t formatted;
-            spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
-            all_lines.push_back({msg.level, fmt::to_string(formatted)});
-        }
-
-        void flush_() override
-        {
+            if (log.lvl >= sink_lvl)
+                all_lines.push_back({log.lvl, format_log(log, false)});
         }
 
     public:
@@ -39,23 +33,23 @@ namespace widgets
 
             for (LogLine &ll : all_lines)
             {
-                std::string timestamp = ll.str.substr(0, 22);
-                std::string text = ll.str.substr(22, ll.str.size());
+                std::string timestamp = ll.str.substr(0, 24);
+                std::string text = ll.str.substr(24, ll.str.size());
 
                 ImGui::Text("%s", timestamp.c_str());
                 ImGui::SameLine();
 
-                if (ll.lvl == spdlog::level::trace)
+                if (ll.lvl == slog::LOG_TRACE)
                     ImGui::TextColored(ImColor(255, 255, 255), "%s", text.c_str());
-                else if (ll.lvl == spdlog::level::debug)
+                else if (ll.lvl == slog::LOG_DEBUG)
                     ImGui::TextColored(ImColor(0, 255, 255), "%s", text.c_str());
-                else if (ll.lvl == spdlog::level::info)
+                else if (ll.lvl == slog::LOG_INFO)
                     ImGui::TextColored(ImColor(0, 255, 0), "%s", text.c_str());
-                else if (ll.lvl == spdlog::level::warn)
+                else if (ll.lvl == slog::LOG_WARN)
                     ImGui::TextColored(ImColor(255, 255, 0), "%s", text.c_str());
-                else if (ll.lvl == spdlog::level::err)
+                else if (ll.lvl == slog::LOG_ERROR)
                     ImGui::TextColored(ImColor(255, 0, 0), "%s", text.c_str());
-                else if (ll.lvl == spdlog::level::critical)
+                else if (ll.lvl == slog::LOG_CRIT)
                     ImGui::TextColored(ImColor(255, 0, 255), "%s", text.c_str());
             }
         }

@@ -60,17 +60,22 @@ void RtlSdrSource::set_gains()
     if (!is_started)
         return;
 
-    rtlsdr_set_agc_mode(rtlsdr_dev_obj, lna_agc_enabled);
-    rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
+    for (int i = 0; i < 20 && rtlsdr_set_agc_mode(rtlsdr_dev_obj, lna_agc_enabled) < 0; i++)
+        ;
+    for (int i = 0; i < 20 && rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10) < 0; i++)
+        ;
 
     if (lna_agc_enabled)
     {
-        rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 0);
+        for (int i = 0; i < 20 && rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 0) < 0; i++)
+            ;
     }
     else
     {
-        rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 1);
-        rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10);
+        for (int i = 0; i < 20 && rtlsdr_set_tuner_gain_mode(rtlsdr_dev_obj, 1) < 0; i++)
+            ;
+        for (int i = 0; i < 20 && rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain * 10) < 0; i++)
+            ;
     }
 
     logger->debug("Set RTL-SDR AGC to {:d}", (int)lna_agc_enabled);
@@ -81,7 +86,8 @@ void RtlSdrSource::set_bias()
 {
     if (!is_started)
         return;
-    rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled);
+    for (int i = 0; i < 20 && rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled) < 0; i++)
+        ;
     logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
 }
 
@@ -189,7 +195,8 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
-        rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency);
+        for (int i = 0; i < 20 && rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency) < 0; i++)
+            ;
         logger->debug("Set RTL-SDR frequency to {:d}", frequency);
     }
     DSPSampleSource::set_frequency(frequency);

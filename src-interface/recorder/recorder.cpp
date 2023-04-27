@@ -71,20 +71,24 @@ namespace satdump
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
-        splitter->set_output_2nd(false);
-        splitter->set_output_3rd(false);
+        splitter->add_output("record");
+        splitter->add_output("live");
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
         fft->avg_rate = 0.1;
         fft->start();
 
-        file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->output_stream_2);
+        file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
         file_sink->set_output_sample_type(dsp::CF_32);
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft->output_stream->writeBuf, fft_size, 500);
+        waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
+        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+
+        fft->on_fft = [this](float *v)
+        { waterfall_plot->push_fft(v); };
 
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
@@ -113,7 +117,7 @@ namespace satdump
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
 
-            float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 240 * ui_scale : 0) + 13 * ui_scale;
+            float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
             ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
@@ -216,10 +220,11 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    if (ImGui::Combo("FFT Size", &selected_fft_size, "8192\0"
-                                                                     "4096\0"
-                                                                     "2048\0"
-                                                                     "1024\0"))
+                    if (ImGui::Combo("FFT Size", &selected_fft_size, //"65536\0"
+                                     "8192\0"
+                                     "4096\0"
+                                     "2048\0"
+                                     "1024\0"))
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 
@@ -234,8 +239,14 @@ namespace satdump
                         fft_size = fft_sizes_lut[selected_fft_size];
 
                         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
                         logger->info("Set FFT rate to {:d}", fft_rate);
+                    }
+                    if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
+                    {
+                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                        logger->info("Set Waterfall rate to {:d}", fft_rate);
                     }
                     ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
@@ -334,31 +345,65 @@ namespace satdump
                                                                       "ziq s16\0"
                                                                       "ziq f32\0"
 #endif
+#ifdef BUILD_ZIQ2
+                                                                      "ziq2 s8 (WIP)\0"
+                                                                      "ziq2 s16 (WIP)\0"
+#endif
                                      ))
                     {
-                        if (select_sample_format == 0)
+                        int type_lut[] = {
+                            0,
+                            1,
+                            2,
+                            3,
+#ifdef BUILD_ZIQ
+                            4,
+                            5,
+                            6,
+#endif
+#ifdef BUILD_ZIQ2
+                            7,
+                            8,
+#endif
+                        };
+
+                        int f = type_lut[select_sample_format];
+
+                        if (f == 0)
                             file_sink->set_output_sample_type(dsp::CF_32);
-                        else if (select_sample_format == 1)
+                        else if (f == 1)
                             file_sink->set_output_sample_type(dsp::IS_16);
-                        else if (select_sample_format == 2)
+                        else if (f == 2)
                             file_sink->set_output_sample_type(dsp::IS_8);
-                        else if (select_sample_format == 3)
+                        else if (f == 3)
                             file_sink->set_output_sample_type(dsp::WAV_16);
 #ifdef BUILD_ZIQ
-                        else if (select_sample_format == 4)
+                        else if (f == 4)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 8;
                         }
-                        else if (select_sample_format == 5)
+                        else if (f == 5)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 16;
                         }
-                        else if (select_sample_format == 6)
+                        else if (f == 6)
                         {
                             file_sink->set_output_sample_type(dsp::ZIQ);
                             ziq_bit_depth = 32;
+                        }
+#endif
+#ifdef BUILD_ZIQ2
+                        else if (f == 7)
+                        {
+                            file_sink->set_output_sample_type(dsp::ZIQ2);
+                            ziq_bit_depth = 8;
+                        }
+                        else if (f == 8)
+                        {
+                            file_sink->set_output_sample_type(dsp::ZIQ2);
+                            ziq_bit_depth = 16;
                         }
 #endif
                     }
@@ -433,7 +478,8 @@ namespace satdump
                     fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
-                    if (ImGui::IsWindowHovered()){
+                    if (ImGui::IsWindowHovered())
+                    {
                         ImVec2 mouse_pos = ImGui::GetMousePos();
                         float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale) / (recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale) - 0.5;
                         ImGui::SetTooltip(((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio) * get_samplerate())).c_str());

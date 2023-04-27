@@ -13,6 +13,8 @@ namespace dsp
     {
         volk_free(buffer_s8);
         volk_free(buffer_s16);
+        if (mag_buffer != nullptr)
+            volk_free(mag_buffer);
     }
 
     void FileSinkBlock::work()
@@ -49,6 +51,14 @@ namespace dsp
             {
                 current_size_out += ziqWriter->write(input_stream->readBuf, nsamples);
                 current_size_out_raw += (ziqcfg.bits_per_sample / 4) * nsamples;
+            }
+#endif
+#ifdef BUILD_ZIQ2
+            else if (d_sample_format == ZIQ2)
+            {
+                int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, input_stream->readBuf, mag_buffer, nsamples, bit_depth);
+                output_file.write((char *)buffer_s8, sz);
+                current_size_out += sz;
             }
 #endif
 

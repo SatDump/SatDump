@@ -169,5 +169,31 @@ namespace fengyun3
                 MERSIReader::init();
             }
         };
+
+        class MERSIRMReader : public MERSIReader
+        {
+        public:
+            MERSIRMReader()
+            {
+                // Configuration for MERSI-RM
+                ch_cnt_250 = 0;
+                ch_cnt_1000 = 8;
+                ch250_width = 1560 * 4;
+
+                frame_head_size = 42864;
+                frame_scan_250_size = 18816;
+                frame_scan_1000_size = 18816;
+
+                imagery_offset_bytes = 2;
+                imagery_offset_bits = 7;
+
+                calib_byte_offset = 0;
+                calib_length = 5358;
+
+                ms_scale = 1e4;
+
+                MERSIReader::init();
+            }
+        };
     } // namespace avhrr
 } // namespace fengyun3
