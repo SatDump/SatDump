@@ -12,25 +12,41 @@
 
 #include "logger.h"
 
-#include "common/image/image.h"
-#include "resources.h"
-#include <vector>
+// #include "common/image/image.h"
+#include "common/dsp/filter/firdes.h"
+
+#include "common/dsp/window/window.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint8_t> img = image::Image<uint8_t>(10000, 300, 3);
-    uint8_t color[] = {255, 255, 255};
+    std::vector<float> taps = /* dsp::windowed_sinc(361, 4, dsp::window::nuttall); //*/
+        dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.6, 361);
+    // dsp::firdes::design_resampler_filter_float(2, 1, 0.2);
 
-#if 1
-    img.init_font(resources::getResourcePath("fonts/ComicSansMS3.ttf"));
-    for (int i = 0; i < 100; i ++)
-       img.draw_text(0, 0, color, 500, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-#else
-    std::vector<image::Image<uint8_t>> font = image::make_font(500);
-    for (int i = 0; i < 100; i ++)
-        img.draw_text(0, 0, color, font, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-#endif   
-    img.save_png("test_font.png");
+    //  image::Image<uint8_t> plot(taps.size(), taps.size(), 1);
+
+    std::string array;
+
+    array += "[";
+
+    // uint8_t color[] = {255};
+    for (int x = 0; x < taps.size(); x++)
+    {
+        if (x < taps.size() - 1)
+            array += std::to_string(taps[x]) + ", ";
+        else
+            array += std::to_string(taps[x]);
+        //  plot.draw_line(x, 0, x, taps[x] * taps.size() * 50, color);
+    }
+    // plot.mirror(false, true);
+    // plot.save_img("taps_plot.png");
+
+    array += "]";
+
+    std::string command = "octave --eval \'taps = " + array + "\n freqz(taps)\n\' --persist";
+
+    // printf("%s\n", command.c_str());
+    system(command.c_str());
 }

@@ -19,6 +19,16 @@
             ]
         ],
         "parameters": {
+            "satellite_number": {
+                "type": "options",
+                "value": "18",
+                "name": "DMSP Satellite",
+                "options": [
+                    "17",
+                    "18"
+                ],
+                "description": "DMSP does not transmit a satellite ID.\nAs instrument configurations does vary between them,\nit is required to identify the satellite."
+            },
             "samplerate": {
                 "value": 2e6
             }

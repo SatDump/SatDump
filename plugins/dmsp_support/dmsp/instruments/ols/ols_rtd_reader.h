@@ -22,6 +22,9 @@ namespace dmsp
             int current_direction = 0;
             int line_sync_code = 0;
 
+            int offset_ir = 0;
+            int offset_vis = 0;
+
         public:
             OLSRTDReader();
             ~OLSRTDReader();
@@ -32,6 +35,12 @@ namespace dmsp
 
             image::Image<uint8_t> getChannelVIS();
             image::Image<uint8_t> getChannelIR();
+
+            void set_offsets(int i, int v)
+            {
+                offset_ir = i;
+                offset_vis = v;
+            }
         };
     } // namespace avhrr
 } // namespace noaa

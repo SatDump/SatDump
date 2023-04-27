@@ -9,6 +9,7 @@
 #include "instruments/mwts2/mwts2_reader.h"
 #include "instruments/mwts3/mwts3_reader.h"
 #include "instruments/mwri/mwri_reader.h"
+#include "instruments/mwrirm/mwrirm_reader.h"
 #include "instruments/wai/wai_reader.h"
 #include "instruments/virr/virr_reader.h"
 #include "instruments/mwhs/mwhs_reader.h"
@@ -16,6 +17,7 @@
 #include "instruments/mersi/mersi_reader.h"
 #include "instruments/gas/gas_reader.h"
 #include "instruments/virr/virr_to_c10.h"
+#include "instruments/pmr/pmr_reader.h"
 
 namespace fengyun3
 {
@@ -30,6 +32,7 @@ namespace fengyun3
                 FY_3C,
                 FY_3D,
                 FY_3E,
+                FY_3G,
             };
 
             enum fy3_downlink_t
@@ -56,6 +59,7 @@ namespace fengyun3
             virr::VIRRReader virr_reader;
             std::unique_ptr<wai::WAIReader> wai_reader;
             mwri::MWRIReader mwri_reader;
+            mwrirm::MWRIRMReader mwrirm_reader;
             mwts::MWTSReader mwts1_reader;
             mwts2::MWTS2Reader mwts2_reader;
             mwts3::MWTS3Reader mwts3_reader;
@@ -63,9 +67,12 @@ namespace fengyun3
             mwhs2::MWHS2Reader mwhs2_reader;
             std::unique_ptr<windrad::WindRADReader> windrad_reader1, windrad_reader2;
             std::unique_ptr<xeuvi::XEUVIReader> xeuvi_reader;
+            std::unique_ptr<pmr::PMRReader> pmr1_reader;
+            std::unique_ptr<pmr::PMRReader> pmr2_reader;
             mersi::MERSI1Reader mersi1_reader;
             mersi::MERSI2Reader mersi2_reader;
             mersi::MERSILLReader mersill_reader;
+            mersi::MERSIRMReader mersirm_reader;
             gas::GASReader gas_reader;
             virr::VIRRToC10 *virr_to_c10;
 
@@ -73,17 +80,21 @@ namespace fengyun3
             instrument_status_t mersi1_status = DECODING;
             instrument_status_t mersi2_status = DECODING;
             instrument_status_t mersill_status = DECODING;
+            instrument_status_t mersirm_status = DECODING;
             instrument_status_t erm_status = DECODING;
             instrument_status_t virr_status = DECODING;
             instrument_status_t wai_status = DECODING;
             instrument_status_t gas_status = DECODING;
             instrument_status_t mwri_status = DECODING;
+            instrument_status_t mwrirm_status = DECODING;
             instrument_status_t mwts1_status = DECODING;
             instrument_status_t mwts2_status = DECODING;
             instrument_status_t mwts3_status = DECODING;
             instrument_status_t mwhs1_status = DECODING;
             instrument_status_t mwhs2_status = DECODING;
             instrument_status_t xeuvi_status = DECODING;
+            instrument_status_t pmr1_status = DECODING;
+            instrument_status_t pmr2_status = DECODING;
             instrument_status_t windrad_C_status = DECODING;
             instrument_status_t windrad_Ku_status = DECODING;
 

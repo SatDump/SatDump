@@ -32,6 +32,8 @@ namespace fengyun3
                 d_satellite = FY_3D;
             else if (parameters["satellite"] == "fy3e")
                 d_satellite = FY_3E;
+            else if (parameters["satellite"] == "fy3g")
+                d_satellite = FY_3G;
             else
                 throw std::runtime_error("FY3 Instruments Decoder : FY3 satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
 
@@ -90,6 +92,20 @@ namespace fengyun3
                     std::filesystem::create_directory(wai_directory);
                 wai_reader = std::make_unique<wai::WAIReader>(wai_directory);
             }
+            else if (d_satellite == FY_3G)
+            {
+                std::string pmr1_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/PMR-1";
+                if (!std::filesystem::exists(pmr1_directory))
+                    std::filesystem::create_directory(pmr1_directory);
+                pmr1_reader = std::make_unique<pmr::PMRReader>(pmr1_directory);
+                pmr1_reader->offset = 1;
+
+                std::string pmr2_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/PMR-2";
+                if (!std::filesystem::exists(pmr2_directory))
+                    std::filesystem::create_directory(pmr2_directory);
+                pmr2_reader = std::make_unique<pmr::PMRReader>(pmr2_directory);
+                pmr2_reader->offset = 1;
+            }
 
             // Demuxers
             ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
@@ -97,11 +113,14 @@ namespace fengyun3
             // Deframer
             def::SimpleDeframer virr_deframer(0b101000010001011011111101011100011001110110000011110010010101, 60, 208400, 0);
             def::SimpleDeframer mwri_deframer(0xeb901acffc1d, 48, 60368, 0);
+            def::SimpleDeframer mwrirm_deframer(0x081308410828080b, 64, 344000, 0);
             def::SimpleDeframer xeuvi_deframer(0x55aa55aa55aa, 48, 519328, 0);
             def::SimpleDeframer waai_deframer(0x55aa55aa55aa, 48, 524336, 0);
             def::SimpleDeframer windrad_deframer1(0xfaf355aa, 32, 13160, 0);
             def::SimpleDeframer windrad_deframer2(0xfaf3aabb, 32, 18072, 0);
             def::SimpleDeframer gas_deframer(0x1acffc7d, 32, 5363264, 0);
+            def::SimpleDeframer pmr1_deframer(0xcc5afe5a, 32, 29536, 0);
+            def::SimpleDeframer pmr2_deframer(0xcc5afe5a, 32, 29536, 0);
 
             std::vector<uint8_t> fy_scids;
 
@@ -137,7 +156,8 @@ namespace fengyun3
                     vcdu.spacecraft_id == FY3_B_SCID ||
                     vcdu.spacecraft_id == FY3_C_SCID ||
                     vcdu.spacecraft_id == FY3_D_SCID ||
-                    vcdu.spacecraft_id == FY3_E_SCID)
+                    vcdu.spacecraft_id == FY3_E_SCID ||
+                    vcdu.spacecraft_id == FY3_G_SCID)
                     fy_scids.push_back(vcdu.spacecraft_id);
 
                 if (d_satellite == FY_AB)
@@ -294,6 +314,61 @@ namespace fengyun3
                                 mwts3_reader.work(pkt);
                     }
                 }
+                else if (d_satellite == FY_3G)
+                {
+                    // printf("VCID %d\n", vcdu.vcid);
+                    /* if (vcdu.vcid == 47) // 3) // MERSI-LL
+                     {
+                         //  mersirm_reader.work(&cadu[14], 882);
+                         //  if (d_dump_mersi)
+                         //      mersi_bin.write((char *)&cadu[14], 882);
+
+                         std::vector<std::vector<uint8_t>> out = pmr_deframer.work(&cadu[14], 882);
+                         for (std::vector<uint8_t> frameVec : out)
+                         {
+                             pmr_reader->work(frameVec);
+                             // if (frameVec[5] == 0xee)
+                             //     idk_out.write((char *)&frameVec[0], frameVec.size());
+                         }
+                         // idk_out.write((char *)&cadu[14], 882);
+                         // logger->info("MERSI!!");
+                     } else */
+                    if (vcdu.vcid == 38) // PMR-1
+                    {
+                        std::vector<std::vector<uint8_t>> out = pmr1_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                            pmr1_reader->work(frameVec);
+                    }
+                    else if (vcdu.vcid == 47) // PMR-2
+                    {
+                        std::vector<std::vector<uint8_t>> out = pmr2_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                            pmr2_reader->work(frameVec);
+                    }
+                    else if (vcdu.vcid == 42) // MWRI-RM
+                    {
+                        std::vector<std::vector<uint8_t>> out = mwrirm_deframer.work(&cadu[14], 882);
+                        for (std::vector<uint8_t> frameVec : out)
+                            mwrirm_reader.work(frameVec);
+                    }
+                    else if (vcdu.vcid == 35) // MERSI-RM
+                    {
+                        mersirm_reader.work(&cadu[14], 882);
+                        if (d_dump_mersi)
+                            mersi_bin.write((char *)&cadu[14], 882);
+                    }
+#if 0
+                    else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
+                    {
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
+                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                            if (pkt.header.apid == 16) // MWHS-2
+                                mwhs2_reader.work(pkt, true);
+                            else if (pkt.header.apid == 7) // MWTS-3
+                                mwts3_reader.work(pkt);
+                    }
+#endif
+                }
 
                 progress = data_in.tellg();
 
@@ -323,6 +398,8 @@ namespace fengyun3
                 sat_name = "FengYun-3D";
             else if (scid == FY3_E_SCID)
                 sat_name = "FengYun-3E";
+            else if (scid == FY3_G_SCID)
+                sat_name = "FengYun-3G";
 
             int norad = 0;
             if (scid == FY3_A_SCID)
@@ -335,6 +412,8 @@ namespace fengyun3
                 norad = FY3_D_NORAD;
             else if (scid == FY3_E_SCID)
                 norad = FY3_E_NORAD;
+            else if (scid == FY3_G_SCID)
+                norad = FY3_G_NORAD;
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
@@ -708,6 +787,65 @@ namespace fengyun3
                 mersill_status = DONE;
             }
 
+            if (d_satellite == FY_3G) // MERSI-RM
+            {
+                mersirm_status = PROCESSING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-RM";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                // BowTie values
+                const float alpha = 1.0 / 1.6;
+                const float beta = 0.58333; // 1.0 - alpha;
+                const long scanHeight_250 = 40;
+                const long scanHeight_1000 = 10;
+
+                logger->info("----------- MERSI-RM");
+                logger->info("Segments : " + std::to_string(mersirm_reader.segments));
+
+                satdump::ImageProducts mersirm_products;
+                mersirm_products.instrument_name = "mersirm";
+                mersirm_products.has_timestamps = true;
+                mersirm_products.set_tle(satellite_tle);
+                mersirm_products.bit_depth = 12;
+                mersirm_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+                mersirm_products.set_timestamps(mersirm_reader.timestamps);
+                mersirm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mersirm.json")));
+
+                // Channel offsets relative to Ch1
+                int offset[8] = {
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                };
+
+                for (int i = 0; i < 8; i++)
+                {
+                    image::Image<uint16_t> image = mersirm_reader.getChannel(i);
+                    logger->debug("Processing channel {:d}", i + 1);
+                    if (d_mersi_histmatch)
+                        mersi::mersi_match_detector_histograms(image, 10);
+                    if (d_mersi_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    mersirm_products.images.push_back({"MERSIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                }
+
+                // mersirm_reader.getChannel(-1).save_png(directory + "/calib.png");
+
+                mersirm_status = SAVING;
+
+                mersirm_products.save(directory);
+                dataset.products_list.push_back("MERSI-RM");
+
+                mersirm_status = DONE;
+            }
+
             if (d_satellite == FY_3D) // MWRI
             {
                 mwri_status = SAVING;
@@ -723,7 +861,7 @@ namespace fengyun3
                 mwri_products.instrument_name = "mwri";
                 mwri_products.has_timestamps = true;
                 mwri_products.set_tle(satellite_tle);
-                mwri_products.bit_depth = 12;
+                mwri_products.bit_depth = 16;
                 mwri_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 mwri_products.set_timestamps(mwri_reader.timestamps);
                 mwri_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abcd_mwri1.json")));
@@ -735,6 +873,35 @@ namespace fengyun3
                 dataset.products_list.push_back("MWRI");
 
                 mwri_status = DONE;
+            }
+
+            if (d_satellite == FY_3G) // MWRI-RM
+            {
+                mwrirm_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWRI-RM";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- MWRI-RM");
+                logger->info("Lines : " + std::to_string(mwrirm_reader.lines));
+
+                satdump::ImageProducts mwrirm_produducts;
+                mwrirm_produducts.instrument_name = "mwri_rm";
+                //  mwrirm_produducts.has_timestamps = true;
+                mwrirm_produducts.set_tle(satellite_tle);
+                mwrirm_produducts.bit_depth = 16;
+                mwrirm_produducts.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                mwrirm_produducts.set_timestamps(mwri_reader.timestamps);
+                mwrirm_produducts.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mwrirm.json")));
+
+                for (int i = 0; i < 26; i++)
+                    mwrirm_produducts.images.push_back({"MWRIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwrirm_reader.getChannel(i)});
+
+                mwrirm_produducts.save(directory);
+                dataset.products_list.push_back("MWRI-RM");
+
+                mwrirm_status = DONE;
             }
 
             if (d_satellite == FY_3D) // WAI
@@ -934,6 +1101,41 @@ namespace fengyun3
                     ImGui::TextColored(ImColor(0, 255, 0), "%d", mersill_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersill_status);
+                }
+
+                if (d_satellite == FY_3G)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MERSI-RM");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mersirm_reader.segments);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mersirm_status);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("MWRI-RM");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", mwrirm_reader.lines);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(mwrirm_status);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("PMR-1");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", pmr1_reader->images_count);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(pmr1_status);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("PMR-2");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextColored(ImColor(0, 255, 0), "%d", pmr2_reader->images_count);
+                    ImGui::TableSetColumnIndex(2);
+                    drawStatus(pmr2_status);
                 }
 
                 if ((d_satellite == FY_AB || d_satellite == FY_3C) && (d_downlink == AHRPT || d_downlink == DPT))

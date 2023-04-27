@@ -42,4 +42,48 @@ namespace ccsds
     {
         return CCSDSHeader(header);
     }
+
+    CCSDSHeader::CCSDSHeader(const CCSDSHeader &v) noexcept
+    {
+        memcpy(raw, v.raw, 6);
+        version = v.version;
+        type = v.type;
+        secondary_header_flag = v.secondary_header_flag;
+        apid = v.apid;
+        sequence_flag = v.sequence_flag;
+        packet_sequence_count = v.packet_sequence_count;
+        packet_length = v.packet_length;
+    }
+
+    CCSDSHeader &CCSDSHeader::operator=(const CCSDSHeader &v) noexcept
+    {
+        if (this != &v)
+        {
+            memcpy(raw, v.raw, 6);
+            version = v.version;
+            type = v.type;
+            secondary_header_flag = v.secondary_header_flag;
+            apid = v.apid;
+            sequence_flag = v.sequence_flag;
+            packet_sequence_count = v.packet_sequence_count;
+            packet_length = v.packet_length;
+        }
+        return *this;
+    };
+
+    CCSDSPacket::CCSDSPacket(const CCSDSPacket &v) noexcept
+    {
+        header = v.header;
+        payload = v.payload;
+    }
+
+    CCSDSPacket &CCSDSPacket::operator=(const CCSDSPacket &v) noexcept
+    {
+        if (this != &v)
+        {
+            header = v.header;
+            payload = v.payload;
+        }
+        return *this;
+    };
 } // namespace proba

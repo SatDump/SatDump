@@ -22,7 +22,9 @@ namespace widgets
         float avg_snr = 0.0f;
         for (int i = 0; i < 200; i++)
         {
-            avg_snr += snr_history[i];
+            if (snr_history[i] >= 0 && snr_history[i] <= peak_snr){
+                avg_snr += snr_history[i];
+            }
         }
         avg_snr = avg_snr / 200; 
 

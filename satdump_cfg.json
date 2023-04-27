@@ -160,6 +160,7 @@
             39260, // FengYun-3C
             43010, // FengYun-3D
             49008, // FengYun-3E
+            56232, // FengYun-3G
             35865, // METEOR-M1
             40069, // METEOR-M2
             44387, // METEOR-M2-2
@@ -700,6 +701,30 @@
                     }
                 }
             },
+            "mersirm": {
+                "handler": "image_handler",
+                "name": "MERSI-RM",
+                "rgb_composites": {
+                    "321": {
+                        "equation": "ch3, ch2, ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "221": {
+                        "equation": "ch2, ch2, ch1",
+                        "geo_correct": true
+                    },
+                    "521": {
+                        "equation": "ch5, ch2, ch1",
+                        "geo_correct": true
+                    },
+                    "nat": {
+                        "equation": "((ch2*0.75 + ch1*0.25)-0.1)*1.2, (ch2-0.1)*1.2, (ch1-0.1)*1.2",
+                        "equalize": false,
+                        "geo_correct": true
+                    }
+                }
+            },
             "mhs": {
                 "handler": "image_handler",
                 "name": "MHS",
@@ -847,6 +872,11 @@
                         "type": "equirectangular"
                     }
                 }
+            },
+            "mwri_rm": {
+                "handler": "image_handler",
+                "name": "MWRI-RM",
+                "rgb_composites": {}
             },
             "atms": {
                 "handler": "image_handler",

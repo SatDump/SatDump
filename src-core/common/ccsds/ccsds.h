@@ -19,7 +19,10 @@ namespace ccsds
 
         CCSDSHeader();
         CCSDSHeader(uint8_t *rawi);
+        CCSDSHeader(const CCSDSHeader &v) noexcept;
         void encodeHDR();
+
+        CCSDSHeader &operator=(const CCSDSHeader &v) noexcept;
     };
 
     // Struct representing
@@ -28,6 +31,11 @@ namespace ccsds
         CCSDSHeader header;
         std::vector<uint8_t> payload;
         void encodeHDR();
+
+        CCSDSPacket() {}
+        CCSDSPacket(const CCSDSPacket &v) noexcept;
+
+        CCSDSPacket &operator=(const CCSDSPacket &v) noexcept;
     };
 
     // Parse CCSDS header
