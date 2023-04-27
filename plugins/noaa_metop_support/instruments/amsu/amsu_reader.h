@@ -27,8 +27,8 @@ namespace noaa_metop
                 uint16_t space;
             };
             std::vector<uint16_t> channels[15];
-            def::SimpleDeframer amsuA2Deframer = def::SimpleDeframer(0xFFFFFF, 24, 9920, 0);
-            def::SimpleDeframer amsuA1Deframer = def::SimpleDeframer(0xFFFFFF, 24, 2496, 0);
+            def::SimpleDeframer amsuA1Deframer = def::SimpleDeframer(0xFFFFFF, 24, 9920, 0);
+            def::SimpleDeframer amsuA2Deframer = def::SimpleDeframer(0xFFFFFF, 24, 2496, 0);
             std::vector<std::vector<uint8_t>> amsuA2Data;
             std::vector<std::vector<uint8_t>> amsuA1Data;
             std::vector<view_pair> calibration_views_A1[13];

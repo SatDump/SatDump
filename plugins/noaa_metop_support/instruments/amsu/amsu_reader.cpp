@@ -35,11 +35,11 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 26; c += 2)
-                calibration_views_A1[c].push_back((view_pair){(((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1201 + c] << 8) | buffer[1202 + c])) / 2,
+                calibration_views_A1[c/2].push_back((view_pair){(((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1201 + c] << 8) | buffer[1202 + c])) / 2,
                                                               (((buffer[1060 + c] << 8) | buffer[1061 + c]) + ((buffer[1073 + c] << 8) | buffer[1074 + c])) / 2});
             // temperatures
             for (int n = 0; n < 90; n += 2)
-                temperature_counts_A1[n].push_back((buffer[1089 + n] << 8) | buffer[1089 + n + 1]);
+                temperature_counts_A1[n/2].push_back((buffer[1089 + n] << 8) | buffer[1089 + n + 1]);
         }
 
         void AMSUReader::work_A2(uint8_t *buffer)
@@ -57,11 +57,11 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 4; c += 2)
-                calibration_views_A2[c].push_back((view_pair){(((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2,
-                                                              (((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2});
+                calibration_views_A2[c/2].push_back((view_pair){(uint16_t)(((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2,
+                                                              (uint16_t)(((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2});
             // temperatures
             for (int n = 0; n < 38; n += 2)
-                temperature_counts_A2[n].push_back((buffer[261 + n] << 8) | buffer[261 + n + 1]);
+                temperature_counts_A2[n/2].push_back((buffer[261 + n] << 8) | buffer[261 + n + 1]);
         }
 
         void AMSUReader::work_noaa(uint8_t *buffer)
@@ -117,7 +117,7 @@ namespace noaa_metop
                 if (packet.payload.size() < 2096)
                     return;
                 std::vector<uint8_t> filtered;
-                for (unsigned int i = 13; i < packet.payload.size(); i += 2)
+                for (unsigned int i = 13; i < packet.payload.size()-2; i += 2)
                 {
                     uint16_t word = (packet.payload[i + 1] << 8) | packet.payload[i + 2];
                     if (word != 1)
@@ -134,7 +134,7 @@ namespace noaa_metop
                 if (packet.payload.size() < 1136)
                     return;
                 std::vector<uint8_t> filtered;
-                for (unsigned int i = 13; i < packet.payload.size(); i += 2)
+                for (unsigned int i = 13; i < packet.payload.size()-2; i += 2)
                 {
                     uint16_t word = (packet.payload[i + 1] << 8) | packet.payload[i + 2];
                     if (word != 1)
