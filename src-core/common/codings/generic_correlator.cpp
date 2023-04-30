@@ -209,6 +209,9 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
         {
             for (int s = 0; s < (int)syncwords.size(); s++)
             {
+                // corr = 0;
+                // for (int x = 0; x < syncword_length; x++)
+                //     corr += (converted_buffer[i + x] > 0) == (syncwords[s][x] > 0);
                 volk_32f_x2_dot_prod_32f(&corr, &converted_buffer[i], syncwords[s].data(), syncword_length);
 
                 if (corr > cor)
@@ -218,6 +221,9 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
                     position = i;
                 }
             }
+
+            // if (i == 0 && corr > 50)
+            //     break;
         }
     }
 
@@ -226,7 +232,19 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
         phase = best_sync ? PHASE_180 : PHASE_0;
         swap = false;
     }
-    else if (d_modulation == dsp::QPSK || d_modulation == dsp::OQPSK)
+    else if (d_modulation == dsp::QPSK)
+    {
+        if (best_sync == 0)
+            phase = PHASE_0;
+        else if (best_sync == 1)
+            phase = PHASE_90;
+        else if (best_sync == 2)
+            phase = PHASE_180;
+        else if (best_sync == 3)
+            phase = PHASE_270;
+        swap = 0; //(best_sync / 4);
+    }
+    else if (d_modulation == dsp::OQPSK)
     {
         if (best_sync == 0)
             phase = PHASE_90;
