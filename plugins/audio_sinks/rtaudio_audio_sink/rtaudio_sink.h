@@ -9,6 +9,7 @@ class RtAudioSink : public audio::AudioSink
 {
 private:
     int d_samplerate;
+    int d_final_samplerate;
 
     std::mutex audio_mtx;
     std::vector<int16_t> audio_buff;

@@ -24,7 +24,6 @@ namespace ccsds
           d_cadu_size(parameters.count("internal_stream") > 0 ? parameters["internal_cadu_size"].get<int>() : 0),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)) // If we can't use complete bytes, add one and padding
     {
-
         // Get constellation
         if (d_constellation_str == "bpsk")
             d_constellation = dsp::BPSK;
@@ -216,10 +215,14 @@ namespace ccsds
                         else if (d_ldpc_asm_size == 64)
                         {
                             const uint64_t sync = 0x034776c7272895b0;
-                            if (output_data_type == DATA_FILE)
-                                data_out.write((char *)&sync, 8);
-                            else
-                                output_fifo->write((uint8_t *)&sync, 8);
+                            for (int i = 7; i >= 0; i--)
+                            {
+                                uint8_t v = (sync >> i * 8) & 0xFF;
+                                if (output_data_type == DATA_FILE)
+                                    data_out.write((char *)&v, 1);
+                                else
+                                    output_fifo->write((uint8_t *)&v, 1);
+                            }
                         }
 
                         if (output_data_type == DATA_FILE)

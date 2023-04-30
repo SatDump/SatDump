@@ -89,8 +89,8 @@ namespace codings
                 for (int i = 0; i < d_simd; i++)
                 {
                     memcpy(&depunc_buffer_in[i * d_codeword_size], &codeword[i * d_frame_size], d_frame_size);
-                    for (int i = 0; i < d_simd; i++) // Last d_M bits are 0s
-                        memset(&depunc_buffer_in[i * d_codeword_size + d_frame_size], 0, d_M);
+                    // Last d_M bits are 0s
+                    memset(&depunc_buffer_in[i * d_codeword_size + d_frame_size], 0, d_M);
                 }
             }
 
