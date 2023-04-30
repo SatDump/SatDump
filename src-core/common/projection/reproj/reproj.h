@@ -49,5 +49,13 @@ namespace satdump
             float equ_tl_lon, float equ_tl_lat, // Top-Left corner
             float equ_br_lon, float equ_br_lat, // Bottom-Right corner
             float *progress);
+
+        void reproject_equ_to_azeq(image::Image<uint16_t> &source_img, // source image
+                                   float equ_tl_lon, float equ_tl_lat, // Top-left conrner
+                                   float equ_br_lon, float equ_br_lat, // Bottom-left corner
+                                   image::Image<uint16_t> &target_img, // target image
+                                   float azeq_longitude,               // Azeq center longitude
+                                   float azeq_latitude,                // Azeq center latitude
+                                   float *progress);
     }
 }

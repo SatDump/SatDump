@@ -99,6 +99,9 @@ namespace image
     void Image<T>::init_font(std::string font_path)
     {
         std::ifstream infile(font_path);
+
+        if (!infile.good())
+            return;
         // get length of file
         infile.seekg(0, std::ios::end);
         size_t length = infile.tellg();

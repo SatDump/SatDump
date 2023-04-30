@@ -161,7 +161,7 @@ namespace satdump
 
         bool projections_draw_map_overlay = true;
         bool projections_draw_cities_overlay = true;
-        float projections_cities_scale = 0.5;
+        int projections_cities_scale = 50;
 
         ImVec4 color_borders = {0, 1, 0, 1};
         ImVec4 color_cities = {1, 0, 0, 1};
@@ -182,6 +182,9 @@ namespace satdump
         float projections_tpers_alt = 30000;
         float projections_tpers_ang = 0;
         float projections_tpers_azi = 0;
+        /////////////
+        float projections_azeq_lon = 0;
+        float projections_azeq_lat = 90;
 
         bool projections_are_generating = false;
         void generateProjectionImage();
