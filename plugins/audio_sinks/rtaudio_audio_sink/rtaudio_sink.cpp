@@ -38,6 +38,7 @@ RtAudioSink::~RtAudioSink()
 void RtAudioSink::set_samplerate(int samplerate)
 {
     d_samplerate = samplerate;
+    d_final_samplerate = 48e3; // For now...
 }
 
 void RtAudioSink::start()
@@ -48,7 +49,7 @@ void RtAudioSink::start()
     rt_parameters.deviceId = rt_dac.getDefaultOutputDevice();
     rt_parameters.nChannels = 1;
     rt_parameters.firstChannel = 0;
-    unsigned int sampleRate = d_samplerate;
+    unsigned int sampleRate = d_final_samplerate;
     unsigned int bufferFrames = 256; // 256 sample frames
     try
     {
@@ -71,6 +72,8 @@ void RtAudioSink::stop()
 void RtAudioSink::push_samples(int16_t *samples, int nsamples)
 {
     audio_mtx.lock();
-    audio_buff.insert(audio_buff.end(), samples, samples + nsamples);
+    std::vector<int16_t> buf_resamp_out(nsamples * (double(d_final_samplerate) / double(d_samplerate)) * 10);
+    int nout = resample_s16(samples, buf_resamp_out.data(), d_samplerate, d_final_samplerate, nsamples, 1);
+    audio_buff.insert(audio_buff.end(), buf_resamp_out.data(), buf_resamp_out.data() + nout);
     audio_mtx.unlock();
 }

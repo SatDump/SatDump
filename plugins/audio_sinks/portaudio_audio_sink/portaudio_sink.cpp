@@ -45,6 +45,7 @@ PortAudioSink::~PortAudioSink()
 void PortAudioSink::set_samplerate(int samplerate)
 {
     d_samplerate = samplerate;
+    d_final_samplerate = 48e3; // For now...
 }
 
 void PortAudioSink::start()
@@ -54,7 +55,7 @@ void PortAudioSink::start()
                                0,
                                1,
                                paInt16,
-                               d_samplerate,
+                               d_final_samplerate,
                                256,
                                &PortAudioSink::audio_callback,
                                this);
@@ -80,6 +81,8 @@ void PortAudioSink::stop()
 void PortAudioSink::push_samples(int16_t *samples, int nsamples)
 {
     audio_mtx.lock();
-    audio_buff.insert(audio_buff.end(), samples, samples + nsamples);
+    std::vector<int16_t> buf_resamp_out(nsamples * (double(d_final_samplerate) / double(d_samplerate)) * 10);
+    int nout = resample_s16(samples, buf_resamp_out.data(), d_samplerate, d_final_samplerate, nsamples, 1);
+    audio_buff.insert(audio_buff.end(), buf_resamp_out.data(), buf_resamp_out.data() + nout);
     audio_mtx.unlock();
 }
