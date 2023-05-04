@@ -1,4 +1,4 @@
-#include "module_ccsds_conv_r2_concat_decoder.h"
+#include "module_ccsds_conv_concat_decoder.h"
 #include "logger.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
@@ -9,7 +9,7 @@ size_t getFilesize(std::string filepath);
 
 namespace ccsds
 {
-    CCSDSConvR2ConcatDecoderModule::CCSDSConvR2ConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    CCSDSConvConcatDecoderModule::CCSDSConvConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : ProcessingModule(input_file, output_file_hint, parameters),
           is_ccsds(parameters.count("ccsds") > 0 ? parameters["ccsds"].get<bool>() : true),
 
@@ -31,14 +31,16 @@ namespace ccsds
           d_derand_after_rs(parameters.count("derand_after_rs") > 0 ? parameters["derand_after_rs"].get<bool>() : false),
           d_derand_from(parameters.count("derand_start") > 0 ? parameters["derand_start"].get<int>() : 4),
 
+          d_conv_type(parameters.count("conv_rate") > 0 ? parameters["conv_rate"].get<std::string>() : "1/2"),
+
           d_rs_interleaving_depth(parameters["rs_i"].get<int>()),
           d_rs_fill_bytes(parameters.count("rs_fill_bytes") > 0 ? parameters["rs_fill_bytes"].get<int>() : -1),
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
           d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
     {
-        viterbi_out = new uint8_t[d_buffer_size * 2];
+        viterbi_out = new uint8_t[d_buffer_size * 8];
         soft_buffer = new int8_t[d_buffer_size];
-        frame_buffer = new uint8_t[d_cadu_size * 2]; // Larger by safety
+        frame_buffer = new uint8_t[d_cadu_size * 8]; // Larger by safety
         d_bpsk_90 = false;
 
         // Get constellation
@@ -84,7 +86,32 @@ namespace ccsds
         if (parameters.count("asm") > 0)
             asm_sync = std::stoul(parameters["asm"].get<std::string>(), nullptr, 16);
 
-        viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+        if (d_conv_type == "1/2")
+            viterbi_coderate = PUNCRATE_1_2;
+        else if (d_conv_type == "2/3")
+            viterbi_coderate = PUNCRATE_2_3;
+        else if (d_conv_type == "3/4")
+            viterbi_coderate = PUNCRATE_3_4;
+        else if (d_conv_type == "5/6")
+            viterbi_coderate = PUNCRATE_5_6;
+        else if (d_conv_type == "7/8")
+            viterbi_coderate = PUNCRATE_7_8;
+
+        if (viterbi_coderate == PUNCRATE_1_2)
+            viterbi = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+        else if (viterbi_coderate == PUNCRATE_2_3)
+            viterbip = std::make_shared<viterbi::Viterbi_Depunc>(std::make_shared<viterbi::puncturing::Depunc23>(),
+                                                                 d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+        else if (viterbi_coderate == PUNCRATE_3_4)
+            viterbip = std::make_shared<viterbi::Viterbi_Depunc>(std::make_shared<viterbi::puncturing::Depunc34>(),
+                                                                 d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+        else if (viterbi_coderate == PUNCRATE_5_6)
+            viterbip = std::make_shared<viterbi::Viterbi_Depunc>(std::make_shared<viterbi::puncturing::Depunc56>(),
+                                                                 d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+        else if (viterbi_coderate == PUNCRATE_7_8)
+            viterbip = std::make_shared<viterbi::Viterbi_Depunc>(std::make_shared<viterbi::puncturing::Depunc78>(),
+                                                                 d_viterbi_ber_threasold, d_viterbi_outsync_after, d_buffer_size, d_phases, d_oqpsk_mode);
+
         deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(d_cadu_size, asm_sync);
         if (d_rs_interleaving_depth != 0)
             reed_solomon = std::make_shared<reedsolomon::ReedSolomon>(rstype, d_rs_fill_bytes);
@@ -96,24 +123,24 @@ namespace ccsds
         }
     }
 
-    std::vector<ModuleDataType> CCSDSConvR2ConcatDecoderModule::getInputTypes()
+    std::vector<ModuleDataType> CCSDSConvConcatDecoderModule::getInputTypes()
     {
         return {DATA_FILE, DATA_STREAM};
     }
 
-    std::vector<ModuleDataType> CCSDSConvR2ConcatDecoderModule::getOutputTypes()
+    std::vector<ModuleDataType> CCSDSConvConcatDecoderModule::getOutputTypes()
     {
         return {DATA_FILE, DATA_STREAM};
     }
 
-    CCSDSConvR2ConcatDecoderModule::~CCSDSConvR2ConcatDecoderModule()
+    CCSDSConvConcatDecoderModule::~CCSDSConvConcatDecoderModule()
     {
         delete[] viterbi_out;
         delete[] soft_buffer;
         delete[] frame_buffer;
     }
 
-    void CCSDSConvR2ConcatDecoderModule::process()
+    void CCSDSConvConcatDecoderModule::process()
     {
         if (input_data_type == DATA_FILE)
             filesize = getFilesize(d_input_file);
@@ -160,9 +187,19 @@ namespace ccsds
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);
 
             // Perform Viterbi decoding
-            int vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
-            viterbi_ber = viterbi->ber();
-            viterbi_lock = viterbi->getState();
+            int vitout = 0;
+            if (viterbi_coderate == PUNCRATE_1_2)
+            {
+                vitout = viterbi->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+                viterbi_ber = viterbi->ber();
+                viterbi_lock = viterbi->getState();
+            }
+            else
+            {
+                vitout = viterbip->work((int8_t *)soft_buffer, d_buffer_size, viterbi_out);
+                viterbi_ber = viterbip->ber();
+                viterbi_lock = viterbip->getState();
+            }
 
             if (d_diff_decode) // Diff decoding if required
                 diff.decode_bits(viterbi_out, vitout);
@@ -203,9 +240,9 @@ namespace ccsds
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                std::string viterbi_state = viterbi->getState() == 0 ? "NOSYNC" : "SYNCED";
+                std::string viterbi_state = viterbi_lock == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi->ber()) + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi_ber) + ", Deframer : " + deframer_state);
             }
         }
 
@@ -215,9 +252,18 @@ namespace ccsds
             data_in.close();
     }
 
-    void CCSDSConvR2ConcatDecoderModule::drawUI(bool window)
+    void CCSDSConvConcatDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+        if (viterbi_coderate == PUNCRATE_1_2)
+            ImGui::Begin("CCSDS r=1/2 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+        else if (viterbi_coderate == PUNCRATE_2_3)
+            ImGui::Begin("CCSDS r=2/3 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+        else if (viterbi_coderate == PUNCRATE_3_4)
+            ImGui::Begin("CCSDS r=3/4 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+        else if (viterbi_coderate == PUNCRATE_5_6)
+            ImGui::Begin("CCSDS r=5/6 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+        if (viterbi_coderate == PUNCRATE_7_8)
+            ImGui::Begin("CCSDS r=7/8 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
         float &ber = viterbi_ber;
 
         ImGui::BeginGroup();
@@ -331,18 +377,18 @@ namespace ccsds
         ImGui::End();
     }
 
-    std::string CCSDSConvR2ConcatDecoderModule::getID()
+    std::string CCSDSConvConcatDecoderModule::getID()
     {
-        return "ccsds_conv_r2_concat_decoder";
+        return "ccsds_conv_concat_decoder";
     }
 
-    std::vector<std::string> CCSDSConvR2ConcatDecoderModule::getParameters()
+    std::vector<std::string> CCSDSConvConcatDecoderModule::getParameters()
     {
         return {"viterbi_outsync_after", "viterbi_ber_thresold"};
     }
 
-    std::shared_ptr<ProcessingModule> CCSDSConvR2ConcatDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<ProcessingModule> CCSDSConvConcatDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
-        return std::make_shared<CCSDSConvR2ConcatDecoderModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<CCSDSConvConcatDecoderModule>(input_file, output_file_hint, parameters);
     }
 } // namespace npp

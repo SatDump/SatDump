@@ -8,6 +8,7 @@
 #include "common/dsp/demod/constellation.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/dsp/utils/random.h"
+#include "common/codings/viterbi/viterbi_punc.h"
 
 namespace ccsds
 {
@@ -40,7 +41,7 @@ namespace ccsds
     code is from the specification and most satellites will use
     CCSDS-compliant concatenated codings anyway.
     */
-    class CCSDSConvR2ConcatDecoderModule : public ProcessingModule
+    class CCSDSConvConcatDecoderModule : public ProcessingModule
     {
     protected:
         const bool is_ccsds; // Just to know if we should output .cadu or .frm
@@ -65,10 +66,23 @@ namespace ccsds
         const bool d_derand_after_rs; // Derandomization after RS
         const int d_derand_from;      // Byte to start derand on
 
+        const std::string d_conv_type; // Conv rate Type identifier
+
         const int d_rs_interleaving_depth; // RS Interleaving depth. If = 0, then RS is disabled
         const int d_rs_fill_bytes;         // RS Frame size, if -1, no puncturing
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
+
+        enum vitrate_t
+        {
+            PUNCRATE_1_2,
+            PUNCRATE_2_3,
+            PUNCRATE_3_4,
+            PUNCRATE_5_6,
+            PUNCRATE_7_8,
+        };
+
+        vitrate_t viterbi_coderate;
 
         uint8_t *viterbi_out;
         int8_t *soft_buffer;
@@ -81,6 +95,7 @@ namespace ccsds
         std::atomic<size_t> progress;
 
         std::shared_ptr<viterbi::Viterbi1_2> viterbi, viterbi2;
+        std::shared_ptr<viterbi::Viterbi_Depunc> viterbip, viterbip2;
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
         std::shared_ptr<reedsolomon::ReedSolomon> reed_solomon;
 
@@ -94,8 +109,8 @@ namespace ccsds
         int viterbi_lock = 0;
 
     public:
-        CCSDSConvR2ConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~CCSDSConvR2ConcatDecoderModule();
+        CCSDSConvConcatDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~CCSDSConvConcatDecoderModule();
         void process();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();

@@ -457,7 +457,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -495,7 +495,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -581,7 +581,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 8952,
                     "viterbi_ber_thresold": 0.300,
@@ -625,7 +625,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 14304,
                     "nrzm": true,
@@ -673,7 +673,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "oqpsk_mode": true,

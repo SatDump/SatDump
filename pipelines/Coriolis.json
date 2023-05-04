@@ -34,7 +34,7 @@
                 }
             },
             "frm": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "ccsds": false,
                     "constellation": "bpsk",
                     "cadu_size": 8192,
