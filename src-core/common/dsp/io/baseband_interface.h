@@ -270,10 +270,10 @@ namespace dsp
 
         int bit_depth = 0;
 
-        // #ifdef BUILD_ZIQ
+#ifdef BUILD_ZIQ
         ziq::ziq_cfg ziqcfg;
         std::shared_ptr<ziq::ziq_writer> ziqWriter;
-        // #endif
+#endif
 
         float *mag_buffer = nullptr;
 
@@ -316,10 +316,10 @@ namespace dsp
                 finalt = path_without_ext + ".s8";
             else if (d_sample_format == WAV_16)
                 finalt = path_without_ext + ".wav";
-            // #ifdef BUILD_ZIQ
+#ifdef BUILD_ZIQ
             else if (d_sample_format == ZIQ)
                 finalt = path_without_ext + ".ziq";
-            // #endif
+#endif
             else if (d_sample_format == ZIQ2)
                 finalt = path_without_ext + ".ziq";
 
@@ -337,7 +337,7 @@ namespace dsp
                 wav_writer->write_header(samplerate, 2);
             }
 
-            // #ifdef BUILD_ZIQ
+#ifdef BUILD_ZIQ
             if (d_sample_format == ZIQ)
             {
                 ziqcfg.is_compressed = true;
@@ -347,8 +347,8 @@ namespace dsp
 
                 ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
             }
-            // #endif
-            // #ifdef BUILD_ZIQ2
+#endif
+#ifdef BUILD_ZIQ2
             if (d_sample_format == ZIQ2)
             {
                 int sz = ziq2::ziq2_write_file_hdr((uint8_t *)buffer_s8, samplerate);
@@ -357,7 +357,7 @@ namespace dsp
                 if (mag_buffer == nullptr)
                     mag_buffer = create_volk_buffer<float>(STREAM_BUFFER_SIZE);
             }
-            // #endif
+#endif
 
             should_work = true;
             rec_mutex.unlock();
@@ -413,21 +413,21 @@ namespace dsp
                     output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);
                     current_size_out += nsamples * sizeof(int8_t) * 2;
                 }
-                // #ifdef BUILD_ZIQ
+#ifdef BUILD_ZIQ
                 else if (d_sample_format == ZIQ)
                 {
                     current_size_out += ziqWriter->write(samples, nsamples);
                     current_size_out_raw += (ziqcfg.bits_per_sample / 4) * nsamples;
                 }
-                // #endif
-                // #ifdef BUILD_ZIQ2
+#endif
+#ifdef BUILD_ZIQ2
                 else if (d_sample_format == ZIQ2)
                 {
                     int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, samples, mag_buffer, nsamples, bit_depth);
                     output_file.write((char *)buffer_s8, sz);
                     current_size_out += sz;
                 }
-                // #endif
+#endif
 
                 output_file.flush();
             }
