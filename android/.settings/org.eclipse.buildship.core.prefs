@@ -1,7 +1,7 @@
-arguments=--init-script /home/alan/.config/VSCodium/User/globalStorage/redhat.java/1.12.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/init/init.gradle --init-script /home/alan/.config/VSCodium/User/globalStorage/redhat.java/1.12.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/protobuf/init.gradle
+arguments=--init-script /home/alan/.config/VSCodium/User/globalStorage/redhat.java/1.16.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/init/init.gradle --init-script /home/alan/.config/VSCodium/User/globalStorage/redhat.java/1.16.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/protobuf/init.gradle
 auto.sync=false
 build.scans.enabled=false
-connection.gradle.distribution=GRADLE_DISTRIBUTION(LOCAL_INSTALLATION(/usr/share/java/gradle))
+connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
 connection.project.dir=
 eclipse.preferences.version=1
 gradle.user.home=
