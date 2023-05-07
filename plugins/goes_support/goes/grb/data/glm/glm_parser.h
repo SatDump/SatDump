@@ -2,7 +2,7 @@
 
 #include <string>
 #include "glm_products.h"
-
+#include <cstdint>
 namespace goes
 {
     namespace grb
