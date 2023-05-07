@@ -145,7 +145,7 @@ mkdir build && cd build
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
 cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
-make -j4
+make -j`nproc`
 
 # To run without installing
 ln -s ../pipelines .        # Symlink pipelines so it can run
