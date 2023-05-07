@@ -98,7 +98,7 @@ namespace image
     template <typename T>
     void Image<T>::init_font(std::string font_path)
     {
-        std::ifstream infile(font_path);
+        std::ifstream infile(font_path, std::ios::binary);
 
         if (!infile.good())
             return;
