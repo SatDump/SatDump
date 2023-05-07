@@ -2,7 +2,7 @@
 
 #include "common/dsp/complex.h"
 #include <vector>
-
+#include <cstdint>
 namespace dsp
 {
     enum constellation_type_t
