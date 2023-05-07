@@ -27,7 +27,7 @@
                 "type": "bool",
                 "value": false,
                 "name": "DC Blocking",
-                "description": "DC Blocking allows removing a DC Spike / Offset present on some SDRs.\n A classic example would be the HackRF which often has this sort of issue."
+                "description": "DC Blocking allows removing a DC Spike / Offset present on some SDRs.\n A classic example would beapt the HackRF which often has this sort of issue."
             },
             "iq_swap": {
                 "type": "bool",
@@ -327,7 +327,8 @@
                         "lua_vars": {
                             "minoffset": 0.4,
                             "scalar": 4.0,
-                            "thresold": 0
+                            "thresold": 0,
+                            "blend": 0
                         },
                         "autogen": false
                     },
@@ -337,7 +338,8 @@
                         "lua_vars": {
                             "minoffset": 0.58,
                             "scalar": 4.0,
-                            "thresold": 0.15
+                            "thresold": 0.15,
+                            "blend": 0
                         },
                         "autogen": false
                     },
@@ -387,7 +389,18 @@
                         "lua_vars": {
                             "minoffset": 0.58,
                             "scalar": 4.0,
-                            "thresold": 0.15
+                            "thresold": 0.15,
+                            "blend": 0
+                        }
+                    },
+                    "MCIR": {
+                        "channels": "chb",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "lua_vars": {
+                            "minoffset": 0.35,
+                            "scalar": 2.5,
+                            "thresold": 0,
+                            "blend": 1
                         }
                     },
                     "WXtoImg HVC N15": {
