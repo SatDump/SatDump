@@ -1,5 +1,5 @@
 #include "detect_header.h"
-
+#include <cstdint>
 #include "wav.h"
 #ifdef BUILD_ZIQ
 #include "ziq.h"
