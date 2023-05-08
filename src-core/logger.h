@@ -7,6 +7,7 @@
 #include <fstream>
 #include <mutex>
 #include <stdarg.h>
+#include <string>
 
 namespace slog
 {
