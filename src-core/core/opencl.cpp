@@ -74,7 +74,7 @@ namespace satdump
 
                 cl_platform_id platform = platforms_ids[platform_id];
                 if (clGetPlatformInfo(platform, CL_PLATFORM_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
-                    logger->info("Using platform: %s", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]));
+                    logger->info("Using platform: %s", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]).c_str());
                 else
                     logger->error("Could not get platform name!");
 
@@ -89,7 +89,7 @@ namespace satdump
 
                 ocl_device = devices_ids[device_id];
                 if (clGetDeviceInfo(ocl_device, CL_DEVICE_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
-                    logger->info("Using device: %s", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]));
+                    logger->info("Using device: %s", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]).c_str());
 
                 ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
                 if (err != CL_SUCCESS)
