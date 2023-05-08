@@ -25,6 +25,8 @@ namespace viterbi
     class Viterbi_Depunc
     {
     private:
+        std::shared_ptr<puncturing::GenericDepunc> depunc;
+
         // Settings
         const float d_ber_thresold;
         const float d_max_outsync;
@@ -64,8 +66,6 @@ namespace viterbi
         float get_ber(uint8_t *raw, uint8_t *rencoded, int len, float ratio);
 
         int test_bit_len = 0;
-
-        std::shared_ptr<puncturing::GenericDepunc> depunc;
 
     public:
         Viterbi_Depunc(std::shared_ptr<puncturing::GenericDepunc> depunc, float ber_threshold, int max_outsync, int buffer_size, std::vector<phase_t> phases = {PHASE_0, PHASE_90, PHASE_180, PHASE_270}, bool check_iq_swap = false);

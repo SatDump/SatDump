@@ -23,9 +23,9 @@ namespace ccsds
 
     void CCSDSHeader::encodeHDR()
     {
-        raw[0] = (version & 0b111) << 5 | (type & 0b1) << 4 | (secondary_header_flag & 0b1) << 3 | (apid >> 8) & 0b111;
+        raw[0] = (version & 0b111) << 5 | (type & 0b1) << 4 | (secondary_header_flag & 0b1) << 3 | ((apid >> 8) & 0b111);
         raw[1] = apid & 0xFF;
-        raw[2] = (sequence_flag & 0b11) << 6 | (packet_sequence_count >> 8) & 0b111111;
+        raw[2] = (sequence_flag & 0b11) << 6 | ((packet_sequence_count >> 8) & 0b111111);
         raw[3] = packet_sequence_count & 0xFF;
         raw[4] = packet_length >> 8;
         raw[5] = packet_length & 0xFF;

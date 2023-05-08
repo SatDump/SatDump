@@ -186,7 +186,7 @@ namespace image
             {
                 info.char_nb = utf8::next(c, c + cstr.size());
             }
-            catch (utf8::invalid_utf8)
+            catch (utf8::invalid_utf8 &)
             {
                 break;
             }
@@ -237,8 +237,8 @@ namespace image
                 {
                     unsigned char m = info.bitmap[pos];
                     int x = xs0 + i + CP + SF * info.lsb, y = j + BL - info.cy1 * SF + ys0;
-                    unsigned int pos2 = y*width() + x;
-                    if (m != 0 && pos2 < width()*height())
+                    unsigned int pos2 = y * width() + x;
+                    if (m != 0 && pos2 < width() * height())
                     {
                         float mf = m / 255.0;
                         T col[] = {static_cast<T>((color[0] - channel(0)[pos2]) * mf + channel(0)[pos2]),

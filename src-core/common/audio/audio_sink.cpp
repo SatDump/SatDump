@@ -66,7 +66,7 @@ namespace audio
         uint64_t curOffset = 0;
         for (uint32_t i = 0; i < outputSize; i += 1)
         {
-            for (uint32_t c = 0; c < channels; c += 1)
+            for (int c = 0; c < channels; c += 1)
             {
                 *output++ = (int16_t)(input[c] + (input[c + channels] - input[c]) * ((double)(curOffset >> 32) + ((curOffset & (fixedFraction - 1)) * normFixed)));
             }

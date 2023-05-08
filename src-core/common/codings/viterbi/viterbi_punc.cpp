@@ -30,7 +30,7 @@ namespace viterbi
         for (int s = 0; s < 2; s++)
             for (int i = 0; i < 12; i++)
                 for (int y = 0; y < 2; y++)
-                    d_bers[s][y][i] = 10;
+                    d_bers[s][i][y] = 10;
     }
 
     Viterbi_Depunc::~Viterbi_Depunc()
@@ -145,8 +145,8 @@ namespace viterbi
             for (int s = 0; s < (d_check_iq_swap ? 2 : 1); s++)
                 for (phase_t phase : d_phases_to_check)
                     for (int o = 0; o < 12; o++)
-                        if (ber > d_bers[s][phase][o])
-                            ber = d_bers[s][phase][o];
+                        if (ber > d_bers[s][o][phase])
+                            ber = d_bers[s][o][phase];
 
             return ber;
         }
