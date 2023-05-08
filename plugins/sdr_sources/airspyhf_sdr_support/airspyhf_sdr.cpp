@@ -20,7 +20,7 @@ void AirspyHFSource::set_atte()
         return;
 
     airspyhf_set_hf_att(airspyhf_dev_obj, attenuation / 6.0f);
-    logger->debug("Set AirspyHF HF Attentuation to {:d}", attenuation);
+    logger->debug("Set AirspyHF HF Attentuation to %d", attenuation);
 }
 
 void AirspyHFSource::set_lna()
@@ -29,7 +29,7 @@ void AirspyHFSource::set_lna()
         return;
 
     airspyhf_set_hf_lna(airspyhf_dev_obj, hf_lna_enabled);
-    logger->debug("Set AirspyHF HF LNA to {:d}", (int)hf_lna_enabled);
+    logger->debug("Set AirspyHF HF LNA to %d", (int)hf_lna_enabled);
 }
 
 void AirspyHFSource::set_agcs()
@@ -39,7 +39,7 @@ void AirspyHFSource::set_agcs()
 
     airspyhf_set_hf_agc(airspyhf_dev_obj, agc_mode != 0);
     airspyhf_set_hf_agc_threshold(airspyhf_dev_obj, agc_mode - 1);
-    logger->debug("Set AirspyHF HF AGC Mode to {:d}", (int)agc_mode);
+    logger->debug("Set AirspyHF HF AGC Mode to %d", (int)agc_mode);
 }
 
 void AirspyHFSource::open_sdr()
@@ -94,7 +94,7 @@ void AirspyHFSource::open()
     available_samplerates.clear();
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
-        logger->trace("AirspyHF device has samplerate {:d} SPS", dev_samplerates[i]);
+        logger->trace("AirspyHF device has samplerate %d SPS", dev_samplerates[i]);
         available_samplerates.push_back(dev_samplerates[i]);
     }
 
@@ -144,7 +144,7 @@ void AirspyHFSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         airspyhf_set_freq(airspyhf_dev_obj, frequency);
-        logger->debug("Set AirspyHF frequency to {:d}", frequency);
+        logger->debug("Set AirspyHF frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

@@ -102,7 +102,7 @@ namespace ccsds
                     best_swapped = true;
                 }
 
-                // logger->critical("{:d} {:f} {:f}", pos, corr_nwap, corr_swap);
+                // logger->critical("%d %f %f", pos, corr_nwap, corr_swap);
             }
 
             locked = best_pos == 0; // Update locking state

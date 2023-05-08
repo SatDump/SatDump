@@ -3,6 +3,7 @@
 #include <cmath>
 #include "logger.h"
 #include "volk_k7_r2_generic_fixed.h"
+#include <cstring>
 
 namespace viterbi
 {

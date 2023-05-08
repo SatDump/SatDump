@@ -72,7 +72,7 @@ namespace metop
             }
             catch (std::exception &e)
             {
-                logger->error("Error parsing Admin message : {:s}", e.what());
+                logger->error("Error parsing Admin message : %s", e.what());
             }
 
             count++;

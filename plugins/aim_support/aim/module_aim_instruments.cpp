@@ -86,8 +86,8 @@ namespace aim
                 {
                     cips_status[i] = SAVING;
 
-                    logger->info("----------- CIPS {:d}", i + 1);
-                    logger->info("Images : {:d}", cips_readers[i].images.size());
+                    logger->info("----------- CIPS %d", i + 1);
+                    logger->info("Images : %d", cips_readers[i].images.size());
 
                     std::string cips_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CIPS-" + std::to_string(i + 1);
 

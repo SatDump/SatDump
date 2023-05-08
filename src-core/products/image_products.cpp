@@ -47,7 +47,7 @@ namespace satdump
         if (save_as_matrix)
         {
             int size = ceil(sqrt(images.size()));
-            logger->debug("Using size {:d}", size);
+            logger->debug("Using size %d", size);
             image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
                                                                                        { return images[c].image; });
             logger->info("Saving " + images[0].filename);
@@ -170,7 +170,7 @@ namespace satdump
         bool is_default = vtype == CALIB_VTYPE_AUTO && range.first == 0 && range.second == 0;
         if (calibrated_img_cache.count(image_index) > 0 && is_default)
         {
-            logger->trace("Cached calibrated image channel {:d}", image_index + 1);
+            logger->trace("Cached calibrated image channel %d", image_index + 1);
             return calibrated_img_cache[image_index];
         }
         else
@@ -187,7 +187,7 @@ namespace satdump
                              radiance_to_temperature(range.second, wn)};
             }
 
-            logger->trace("Generating calibrated image channel {:d}. Range {:f} {:f}. Type {:d}", image_index + 1, range.first, range.second, vtype);
+            logger->trace("Generating calibrated image channel %d. Range %f %f. Type %d", image_index + 1, range.first, range.second, vtype);
 
             // calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
             // image::Image<uint16_t> &output = calibrated_img_cache[image_index];
@@ -222,7 +222,7 @@ namespace satdump
             }
             catch (std::exception &e)
             {
-                logger->error("Error calibrating image : {:s}", e.what());
+                logger->error("Error calibrating image : %s", e.what());
             }
 
             if (is_default)
@@ -305,7 +305,7 @@ namespace satdump
                 channel_numbers.push_back(equ_str);
                 images_obj.push_back(img.image);
                 offsets.emplace(equ_str, img.offset_x);
-                logger->debug("Composite needs channel {:s}", equ_str);
+                logger->debug("Composite needs channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
@@ -331,7 +331,7 @@ namespace satdump
                     images_obj.push_back(product.get_calibrated_image(i, progress));
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
-                logger->debug("Composite needs calibrated channel {:s}", equ_str);
+                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
@@ -348,15 +348,15 @@ namespace satdump
         }
 
         int ratio = max_width_total / max_width_used;
-        logger->trace("Max Total Width {:d}", max_width_total);
-        logger->trace("Max Total Used  {:d}", max_width_used);
+        logger->trace("Max Total Width %d", max_width_total);
+        logger->trace("Max Total Used  %d", max_width_used);
 
         // Offset... Offsets to 0 and scale if needed
         for (std::pair<const std::string, int> &img_off : offsets)
         {
             img_off.second -= min_offset;
             img_off.second /= ratio;
-            logger->trace("Offset for {:s} is {:d}", img_off.first.c_str(), img_off.second);
+            logger->trace("Offset for %s is %d", img_off.first.c_str(), img_off.second);
 
             if (final_metadata != nullptr)
                 (*final_metadata)["img_x_offset"] = min_offset;
@@ -483,7 +483,7 @@ namespace satdump
         {
             if ((int)img.width() != product.get_proj_cfg()["corr_width"].get<int>())
             {
-                logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), img.width());
+                logger->debug("Image width mistmatch %d %d", product.get_proj_cfg()["corr_width"].get<int>(), img.width());
                 resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(img.width());
             }
         }
@@ -512,14 +512,14 @@ namespace satdump
         {
             if ((int)width != product.get_proj_cfg()["corr_width"].get<int>())
             {
-                logger->debug("Image width mistmatch {:d} {:d}", product.get_proj_cfg()["corr_width"].get<int>(), width);
+                logger->debug("Image width mistmatch %d %d", product.get_proj_cfg()["corr_width"].get<int>(), width);
                 resol *= product.get_proj_cfg()["corr_width"].get<int>() / float(width);
             }
         }
 
-        float satellite_orbit_radius = 6371.0f + altit;                                                                                        // Compute the satellite's orbit radius
-        int corrected_width = round(swath / resol);                                                                                                    // Compute the output image size, or number of samples from the imager
-        float satellite_view_angle = swath / 6371.0f;                                                                                                     // Compute the satellite's view angle
+        float satellite_orbit_radius = 6371.0f + altit;                                                                                              // Compute the satellite's orbit radius
+        int corrected_width = round(swath / resol);                                                                                                  // Compute the output image size, or number of samples from the imager
+        float satellite_view_angle = swath / 6371.0f;                                                                                                // Compute the satellite's view angle
         float edge_angle = -atanf(6371.0f * sinf(satellite_view_angle / 2) / ((cosf(satellite_view_angle / 2)) * 6371.0f - satellite_orbit_radius)); // Max angle relative to the satellite
 
         std::vector<int> correction_factors(corrected_width);
@@ -527,9 +527,9 @@ namespace satdump
         // Generate them
         for (int i = 0; i < corrected_width; i++)
         {
-            float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                    // Get the satellite's angle
+            float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                          // Get the satellite's angle
             float satellite_angle = -atanf(6371.0f * sinf(angle) / ((cosf(angle)) * 6371.0f - satellite_orbit_radius)); // Convert to an angle relative to earth
-            correction_factors[i] = width * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
+            correction_factors[i] = width * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                             // Convert that to a pixel from the original image
         }
         return correction_factors;
     }

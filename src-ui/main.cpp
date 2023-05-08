@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
             final_gl_version = 2;
             if (window == NULL)
             {
-                logger->critical("Could not init GLFW Window with OpenGL 3.2 with {:s}", gl_override_rpi);
+                logger->critical("Could not init GLFW Window with OpenGL 3.2 with %s", gl_override_rpi);
                 exit(1);
             }
         }
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
             window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
             final_gl_version = i;
             if (window == NULL)
-                logger->critical("Could not init GLFW Window with OpenGL {:d}.{:d}", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
+                logger->critical("Could not init GLFW Window with OpenGL %d.%d", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
             else
                 break;
         }
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     (void)io;
     io.IniFilename = NULL;
 
-    logger->debug("Starting with OpenGL {:s}", (char *)glGetString(GL_VERSION));
+    logger->debug("Starting with OpenGL %s", (char *)glGetString(GL_VERSION));
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);

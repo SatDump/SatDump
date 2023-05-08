@@ -1,6 +1,7 @@
 #include "mersi_histmatch.h"
 #include "common/image/histogram_utils.h"
 #include "logger.h"
+#include <cmath>
 
 namespace fengyun3
 {
@@ -49,7 +50,7 @@ namespace fengyun3
                     for (int ii = 0; ii < 4096; ii++)
                         matching_tables[i][ii] = ii;
                 }
-                logger->trace("Table {:d} done!", i + 1);
+                logger->trace("Table %d done!", i + 1);
             }
             all_histograms.clear();
             logger->trace("Generated matching tables...");

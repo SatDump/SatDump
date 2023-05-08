@@ -54,7 +54,7 @@ protected:
             if (cnt > 0)
                 output_stream->swap(cnt);
             if (meta.error_code != meta.ERROR_CODE_NONE)
-                logger->error("USRP Stream error {:s}", meta.strerror().c_str());
+                logger->error("USRP Stream error %s", meta.strerror().c_str());
         }
     }
 

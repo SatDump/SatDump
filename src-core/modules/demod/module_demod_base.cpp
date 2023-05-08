@@ -67,11 +67,11 @@ namespace demod
 
         final_sps = final_samplerate / (float)d_symbolrate;
 
-        logger->debug("Input SPS : {:f}", input_sps);
+        logger->debug("Input SPS : %f", input_sps);
         logger->debug("Resample : " + std::to_string(resample));
-        logger->debug("Samplerate : {:f}", final_samplerate);
-        logger->debug("Dec factor : {:f}", decimation_factor);
-        logger->debug("Final SPS : {:f}", final_sps);
+        logger->debug("Samplerate : %f", final_samplerate);
+        logger->debug("Dec factor : %f", decimation_factor);
+        logger->debug("Final SPS : %f", final_sps);
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)

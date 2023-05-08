@@ -24,7 +24,7 @@ void LimeSDRSource::set_gains()
     limeDevice->SetGain(false, 0, gain, "");
 #endif
 
-    logger->debug("Set LimeSDR Gain to {:d}", gain);
+    logger->debug("Set LimeSDR Gain to %d", gain);
 }
 
 void LimeSDRSource::set_settings(nlohmann::json settings)
@@ -199,7 +199,7 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 #else
         limeDevice->SetFrequency(false, 0, frequency);
 #endif
-        logger->debug("Set LimeSDR frequency to {:d}", frequency);
+        logger->debug("Set LimeSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

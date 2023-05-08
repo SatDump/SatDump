@@ -19,9 +19,9 @@ void HackRFSink::set_gains()
     hackrf_set_amp_enable(hackrf_dev_obj, amp_enabled);
     hackrf_set_lna_gain(hackrf_dev_obj, lna_gain);
     hackrf_set_vga_gain(hackrf_dev_obj, vga_gain);
-    logger->debug("Set HackRF AMP to {:d}", (int)amp_enabled);
-    logger->debug("Set HackRF LNA gain to {:d}", lna_gain);
-    logger->debug("Set HackRF VGA gain to {:d}", vga_gain);
+    logger->debug("Set HackRF AMP to %d", (int)amp_enabled);
+    logger->debug("Set HackRF LNA gain to %d", lna_gain);
+    logger->debug("Set HackRF VGA gain to %d", vga_gain);
 }
 
 void HackRFSink::set_bias()
@@ -29,7 +29,7 @@ void HackRFSink::set_bias()
     if (!is_started)
         return;
     hackrf_set_antenna_enable(hackrf_dev_obj, bias_enabled);
-    logger->debug("Set HackRF bias to {:d}", (int)bias_enabled);
+    logger->debug("Set HackRF bias to %d", (int)bias_enabled);
 }
 
 void HackRFSink::set_settings(nlohmann::json settings)
@@ -138,7 +138,7 @@ void HackRFSink::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         hackrf_set_freq(hackrf_dev_obj, frequency);
-        logger->debug("Set HackRF frequency to {:d}", frequency);
+        logger->debug("Set HackRF frequency to %d", frequency);
     }
     DSPSampleSink::set_frequency(frequency);
 }

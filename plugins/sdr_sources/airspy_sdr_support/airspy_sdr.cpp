@@ -22,19 +22,19 @@ void AirspySource::set_gains()
     if (gain_type == 0)
     {
         airspy_set_sensitivity_gain(airspy_dev_obj, general_gain);
-        logger->debug("Set Airspy gain (sensitive) to {:d}", general_gain);
+        logger->debug("Set Airspy gain (sensitive) to %d", general_gain);
     }
     else if (gain_type == 1)
     {
         airspy_set_linearity_gain(airspy_dev_obj, general_gain);
-        logger->debug("Set Airspy gain (linear) to {:d}", general_gain);
+        logger->debug("Set Airspy gain (linear) to %d", general_gain);
     }
     else if (gain_type == 2)
     {
         airspy_set_lna_gain(airspy_dev_obj, manual_gains[0]);
         airspy_set_mixer_gain(airspy_dev_obj, manual_gains[1]);
         airspy_set_vga_gain(airspy_dev_obj, manual_gains[2]);
-        logger->debug("Set Airspy gain (manual) to {:d}, {:d}, {:d}", manual_gains[0], manual_gains[1], manual_gains[2]);
+        logger->debug("Set Airspy gain (manual) to %d, %d, %d", manual_gains[0], manual_gains[1], manual_gains[2]);
     }
 }
 
@@ -44,7 +44,7 @@ void AirspySource::set_bias()
         return;
 
     airspy_set_rf_bias(airspy_dev_obj, bias_enabled);
-    logger->debug("Set Airspy bias to {:d}", (int)bias_enabled);
+    logger->debug("Set Airspy bias to %d", (int)bias_enabled);
 }
 
 void AirspySource::set_agcs()
@@ -54,8 +54,8 @@ void AirspySource::set_agcs()
 
     airspy_set_lna_agc(airspy_dev_obj, lna_agc_enabled);
     airspy_set_mixer_agc(airspy_dev_obj, mixer_agc_enabled);
-    logger->debug("Set Airspy LNA AGC to {:d}", (int)lna_agc_enabled);
-    logger->debug("Set Airspy Mixer AGC to {:d}", (int)mixer_agc_enabled);
+    logger->debug("Set Airspy LNA AGC to %d", (int)lna_agc_enabled);
+    logger->debug("Set Airspy Mixer AGC to %d", (int)mixer_agc_enabled);
 }
 
 void AirspySource::open_sdr()
@@ -123,7 +123,7 @@ void AirspySource::open()
     bool has_10msps = false;
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
-        logger->trace("Airspy device has samplerate {:d} SPS", dev_samplerates[i]);
+        logger->trace("Airspy device has samplerate %d SPS", dev_samplerates[i]);
         available_samplerates.push_back(dev_samplerates[i]);
         if (dev_samplerates[i] == 10e6)
             has_10msps = true;
@@ -179,7 +179,7 @@ void AirspySource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         airspy_set_freq(airspy_dev_obj, frequency);
-        logger->debug("Set Airspy frequency to {:d}", frequency);
+        logger->debug("Set Airspy frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

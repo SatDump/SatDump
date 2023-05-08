@@ -22,7 +22,7 @@ void sdr_probe()
     {
         logger->info("- " + src.name);
         logger->debug("    - type : " + src.source_type);
-        logger->debug("    - id : {:d}", src.unique_id);
+        logger->debug("    - id : %d", src.unique_id);
     }
 
     logger->info("Found devices (sinks) :");
@@ -30,6 +30,6 @@ void sdr_probe()
     {
         logger->info("- " + src.name);
         logger->debug("    - type : " + src.sink_type);
-        logger->debug("    - id : {:d}", src.unique_id);
+        logger->debug("    - id : %d", src.unique_id);
     }
 }

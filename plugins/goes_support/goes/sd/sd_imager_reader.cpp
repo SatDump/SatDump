@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/utils.h"
 #include <filesystem>
+#include <cstring>
 
 #define IMG_WIDTH 40000
 
@@ -117,7 +118,7 @@ namespace goes
 
                 wip_scanline.clear();
 
-                logger->info("Lines {:d}", lines);
+                logger->info("Lines %d", lines);
             }
 
             wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);

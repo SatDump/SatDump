@@ -96,7 +96,7 @@ namespace ax25
                 int ctrl = frm[14];
                 int pid = frm[15];
 
-                logger->trace("AX.25 Frame - SRC : " + source_callsign + ",{:d} DST : " + destination_callsign + ",{:d} CTRL : {:d} PID : {:d}",
+                logger->trace("AX.25 Frame - SRC : " + source_callsign + ",%d DST : " + destination_callsign + ",%d CTRL : %d PID : %d",
                               source_ssid, target_ssid, ctrl, pid);
 
                 // Add a custom header to ease up forwarding to the next stuff

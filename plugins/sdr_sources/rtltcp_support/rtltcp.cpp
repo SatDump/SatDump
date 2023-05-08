@@ -7,10 +7,10 @@ void RTLTCPSource::set_gains()
         return;
 
     client.setAGCMode(lna_agc_enabled);
-    logger->debug("Set RTL-TCP AGC to {:d}", (int)lna_agc_enabled);
+    logger->debug("Set RTL-TCP AGC to %d", (int)lna_agc_enabled);
 
     client.setGain(gain * 10);
-    logger->debug("Set RTL-TCP Gain to {:d}", gain * 10);
+    logger->debug("Set RTL-TCP Gain to %d", gain * 10);
 }
 
 void RTLTCPSource::set_bias()
@@ -18,7 +18,7 @@ void RTLTCPSource::set_bias()
     if (!is_started)
         return;
     client.setBiasTee(bias);
-    logger->debug("Set RTL-TCP Bias to {:d}", (int)bias);
+    logger->debug("Set RTL-TCP Bias to %d", (int)bias);
 }
 
 void RTLTCPSource::set_settings(nlohmann::json settings)
@@ -121,7 +121,7 @@ void RTLTCPSource::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         client.setFrequency(frequency);
-        logger->debug("Set RTL-TCP frequency to {:d}", frequency);
+        logger->debug("Set RTL-TCP frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

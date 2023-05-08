@@ -50,7 +50,7 @@ protected:
         for (int dec_stage = client->devInfo.MinimumIQDecimation; dec_stage < (int)client->devInfo.DecimationStageCount; dec_stage++)
         {
             uint64_t rate = client->devInfo.MaximumSampleRate / (1 << dec_stage);
-            logger->trace("SpyServer has samplerate {:d} SPS", rate);
+            logger->trace("SpyServer has samplerate %d SPS", rate);
             available_samplerates.push_back(rate);
         }
 

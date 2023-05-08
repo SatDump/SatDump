@@ -55,7 +55,7 @@ namespace goes
             channel_images[ch - 1] = img;
             has_channels[ch - 1] = true;
 
-            // logger->critical("Channel compose got {:d} at {:f}", ch, timestamp);
+            // logger->critical("Channel compose got %d at %f", ch, timestamp);
         }
 
         void ABIComposer::saveABICompo(image::Image<uint16_t> img, std::string name)

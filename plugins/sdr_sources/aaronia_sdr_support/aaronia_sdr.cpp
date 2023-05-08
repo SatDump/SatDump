@@ -67,11 +67,11 @@ void AaroniaSource::set_gains()
     // Set the reference level of the receiver
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/reflevel") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, d_level);
-    logger->debug("Set Aaronia reflevel to {:f}", d_level);
+    logger->debug("Set Aaronia reflevel to %f", d_level);
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/gaincontrol") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_agc_str(d_agc_mode).c_str());
-    logger->debug("Set Aaronia AGC mode to {:d}", d_agc_mode);
+    logger->debug("Set Aaronia AGC mode to %d", d_agc_mode);
 }
 
 void AaroniaSource::set_others()
@@ -81,7 +81,7 @@ void AaroniaSource::set_others()
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/usbcompression") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_usbcomp_str(d_usb_compression).c_str());
-    logger->debug("Set Aaronia USB compression mode to {:d}", d_usb_compression);
+    logger->debug("Set Aaronia USB compression mode to %d", d_usb_compression);
 }
 
 void AaroniaSource::set_settings(nlohmann::json settings)
@@ -159,7 +159,7 @@ void AaroniaSource::start()
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate).c_str());
-    logger->info("Set Spectran receiver clock to {:s}", ws2s(get_spectran_samplerate_str(current_samplerate)).c_str());
+    logger->info("Set Spectran receiver clock to %s", ws2s(get_spectran_samplerate_str(current_samplerate)).c_str());
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/decimation") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Full");
@@ -224,7 +224,7 @@ void AaroniaSource::set_frequency(uint64_t frequency)
         // Set frequency
         if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/centerfreq") == AARTSAAPI_OK)
             AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, frequency);
-        logger->debug("Set Aaronia frequency to {:d}", frequency);
+        logger->debug("Set Aaronia frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

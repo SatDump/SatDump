@@ -248,7 +248,7 @@ namespace image
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
                         rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position_y * lut.width() + position_x];
 
-                    // logger->critical("{:d}, {:d}, {:d}", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
+                    // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
                 }
             }
 
@@ -339,7 +339,7 @@ namespace image
         }
         catch (std::exception &e)
         {
-            logger->error("Error generating composite! {:s}", e.what());
+            logger->error("Error generating composite! %s", e.what());
         }
 
         delete[] channelValues;

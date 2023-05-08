@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "../../metop.h"
 #include "common/ccsds/ccsds_time.h"
+#include <cstring>
 
 namespace metop
 {

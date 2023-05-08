@@ -232,7 +232,7 @@ namespace satdump
                         fft_plot->set_size(fft_size);
                         waterfall_plot->set_size(fft_size);
 
-                        logger->info("Set FFT size to {:d}", fft_size);
+                        logger->info("Set FFT size to %d", fft_size);
                     }
                     if (ImGui::InputInt("FFT Rate", &fft_rate))
                     {
@@ -241,12 +241,12 @@ namespace satdump
                         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
-                        logger->info("Set FFT rate to {:d}", fft_rate);
+                        logger->info("Set FFT rate to %d", fft_rate);
                     }
                     if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
                     {
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
-                        logger->info("Set Waterfall rate to {:d}", fft_rate);
+                        logger->info("Set Waterfall rate to %d", fft_rate);
                     }
                     ImGui::SliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     ImGui::SliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);

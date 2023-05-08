@@ -127,7 +127,7 @@ namespace dvb
         descramber = std::make_unique<dvbs2::BBFrameDescrambler>(s2_framesize, s2_coderate);
 
         // Info
-        logger->info("Output bbframe bits : {:d}", bch_decoder->dataSize());
+        logger->info("Output bbframe bits : %d", bch_decoder->dataSize());
     }
 
     DVBS2DemodModule::~DVBS2DemodModule()
@@ -147,10 +147,10 @@ namespace dvb
             d_output_files.push_back(d_output_file_hint + ".bbframe");
         }
 
-        logger->info("MODCOD : {:d}", d_modcod);
+        logger->info("MODCOD : %d", d_modcod);
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".bbframe");
-        logger->info("Buffer size : {:d}", d_buffer_size);
+        logger->info("Buffer size : %d", d_buffer_size);
 
         time_t lastTime = 0;
 
@@ -207,7 +207,7 @@ namespace dvb
             // Propagate frequency to an earlier rotator, slowly
             current_freq -= s2_pll->getFreq() * freq_propagation_factor;
             freq_sh->set_freq_raw(current_freq);
-            // logger->info("Freq {:f}, PLFreq {:f}", current_freq, s2_pll->getFreq());
+            // logger->info("Freq %f, PLFreq %f", current_freq, s2_pll->getFreq());
 
             // Update module stats
             module_stats["snr"] = snr;

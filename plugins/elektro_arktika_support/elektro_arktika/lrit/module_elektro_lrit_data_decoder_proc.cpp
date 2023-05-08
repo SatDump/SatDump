@@ -103,7 +103,7 @@ namespace elektro
                         }
                         catch (std::exception &e)
                         {
-                            logger->error("Failed decompression! {:d}", e.what());
+                            logger->error("Failed decompression! %d", e.what());
                         }
 
                         // Fill our output buffer

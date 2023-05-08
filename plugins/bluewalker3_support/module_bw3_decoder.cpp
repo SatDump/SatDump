@@ -89,7 +89,7 @@ namespace bluewalker3
 
             if (sliding_header[0] == 0xFF && sliding_header[1] == 0xD8 && sliding_header[2] == 0xFF && sliding_header[3] == 0xE0)
             {
-                logger->info("Writing image {:d}", img_cnt);
+                logger->info("Writing image %d", img_cnt);
                 std::ofstream raw_img(directory + "BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
                 raw_img.put(0xFF);
                 raw_img.put(0xD8);
@@ -102,7 +102,7 @@ namespace bluewalker3
 
         if (wip_until_hdr.size() > 0)
         {
-            logger->info("Writing image {:d}", img_cnt);
+            logger->info("Writing image %d", img_cnt);
             std::ofstream raw_img(directory + "BlueWaker3_Cam_" + std::to_string(img_cnt++) + ".jpg", std::ios::binary);
             raw_img.put(0xFF);
             raw_img.put(0xD8);

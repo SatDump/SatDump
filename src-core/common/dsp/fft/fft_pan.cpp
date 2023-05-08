@@ -31,7 +31,7 @@ namespace dsp
         rbuffer_rate = (samplerate / rate);
         rbuffer_size = std::min<int>(rbuffer_rate, fft_size);
         rbuffer_skip = rbuffer_rate - rbuffer_size;
-        logger->trace("FFT Rate {:d}, Samplerate {:d}, Final Size {:d}, Skip {:d}", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
+        logger->trace("FFT Rate %d, Samplerate %d, Final Size %d, Skip %d", rbuffer_rate, samplerate, rbuffer_size, rbuffer_skip);
 
         // Init taps, rectangular window
         fft_taps.resize(rbuffer_size);

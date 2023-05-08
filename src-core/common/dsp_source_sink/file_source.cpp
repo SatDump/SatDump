@@ -73,7 +73,7 @@ void FileSource::start()
     baseband_reader.set_file(file_path, baseband_type_e);
     baseband_reader.should_repeat = true;
 
-    logger->debug("Opening {:s} filesize {:d}", file_path.c_str(), baseband_reader.filesize);
+    logger->debug("Opening %s filesize %d", file_path.c_str(), baseband_reader.filesize);
 
     is_started = true;
 }

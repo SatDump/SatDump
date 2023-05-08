@@ -89,7 +89,7 @@ namespace scisat1
                 fts_status = SAVING;
 
                 logger->info("----------- FTS");
-                logger->info("Lines : {:d}", fts_reader.lines);
+                logger->info("Lines : %d", fts_reader.lines);
 
                 std::string fts_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/FTS";
 
@@ -110,8 +110,8 @@ namespace scisat1
                 maestro_status = SAVING;
 
                 logger->info("----------- MAESTRO");
-                logger->info("Lines (1) : {:d}", maestro_reader.lines_1);
-                logger->info("Lines (2) : {:d}", maestro_reader.lines_2);
+                logger->info("Lines (1) : %d", maestro_reader.lines_1);
+                logger->info("Lines (2) : %d", maestro_reader.lines_2);
 
                 std::string maestro_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MAESTRO";
 

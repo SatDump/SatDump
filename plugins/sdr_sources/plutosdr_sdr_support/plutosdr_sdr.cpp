@@ -22,7 +22,7 @@ void PlutoSDRSource::set_gains()
     {
         iio_channel_attr_write(iio_device_find_channel(phy, "voltage0", false), "gain_control_mode", pluto_gain_mode[gain_mode]);
         iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "hardwaregain", round(gain));
-        logger->debug("Set PlutoSDR gain to {:d}, mode {:s}", gain, pluto_gain_mode[gain_mode]);
+        logger->debug("Set PlutoSDR gain to %d, mode %s", gain, pluto_gain_mode[gain_mode]);
     }
 }
 
@@ -92,7 +92,7 @@ void PlutoSDRSource::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         iio_channel_attr_write_longlong(iio_device_find_channel(phy, "altvoltage0", true), "frequency", round(frequency));
-        logger->debug("Set PlutoSDR frequency to {:d}", frequency);
+        logger->debug("Set PlutoSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

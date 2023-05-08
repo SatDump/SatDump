@@ -53,7 +53,7 @@ int main_record(int argc, char *argv[])
     }
     catch (std::exception &e)
     {
-        logger->error("Error parsing arguments! {:s}", e.what());
+        logger->error("Error parsing arguments! %s", e.what());
         return 1;
     }
 
@@ -82,7 +82,7 @@ int main_record(int argc, char *argv[])
 
     if (!src_found)
     {
-        logger->error("Could not find a handler for source type : {:s}!", handler_id.c_str());
+        logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
         return 1;
     }
 
@@ -152,7 +152,7 @@ int main_record(int argc, char *argv[])
         ziq_bit_depth = parameters["ziq_depth"].get<int>();
 
     if (parameters["baseband_format"].get<std::string>() == "ziq")
-        logger->info("Using ZIQ Depth {:d}", ziq_bit_depth);
+        logger->info("Using ZIQ Depth %d", ziq_bit_depth);
 
     if (parameters.contains("baseband_format"))
     {
@@ -179,7 +179,7 @@ int main_record(int argc, char *argv[])
                 stats["written_raw"] = file_sink->get_written_raw();
                 return stats.dump(4);
             };
-        logger->info("Start webserver on {:s}", http_addr.c_str());
+        logger->info("Start webserver on %s", http_addr.c_str());
         webserver::start(http_addr);
     }
 
@@ -196,7 +196,7 @@ int main_record(int argc, char *argv[])
         {
             if (elapsed_time >= timeout)
             {
-                logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                 break;
             }
         }
@@ -210,9 +210,9 @@ int main_record(int argc, char *argv[])
         if (int(elapsed_time) % 2 == 0)
         {
             if (parameters["baseband_format"].get<std::string>() == "ziq")
-                logger->info("Wrote {:d} MB, raw {:d} MB", int(file_sink->get_written() / 1e6), int(file_sink->get_written_raw() / 1e6));
+                logger->info("Wrote %d MB, raw %d MB", int(file_sink->get_written() / 1e6), int(file_sink->get_written_raw() / 1e6));
             else
-                logger->info("Wrote {:d} MB", int(file_sink->get_written() / 1e6));
+                logger->info("Wrote %d MB", int(file_sink->get_written() / 1e6));
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

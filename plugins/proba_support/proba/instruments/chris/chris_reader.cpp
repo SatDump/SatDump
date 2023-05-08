@@ -143,7 +143,7 @@ namespace proba
         {
             int height_detected = (max_value * 7680) / current_width;
             int final_height = height_detected > current_height ? height_detected : current_height;
-            logger->trace("CHRIS Image size : {:d}x{:d}", current_width, final_height);
+            logger->trace("CHRIS Image size : %dx%d", current_width, final_height);
 
             CHRISImagesT ret;
             ret.mode = mode;

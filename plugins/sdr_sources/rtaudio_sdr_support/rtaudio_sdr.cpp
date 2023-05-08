@@ -101,7 +101,7 @@ void RtAudioSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         // No Freq for audio!
-        logger->debug("Set RtAudio frequency to {:d}", frequency);
+        logger->debug("Set RtAudio frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

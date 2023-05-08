@@ -67,7 +67,7 @@ namespace satdump
         if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
             instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
         else
-            logger->error("Unknown instrument : {:s}!", products->instrument_name);
+            logger->error("Unknown instrument : %s!", products->instrument_name);
 
         // Generate composites
         if (instrument_viewer_settings.contains("rgb_composites"))
@@ -115,7 +115,7 @@ namespace satdump
 
                 if (compo.value().contains("project") && img_products->has_proj_cfg())
                 {
-                    logger->debug("Reprojecting composite {:s}", name.c_str());
+                    logger->debug("Reprojecting composite %s", name.c_str());
                     reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
                                                                     final_metadata,
                                                                     rgb_image,
@@ -167,7 +167,7 @@ namespace satdump
             {
                 auto &img = img_products->images[chanid];
 
-                logger->debug("Reprojecting channel {:s}", img.channel_name.c_str());
+                logger->debug("Reprojecting channel %s", img.channel_name.c_str());
                 reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
                                                                 img_products->get_channel_proj_metdata(chanid),
                                                                 img.image,

@@ -77,12 +77,12 @@ namespace satdump
                 if (result.result().size() > 0)
                 {
                     std::string path = result.result();
-                    logger->info("Saving current image at {:s}", path.c_str());
+                    logger->info("Saving current image at %s", path.c_str());
                     map_img.save_img(path);
                 }
 #else
                 std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current image at {:s}", path.c_str());
+                logger->info("Saving current image at %s", path.c_str());
                 map_img.save_img("" + path);
 #endif
             }

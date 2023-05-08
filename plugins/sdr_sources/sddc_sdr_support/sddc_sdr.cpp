@@ -138,7 +138,7 @@ void SDDCSource::set_frequency(uint64_t frequency)
             if (is_started)
                 sddc_start_streaming(sddc_dev_obj);
         }
-        logger->debug("Set SDDC frequency to {:d}", frequency);
+        logger->debug("Set SDDC frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

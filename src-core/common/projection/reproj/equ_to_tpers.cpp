@@ -92,7 +92,7 @@ namespace satdump
                 clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size_wg, NULL);
                 clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &compute_units, NULL);
 
-                logger->debug("Workgroup size {:d}", size_wg * compute_units);
+                logger->debug("Workgroup size %d", size_wg * compute_units);
 
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
@@ -113,7 +113,7 @@ namespace satdump
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
-            logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
+            logger->debug("GPU Processing Time %f", gpu_time.count() / 1e9);
 
             if (progress != nullptr)
                 *progress = 1;
@@ -201,7 +201,7 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                logger->error("Error stereo reproj on GPU : {:s}", e.what());
+                logger->error("Error stereo reproj on GPU : %s", e.what());
             }
 #endif
 

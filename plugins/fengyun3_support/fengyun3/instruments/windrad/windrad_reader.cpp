@@ -1,5 +1,6 @@
 #include "windrad_reader.h"
 #include "logger.h"
+#include <cmath>
 
 namespace fengyun3
 {
@@ -70,7 +71,7 @@ namespace fengyun3
 
                 test /= 500;
 
-                // logger->critical("{:f} - S {:d} - E {:f} - S {:f}", test, (int)sign, exponent - 15, significand);
+                // logger->critical("%f - S %d - E %f - S %f", test, (int)sign, exponent - 15, significand);
                 if (test < 0)
                     test = 0;
                 if (test > 65535)

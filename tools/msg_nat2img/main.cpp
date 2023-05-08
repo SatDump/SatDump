@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     mh_strs[47] = (char *)buf + 5034;
 
     // for (int i = 0; i < 48; i++)
-    //     logger->debug("L{:d} {:s}", i, mh_strs[i].substr(0, mh_strs[i].size() - 1));
+    //     logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1));
 
     // IMG Size
     int vis_ir_x_size, vis_ir_y_size;
@@ -109,8 +109,8 @@ int main(int argc, char *argv[])
     sscanf(mh_strs[46].c_str(), "NumberLinesHRV              : %d", &hrv_y_size);
     sscanf(mh_strs[47].c_str(), "NumberColumnsHRV            : %d", &hrv_x_size);
 
-    logger->warn("VIS/IR Size : {:d}x{:d}", vis_ir_x_size, vis_ir_y_size);
-    logger->warn("HRV    Size : {:d}x{:d}", hrv_x_size, hrv_y_size);
+    logger->warn("VIS/IR Size : %dx%d", vis_ir_x_size, vis_ir_y_size);
+    logger->warn("HRV    Size : %dx%d", hrv_x_size, hrv_y_size);
 
     // Other data
     long int headerpos, datapos, trailerpos;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
                 // uint16_t seq_cnt = (data_ptr + 16)[0] << 8 | (data_ptr + 16)[1];
                 uint32_t pkt_len = (data_ptr + 18)[0] << 24 | (data_ptr + 18)[1] << 16 | (data_ptr + 18)[2] << 8 | (data_ptr + 18)[3];
 
-                // logger->info("PKT {:d} CHANNEL {:d} SEQ {:d} LEN {:d}", line, channel, seq_cnt, pkt_len);
+                // logger->info("PKT %d CHANNEL %d SEQ %d LEN %d", line, channel, seq_cnt, pkt_len);
 
                 int datasize = pkt_len - 15 - 27;
 

@@ -30,7 +30,7 @@ namespace image
                     queue.erase(queue.begin());
                     queue_mutex.unlock();
 
-                    // logger->debug("Queue length {:d}", queue.size());
+                    // logger->debug("Queue length %d", queue.size());
                     logger->info("Saving " + img.second);
                     img.first.save_png(img.second);
                     continue;

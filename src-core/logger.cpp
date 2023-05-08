@@ -33,6 +33,38 @@ namespace slog
                                   "\033[31m\033[1m",
                                   "\033[1m\033[41m"};
 
+    template <typename... T>
+    std::string vformat(const char *fmt, T &&...args)
+    {
+        // Allocate a buffer on the stack that's big enough for us almost
+        // all the time.
+        size_t size = 1024;
+        char buf[size];
+
+        // Try to vsnprintf into our buffer.
+        size_t needed = snprintf((char *)&buf[0], size, fmt, args...);
+        // NB. On Windows, vsnprintf returns -1 if the string didn't fit the
+        // buffer.  On Linux & OSX, it returns the length it would have needed.
+
+        if (needed <= size && needed >= 0)
+        {
+            // It fit fine the first time, we're done.
+            return std::string(&buf[0]);
+        }
+        else
+        {
+            // vsnprintf reported that it wanted to write more characters
+            // than we allotted.  So do a malloc of the right size and try again.
+            // This doesn't happen very often if we chose our initial size
+            // well.
+            std::vector<char> buf;
+            size = needed;
+            buf.resize(size);
+            needed = snprintf((char *)&buf[0], size, fmt, args...);
+            return std::string(&buf[0]);
+        }
+    }
+
     std::string LoggerSink::format_log(LogMsg m, bool color, int *cpos)
     {
         time_t ct = time(0);
@@ -50,13 +82,13 @@ namespace slog
             *cpos = timestamp.size() + 3;
 
         if (color)
-            return fmt::format("[{:s}] {:s}({:s}) {:s}\033[m\n",
-                               timestamp.c_str(),
-                               colors[m.lvl].c_str(), log_schar[m.lvl].c_str(), m.str.c_str());
+            return vformat("[%s] %s(%s) %s\033[m\n",
+                           timestamp.c_str(),
+                           colors[m.lvl].c_str(), log_schar[m.lvl].c_str(), m.str.c_str());
         else
-            return fmt::format("[{:s}] ({:s}) {:s}\n",
-                               timestamp.c_str(),
-                               log_schar[m.lvl].c_str(), m.str.c_str());
+            return vformat("[%s] (%s) %s\n",
+                           timestamp.c_str(),
+                           log_schar[m.lvl].c_str(), m.str.c_str());
     }
 
     void StdOutSink::receive(LogMsg log)
@@ -141,6 +173,28 @@ namespace slog
             for (auto &l : sinks)
                 l->receive(m);
         sink_mtx.unlock();
+    }
+
+    void Logger::logf(LogLevel lvl, std::string fmt, va_list args)
+    {
+        std::string output;
+        output.resize(1024);
+
+        va_list argscopy;
+        va_copy(argscopy, args);
+
+        size_t size = vsnprintf((char *)output.c_str(), output.size(), fmt.c_str(), args);
+
+        if (output.size() <= size)
+        {
+            log(lvl, output);
+        }
+        else
+        {
+            output.resize(size + 1);
+            size = vsnprintf((char *)output.c_str(), output.size(), fmt.c_str(), argscopy);
+            log(lvl, output);
+        }
     }
 
 #ifdef __ANDROID__

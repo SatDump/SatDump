@@ -32,7 +32,7 @@ namespace fengyun3
             if (cnt > 58 || !(marker == 90 || marker == 238))
                 return; // Make sure we don't go out of bounds due to an invalid counter
 
-            // logger->critical("CNT {:d} CNT2 {:d} MARKER {:d}", cnt, cnt2, marker);
+            // logger->critical("CNT %d CNT2 %d MARKER %d", cnt, cnt2, marker);
 
             int off = 0;
             if (marker == 238) // Start

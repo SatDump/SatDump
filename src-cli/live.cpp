@@ -85,7 +85,7 @@ int main_live(int argc, char *argv[])
                 live_pipeline->updateModuleStats();
                 return live_pipeline->stats.dump(4);
             };
-            logger->info("Start webserver on {:s}", http_addr.c_str());
+            logger->info("Start webserver on %s", http_addr.c_str());
             webserver::start(http_addr);
         }
 
@@ -129,7 +129,7 @@ int main_live(int argc, char *argv[])
         }
         catch (std::exception &e)
         {
-            logger->error("Error parsing arguments! {:s}", e.what());
+            logger->error("Error parsing arguments! %s", e.what());
             return 1;
         }
 
@@ -169,7 +169,7 @@ int main_live(int argc, char *argv[])
 
         if (!src_found)
         {
-            logger->error("Could not find a handler for source type : {:s}!", handler_id.c_str());
+            logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
             return 1;
         }
 
@@ -216,7 +216,7 @@ int main_live(int argc, char *argv[])
 
                 if (abs(final_shift) > (samplerate / 2))
                 {
-                    logger->error("Frequency shift for VFO {:s} is outside of samplerate range!", cfg.key().c_str());
+                    logger->error("Frequency shift for VFO %s is outside of samplerate range!", cfg.key().c_str());
                     exit(1);
                 }
 
@@ -239,7 +239,7 @@ int main_live(int argc, char *argv[])
                 splitter_vfo->set_vfo_enabled(cfg.key(), true);
 
                 all_pipelines.emplace(cfg.key(), live_pipeline);
-                logger->info("Added VFO for " + cfg.key() + " at {:f}", final_shift);
+                logger->info("Added VFO for " + cfg.key() + " at %f", final_shift);
             }
 
             // If requested, boot up webserver
@@ -257,7 +257,7 @@ int main_live(int argc, char *argv[])
                     }
                     return stats.dump(4);
                 };
-                logger->info("Start webserver on {:s}", http_addr.c_str());
+                logger->info("Start webserver on %s", http_addr.c_str());
                 webserver::start(http_addr);
             }
 
@@ -273,7 +273,7 @@ int main_live(int argc, char *argv[])
                     uint64_t elapsed_time = time(0) - start_time;
                     if (elapsed_time >= timeout)
                     {
-                        logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                        logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                         break;
                     }
 
@@ -380,7 +380,7 @@ int main_live(int argc, char *argv[])
                         live_pipeline->updateModuleStats();
                         return live_pipeline->stats.dump(4);
                     };
-                logger->info("Start webserver on {:s}", http_addr.c_str());
+                logger->info("Start webserver on %s", http_addr.c_str());
                 webserver::start(http_addr);
             }
 
@@ -396,7 +396,7 @@ int main_live(int argc, char *argv[])
                     uint64_t elapsed_time = time(0) - start_time;
                     if (elapsed_time >= timeout)
                     {
-                        logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                        logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                         break;
                     }
 

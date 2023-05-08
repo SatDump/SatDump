@@ -6,7 +6,7 @@ void USRPSource::set_gains()
         return;
 
     usrp_device->set_rx_gain(gain, channel);
-    logger->debug("Set USRP gain to {:f}", gain);
+    logger->debug("Set USRP gain to %f", gain);
 }
 
 void USRPSource::open_sdr()
@@ -31,7 +31,7 @@ void USRPSource::open_channel()
     if (channel >= (int)usrp_device->get_rx_num_channels())
         throw std::runtime_error("Channel " + std::to_string(channel) + " is invalid!");
 
-    logger->info("Using USRP channel {:d}", channel);
+    logger->info("Using USRP channel %d", channel);
 
     if (usrp_device->get_master_clock_rate_range().start() != usrp_device->get_master_clock_rate_range().stop())
         use_device_rates = true;
@@ -201,7 +201,7 @@ void USRPSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         usrp_device->set_rx_freq(frequency, channel);
-        logger->debug("Set USRP frequency to {:d}", frequency);
+        logger->debug("Set USRP frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

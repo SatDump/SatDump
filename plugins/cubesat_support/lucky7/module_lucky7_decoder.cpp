@@ -43,7 +43,7 @@ namespace lucky7
             {
                 uint16_t current_chunk = (frame_buffer[1] & 0xF) << 8 | frame_buffer[2];
                 uint16_t total_chunks = frame_buffer[5] << 8 | frame_buffer[6];
-                // logger->info("{:d}/{:d}", current_chunk, total_chunks);
+                // logger->info("%d/%d", current_chunk, total_chunks);
 
                 if (wip_image_payloads.count(total_chunks) == 0)
                 {
@@ -78,7 +78,7 @@ namespace lucky7
 
         for (auto imgp : wip_image_payloads)
         {
-            logger->info("Image Payload {:d}. Got {:d}/{:d}", imgp.first, imgp.second.get_present(), imgp.second.total_chunks);
+            logger->info("Image Payload %d. Got %d/%d", imgp.first, imgp.second.get_present(), imgp.second.total_chunks);
 
             image::Image<uint8_t> img;
             img.load_jpeg(imgp.second.payload.data(), imgp.second.payload.size());

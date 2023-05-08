@@ -33,10 +33,10 @@ namespace inmarsat
             d_aero_info_size = d_aero_interleaver_block_size * d_aero_interleaver_blocks;
             d_aero_total_frm_size = d_aero_sync_size + d_aero_hdr_size + d_aero_info_size;
 
-            logger->info("Aero Sync Size : {:d}", d_aero_sync_size);
-            logger->info("Aero Header Size : {:d}", d_aero_hdr_size);
-            logger->info("Aero Info Size : {:d}", d_aero_info_size);
-            logger->info("Aero Frame Size : {:d}", d_aero_total_frm_size);
+            logger->info("Aero Sync Size : %d", d_aero_sync_size);
+            logger->info("Aero Header Size : %d", d_aero_hdr_size);
+            logger->info("Aero Info Size : %d", d_aero_info_size);
+            logger->info("Aero Frame Size : %d", d_aero_total_frm_size);
 
             if (is_c_channel)
             {

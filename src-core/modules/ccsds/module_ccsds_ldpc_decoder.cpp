@@ -54,7 +54,7 @@ namespace ccsds
                                                                                                 : unsigned_to_bitvec<uint64_t>(0x034776c7272895b0),
                                                          d_ldpc_frame_size);
 
-        logger->trace("LDPC Frame size {:d}, SIMD {:d}", d_ldpc_frame_size, d_ldpc_simd);
+        logger->trace("LDPC Frame size %d, SIMD %d", d_ldpc_frame_size, d_ldpc_simd);
 
         // Parse internal sync marker if set
         if (d_internal_stream)

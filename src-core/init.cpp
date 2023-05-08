@@ -121,7 +121,7 @@ namespace satdump
                 int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
                 dsp::STREAM_BUFFER_SIZE = new_sz;
                 dsp::RING_BUF_SZ = new_sz;
-                logger->warn("DSP Buffer size was changed to {:d}", new_sz);
+                logger->warn("DSP Buffer size was changed to %d", new_sz);
             }
         }
 

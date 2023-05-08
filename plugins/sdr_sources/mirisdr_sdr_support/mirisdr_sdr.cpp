@@ -31,7 +31,7 @@ void MiriSdrSource::set_gains()
 
     mirisdr_set_tuner_gain_mode(mirisdr_dev_obj, 1);
     mirisdr_set_tuner_gain(mirisdr_dev_obj, gain * 10);
-    logger->debug("Set MiriSDR Gain to {:d}", gain);
+    logger->debug("Set MiriSDR Gain to %d", gain);
 }
 
 void MiriSdrSource::set_bias()
@@ -39,7 +39,7 @@ void MiriSdrSource::set_bias()
     if (!is_started)
         return;
     mirisdr_set_bias(mirisdr_dev_obj, bias_enabled);
-    logger->debug("Set MiriSDR Bias to {:d}", (int)bias_enabled);
+    logger->debug("Set MiriSDR Bias to %d", (int)bias_enabled);
 }
 
 void MiriSdrSource::set_settings(nlohmann::json settings)
@@ -119,7 +119,7 @@ void MiriSdrSource::start()
     else
         bit_depth = 8;
 
-    logger->info("Using MiriSDR bit depth {:d}", bit_depth);
+    logger->info("Using MiriSDR bit depth %d", bit_depth);
 
     if (bit_depth == 8)
         mirisdr_set_sample_format(mirisdr_dev_obj, (char *)"504_S8");
@@ -171,7 +171,7 @@ void MiriSdrSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         mirisdr_set_center_freq(mirisdr_dev_obj, frequency);
-        logger->debug("Set MiriSDR frequency to {:d}", frequency);
+        logger->debug("Set MiriSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

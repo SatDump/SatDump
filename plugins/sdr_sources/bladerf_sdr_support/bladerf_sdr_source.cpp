@@ -10,7 +10,7 @@ void BladeRFSource::set_gains()
     if (gain_mode == BLADERF_GAIN_MANUAL)
     {
         bladerf_set_gain(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), general_gain);
-        logger->debug("Set BladeRF gain to {:d}", general_gain);
+        logger->debug("Set BladeRF gain to %d", general_gain);
     }
 }
 
@@ -19,7 +19,7 @@ void BladeRFSource::set_bias()
     if (bladerf_model == 2)
     {
         bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), bias_enabled);
-        logger->debug("Set BladeRF bias to {:d}", (int)bias_enabled);
+        logger->debug("Set BladeRF bias to %d", (int)bias_enabled);
     }
 }
 
@@ -95,7 +95,7 @@ void BladeRFSource::open()
     available_samplerates.push_back(bladerf_range_samplerate->min);
     for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
     {
-        // logger->trace("BladeRF device has samplerate {:d} SPS", i);
+        // logger->trace("BladeRF device has samplerate %d SPS", i);
         available_samplerates.push_back(i);
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
@@ -142,7 +142,7 @@ void BladeRFSource::start()
     rational_rate.num = (current_samplerate - rational_rate.integer) * rational_rate.den;
     bladerf_set_rational_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), &rational_rate, &actual);
     uint64_t actuals = actual.integer + (actual.num / static_cast<double>(actual.den));
-    logger->info("Actual samplerate {:d}", actuals);
+    logger->info("Actual samplerate %d", actuals);
 
     bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
 
@@ -196,7 +196,7 @@ void BladeRFSource::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         bladerf_set_frequency(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), frequency);
-        logger->debug("Set BladeRF frequency to {:d}", frequency);
+        logger->debug("Set BladeRF frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

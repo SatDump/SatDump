@@ -92,7 +92,7 @@ namespace satdump
             if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
                 instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
             else
-                logger->error("Unknown instrument : {:s}!", products->instrument_name);
+                logger->error("Unknown instrument : %s!", products->instrument_name);
 
             // Init Handler
             std::string handler_id;
@@ -104,7 +104,7 @@ namespace satdump
                 handler_id = "radiation_handler";
             else if (products->contents["type"] == "scatterometer")
                 handler_id = "scatterometer_handler";
-            logger->debug("Using handler {:s} for instrument {:s}", handler_id, products->instrument_name);
+            logger->debug("Using handler %s for instrument %s", handler_id.c_str(), products->instrument_name.c_str());
             std::shared_ptr<ViewerHandler> handler = viewer_handlers_registry[handler_id]();
 
             handler->products = products.get();

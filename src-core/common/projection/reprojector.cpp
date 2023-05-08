@@ -114,7 +114,7 @@ namespace satdump
 
                         if (progress != nullptr)
                             *progress = float(currentScan) / float(image.height());
-                        // logger->critical("{:d}/{:d}", currentScan, image.height());
+                        // logger->critical("%d/%d", currentScan, image.height());
                     }
                 }
             }
@@ -189,7 +189,7 @@ namespace satdump
                     operation.output_width = l_width;
                     operation.output_height = l_width / 2;
 
-                    logger->trace("Warping size {:d}x{:d}", l_width, l_width / 2);
+                    logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
                     satdump::warp::ImageWarper warper;
                     warper.op = operation;

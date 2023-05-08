@@ -78,8 +78,8 @@ void RtlSdrSource::set_gains()
             ;
     }
 
-    logger->debug("Set RTL-SDR AGC to {:d}", (int)lna_agc_enabled);
-    logger->debug("Set RTL-SDR Gain to {:d}", gain * 10);
+    logger->debug("Set RTL-SDR AGC to %d", (int)lna_agc_enabled);
+    logger->debug("Set RTL-SDR Gain to %d", gain * 10);
 }
 
 void RtlSdrSource::set_bias()
@@ -88,7 +88,7 @@ void RtlSdrSource::set_bias()
         return;
     for (int i = 0; i < 20 && rtlsdr_set_bias_tee(rtlsdr_dev_obj, bias_enabled) < 0; i++)
         ;
-    logger->debug("Set RTL-SDR Bias to {:d}", (int)bias_enabled);
+    logger->debug("Set RTL-SDR Bias to %d", (int)bias_enabled);
 }
 
 void RtlSdrSource::set_settings(nlohmann::json settings)
@@ -197,7 +197,7 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
     {
         for (int i = 0; i < 20 && rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency) < 0; i++)
             ;
-        logger->debug("Set RTL-SDR frequency to {:d}", frequency);
+        logger->debug("Set RTL-SDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }

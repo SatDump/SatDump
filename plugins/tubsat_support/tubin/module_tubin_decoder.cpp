@@ -62,7 +62,7 @@ namespace tubin
                                        (uint64_t)cadu[33] << 8 |
                                        (uint64_t)cadu[34];
 
-                    // logger->info("{:d} {:d}", chunk_counter, file_id);
+                    // logger->info("%d %d", chunk_counter, file_id);
 
                     if (all_files_vis.count(file_id) == 0)
                         all_files_vis.insert({file_id, std::vector<uint8_t>()});
@@ -130,7 +130,7 @@ namespace tubin
             image::Image<uint16_t> image;
             image.load_png(out.data(), out.size());
 
-            logger->info("New image is {:d}x{:d}", image.width(), image.height());
+            logger->info("New image is %dx%d", image.width(), image.height());
 
             if (image.size() > 0)
             {

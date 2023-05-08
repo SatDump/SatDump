@@ -57,8 +57,8 @@ namespace noaa_apt
             wav::FileMetadata md = wav::tryParseFilenameMetadata(d_input_file, true);
             if (md.timestamp != 0 && (d_parameters.contains("start_timestamp") ? d_parameters["start_timestamp"] == -1 : 1))
             {
-                d_parameters["start_timestamp"] = md.timestamp;
-                logger->trace("Has timestamp {:d}", md.timestamp);
+                d_parameters["start_timestamp"] = md.timestamp-3600;
+                logger->trace("Has timestamp %d", md.timestamp);
             }
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -172,7 +172,7 @@ namespace noaa_apt
 
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
-        logger->info("Got {:d} lines...", line_cnt);
+        logger->info("Got %d lines...", line_cnt);
 
         // WB
         logger->info("White balance...");
@@ -328,7 +328,7 @@ namespace noaa_apt
                 }
             }
 
-            // logger->critical("Line {:d} Pos {:d} Cor {:d}", line, best_pos, best_cor);
+            // logger->critical("Line %d Pos %d Cor %d", line, best_pos, best_cor);
             for (int i = 0; i < APT_IMG_WIDTH; i++)
                 wip_apt_image_sync[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS];
         }

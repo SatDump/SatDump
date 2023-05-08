@@ -32,14 +32,14 @@ PortAudioSink::PortAudioSink()
 {
     PaError err = Pa_Initialize();
     if (err != paNoError)
-        logger->error("Couldn't init PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't init PortAudio! %s", Pa_GetErrorText(err));
 }
 
 PortAudioSink::~PortAudioSink()
 {
     PaError err = Pa_Terminate();
     if (err != paNoError)
-        logger->error("Couldn't terminate PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't terminate PortAudio! %s", Pa_GetErrorText(err));
 }
 
 void PortAudioSink::set_samplerate(int samplerate)
@@ -60,22 +60,22 @@ void PortAudioSink::start()
                                &PortAudioSink::audio_callback,
                                this);
     if (err != paNoError)
-        logger->error("Couldn't open PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't open PortAudio! %s", Pa_GetErrorText(err));
 
     err = Pa_StartStream(stream);
     if (err != paNoError)
-        logger->error("Couldn't start PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't start PortAudio! %s", Pa_GetErrorText(err));
 }
 
 void PortAudioSink::stop()
 {
     PaError err = Pa_StopStream(stream);
     if (err != paNoError)
-        logger->error("Couldn't stop PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't stop PortAudio! %s", Pa_GetErrorText(err));
 
     err = Pa_CloseStream(stream);
     if (err != paNoError)
-        logger->error("Couldn't close PortAudio! {:s}", Pa_GetErrorText(err));
+        logger->error("Couldn't close PortAudio! %s", Pa_GetErrorText(err));
 }
 
 void PortAudioSink::push_samples(int16_t *samples, int nsamples)

@@ -32,7 +32,7 @@ namespace geodetic
                 forward(tl_lon, tl_lat, x1, y1);
                 forward(br_lon, br_lat, x2, y2);
 
-                logger->critical("{:d} {:d} {:d} {:d}", x1, x2, y1, y2);
+                logger->critical("%d %d %d %d", x1, x2, y1, y2);
 
                 double ratio_x = image_width / abs(x1 - x2);
                 double ratio_y = image_height / abs(y1 - y2);
@@ -43,7 +43,7 @@ namespace geodetic
                 image_height = img_height * ratio_y;
                 image_width = img_width * ratio_x;
 
-                logger->critical("{:d} {:d}              {:d} {:d}", offset_x, offset_y, (img_width / image_width), (img_height / image_height));
+                logger->critical("%d %d              %d %d", offset_x, offset_y, (img_width / image_width), (img_height / image_height));
             }
             else
             {

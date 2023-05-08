@@ -69,7 +69,7 @@ namespace inmarsat
                     }
                     catch (std::exception &e)
                     {
-                        logger->error("Error sending to UDP! {:s}", e.what());
+                        logger->error("Error sending to UDP! %s", e.what());
                     }
                 }
             }
@@ -227,7 +227,7 @@ namespace inmarsat
                 }
                 catch (std::exception &e)
                 {
-                    logger->error("Error processing STD-C frame {:s}", e.what());
+                    logger->error("Error processing STD-C frame %s", e.what());
                 }
 
                 if (input_data_type == DATA_FILE)

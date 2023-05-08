@@ -294,7 +294,7 @@ namespace himawari
                                                 int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
                                                 long id = std::stoll(current_filename.substr(12, 12));
 
-                                                logger->debug("Channel {:s} segment {:d} id {:d}", channel_name.c_str(), segment, id);
+                                                logger->debug("Channel %s segment %d id %d", channel_name.c_str(), segment, id);
 
                                                 if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
                                                 {
@@ -329,7 +329,7 @@ namespace himawari
                                 }
                                 catch (std::exception &e)
                                 {
-                                    logger->error("Error processing HimawariCast file {:s}", e.what());
+                                    logger->error("Error processing HimawariCast file %s", e.what());
                                 }
                             }
                         }

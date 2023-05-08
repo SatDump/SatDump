@@ -1,11 +1,12 @@
 #pragma once
 
-#include "libs/fmt/fmt.h"
+// #include "libs/fmt/fmt.h"
 #include <memory>
 #include "dll_export.h"
 #include <vector>
 #include <fstream>
 #include <mutex>
+#include <stdarg.h>
 
 namespace slog
 {
@@ -57,18 +58,42 @@ namespace slog
 
     public:
         // FMT formats
-        template <typename... T>
-        void trace(fmt::format_string<T...> fmt, T &&...args) { log(LOG_TRACE, fmt, args...); }
-        template <typename... T>
-        void debug(fmt::format_string<T...> fmt, T &&...args) { log(LOG_DEBUG, fmt, args...); }
-        template <typename... T>
-        void info(fmt::format_string<T...> fmt, T &&...args) { log(LOG_INFO, fmt, args...); }
-        template <typename... T>
-        void warn(fmt::format_string<T...> fmt, T &&...args) { log(LOG_WARN, fmt, args...); }
-        template <typename... T>
-        void error(fmt::format_string<T...> fmt, T &&...args) { log(LOG_ERROR, fmt, args...); }
-        template <typename... T>
-        void critical(fmt::format_string<T...> fmt, T &&...args) { log(LOG_CRIT, fmt, args...); }
+        void trace(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_TRACE, fmt, args);
+        }
+        void debug(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_DEBUG, fmt, args);
+        }
+        void info(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_INFO, fmt, args);
+        }
+        void warn(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_WARN, fmt, args);
+        }
+        void error(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_ERROR, fmt, args);
+        }
+        void critical(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_CRIT, fmt, args);
+        }
 
         // Int formats
         void trace(int v) { log(LOG_TRACE, v); }
@@ -78,19 +103,8 @@ namespace slog
         void error(int v) { log(LOG_ERROR, v); }
         void critical(int v) { log(LOG_CRIT, v); }
 
-        // String formats
-        void trace(std::string v) { log(LOG_TRACE, v); }
-        void debug(std::string v) { log(LOG_DEBUG, v); }
-        void info(std::string v) { log(LOG_INFO, v); }
-        void warn(std::string v) { log(LOG_WARN, v); }
-        void error(std::string v) { log(LOG_ERROR, v); }
-        void critical(std::string v) { log(LOG_CRIT, v); }
-
-        template <typename... T>
-        void log(LogLevel lvl, fmt::format_string<T...> fmt, T &&...args) { log(lvl, fmt::format(fmt, args...)); }
-
+        void logf(LogLevel lvl, std::string fmt, va_list args);
         void log(LogLevel lvl, int v) { log(lvl, std::to_string(v)); }
-
         void log(LogLevel lvl, std::string v);
     };
 

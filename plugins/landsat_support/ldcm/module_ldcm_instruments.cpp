@@ -64,7 +64,7 @@ namespace ldcm
                         else if (pkt.header.apid == 1794)
                             tirs_reader3.work(pkt);
                         // else
-                        //     logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+                        //     logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
                     }
                 }
 #if 0
@@ -73,7 +73,7 @@ namespace ldcm
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+                        logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
 
                         if (pkt.header.apid == 299)
                         {

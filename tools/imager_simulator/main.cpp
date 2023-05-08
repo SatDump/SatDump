@@ -49,15 +49,15 @@ int main(int argc, char *argv[])
 
     int scan_count = (stop_time - start_time) / scan_period;
 
-    logger->info("Simulating data for NORAD {:d}", norad);
-    logger->info("Start Time {:f}", start_time);
-    logger->info("Stop Time {:f}", stop_time);
-    logger->info("Duration {:f}", stop_time - start_time);
-    logger->info("Scan period {:f}", scan_period);
-    logger->info("Scan count {:d}", scan_count);
-    logger->info("Scan angle {:f}", scan_angle);
-    logger->info("Scan size {:d}", scan_size);
-    logger->info("Scan angle size {:f}", scan_angle / scan_size);
+    logger->info("Simulating data for NORAD %d", norad);
+    logger->info("Start Time %f", start_time);
+    logger->info("Stop Time %f", stop_time);
+    logger->info("Duration %f", stop_time - start_time);
+    logger->info("Scan period %f", scan_period);
+    logger->info("Scan count %d", scan_count);
+    logger->info("Scan angle %f", scan_angle);
+    logger->info("Scan size %d", scan_size);
+    logger->info("Scan angle size %f", scan_angle / scan_size);
 
     logger->debug("Loading source image...");
 
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 
             if (ret)
             {
-                logger->error("Invalid earth position! {:f} {:f} - {:f} {:f} {:f} - {:f} {:f}",
+                logger->error("Invalid earth position! %f %f - %f %f %f - %f %f",
                               ground_position.lon, ground_position.lat,
                               satellite_pointing.roll,
                               satellite_pointing.pitch,
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 
         y++;
 
-        logger->trace("Line {:d}/{:d}", y, scan_count);
+        logger->trace("Line %d/%d", y, scan_count);
     }
 
     satdump::ImageProducts imager_products;

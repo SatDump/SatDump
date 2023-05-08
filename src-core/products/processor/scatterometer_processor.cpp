@@ -20,7 +20,7 @@ namespace satdump
         if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
             instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
         else
-            logger->error("Unknown instrument : {:s}!", products->instrument_name);
+            logger->error("Unknown instrument : %s!", products->instrument_name);
 
         if (instrument_viewer_settings.contains("grayscale_images"))
         {

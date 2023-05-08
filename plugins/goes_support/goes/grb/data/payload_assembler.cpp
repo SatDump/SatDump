@@ -103,7 +103,7 @@ namespace goes
             fullPkt.clear(); // Free memory
 
             // if (checksum != sent_checksum)
-            //     logger->critical("CRC CHECK {:d} {:d}", sent_checksum, checksum);
+            //     logger->critical("CRC CHECK %d %d", sent_checksum, checksum);
 
             return checksum == sent_checksum;
         }

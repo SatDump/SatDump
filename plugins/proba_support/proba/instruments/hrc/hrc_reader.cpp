@@ -47,7 +47,7 @@ namespace proba
 
             if (hrc_images.count(img_tag) == 0)
             {
-                logger->info("New HRC image with tag {:d}!", img_tag);
+                logger->info("New HRC image with tag %d!", img_tag);
                 hrc_images.insert({img_tag, std::make_shared<HRCImage>()});
             }
 

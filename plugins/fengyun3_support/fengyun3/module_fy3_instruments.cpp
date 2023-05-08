@@ -267,7 +267,7 @@ namespace fengyun3
                         //     continue; // idk_out.write((char *)pkt.payload.data(), 506);
                         // else if (pkt.header.apid == 1)
                         //     continue; // idk_out.write((char *)pkt.payload.data(), 282);
-                        //               // else logger->critical("APID {:d}           {:d}", pkt.header.apid, pkt.payload.size());
+                        //               // else logger->critical("APID %d           %d", pkt.header.apid, pkt.payload.size());
                     }
                     // else
                     // {
@@ -275,7 +275,7 @@ namespace fengyun3
                     //    if (vcdu.vcid == 11)
                     //        idk_out.write((char *)&cadu[14], 882);
                     //    else
-                    //        logger->critical("VCID {:d}", vcdu.vcid);
+                    //        logger->critical("VCID %d", vcdu.vcid);
                     //}
                 }
                 else if (d_satellite == FY_3E)
@@ -618,7 +618,7 @@ namespace fengyun3
                 for (int i = 0; i < 20; i++)
                 {
                     image::Image<uint16_t> image = mersi1_reader.getChannel(i);
-                    logger->debug("Processing channel {:d}", i + 1);
+                    logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, i < 5 ? 40 : 10);
                     if (d_mersi_bowtie)
@@ -697,7 +697,7 @@ namespace fengyun3
                 for (int i = 0; i < 25; i++)
                 {
                     image::Image<uint16_t> image = mersi2_reader.getChannel(i);
-                    logger->debug("Processing channel {:d}", i + 1);
+                    logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
                     if (d_mersi_bowtie)
@@ -767,7 +767,7 @@ namespace fengyun3
                 for (int i = 0; i < 18; i++)
                 {
                     image::Image<uint16_t> image = mersill_reader.getChannel(i);
-                    logger->debug("Processing channel {:d}", i + 1);
+                    logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, i < 2 ? 80 : 10);
                     if (i < 2)
@@ -828,7 +828,7 @@ namespace fengyun3
                 for (int i = 0; i < 8; i++)
                 {
                     image::Image<uint16_t> image = mersirm_reader.getChannel(i);
-                    logger->debug("Processing channel {:d}", i + 1);
+                    logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, 10);
                     if (d_mersi_bowtie)
