@@ -383,7 +383,7 @@
                         "equation": "chb",
                         "equalize": true
                     },
-                    /*"Clouds Underlay": {
+                    "Clouds Underlay": {
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "lua_vars": {
@@ -402,7 +402,7 @@
                             "thresold": 0,
                             "blend": 1
                         }
-                    },*/
+                    },
                     "MSA": {
                         "channels": "cha",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
