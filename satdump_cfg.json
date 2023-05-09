@@ -413,6 +413,16 @@
                             "blend": 1
                         }
                     },
+                    "MCIR Rain": {
+                        "channels": "cha, chb",
+                        "lua": "scripted_compos/underlay_with_clouds_lut.lua",
+                        "lua_vars": {
+                            "minoffset": 0,
+                            "scalar": 1,
+                            "thresold": 0,
+                            "lut": "noaa_apt/WXtoImg-NO.png"
+                        }
+                    },
                     "WXtoImg HVC N15": {
                         "lut": "noaa_apt/WXtoImg-N15-HVC.png",
                         "channels": "cha, chb"
@@ -424,6 +434,11 @@
                     "WXtoImg HVC N19": {
                         "lut": "noaa_apt/WXtoImg-N19-HVC.png",
                         "channels": "cha, chb"
+                    },
+                    "WXtoImg NO": {
+                        "lut": "noaa_apt/WXtoImg-NO.png",
+                        "channels": "cha, chb",
+                        "autogen": false
                     }
                 }
                 //,"project_channels": {}
