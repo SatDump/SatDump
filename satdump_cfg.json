@@ -420,7 +420,7 @@
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
-                            "lut": "noaa_apt/WXtoImg-NO.png"
+                            "lut": "noaa_apt/WXtoImg-NO_mod.png"
                         }
                     },
                     "WXtoImg HVC N15": {

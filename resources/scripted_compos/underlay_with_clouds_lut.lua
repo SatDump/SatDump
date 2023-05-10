@@ -12,7 +12,7 @@ function init()
     equ_proj:init(img_background:width(), img_background:height(), -180, 90, 180, -90)
 
     img_rainnolut = image8.new()
-    img_rainnolut:load_png(get_resource_path("noaa_apt/WXtoImg-NO.png"))
+    img_rainnolut:load_png(get_resource_path(lua_vars["lut"]))
 
     cfg_offset = lua_vars["minoffset"]
     cfg_scalar = lua_vars["scalar"]
@@ -35,6 +35,13 @@ function process()
                 lut_y = get_channel_value(1) * img_rainnolut:height()
                 lut_x = get_channel_value(0) * img_rainnolut:width()
 
+                if lut_y >= img_rainnolut:height() then
+                    lut_y = img_rainnolut:height()
+                end
+
+                if lut_x >= img_rainnolut:width() then
+                    lut_x = img_rainnolut:width()
+                end
 
                 val_lut = {}
                 val = {}
