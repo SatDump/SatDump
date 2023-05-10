@@ -401,7 +401,13 @@
                             "scalar": 2.5,
                             "thresold": 0,
                             "blend": 1
-                        }
+                        },
+                        "map_overlay": true,
+                        "map_overlay_colors": [
+                            1,
+                            1,
+                            0
+                        ]
                     },
                     "MSA": {
                         "channels": "cha",
@@ -411,7 +417,13 @@
                             "scalar": 1.6,
                             "thresold": 0,
                             "blend": 1
-                        }
+                        },
+                        "map_overlay": true,
+                        "map_overlay_colors": [
+                            1,
+                            1,
+                            0
+                        ]
                     },
                     "MCIR Rain": {
                         "channels": "cha, chb",
@@ -421,7 +433,13 @@
                             "scalar": 1,
                             "thresold": 0,
                             "lut": "noaa_apt/WXtoImg-NO_mod.png"
-                        }
+                        },
+                        "map_overlay": true,
+                        "map_overlay_colors": [
+                            1,
+                            1,
+                            0
+                        ]
                     },
                     "WXtoImg HVC N15": {
                         "lut": "noaa_apt/WXtoImg-N15-HVC.png",

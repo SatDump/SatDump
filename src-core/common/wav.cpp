@@ -68,7 +68,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq;
-                md.timestamp = mktime(&timeS);
+                md.timestamp = mktime(&timeS) - 3600;
             }
 
             // HDSDR Audio filename

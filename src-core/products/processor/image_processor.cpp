@@ -103,6 +103,14 @@ namespace satdump
                                                                                     final_timestamps);
                     logger->info("Drawing map...");
                     unsigned short color[3] = {0, 65535, 0};
+
+                    if (compo.value().contains("map_overlay_colors"))
+                    {
+                        color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
+                        color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
+                        color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
+                    }
+
                     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                    rgb_image,
                                                    color,
