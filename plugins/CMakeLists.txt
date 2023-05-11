@@ -300,7 +300,7 @@ if(PLUGIN_SDDC_SDR_SUPPORT)
 endif()
 
 # ######################
-option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" ON)
+option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" OFF)
 
 if(PLUGIN_RTAUDIO_SINK)
     add_subdirectory(audio_sinks/rtaudio_audio_sink)
