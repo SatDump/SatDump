@@ -110,6 +110,13 @@ namespace proba
                 img.simple_despeckle(20);
 
                 logger->info("Good! Saving as png... ");
+                if (std::filesystem::exists(output_folder + "/" + filename + ".png"))
+                {
+                    int i = 0;
+                    while (std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + ".png"))
+                        i++;
+                    filename = filename + "-" + std::to_string(i);
+                }
                 WRITE_IMAGE_LOCAL(img, output_folder + "/" + filename + ".png");
             }
         }
