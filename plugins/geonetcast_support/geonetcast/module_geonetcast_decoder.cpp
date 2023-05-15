@@ -97,6 +97,7 @@ namespace geonetcast
 
                     for (fazzt::FazztFile &file : files)
                     {
+                        file.name = file.name.substr(0, file.name.length() - 45);
                         logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
 
                         std::ofstream output_himawari_file(directory + "/" + file.name);
