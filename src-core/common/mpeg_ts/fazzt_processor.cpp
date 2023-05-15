@@ -22,12 +22,14 @@ namespace fazzt
             if (pkt_type == 0x03) // Head
             {
                 std::string filename((char *)&fazzt_frame[84]);
-                std::string path((char *)&fazzt_frame[188]);
+                int newPos_Path = 84 + filename.size() + 72;
+                int newPos_Size = 84 + filename.size() + 56;
+                std::string path((char *)&fazzt_frame[newPos_Path]);
                 uint16_t parts = fazzt_frame[73] << 8 | fazzt_frame[72];
-                uint32_t length = fazzt_frame[175] << 24 | fazzt_frame[174] << 16 | fazzt_frame[173] << 8 | fazzt_frame[172];
+                uint32_t length = fazzt_frame[newPos_Size + 3] << 24 | fazzt_frame[newPos_Size + 2] << 16 | fazzt_frame[newPos_Size + 1] << 8 | fazzt_frame[newPos_Size + 0];
 
                 FazztFile file;
-                file.data.resize(length * 100); // Be safe
+                file.data.resize(parts * PAYLOAD_SIZE); // Be safe
                 file.size = length;
                 file.name = filename;
                 file.parts = parts;
@@ -45,7 +47,7 @@ namespace fazzt
             {
                 uint16_t part = fazzt_frame[9] << 8 | fazzt_frame[8];
                 if (part < files_in_progress[id].parts)
-                    memcpy(&files_in_progress[id].data[part * 1411], &fazzt_frame[16], 1411);
+                    memcpy(&files_in_progress[id].data[part * PAYLOAD_SIZE], &fazzt_frame[16], PAYLOAD_SIZE);
             }
             else if (pkt_type == 0xFF && file_exists) // Tail
             {

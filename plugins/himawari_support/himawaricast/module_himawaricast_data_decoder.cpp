@@ -139,7 +139,7 @@ namespace himawari
             int ts_cnt = 1;
             uint8_t mpeg_ts_all[188 * 1000];
             mpeg_ts::TSDemux ts_demux;
-            fazzt::FazztProcessor fazzt_processor;
+            fazzt::FazztProcessor fazzt_processor(1411);
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
