@@ -97,12 +97,35 @@ namespace geonetcast
 
                     for (fazzt::FazztFile &file : files)
                     {
-                        file.name = file.name.substr(0, file.name.length() - 45);
-                        logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
+                        bool has_all_parts = true;
+                        for (auto p : file.has_parts)
+                            if (!p)
+                                has_all_parts = false;
 
-                        std::ofstream output_himawari_file(directory + "/" + file.name);
-                        output_himawari_file.write((char *)file.data.data(), file.data.size());
-                        output_himawari_file.close();
+                        file.name = file.name.substr(0, file.name.length() - 45);
+
+                        if (has_all_parts)
+                        {
+                            if (!std::filesystem::exists(directory + "/COMPLETE"))
+                                std::filesystem::create_directories(directory + "/COMPLETE");
+
+                            logger->debug("Saving complete " + file.name + " size " + std::to_string(file.size));
+
+                            std::ofstream output_himawari_file(directory + "/COMPLETE/" + file.name);
+                            output_himawari_file.write((char *)file.data.data(), file.data.size());
+                            output_himawari_file.close();
+                        }
+                        else
+                        {
+                            if (!std::filesystem::exists(directory + "/INCOMPLETE"))
+                                std::filesystem::create_directories(directory + "/INCOMPLETE");
+
+                            logger->trace("Saving incomplete " + file.name + " size " + std::to_string(file.size));
+
+                            std::ofstream output_himawari_file(directory + "/INCOMPLETE/" + file.name);
+                            output_himawari_file.write((char *)file.data.data(), file.data.size());
+                            output_himawari_file.close();
+                        }
                     }
                 }
             }

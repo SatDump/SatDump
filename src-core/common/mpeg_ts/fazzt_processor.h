@@ -12,6 +12,7 @@ namespace fazzt
         std::string name;
         uint32_t size;
         int parts;
+        std::vector<bool> has_parts;
         std::vector<uint8_t> data;
     };
 

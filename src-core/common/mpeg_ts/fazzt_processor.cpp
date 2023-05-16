@@ -33,6 +33,7 @@ namespace fazzt
                 file.size = length;
                 file.name = filename;
                 file.parts = parts;
+                file.has_parts = std::vector<bool>(parts, false);
 
                 if (files_in_progress.count(id) > 0)
                 {
@@ -47,7 +48,10 @@ namespace fazzt
             {
                 uint16_t part = fazzt_frame[9] << 8 | fazzt_frame[8];
                 if (part < files_in_progress[id].parts)
+                {
                     memcpy(&files_in_progress[id].data[part * PAYLOAD_SIZE], &fazzt_frame[16], PAYLOAD_SIZE);
+                    files_in_progress[id].has_parts[part] = true;
+                }
             }
             else if (pkt_type == 0xFF && file_exists) // Tail
             {
