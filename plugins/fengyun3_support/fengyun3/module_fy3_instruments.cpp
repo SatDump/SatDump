@@ -833,6 +833,25 @@ namespace fengyun3
                         mersi::mersi_match_detector_histograms(image, 10);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+
+                    // What did you do NSMC.... Why did you turn FY-3G 180 degs!?
+                    if (d_parameters.contains("mersi_rotate") ? d_parameters["mersi_rotate"].get<bool>() : false)
+                    {
+                        auto img2 = image;
+                        for (int l = 0; l < img2.height() / 10; l++)
+                        {
+                            for (int x = 0; x < img2.width(); x++)
+                            {
+                                for (int c = 0; c < 10; c++)
+                                {
+                                    image[(l * 10 + c) * img2.width() + x] = img2[(l * 10 + (9 - c)) * img2.width() + x];
+                                }
+                            }
+                        }
+
+                        image.mirror(true, false);
+                    }
+
                     mersirm_products.images.push_back({"MERSIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 

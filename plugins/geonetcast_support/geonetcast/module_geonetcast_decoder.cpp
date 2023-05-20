@@ -9,6 +9,7 @@
 #include "common/mpeg_ts/ts_demux.h"
 #include "common/mpeg_ts/fazzt_processor.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
+#include "libs/ctpl/ctpl_stl.h"
 
 namespace geonetcast
 {
@@ -63,6 +64,8 @@ namespace geonetcast
         mpeg_ts::TSDemux ts_demux;
         fazzt::FazztProcessor fazzt_processor(1408);
 
+        ctpl::thread_pool saving_pool(16);
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             if (ts_input)
@@ -95,7 +98,7 @@ namespace geonetcast
 
                     std::vector<fazzt::FazztFile> files = fazzt_processor.work(payload);
 
-                    for (fazzt::FazztFile &file : files)
+                    for (fazzt::FazztFile file : files)
                     {
                         bool has_all_parts = true;
                         for (auto p : file.has_parts)
@@ -104,28 +107,32 @@ namespace geonetcast
 
                         file.name = file.name.substr(0, file.name.length() - 45);
 
-                        if (has_all_parts)
+                        auto function = [file, has_all_parts, this](int)
                         {
-                            if (!std::filesystem::exists(directory + "/COMPLETE"))
-                                std::filesystem::create_directories(directory + "/COMPLETE");
+                            if (has_all_parts)
+                            {
+                                if (!std::filesystem::exists(directory + "/COMPLETE"))
+                                    std::filesystem::create_directories(directory + "/COMPLETE");
 
-                            logger->debug("Saving complete " + file.name + " size " + std::to_string(file.size));
+                                logger->debug("Saving complete " + file.name + " size " + std::to_string(file.size));
 
-                            std::ofstream output_himawari_file(directory + "/COMPLETE/" + file.name);
-                            output_himawari_file.write((char *)file.data.data(), file.data.size());
-                            output_himawari_file.close();
-                        }
-                        else
-                        {
-                            if (!std::filesystem::exists(directory + "/INCOMPLETE"))
-                                std::filesystem::create_directories(directory + "/INCOMPLETE");
+                                std::ofstream output_himawari_file(directory + "/COMPLETE/" + file.name);
+                                output_himawari_file.write((char *)file.data.data(), file.data.size());
+                                output_himawari_file.close();
+                            }
+                            else
+                            {
+                                if (!std::filesystem::exists(directory + "/INCOMPLETE"))
+                                    std::filesystem::create_directories(directory + "/INCOMPLETE");
 
-                            logger->trace("Saving incomplete " + file.name + " size " + std::to_string(file.size));
+                                logger->trace("Saving incomplete " + file.name + " size " + std::to_string(file.size));
 
-                            std::ofstream output_himawari_file(directory + "/INCOMPLETE/" + file.name);
-                            output_himawari_file.write((char *)file.data.data(), file.data.size());
-                            output_himawari_file.close();
-                        }
+                                std::ofstream output_himawari_file(directory + "/INCOMPLETE/" + file.name);
+                                output_himawari_file.write((char *)file.data.data(), file.data.size());
+                                output_himawari_file.close();
+                            }
+                        };
+                        saving_pool.push(function);
                     }
                 }
             }

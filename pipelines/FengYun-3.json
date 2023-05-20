@@ -254,7 +254,8 @@
                 "fy3_instruments": {
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": true,
+                    "mersi_rotate": true // Since the S/C is currently 180 degs rotated
                 }
             }
         }

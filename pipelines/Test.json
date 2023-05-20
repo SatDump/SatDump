@@ -91,7 +91,7 @@
             "baseband": {},
             "soft": {
                 "fsk_demod": {
-                    "symbolrate": 1e6,
+                    "symbolrate": 16276.0625,
                     "rrc_alpha": 0.35
                 }
             }
