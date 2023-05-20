@@ -316,23 +316,19 @@ namespace fengyun3
                 }
                 else if (d_satellite == FY_3G)
                 {
+                    // 12 = 0x4fa3aa06 6944
+                    // 27 0x5f5f5f
                     // printf("VCID %d\n", vcdu.vcid);
-                    /* if (vcdu.vcid == 47) // 3) // MERSI-LL
-                     {
-                         //  mersirm_reader.work(&cadu[14], 882);
-                         //  if (d_dump_mersi)
-                         //      mersi_bin.write((char *)&cadu[14], 882);
+                    /*if (vcdu.vcid == 27) // 3) // MERSI-LL
+                    {
+                        //  mersirm_reader.work(&cadu[14], 882);
+                        //  if (d_dump_mersi)
+                        //      mersi_bin.write((char *)&cadu[14], 882);
 
-                         std::vector<std::vector<uint8_t>> out = pmr_deframer.work(&cadu[14], 882);
-                         for (std::vector<uint8_t> frameVec : out)
-                         {
-                             pmr_reader->work(frameVec);
-                             // if (frameVec[5] == 0xee)
-                             //     idk_out.write((char *)&frameVec[0], frameVec.size());
-                         }
-                         // idk_out.write((char *)&cadu[14], 882);
-                         // logger->info("MERSI!!");
-                     } else */
+                        idk_out.write((char *)&cadu[14], 882);
+                        // logger->info("MERSI!!");
+                    }
+                    else */
                     if (vcdu.vcid == 38) // PMR-1
                     {
                         std::vector<std::vector<uint8_t>> out = pmr1_deframer.work(&cadu[14], 882);
