@@ -60,6 +60,10 @@ namespace noaa_apt
                 d_parameters["start_timestamp"] = md.timestamp;
                 logger->trace("Has timestamp %d", md.timestamp);
             }
+            else
+            {
+                logger->warn("Could not get timestamp from filename or parameters!");
+            }
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
         }
@@ -232,6 +236,10 @@ namespace noaa_apt
                 logger->info("NORAD : " + std::to_string(norad));
                 logger->info("Name  : " + sat_name);
             }
+        }
+        else
+        {
+            logger->warn("Could not get satellite number from parameters!");
         }
 
         satdump::ProductDataSet dataset;
