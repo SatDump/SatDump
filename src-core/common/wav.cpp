@@ -73,7 +73,7 @@ namespace wav
 
             // HDSDR Audio filename
             if (sscanf(filename.c_str(),
-                       "%4d%2d%2d_%2d%2d%2dZ_%lukHz_AF",
+                       "HDSDR_%4d%2d%2d_%2d%2d%2dZ_%lukHz_AF",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &freq) == 7)
