@@ -255,7 +255,7 @@
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true,
-                    "mersi_rotate": true // Since the S/C is currently 180 degs rotated
+                    "mersi_rotate": false // Back to normal
                 }
             }
         }
