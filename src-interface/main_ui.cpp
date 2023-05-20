@@ -11,6 +11,8 @@
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
 #include "common/audio/audio_sink.h"
+#include "imgui_notify/imgui_notify.h"
+#include "notify_logger_sink.h"
 
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
@@ -29,6 +31,8 @@ namespace satdump
     bool in_app = false; // true;
 
     widgets::MarkdownHelper credits_md;
+
+    std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
 
     void initMainUI()
     {
@@ -60,6 +64,10 @@ namespace satdump
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
+
+        // Logger notify sink
+        notify_logger_sink = std::make_shared<NotifyLoggerSink>();
+        logger->add_sink(notify_logger_sink);
     }
 
     void exitMainUI()
@@ -211,6 +219,14 @@ namespace satdump
             if (settings::show_imgui_demo)
                 ImGui::ShowDemoWindow();
         }
+
+        // Render toasts on top of everything, at the end of your code!
+        // You should push style vars here
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);                                                    // Round borders
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 100.f / 255.f)); // Background color
+        ImGui::RenderNotifications();                                                                              // <-- Here we render all notifications
+        ImGui::PopStyleVar(1);                                                                                     // Don't forget to Pop()
+        ImGui::PopStyleColor(1);
     }
 
     bool light_theme;

@@ -141,11 +141,11 @@ namespace satdump
             if (!foundLevel)
             {
                 foundLevel = step.level_name == input_level;
-                logger->warn("Data is already at level " + step.level_name + ", skipping");
+                logger->info("Data is already at level " + step.level_name + ", skipping");
                 continue;
             }
 
-            logger->warn("Processing data to level " + step.level_name);
+            logger->info("Processing data to level " + step.level_name);
 
             std::vector<std::string> files;
 
