@@ -41,6 +41,8 @@ namespace noaa_apt
 
         bool is_stereo = false;
 
+        int autodetected_sat = -1;
+
         std::ifstream data_in;
         if (input_data_type == DATA_FILE)
         {
@@ -63,6 +65,26 @@ namespace noaa_apt
             else
             {
                 logger->warn("Could not get timestamp from filename or parameters!");
+            }
+
+            if (abs(md.frequency - 137.1e6) < 1e4)
+            {
+                autodetected_sat = 19;
+                logger->info("Detected NOAA-19");
+            }
+            else if (abs(md.frequency - 137.9125e6) < 1e4)
+            {
+                autodetected_sat = 18;
+                logger->info("Detected NOAA-18");
+            }
+            else if (abs(md.frequency - 137.62e6) < 1e4)
+            {
+                autodetected_sat = 15;
+                logger->info("Detected NOAA-15");
+            }
+            else
+            {
+                logger->warn("Could not get satellite number from filename or parameters!");
             }
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
@@ -199,17 +221,24 @@ namespace noaa_apt
         std::string sat_name = "NOAA";
         std::optional<satdump::TLE> satellite_tle;
 
-        if (d_parameters.contains("satellite_number"))
+        if (d_parameters.contains("satellite_number") || autodetected_sat != -1)
         {
             double number = 0;
 
-            try
+            if (autodetected_sat == -1)
             {
-                number = d_parameters["satellite_number"];
+                try
+                {
+                    number = d_parameters["satellite_number"];
+                }
+                catch (std::exception &e)
+                {
+                    number = std::stoi(d_parameters["satellite_number"].get<std::string>());
+                }
             }
-            catch (std::exception &e)
+            else
             {
-                number = std::stoi(d_parameters["satellite_number"].get<std::string>());
+                number = autodetected_sat;
             }
 
             if (number == 15)
@@ -239,7 +268,7 @@ namespace noaa_apt
         }
         else
         {
-            logger->warn("Could not get satellite number from parameters!");
+            logger->warn("Could not get satellite number from parameters or filename!");
         }
 
         satdump::ProductDataSet dataset;
