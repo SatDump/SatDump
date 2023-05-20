@@ -21,7 +21,7 @@ namespace satdump
     {
         dsp::registerAllSources();
 
-        automated_live_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_autogen"]["value"].get<bool>();
+        automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
 
         sources = dsp::getAllAvailableSources();

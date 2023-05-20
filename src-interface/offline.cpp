@@ -16,6 +16,9 @@ namespace satdump
         void setup()
         {
             pipeline_selector = std::make_unique<PipelineUISelector>(false);
+
+            pipeline_selector->inputfileselect.default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>() + "/";
+            pipeline_selector->outputdirselect.default_dir = config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>() + "/";
         }
 
         void render()

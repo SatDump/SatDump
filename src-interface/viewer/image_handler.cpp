@@ -57,7 +57,7 @@ namespace satdump
         correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
         correction_factors.push_back(products->images[0].image.width());
 
-        //font
+        // font
         current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
 
         asyncUpdate();
@@ -515,7 +515,8 @@ namespace satdump
             if (ImGui::Checkbox("Normalize", &normalize_image))
                 asyncUpdate();
 
-            if (ImGui::Checkbox("Invert", &invert_image)){
+            if (ImGui::Checkbox("Invert", &invert_image))
+            {
                 scale_image.mirror(false, true);
                 scale_view.update(scale_image);
                 asyncUpdate();
@@ -523,7 +524,9 @@ namespace satdump
 
             if (ImGui::Button("Save"))
             {
-                std::string default_name = products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
+                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>() + "/";
+                std::string default_name = default_path +
+                                           products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
 #ifndef __ANDROID__
                 auto result = pfd::save_file("Save Image", default_name, {"*.png"});

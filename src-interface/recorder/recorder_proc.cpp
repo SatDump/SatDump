@@ -150,7 +150,7 @@ namespace satdump
                                         (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
                                         (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                         (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                pipeline_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
+                pipeline_output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
                                       timestamp + "_" +
                                       pipelines[pipeline_selector.pipeline_id].name + "_" +
                                       std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
@@ -211,7 +211,7 @@ namespace satdump
                                 (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-        std::string filename = config::main_cfg["satdump_output_directories"]["recording_path"]["value"].get<std::string>() +
+        std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
                                "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
                                std::to_string(long(frequency_mhz * 1e6)) + "Hz";
 

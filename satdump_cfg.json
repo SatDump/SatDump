@@ -122,8 +122,8 @@
             "description": "Process products once the pipeline is done."
         }
     },
-    // Output directories
-    "satdump_output_directories": {
+    // Input/Output Directories
+    "satdump_directories": {
         "recording_path": {
             "type": "path",
             "is_directory": true,
@@ -143,6 +143,35 @@
             "value": "./live_output",
             "name": "Live Processing Directory",
             "description": "Path to the default folder to use to store live processing\nOnly valid when automatic generation is enabled!"
+        },
+        //////////////////////////////////////////////////////////////
+        "default_input_directory": {
+            "type": "path",
+            "is_directory": true,
+            "value": ".",
+            "name": "Default Input Directory",
+            "description": "Path to the default folder to open when selecting an input file in offline processing."
+        },
+        "default_output_directory": {
+            "type": "path",
+            "is_directory": true,
+            "value": ".",
+            "name": "Default Output Directory",
+            "description": "Path to the default folder to open when selecting an output directory in offline processing."
+        },
+        "default_image_output_directory": {
+            "type": "path",
+            "is_directory": true,
+            "value": ".",
+            "name": "Default Img Output Directory",
+            "description": "Path to the default folder to open when saving an image in the viewer."
+        },
+        "default_projection_output_directory": {
+            "type": "path",
+            "is_directory": true,
+            "value": ".",
+            "name": "Default Proj Output Directory",
+            "description": "Path to the default folder to open when saving a projection in the viewer."
         }
     },
     // TLE settings

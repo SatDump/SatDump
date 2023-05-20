@@ -39,7 +39,6 @@ namespace satdump
                                                                              "Satellite (TPERS)\0"
                                                                              "Azimuthal Equidistant\0");
 
-                                                                             
             if (projections_current_selected_proj == 0)
             {
                 ImGui::Text("Top Left Coordinates :");
@@ -70,7 +69,8 @@ namespace satdump
                 ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
-            }else if (projections_current_selected_proj == 4)
+            }
+            else if (projections_current_selected_proj == 4)
             {
                 ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
@@ -104,7 +104,8 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
-                std::string default_name = "./projection.png";
+                std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>() + "/";
+                std::string default_name = default_path + "projection.png";
 
 #ifndef __ANDROID__
                 auto result = pfd::save_file("Save Projection", default_name, {"*.png"});

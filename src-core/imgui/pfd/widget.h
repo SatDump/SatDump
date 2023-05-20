@@ -22,6 +22,8 @@ struct FileSelectWidget
     bool waiting_for_res = false;
 #endif
 
+    std::string default_dir = ".";
+
     bool draw(std::string hint = "")
     {
         bool changed = false;
@@ -42,7 +44,7 @@ struct FileSelectWidget
 #ifdef __ANDROID__
                 show_select_file_dialog();
 #else
-                auto fileselect = pfd::open_file(selection_text.c_str(), ".", {});
+                auto fileselect = pfd::open_file(selection_text.c_str(), default_dir, {});
 
                 while (!fileselect.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -56,7 +58,7 @@ struct FileSelectWidget
 #ifdef __ANDROID__
                 show_select_directory_dialog();
 #else
-                auto dirselect = pfd::select_folder(selection_text.c_str(), ".");
+                auto dirselect = pfd::select_folder(selection_text.c_str(), default_dir);
 
                 while (!dirselect.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
