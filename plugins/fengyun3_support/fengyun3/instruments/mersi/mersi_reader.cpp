@@ -1,11 +1,6 @@
 #include "mersi_reader.h"
 #include "common/repack.h"
 
-#include <fstream>
-#include "common/utils.h"
-
-std::ofstream idk_test("timestamps.tt");
-
 namespace fengyun3
 {
     namespace mersi
@@ -80,9 +75,6 @@ namespace fengyun3
                               double(timestamp[6] << 8 | timestamp[7]) / 55695 +
                               12 * 3600;
             }
-
-            printf("%s --- %f\n", timestamp_to_string(currentTime).c_str(), currentTime);
-            idk_test.write((char *)timestamp, 8);
 
             last_timestamp = currentTime;
         }
