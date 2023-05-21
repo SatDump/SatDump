@@ -185,7 +185,7 @@ namespace fengyun3
                 frame_scan_1000_size = 18816;
 
                 imagery_offset_bytes = 2;
-                imagery_offset_bits = 7;
+                imagery_offset_bits = 6;
 
                 calib_byte_offset = 0;
                 calib_length = 5358;
