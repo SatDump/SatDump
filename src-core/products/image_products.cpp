@@ -206,7 +206,7 @@ namespace satdump
                     {
                         double cal_val = get_calibrated_value(image_index, x, y);
 
-                        if (vtype == CALIB_VTYPE_TEMPERATURE)
+                        if (vtype == CALIB_VTYPE_TEMPERATURE && get_calibration_type(image_index) == CALIB_RADIANCE)
                             cal_val = radiance_to_temperature(cal_val, wn);
 
                         output[y * output.width() + x] =
