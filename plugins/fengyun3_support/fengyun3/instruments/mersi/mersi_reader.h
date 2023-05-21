@@ -32,6 +32,7 @@ namespace fengyun3
 
             // Timestamp stuff
             double ms_scale = 1e3;
+            int timestamp3g_mode = false;
 
         protected:
             void init()
@@ -191,6 +192,7 @@ namespace fengyun3
                 calib_length = 5358;
 
                 ms_scale = 1e4;
+                timestamp3g_mode = true;
 
                 MERSIReader::init();
             }
