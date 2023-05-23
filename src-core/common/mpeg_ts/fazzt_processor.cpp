@@ -1,6 +1,7 @@
 #include "fazzt_processor.h"
 #include <cstring>
 #include <ctime>
+// #include "logger.h"
 
 namespace fazzt
 {
@@ -34,7 +35,11 @@ namespace fazzt
                 uint16_t parts = fazzt_frame[73] << 8 | fazzt_frame[72];
                 uint32_t length = fazzt_frame[newPos_Size + 3] << 24 | fazzt_frame[newPos_Size + 2] << 16 | fazzt_frame[newPos_Size + 1] << 8 | fazzt_frame[newPos_Size + 0];
 
-                if (length <= MAX_SIZE) // Ensure we don't generate massive files
+                // logger->warn("New file ID %lld NAME %s, PATH %s, PARTS %d, LENGTH %d", id, filename.c_str(), path.c_str(), parts, length);
+
+                if (length <= MAX_SIZE &&
+                    filename.size() > 4 &&
+                    size_t(parts) * size_t(PAYLOAD_SIZE) >= length) // Ensure we don't generate massive files
                 {
                     FazztFile file;
                     file.data.resize(parts * PAYLOAD_SIZE); // Be safe
@@ -70,6 +75,7 @@ namespace fazzt
                     files_in_progress[id].data.resize(files_in_progress[id].size);
                     finished_files.push_back(files_in_progress[id]); // Push the file out
                     files_in_progress.erase(id);
+                    // logger->warn("End file ID %lld", id);
                 }
             }
         }

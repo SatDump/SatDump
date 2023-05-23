@@ -47,7 +47,8 @@
             },
             "products": {
                 "geonetcast_decoder": {
-                    "ts_input": false
+                    "ts_input": false,
+                    "process_goes_abi": true
                 }
             }
         }

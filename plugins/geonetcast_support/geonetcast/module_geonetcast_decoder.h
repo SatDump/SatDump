@@ -4,7 +4,6 @@
 
 namespace geonetcast
 {
-
     class GeoNetCastDecoderModule : public ProcessingModule
     {
     protected:

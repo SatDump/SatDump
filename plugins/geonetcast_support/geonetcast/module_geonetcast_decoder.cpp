@@ -11,6 +11,8 @@
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/ctpl/ctpl_stl.h"
 
+#include "goes_abi.h"
+
 namespace geonetcast
 {
     GeoNetCastDecoderModule::GeoNetCastDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -113,6 +115,41 @@ namespace geonetcast
                             {
                                 if (!std::filesystem::exists(directory + "/COMPLETE"))
                                     std::filesystem::create_directories(directory + "/COMPLETE");
+
+                                // Try to process as GOES ABI
+                                if (this->d_parameters["process_goes_abi"].get<bool>())
+                                {
+                                    int mode = 0;
+                                    int channel = 0;
+                                    int satellite = 0;
+                                    uint64_t tstart = 0;
+                                    uint64_t tend = 0;
+                                    uint64_t tfile = 0;
+                                    uint64_t tidk = 0;
+
+                                    if (sscanf(file.name.c_str(),
+                                               "OR_ABI-L2-CMIPF-M%1dC%2d_G%2d_s%lu_e%lu_c%lu-%lu_0.nc",
+                                               &mode, &channel, &satellite,
+                                               &tstart, &tend, &tfile, &tidk) == 7)
+                                    {
+                                        logger->info("Mode %d Channel %d Satellite %d", mode, channel, satellite);
+
+                                        int side_chunk_size = 4;
+                                        int bit_depth = 12;
+
+                                        if (channel == 1 || channel == 2 || channel == 3 || channel == 5)
+                                            side_chunk_size = 8;
+
+                                        if (channel == 7)
+                                            bit_depth = 14;
+
+                                        image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk(file.data, side_chunk_size, bit_depth);
+
+                                        logger->info("Saving complete " + file.name + ".png size " + std::to_string(file.size));
+                                        final_image.save_png(directory + "/COMPLETE/" + file.name + ".png");
+                                        // return;
+                                    }
+                                }
 
                                 logger->debug("Saving complete " + file.name + " size " + std::to_string(file.size));
 
