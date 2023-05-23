@@ -111,6 +111,14 @@ namespace geonetcast
 
                         auto function = [file, has_all_parts, this](int)
                         {
+                            std::string filesize_str = filesize_str;
+                            if (file.size >= 1e3)
+                                filesize_str = std::to_string(file.size / 1e3) + "kB";
+                            if (file.size >= 1e6)
+                                filesize_str = std::to_string(file.size / 1e6) + "MB";
+                            if (file.size >= 1e9)
+                                filesize_str = std::to_string(file.size / 1e9) + "GB";
+
                             if (has_all_parts)
                             {
                                 if (!std::filesystem::exists(directory + "/COMPLETE"))
@@ -145,13 +153,13 @@ namespace geonetcast
 
                                         image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk(file.data, side_chunk_size, bit_depth);
 
-                                        logger->info("Saving complete " + file.name + ".png size " + std::to_string(file.size));
+                                        logger->info("Saving complete " + file.name + ".png size " + filesize_str);
                                         final_image.save_png(directory + "/COMPLETE/" + file.name + ".png");
                                         // return;
                                     }
                                 }
 
-                                logger->debug("Saving complete " + file.name + " size " + std::to_string(file.size));
+                                logger->debug("Saving complete " + file.name + " size " + filesize_str);
 
                                 std::ofstream output_himawari_file(directory + "/COMPLETE/" + file.name);
                                 output_himawari_file.write((char *)file.data.data(), file.data.size());
@@ -162,7 +170,7 @@ namespace geonetcast
                                 if (!std::filesystem::exists(directory + "/INCOMPLETE"))
                                     std::filesystem::create_directories(directory + "/INCOMPLETE");
 
-                                logger->trace("Saving incomplete " + file.name + " size " + std::to_string(file.size));
+                                logger->trace("Saving incomplete " + file.name + " size " + filesize_str);
 
                                 std::ofstream output_himawari_file(directory + "/INCOMPLETE/" + file.name);
                                 output_himawari_file.write((char *)file.data.data(), file.data.size());

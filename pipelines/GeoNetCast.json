@@ -3,7 +3,7 @@
         "name": "GeoNetCast",
         "live": true,
         "live_cfg": {
-            "pkt_size": 188000,
+            "pkt_size": 9400,
             "default": [
                 [
                     1,
