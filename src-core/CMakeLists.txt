@@ -72,6 +72,7 @@ if(MSVC)
     endif()
 
     target_include_directories(satdump_core PUBLIC libs/lua)
+    target_link_libraries(inmarsat_support PUBLIC ws2_32)
 elseif(ANDROID)
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
