@@ -79,6 +79,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [],
@@ -91,8 +95,17 @@
             "baseband": {},
             "soft": {
                 "fsk_demod": {
-                    "symbolrate": 16276.0625,
+                    "symbolrate": 4.8e3,//16276.0625,
                     "rrc_alpha": 0.35
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "nrzm": false,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
                 }
             }
         }

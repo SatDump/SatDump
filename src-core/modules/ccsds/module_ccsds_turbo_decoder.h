@@ -6,7 +6,7 @@
 
 namespace ccsds
 {
-    class CCSDSTurboR6K8920DecoderModule : public ProcessingModule
+    class CCSDSTurboDecoderModule : public ProcessingModule
     {
     protected:
         int8_t *buffer_soft;
@@ -17,7 +17,13 @@ namespace ccsds
         std::atomic<size_t> filesize;
         std::atomic<size_t> progress;
 
+        std::string d_turbo_rate;
+        int d_turbo_base;
         int d_turbo_iters;
+
+        int d_codeword_size;
+        int d_asm_size;
+        int d_frame_size;
 
         float asm_softs[192];
 
@@ -28,9 +34,11 @@ namespace ccsds
         // UI Stuff
         float cor_history[200];
 
+        std::string window_name;
+
     public:
-        CCSDSTurboR6K8920DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~CCSDSTurboR6K8920DecoderModule();
+        CCSDSTurboDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~CCSDSTurboDecoderModule();
         void process();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();

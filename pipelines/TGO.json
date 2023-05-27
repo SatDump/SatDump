@@ -1,6 +1,6 @@
 {
-    "stereo_lr": {
-        "name": "Stereo-A/B/C Low Rate",
+    "tgo_link": {
+        "name": "Mars TGO X-Band Link",
         "live": true,
         "live_cfg": [
             [
@@ -18,22 +18,19 @@
             "baseband": {},
             "soft": {
                 "pm_demod": {
-                    "symbolrate": 3800,
                     "resample_after_pll": true,
-                    "agc_rate": 0.001,
+                    "symbolrate": 52765,
                     "pll_bw": 0.01,
-                    "pll_max_offset": 3.14,
-                    "rrc_alpha": 0.6,
-                    "rrc_taps": 31,
+                    "rrc_alpha": 0.5,
                     "costas_bw": 0.005,
-                    "clock_omega_relative_limit": 0.005
+                    "subcarrier_offset": 262e3
                 }
             },
             "frames": {
                 "ccsds_turbo_decoder": {
-                    "turbo_rate": "1/6",
+                    "turbo_rate": "1/2",
                     "turbo_base": 1115,
-                    "turbo_iters": 20
+                    "turbo_iters": 1
                 }
             },
             "products": {}
