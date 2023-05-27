@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
             std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid0.work(cadu);
             for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
             {
-                if (pkt.header.apid == 2047)
-                    continue;
+               // if (pkt.header.apid == 2047)
+               //     continue;
 
                 printf("APID %d\n", pkt.header.apid);
 
