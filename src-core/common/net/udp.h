@@ -105,7 +105,7 @@ namespace net
             sock_addr.sin_port = htons(port);
 
 #if defined(_WIN32)
-            sock_addr.sin_addr.S_un.S_addr = inet_addr(address);
+            sock_addr.sin_addr.S_un.S_addr = INADDR_ANY;
 #else
             if (bind(sock, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) < 0)
                 throw std::runtime_error("Couldn't connect to UDP socket!");

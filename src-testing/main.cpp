@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
                 printf("APID %d\n", pkt.header.apid);
 
-                if (pkt.header.apid == 99)
+                if (pkt.header.apid == 83)
                 {
                     pkt.payload.resize(1000 - 6);
                     data_out.write((char *)pkt.header.raw, 6);
