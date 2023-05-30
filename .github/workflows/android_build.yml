@@ -31,7 +31,7 @@ jobs:
 
     - name: Download dependencies
       shell: bash
-      run: cd $GITHUB_WORKSPACE/android/ && wget https://www.satdump.org/android_deps.zip && unzip android_deps.zip -d deps 
+      run: cd $GITHUB_WORKSPACE/ && git submodule update --init
 
     - name: Build
       shell: bash
