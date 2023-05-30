@@ -66,7 +66,7 @@ class MainActivity : NativeActivity(), TextWatcher {
     }
 
     // Adapted from Ryzerth's implementation, a lot cleaner than my old Java crap!
-    private var ACTION_USB_PERMISSION = "org.altillimity.satdump.USB_PERMISSION";
+    private var ACTION_USB_PERMISSION = "org.satdump.satdump.USB_PERMISSION";
 
     private var usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {

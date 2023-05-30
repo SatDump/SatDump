@@ -6,7 +6,7 @@ android {
     buildToolsVersion "30.0.3"
     ndkVersion "25.1.8937393"
     defaultConfig {
-        applicationId "com.altillimity.satdump"
+        applicationId "org.satdump.SatDump"
         minSdkVersion 28
         targetSdkVersion 28
         versionCode 1
