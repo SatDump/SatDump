@@ -59,34 +59,6 @@ task copyCfg(type: Copy) {
     include('*')
 }
 
-task copyPlugins_arm64v8a(type: Copy) {
-    description = 'Copy Plugins (arm64-v8a)...'
-    from '.cxx/cmake/release/arm64-v8a/plugins'
-    into 'assets/plugins/arm64-v8a'
-    include('*.so')
-}
-
-task copyPlugins_armeabiv7a(type: Copy) {
-    description = 'Copy Plugins (armeabi-v7a)...'
-    from '.cxx/cmake/release/armeabi-v7a/plugins'
-    into 'assets/plugins/armeabi-v7a'
-    include('*.so')
-}
-
-task copyPlugins_x86(type: Copy) {
-    description = 'Copy Plugins (x86)...'
-    from '.cxx/cmake/release/x86/plugins'
-    into 'assets/plugins/x86'
-    include('*.so')
-}
-
-task copyPlugins_x86_64(type: Copy) {
-    description = 'Copy Plugins (x86_64)...'
-    from '.cxx/cmake/release/x86_64/plugins'
-    into 'assets/plugins/x86_64'
-    include('*.so')
-}
-
 repositories {
     mavenCentral()
 }
@@ -109,8 +81,3 @@ copyPlugins_x86_64.dependsOn deleteTempAssets
 preBuild.dependsOn copyResources
 preBuild.dependsOn copyPipelines
 preBuild.dependsOn copyCfg
-
-preBuild.dependsOn copyPlugins_arm64v8a
-preBuild.dependsOn copyPlugins_armeabiv7a
-preBuild.dependsOn copyPlugins_x86
-preBuild.dependsOn copyPlugins_x86_64

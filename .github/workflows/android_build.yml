@@ -37,10 +37,6 @@ jobs:
       shell: bash
       run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
 
-    - name: Re-Build to include plugins
-      shell: bash
-      run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
-
     - name: Upload APK
       uses: actions/upload-artifact@v2
       with:

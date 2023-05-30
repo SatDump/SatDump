@@ -139,11 +139,15 @@ class MainActivity : NativeActivity(), TextWatcher {
         val aman = getAssets();
         extractDir(aman, fdir + "/pipelines", "pipelines");
         extractDir(aman, fdir + "/resources", "resources");
-        extractDir(aman, fdir + "/plugins", "plugins");
+        // extractDir(aman, fdir + "/plugins", "plugins");
         extractFile(aman, fdir + "/satdump_cfg.json", "satdump_cfg.json");
         //createIfDoesntExist(fdir + "/plugins");
 
         return fdir;
+    }
+
+    public fun get_plugins_directory() : String {
+        return getApplicationInfo().nativeLibraryDir;
     }
 
     fun showSoftInput() {

@@ -44,6 +44,10 @@ namespace satdump
         light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
         float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
 
+#ifdef __ANDROID__
+        manual_dpi_scaling *= 3; // Otherwise it's just too small by default!
+#endif
+
         ui_scale = manual_dpi_scaling;
 
         // Setup Theme
