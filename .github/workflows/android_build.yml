@@ -29,9 +29,9 @@ jobs:
     - name: Install Android NDK
       run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.1.8937393" --channel=3
 
-    - name: Download dependencies
+    - name: Build dependencies
       shell: bash
-      run: cd $GITHUB_WORKSPACE/ && git submodule update --init
+      run: cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && sh build.sh
 
     - name: Build
       shell: bash

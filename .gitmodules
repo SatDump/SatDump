@@ -1,6 +1,3 @@
-[submodule "android/SatDump/src/main/cpp/deps/SDL"]
-	path = android/SatDump/src/main/cpp/deps/SDL
-	url = https://github.com/libsdl-org/SDL
 [submodule "android/deps"]
 	path = android/deps
 	url = https://github.com/SatDump/Android-Dependencies
