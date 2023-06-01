@@ -6,7 +6,8 @@
         android:label="SatDump"
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:hasCode="true">
+        android:hasCode="true"
+        android:extractNativeLibs="true">
         <!--android:requestLegacyExternalStorage="true"-->
 
         <activity

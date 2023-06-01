@@ -77,6 +77,13 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 
                 if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
                 {
+#if __ANDROID__
+                    if (path.find("libandroid_imgui.so") != std::string::npos)
+                        goto skip_this;
+                    if (path.find("libsatdump_core.so") != std::string::npos)
+                        goto skip_this;
+#endif
+
                     try
                     {
                         std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
@@ -94,6 +101,9 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             }
         }
 
+#if __ANDROID__
+    skip_this:
+#endif
         pluginIterator.increment(iteratorError);
         if (iteratorError)
             logger->critical(iteratorError.message());
