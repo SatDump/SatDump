@@ -161,7 +161,7 @@ namespace satdump
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
-                logger->warn("Closing products " + label);
+                logger->info("Closing products " + label);
                 ph.marked_for_close = true;
             }
             ImGui::PopStyleColor();
