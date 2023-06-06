@@ -524,5 +524,30 @@ namespace satdump
                 }
             }
         }
+
+        // Keyboard shortcuts
+        {
+            // FFT
+            if (ImGui::IsKeyDown(ImGuiKey_ModShift) && ImGui::IsKeyDown(ImGuiKey_X))
+            {
+                if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
+                    fft_plot->scale_max -= 0.5;
+                else if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
+                    fft_plot->scale_max += 0.5;
+                else if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
+                    fft_plot->scale_min -= 0.5;
+                else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
+                    fft_plot->scale_min += 0.5;
+                else if (ImGui::IsKeyDown(ImGuiKey_PageUp))
+                    fft->avg_rate += 0.001;
+                else if (ImGui::IsKeyDown(ImGuiKey_PageDown))
+                    fft->avg_rate -= 0.001;
+
+                if (fft->avg_rate > 0.99)
+                    fft->avg_rate = 0.99;
+                else if (fft->avg_rate < 0.01)
+                    fft->avg_rate = 0.01;
+            }
+        }
     }
 };

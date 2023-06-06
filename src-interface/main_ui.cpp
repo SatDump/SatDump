@@ -110,7 +110,7 @@ namespace satdump
         // else
         {
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
+            ImGui::SetNextWindowSize({(float)wwidth, processing::is_processing ? -1.0f : (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
@@ -121,7 +121,7 @@ namespace satdump
                         // ImGui::BeginChild("OfflineProcessingChild");
                         processing::ui_call_list_mutex->lock();
                         int live_width = wwidth; // ImGui::GetWindowWidth();
-                        int live_height = ImGui::GetWindowHeight() - ImGui::GetCursorPos().y;
+                        int live_height = /*ImGui::GetWindowHeight()*/ wheight - ImGui::GetCursorPos().y;
                         float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
                         for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
@@ -129,7 +129,7 @@ namespace satdump
                             ImGui::SetNextWindowPos({0, currentPos});
                             currentPos += winheight;
                             ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
-                            module->drawUI(true);
+                            module->drawUI(false);
                         }
                         processing::ui_call_list_mutex->unlock();
                         // ImGui::EndChild();
