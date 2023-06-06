@@ -78,7 +78,16 @@ namespace satdump
 
         std::string pro_directory = std::filesystem::path(path).parent_path().string();
         for (std::string pro_path : dataset.products_list)
-            loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
+        {
+            try
+            {
+                loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not open " + pro_path + " in viewer! : %s", e.what());
+            }
+        }
     }
 
     void ViewerApplication::loadProductsInViewer(std::string path, std::string dataset_name)
