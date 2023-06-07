@@ -215,7 +215,7 @@ namespace satdump
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
-                                    logger->warn("Closing datset " + dataset_name);
+                                    logger->info("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                         if (products_and_handlers[i]->dataset_name == dataset_name)
                                             products_and_handlers[i]->marked_for_close = true;
