@@ -11,6 +11,7 @@ find_library(LIBHDF5HL_LIBRARY hdf5_hl)
 
 if(LIBHDF5_LIBRARY AND LIBHDF5HL_LIBRARY)
     target_compile_definitions(geonetcast_support PUBLIC ENABLE_HDF5_PARSING=1)
+    target_link_libraries(geonetcast_support PUBLIC hdf5 hdf5_hl)
     message("Found HDF5 libraries. Geonetcast HDF5 processing enabled!")
 else()
     message("Could not find HDF5 libraries. Geonetcast HDF5 processing disabled!")
