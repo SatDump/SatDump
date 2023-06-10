@@ -1,8 +1,53 @@
 #include "goes_abi.h"
 #include "libs/miniz/miniz.h"
 
+#ifdef ENABLE_HDF5_PARSING
+#include <hdf5.h>
+#include <H5LTpublic.h>
+#endif
+
 namespace geonetcast
 {
+#ifdef ENABLE_HDF5_PARSING
+    image::Image<uint16_t> parse_goesr_abi_netcdf_fulldisk_CMI(std::vector<uint8_t> data, int bit_depth)
+    {
+        herr_t status;
+        hsize_t image_dims[2];
+
+        hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
+
+        if (file < 0)
+            return image::Image<uint16_t>();
+
+        hid_t dataset = H5Dopen2(file, "CMI", H5P_DEFAULT);
+
+        if (dataset < 0)
+            return image::Image<uint16_t>();
+
+        hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
+        int rank = H5Sget_simple_extent_ndims(dataspace);
+        int status_n = H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
+
+        if (rank != 2)
+            return image::Image<uint16_t>();
+
+        hid_t memspace = H5Screate_simple(2, image_dims, NULL);
+
+        image::Image<uint16_t> image_out(image_dims[0], image_dims[1], 1);
+
+        status = H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, image_out.data());
+
+        for (size_t i = 0; i < image_out.size(); i++)
+            image_out[i] <<= (16 - bit_depth);
+
+        H5Dclose(dataset);
+        H5Fclose(file);
+
+        return image_out;
+    }
+#endif
+
+#if 0
     image::Image<uint16_t> parse_goesr_abi_netcdf_fulldisk(std::vector<uint8_t> data, int side_chunks, int bit_depth, bool mode2)
     {
         const int chunk_width = mode2 ? 226 : 1356;
@@ -55,4 +100,5 @@ namespace geonetcast
 
         return final_image;
     }
+#endif
 }

@@ -13,6 +13,8 @@
 
 #include "goes_abi.h"
 
+#include "common/thread_priority.h"
+
 namespace geonetcast
 {
     GeoNetCastDecoderModule::GeoNetCastDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -124,9 +126,13 @@ namespace geonetcast
                                 if (!std::filesystem::exists(directory + "/COMPLETE"))
                                     std::filesystem::create_directories(directory + "/COMPLETE");
 
+                                if (!std::filesystem::exists(directory + "/PROCESSED"))
+                                    std::filesystem::create_directories(directory + "/PROCESSED");
+
                                 // Try to process as GOES ABI
                                 if (this->d_parameters["process_goes_abi"].get<bool>())
                                 {
+#ifdef ENABLE_HDF5_PARSING
                                     int mode = 0;
                                     int channel = 0;
                                     int satellite = 0;
@@ -142,28 +148,25 @@ namespace geonetcast
                                     {
                                         logger->info("Mode %d Channel %d Satellite %d", mode, channel, satellite);
 
-                                        int side_chunk_size = 4;
                                         int bit_depth = 12;
-
-                                        if (channel == 1 || channel == 2 || channel == 3 || channel == 5)
-                                            side_chunk_size = 8;
 
                                         if (channel == 7)
                                             bit_depth = 14;
 
-                                        image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk(file.data, side_chunk_size, bit_depth);
+                                        image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
 
                                         logger->info("Saving complete " + file.name + ".png size " + filesize_str);
-                                        final_image.save_png(directory + "/COMPLETE/" + file.name + ".png");
+                                        final_image.save_png(directory + "/PROCESSED/" + file.name + ".png");
                                         // return;
                                     }
+#endif
                                 }
 
                                 logger->debug("Saving complete " + file.name + " size " + filesize_str);
 
-                                std::ofstream output_himawari_file(directory + "/COMPLETE/" + file.name);
-                                output_himawari_file.write((char *)file.data.data(), file.data.size());
-                                output_himawari_file.close();
+                                std::ofstream output_geonetcast_file(directory + "/COMPLETE/" + file.name);
+                                output_geonetcast_file.write((char *)file.data.data(), file.data.size());
+                                output_geonetcast_file.close();
                             }
                             else
                             {
@@ -172,11 +175,12 @@ namespace geonetcast
 
                                 logger->trace("Saving incomplete " + file.name + " size " + filesize_str);
 
-                                std::ofstream output_himawari_file(directory + "/INCOMPLETE/" + file.name);
-                                output_himawari_file.write((char *)file.data.data(), file.data.size());
-                                output_himawari_file.close();
+                                std::ofstream output_geonetcast_file(directory + "/INCOMPLETE/" + file.name);
+                                output_geonetcast_file.write((char *)file.data.data(), file.data.size());
+                                output_geonetcast_file.close();
                             }
                         };
+
                         saving_pool.push(function);
                     }
                 }
