@@ -110,6 +110,19 @@ namespace wav
                 md.timestamp = mktime(&timeS);
             }
 
+            // GQRZ Audio filename (UTC)
+            if (sscanf(filename.c_str(),
+                       "gqrx_%4d%2d%2d_%2d%2d%2d_%lu",
+                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                       &freq) == 7)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                md.frequency = freq;
+                md.timestamp = mktime_utc(&timeS);
+            }
+
             // AltiWx Audio UTC timestamp
             if (sscanf(filename.c_str(),
                        "%4d%2d%2dT%2d%2d%2dZ",
