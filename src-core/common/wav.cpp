@@ -110,7 +110,7 @@ namespace wav
                 md.timestamp = mktime(&timeS);
             }
 
-            // GQRZ Audio filename (UTC)
+            // GQRX Audio filename (UTC)
             if (sscanf(filename.c_str(),
                        "gqrx_%4d%2d%2d_%2d%2d%2d_%lu",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
