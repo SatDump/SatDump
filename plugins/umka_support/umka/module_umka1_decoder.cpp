@@ -135,6 +135,10 @@ namespace umka
                         }
                     }
                 }
+                else
+                {
+                    logger->error("Invalid spacers!");
+                }
             }
             else
             {
