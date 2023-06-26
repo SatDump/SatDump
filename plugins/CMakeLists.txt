@@ -157,6 +157,12 @@ if(PLUGIN_TUBSAT OR PLUGINS_ALL)
     add_subdirectory(tubsat_support)
 endif()
 
+option(PLUGIN_UMKA "Enable the support plugin for the UmKA satellite" OFF)
+
+if(PLUGIN_UMKA OR PLUGINS_ALL)
+    add_subdirectory(umka_support)
+endif()
+
 option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
 
 if(PLUGIN_INMARSAT OR PLUGINS_ALL)
