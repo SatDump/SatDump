@@ -384,19 +384,6 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "WXtoImg NO": {
-                        "lut": "noaa_apt/WXtoImg-NO.png",
-                        "channels": "ch3b, ch4",
-                        "autogen": false,
-                        "geo_correct": true,
-                        "equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
-                            1,
-                            1,
-                            0
-                        ]
-                    }
                 },
                 "project_channels": {
                     "channels": "4",
@@ -608,11 +595,6 @@
                     },
                     "321 Equalized": {
                         "equation": "ch3, ch2, ch1",
-                        "equalize": true,
-                        "autogen": false
-                    },
-                    "124 Equalized": {
-                        "equation": "ch1, ch2, 1-ch4",
                         "equalize": true,
                         "autogen": false
                     },
