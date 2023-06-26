@@ -23,7 +23,7 @@
             "baseband": {},
             "soft": {
                 "pm_demod": {
-                    "symbolrate": 428e3,
+                    "symbolrate": 600e3,
                     "agc_rate": 0.001,
                     "pll_bw": 0.005,
                     "pll_max_offset": 0.5,
