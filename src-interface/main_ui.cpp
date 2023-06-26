@@ -81,6 +81,8 @@ namespace satdump
         recorder_app.reset();
     }
 
+    bool main_ui_is_processing_selected = false;
+
     void renderMainUI(int wwidth, int wheight)
     {
         // ImGui::ShowDemoWindow();
@@ -110,10 +112,12 @@ namespace satdump
         // else
         {
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, processing::is_processing ? -1.0f : (float)wheight});
+            ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
+                main_ui_is_processing_selected = false;
+
                 if (ImGui::BeginTabItem("Offline processing"))
                 {
                     if (processing::is_processing)
@@ -140,6 +144,7 @@ namespace satdump
                     }
 
                     ImGui::EndTabItem();
+                    main_ui_is_processing_selected = true;
                 }
                 if (ImGui::BeginTabItem("Recorder"))
                 {
