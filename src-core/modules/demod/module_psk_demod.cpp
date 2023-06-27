@@ -138,7 +138,7 @@ namespace demod
         rec->start();
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = rec->output_stream->read();
 

@@ -82,7 +82,7 @@ namespace orbcomm
         uint8_t *frames = new uint8_t[d_buffer_size * 2];
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = rec->output_stream->read();
 
@@ -186,6 +186,8 @@ namespace orbcomm
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+
+        drawStopButton();
 
         ImGui::End();
 

@@ -194,6 +194,8 @@ namespace demod
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
+        drawStopButton();
+
         ImGui::End();
 
         drawFFT();
@@ -219,9 +221,26 @@ namespace demod
             waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
 
             if (showWaterfall)
-                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 40 * ui_scale) / 2});
+                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2});
 
             ImGui::End();
+        }
+    }
+
+    void BaseDemodModule::drawStopButton()
+    {
+        if (input_data_type != DATA_FILE)
+            return;
+
+        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+        {
+            ImGui::SetCursorPos({ImGui::GetWindowSize().x - 45 * ui_scale, ImGui::GetWindowSize().y - 47 * ui_scale});
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
+            if (ImGui::Button("Abort##demodstop"))
+                demod_should_stop = true;
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("This Abort button will simulate the \ndemodulation being finished. \nProcessing will carry on!");
         }
     }
 
