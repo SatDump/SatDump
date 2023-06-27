@@ -76,6 +76,8 @@ namespace meteor
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            module_stats["deframer_lock"] = def->getState() == 12;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
