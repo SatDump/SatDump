@@ -33,12 +33,15 @@ namespace meteor
             // Deframers
             def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, true);
             def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
+            def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, true);
 
             time_t currentDay = time(0) + 3 * 3600.0;            // Moscow Time
             time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
 
             std::vector<double> msumr_timestamps;
             std::vector<uint8_t> msumr_ids;
+
+            // std::ofstream file_out("idk_bism.bin");
 
             while (!data_in.eof())
             {
@@ -47,6 +50,7 @@ namespace meteor
 
                 std::vector<std::vector<uint8_t>> msumr_frames;
                 std::vector<std::vector<uint8_t>> mtvza_frames;
+                std::vector<std::vector<uint8_t>> bism_frames;
 
                 // MSU-MR Deframing
                 {
@@ -82,6 +86,22 @@ namespace meteor
                 // MTVZA Processing
                 for (std::vector<uint8_t> &frame : mtvza_frames)
                     mtvza_reader.work(frame.data());
+
+                // BIS-M Deframing
+                {
+                    std::vector<uint8_t> bism_data;
+                    bism_data.insert(bism_data.end(), &cadu[7 - 1], &cadu[7 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[263 - 1], &cadu[263 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[519 - 1], &cadu[519 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[775 - 1], &cadu[775 - 1] + 4);
+                    bism_frames = bism_deframer.work(bism_data.data(), bism_data.size());
+                }
+
+                // BIS-M Processing
+                for (std::vector<uint8_t> &frame : bism_frames)
+                {
+                    // TODO
+                }
 
                 progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
