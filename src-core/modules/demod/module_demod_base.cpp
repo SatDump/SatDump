@@ -234,7 +234,8 @@ namespace demod
 
         if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
         {
-            ImGui::SetCursorPos({ImGui::GetWindowSize().x - 45 * ui_scale, ImGui::GetWindowSize().y - 47 * ui_scale});
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
+                                 ImGui::GetCursorPos().y - 25 * ui_scale});
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
             if (ImGui::Button("Abort##demodstop"))
                 demod_should_stop = true;
