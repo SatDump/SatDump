@@ -54,8 +54,11 @@ namespace satdump
         }
         scale_view.update(scale_image);
         scale_view.allow_zoom_and_move = false;
-        correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
-        correction_factors.push_back(products->images[0].image.width());
+        if (products->images.size() > 0)
+        {
+            correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
+            correction_factors.push_back(products->images[0].image.width());
+        }
 
         // font
         current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
