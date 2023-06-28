@@ -198,7 +198,7 @@ namespace meteor
                 else if (msumr_serial_number == 2)
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
                 else if (msumr_serial_number == 3)
-                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
+                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), msumr_reader.getChannel(i)});
