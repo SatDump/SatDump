@@ -7,7 +7,7 @@ namespace meteor
     {
         namespace lrpt
         {
-            MSUMRReader::MSUMRReader()
+            MSUMRReader::MSUMRReader(bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode)
             {
                 for (int i = 0; i < 6; i++)
                 {
@@ -57,7 +57,7 @@ namespace meteor
                 else
                     return;
 
-                Segment newSeg(&packet.payload.data()[0], packet.payload.size());
+                Segment newSeg(&packet.payload.data()[0], packet.payload.size(), meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -133,7 +133,10 @@ namespace meteor
 
                                 if (!hasDoneTimestamps)
                                 {
-                                    timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
+                                    if (meteorm2x_mode)
+                                        timestamps.push_back(segments[channel][x + j].timestamp);
+                                    else
+                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
                                     hasDoneTimestamps = true;
                                 }
                             }

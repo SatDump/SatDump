@@ -23,8 +23,10 @@ namespace meteor
 
                 time_t dayValue;
 
+                const bool meteorm2x_mode;
+
             public:
-                MSUMRReader();
+                MSUMRReader(bool meteorm2x_mode);
                 ~MSUMRReader();
                 void work(ccsds::CCSDSPacket &packet);
                 image::Image<uint8_t> getChannel(int channel, int32_t first = -1, int32_t last = -1, int32_t offset = 1);

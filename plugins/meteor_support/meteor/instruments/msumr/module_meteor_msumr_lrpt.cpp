@@ -13,11 +13,9 @@
 #include <ctime>
 #include "products/dataset.h"
 #include "resources.h"
+#include "common/utils.h"
 
 #define BUFFER_SIZE 8192
-
-// Return filesize
-size_t getFilesize(std::string filepath);
 
 namespace meteor
 {
@@ -37,15 +35,19 @@ namespace meteor
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
+            bool meteorm2x_mode = d_parameters["m2x_mode"].get<bool>();
+
             time_t lastTime = 0;
 
             uint8_t cadu[1024];
 
             ccsds::ccsds_weather::Demuxer ccsds_demuxer(882, true);
 
-            lrpt::MSUMRReader msureader;
+            lrpt::MSUMRReader msureader(meteorm2x_mode);
 
             logger->info("Demultiplexing and deframing...");
+
+            std::vector<uint8_t> msumr_ids;
 
             while (!data_in.eof())
             {
@@ -59,6 +61,12 @@ namespace meteor
                     for (ccsds::CCSDSPacket pkt : frames)
                     {
                         msureader.work(pkt);
+
+                        if (pkt.header.apid == 70 && pkt.payload.size() >= 13)
+                        {
+                            uint8_t msumr_id = pkt.payload[12] & 0xF;
+                            msumr_ids.push_back(msumr_id);
+                        }
                     }
                 }
 
@@ -82,10 +90,41 @@ namespace meteor
 
             logger->info("Writing images.... (Can take a while)");
 
+            // Identify satellite, and apply per-sat settings...
+            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
+            msumr_ids.clear();
+
+            std::string sat_name = "Unknown Meteor";
+            if (msumr_serial_number == 0)
+                sat_name = "METEOR-M2";
+            else if (msumr_serial_number == 1)
+                sat_name = "METEOR-M2-1";
+            else if (msumr_serial_number == 2)
+                sat_name = "METEOR-M2-2";
+            else if (msumr_serial_number == 3)
+                sat_name = "METEOR-M2-3";
+
+            int norad = 0;
+            if (msumr_serial_number == 0)
+                norad = 40069; // M2
+            else if (msumr_serial_number == 1)
+                norad = 0; // M2-1, failed launch
+            else if (msumr_serial_number == 2)
+                norad = 44387; // M2-2
+            else if (msumr_serial_number == 3)
+                norad = 57166; // M2-3
+
             // Products dataset
             satdump::ProductDataSet dataset;
-            dataset.satellite_name = "METEOR-M 2";
+            dataset.satellite_name = sat_name;
             dataset.timestamp = time(0); // avg_overflowless(msureader.timestamps);
+
+            // Satellite ID
+            {
+                logger->info("----------- Satellite");
+                logger->info("NORAD : " + std::to_string(norad));
+                logger->info("Name  : " + sat_name);
+            }
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -95,8 +134,13 @@ namespace meteor
             msumr_products.has_timestamps = true;
             msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
             msumr_products.needs_correlation = true;
-            msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(40069));
-            msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+            msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+            if (msumr_serial_number == 0) // M2
+                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+            else if (msumr_serial_number == 3) // M2-3
+                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
+            else // Default to M2
+                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
 
             for (int i = 0; i < 6; i++)
             {
@@ -109,10 +153,6 @@ namespace meteor
             dataset.products_list.push_back("MSU-MR");
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
-
-            // TODO : Add detection system!!!!!!!!
-            // Currently not *that* mandatory as only M2 is active on VHF
-            // int norad = 40069;
         }
 
         void METEORMSUMRLRPTDecoderModule::drawUI(bool window)

@@ -85,7 +85,9 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": false
+                }
             }
         }
     },
@@ -145,7 +147,9 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": true
+                }
             }
         }
     }
