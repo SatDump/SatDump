@@ -117,13 +117,15 @@ namespace meteor
             int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
             msumr_ids.clear();
 
-            std::string sat_name = "Unknown MetOp";
+            std::string sat_name = "Unknown Meteor";
             if (msumr_serial_number == 0)
                 sat_name = "METEOR-M2";
             else if (msumr_serial_number == 1)
                 sat_name = "METEOR-M2-1";
             else if (msumr_serial_number == 2)
                 sat_name = "METEOR-M2-2";
+            else if (msumr_serial_number == 3)
+                sat_name = "METEOR-M2-3";
 
             int norad = 0;
             if (msumr_serial_number == 0)
@@ -132,6 +134,8 @@ namespace meteor
                 norad = 0; // M2-1, failed launch
             else if (msumr_serial_number == 2)
                 norad = 44387; // M2-2
+            else if (msumr_serial_number == 3)
+                norad = 0; // M2-3
 
             // Products dataset
             satdump::ProductDataSet dataset;
