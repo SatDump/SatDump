@@ -56,7 +56,7 @@ namespace demod
 
     void PMDemodModule::init()
     {
-        BaseDemodModule::init(!d_resample_after_pll);
+        BaseDemodModule::initb(!d_resample_after_pll);
 
         // PLL
         pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);

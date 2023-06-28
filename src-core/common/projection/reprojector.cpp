@@ -423,7 +423,7 @@ namespace satdump
             {
                 geodetic::projection::AzimuthalEquidistantProjection eqaz_proj;
                 eqaz_proj.init(width, height, params["lon"].get<float>(), params["lat"].get<float>());
-                return [eqaz_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [eqaz_proj, rotate](float lat, float lon, int /*map_height*/, int /*map_width*/) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     eqaz_proj.forward(lon, lat, x, y);

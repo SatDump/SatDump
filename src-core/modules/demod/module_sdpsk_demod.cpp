@@ -51,7 +51,7 @@ namespace demod
 
     void SDPSKDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         // Quadrature demod
         qua = std::make_shared<dsp::QuadratureDemodBlock>(agc->output_stream, 1.0f);

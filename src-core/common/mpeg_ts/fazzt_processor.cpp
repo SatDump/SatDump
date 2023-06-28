@@ -37,7 +37,7 @@ namespace fazzt
 
                 // logger->warn("New file ID %lld NAME %s, PATH %s, PARTS %d, LENGTH %d", id, filename.c_str(), path.c_str(), parts, length);
 
-                if (length <= MAX_SIZE &&
+                if (length <= (uint32_t)MAX_SIZE &&
                     filename.size() > 4 &&
                     size_t(parts) * size_t(PAYLOAD_SIZE) >= length) // Ensure we don't generate massive files
                 {

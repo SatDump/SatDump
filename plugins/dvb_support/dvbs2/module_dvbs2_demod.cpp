@@ -76,7 +76,7 @@ namespace dvb
 
     void DVBS2DemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         float g1 = 0, g2 = 0;
 

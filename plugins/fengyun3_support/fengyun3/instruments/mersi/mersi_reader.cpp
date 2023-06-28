@@ -68,7 +68,7 @@ namespace fengyun3
 
                 uint16_t days = timestamp[0] << 8 | timestamp[1];
                 uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
-                uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
+                // uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
 
                 currentTime = double(10957 + days) * 86400.0 +
                               double(milliseconds_of_day) / ms_scale +

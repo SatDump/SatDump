@@ -40,7 +40,7 @@ namespace demod
         showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
     }
 
-    void BaseDemodModule::init(bool resample_here)
+    void BaseDemodModule::initb(bool resample_here)
     {
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
         resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample

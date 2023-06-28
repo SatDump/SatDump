@@ -28,7 +28,7 @@ namespace noaa_apt
 
     void NOAAAPTDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         // Resampler to BW
         res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);

@@ -166,7 +166,7 @@ namespace ccsds
         logger->info("Using input symbols " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".cadu");
 
-        codings::turbo::turbo_rate_t frate;
+        codings::turbo::turbo_rate_t frate = codings::turbo::RATE_1_2;
 
         if (d_turbo_rate == "1/2")
             frate = codings::turbo::RATE_1_2;

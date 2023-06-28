@@ -99,7 +99,7 @@ namespace demod
     public:
         BaseDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~BaseDemodModule();
-        virtual void init(bool resample_here = true);
+        virtual void initb(bool resample_here = true);
         virtual void start();
         virtual void stop();
         // void process();

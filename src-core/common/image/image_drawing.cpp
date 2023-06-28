@@ -8,7 +8,9 @@
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "common/image/font/imstb_truetype.h"
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "font/utf8.h"
+#pragma GCC diagnostic pop
 #include <iostream>
 #include <fstream>
 
