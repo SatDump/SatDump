@@ -124,12 +124,24 @@
                     "constellation": "oqpsk",
                     "symbolrate": 72e3,
                     "rrc_alpha": 0.6,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
-                "meteor_lrpt_decoder": {
+                /*"meteor_lrpt_decoder": {
                     "diff_decode": true
+                }*/
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_mode": true,
+                    "nrzm": true,
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_dualbasis": false,
+                    "rs_type": "rs223"
                 }
             },
             "products": {
