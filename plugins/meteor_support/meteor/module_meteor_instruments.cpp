@@ -135,7 +135,7 @@ namespace meteor
             else if (msumr_serial_number == 2)
                 norad = 44387; // M2-2
             else if (msumr_serial_number == 3)
-                norad = 0; // M2-3
+                norad = 57166; // M2-3
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -196,6 +196,8 @@ namespace meteor
                 if (msumr_serial_number == 0)
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr.json")));
                 else if (msumr_serial_number == 2)
+                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
+                else if (msumr_serial_number == 3)
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
