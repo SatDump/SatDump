@@ -38,7 +38,7 @@
             },
             "products": {
                 "stereo_instruments": {
-                    "icer_path": "icer_decomp_linux"
+                    "icer_path": "./icer_decomp_linux"
                 }
             }
         }

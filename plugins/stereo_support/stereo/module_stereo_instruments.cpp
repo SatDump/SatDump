@@ -9,6 +9,8 @@
 #include "products/products.h"
 #include "products/dataset.h"
 
+#include "resources.h"
+
 namespace stereo
 {
     StereoInstrumentsDecoderModule::StereoInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -70,7 +72,7 @@ namespace stereo
         time_t lastTime = 0;
         uint8_t cadu[1119];
 
-        //        std::ofstream output("file.ccsds");
+        std::ofstream output("file.ccsds");
 
         int s_waves_lines = 0;
         std::vector<uint8_t> s_waves_data;
@@ -79,10 +81,15 @@ namespace stereo
 
         int payload_idk = 0;
 
-        std::filesystem::create_directories(directory + "/SECCHI_SUV/");
+        std::filesystem::create_directories(directory + "/SECCHI/");
         std::filesystem::create_directories(directory + "/SECCHI_CH1/");
         std::filesystem::create_directories(directory + "/SECCHI_CH2/");
         std::filesystem::create_directories(directory + "/SECCHI_CH3/");
+
+        double last_tt_1 = 0;
+        double last_pol_1 = 0;
+
+        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
 
         while (!data_in.eof())
         {
@@ -94,6 +101,16 @@ namespace stereo
 
             // logger->info(pkt.header.apid);
             // logger->info(vcdu.vcid);
+
+            uint8_t *tttt = &cadu[4 + 7];
+            double timestamp = (tttt[0] << 24 |
+                                tttt[1] << 16 |
+                                tttt[2] << 8 |
+                                tttt[3]) +
+                               tttt[4] / 256.0 +
+                               1161734400 + 43200;
+
+            //  logger->trace(timestamp_to_string(timestamp));
 
             if (vcdu.vcid == 7) // Space Beacon VCID
             {
@@ -110,59 +127,19 @@ namespace stereo
                     }
                     else if (pkt.header.apid == 1140) // SECCHI SUV
                     {
-                        for (auto b : secchi_assembler0.work(pkt))
-                        {
-                            if (b.hdr.block_type == 0)
-                            {
-                                auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 512);
-                                for (size_t i = 0; i < img.size(); i++)
-                                    img[i] <<= 3;
-                                logger->info("Saving SECCHI SUV Image");
-                                img.save_png(directory + "/SECCHI_SUV/SECCHI_SUV_" + std::to_string(payload_idk++) + ".png");
-                            }
-                        }
+                        secchi_reader->work(pkt);
                     }
                     else if (pkt.header.apid == 1139) // SECCHI NotSureYet?
                     {
-                        for (auto b : secchi_assembler1.work(pkt))
-                        {
-                            if (b.hdr.block_type == 0)
-                            {
-                                auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 512);
-                                for (size_t i = 0; i < img.size(); i++)
-                                    img[i] <<= 2;
-                                logger->info("Saving SECCHI CH1 Image");
-                                img.save_png(directory + "/SECCHI_CH1/SECCHI_CH1_" + std::to_string(payload_idk++) + ".png");
-                            }
-                        }
+                        secchi_reader->work(pkt);
                     }
                     else if (pkt.header.apid == 1138) // SECCHI NotSureYet?
                     {
-                        for (auto b : secchi_assembler2.work(pkt))
-                        {
-                            if (b.hdr.block_type == 0)
-                            {
-                                auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 256);
-                                for (size_t i = 0; i < img.size(); i++)
-                                    img[i] <<= 2;
-                                logger->info("Saving SECCHI CH2 Image");
-                                img.save_png(directory + "/SECCHI_CH2/SECCHI_CH2_" + std::to_string(payload_idk++) + ".png");
-                            }
-                        }
+                        secchi_reader->work(pkt);
                     }
                     else if (pkt.header.apid == 1137) // SECCHI Occulted?
                     {
-                        for (auto b : secchi_assembler3.work(pkt))
-                        {
-                            if (b.hdr.block_type == 0)
-                            {
-                                auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 256);
-                                for (size_t i = 0; i < img.size(); i++)
-                                    img[i] <<= 2;
-                                logger->info("Saving SECCHI CH3 Image");
-                                img.save_png(directory + "/SECCHI_CH3/SECCHI_CH3_" + std::to_string(payload_idk++) + ".png");
-                            }
-                        }
+                        secchi_reader->work(pkt);
                     }
                     else if (pkt.header.apid == 880)
                     {
@@ -187,6 +164,8 @@ namespace stereo
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
             }
         }
+
+        delete secchi_reader;
 
         data_in.close();
 
