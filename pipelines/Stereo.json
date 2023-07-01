@@ -29,14 +29,18 @@
                     "clock_omega_relative_limit": 0.005
                 }
             },
-            "frames": {
+            "cadu": {
                 "ccsds_turbo_decoder": {
                     "turbo_rate": "1/6",
                     "turbo_base": 1115,
                     "turbo_iters": 20
                 }
             },
-            "products": {}
+            "products": {
+                "stereo_instruments": {
+                    "icer_path": "icer_decomp_linux"
+                }
+            }
         }
     }
 }

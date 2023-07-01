@@ -12,7 +12,21 @@
 
 #include "logger.h"
 
-int main(int /*argc*/, char * /*argv*/[])
+#include <fstream>
+#include "common/image/image.h"
+
+int main(int argc, char *argv[])
 {
     initLogger();
+
+    std::ifstream data_in(argv[1], std::ios::binary);
+    int size = std::stoi(argv[3]);
+
+    uint16_t *buffer = new uint16_t[size * size];
+
+    data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
+
+    image::Image<uint16_t> img(buffer, size, size, 1);
+
+    img.save_png(argv[2]);
 }

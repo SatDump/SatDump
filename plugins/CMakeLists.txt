@@ -163,6 +163,12 @@ if(PLUGIN_UMKA OR PLUGINS_ALL)
     add_subdirectory(umka_support)
 endif()
 
+option(PLUGIN_STEREO "Enable the support plugin for the STEREO probes" OFF)
+
+if(PLUGIN_STEREO OR PLUGINS_ALL)
+    add_subdirectory(stereo_support)
+endif()
+
 option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
 
 if(PLUGIN_INMARSAT OR PLUGINS_ALL)
