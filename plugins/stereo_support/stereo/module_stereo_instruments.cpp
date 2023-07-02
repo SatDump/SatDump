@@ -72,7 +72,7 @@ namespace stereo
         time_t lastTime = 0;
         uint8_t cadu[1119];
 
-        std::ofstream output("file.ccsds");
+        // std::ofstream output("file.ccsds");
 
         int s_waves_lines = 0;
         std::vector<uint8_t> s_waves_data;

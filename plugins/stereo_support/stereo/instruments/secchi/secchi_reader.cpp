@@ -24,6 +24,18 @@ namespace stereo
                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
+        void rotate_image(image::Image<uint16_t> &img)
+        {
+            image::Image<uint16_t> img2 = img;
+            for (int x = 0; x < img.width(); x++)
+            {
+                for (int y = 0; y < img.height(); y++)
+                {
+                    img[y * img.width() + x] = img2[x * img.width() + y];
+                }
+            }
+        }
+
         void SECCHIReader::work(ccsds::CCSDSPacket &pkt)
         {
             if (pkt.header.apid == 1137) // Cor2
@@ -42,6 +54,8 @@ namespace stereo
 
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 2;
+
+                        rotate_image(img);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
@@ -83,6 +97,8 @@ namespace stereo
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 2;
 
+                        rotate_image(img);
+
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
                         img.white_balance();
@@ -122,6 +138,8 @@ namespace stereo
 
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 2;
+
+                        rotate_image(img);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
@@ -163,6 +181,8 @@ namespace stereo
 
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 3;
+
+                        rotate_image(img);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
