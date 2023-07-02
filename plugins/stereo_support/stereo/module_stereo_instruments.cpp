@@ -82,9 +82,6 @@ namespace stereo
         int payload_idk = 0;
 
         std::filesystem::create_directories(directory + "/SECCHI/");
-        std::filesystem::create_directories(directory + "/SECCHI_CH1/");
-        std::filesystem::create_directories(directory + "/SECCHI_CH2/");
-        std::filesystem::create_directories(directory + "/SECCHI_CH3/");
 
         double last_tt_1 = 0;
         double last_pol_1 = 0;
