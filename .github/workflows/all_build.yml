@@ -1,0 +1,221 @@
+name: Build All
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build_windows:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Clone pre-setup VCPKG
+        run: git clone https://github.com/Aang23/vcpkg.git --depth 1
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Download SDRPlay API
+        shell: powershell
+        run: Invoke-WebRequest -Uri "https://www.satdump.org/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.zip
+
+      - name: Install SDRPlay API
+        shell: powershell
+        run: 7z x ${{runner.workspace}}/sdrplay.zip -O"${{runner.workspace}}"
+
+      - name: Copy SDRPlay API Files
+        shell: powershell
+        run: cp -r "${{runner.workspace}}/SDRPlay/API/inc/*" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/include/; cp "${{runner.workspace}}/SDRPlay/API/x64/sdrplay_api.dll" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/sdrplay_api.dll; cp "${{runner.workspace}}/SDRPlay/API/x64/sdrplay_api.lib" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/lib/sdrplay_api.lib;
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake -G "Visual Studio 16 2019" -DBUILD_MSVC=ON -DBUILD_LIVE=ON -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake "$Env:GITHUB_WORKSPACE"
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Copy DLLs
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/*.dll Release
+
+      - name: Copy Resources
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp -r $Env:GITHUB_WORKSPACE/resources Release
+
+      - name: Copy Pipelines
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
+
+      - name: Create Plugins Dir
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: mkdir ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Plugins
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp ${{runner.workspace}}/build/plugins/Release/*.dll ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Config
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-Windows_x64_MSVC
+          path: ${{runner.workspace}}/build/Release/*
+
+  build_android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add gradle PPA
+        run: sudo add-apt-repository ppa:cwchien/gradle -y
+
+      - name: Update repositories
+        run: sudo apt update
+
+      - name: Install packages
+        run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle build-essential git python3-mako
+
+      - name: Build CMake 3.18.1
+        run: git clone https://github.com/Kitware/CMake -b v3.18.1 --depth 1 && cd CMake && ./bootstrap && make -j16 && sudo make install
+
+      # Setup Android SDK, and auto-accept licenses
+      - name: Install Android SDK
+        run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
+
+      # Call SDKManager to install the Android NDK
+      - name: Install Android NDK
+        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.1.8937393" --channel=3
+
+      - name: Build dependencies
+        shell: bash
+        run: git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && sh build.sh
+
+      - name: Build
+        shell: bash
+        run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-debug.apk
+          path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/debug/app-debug.apk
+
+  build_linux:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update repositories
+        run: sudo apt update
+
+      - name: Install dependencies
+        run: sudo apt install -y libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev ocl-icd-opencl-dev libluajit-5.1-dev
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        # Use a bash shell so we can use the same syntax for environment variable
+        # access regardless of the host operating system
+        shell: bash
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make -j8
+
+      - name: Package
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make package
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-Ubuntu-Latest
+          path: ${{runner.workspace}}/build/*.deb
+
+  build_macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit
+
+      - name: Build airspyhf
+        run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
+
+      - name: Build FFTW3
+        run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true .. && make -j8 && sudo make install
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make -j8
+
+  # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
+  update_nightly_release:
+    needs: ["build_windows", "build_android", "build_linux"]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Copy files
+        run: ls *
+
+      #- name: Update Nightly
+      #  run: gh release upload nightly sdrpp_all/* -R ${{github.repository}} --clobber
