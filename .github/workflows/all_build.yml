@@ -210,7 +210,7 @@ jobs:
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux", "build_android"]
+    needs: ["build_windows", "build_linux"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -222,7 +222,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump_1.1.0_amd64.deb satdump_out/satdump_ubuntu_latest_1.1.0_amd64.deb && (cd SatDump-Windows_x64_MSVC && zip ../satdump_out/SatDump-Windows_x64_MSVC.zip *) && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump_1.1.0_amd64.deb satdump_out/satdump_ubuntu_latest_1.1.0_amd64.deb && (cd SatDump-Windows_x64_MSVC && zip -r ../satdump_out/SatDump-Windows_x64_MSVC.zip *) # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
