@@ -140,6 +140,7 @@ namespace stereo
                             img[i] <<= 2;
 
                         rotate_image(img);
+                        img.mirror(false, true);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
@@ -183,6 +184,7 @@ namespace stereo
                             img[i] <<= 3;
 
                         rotate_image(img);
+                        img.mirror(false, true);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
