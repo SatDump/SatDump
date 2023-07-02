@@ -7,6 +7,9 @@ env:
   BUILD_TYPE: Release
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+permissions:
+  contents: write
+
 jobs:
   build_windows:
     runs-on: windows-2019
