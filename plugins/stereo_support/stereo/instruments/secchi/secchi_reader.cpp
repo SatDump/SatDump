@@ -97,15 +97,13 @@ namespace stereo
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 2;
 
-                        rotate_image(img);
-
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
                         img.white_balance();
                         img.to_rgba();
                         img.init_font(resources::getResourcePath("fonts/font.ttf"));
 
-                        std::string channel_name = "Unknown";
+                        std::string channel_name = "HI";
 
                         img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_1));
 
@@ -138,8 +136,6 @@ namespace stereo
 
                         for (size_t i = 0; i < img.size(); i++)
                             img[i] <<= 2;
-
-                        rotate_image(img);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
