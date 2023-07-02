@@ -72,6 +72,9 @@ namespace noaa
                 }
             }
 
+            // Update module stats
+            module_stats["frame_count"] = frame_count;
+
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 

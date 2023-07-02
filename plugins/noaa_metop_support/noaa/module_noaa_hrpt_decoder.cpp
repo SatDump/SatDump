@@ -67,6 +67,9 @@ namespace noaa
             if (frames.size() > 0)
                 data_out.write((char *)&frames[0], frames.size() * sizeof(uint16_t));
 
+            // Update module stats
+            module_stats["frame_count"] = frame_count / 11090;
+
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
