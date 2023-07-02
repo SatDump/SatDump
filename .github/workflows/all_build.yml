@@ -206,7 +206,7 @@ jobs:
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_android", "build_linux"]
+    needs: ["build_windows", "build_linux"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
