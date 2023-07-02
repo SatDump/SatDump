@@ -83,7 +83,7 @@ namespace meteor
 
             if (pos != 0 && pos < ENCODED_FRAME_SIZE) // Safety
             {
-                std::memmove(buffer, &buffer[pos], pos);
+                std::memmove(buffer, &buffer[pos], ENCODED_FRAME_SIZE - pos);
 
                 if (input_data_type == DATA_FILE)
                     data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
