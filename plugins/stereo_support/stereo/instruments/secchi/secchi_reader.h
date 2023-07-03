@@ -29,11 +29,19 @@ namespace stereo
 
             int unknown_cnt = 0;
 
+            std::ofstream decompression_status_out;
+
+            std::string last_filename_0 = "";
+            std::string last_filename_1 = "";
+            std::string last_filename_2 = "";
+            std::string last_filename_3 = "";
+
         private:
             image::Image<uint16_t> decompress_icer_tool(uint8_t *data, int dsize, int size);
 
         public:
             SECCHIReader(std::string icer_path, std::string output_directory);
+            ~SECCHIReader();
             void work(ccsds::CCSDSPacket &pkt);
         };
     }

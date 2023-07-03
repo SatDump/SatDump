@@ -10,6 +10,12 @@ namespace stereo
         SECCHIReader::SECCHIReader(std::string icer_path, std::string output_directory)
             : icer_path(icer_path), output_directory(output_directory)
         {
+            decompression_status_out = std::ofstream(output_directory + "/image_status.txt", std::ios::binary);
+        }
+
+        SECCHIReader::~SECCHIReader()
+        {
+            decompression_status_out.close();
         }
 
         std::string filename_timestamp(double timestamp)
@@ -46,6 +52,7 @@ namespace stereo
                     {
                         auto hdr = read_base_hdr(b.payload.data());
                         last_timestamp_0 = hdr.actualExpTime;
+                        last_filename_0 = hdr.filename;
                     }
 
                     if (b.hdr.block_type == 0) // Image
@@ -76,6 +83,9 @@ namespace stereo
                         else
                             img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
 
+                        if (last_filename_0.size() > 0)
+                            decompression_status_out << channel_name << "     " << last_filename_0 << " " << timestamp_to_string(last_timestamp_0) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                        last_filename_0 = "";
                         last_timestamp_0 = 0;
                     }
                 }
@@ -88,6 +98,7 @@ namespace stereo
                     {
                         auto hdr = read_base_hdr(b.payload.data());
                         last_timestamp_1 = hdr.actualExpTime;
+                        last_filename_1 = hdr.filename;
                     }
 
                     if (b.hdr.block_type == 0) // Image
@@ -116,6 +127,9 @@ namespace stereo
                         // else
                         img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
 
+                        if (last_filename_1.size() > 0)
+                            decompression_status_out << channel_name << "      " << last_filename_1 << " " << timestamp_to_string(last_timestamp_1) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                        last_filename_1 = "";
                         last_timestamp_1 = 0;
                     }
                 }
@@ -128,6 +142,7 @@ namespace stereo
                     {
                         auto hdr = read_base_hdr(b.payload.data());
                         last_timestamp_2 = hdr.actualExpTime;
+                        last_filename_2 = hdr.filename;
                     }
 
                     if (b.hdr.block_type == 0) // Image
@@ -156,6 +171,9 @@ namespace stereo
                         // else
                         img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
 
+                        if (last_filename_2.size() > 0)
+                            decompression_status_out << channel_name << "      " << last_filename_2 << " " << timestamp_to_string(last_timestamp_2) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                        last_filename_2 = "";
                         last_timestamp_2 = 0;
                     }
                 }
@@ -169,6 +187,7 @@ namespace stereo
                         auto hdr = read_base_hdr(b.payload.data());
                         last_timestamp_3 = hdr.actualExpTime;
                         last_polarization_3 = hdr.actualPolarPosition;
+                        last_filename_3 = hdr.filename;
                     }
 
                     if (b.hdr.block_type == 0) // Image
@@ -207,6 +226,9 @@ namespace stereo
                         else
                             img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
 
+                        if (last_filename_3.size() > 0)
+                            decompression_status_out << channel_name << " " << last_filename_3 << " " << timestamp_to_string(last_timestamp_3) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                        last_filename_3 = "";
                         last_timestamp_3 = 0;
                         last_polarization_3 = 0;
                     }
@@ -221,7 +243,7 @@ namespace stereo
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
                 std::filesystem::remove("./stereo_secchi_out.tmp");
 
-            std::string cmd = icer_path + " -vv -i ./stereo_secchi_raw.tmp -o ./stereo_secchi_out.tmp";
+            std::string cmd = icer_path + /*-vv*/ " -i ./stereo_secchi_raw.tmp -o ./stereo_secchi_out.tmp";
 
             if (!std::filesystem::exists(icer_path))
             {
