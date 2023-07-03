@@ -103,7 +103,7 @@ namespace stereo
                         img.to_rgba();
                         img.init_font(resources::getResourcePath("fonts/font.ttf"));
 
-                        std::string channel_name = "HI";
+                        std::string channel_name = "HI1";
 
                         img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_1));
 
@@ -143,7 +143,7 @@ namespace stereo
                         img.to_rgba();
                         img.init_font(resources::getResourcePath("fonts/font.ttf"));
 
-                        std::string channel_name = "Unknown";
+                        std::string channel_name = "HI2";
 
                         img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_2));
 
