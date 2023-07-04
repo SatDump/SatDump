@@ -1,6 +1,8 @@
 #include "lrpt_msumr_reader.h"
 #include <ctime>
 
+#define SEG_CNT 20000 // 12250
+
 namespace meteor
 {
     namespace msumr
@@ -11,9 +13,9 @@ namespace meteor
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    channels[i] = new unsigned char[20000 * 1568];
+                    channels[i] = new unsigned char[((SEG_CNT / 14) * 8) * 1568];
                     lines[i] = 0;
-                    segments[i] = new Segment[200000];
+                    segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
                     lastSeg[i] = 0;
                     segCount[i] = 0;
