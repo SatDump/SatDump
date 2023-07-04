@@ -1,6 +1,6 @@
 # Satellite pipelines
 
-The aim of this is to document all possible satellite processing pipelines as well as their parameters. It is not the goal of this document to explain all different pipelines. This should just simplify the CLIs use.
+The aim of this is to list all possible satellite processing pipelines as well as their parameters. This does not explain the pipelines by any means. This should just simplify the CLIs use.
 
 ## NOAA
 
@@ -204,5 +204,19 @@ The aim of this is to document all possible satellite processing pipelines as we
 
 - `umka_1_dump`: UmKA-1 dump
 
+## Others
+
+- `saral_l_band`: Salral L-Band
+- `angels_l_band`: Angels L-Band
+- `gazelle_l_band`: OTB-3/Gazelle L-Band
+- `yunhai_ahrpt`: Yunhai AHRPT - Encrypted ;(
+- `syracuse3b_tlm`: Syracuse 3B TLM
+- `scisat1_dump`: SciSat-1 dump
+- `CALIPSO`: Calipso S-Band dump
+- `landsat_ldcm_tlm`: LandSat 8/9 S-band
+- `landsat_ldcm_link`: LandSat 8/9 X-band
+- `youthsat_dump`: YouthSat dump
+
 #
-//TODO: add Others, Test, WIP
+
+TODO: add Test, WIP
