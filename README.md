@@ -51,6 +51,8 @@ Sample command :
 satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16
 ```
 
+You can find a list of Satellite pipelines and their parameters [Here](docs/Satellite-pipelines.md).
+
 ### Live processing
 
 ```
@@ -141,10 +143,9 @@ rm -rf fftw-3.3.9
 git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
-# If you do not want to build the GUI Version, add -DNO_GUI=ON to the command
+# If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release ..                             # MacOS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j`nproc`
 
 # To run without installing
