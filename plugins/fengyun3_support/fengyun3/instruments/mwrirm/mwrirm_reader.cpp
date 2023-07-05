@@ -9,7 +9,7 @@ namespace fengyun3
         MWRIRMReader::MWRIRMReader()
         {
             for (int i = 0; i < 26; i++)
-                channels[i].create(1000 * 492);
+                channels[i].resize(1000 * 492);
 
             lines = 0;
         }
@@ -17,7 +17,7 @@ namespace fengyun3
         MWRIRMReader::~MWRIRMReader()
         {
             for (int i = 0; i < 26; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void MWRIRMReader::work(std::vector<uint8_t> &packet)
@@ -62,16 +62,13 @@ namespace fengyun3
             lines++;
 
             // Make sure we have enough room
-            if (lines * 492 >= (int)channels[0].size())
-            {
-                for (int i = 0; i < 10; i++)
-                    channels[i].resize((lines + 1000) * 492);
-            }
+            for (int i = 0; i < 10; i++)
+                channels[i].resize((lines + 1) * 492);
         }
 
         image::Image<uint16_t> MWRIRMReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].buf, 492, lines, 1);
+            return image::Image<uint16_t>(channels[channel].data(), 492, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun
