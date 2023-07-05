@@ -43,22 +43,12 @@ namespace satdump
             rgb_presets_str += compo.first + '\0';
 
         // generate scale iamge
-        scale_image = image::Image<uint16_t>(25, 512, 3);
-        for (int i = 0; i < 512; i++)
-        {
-            for (int x = 0; x < 25; x++)
-            {
-                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
-                scale_image.draw_pixel(x, i, color);
-            }
-        }
-        scale_view.update(scale_image);
-        scale_view.allow_zoom_and_move = false;
-        if (products->images.size() > 0)
-        {
-            correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
-            correction_factors.push_back(products->images[0].image.width());
-        }
+        updateScaleImage();
+
+        // Setup correction factors.
+        updateCorrectionFactors(true);
+
+        lut_image = image::LUT_jet<uint16_t>();
 
         // font
         current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
@@ -96,6 +86,22 @@ namespace satdump
 
         if (select_image_id != 0)
             current_timestamps = products->get_timestamps(select_image_id - 1);
+
+        // TODO : Cleanup?
+        if (using_lut)
+        {
+            current_image.to_rgb();
+            for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
+            {
+                uint16_t val = current_image[i];
+                val = (float(val) / 65535.0) * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                current_image.channel(0)[i] = lut_image.channel(0)[val];
+                current_image.channel(1)[i] = lut_image.channel(1)[val];
+                current_image.channel(2)[i] = lut_image.channel(2)[val];
+            }
+        }
 
         if (median_blur)
             current_image.median_blur();
@@ -214,11 +220,7 @@ namespace satdump
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (correct_image)
                     {
-                        if (correction_factors[correction_factors.size() - 1] != (int)products->images[active_channel_id].image.width())
-                        {
-                            correction_factors = generate_horizontal_corr_lut(*products, products->images[active_channel_id].image.width());
-                            correction_factors.push_back(products->images[active_channel_id].image.width());
-                        }
+                        updateCorrectionFactors();
                         radiance = products->get_calibrated_value(active_channel_id, correction_factors[x], y);
                     }
                     if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
@@ -520,9 +522,14 @@ namespace satdump
 
             if (ImGui::Checkbox("Invert", &invert_image))
             {
-                scale_image.mirror(false, true);
-                scale_view.update(scale_image);
+                updateScaleImage();
                 asyncUpdate();
+            }
+
+            if (ImGui::Checkbox("Apply LUT##lutoption", &using_lut))
+            {
+                asyncUpdate();
+                updateScaleImage();
             }
 
             if (ImGui::Button("Save"))
@@ -690,6 +697,57 @@ namespace satdump
 #endif
 
         return tree_local.end();
+    }
+
+    void ImageViewerHandler::updateScaleImage()
+    {
+        scale_image = image::Image<uint16_t>(25, 512, 3);
+        for (int i = 0; i < 512; i++)
+        {
+            for (int x = 0; x < 25; x++)
+            {
+                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
+
+                if (using_lut)
+                {
+                    uint16_t val = color[0];
+                    val = (float(val) / 65535.0) * lut_image.width();
+                    if (val >= lut_image.width())
+                        val = lut_image.width() - 1;
+                    color[0] = lut_image.channel(0)[val];
+                    color[1] = lut_image.channel(1)[val];
+                    color[2] = lut_image.channel(2)[val];
+                }
+
+                scale_image.draw_pixel(x, i, color);
+            }
+        }
+
+        if (invert_image)
+            scale_image.mirror(false, true);
+
+        scale_view.update(scale_image);
+        scale_view.allow_zoom_and_move = false;
+    }
+
+    void ImageViewerHandler::updateCorrectionFactors(bool first)
+    {
+        if (first)
+        {
+            if (products->images.size() > 0)
+            {
+                correction_factors = generate_horizontal_corr_lut(*products, products->images[0].image.width());
+                correction_factors.push_back(products->images[0].image.width());
+            }
+        }
+        else
+        {
+            if (correction_factors[correction_factors.size() - 1] != (int)products->images[active_channel_id].image.width())
+            {
+                correction_factors = generate_horizontal_corr_lut(*products, products->images[active_channel_id].image.width());
+                correction_factors.push_back(products->images[active_channel_id].image.width());
+            }
+        }
     }
 
     bool ImageViewerHandler::canBeProjected()
