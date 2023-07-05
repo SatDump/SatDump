@@ -255,7 +255,7 @@
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true,
-                    "mersi_rotate": true // Still turned 180
+                    "mersi_rotate": false // Not turned 180 anymore
                 }
             }
         }
