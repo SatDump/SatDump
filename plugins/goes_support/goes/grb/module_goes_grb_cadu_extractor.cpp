@@ -125,7 +125,7 @@ namespace goes
                 {
                     lastTime = time(NULL);
                     std::string lock_state_ca = cadu_sync ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, CADU : " + lock_state_ca);
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, CADU : " + lock_state_ca);
                 }
             }
 

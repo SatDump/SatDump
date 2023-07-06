@@ -304,7 +304,7 @@ namespace ccsds
                     if (deframer_qpsk->getState() > deframer->getState()) // ...and use the one that is locked
                         def = deframer_qpsk;
                 std::string deframer_state = def->getState() == def->STATE_NOSYNC ? "NOSYNC" : (def->getState() == def->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Deframer : " + deframer_state);
             }
         }
 

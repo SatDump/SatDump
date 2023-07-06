@@ -252,7 +252,7 @@ namespace ccsds
                 std::string deframer_state;
                 if (d_internal_stream)
                     deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state + (d_internal_stream ? (", Deframer : " + deframer_state) : ""));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Lock : " + lock_state + (d_internal_stream ? (", Deframer : " + deframer_state) : ""));
             }
         }
 
