@@ -85,13 +85,17 @@ namespace satdump
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
-        waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         fft->on_fft = [this](float *v)
         { waterfall_plot->push_fft(v); };
 
+        // Load config
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
+
+        fft_plot->set_size(fft_size);
+        waterfall_plot->set_size(fft_size);
+        waterfall_plot->set_rate(fft_rate, waterfall_rate);
     }
 
     RecorderApplication::~RecorderApplication()
@@ -220,11 +224,13 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    if (ImGui::Combo("FFT Size", &selected_fft_size, //"65536\0"
-                                     "8192\0"
-                                     "4096\0"
-                                     "2048\0"
-                                     "1024\0"))
+                    if (ImGui::Combo("FFT Size", &selected_fft_size, "131072\0"
+                                                                     "65536\0"
+                                                                     "16384\0"
+                                                                     "8192\0"
+                                                                     "4096\0"
+                                                                     "2048\0"
+                                                                     "1024\0"))
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 

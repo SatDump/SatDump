@@ -23,7 +23,7 @@ namespace widgets
         const ImRect inner_bb({frame_bb.Min.x, frame_bb.Min.y + style.FramePadding.y},
                               {frame_bb.Max.x - 1, frame_bb.Max.y - style.FramePadding.y});
 
-        int res_w = /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
+        int res_w = size.x; // /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
         int item_count = values_size - 1;
         const float t_step = 1.0f / (float)res_w;
         const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));
@@ -49,12 +49,25 @@ namespace widgets
             window->DrawList->AddText({pos0.x, pos0.y + 2}, color_scale, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
+        double fz = (double)values_size / (double)res_w;
+
         // Draw lines
         for (int n = 0; n < res_w; n++)
         {
             const float t1 = t0 + t_step;
             const int v1_idx = (int)(t0 * item_count + 0.5f);
-            const float v1 = values[v1_idx];
+
+            float ffpos = n * fz;
+
+            if (ffpos >= values_size)
+                ffpos = values_size - 1;
+
+            float finals = -INFINITY;
+            for (float v = ffpos; v < ffpos + fz; v += 1)
+                if (finals < values[(int)floor(v)])
+                    finals = values[(int)floor(v)];
+
+            const float v1 = finals; // values[v1_idx];
             const ImVec2 tp1 = ImVec2(t1, 1.0f - ImSaturate((v1 - scale_min) * inv_scale));
 
             ImVec2 pos0 = ImLerp(inner_bb.Min, inner_bb.Max, tp0);

@@ -358,10 +358,26 @@ namespace fengyun3
                     {
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                            if (pkt.header.apid == 16) // MWHS-2
-                                mwhs2_reader.work(pkt, true);
-                            else if (pkt.header.apid == 7) // MWTS-3
-                                mwts3_reader.work(pkt);
+                        {
+                            printf("APID %d\n", pkt.header.apid);
+                            if (pkt.header.apid == 1)
+                            {
+
+                                uint8_t pkt_cnt = pkt.payload[35] >> 4;
+
+                                printf("LEN %d - %d\n", pkt.payload.size(), pkt_cnt);
+
+                                if (pkt_cnt == 4)
+                                {
+                                    idk_out.write((char *)pkt.header.raw, 6);
+                                    idk_out.write((char *)pkt.payload.data(), 862);
+                                }
+                            }
+                        }
+                        //    if (pkt.header.apid == 16) // MWHS-2
+                        //        mwhs2_reader.work(pkt, true);
+                        //    else if (pkt.header.apid == 7) // MWTS-3
+                        //        mwts3_reader.work(pkt);
                     }
 #endif
                 }
