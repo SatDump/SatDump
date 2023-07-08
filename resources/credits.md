@@ -84,6 +84,7 @@ And additionally, on the UI side :
 - Blobtoe
 - lego11
 - crosswalkersam
+- Scott Tilley (VE7TIL)
 
 # Thanks
 
