@@ -91,8 +91,13 @@ namespace meteor
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
-            msumr_ids.clear();
+            int msumr_serial_number = 0;
+            if (msumr_ids.empty()) {
+                logger->error("Could not find any MSUMR IDs!\n");
+            } else {
+                msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
+                msumr_ids.clear();
+            }
 
             std::string sat_name = "Unknown Meteor";
             if (msumr_serial_number == 0)

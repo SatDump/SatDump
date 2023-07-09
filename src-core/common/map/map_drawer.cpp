@@ -208,7 +208,7 @@ namespace map
     template void drawProjectedCapitalsGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {

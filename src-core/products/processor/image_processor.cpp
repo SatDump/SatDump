@@ -45,10 +45,11 @@ namespace satdump
             {
                 auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings, metadata);
                 logger->info("Drawing map");
-                unsigned short color[3] = {0, 65535, 0};
+                std::vector<unsigned short> color(ret.img.channels(), 0);
+                color[1] = 65535;
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                ret.img,
-                                               color,
+                                               color.data(),
                                                proj_func);
             }
         }
