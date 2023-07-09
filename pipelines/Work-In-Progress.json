@@ -119,7 +119,7 @@
             "cadu": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "qpsk",
-		    "oqpsk_mode": true,
+                    "oqpsk_mode": true,
                     "cadu_size": 10232,
                     "nrzm": false,
                     "derandomize": true,
@@ -859,6 +859,47 @@
                     "rs_type": "rs223"
                 }
             }
+        }
+    },
+    "viasat3_tlm": {
+        "name": "ViaSat-3 TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3
+                }
+            },
+            "frames": {
+                /*"ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "ccsds": false,
+                    "nrzm": true,
+                    "derandomize": false,
+                    "asm": "0xa91a8c29",
+                    "rs_i": 0
+                }*/
+            },
+            "products": {}
         }
     }
 }

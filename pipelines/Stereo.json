@@ -1,6 +1,6 @@
 {
     "stereo_lr": {
-        "name": "Stereo-A/B/C Low Rate",
+        "name": "Stereo-A/B Low Rate",
         "live": true,
         "live_cfg": [
             [
@@ -38,8 +38,49 @@
             },
             "products": {
                 "stereo_instruments": {
-                    "icer_path": "./icer_decomp_linux"
+                    "icer_path": "./icer_decomp_linux",
+                    "rice_path": "./rice_decomp_linux"
                 }
+            }
+        }
+    },
+    "stereo_hr": {
+        "name": "Stereo-A/B High Rate",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1.44e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.002,
+                    "post_costas_dc": true
+                }
+            },
+            "cadu": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 1115,
+                    "turbo_iters": 1
+                }
+            },
+            "products": {
+                /*"stereo_instruments": {
+                    "icer_path": "./icer_decomp_linux"
+                }*/
             }
         }
     }

@@ -72,7 +72,7 @@ namespace stereo
         time_t lastTime = 0;
         uint8_t cadu[1119];
 
-        std::ofstream output("file.ccsds");
+        // std::ofstream output("file.ccsds");
 
         int s_waves_lines = 0;
         std::vector<uint8_t> s_waves_data;
@@ -86,7 +86,7 @@ namespace stereo
         double last_tt_1 = 0;
         double last_pol_1 = 0;
 
-        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
+        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], d_parameters["rice_path"], directory + "/SECCHI");
 
         while (!data_in.eof())
         {
@@ -149,7 +149,7 @@ namespace stereo
                     }
                     else if (pkt.header.apid != 2047)
                     {
-                        // logger->info(pkt.header.apid);
+                        // printf("APID %d\n", pkt.header.apid);
                     }
                 }
             }

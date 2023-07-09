@@ -13,6 +13,7 @@ namespace stereo
         {
         private:
             std::string icer_path;
+            std::string rice_path;
             std::string output_directory;
 
             secchi::PayloadAssembler secchi_assembler0;
@@ -38,9 +39,10 @@ namespace stereo
 
         private:
             image::Image<uint16_t> decompress_icer_tool(uint8_t *data, int dsize, int size);
+            image::Image<uint16_t> decompress_rice_tool(uint8_t *data, int dsize, int size);
 
         public:
-            SECCHIReader(std::string icer_path, std::string output_directory);
+            SECCHIReader(std::string icer_path, std::string rice_path, std::string output_directory);
             ~SECCHIReader();
             void work(ccsds::CCSDSPacket &pkt);
         };

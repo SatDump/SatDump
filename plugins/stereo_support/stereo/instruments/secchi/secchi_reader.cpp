@@ -7,8 +7,8 @@ namespace stereo
 {
     namespace secchi
     {
-        SECCHIReader::SECCHIReader(std::string icer_path, std::string output_directory)
-            : icer_path(icer_path), output_directory(output_directory)
+        SECCHIReader::SECCHIReader(std::string icer_path, std::string rice_path, std::string output_directory)
+            : icer_path(icer_path), rice_path(rice_path), output_directory(output_directory)
         {
             decompression_status_out = std::ofstream(output_directory + "/image_status.txt", std::ios::binary);
         }
@@ -147,10 +147,7 @@ namespace stereo
 
                     if (b.hdr.block_type == 0) // Image
                     {
-                        auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 512);
-
-                        for (size_t i = 0; i < img.size(); i++)
-                            img[i] <<= 2;
+                        auto img = decompress_rice_tool(&b.payload[0], b.hdr.block_length, 256);
 
                         uint16_t text_color[] = {65535, 65535, 65535, 65535};
 
@@ -246,6 +243,49 @@ namespace stereo
             std::string cmd = icer_path + /*-vv*/ " -i ./stereo_secchi_raw.tmp -o ./stereo_secchi_out.tmp";
 
             if (!std::filesystem::exists(icer_path))
+            {
+                logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
+                return image::Image<uint16_t>();
+            }
+
+            int ret = system(cmd.data());
+
+            if (ret == 0 && std::filesystem::exists("./stereo_secchi_out.tmp"))
+            {
+                logger->trace("SECCHI Decompression OK!");
+
+                std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
+                uint16_t *buffer = new uint16_t[size * size];
+                data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
+                image::Image<uint16_t> img(buffer, size, size, 1);
+                delete[] buffer;
+
+                if (std::filesystem::exists("./stereo_secchi_out.tmp"))
+                    std::filesystem::remove("./stereo_secchi_out.tmp");
+
+                return img;
+            }
+            else
+            {
+                logger->error("Failed decompressing SECCHI!");
+
+                if (std::filesystem::exists("./stereo_secchi_out.tmp"))
+                    std::filesystem::remove("./stereo_secchi_out.tmp");
+
+                return image::Image<uint16_t>();
+            }
+        }
+
+        image::Image<uint16_t> SECCHIReader::decompress_rice_tool(uint8_t *data, int dsize, int size)
+        {
+            std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
+
+            if (std::filesystem::exists("./stereo_secchi_out.tmp"))
+                std::filesystem::remove("./stereo_secchi_out.tmp");
+
+            std::string cmd = rice_path + /*-vv*/ " ./stereo_secchi_raw.tmp ./stereo_secchi_out.tmp";
+
+            if (!std::filesystem::exists(rice_path))
             {
                 logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
                 return image::Image<uint16_t>();
