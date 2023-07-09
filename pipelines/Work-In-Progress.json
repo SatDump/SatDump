@@ -889,15 +889,15 @@
                 }
             },
             "frames": {
-                /*"ccsds_simple_psk_decoder": {
+                "ccsds_simple_psk_decoder": {
                     "constellation": "bpsk",
-                    "cadu_size": 8192,
+                    "cadu_size": 288,
                     "ccsds": false,
                     "nrzm": true,
                     "derandomize": false,
-                    "asm": "0xa91a8c29",
+                    "asm": "0xb8b8b8ca",
                     "rs_i": 0
-                }*/
+                }
             },
             "products": {}
         }
