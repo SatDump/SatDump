@@ -388,11 +388,21 @@ namespace goes
                     }
                     else // Write raw image dats
                     {
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                        //Sometimes, multiple different images can be sent down with the same name
+                        //Do not overwrite files
+                        std::string suffix = "";
+                        int suffixInt = 1;
+                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".png"))
+                        {
+                            suffixInt++;
+                            suffix = "-" + std::to_string(suffixInt);
+                        }
+
+                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + suffix + ".png" + "...");
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         if (is_goesn)
                             image.resize(image.width(), image.height() * 1.75);
-                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + suffix + ".png").c_str());
 
                         // Check if this is GOES-R
                         if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||

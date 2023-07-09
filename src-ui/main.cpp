@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         int wwidth, wheight;
-        glfwGetFramebufferSize(window, &wwidth, &wheight);
+        glfwGetWindowSize(window, &wwidth, &wheight);
         //std::cout<<wwidth<<std::endl;
 
         // User rendering
