@@ -891,11 +891,11 @@
             "frames": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "bpsk",
-                    "cadu_size": 288,
+                    "cadu_size": 4096,
                     "ccsds": false,
                     "nrzm": true,
                     "derandomize": false,
-                    "asm": "0xb8b8b8ca",
+                    "asm": "0xfaf3200d",
                     "rs_i": 0
                 }
             },
