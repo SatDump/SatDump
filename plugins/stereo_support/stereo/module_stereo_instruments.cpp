@@ -86,7 +86,7 @@ namespace stereo
         double last_tt_1 = 0;
         double last_pol_1 = 0;
 
-        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], d_parameters["rice_path"], directory + "/SECCHI");
+        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
 
         while (!data_in.eof())
         {

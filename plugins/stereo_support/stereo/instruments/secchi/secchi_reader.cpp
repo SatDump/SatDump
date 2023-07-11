@@ -3,12 +3,14 @@
 #include "common/utils.h"
 #include "resources.h"
 
+#include "rice_decomp.h"
+
 namespace stereo
 {
     namespace secchi
     {
-        SECCHIReader::SECCHIReader(std::string icer_path, std::string rice_path, std::string output_directory)
-            : icer_path(icer_path), rice_path(rice_path), output_directory(output_directory)
+        SECCHIReader::SECCHIReader(std::string icer_path, std::string output_directory)
+            : icer_path(icer_path), output_directory(output_directory)
         {
             decompression_status_out = std::ofstream(output_directory + "/image_status.txt", std::ios::binary);
         }
@@ -278,6 +280,7 @@ namespace stereo
 
         image::Image<uint16_t> SECCHIReader::decompress_rice_tool(uint8_t *data, int dsize, int size)
         {
+#if !RICE_MEMORY_VERSION
             std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
 
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
@@ -287,36 +290,76 @@ namespace stereo
 
             if (!std::filesystem::exists(rice_path))
             {
-                logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
+                logger->error("No RICE Decompressor provided. Can't decompress SECCHI!");
                 return image::Image<uint16_t>();
             }
 
-            int ret = system(cmd.data());
+            soho_compression::SOHORiceDecompressor decomp;
+            /*            int ret = decomp.run_main("./stereo_secchi_raw.tmp", "./stereo_secchi_out.tmp"); // system(cmd.data());
 
-            if (ret == 0 && std::filesystem::exists("./stereo_secchi_out.tmp"))
+                        if (ret == 0 && decomp.output_was_valid && std::filesystem::exists("./stereo_secchi_out.tmp"))
+                        {
+                            logger->trace("SECCHI Decompression OK!");
+
+                            std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
+                            uint16_t *buffer = new uint16_t[size * size];
+                            data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
+                            image::Image<uint16_t> img(buffer, size, size, 1);
+                            delete[] buffer;
+
+                            if (std::filesystem::exists("./stereo_secchi_out.tmp"))
+                                std::filesystem::remove("./stereo_secchi_out.tmp");
+
+                            return img;
+                        }
+                        else
+                        {
+                            logger->error("Failed decompressing SECCHI!");
+
+                            if (std::filesystem::exists("./stereo_secchi_out.tmp"))
+                                std::filesystem::remove("./stereo_secchi_out.tmp");
+
+                            return image::Image<uint16_t>();
+                        }
+                        */
+
+            uint16_t *buffer_img;
+            int nrow, ncol;
+            int ret = decomp.run_main("./stereo_secchi_raw.tmp", &buffer_img, &nrow, &ncol);
+
+            // logger->info("%d %d", ncol, nrow);
+
+            if (ret == 0 && buffer_img != nullptr && ncol == size && nrow == size)
             {
-                logger->trace("SECCHI Decompression OK!");
-
-                std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
-                uint16_t *buffer = new uint16_t[size * size];
-                data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
-                image::Image<uint16_t> img(buffer, size, size, 1);
-                delete[] buffer;
-
-                if (std::filesystem::exists("./stereo_secchi_out.tmp"))
-                    std::filesystem::remove("./stereo_secchi_out.tmp");
-
+                image::Image<uint16_t> img(buffer_img, ncol, nrow, 1);
+                // delete[] buffer_img;
                 return img;
             }
             else
             {
-                logger->error("Failed decompressing SECCHI!");
-
-                if (std::filesystem::exists("./stereo_secchi_out.tmp"))
-                    std::filesystem::remove("./stereo_secchi_out.tmp");
-
+                // delete[] buffer_img;
                 return image::Image<uint16_t>();
             }
+#else
+            soho_compression::SOHORiceDecompressor decomp;
+            uint16_t *buffer_img;
+            int nrow, ncol;
+            int ret = decomp.run_main_buff(data, dsize, &buffer_img, &nrow, &ncol);
+
+            // logger->info("%d %d", ncol, nrow);
+
+            if (ret == 0 && buffer_img != nullptr && ncol == size && nrow == size)
+            {
+                image::Image<uint16_t> img(buffer_img, ncol, nrow, 1);
+                // delete[] buffer_img;
+                return img;
+            }
+            else
+            {
+                // delete[] buffer_img;
+                return image::Image<uint16_t>();
+            }
+#endif
         }
     }
 }
