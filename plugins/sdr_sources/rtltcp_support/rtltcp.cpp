@@ -72,6 +72,9 @@ void RTLTCPSource::open()
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
         samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+
+    available_samplerates.push_back(-1);
+    samplerate_option_str += "Manual" + '\0';
 }
 
 void RTLTCPSource::start()
@@ -131,7 +134,16 @@ void RTLTCPSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
     ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    if (selected_samplerate == available_samplerates.size() - 1)
+    {
+        double v = current_samplerate;
+        ImGui::InputDouble("Manual Samplerate", &v, 10e3, 100e3, "%.0f");
+        current_samplerate = v;
+    }
+    else
+    {
+        current_samplerate = available_samplerates[selected_samplerate];
+    }
     if (is_started)
         style::endDisabled();
 
@@ -166,6 +178,13 @@ void RTLTCPSource::set_samplerate(uint64_t samplerate)
             current_samplerate = samplerate;
             return;
         }
+    }
+
+    if (samplerate <= 3.2e6)
+    {
+        selected_samplerate = available_samplerates.size() - 1;
+        current_samplerate = samplerate;
+        return;
     }
 
     throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
