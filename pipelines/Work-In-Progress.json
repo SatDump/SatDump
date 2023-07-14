@@ -926,7 +926,8 @@
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.35,
                     "costas_bw": 0.005,
-                    "subcarrier_offset": 32e3
+                    "subcarrier_offset": 32e3,
+                    "pll_max_offset": 3.14
                 }
             },
             "frames": {
@@ -965,7 +966,8 @@
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.35,
                     "costas_bw": 0.005,
-                    "subcarrier_offset": 64e3
+                    "subcarrier_offset": 64e3,
+                    "pll_max_offset": 3.14
                 }
             },
             "frames": {
