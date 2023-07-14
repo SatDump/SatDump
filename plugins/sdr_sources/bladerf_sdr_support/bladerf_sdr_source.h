@@ -33,8 +33,11 @@ protected:
 
     bool bias_enabled = false;
 
+    bool extclock_enable = false;
+
     void set_gains();
     void set_bias();
+    void set_others();
 
     int sample_buffer_size = 8192;
 
