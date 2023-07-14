@@ -24,6 +24,7 @@ protected:
     bladerf_devinfo *devs_list = NULL;
 
     widgets::DoubleList samplerate_widget;
+    widgets::DoubleList bandwidth_widget;
 
     int channel_id = 0;
     int gain_mode = 1;
@@ -32,6 +33,8 @@ protected:
     bool bias_enabled = false;
 
     bool extclock_enable = false;
+
+    bool manual_bandwidth = false;
 
     void set_gains();
     void set_bias();
@@ -80,7 +83,7 @@ protected:
     }
 
 public:
-    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
     {
     }
 

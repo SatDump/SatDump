@@ -30,6 +30,15 @@ void BladeRFSource::set_others()
         bladerf_set_clock_select(bladerf_dev_obj, extclock_enable ? CLOCK_SELECT_EXTERNAL : CLOCK_SELECT_ONBOARD);
         logger->debug("Set BladeRF External Clock to %d", (int)extclock_enable);
     }
+
+    if (manual_bandwidth)
+        bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(bandwidth_widget.get_value(), bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
+    else
+        bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(samplerate_widget.get_value(), bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
+
+    bladerf_bandwidth bw = 0;
+    bladerf_get_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), &bw);
+    logger->debug("Set BladeRF BandWidth to %d", bw);
 }
 
 void BladeRFSource::set_settings(nlohmann::json settings)
@@ -40,6 +49,8 @@ void BladeRFSource::set_settings(nlohmann::json settings)
     general_gain = getValueOrDefault(d_settings["general_gain"], general_gain);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
     extclock_enable = getValueOrDefault(d_settings["extclock"], extclock_enable);
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
+    bandwidth_widget.set_value(getValueOrDefault(d_settings["manual_bw_value"], samplerate_widget.get_value()));
 
     if (is_open && is_started)
     {
@@ -55,6 +66,8 @@ nlohmann::json BladeRFSource::get_settings()
     d_settings["general_gain"] = general_gain;
     d_settings["bias"] = bias_enabled;
     d_settings["extclock"] = extclock_enable;
+    d_settings["manual_bw"] = manual_bandwidth;
+    d_settings["manual_bw_value"] = bandwidth_widget.get_value();
 
     return d_settings;
 }
@@ -114,6 +127,8 @@ void BladeRFSource::open()
 
     samplerate_widget.set_list(available_samplerates, true, [](double v)
                                { return formatSamplerateToString(v); });
+    bandwidth_widget.set_list(available_samplerates, true, [](double v)
+                              { return formatSamplerateToString(v); });
 
     // Close it
     bladerf_close(bladerf_dev_obj);
@@ -167,7 +182,10 @@ void BladeRFSource::start()
     }
 #endif
 
-    bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
+    if (manual_bandwidth)
+        set_others();
+    else
+        bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
 
     // Setup and start streaming
     sample_buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
@@ -263,6 +281,12 @@ void BladeRFSource::drawControlUI()
         if (is_started)
             style::endDisabled();
     }
+
+    bool bw_update = ImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
+    if (manual_bandwidth)
+        bw_update = bw_update || bandwidth_widget.render();
+    if (bw_update)
+        set_others();
 }
 
 void BladeRFSource::set_samplerate(uint64_t samplerate)
