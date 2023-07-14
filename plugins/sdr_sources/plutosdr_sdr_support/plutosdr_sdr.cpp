@@ -58,14 +58,12 @@ void PlutoSDRSource::open()
         is_open = true;
 
     // Get available samplerates
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     for (int sr = 1000000; sr <= 20000000; sr += 500000)
         available_samplerates.push_back(sr);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
 }
 
 void PlutoSDRSource::start()
@@ -102,8 +100,7 @@ void PlutoSDRSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    samplerate_widget.render();
 
     if (!is_usb)
     {
@@ -127,22 +124,13 @@ void PlutoSDRSource::drawControlUI()
 
 void PlutoSDRSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unsupported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 61.44e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t PlutoSDRSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
@@ -186,6 +174,8 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 
 void PlutoSDRSource::sdr_startup()
 {
+    uint64_t current_samplerate = samplerate_widget.get_value();
+
 #ifndef __ANDROID__
     if (is_usb)
     {

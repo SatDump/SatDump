@@ -51,18 +51,19 @@ void LimeSDRSource::open()
     is_open = true;
 
     // Set available samplerates
+    std::vector<double> available_samplerates;
     for (int i = 1; i < 81; i++)
         available_samplerates.push_back(i * 1e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
 }
 
 void LimeSDRSource::start()
 {
     DSPSampleSource::start();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     if (!is_started)
     {
@@ -208,8 +209,9 @@ void LimeSDRSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -223,22 +225,13 @@ void LimeSDRSource::drawControlUI()
 
 void LimeSDRSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 100e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t LimeSDRSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()

@@ -12,6 +12,7 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class PlutoSDRSource : public dsp::DSPSampleSource
 {
@@ -22,10 +23,7 @@ protected:
     iio_device *phy = NULL;
     iio_device *dev = NULL;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     bool is_usb = false;
 
@@ -46,7 +44,7 @@ protected:
         work_thread_mtx.lock();
 
     restart:
-        int blockSize = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
+        int blockSize = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
 
         struct iio_channel *rx0_i, *rx0_q;
         struct iio_buffer *rxbuf;
@@ -123,7 +121,7 @@ protected:
     void sdr_startup();
 
 public:
-    PlutoSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    PlutoSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
     {
         thread_should_run = false;
     }

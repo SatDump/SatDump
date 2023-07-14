@@ -190,7 +190,7 @@ void SDRPlaySource::open()
     is_open = true;
 
     // Set available samplerates
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(2000000);
     available_samplerates.push_back(3000000);
     available_samplerates.push_back(4000000);
@@ -201,10 +201,8 @@ void SDRPlaySource::open()
     available_samplerates.push_back(9000000);
     available_samplerates.push_back(10000000);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false, [](double v)
+                               { return formatSamplerateToString(v); });
 
     // Set max gain
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1_ID) // RSP1
@@ -223,6 +221,8 @@ void SDRPlaySource::open()
 void SDRPlaySource::start()
 {
     DSPSampleSource::start();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
         set_duo_tuner();
@@ -331,8 +331,9 @@ void SDRPlaySource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -421,22 +422,13 @@ void SDRPlaySource::drawControlUI()
 
 void SDRPlaySource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 10e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t SDRPlaySource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()

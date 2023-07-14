@@ -36,6 +36,8 @@ void USRPSource::open_channel()
     if (usrp_device->get_master_clock_rate_range().start() != usrp_device->get_master_clock_rate_range().stop())
         use_device_rates = true;
 
+    std::vector<double> available_samplerates;
+
     if (use_device_rates)
     {
         // Get samplerates
@@ -79,10 +81,8 @@ void USRPSource::open_channel()
         }
     }
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false, [](double v)
+                               { return formatSamplerateToString(v); });
 
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
@@ -139,6 +139,8 @@ void USRPSource::start()
     DSPSampleSource::start();
     open_sdr();
     open_channel();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     logger->debug("Set USRP samplerate to " + std::to_string(current_samplerate));
     if (use_device_rates)
@@ -221,8 +223,7 @@ void USRPSource::drawControlUI()
 
     ImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    samplerate_widget.render();
 
     if (ImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
                                                        "16-bits\0"))
@@ -243,22 +244,13 @@ void USRPSource::drawControlUI()
 
 void USRPSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 0))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t USRPSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> USRPSource::getAvailableSources()

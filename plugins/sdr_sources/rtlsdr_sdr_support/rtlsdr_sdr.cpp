@@ -120,7 +120,7 @@ void RtlSdrSource::open()
     is_open = true;
 
     // Set available samplerate
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(250000);
     available_samplerates.push_back(1024000);
     available_samplerates.push_back(1536000);
@@ -133,13 +133,8 @@ void RtlSdrSource::open()
     available_samplerates.push_back(2880000);
     available_samplerates.push_back(3200000);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
-
-    available_samplerates.push_back(-1);
-    samplerate_option_str += "Manual" + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
 }
 
 void RtlSdrSource::start()
@@ -155,6 +150,8 @@ void RtlSdrSource::start()
     if (rtlsdr_open_fd(&rtlsdr_dev_obj, fd) != 0)
         throw std::runtime_error("Could not open RTL-SDR device!");
 #endif
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     logger->debug("Set RTL-SDR samplerate to " + std::to_string(current_samplerate));
     rtlsdr_set_sample_rate(rtlsdr_dev_obj, current_samplerate);
@@ -209,17 +206,9 @@ void RtlSdrSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    if (selected_samplerate == available_samplerates.size() - 1)
-    {
-        double v = current_samplerate;
-        ImGui::InputDouble("Manual Samplerate", &v, 10e3, 100e3, "%.0f");
-        current_samplerate = v;
-    }
-    else
-    {
-        current_samplerate = available_samplerates[selected_samplerate];
-    }
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -235,29 +224,13 @@ void RtlSdrSource::drawControlUI()
 
 void RtlSdrSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    if (samplerate <= 3.2e6)
-    {
-        selected_samplerate = available_samplerates.size() - 1;
-        current_samplerate = samplerate;
-        return;
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 3.2e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RtlSdrSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()

@@ -119,7 +119,7 @@ void AirspySource::open()
     uint32_t dev_samplerates[10];
     airspy_get_samplerates(airspy_dev_obj, &samprate_cnt, 0);
     airspy_get_samplerates(airspy_dev_obj, dev_samplerates, samprate_cnt);
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     bool has_10msps = false;
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
@@ -132,10 +132,9 @@ void AirspySource::open()
     if (!has_10msps)
         available_samplerates.push_back(10e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false, [](double v)
+                               { return formatSamplerateToString(v); });
+
     airspy_close(airspy_dev_obj);
 }
 
@@ -143,6 +142,8 @@ void AirspySource::start()
 {
     DSPSampleSource::start();
     open_sdr();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     airspy_set_sample_type(airspy_dev_obj, AIRSPY_SAMPLE_FLOAT32_IQ);
 
@@ -188,8 +189,9 @@ void AirspySource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -227,22 +229,13 @@ void AirspySource::drawControlUI()
 
 void AirspySource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 10e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspySource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> AirspySource::getAvailableSources()

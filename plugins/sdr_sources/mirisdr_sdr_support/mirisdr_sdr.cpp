@@ -69,7 +69,7 @@ void MiriSdrSource::open()
     is_open = true;
 
     // Set available samplerate
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(2e6);
     available_samplerates.push_back(3e6);
     available_samplerates.push_back(4e6);
@@ -80,10 +80,8 @@ void MiriSdrSource::open()
     available_samplerates.push_back(9e6);
     available_samplerates.push_back(10e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
 }
 
 void MiriSdrSource::start()
@@ -99,6 +97,8 @@ void MiriSdrSource::start()
     if (mirisdr_open_fd(&mirisdr_dev_obj, 0, fd) != 0)
         throw std::runtime_error("Could not open MiriSDR device!");
 #endif
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     mirisdr_set_hw_flavour(mirisdr_dev_obj, MIRISDR_HW_DEFAULT);
 
@@ -180,8 +180,9 @@ void MiriSdrSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -194,22 +195,13 @@ void MiriSdrSource::drawControlUI()
 
 void MiriSdrSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 20e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t MiriSdrSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> MiriSdrSource::getAvailableSources()

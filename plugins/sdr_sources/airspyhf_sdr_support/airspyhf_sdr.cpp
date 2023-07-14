@@ -91,17 +91,15 @@ void AirspyHFSource::open()
     uint32_t dev_samplerates[10];
     airspyhf_get_samplerates(airspyhf_dev_obj, &samprate_cnt, 0);
     airspyhf_get_samplerates(airspyhf_dev_obj, dev_samplerates, samprate_cnt);
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
         logger->trace("AirspyHF device has samplerate %d SPS", dev_samplerates[i]);
         available_samplerates.push_back(dev_samplerates[i]);
     }
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
     airspyhf_close(airspyhf_dev_obj);
 }
 
@@ -109,6 +107,8 @@ void AirspyHFSource::start()
 {
     DSPSampleSource::start();
     open_sdr();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     logger->debug("Set AirspyHF samplerate to " + std::to_string(current_samplerate));
     airspyhf_set_samplerate(airspyhf_dev_obj, current_samplerate);
@@ -153,8 +153,9 @@ void AirspyHFSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+
+    samplerate_widget.render();
+
     if (is_started)
         style::endDisabled();
 
@@ -172,22 +173,13 @@ void AirspyHFSource::drawControlUI()
 
 void AirspyHFSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 3.2e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspyHFSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> AirspyHFSource::getAvailableSources()

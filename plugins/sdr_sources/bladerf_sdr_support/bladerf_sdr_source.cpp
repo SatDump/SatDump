@@ -103,7 +103,7 @@ void BladeRFSource::open()
     bladerf_get_gain_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), &bladerf_range_gain);
 
     // Get available samplerates
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(bladerf_range_samplerate->min);
     for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
     {
@@ -112,13 +112,8 @@ void BladeRFSource::open()
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
-
-    available_samplerates.push_back(-1);
-    samplerate_option_str += "Manual" + '\0';
+    samplerate_widget.set_list(available_samplerates, true, [](double v)
+                               { return formatSamplerateToString(v); });
 
     // Close it
     bladerf_close(bladerf_dev_obj);
@@ -130,6 +125,8 @@ void BladeRFSource::start()
 
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
         throw std::runtime_error("Could not open BladeRF device!");
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
 #ifdef BLADERF_HAS_WIDEBAND
     if (current_samplerate > 61.44e6)
@@ -232,17 +229,8 @@ void BladeRFSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    if (selected_samplerate == available_samplerates.size() - 1)
-    {
-        double v = current_samplerate;
-        ImGui::InputDouble("Manual Samplerate", &v, 10e3, 100e3, "%.0f");
-        current_samplerate = v;
-    }
-    else
-    {
-        current_samplerate = available_samplerates[selected_samplerate];
-    }
+
+    samplerate_widget.render();
 
     if (channel_cnt > 1)
         ImGui::Combo("Channel", &channel_id, "RX1\0"
@@ -279,33 +267,13 @@ void BladeRFSource::drawControlUI()
 
 void BladeRFSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-#ifdef BLADERF_HAS_WIDEBAND
-    if (samplerate <= 128.88e6)
-#else
-    if (samplerate <= 61.44e6)
-#endif
-    {
-        selected_samplerate = available_samplerates.size() - 1;
-        current_samplerate = samplerate;
-        return;
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 61.44e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> BladeRFSource::getAvailableSources()

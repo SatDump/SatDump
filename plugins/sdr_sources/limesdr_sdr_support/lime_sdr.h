@@ -12,6 +12,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"
+#include "common/widgets/double_list.h"
 
 class LimeSDRSource : public dsp::DSPSampleSource
 {
@@ -28,10 +29,7 @@ protected:
     lms_stream_t limeStream;
 #endif
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int gain = 0;
 
@@ -47,7 +45,7 @@ protected:
         lms_stream_meta_t md;
 #endif
 
-        int buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {
@@ -62,7 +60,7 @@ protected:
     }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
     {
     }
 

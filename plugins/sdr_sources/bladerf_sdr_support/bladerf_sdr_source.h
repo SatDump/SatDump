@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class BladeRFSource : public dsp::DSPSampleSource
 {
@@ -22,10 +23,7 @@ protected:
     int selected_dev_id = 0;
     bladerf_devinfo *devs_list = NULL;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int channel_id = 0;
     int gain_mode = 1;
@@ -82,7 +80,7 @@ protected:
     }
 
 public:
-    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
     {
     }
 

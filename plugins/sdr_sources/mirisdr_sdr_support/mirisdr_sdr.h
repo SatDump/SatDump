@@ -10,6 +10,7 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class MiriSdrSource : public dsp::DSPSampleSource
 {
@@ -19,10 +20,7 @@ protected:
     static void _rx_callback_8(unsigned char *buf, uint32_t len, void *ctx);
     static void _rx_callback_16(unsigned char *buf, uint32_t len, void *ctx);
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int bit_depth = 12;
     int gain = 0;
@@ -39,7 +37,7 @@ protected:
 
     void mainThread()
     {
-        int buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {
@@ -53,7 +51,7 @@ protected:
     }
 
 public:
-    MiriSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    MiriSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
     {
     }
 
