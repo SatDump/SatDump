@@ -9,14 +9,16 @@ namespace widgets
         d_id_man = "Manual " + name + "##id" + std::to_string(rand());
     }
 
-    void DoubleList::render()
+    bool DoubleList::render()
     {
-        ImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
+        bool v = ImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
 
         if (allow_manual && selected_value == (int)available_values.size() - 1)
-            ImGui::InputDouble(d_id_man.c_str(), &current_value, 10e3, 100e3, "%.0f");
+            v = v || ImGui::InputDouble(d_id_man.c_str(), &current_value, 10e3, 100e3, "%.0f");
         else
             current_value = available_values[selected_value];
+
+        return v;
     }
 
     void DoubleList::set_list(std::vector<double> list, bool allow_manual, std::function<std::string(double v)> format_func)

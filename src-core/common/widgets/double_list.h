@@ -18,7 +18,7 @@ namespace widgets
 
     public:
         DoubleList(std::string name);
-        void render();
+        bool render();
         void set_list(
             std::vector<double> list, bool allow_manual, std::function<std::string(double v)> format_func = [](double v)
                                                          { return std::to_string(v); });
