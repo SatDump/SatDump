@@ -275,7 +275,7 @@ void BladeRFSource::drawControlUI()
         if (is_started)
             style::beginDisabled();
 
-        if (ImGui::Checkbox("External Clock", &extclock_enable))
+        if (ImGui::Checkbox("External Clock", &extclock_enable) && is_started)
             set_others();
 
         if (is_started)
