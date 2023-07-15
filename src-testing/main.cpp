@@ -13,16 +13,11 @@
 #include "logger.h"
 
 #include <fstream>
-#include <vector>
-#include <array>
-#include <algorithm>
 
-#include "common/ccsds/ccsds_weather/vcdu.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/codings/randomization.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
-
-    
 }
