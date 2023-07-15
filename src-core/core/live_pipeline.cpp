@@ -20,6 +20,12 @@ namespace satdump
     {
         for (std::pair<int, int> currentModule : mods)
         {
+            if (d_pipeline.steps.size() <= currentModule.first)
+                throw std::runtime_error("Invalid live pipeline step!");
+
+            if (d_pipeline.steps[currentModule.first].modules.size() <= currentModule.second)
+                throw std::runtime_error("Invalid live pipeline module!");
+
             // Prep parameters
             nlohmann::json final_parameters = Pipeline::prepareParameters(
                 d_pipeline.steps[currentModule.first].modules[currentModule.second].parameters,

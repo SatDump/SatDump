@@ -162,12 +162,20 @@ namespace satdump
                 pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
             }
 
-            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
-            splitter->reset_output("live");
-            live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
-            splitter->set_enabled("live", true);
+            try
+            {
+                live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
+                splitter->reset_output("live");
+                live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
+                splitter->set_enabled("live", true);
 
-            is_processing = true;
+                is_processing = true;
+            }
+            catch (std::runtime_error &e)
+            {
+                error = e.what();
+                logger->error(e.what());
+            }
         }
         else
         {
