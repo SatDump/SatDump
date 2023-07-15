@@ -109,6 +109,8 @@ namespace net
 #else
             if (bind(sock, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) < 0)
                 throw std::runtime_error("Couldn't connect to UDP socket!");
+            int ttrue = 1;
+            setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ttrue, sizeof(int));
 #endif
         }
 
@@ -118,6 +120,7 @@ namespace net
             closesocket(sock);
             WSACleanup();
 #else
+
             close(sock);
 #endif
         }

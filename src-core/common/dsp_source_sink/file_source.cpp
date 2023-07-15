@@ -87,6 +87,7 @@ void FileSource::close()
 {
     if (is_open)
     {
+        is_open = false;
     }
 }
 

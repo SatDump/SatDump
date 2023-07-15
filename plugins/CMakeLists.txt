@@ -310,6 +310,12 @@ if(PLUGIN_RTAUDIO_SDR_SUPPORT)
     add_subdirectory(sdr_sources/rtaudio_sdr_support)
 endif()
 
+option(PLUGIN_UDP_SOURCE_SDR_SUPPORT "Enable UDP Source Support plugin" ON)
+
+if(PLUGIN_UDP_SOURCE_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/udp_source_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 
