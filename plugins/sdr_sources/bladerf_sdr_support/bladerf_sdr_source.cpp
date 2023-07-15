@@ -285,7 +285,7 @@ void BladeRFSource::drawControlUI()
     bool bw_update = ImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
     if (manual_bandwidth)
         bw_update = bw_update || bandwidth_widget.render();
-    if (bw_update)
+    if (bw_update && is_started)
         set_others();
 }
 
