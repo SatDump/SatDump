@@ -416,7 +416,8 @@
                 "name": "AVHRR APT",
                 "rgb_composites": {
                     "224": {
-                        "equation": "cha + 0.01, cha, chb - 0.2"
+                        "equation": "cha + 0.01, cha, chb - 0.2",
+                        "autogen": false
                     },
                     "A Equalized": {
                         "equation": "cha",
@@ -434,7 +435,8 @@
                             "scalar": 4.0,
                             "thresold": 0.15,
                             "blend": 0
-                        }
+                        },
+                        "autogen": false
                     },
                     "MCIR": {
                         "channels": "chb",
@@ -486,15 +488,18 @@
                     },
                     "WXtoImg HVC N15": {
                         "lut": "noaa_apt/WXtoImg-N15-HVC.png",
-                        "channels": "cha, chb"
+                        "channels": "cha, chb",
+                        "autogen": false
                     },
                     "WXtoImg HVC N18": {
                         "lut": "noaa_apt/WXtoImg-N18-HVC.png",
-                        "channels": "cha, chb"
+                        "channels": "cha, chb",
+                        "autogen": false
                     },
                     "WXtoImg HVC N19": {
                         "lut": "noaa_apt/WXtoImg-N19-HVC.png",
-                        "channels": "cha, chb"
+                        "channels": "cha, chb",
+                        "autogen": false
                     },
                     "WXtoImg NO": {
                         "lut": "noaa_apt/WXtoImg-NO.png",
