@@ -132,7 +132,7 @@
                     "write_messages": true,
                     "write_dcs": true,
                     "write_unknown": false,
-                    "write_lrit": true
+                    "write_lrit": false
                 }
             }
         }
