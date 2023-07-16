@@ -24,6 +24,7 @@ namespace goes
             bool write_messages;
             bool write_dcs;
             bool write_unknown;
+            bool write_lrit;
 
             std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
             std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
@@ -54,6 +55,7 @@ namespace goes
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void processLRITFile(::lrit::LRITFile &file);
+            void saveLRITFile(::lrit::LRITFile &file, std::string path);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
@@ -69,5 +71,5 @@ namespace goes
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace avhrr
-} // namespace metop
+    } // namespace hrit
+} // namespace goes
