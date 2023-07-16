@@ -6,6 +6,7 @@ namespace satdump
     {
         satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
     }
+
     SatelliteTracker::~SatelliteTracker()
     {
         predict_destroy_orbital_elements(satellite_object);
