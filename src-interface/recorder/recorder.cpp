@@ -453,6 +453,11 @@ namespace satdump
                             stop_recording();
                     }
                 }
+
+                if (ImGui::CollapsingHeader("Tracking"))
+                {
+                    tracking_widget.render();
+                }
             }
             ImGui::EndChild();
             ImGui::EndGroup();

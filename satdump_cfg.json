@@ -120,6 +120,24 @@
             "value": true,
             "name": "Automatically Process Products",
             "description": "Process products once the pipeline is done."
+        },
+        "qth_lon": {
+            "type": "float",
+            "value": 0.0,
+            "name": "QTH Longitude",
+            "description": "Longitude of your station's QTH"
+        },
+        "qth_lat": {
+            "type": "float",
+            "value": 0.0,
+            "name": "QTH Latitude",
+            "description": "Latitude of your station's QTH"
+        },
+        "qth_alt": {
+            "type": "float",
+            "value": 0.0,
+            "name": "QTH Altitude",
+            "description": "Altitude (meters) of your station's QTH"
         }
     },
     // Input/Output Directories
@@ -209,7 +227,11 @@
             29107, // CloudSat
             25544, // ISS (Zarya)
             38337, // GCOM-W1
-            43065 // GCOM-C1
+            43065, // GCOM-C1
+            47719, // Arktika-M 1
+            41105, // Elektro-L 2
+            44903, // Elektro-L 3
+            55506 // Elektro-L 4
         ]
     },
     // Advanced user settings

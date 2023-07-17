@@ -14,9 +14,6 @@
 
 #include <fstream>
 
-#include "common/codings/randomization.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
-
 int main(int argc, char *argv[])
 {
     initLogger();
