@@ -74,74 +74,81 @@ namespace satdump
         {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
             {
-                if (compo.value().contains("autogen")) // Skip auto-generating if requested
-                    if (compo.value()["autogen"].get<bool>() == false)
-                        continue;
-
-                // rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
-                std::string initial_name = compo.key();
-                std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
-                std::replace(initial_name.begin(), initial_name.end(), '/', '_');
-
-                ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
-                std::vector<double> final_timestamps;
-                nlohmann::json final_metadata;
-                image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
-
-                std::string name = products->instrument_name +
-                                   (rgb_image.channels() == 1 ? "_" : "_rgb_") +
-                                   initial_name;
-
-                if (compo.value().contains("map_overlay") ? compo.value()["map_overlay"].get<bool>() : false)
+                try
                 {
-                    rgb_image.to_rgb(); // Ensure this is RGB!!
-                    auto proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
-                                                                                    rgb_image.height(),
-                                                                                    img_products->get_proj_cfg(),
-                                                                                    final_metadata,
-                                                                                    img_products->get_tle(),
-                                                                                    final_timestamps);
-                    logger->info("Drawing map...");
-                    unsigned short color[3] = {0, 65535, 0};
+                    if (compo.value().contains("autogen")) // Skip auto-generating if requested
+                        if (compo.value()["autogen"].get<bool>() == false)
+                            continue;
 
-                    if (compo.value().contains("map_overlay_colors"))
+                    // rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
+                    std::string initial_name = compo.key();
+                    std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
+                    std::replace(initial_name.begin(), initial_name.end(), '/', '_');
+
+                    ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
+                    std::vector<double> final_timestamps;
+                    nlohmann::json final_metadata;
+                    image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+
+                    std::string name = products->instrument_name +
+                                       (rgb_image.channels() == 1 ? "_" : "_rgb_") +
+                                       initial_name;
+
+                    if (compo.value().contains("map_overlay") ? compo.value()["map_overlay"].get<bool>() : false)
                     {
-                        color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
-                        color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
-                        color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
+                        rgb_image.to_rgb(); // Ensure this is RGB!!
+                        auto proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
+                                                                                        rgb_image.height(),
+                                                                                        img_products->get_proj_cfg(),
+                                                                                        final_metadata,
+                                                                                        img_products->get_tle(),
+                                                                                        final_timestamps);
+                        logger->info("Drawing map...");
+                        unsigned short color[3] = {0, 65535, 0};
+
+                        if (compo.value().contains("map_overlay_colors"))
+                        {
+                            color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
+                            color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
+                            color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
+                        }
+
+                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                       rgb_image,
+                                                       color,
+                                                       proj_func,
+                                                       100);
                     }
 
-                    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                   rgb_image,
-                                                   color,
-                                                   proj_func,
-                                                   100);
-                }
+                    logger->info("Saving " + product_path + "/" + name + ".png");
+                    rgb_image.save_png(product_path + "/" + name + ".png");
 
-                logger->info("Saving " + product_path + "/" + name + ".png");
-                rgb_image.save_png(product_path + "/" + name + ".png");
-
-                if (compo.value().contains("project") && img_products->has_proj_cfg())
-                {
-                    logger->debug("Reprojecting composite %s", name.c_str());
-                    reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
-                                                                    final_metadata,
-                                                                    rgb_image,
-                                                                    final_timestamps,
-                                                                    *img_products);
-                    ret.img.save_png(product_path + "/rgb_" + name + "_projected.png");
-                }
-
-                if ((compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false) && rgb_image.size() > 0)
-                {
-                    bool success = false;
-                    rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
-
-                    if (success)
+                    if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
-                        logger->info("Saving " + product_path + "/" + name + "_corrected.png");
-                        rgb_image.save_png(product_path + "/" + name + "_corrected.png");
+                        logger->debug("Reprojecting composite %s", name.c_str());
+                        reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
+                                                                        final_metadata,
+                                                                        rgb_image,
+                                                                        final_timestamps,
+                                                                        *img_products);
+                        ret.img.save_png(product_path + "/rgb_" + name + "_projected.png");
                     }
+
+                    if ((compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false) && rgb_image.size() > 0)
+                    {
+                        bool success = false;
+                        rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
+
+                        if (success)
+                        {
+                            logger->info("Saving " + product_path + "/" + name + "_corrected.png");
+                            rgb_image.save_png(product_path + "/" + name + "_corrected.png");
+                        }
+                    }
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error making composites : %s!", e.what());
                 }
             }
         }

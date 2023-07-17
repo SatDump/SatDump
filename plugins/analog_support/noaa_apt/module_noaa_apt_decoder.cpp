@@ -179,17 +179,19 @@ namespace noaa_apt
             }
         }
 
-        if (feeder_thread.joinable())
-            feeder_thread.join();
-
         // Stop everything
         input_stream->clearReadStop();
         input_stream->clearWriteStop();
+        input_stream->stopReader();
+        input_stream->stopWriter();
         rtc->stop();
         frs->stop();
         rsp->stop();
         lpf->stop();
         ctm->stop();
+
+        if (feeder_thread.joinable())
+            feeder_thread.join();
 
         if (input_data_type == DATA_FILE)
             data_in.close();
