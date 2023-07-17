@@ -27,7 +27,7 @@ void BladeRFSource::set_others()
 {
     if (bladerf_model == 2)
     {
-        bladerf_set_clock_select(bladerf_dev_obj, extclock_enable ? CLOCK_SELECT_EXTERNAL : CLOCK_SELECT_ONBOARD);
+        bladerf_set_pll_enable(bladerf_dev_obj, extclock_enable);
         logger->debug("Set BladeRF External Clock to %d", (int)extclock_enable);
     }
 
