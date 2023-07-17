@@ -11,3 +11,4 @@ android/CMakeFiles
 **/.DS_Store
 resources/gk2a/EncryptionKeyMessage.bin
 .directory
+vcpkg/
