@@ -1,13 +1,13 @@
 # Building on Windows
-Building SatDump on Windows requires Microsoft Visual Studio 2019 or greater. These instructions are assuming you use Visual Studio 2022.
+**These instructions and scripts assume you will be using Microsoft Visual Studio 2022**. Building SatDump on Windows requires Microsoft Visual Studio 2019 or greater. If you are using another version of Visual Studio, update `scripts\Build.ps1` as necessary.
 
-On install, set Visual Studio up for use with:
+Compilation is currently only available for 64-bit Windows.
+
+**On install, set Visual Studio up for use with:**
 - Desktop development with C++
 - Under "Individual components", install "Git for Windows" as well.
 
 ![image](https://github.com/JVital2013/goestools-win/assets/24253715/396cc01e-f35d-46ca-b2b4-e240170068de)
-
-**These instructions and scripts assume you will be using Microsoft Visual Studio 2022**. If you are using another version of Visual Studio, update `scripts\Build.ps1` as necessary.
 
 ## Automated PowerShell Build Instructions
 Using the automated PowerShell build scripts is the easiest way to build SatDump on Windows.
@@ -19,15 +19,17 @@ Using the automated PowerShell build scripts is the easiest way to build SatDump
 2. cd to a directory where you want to build SatDump
 3. Run the following commands, one at a time
     ```powershell
-	git clone https://github.com/SatDump/SatDump
-	cd SatDump
+    git clone https://github.com/SatDump/SatDump
+    cd SatDump
     .\scripts\Configure-vcpkg.ps1    # Downloads a preconfigured vcpkg to the correct
                                      # location and adds SDRPlay libraries.
     .\scripts\Build-SatDump.ps1      # Builds SatDump
-    .\scripts\Dist-Release.ps1       # Copies all necessary files into the Release folder
+    .\scripts\Finish-Release.ps1     # Copies all necessary files into the Release folder
     ```
 
 Your build SatDump will be in the `build\Release` folder of the SatDump repo.
+
+![Build Folder](https://github.com/SatDump/SatDump/assets/24253715/1731db36-7237-4ed5-8e71-7a36cc79305b)
 
 ## Building in Visual Studio for Debugging
 Compiling in Visual Studio for Debugging is for advanced users who aren't afriad to get their hands dirty!
@@ -44,8 +46,32 @@ Compiling in Visual Studio for Debugging is for advanced users who aren't afriad
     .\scripts\Configure-vcpkg.ps1    # Downloads a preconfigured vcpkg to the correct
                                      # location and adds SDRPlay libraries.
 	```
-4. Open Microsoft Visual Studio. On the launch screen, select "Open a local folder", and browse to your SatDump repo
+4. Keeping the developer console open in the background, open Microsoft Visual Studio. On the launch screen, select "Open a local folder", and select your cloned SatDump repo.
 
-    TODO: Pic here
+    ![Open Local Folder](https://github.com/SatDump/SatDump/assets/24253715/22f2258d-0cc4-4b6e-9c5c-5e0dd4fb8b53)
 
-5. MORE HERE
+5. Once the project opens, select "Open CMake Settings Editor"
+
+    ![Edit CMake Settings](https://github.com/SatDump/SatDump/assets/24253715/026d6ea5-9b6d-4560-899b-175bd8f13eef)
+
+6. In CMake Settings, change the following items:
+    - **CMake toolchain file:** set this to `<full path of your satdump repo>\vcpkg\scripts\buildsystems\vcpkg.cmake`
+    - **CMake valiables and cache:** check "BUILD_MSVC"
+    - **CMake Generator (under "show advanced setting):** set this to "Visual Studio 17 2022 Win64"
+
+7. Press Ctrl+S to save the CMake Settings. You will usually get an error right away - this is normal. Either way, click Project > Delete Cache and Reconfigure. Confirm the prompt and let cmake rebuild its cache
+
+    ![Delete Cache and Reconfigure](https://github.com/SatDump/SatDump/assets/24253715/9205663f-011f-4c52-a31d-f60795fa3822)
+
+8. Once cmake finishes, click Build > Build All. Go get come coffee because this takes several minutes
+
+    ![Build All](https://github.com/SatDump/SatDump/assets/24253715/3f0a38a1-3e98-41b7-bddb-5aa6c376aec4)
+
+9. Once you get the "Build all succeded" message, go back to your developer terminal (it's still open, right?) and run `.\scripts\Finish-Debug.ps1`. This will copy all necessary DLL files into the debug folder.
+10. That's it, you're ready to debug! To make any changes to the code and build again, just repeat steps 8 and 9 before launching the debugger. **Step 9 is important, because it copies the plugin DLLs into the right spot for SatDump to load them!**
+
+## Debugging SatDump UI
+TODO
+
+## Debugging SatDump CLI
+TODO
