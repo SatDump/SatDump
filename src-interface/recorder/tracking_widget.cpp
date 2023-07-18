@@ -34,6 +34,20 @@ namespace satdump
 
         for (auto &hid : horizons_ids)
             horizonsoptionstr += hid + '\0';
+
+        // Updates on registry updates
+        eventBus->register_handler<TLEsUpdatedEvent>([this](TLEsUpdatedEvent)
+                                                     {
+                                                            tle_update_mutex.lock();
+
+                                                            if (general_tle_registry.size() > 0)
+                                                                has_tle = true;
+
+                                                            satoptionstr = "";
+                                                            for (auto &tle : general_tle_registry)
+                                                                satoptionstr += tle.name + '\0';
+                                                                
+                                                            tle_update_mutex.unlock(); });
     }
 
     TrackingWidget::~TrackingWidget()
@@ -162,6 +176,8 @@ namespace satdump
     {
         if (!has_tle)
             return;
+
+        tle_update_mutex.lock();
 
         float az = 0, el = 0;
 
@@ -368,6 +384,8 @@ namespace satdump
         }
 
         ImGui::Spacing();
+
+        tle_update_mutex.unlock();
     }
 
     double TrackingWidget::getTime()

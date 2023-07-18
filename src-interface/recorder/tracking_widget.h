@@ -3,6 +3,7 @@
 #include "libs/predict/predict.h"
 #include "common/geodetic/geodetic_coordinates.h"
 #include <vector>
+#include <mutex>
 
 namespace satdump
 {
@@ -45,6 +46,8 @@ namespace satdump
         std::vector<HorizonsV> horizons_data;
 
         void loadHorizons();
+
+        std::mutex tle_update_mutex;
 
     public:
         TrackingWidget();

@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "core/config.h"
 #include <filesystem>
+#include "core/plugin.h"
 
 namespace satdump
 {
@@ -96,6 +97,8 @@ namespace satdump
 
             line_count++;
         }
+
+        eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void fetchTLENow(int norad)
@@ -126,5 +129,7 @@ namespace satdump
 
             general_tle_registry.push_back(newTLE);
         }
+
+        eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 }
