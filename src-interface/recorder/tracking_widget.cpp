@@ -24,6 +24,9 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
+        if (general_tle_registry > 0)
+            has_tle = true;
+
         for (auto &tle : general_tle_registry)
             satoptionstr += tle.name + '\0';
 
@@ -157,6 +160,9 @@ namespace satdump
 
     void TrackingWidget::render()
     {
+        if (!has_tle)
+            return;
+
         float az = 0, el = 0;
 
         if (horizons_mode)
@@ -247,7 +253,7 @@ namespace satdump
 
                     draw_list->AddLine({point_x1, point_y1},
                                        {point_x2, point_y2},
-                                       ImColor(255, 165, 0, 255));
+                                       ImColor(255, 165, 0, 255), 2.0);
                 }
             }
 

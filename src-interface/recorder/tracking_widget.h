@@ -13,6 +13,9 @@ namespace satdump
         double qth_lat = 0;
         double qth_alt = 0;
 
+
+        bool has_tle=false;
+
         bool horizons_mode = false;
 
         predict_orbital_elements_t *satellite_object = nullptr;
