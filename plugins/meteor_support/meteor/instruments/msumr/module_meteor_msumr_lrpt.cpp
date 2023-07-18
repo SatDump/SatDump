@@ -64,7 +64,7 @@ namespace meteor
 
                         if (pkt.header.apid == 70 && pkt.payload.size() >= 13)
                         {
-                            uint8_t msumr_id = pkt.payload[12] >> 4;
+                            uint8_t msumr_id = pkt.payload[8 + 12] >> 4;
                             msumr_ids.push_back(msumr_id);
                         }
                     }
@@ -94,7 +94,7 @@ namespace meteor
             int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
             msumr_ids.clear();
 
-            // logger->trace("MSU-MR ID %d");
+            logger->trace("MSU-MR ID %d", msumr_serial_number);
 
             std::string sat_name = "Unknown Meteor";
             if (msumr_serial_number == 0)
