@@ -1,5 +1,6 @@
 #include "deint.h"
 #include <cstring>
+#include <vector>
 
 #define LEN(x) (sizeof(x) / sizeof(*x))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
