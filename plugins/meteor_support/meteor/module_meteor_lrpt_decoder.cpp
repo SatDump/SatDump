@@ -28,7 +28,8 @@ namespace meteor
         {
             int d_viterbi_outsync_after = parameters["viterbi_outsync_after"].get<int>();
             float d_viterbi_ber_threasold = parameters["viterbi_ber_thresold"].get<float>();
-            viterbin = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, (std::vector<phase_t>){PHASE_0, PHASE_90}, true);
+            std::vector<phase_t> phases = {PHASE_0, PHASE_90};
+            viterbin = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, phases, true);
             deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(8192);
         }
         else
