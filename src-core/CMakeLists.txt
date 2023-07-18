@@ -85,7 +85,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC fftw)
 
     # NNG
-    target_link_libraries(satdump_core PUBLIC nng)
+    target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
 
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)

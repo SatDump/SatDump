@@ -52,6 +52,15 @@ set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/de
 # set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
 # include_directories(deps/jpeg/jni)
 
+# MBed-TLS
+add_library(mbedtls STATIC IMPORTED)
+set_target_properties(mbedtls PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedtls.a)
+add_library(mbedtlscrypto STATIC IMPORTED)
+set_target_properties(mbedtlscrypto PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedcrypto.a)
+add_library(mbedtlsx509 STATIC IMPORTED)
+set_target_properties(mbedtlsx509 PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedx509.a)
+
+
 # NNG
 add_library(nng STATIC IMPORTED)
 set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libnng.a)

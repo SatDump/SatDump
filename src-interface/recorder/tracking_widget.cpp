@@ -5,6 +5,7 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "core/config.h"
+#include "main_ui.h"
 
 namespace satdump
 {
@@ -46,6 +47,9 @@ namespace satdump
 
         if (horizons_mode)
         {
+            if (horizons_data.size() == 0)
+                return;
+
             double timed = getTime();
 
             int iter = 0;
@@ -196,7 +200,7 @@ namespace satdump
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                      ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_size),
-                                     ImColor::HSV(0, 0, 0));
+                                     light_theme ? ImColor(255, 255, 255, 255) : ImColor::HSV(0, 0, 0));
 
             float radius = 0.45;
             float radius1 = d_pplot_size * radius * (3.0 / 9.0);
@@ -243,7 +247,7 @@ namespace satdump
 
                     draw_list->AddLine({point_x1, point_y1},
                                        {point_x2, point_y2},
-                                       ImColor(0, 0, 255, 255));
+                                       ImColor(255, 165, 0, 255));
                 }
             }
 

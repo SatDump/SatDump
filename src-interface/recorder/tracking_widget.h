@@ -37,7 +37,7 @@ namespace satdump
             float az, el;
         };
 
-        std::vector<std::string> horizons_ids = {"STEREO-A", "STEREO-B", "JUICE", "JWST", "SOHO", "Sun"};
+        std::vector<std::string> horizons_ids = {"STEREO-A", "STEREO-B", "JUICE", "JWST", "SOHO", "Sun", "CH-3"};
         std::string horizonsoptionstr;
         int current_horizons = 0;
         std::vector<HorizonsV> horizons_data;
