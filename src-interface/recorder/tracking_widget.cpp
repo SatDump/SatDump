@@ -215,24 +215,24 @@ namespace satdump
 
             draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
                                   ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius1, ImColor(0, 255, 0, 255));
+                                 radius1, ImColor(0, 255, 0, 255), 2);
             draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
                                   ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius2, ImColor(0, 255, 0, 255));
+                                 radius2, ImColor(0, 255, 0, 255), 2);
             draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
                                   ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius3, ImColor(0, 255, 0, 255));
+                                 radius3, ImColor(0, 255, 0, 255), 2);
 
             draw_list->AddLine({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
                                 ImGui::GetCursorScreenPos().y},
                                {ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
                                 ImGui::GetCursorScreenPos().y + d_pplot_size},
-                               ImColor(0, 255, 0, 255));
+                               ImColor(0, 255, 0, 255), 2);
             draw_list->AddLine({ImGui::GetCursorScreenPos().x,
                                 ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
                                {ImGui::GetCursorScreenPos().x + d_pplot_size,
                                 ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                               ImColor(0, 255, 0, 255));
+                               ImColor(0, 255, 0, 255), 2);
 
             if (upcoming_pass_points.size() > 1)
             {
