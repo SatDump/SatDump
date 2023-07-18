@@ -35,6 +35,29 @@ namespace goes
 
         const int ID_HIMAWARI = 43;
 
+        void GOESLRITDataDecoderModule::saveLRITFile(::lrit::LRITFile &file, std::string path)
+        {
+            if (!std::filesystem::exists(path))
+                std::filesystem::create_directory(path);
+
+            //If segmented, rename file after segment name
+            std::string current_filename = file.filename;
+            if (file.hasHeader<SegmentIdentificationHeader>())
+            {
+                SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
+                std::ostringstream oss;
+                oss << "_" << std::setfill('0') << std::setw(3) << segment_id_header.segment_sequence_number;
+                current_filename.insert(current_filename.length() - 5, oss.str());
+            }
+
+            logger->info("Writing file " + path + "/" + current_filename + "...");
+
+            // Write file out
+            std::ofstream fileo(path + "/" + current_filename, std::ios::binary);
+            fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+            fileo.close();
+        }
+
         void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
@@ -491,30 +514,11 @@ namespace goes
             }
             // Check if this is DCS data
             else if (write_dcs && primary_header.file_type_code == 130)
-            {
-                if (!std::filesystem::exists(directory + "/DCS"))
-                    std::filesystem::create_directory(directory + "/DCS");
-
-                logger->info("Writing file " + directory + "/DCS/" + current_filename + "...");
-
-                // Write file out
-                std::ofstream fileo(directory + "/DCS/" + current_filename, std::ios::binary);
-                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
-                fileo.close();
-            }
+                saveLRITFile(file, directory + "/DCS");
             // Otherwise, write as generic, unknown stuff. This should not happen
-            else if (write_unknown)
-            {
-                if (!std::filesystem::exists(directory + "/LRIT"))
-                    std::filesystem::create_directory(directory + "/LRIT");
-
-                logger->info("Writing file " + directory + "/LRIT/" + current_filename + "...");
-
-                // Write file out
-                std::ofstream fileo(directory + "/LRIT/" + current_filename, std::ios::binary);
-                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
-                fileo.close();
-            }
+            // Do not write if already saving LRIT data
+            else if (write_unknown && !write_lrit)
+                saveLRITFile(file, directory + "/LRIT");
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace hrit
+} // namespace goes
