@@ -88,7 +88,7 @@ Those builds are made with Visual Studio 2019 for x64, so the appropriate Visual
 
 From there, just run either satdump-ui.exe or satdump.exe (CLI) and everything will work.
 
-If you really want to build it yourself on Windows, see the dedicated documentation [TODO].  
+If you really want to build it yourself on Windows, see the dedicated documentation [here](/docs/Building-Windows.md).  
 *Note : Mingw builds are NOT supported, VOLK will not work.*
 
 ### Linux (or MacOS)
