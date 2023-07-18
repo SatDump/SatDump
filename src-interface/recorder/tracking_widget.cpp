@@ -24,7 +24,7 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
-        if (general_tle_registry > 0)
+        if (general_tle_registry.size() > 0)
             has_tle = true;
 
         for (auto &tle : general_tle_registry)
