@@ -71,7 +71,31 @@ Compiling in Visual Studio for Debugging is for advanced users who aren't afriad
 10. That's it, you're ready to debug! To make any changes to the code and build again, just repeat steps 8 and 9 before launching the debugger. **Step 9 is important, because it copies the plugin DLLs into the right spot for SatDump to load them!**
 
 ## Debugging SatDump UI
-TODO
+Once you built SatDump for debugging in Windows, using the debugger is the same as it is with any other Visual Studio project.
+
+1. At the top, set the startup item to "satdump-ui.exe" (not the installed one!)
+
+    ![SatDump UI Startup Item](https://github.com/SatDump/SatDump/assets/24253715/e811a074-3f3c-4e2b-8bf9-7600a17b577b)
+
+2. Click the green start icon to start debugging SatDump-UI. Breakpoints and other tested debugger functionality works as expected
+
+    ![The Mind of Alan](https://github.com/SatDump/SatDump/assets/24253715/77ae1ddd-6507-4477-968f-b488e76f366b)
 
 ## Debugging SatDump CLI
-TODO
+Debugging the CLI version is similar to the UI, but you need to provide command line arguments
+
+1. At the top, change the startup item to "satdump.exe"
+
+    ![Satdump target](https://github.com/SatDump/SatDump/assets/24253715/92ff0872-6aec-476f-889c-de2468d66b82)
+
+2. Go to Debug > Debug and Launch setting for SatDump
+
+    ![Debug Settings](https://github.com/SatDump/SatDump/assets/24253715/c173425c-4cb5-4cbd-8020-ee1342dfffaa)
+
+3. Add the satdump launch arguments in the form of an array. If you compose the argument list elsewhere and copy/paste it here, it will turn it into an array for you. You may need to clean it up, though
+
+    ![Args](https://github.com/SatDump/SatDump/assets/24253715/0ae0ee59-bc0b-48da-80d5-de2dd3e0757a)
+
+4. Click the green start icon to start debugging SatDump.
+
+    ![Dumping all MSUMR Timestamps](https://github.com/SatDump/SatDump/assets/24253715/11c1ff2c-82db-47eb-9433-51624ff7727b)
