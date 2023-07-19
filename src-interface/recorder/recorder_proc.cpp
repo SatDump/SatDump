@@ -210,7 +210,15 @@ namespace satdump
     {
         splitter->set_enabled("record", true);
 
-        const time_t timevalue = time(0);
+        double timeValue_precise = 0;
+        {
+            auto time = std::chrono::system_clock::now();
+            auto since_epoch = time.time_since_epoch();
+            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
+            timeValue_precise = millis.count() / 1e3;
+        }
+
+        const time_t timevalue = timeValue_precise;
         std::tm *timeReadable = gmtime(&timevalue);
         std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                 (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
@@ -218,6 +226,17 @@ namespace satdump
                                 (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                 (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+        if (config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+        {
+            timestamp += "-";
+            double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
+            if (ms_val < 10)
+                timestamp += "00";
+            else if (ms_val < 100)
+                timestamp += "0";
+            timestamp += std::to_string(timeValue_precise);
+        }
 
         std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
                                "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +

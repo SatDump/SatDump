@@ -80,6 +80,12 @@
             "value": false,
             "name": "Recorder Floating Windows",
             "description": "Make module windows in the recorder float.\nThis allows dragging them around at will"
+        },
+        "recorder_baseband_filename_millis_precision": {
+            "type": "bool",
+            "value": false,
+            "name": "Recorder Baseband Filename Milliseconds",
+            "description": "Add milliseconds to the output filenames for basebands recorded in the recorder"
         }
     },
     // More generic SatDump settings
