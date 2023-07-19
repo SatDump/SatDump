@@ -143,6 +143,9 @@ namespace meteor
                 module_stats["viterbi_lock"] = viterbi_lock;
                 module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
 
+                if (input_data_type == DATA_FILE)
+                    progress = data_in.tellg();
+
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
