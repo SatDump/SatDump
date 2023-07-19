@@ -335,14 +335,19 @@ namespace satdump
                 else
                     timeOffset = next_los_time - ctime;
 
-                int minutes = timeOffset / 60;
+                int hours = timeOffset / 3600;
+                int minutes = fmod(timeOffset / 60, 60);
                 int seconds = fmod(timeOffset, 60);
+
+                std::string time_dis = (hours < 10 ? "0" : "") + std::to_string(hours) + ":" +
+                                       (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
+                                       (seconds < 10 ? "0" : "") + std::to_string(seconds);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Next Event");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%2d:%2d", minutes, seconds);
+                ImGui::Text("%s", time_dis.c_str());
             }
 
 #if 1
