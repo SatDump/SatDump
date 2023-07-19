@@ -78,5 +78,81 @@
             },
             "products": {}
         }
+    },
+    "chandrayaan3_link_2k": {
+        "name": "Chandrayaan-3 2k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 2e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 223,
+                    "turbo_iters": 1
+                }
+            },
+            "products": {}
+        }
+    },
+    "chandrayaan3_link_8k": {
+        "name": "Chandrayaan-3 8k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 8e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 64e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 223,
+                    "turbo_iters": 1
+                }
+            },
+            "products": {}
+        }
     }
 }
