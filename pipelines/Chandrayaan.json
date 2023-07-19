@@ -111,7 +111,7 @@
                 "ccsds_turbo_decoder": {
                     "turbo_rate": "1/2",
                     "turbo_base": 223,
-                    "turbo_iters": 1
+                    "turbo_iters": 10
                 }
             },
             "products": {}
@@ -149,7 +149,7 @@
                 "ccsds_turbo_decoder": {
                     "turbo_rate": "1/2",
                     "turbo_base": 223,
-                    "turbo_iters": 1
+                    "turbo_iters": 10
                 }
             },
             "products": {}
