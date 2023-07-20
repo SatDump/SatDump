@@ -38,7 +38,15 @@ private:
             delete client;
         client = nullptr;
 
-        client = new net::TCPClient(address, port);
+        try
+        {
+            client = new net::TCPClient(address, port);
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Could not connect to Rotcld! %s", e.what());
+            client = nullptr;
+        }
     }
 
     void disconnect()
@@ -73,7 +81,17 @@ public:
             *el = sel;
             return false;
         }
-        printf("%s\n", cmd.c_str());
+        else if (sscanf(cmd.c_str(), "get_pos:;Azimuth: %f;Elevation: %f;RPRT %*d", &saz, &sel) == 2)
+        {
+            *az = saz;
+            *el = sel;
+            return false;
+        }
+
+        if (client != nullptr)
+            delete client;
+        client = nullptr;
+
         return true;
     }
 
@@ -93,7 +111,18 @@ public:
             else
                 return false;
         }
-        printf("%s\n", cmd.c_str());
+        else if (sscanf(cmd.c_str(), "set_pos: %*f %*f\nRPRT %d", &result) == 1)
+        {
+            if (result != 0)
+                return true;
+            else
+                return false;
+        }
+
+        if (client != nullptr)
+            delete client;
+        client = nullptr;
+
         return true;
     }
 
