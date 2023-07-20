@@ -6,7 +6,6 @@
 #include "main_ui.h"
 
 #include "rotcl_handler.h"
-#include "pstrotator_handler.h"
 
 namespace satdump
 {
@@ -306,8 +305,6 @@ namespace satdump
             rotator_handler_mtx.lock();
             if (selected_rotator_handler == 0)
                 rotator_handler = std::make_shared<RotctlHandler>();
-            else if (selected_rotator_handler == 1)
-                rotator_handler = std::make_shared<PstRotatorHandler>();
             rotator_handler_mtx.unlock();
         }
         if (rotator_handler->is_connected())
