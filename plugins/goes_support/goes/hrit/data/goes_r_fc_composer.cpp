@@ -59,6 +59,9 @@ namespace goes
 
         void GOESRFalseColorComposer::push2(image::Image<uint8_t> img, time_t time)
         {
+            if (time2 != 0 && time2 != time)
+                save();
+
             ch2 = img;
             time2 = time;
 
@@ -68,6 +71,9 @@ namespace goes
 
         void GOESRFalseColorComposer::push13(image::Image<uint8_t> img, time_t time)
         {
+            if (time13 != 0 && time13 != time)
+                save();
+
             ch13 = img;
             time13 = time;
 
@@ -75,13 +81,14 @@ namespace goes
                 generateCompo();
         }
 
-        void GOESRFalseColorComposer::save(std::string directory)
+        void GOESRFalseColorComposer::save()
         {
             imageStatus = SAVING;
             logger->info("Writing image " + directory + "/IMAGES/" + filename + ".png" + "...");
-            logger->warn("This false color LUT was made by Harry Dove-Robinson, see resources/goes/abi/wxstar/README.md for more infos.");
+            logger->info("This false color LUT was made by Harry Dove-Robinson, see resources/goes/abi/wxstar/README.md for more infos.");
             falsecolor.save_png(std::string(directory + "/IMAGES/" + filename + ".png").c_str());
             hasData = false;
+            time2 = time13 = 0;
             imageStatus = IDLE;
         }
     }
