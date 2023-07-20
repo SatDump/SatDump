@@ -81,12 +81,6 @@ public:
             *el = sel;
             return false;
         }
-        else if (sscanf(cmd.c_str(), "get_pos:;Azimuth: %f;Elevation: %f;RPRT %*d", &saz, &sel) == 2)
-        {
-            *az = saz;
-            *el = sel;
-            return false;
-        }
 
         if (client != nullptr)
             delete client;
@@ -105,13 +99,6 @@ public:
         std::string cmd = command(std::string(command_out));
         int result = 0;
         if (sscanf(cmd.c_str(), "RPRT %d", &result) == 1)
-        {
-            if (result != 0)
-                return true;
-            else
-                return false;
-        }
-        else if (sscanf(cmd.c_str(), "set_pos: %*f %*f\nRPRT %d", &result) == 1)
         {
             if (result != 0)
                 return true;
