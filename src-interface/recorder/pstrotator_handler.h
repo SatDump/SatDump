@@ -16,12 +16,12 @@ private:
 private:
     std::string command(std::string cmd)
     {
-        client->sends((uint8_t *)cmd.data(), cmd.size());
+        client->send((uint8_t *)cmd.data(), cmd.size());
 
         std::string result;
         result.resize(1000);
 
-        int sz = client->recvs((uint8_t *)result.data(), result.size());
+        int sz = client->recv((uint8_t *)result.data(), result.size());
 
         if (sz < 0)
             return "";
@@ -38,7 +38,7 @@ private:
             delete client;
         client = nullptr;
 
-        client = new net::TCPClient(address, port);
+        client = new net::UDPClient(address, port);
     }
 
     void disconnect()
