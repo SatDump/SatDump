@@ -73,6 +73,7 @@ public:
             *el = sel;
             return false;
         }
+        printf("%s\n", cmd.c_str());
         return true;
     }
 
@@ -92,6 +93,7 @@ public:
             else
                 return false;
         }
+        printf("%s\n", cmd.c_str());
         return true;
     }
 
