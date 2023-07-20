@@ -25,7 +25,6 @@ namespace satdump
         predict_position satellite_orbit;
         predict_observer_t *observer_station;
         predict_observation observation_pos;
-        double next_aos_time, next_los_time;
 
         std::string satoptionstr;
         int current_satellite = 0;
@@ -61,6 +60,10 @@ namespace satdump
         std::mutex upcoming_passes_mtx;
         std::vector<std::pair<float, float>> upcoming_pass_points;
         void updateNextPass();
+
+        double next_aos_time, next_los_time;
+
+        float next_aos_az = 0, next_aos_el = 0;
 
     private: // Rotator control
         bool rotator_engaged = false;

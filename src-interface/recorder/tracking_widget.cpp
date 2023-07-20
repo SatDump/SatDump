@@ -167,6 +167,9 @@ namespace satdump
 
         bool update_global = false;
 
+        if (backend_needs_update)
+            style::beginDisabled();
+
         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
         if (horizons_mode)
             update_global = update_global || ImGui::Combo("###horizonsselectcombo", &current_horizons, horizonsoptionstr.c_str());
@@ -191,19 +194,25 @@ namespace satdump
             ImGui::EndTable();
         }
 
+        if (backend_needs_update)
+            style::endDisabled();
+
+        if (update_global)
+            backend_needs_update = true;
+
         if (ImGui::BeginTable("##trackingwidgettable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Azimuth");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.2f", current_az);
+            ImGui::Text("%.3f", current_az);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Elevation");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.2f", current_el);
+            ImGui::Text("%.3f", current_el);
 
             if (next_aos_time != 0 && next_los_time != 0)
             {
@@ -248,22 +257,44 @@ namespace satdump
             ImGui::EndTable();
         }
 
-        backend_needs_update = update_global;
-
         ImGui::Spacing();
 
         //////////////////
 
         ImGui::Separator();
+        ImGui::Spacing();
 
-        ImGui::InputFloat("Rot Az", &current_req_rotator_az);
-        ImGui::InputFloat("Rot El", &current_req_rotator_el);
+        if (ImGui::BeginTable("##trackingwidgettable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Rot Az");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("Rot El");
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::InputFloat("##Rot Az", &current_req_rotator_az);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::InputFloat("##Rot El", &current_req_rotator_el);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%.3f", current_rotator_az);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%.3f", current_rotator_el);
+
+            ImGui::EndTable();
+        }
+
         ImGui::Checkbox("Engage", &rotator_engaged);
         ImGui::SameLine();
         ImGui::Checkbox("Track", &rotator_tracking);
 
         ImGui::Separator();
+
         rotctld_client.render();
+
         ImGui::Spacing();
 
         // tle_update_mutex.unlock();

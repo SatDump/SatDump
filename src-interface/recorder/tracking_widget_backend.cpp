@@ -122,6 +122,8 @@ namespace satdump
                     if (horizons_data[i].el <= 0)
                     {
                         next_aos_time = horizons_data[i].timestamp;
+                        next_aos_az = horizons_data[i].az;
+                        next_aos_el = horizons_data[i].el;
                         break;
                     }
                 }
@@ -143,6 +145,8 @@ namespace satdump
                     if (horizons_data[i].el > 0)
                     {
                         next_aos_time = horizons_data[i].timestamp;
+                        next_aos_az = horizons_data[i].az;
+                        next_aos_el = horizons_data[i].el;
                         aos_iter = i;
                         break;
                     }
@@ -199,6 +203,9 @@ namespace satdump
 
             next_los_time = predict_from_julian(next_los.time);
             next_aos_time = predict_from_julian(next_aos.time);
+
+            next_aos_az = next_aos.azimuth * RAD_TO_DEG;
+            next_aos_el = next_aos.elevation * RAD_TO_DEG;
 
             // Calculate a few points during the pass
             predict_position satellite_orbit2;
@@ -310,8 +317,16 @@ namespace satdump
         {
             if (rotator_tracking)
             {
-                current_req_rotator_az = current_az;
-                current_req_rotator_el = current_el;
+                if (current_el > 0)
+                {
+                    current_req_rotator_az = current_az;
+                    current_req_rotator_el = current_el;
+                }
+                else
+                {
+                    current_req_rotator_az = next_aos_az;
+                    current_req_rotator_el = next_aos_el;
+                }
             }
 
             if (current_req_rotator_el < 0)
