@@ -7,6 +7,8 @@ namespace satdump
 {
     void TrackingWidget::backend_run()
     {
+        time_t last_rot_update = 0;
+
         while (backend_should_run)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -19,7 +21,10 @@ namespace satdump
             if (horizons_mode)
             {
                 if (getTime() > last_horizons_fetch_time + 3600)
+                {
                     loadHorizons();
+                    updateNextPass();
+                }
 
                 if (horizons_data.size() > 0)
                 {
@@ -55,6 +60,8 @@ namespace satdump
             // Update
             if (backend_needs_update)
             {
+                logger->trace("Updating elements...");
+
                 if (horizons_mode)
                 {
                     loadHorizons();
@@ -73,11 +80,20 @@ namespace satdump
             }
 
             tle_update_mutex.unlock();
+
+            // TODO : MOVE THIS OUT OF THERE!!!!
+            if (rotctld_client.is_connected() && time(0) - last_rot_update > 1)
+            {
+                updateRotator();
+                last_rot_update = time(0);
+            }
         }
     }
 
     void TrackingWidget::updateNextPass()
     {
+        logger->trace("Update pass trajectory...");
+
         upcoming_pass_points.clear();
 
         next_aos_time = 0;
@@ -203,9 +219,11 @@ namespace satdump
 
     void TrackingWidget::loadHorizons()
     {
+        logger->trace("Pulling Horizons data...");
+
         double curr_time = getTime();
-        double start_time = curr_time - 12 * 3600;
-        double stop_time = curr_time + 12 * 3600;
+        double start_time = curr_time - 24 * 3600;
+        double stop_time = curr_time + 24 * 3600;
 
         std::string cmd = (std::string) "https://ssd.jpl.nasa.gov/api/horizons.api?format=text" +
                           "&OBJ_DATA=NO" +
@@ -276,6 +294,31 @@ namespace satdump
                 // logger->info("%s %f %f", timestamp_to_string(ctime).c_str(), az, el);
                 horizons_data.push_back({ctime, (float)az, (float)el});
             }
+        }
+
+        logger->trace("Done pulling Horizons data...");
+    }
+
+    void TrackingWidget::updateRotator()
+    {
+        // logger->info("Rot update!");
+
+        if (rotctld_client.get_pos(&current_rotator_az, &current_rotator_el))
+            logger->error("Error getting rotator position!");
+
+        if (rotator_engaged)
+        {
+            if (rotator_tracking)
+            {
+                current_req_rotator_az = current_az;
+                current_req_rotator_el = current_el;
+            }
+
+            if (current_req_rotator_el < 0)
+                current_req_rotator_el = 0;
+
+            if (rotctld_client.set_pos(current_req_rotator_az, current_req_rotator_el))
+                logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
         }
     }
 }

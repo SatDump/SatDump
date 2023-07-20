@@ -6,6 +6,8 @@
 #include <mutex>
 #include <thread>
 
+#include "rotcl_client.h"
+
 namespace satdump
 {
     class TrackingWidget
@@ -59,6 +61,15 @@ namespace satdump
         std::mutex upcoming_passes_mtx;
         std::vector<std::pair<float, float>> upcoming_pass_points;
         void updateNextPass();
+
+    private: // Rotator control
+        bool rotator_engaged = false;
+        bool rotator_tracking = false;
+        float current_rotator_az = 0, current_rotator_el = 0;
+        float current_req_rotator_az = 0, current_req_rotator_el = 0;
+        void updateRotator();
+
+        RotclClient rotctld_client;
 
     public:
         TrackingWidget();

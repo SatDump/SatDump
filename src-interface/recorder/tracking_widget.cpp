@@ -135,6 +135,33 @@ namespace satdump
                 draw_list->AddCircleFilled({point_x, point_y}, 5 * ui_scale, ImColor(255, 0, 0, 255));
             }
 
+            if (rotctld_client.is_connected())
+            {
+                {
+                    float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
+                    float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
+
+                    point_x += sin(current_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_rotator_el) / 90.0);
+                    point_y -= cos(current_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_rotator_el) / 90.0);
+
+                    draw_list->AddCircle({point_x, point_y}, 9 * ui_scale, ImColor(0, 237, 255, 255), 0, 2.0);
+                }
+
+                if (rotator_engaged)
+                {
+                    float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
+                    float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
+
+                    point_x += sin(current_req_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_req_rotator_el) / 90.0);
+                    point_y -= cos(current_req_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_req_rotator_el) / 90.0);
+
+                    draw_list->AddLine({point_x - 5 * ui_scale, point_y}, {point_x - 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
+                    draw_list->AddLine({point_x + 5 * ui_scale, point_y}, {point_x + 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
+                    draw_list->AddLine({point_x, point_y - 5 * ui_scale}, {point_x, point_y - 12 * ui_scale}, ImColor(0, 237, 255, 255), 2.0);
+                    draw_list->AddLine({point_x, point_y + 5 * ui_scale}, {point_x, point_y + 12 * ui_scale}, ImColor(0, 237, 255, 255), 2.0);
+                }
+            }
+
             ImGui::Dummy(ImVec2(d_pplot_size + 3 * ui_scale, d_pplot_size + 3 * ui_scale));
         }
 
@@ -223,6 +250,20 @@ namespace satdump
 
         backend_needs_update = update_global;
 
+        ImGui::Spacing();
+
+        //////////////////
+
+        ImGui::Separator();
+
+        ImGui::InputFloat("Rot Az", &current_req_rotator_az);
+        ImGui::InputFloat("Rot El", &current_req_rotator_el);
+        ImGui::Checkbox("Engage", &rotator_engaged);
+        ImGui::SameLine();
+        ImGui::Checkbox("Track", &rotator_tracking);
+
+        ImGui::Separator();
+        rotctld_client.render();
         ImGui::Spacing();
 
         // tle_update_mutex.unlock();
