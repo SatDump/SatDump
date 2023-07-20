@@ -5,6 +5,10 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#endif
+
 namespace goes
 {
     namespace hrit
@@ -153,11 +157,11 @@ namespace goes
 
                                     if (channel == 2)
                                     {
-                                        goes_r_fc_composer->push2(image, mktime(&scanTimestamp));
+                                        goes_r_fc_composer->push2(image, timegm(&scanTimestamp));
                                     }
                                     else if (channel == 13)
                                     {
-                                        goes_r_fc_composer->push13(image, mktime(&scanTimestamp));
+                                        goes_r_fc_composer->push13(image, timegm(&scanTimestamp));
                                     }
 
                                     goes_r_fc_composer->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
@@ -314,14 +318,14 @@ namespace goes
 
                                 if (channel == 2)
                                 {
-                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
+                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
                                     goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
 
                                 else if (channel == 13 && file.vcid == 13) //Redundant check keeps relayed channel 13 from entering the color composer
                                 {
-                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, mktime(&scanTimestamp));
+                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
                                     goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }

@@ -62,6 +62,11 @@ namespace goes
             if (time2 != 0 && time2 != time)
                 save();
 
+            //Keep Composer in sync - purge old data from composites where no data
+            //Was received on one of the channels
+            if (time13 != 0 && time > time13)
+                time13 = 0;
+
             ch2 = img;
             time2 = time;
 
@@ -73,6 +78,11 @@ namespace goes
         {
             if (time13 != 0 && time13 != time)
                 save();
+
+            //Keep Composer in sync - purge old data from composites where no data
+            //Was received on one of the channels
+            if (time2 != 0 && time > time2)
+                time2 = 0;
 
             ch13 = img;
             time13 = time;
