@@ -5,6 +5,9 @@
 #include "core/config.h"
 #include "main_ui.h"
 
+#include "rotcl_handler.h"
+#include "pstrotator_handler.h"
+
 namespace satdump
 {
     TrackingWidget::TrackingWidget()
@@ -48,6 +51,8 @@ namespace satdump
                                                             tle_update_mutex.unlock(); });
 
         backend_thread = std::thread(&TrackingWidget::backend_run, this);
+
+        rotator_handler = std::make_shared<RotctlHandler>();
     }
 
     TrackingWidget::~TrackingWidget()
@@ -135,7 +140,7 @@ namespace satdump
                 draw_list->AddCircleFilled({point_x, point_y}, 5 * ui_scale, ImColor(255, 0, 0, 255));
             }
 
-            if (rotctld_client.is_connected())
+            if (rotator_handler->is_connected())
             {
                 {
                     float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
@@ -293,7 +298,22 @@ namespace satdump
 
         ImGui::Separator();
 
-        rotctld_client.render();
+        if (rotator_handler->is_connected())
+            style::beginDisabled();
+        if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"
+                                                                         "PstRotator (Untested)\0"))
+        {
+            rotator_handler_mtx.lock();
+            if (selected_rotator_handler == 0)
+                rotator_handler = std::make_shared<RotctlHandler>();
+            else if (selected_rotator_handler == 1)
+                rotator_handler = std::make_shared<PstRotatorHandler>();
+            rotator_handler_mtx.unlock();
+        }
+        if (rotator_handler->is_connected())
+            style::endDisabled();
+
+        rotator_handler->render();
 
         ImGui::Spacing();
 

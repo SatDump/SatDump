@@ -5,8 +5,9 @@
 #include <vector>
 #include <mutex>
 #include <thread>
+#include <memory>
 
-#include "rotcl_client.h"
+#include "rotator_handler.h"
 
 namespace satdump
 {
@@ -72,7 +73,9 @@ namespace satdump
         float current_req_rotator_az = 0, current_req_rotator_el = 0;
         void updateRotator();
 
-        RotclClient rotctld_client;
+        int selected_rotator_handler = 0;
+        std::mutex rotator_handler_mtx;
+        std::shared_ptr<RotatorHandler> rotator_handler;
 
     public:
         TrackingWidget();

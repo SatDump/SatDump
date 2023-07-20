@@ -3,13 +3,11 @@
 #include "common/net/tcp.h"
 #include "imgui/imgui.h"
 #include "core/style.h"
+#include "rotator_handler.h"
 
-class RotclClient
+class RotctlHandler : public RotatorHandler
 {
 private:
-    int port;
-    int sockfd;
-
     net::TCPClient *client = nullptr;
 
     char input_address[100] = "127.0.0.1";
@@ -51,11 +49,11 @@ private:
     }
 
 public:
-    RotclClient()
+    RotctlHandler()
     {
     }
 
-    ~RotclClient()
+    ~RotctlHandler()
     {
         if (client != nullptr)
             delete client;

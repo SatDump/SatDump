@@ -82,11 +82,13 @@ namespace satdump
             tle_update_mutex.unlock();
 
             // TODO : MOVE THIS OUT OF THERE!!!!
-            if (rotctld_client.is_connected() && time(0) - last_rot_update > 1)
+            rotator_handler_mtx.lock();
+            if (rotator_handler->is_connected() && time(0) - last_rot_update > 1)
             {
                 updateRotator();
                 last_rot_update = time(0);
             }
+            rotator_handler_mtx.unlock();
         }
     }
 
@@ -310,7 +312,7 @@ namespace satdump
     {
         // logger->info("Rot update!");
 
-        if (rotctld_client.get_pos(&current_rotator_az, &current_rotator_el))
+        if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el))
             logger->error("Error getting rotator position!");
 
         if (rotator_engaged)
@@ -332,7 +334,7 @@ namespace satdump
             if (current_req_rotator_el < 0)
                 current_req_rotator_el = 0;
 
-            if (rotctld_client.set_pos(current_req_rotator_az, current_req_rotator_el))
+            if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el))
                 logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
         }
     }
