@@ -205,6 +205,9 @@
             29499, // MetOp-A
             38771, // MetOp-B
             43689, // MetOp-C
+            28054, // DMSP-F16
+            29522, // DMSP-F17
+            35951, // DMSP-F18
             25338, // NOAA-15
             28654, // NOAA-18
             33591, // NOAA-19
@@ -232,12 +235,62 @@
             39159, // Proba-V
             29107, // CloudSat
             25544, // ISS (Zarya)
+            48274, // CSS (Tianhe-1)
             38337, // GCOM-W1
             43065, // GCOM-C1
+            29155, // GOES-13 (EWS-G1)
+            35491, // GOES-14
+            36411, // GOES-15 (EWS-G2)
+            41866, // GOES-16
+            43226, // GOES-17
+            51850, // GOES-18
             47719, // Arktika-M 1
             41105, // Elektro-L 2
             44903, // Elektro-L 3
-            55506 // Elektro-L 4
+            55506, // Elektro-L 4
+            40367, // FENGYUN-2G
+            43491, // FENGYUN-2H
+            41882, // FENGYUN-4A
+            48808, // FENGYUN-4B
+            43823, // GK-2A
+            31304, // AIM
+            53807, // BlueWalker-3
+            53323, // COSMOS-2558
+            42719, // COSMOS-2518
+            29479, // HINODE
+            39197, // IRIS
+            44406, // Lucky-7
+            54227, // MATS
+            35931, // Oceansat-2
+            54361, // Oceansat-3 (EOS-6)
+            39086, // SARAL
+            44876, // ANGELS
+            54023, // OTB-3 (Gazelle)
+            29273, // Syracuse-3B
+            27858, // SciSat-1
+            37388, // YouthSat
+            46984, // Sentinel-6
+            48900, // TUBIN
+            57172, // UmKA-1 (RS40S)
+            56211, // Inspire-Sat 7
+            40376, // SMAP
+            44874, // CHEOPS
+            36036, // SMOS
+            39089, // NEOSSat
+            42920, // Formosat-5
+            44878, // OPS-SAT
+            54754, // SWOT
+            43215, // PAZ
+            29108, // Calipso
+            43476, // Grace-FO 1
+            43477, // Grace-FO 2
+            36508, // Cryosat-2
+            44072, // PRISMA
+            39084, // LandSat-8
+            49260, // LandSat-9
+            41857, // Yunhai 1
+            44547, // Yunhai 1-02
+            53877 // Yunhai 1-03
         ]
     },
     // Advanced user settings
