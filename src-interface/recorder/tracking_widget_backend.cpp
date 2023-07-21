@@ -187,7 +187,11 @@ namespace satdump
         else
         {
             if (predict_is_geosynchronous(satellite_object))
+            {
+                next_aos_time = 0;
+                next_los_time = std::numeric_limits<double>::max();
                 return;
+            }
 
             upcoming_passes_mtx.lock();
 
@@ -237,7 +241,7 @@ namespace satdump
         std::string cmd = (std::string) "https://ssd.jpl.nasa.gov/api/horizons.api?format=text" +
                           "&OBJ_DATA=NO" +
                           "&MAKE_EPHEM=YES" +
-                          "&COMMAND=" + horizons_ids[current_horizons] +
+                          "&COMMAND=" + std::to_string(horizonsoptions[current_horizons].first) +
                           "&CAL_FORMAT=JD" +
                           "&EPHEM_TYPE=OBSERVER" +
                           "&CENTER='coord@399'" +
@@ -308,6 +312,56 @@ namespace satdump
         logger->trace("Done pulling Horizons data...");
     }
 
+    std::vector<std::pair<int, std::string>> TrackingWidget::pullHorizonsList()
+    {
+        std::vector<std::pair<int, std::string>> vv;
+
+        logger->trace("Pulling object list from Horizons...");
+
+        std::string url = "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='*'";
+        std::string req_result;
+        perform_http_request(url, req_result);
+
+        std::istringstream req_results(req_result);
+        std::string line;
+
+        bool got_start = false;
+        while (getline(req_results, line))
+        {
+            if (line.find("  -------  ---------------------------------- -----------  ------------------- ") != std::string::npos)
+            {
+                got_start = true;
+                continue;
+            }
+
+            if (!got_start)
+                continue;
+
+            try
+            {
+                std::string numid = line.substr(0, 9);
+                std::string name = line.substr(11, 35);
+                std::string desig = line.substr(45, 13);
+                std::string iauo = line.substr(59, 21);
+
+                int id = std::stoi(numid);
+
+                bool is_valid = false;
+                for (auto &c : name)
+                    if (c != ' ')
+                        is_valid = true;
+
+                if (is_valid && name.find("simulation") == std::string::npos)
+                    vv.push_back({id, name});
+            }
+            catch (std::exception &e)
+            {
+            }
+        }
+
+        return vv;
+    }
+
     void TrackingWidget::updateRotator()
     {
         // logger->info("Rot update!");
@@ -338,4 +392,5 @@ namespace satdump
                 logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
         }
     }
+
 }

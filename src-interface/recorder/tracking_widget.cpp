@@ -28,12 +28,9 @@ namespace satdump
             has_tle = true;
 
         for (auto &tle : general_tle_registry)
-            satoptionstr += tle.name + '\0';
+            satoptions.push_back(tle.name);
 
         observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
-
-        for (auto &hid : horizons_ids)
-            horizonsoptionstr += hid + '\0';
 
         // Updates on registry updates
         eventBus->register_handler<TLEsUpdatedEvent>([this](TLEsUpdatedEvent)
@@ -43,9 +40,9 @@ namespace satdump
                                                             if (general_tle_registry.size() > 0)
                                                                 has_tle = true;
 
-                                                            satoptionstr = "";
+                                                            satoptions.clear();
                                                             for (auto &tle : general_tle_registry)
-                                                                satoptionstr += tle.name + '\0';
+                                                                satoptions.push_back(tle.name);
                                                                 
                                                             tle_update_mutex.unlock(); });
 
@@ -176,9 +173,49 @@ namespace satdump
 
         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
         if (horizons_mode)
-            update_global = update_global || ImGui::Combo("###horizonsselectcombo", &current_horizons, horizonsoptionstr.c_str());
+        {
+            if (ImGui::BeginCombo("###horizonsselectcombo", horizonsoptions[current_horizons].second.c_str()))
+            {
+                ImGui::InputTextWithHint("##horizonssatellitetracking", u8"\uf422   Search", &horizonssearchstr);
+                for (int i = 0; i < horizonsoptions.size(); i++)
+                {
+                    bool show = true;
+                    if (horizonssearchstr.size() != 0)
+                        show = isStringPresent(horizonsoptions[i].second, horizonssearchstr);
+                    if (show)
+                    {
+                        if (ImGui::Selectable(horizonsoptions[i].second.c_str(), i == current_horizons))
+                        {
+                            current_horizons = i;
+                            update_global = true;
+                        }
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        }
         else
-            update_global = update_global || ImGui::Combo("###satelliteselectcombo", &current_satellite, satoptionstr.c_str());
+        {
+            if (ImGui::BeginCombo("###satelliteselectcombo", satoptions[current_satellite].c_str()))
+            {
+                ImGui::InputTextWithHint("##searchsatellitetracking", u8"\uf422   Search", &satsearchstr);
+                for (int i = 0; i < satoptions.size(); i++)
+                {
+                    bool show = true;
+                    if (satsearchstr.size() != 0)
+                        show = isStringPresent(satoptions[i], satsearchstr);
+                    if (show)
+                    {
+                        if (ImGui::Selectable(satoptions[i].c_str(), i == current_satellite))
+                        {
+                            current_satellite = i;
+                            update_global = true;
+                        }
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        }
 
         if (ImGui::BeginTable("##trackingradiotable", 2, NULL))
         {
@@ -192,6 +229,8 @@ namespace satdump
             ImGui::TableSetColumnIndex(1);
             if (ImGui::RadioButton("Horizons", horizons_mode))
             {
+                if (horizonsoptions.size() == 1)
+                    horizonsoptions = pullHorizonsList();
                 horizons_mode = true;
                 update_global = true;
             }

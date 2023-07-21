@@ -27,8 +27,9 @@ namespace satdump
         predict_observer_t *observer_station;
         predict_observation observation_pos;
 
-        std::string satoptionstr;
+        std::vector<std::string> satoptions;
         int current_satellite = 0;
+        std::string satsearchstr;
 
         double getTime();
 
@@ -40,10 +41,12 @@ namespace satdump
             float az, el;
         };
 
-        std::vector<std::string> horizons_ids = {"STEREO-A", "STEREO-B", "JUICE", "JWST", "SOHO", "Sun", "CH-3", "New Horizons"};
-        std::string horizonsoptionstr;
+        std::vector<std::pair<int, std::string>> horizonsoptions = {{-234, "STEREO-A"}};
         int current_horizons = 0;
         std::vector<HorizonsV> horizons_data;
+        std::string horizonssearchstr;
+
+        std::vector<std::pair<int, std::string>> pullHorizonsList();
 
         void loadHorizons();
 
