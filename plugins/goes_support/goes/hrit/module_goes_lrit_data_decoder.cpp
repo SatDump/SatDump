@@ -66,7 +66,8 @@ namespace goes
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+            directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+            goes_r_fc_composer_full_disk->directory = goes_r_fc_composer_meso1->directory = goes_r_fc_composer_meso2->directory = directory;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -81,8 +82,6 @@ namespace goes
             logger->info("Demultiplexing and deframing...");
 
             ::lrit::LRITDemux lrit_demux;
-
-            this->directory = directory;
 
             lrit_demux.onParseHeader =
                 [this](::lrit::LRITFile &file) -> void
@@ -197,11 +196,11 @@ namespace goes
             }
 
             if (goes_r_fc_composer_full_disk->hasData)
-                goes_r_fc_composer_full_disk->save(directory);
+                goes_r_fc_composer_full_disk->save();
             if (goes_r_fc_composer_meso1->hasData)
-                goes_r_fc_composer_meso1->save(directory);
+                goes_r_fc_composer_meso1->save();
             if (goes_r_fc_composer_meso2->hasData)
-                goes_r_fc_composer_meso2->save(directory);
+                goes_r_fc_composer_meso2->save();
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
