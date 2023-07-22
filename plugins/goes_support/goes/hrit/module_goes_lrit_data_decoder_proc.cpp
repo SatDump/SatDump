@@ -5,6 +5,10 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#endif
+
 namespace goes
 {
     namespace hrit
@@ -137,42 +141,27 @@ namespace goes
 
                                 current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
 
-                                if ((region == "Full Disk" || region == "Mesoscale 1" || region == "Mesoscale 2"))
+                                //Configure mesoscale color compoer - FD is defined further down
+                                if ((region == "Mesoscale 1" || region == "Mesoscale 2"))
                                 {
                                     std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer;
 
-                                    if (region == "Full Disk")
-                                    {
-                                        goes_r_fc_composer = goes_r_fc_composer_full_disk;
+                                    if (region == "Mesoscale 1")
+                                        goes_r_fc_composer = goes_r_fc_composer_meso1;
+                                    else if (region == "Mesoscale 2")
+                                        goes_r_fc_composer = goes_r_fc_composer_meso2;
 
-                                        /*if (channel == 2)
-                                        {
-                                            goes_r_fc_composer->push2(segmentedDecoder.image, mktime(&scanTimestamp));
-                                        }
-                                        else if (channel == 13)
-                                        {
-                                            goes_r_fc_composer->push13(segmentedDecoder.image, mktime(&scanTimestamp));
-                                        }*/
+                                    image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length],
+                                                                image_structure_record.columns_count,
+                                                                image_structure_record.lines_count, 1);
+
+                                    if (channel == 2)
+                                    {
+                                        goes_r_fc_composer->push2(image, timegm(&scanTimestamp));
                                     }
-                                    else if (region == "Mesoscale 1" || region == "Mesoscale 2")
+                                    else if (channel == 13)
                                     {
-                                        if (region == "Mesoscale 1")
-                                            goes_r_fc_composer = goes_r_fc_composer_meso1;
-                                        else if (region == "Mesoscale 2")
-                                            goes_r_fc_composer = goes_r_fc_composer_meso2;
-
-                                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length],
-                                                                    image_structure_record.columns_count,
-                                                                    image_structure_record.lines_count, 1);
-
-                                        if (channel == 2)
-                                        {
-                                            goes_r_fc_composer->push2(image, mktime(&scanTimestamp));
-                                        }
-                                        else if (channel == 13)
-                                        {
-                                            goes_r_fc_composer->push13(image, mktime(&scanTimestamp));
-                                        }
+                                        goes_r_fc_composer->push13(image, timegm(&scanTimestamp));
                                     }
 
                                     goes_r_fc_composer->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
@@ -280,41 +269,22 @@ namespace goes
 
                     SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[file.vcid];
 
-                    if (segmentedDecoder.image_id != file.vcid)
+                    if (segmentedDecoder.image_id != segment_id_header.image_identifier)
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
                             wip_img->imageStatus = SAVING;
-                            logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
+                            logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.filename + ".png" + "...");
                             if (is_goesn)
                                 segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.filename + ".png").c_str());
                             wip_img->imageStatus = RECEIVING;
-
-                            // Check if this is GOES-R
-                            if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
-                                                                       noaa_header.product_id == 17 ||
-                                                                       noaa_header.product_id == 18 ||
-                                                                       noaa_header.product_id == 19))
-                            {
-                                int mode = -1;
-                                int channel = -1;
-                                std::vector<std::string> cutFilename = splitString(old_filename, '-');
-                                if (cutFilename.size() > 3)
-                                {
-                                    if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
-                                    {
-                                        if (goes_r_fc_composer_full_disk->hasData && (channel == 2 || channel == 2))
-                                            goes_r_fc_composer_full_disk->save(directory);
-                                    }
-                                }
-                            }
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
-                                                                     file.vcid);
+                                                                     segment_id_header.image_identifier);
                         segmentedDecoder.filename = current_filename;
                     }
 
@@ -323,7 +293,7 @@ namespace goes
                     else
                         segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
 
-                    // Check if this is GOES-R, if yes, MS
+                    // Check if this is GOES-R, if yes, this is Full Disk
                     if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
                                                                noaa_header.product_id == 17 ||
                                                                noaa_header.product_id == 18 ||
@@ -347,9 +317,20 @@ namespace goes
                                 }
 
                                 if (channel == 2)
-                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
-                                else if (channel == 13)
-                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, mktime(&scanTimestamp));
+                                {
+                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, timegm(&scanTimestamp));
+                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
+                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                }
+
+                                else if (channel == 13 && file.vcid == 13) //Redundant check keeps relayed channel 13 from entering the color composer
+                                {
+                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, timegm(&scanTimestamp));
+                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
+                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                }
+
+
                             }
                         }
                     }
@@ -389,8 +370,8 @@ namespace goes
                             {
                                 if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                                 {
-                                    if (goes_r_fc_composer_full_disk->hasData && (channel == 2 || channel == 2))
-                                        goes_r_fc_composer_full_disk->save(directory);
+                                    if (goes_r_fc_composer_full_disk->hasData && channel == 2)
+                                        goes_r_fc_composer_full_disk->save();
                                 }
                             }
                         }
@@ -434,9 +415,9 @@ namespace goes
                                                                    noaa_header.product_id == 19))
                         {
                             if (goes_r_fc_composer_meso1->hasData)
-                                goes_r_fc_composer_meso1->save(directory);
+                                goes_r_fc_composer_meso1->save();
                             if (goes_r_fc_composer_meso2->hasData)
-                                goes_r_fc_composer_meso2->save(directory);
+                                goes_r_fc_composer_meso2->save();
                         }
                     }
                 }

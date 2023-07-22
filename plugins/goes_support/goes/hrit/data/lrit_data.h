@@ -52,10 +52,9 @@ namespace goes
 
             bool hasData = false;
 
-            std::string filename;
+            std::string filename, directory;
 
-            void save(std::string directory);
-
+            void save();
             void push2(image::Image<uint8_t> img, time_t time);
             void push13(image::Image<uint8_t> img, time_t time);
 
