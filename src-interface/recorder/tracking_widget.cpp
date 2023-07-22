@@ -46,10 +46,10 @@ namespace satdump
                                                                 
                                                             tle_update_mutex.unlock(); });
 
+        rotator_handler = std::make_shared<RotctlHandler>();
+
         backend_thread = std::thread(&TrackingWidget::backend_run, this);
         rotatorth_thread = std::thread(&TrackingWidget::rotatorth_run, this);
-
-        rotator_handler = std::make_shared<RotctlHandler>();
     }
 
     TrackingWidget::~TrackingWidget()

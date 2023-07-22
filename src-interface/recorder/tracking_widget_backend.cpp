@@ -393,6 +393,9 @@ namespace satdump
             }
         }
 
-        return vv;
+        if (vv.size() > 0)
+            return vv;
+        else
+            return horizonsoptions;
     }
 }
