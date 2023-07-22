@@ -366,7 +366,7 @@ namespace satdump
     {
         // logger->info("Rot update!");
 
-        if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el))
+        if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el) != RotatorHandler::ROT_ERROR_OK)
             logger->error("Error getting rotator position!");
 
         if (rotator_engaged)
@@ -388,7 +388,7 @@ namespace satdump
             if (current_req_rotator_el < 0)
                 current_req_rotator_el = 0;
 
-            if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el))
+            if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el) != RotatorHandler::ROT_ERROR_OK)
                 logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
         }
     }
