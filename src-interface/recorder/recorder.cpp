@@ -108,6 +108,9 @@ namespace satdump
         splitter->stop();
         fft->stop();
         file_sink->stop();
+
+        if (tracking_widget != nullptr)
+            delete tracking_widget;
     }
 
     void RecorderApplication::drawUI()
@@ -456,7 +459,9 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("Tracking"))
                 {
-                    tracking_widget.render();
+                    if (tracking_widget == nullptr)
+                        tracking_widget = new TrackingWidget();
+                    tracking_widget->render();
                 }
             }
             ImGui::EndChild();

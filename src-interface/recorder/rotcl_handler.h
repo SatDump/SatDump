@@ -26,7 +26,6 @@ private:
 
         *ret_sz = client->recvs((uint8_t *)result.data(), result.size());
 
-        printf("%d\n", *ret_sz);
         if (*ret_sz < 0)
             return "";
 

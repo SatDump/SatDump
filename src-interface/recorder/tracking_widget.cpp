@@ -47,6 +47,7 @@ namespace satdump
                                                             tle_update_mutex.unlock(); });
 
         backend_thread = std::thread(&TrackingWidget::backend_run, this);
+        rotatorth_thread = std::thread(&TrackingWidget::rotatorth_run, this);
 
         rotator_handler = std::make_shared<RotctlHandler>();
     }
@@ -58,6 +59,10 @@ namespace satdump
         backend_should_run = false;
         if (backend_thread.joinable())
             backend_thread.join();
+
+        rotatorth_should_run = false;
+        if (rotatorth_thread.joinable())
+            rotatorth_thread.join();
     }
 
     void TrackingWidget::render()
@@ -333,6 +338,9 @@ namespace satdump
         ImGui::Checkbox("Engage", &rotator_engaged);
         ImGui::SameLine();
         ImGui::Checkbox("Track", &rotator_tracking);
+        ImGui::SameLine();
+        if (ImGui::Button("Cfg"))
+            show_rotator_config = true;
 
         ImGui::Separator();
 
@@ -354,6 +362,13 @@ namespace satdump
         ImGui::Spacing();
 
         // tle_update_mutex.unlock();
+
+        if (show_rotator_config)
+        {
+            ImGui::Begin("Rotator Configuration", &show_rotator_config);
+            ImGui::InputFloat("Update Period (s)", &rotator_update_period);
+            ImGui::End();
+        }
     }
 
     double TrackingWidget::getTime()

@@ -7,11 +7,9 @@ namespace satdump
 {
     void TrackingWidget::backend_run()
     {
-        time_t last_rot_update = 0;
-
         while (backend_should_run)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
             if (!has_tle)
                 continue;
@@ -80,13 +78,49 @@ namespace satdump
             }
 
             tle_update_mutex.unlock();
+        }
+    }
 
-            // TODO : MOVE THIS OUT OF THERE!!!!
+    void TrackingWidget::rotatorth_run()
+    {
+        while (rotatorth_should_run)
+        {
             rotator_handler_mtx.lock();
-            if (rotator_handler->is_connected() && time(0) - last_rot_update > 1)
+            if (rotator_handler->is_connected())
             {
-                updateRotator();
-                last_rot_update = time(0);
+                // logger->info("Rot update!");
+
+                if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el) != RotatorHandler::ROT_ERROR_OK)
+                    logger->error("Error getting rotator position!");
+
+                if (rotator_engaged)
+                {
+                    if (rotator_tracking)
+                    {
+                        if (current_el > 0)
+                        {
+                            current_req_rotator_az = current_az;
+                            current_req_rotator_el = current_el;
+                        }
+                        else
+                        {
+                            current_req_rotator_az = next_aos_az;
+                            current_req_rotator_el = next_aos_el;
+                        }
+                    }
+
+                    if (current_req_rotator_el < 0)
+                        current_req_rotator_el = 0;
+
+                    if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el) != RotatorHandler::ROT_ERROR_OK)
+                        logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(uint64_t(rotator_update_period * 1e3)));
+            }
+            else
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             rotator_handler_mtx.unlock();
         }
@@ -361,36 +395,4 @@ namespace satdump
 
         return vv;
     }
-
-    void TrackingWidget::updateRotator()
-    {
-        // logger->info("Rot update!");
-
-        if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el) != RotatorHandler::ROT_ERROR_OK)
-            logger->error("Error getting rotator position!");
-
-        if (rotator_engaged)
-        {
-            if (rotator_tracking)
-            {
-                if (current_el > 0)
-                {
-                    current_req_rotator_az = current_az;
-                    current_req_rotator_el = current_el;
-                }
-                else
-                {
-                    current_req_rotator_az = next_aos_az;
-                    current_req_rotator_el = next_aos_el;
-                }
-            }
-
-            if (current_req_rotator_el < 0)
-                current_req_rotator_el = 0;
-
-            if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el) != RotatorHandler::ROT_ERROR_OK)
-                logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
-        }
-    }
-
 }

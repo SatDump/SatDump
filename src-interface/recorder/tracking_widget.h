@@ -70,15 +70,21 @@ namespace satdump
         float next_aos_az = 0, next_aos_el = 0;
 
     private: // Rotator control
+        bool rotatorth_should_run = true;
+        std::thread rotatorth_thread;
+        void rotatorth_run();
+
         bool rotator_engaged = false;
         bool rotator_tracking = false;
         float current_rotator_az = 0, current_rotator_el = 0;
         float current_req_rotator_az = 0, current_req_rotator_el = 0;
-        void updateRotator();
 
         int selected_rotator_handler = 0;
         std::mutex rotator_handler_mtx;
         std::shared_ptr<RotatorHandler> rotator_handler;
+
+        bool show_rotator_config = false;
+        float rotator_update_period = 1;
 
     public:
         TrackingWidget();
