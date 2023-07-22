@@ -79,6 +79,7 @@ namespace image
         // Image processing functions
         void fill_color(T color[]);                                          // Fill image with a single color
         void fill(T val);                                                    // Fill image with a single value
+        void fill_background(T bgColor[], T replaceColor[]);                 // Replace background color of an image with a another color
         void mirror(bool x, bool y);                                         // Mirror the image along the X or Y axis
         Image<T> &equalize();                                                // Perform histogram equalization
         Image<T> &normalize();                                               // Normalize the current image data. This takes the current min and max values and extends it to the full bit depth range

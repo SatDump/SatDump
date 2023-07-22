@@ -25,6 +25,45 @@ namespace image
     }
 
     template <typename T>
+    void Image<T>::fill_background(T bgcolor[], T replaceColor[])
+    {
+        bool stop;
+        for (size_t i = 0; i < d_width * d_height; i += d_width)
+        {
+            int c;
+            size_t j;
+
+            //Left Side
+            stop = false;
+            for (j = 0; j < d_width; j++)
+            {
+                for (c = 0; c < d_channels; c++)
+                {
+                    if (channel(c)[i + j] != bgcolor[c])
+                        stop = true;
+                }
+                if (stop) break;
+                for (c = 0; c < d_channels; c++)
+                    channel(c)[i + j] = replaceColor[c];
+            }
+
+            //Right Side
+            stop = false;
+            for (j = d_width - 1; j >= 0; j--)
+            {
+                for (c = 0; c < d_channels; c++)
+                {
+                    if (channel(c)[i + j] != bgcolor[c])
+                        stop = true;
+                }
+                if (stop) break;
+                for (c = 0; c < d_channels; c++)
+                    channel(c)[i + j] = replaceColor[c];
+            }
+        }
+    }
+
+    template <typename T>
     void Image<T>::mirror(bool x, bool y)
     {
         if (y) // Mirror on the Y axis
