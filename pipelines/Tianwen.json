@@ -27,7 +27,7 @@
                     "pll_max_offset": 3.14
                 }
             },
-            "frames": {
+            "cadu": {
                 "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 2048,

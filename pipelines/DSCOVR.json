@@ -26,7 +26,7 @@
                     "pll_max_offset": 3.14
                 }
             },
-            "frames": {
+            "cadu": {
                 "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10112,
@@ -39,7 +39,9 @@
                     "rs_fill_bytes": 3
                 }
             },
-            "products": {}
+            "products": {
+                "dscovr_instruments": {}
+            }
         }
     },
     "dscovr_hr": {
@@ -69,7 +71,7 @@
                     "pll_max_offset": 3.14
                 }
             },
-            "frames": {
+            "cadu": {
                 "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10112,
@@ -82,7 +84,9 @@
                     "rs_fill_bytes": 3
                 }
             },
-            "products": {}
+            "products": {
+                "dscovr_instruments": {}
+            }
         }
     }
 }
