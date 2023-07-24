@@ -42,8 +42,8 @@ jobs:
         run: Invoke-WebRequest -Uri "https://www.satdump.org/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile ${{runner.workspace}}/rtsa.exe
 
       - name: Install Aaronia RTSA API
-        shell: powershell
-        run: ${{runner.workspace}}\rtsa.exe /q
+        shell: cmd
+        run: start /wait ${{runner.workspace}}\rtsa.exe /q2 /install
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
