@@ -28,6 +28,8 @@ protected:
 
     float d_min_level = -20;
 
+    int d_rx_channel = 0;
+
     float d_level = -20;
     int d_usb_compression = 0;
     int d_agc_mode = 0;
