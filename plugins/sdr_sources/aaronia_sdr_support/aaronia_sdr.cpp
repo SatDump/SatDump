@@ -185,7 +185,7 @@ void AaroniaSource::start()
         throw std::runtime_error("Could not start Aaronia device!");
 
     // Wait
-    logger->info("Waiting for devide to stream...");
+    logger->info("Waiting for device to stream...");
 
     AARTSAAPI_Packet packet;
     while (AARTSAAPI_GetPacket(&aaronia_device, 0, 0, &packet) == AARTSAAPI_EMPTY)
