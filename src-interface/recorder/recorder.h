@@ -85,7 +85,7 @@ namespace satdump
         void deserialize_config(nlohmann::json in);
         void try_load_sdr_settings();
 
-        TrackingWidget tracking_widget;
+        TrackingWidget *tracking_widget = nullptr;
 
     private:
         void start();

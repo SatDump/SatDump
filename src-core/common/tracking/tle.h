@@ -32,6 +32,10 @@ namespace satdump
         v.line2 = j["line2"].get<std::string>();
     }
 
+    struct TLEsUpdatedEvent
+    {
+    };
+
     // TLE Registry class, which simply extends a std::vector with some QOL functions
     class TLERegistry : public std::vector<TLE>
     {

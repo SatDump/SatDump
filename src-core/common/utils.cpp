@@ -58,16 +58,11 @@ bool isStringPresent(std::string searched, std::string keyword)
 int perform_http_request(std::string url_str, std::string &result)
 {
     nng_http_client *client;
-    nng_http_conn *conn;
     nng_url *url;
     nng_aio *aio;
     nng_http_req *req;
     nng_http_res *res;
-    const char *hdr;
     int rv;
-    int len;
-    char *data;
-    nng_iov iov;
 
     if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) ||
         ((rv = nng_http_client_alloc(&client, url)) != 0))
@@ -119,7 +114,6 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_aio_free(aio);
     nng_http_res_free(res);
     nng_http_req_free(req);
-    free(data);
 
 #if defined(NNG_OPT_TLS_CONFIG)
     nng_tls_config_free(tls_config);

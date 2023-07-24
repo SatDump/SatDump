@@ -1,0 +1,92 @@
+{
+    "dscovr_tlm": {
+        "name": "DSCOVR TLM Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    // "resample_after_pll": true,
+                    "symbolrate": 40e3,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.001,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10112,
+                    "viterbi_ber_thresold": 0.390,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_dualbasis": true,
+                    "rs_type": "rs223",
+                    "rs_fill_bytes": 3
+                }
+            },
+            "products": {
+                "dscovr_instruments": {}
+            }
+        }
+    },
+    "dscovr_hr": {
+        "name": "DSCOVR High-Rate Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    // "resample_after_pll": true,
+                    "symbolrate": 276e3,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.001,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10112,
+                    "viterbi_ber_thresold": 0.340,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_dualbasis": true,
+                    "rs_type": "rs223",
+                    "rs_fill_bytes": 3
+                }
+            },
+            "products": {
+                "dscovr_instruments": {}
+            }
+        }
+    }
+}

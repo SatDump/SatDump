@@ -41,7 +41,7 @@
         }
     },
     "meteor_m2_lrpt": {
-        "name": "METEOR M2 LRPT",
+        "name": "METEOR M2 LRPT 72k",
         "live": true,
         "live_cfg": [
             [
@@ -92,7 +92,7 @@
         }
     },
     "meteor_m2-x_lrpt": {
-        "name": "METEOR M2-x LRPT",
+        "name": "METEOR M2-x LRPT 72k",
         "live": true,
         "live_cfg": [
             [
@@ -144,6 +144,60 @@
                     "rs_i": 4,
                     "rs_dualbasis": false,
                     "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": true
+                }
+            }
+        }
+    },
+    "meteor_m2-x_lrpt_80k": {
+        "name": "METEOR M2-x LRPT 80k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 80e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "meteor_lrpt_decoder": {
+                    "m2x_mode": true,
+                    "interleaved": true,
+                    "diff_decode": true,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20
                 }
             },
             "products": {
