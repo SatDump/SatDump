@@ -85,6 +85,7 @@ And additionally, on the UI side :
 - lego11
 - crosswalkersam
 - Scott Tilley (VE7TIL)
+- Jamie Vital
 
 # Thanks
 
