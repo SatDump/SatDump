@@ -91,7 +91,7 @@ namespace dscovr
 
         void DSCOVRInstrumentsDecoderModule::drawUI(bool window)
         {
-            ImGui::Begin("DSCOVRE Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+            ImGui::Begin("DSCOVR Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (ImGui::BeginTable("##dscovrinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
