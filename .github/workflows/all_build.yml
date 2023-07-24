@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Aaronia RTSA API
         shell: powershell
-        run: ${{runner.workspace}}/rtsa.exe /q"
+        run: ${{runner.workspace}}\rtsa.exe /q"
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
