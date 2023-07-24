@@ -39,7 +39,7 @@ jobs:
 
       - name: Download Aaronia RTSA API
         shell: powershell
-        run: Invoke-WebRequest -Uri "https://downloads.aaronia.com/software/V6_RTSA_Suite_PRO/win/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile ${{runner.workspace}}/rtsa.exe
+        run: Invoke-WebRequest -Uri "https://www.satdump.org/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile ${{runner.workspace}}/rtsa.exe
 
       - name: Install Aaronia RTSA API
         shell: powershell
