@@ -59,6 +59,9 @@ namespace satdump
         void backend_run();
         bool backend_needs_update = true;
 
+    private: // Config Window
+        bool show_window_config = false;
+
     private: // Current satellite
         float current_az = 0, current_el = 0;
 
@@ -83,8 +86,14 @@ namespace satdump
         std::mutex rotator_handler_mtx;
         std::shared_ptr<RotatorHandler> rotator_handler;
 
-        bool show_rotator_config = false;
         float rotator_update_period = 1;
+
+    private: // UI Functions
+        void renderPolarPlot();
+        void renderSelectionMenu();
+        void renderObjectStatus();
+        void renderRotatorStatus();
+        void renderConfigWindow();
 
     public:
         TrackingWidget();
