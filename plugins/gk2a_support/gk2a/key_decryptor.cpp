@@ -82,7 +82,7 @@ namespace gk2a
             logger->info("\nDecrypting...");
 
             uint64_t mac_bin = 0;
-            uint64_t mac_bin2 = std::stoul(mac_address, nullptr, 16) << 16; //;
+            uint64_t mac_bin2 = std::stoull(mac_address, nullptr, 16) << 16;
 
             for (int i = 0; i < 8; i++)
             {
