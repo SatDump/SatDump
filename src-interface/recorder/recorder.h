@@ -16,7 +16,7 @@
 #include "pipeline_selector.h"
 #include "core/live_pipeline.h"
 
-#include "tracking_widget.h"
+#include "tracking/tracking_widget.h"
 
 namespace satdump
 {

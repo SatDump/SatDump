@@ -13,28 +13,30 @@ namespace satdump
 {
     class TrackingWidget
     {
-    private:
+    private: // QTH Config
         double qth_lon = 0;
         double qth_lat = 0;
         double qth_alt = 0;
 
+    private: // General configs/utils
         bool has_tle = false;
-
         bool horizons_mode = false;
+
+        double getTime();
+
+    private: // Satellite Tracking (libpredict)
+        std::vector<std::string> satoptions;
+        int current_satellite = 0;
+        std::string satsearchstr;
 
         predict_orbital_elements_t *satellite_object = nullptr;
         predict_position satellite_orbit;
         predict_observer_t *observer_station;
         predict_observation observation_pos;
 
-        std::vector<std::string> satoptions;
-        int current_satellite = 0;
-        std::string satsearchstr;
+        std::mutex tle_update_mutex;
 
-        double getTime();
-
-        double last_horizons_fetch_time = 0;
-
+    private: // Horizons Tracking (horizons)
         struct HorizonsV
         {
             double timestamp;
@@ -46,11 +48,10 @@ namespace satdump
         std::vector<HorizonsV> horizons_data;
         std::string horizonssearchstr;
 
+        double last_horizons_fetch_time = 0;
+
         std::vector<std::pair<int, std::string>> pullHorizonsList();
-
         void loadHorizons();
-
-        std::mutex tle_update_mutex;
 
     private: // Core
         bool backend_should_run = true;
@@ -66,7 +67,6 @@ namespace satdump
         void updateNextPass();
 
         double next_aos_time, next_los_time;
-
         float next_aos_az = 0, next_aos_el = 0;
 
     private: // Rotator control

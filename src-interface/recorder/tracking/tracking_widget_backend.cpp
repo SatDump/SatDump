@@ -29,7 +29,7 @@ namespace satdump
                     double timed = getTime();
 
                     int iter = 0;
-                    for (int i = 0; i < horizons_data.size(); i++)
+                    for (int i = 0; i < (int)horizons_data.size(); i++)
                         if (horizons_data[i].timestamp < timed)
                             iter = i;
 
@@ -145,7 +145,7 @@ namespace satdump
             double timed = getTime();
 
             int iter = 0;
-            for (int i = 0; i < horizons_data.size(); i++)
+            for (int i = 0; i < (int)horizons_data.size(); i++)
                 if (horizons_data[i].timestamp < timed)
                     iter = i;
 
@@ -164,7 +164,7 @@ namespace satdump
                     }
                 }
 
-                for (int i = iter; i < horizons_data.size(); i++) // Find LOS
+                for (int i = iter; i < (int)horizons_data.size(); i++) // Find LOS
                 {
                     if (horizons_data[i].el <= 0)
                     {
@@ -176,7 +176,7 @@ namespace satdump
             else
             {
                 int aos_iter = 0;
-                for (int i = iter; i < horizons_data.size(); i++) // Find AOS
+                for (int i = iter; i < (int)horizons_data.size(); i++) // Find AOS
                 {
                     if (horizons_data[i].el > 0)
                     {
@@ -190,7 +190,7 @@ namespace satdump
 
                 if (next_aos_time != 0)
                 {
-                    for (int i = aos_iter; i < horizons_data.size(); i++) // Find LOS
+                    for (int i = aos_iter; i < (int)horizons_data.size(); i++) // Find LOS
                     {
                         if (horizons_data[i].el <= 0)
                         {
@@ -208,7 +208,7 @@ namespace satdump
                 for (double ctime = next_aos_time; ctime <= next_los_time; ctime += time_step)
                 {
                     int iter = 0;
-                    for (int i = 0; i < horizons_data.size(); i++)
+                    for (int i = 0; i < (int)horizons_data.size(); i++)
                         if (horizons_data[i].timestamp < ctime)
                             iter = i;
 

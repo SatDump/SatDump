@@ -222,7 +222,7 @@ namespace satdump
             }
         }
 
-        if (ImGui::BeginTable("##trackingradiotable", 2, NULL))
+        if (ImGui::BeginTable("##trackingradiotable", 2, (ImGuiTableFlags)NULL))
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
@@ -285,7 +285,6 @@ namespace satdump
                 ImGui::Text("%s", time_dis.c_str());
             }
 
-#if 1
             if (!horizons_mode && satellite_object != nullptr)
             {
                 ImGui::TableNextRow();
@@ -300,7 +299,6 @@ namespace satdump
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", observation_pos.elevation_rate * RAD_TO_DEG);
             }
-#endif
 
             ImGui::EndTable();
         }
@@ -365,8 +363,13 @@ namespace satdump
 
         if (show_rotator_config)
         {
-            ImGui::Begin("Rotator Configuration", &show_rotator_config);
-            ImGui::InputFloat("Update Period (s)", &rotator_update_period);
+            ImGui::Begin("Tracking Configuration", &show_rotator_config);
+
+            if (ImGui::CollapsingHeader("Rotator"))
+            {
+                ImGui::InputFloat("Update Period (s)", &rotator_update_period);
+            }
+
             ImGui::End();
         }
     }
