@@ -346,5 +346,14 @@ namespace satdump
                 params2[p.first] = p.second.getValue();
             return params2;
         }
+
+        void select_pipeline(std::string id)
+        {
+            for (int n = 0; n < (int)pipelines.size(); n++)
+            {
+                if (id == pipelines[n].name)
+                    pipeline_id = n;
+            }
+        }
     };
 }

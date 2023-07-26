@@ -6,6 +6,7 @@
 #include <mutex>
 #include <thread>
 #include <memory>
+#include <functional>
 
 #include "rotator_handler.h"
 
@@ -52,6 +53,7 @@ namespace satdump
 
         std::vector<std::pair<int, std::string>> pullHorizonsList();
         void loadHorizons();
+        std::vector<HorizonsV> pullHorizonsData(double start_time, double stop_time, int num_points);
 
     private: // Core
         bool backend_should_run = true;
@@ -88,12 +90,52 @@ namespace satdump
 
         float rotator_update_period = 1;
 
+    public: // Autotrack (Basic for now, satellites only, Horizons to be done...)
+        struct SatellitePass
+        {
+            int norad;
+            double aos_time;
+            double los_time;
+            float max_elevation;
+        };
+
+        struct TrackedObject
+        {
+            int norad;
+
+            // Config
+            double frequency = 100e6;
+            bool record = false;
+            bool live = false;
+            std::string pipeline_name = "";
+        };
+
+    private:
+        int tracking_sats_menu_selected_1 = 0, tracking_sats_menu_selected_2 = 0;
+        std::vector<TrackedObject> enabled_satellites;
+
+        std::mutex upcoming_satellite_passes_mtx;
+        std::vector<SatellitePass> upcoming_satellite_passes_all;
+        std::vector<SatellitePass> upcoming_satellite_passes_sel;
+
+        bool autotrack_engaged = false;
+
+        void processAutotrack();
+        void updateAutotrackPasses();
+        void renderAutotrackConfig();
+
+        bool autotrack_pass_has_started = false;
+
     private: // UI Functions
         void renderPolarPlot();
         void renderSelectionMenu();
         void renderObjectStatus();
         void renderRotatorStatus();
         void renderConfigWindow();
+
+    public: // Handlers
+        std::function<void(SatellitePass, TrackedObject)> aos_callback = [](SatellitePass, TrackedObject) {};
+        std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
 
     public:
         TrackingWidget();

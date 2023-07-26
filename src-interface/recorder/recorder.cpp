@@ -460,7 +460,35 @@ namespace satdump
                 if (ImGui::CollapsingHeader("Tracking"))
                 {
                     if (tracking_widget == nullptr)
+                    {
                         tracking_widget = new TrackingWidget();
+
+                        tracking_widget->aos_callback = [this](TrackingWidget::SatellitePass pass, TrackingWidget::TrackedObject obj)
+                        {
+                            stop_recording();
+                            stop_processing();
+
+                            frequency_mhz = obj.frequency * 1e6;
+                            source_ptr->set_frequency(frequency_mhz * 1e6);
+
+                            if (obj.live)
+                            {
+                                pipeline_selector.select_pipeline(obj.pipeline_name);
+                                start_processing();
+                            }
+
+                            if (obj.record)
+                            {
+                                start_recording();
+                            }
+                        };
+
+                        tracking_widget->los_callback = [this](TrackingWidget::SatellitePass pass, TrackingWidget::TrackedObject obj)
+                        {
+                            stop_recording();
+                            stop_processing();
+                        };
+                    }
                     tracking_widget->render();
                 }
             }

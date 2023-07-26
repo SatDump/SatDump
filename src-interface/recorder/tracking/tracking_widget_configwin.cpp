@@ -16,6 +16,9 @@ namespace satdump
                 ImGui::InputFloat("Update Period (s)", &rotator_update_period);
             }
 
+            if (ImGui::CollapsingHeader("Scheduling"))
+                renderAutotrackConfig();
+
             ImGui::End();
         }
     }

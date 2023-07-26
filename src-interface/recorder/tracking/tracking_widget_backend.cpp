@@ -77,11 +77,13 @@ namespace satdump
                 backend_needs_update = false;
             }
 
+            processAutotrack();
+
             tle_update_mutex.unlock();
         }
     }
 
-     void TrackingWidget::updateNextPass()
+    void TrackingWidget::updateNextPass()
     {
         logger->trace("Update pass trajectory...");
 
@@ -227,6 +229,21 @@ namespace satdump
         double start_time = curr_time - 24 * 3600;
         double stop_time = curr_time + 24 * 3600;
 
+        auto hdata = pullHorizonsData(start_time, stop_time, 8640);
+
+        if (hdata.size() > 0)
+        {
+            horizons_data = hdata;
+            last_horizons_fetch_time = curr_time;
+        }
+
+        logger->trace("Done pulling Horizons data...");
+    }
+
+    std::vector<TrackingWidget::HorizonsV> TrackingWidget::pullHorizonsData(double start_time, double stop_time, int num_points)
+    {
+        std::vector<HorizonsV> hdata;
+
         std::string cmd = (std::string) "https://ssd.jpl.nasa.gov/api/horizons.api?format=text" +
                           "&OBJ_DATA=NO" +
                           "&MAKE_EPHEM=YES" +
@@ -240,7 +257,7 @@ namespace satdump
                           std::to_string(qth_alt / 1e3) + "'" +
                           "&START_TIME='JD " + std::to_string((start_time / 86400.0) + 2440587.5) + "'" +
                           "&STOP_TIME='JD " + std::to_string((stop_time / 86400.0) + 2440587.5) + "'" +
-                          "&STEP_SIZE='8640'" + // 86400
+                          "&STEP_SIZE='" + std::to_string(num_points) + "'" + // 86400
                           "&QUANTITIES='4,20'";
 
         std::string req_result;
@@ -250,15 +267,11 @@ namespace satdump
         if (err != 0)
         {
             logger->error("Could not fetch data from Horizons!");
-            return;
+            return hdata;
         }
-
-        last_horizons_fetch_time = curr_time;
 
         std::istringstream req_results(req_result);
         std::string line;
-
-        horizons_data.clear();
 
         bool fount_soe = false;
         bool fount_eoe = false;
@@ -294,11 +307,11 @@ namespace satdump
             {
                 double ctime = (julian_time - 2440587.5) * 86400.0;
                 // logger->info("%s %f %f", timestamp_to_string(ctime).c_str(), az, el);
-                horizons_data.push_back({ctime, (float)az, (float)el});
+                hdata.push_back({ctime, (float)az, (float)el});
             }
         }
 
-        logger->trace("Done pulling Horizons data...");
+        return hdata;
     }
 
     std::vector<std::pair<int, std::string>> TrackingWidget::pullHorizonsList()
