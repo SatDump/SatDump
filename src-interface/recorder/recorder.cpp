@@ -468,7 +468,7 @@ namespace satdump
                             stop_recording();
                             stop_processing();
 
-                            frequency_mhz = obj.frequency * 1e6;
+                            frequency_mhz = obj.frequency;
                             source_ptr->set_frequency(frequency_mhz * 1e6);
 
                             if (obj.live)
