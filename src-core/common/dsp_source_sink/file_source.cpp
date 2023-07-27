@@ -161,11 +161,6 @@ void FileSource::drawControlUI()
 
     if (is_started)
         style::endDisabled();
-
-#ifdef BUILD_ZIQ
-    if (select_sample_format == 4)
-        style::beginDisabled();
-#endif
     if (!is_started)
         style::beginDisabled();
     if (ImGui::SliderFloat("Progress", &file_progress, 0, 100))
@@ -174,10 +169,7 @@ void FileSource::drawControlUI()
         style::endDisabled();
 #ifdef BUILD_ZIQ
     if (select_sample_format == 4)
-    {
-        ImGui::TextColored(ImColor(255, 0, 0), "Scrolling not\navailable on ZIQ!");
-        style::endDisabled();
-    }
+        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking\nmay be slow!");
 #endif
 }
 

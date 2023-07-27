@@ -76,6 +76,7 @@ namespace ziq
         std::ifstream &stream;
         int8_t *buffer_i8;
         int16_t *buffer_i16;
+        uint64_t annotation_size;
 
     private:
         ZSTD_DCtx *zstd_ctx;
@@ -96,6 +97,7 @@ namespace ziq
         ~ziq_reader();
 
         int read(complex_t *output, int size);
+        bool seekg(size_t pos);
     };
 
     bool isValidZIQ(std::string file);
