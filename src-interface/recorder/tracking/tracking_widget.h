@@ -7,11 +7,53 @@
 #include <thread>
 #include <memory>
 #include <functional>
+#include "core/config.h"
+#include "nlohmann/json_utils.h"
 
 #include "rotator_handler.h"
 
 namespace satdump
 {
+    namespace tracking
+    { // Autotrack (Basic for now, satellites only, Horizons to be done...)
+        struct SatellitePass
+        {
+            int norad;
+            double aos_time;
+            double los_time;
+            float max_elevation;
+        };
+
+        struct TrackedObject
+        {
+            int norad;
+
+            // Config
+            double frequency = 100e6;
+            bool record = false;
+            bool live = false;
+            std::string pipeline_name = "";
+        };
+
+        inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
+        {
+            j["norad"] = v.norad;
+            j["frequency"] = v.frequency;
+            j["record"] = v.record;
+            j["live"] = v.live;
+            j["pipeline_name"] = v.pipeline_name;
+        }
+
+        inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
+        {
+            v.norad = j["norad"];
+            v.frequency = j["frequency"];
+            v.record = j["record"];
+            v.live = j["live"];
+            v.pipeline_name = j["pipeline_name"];
+        }
+    }
+
     class TrackingWidget
     {
     private: // QTH Config
@@ -91,33 +133,13 @@ namespace satdump
 
         float rotator_update_period = 1;
 
-    public: // Autotrack (Basic for now, satellites only, Horizons to be done...)
-        struct SatellitePass
-        {
-            int norad;
-            double aos_time;
-            double los_time;
-            float max_elevation;
-        };
-
-        struct TrackedObject
-        {
-            int norad;
-
-            // Config
-            double frequency = 100e6;
-            bool record = false;
-            bool live = false;
-            std::string pipeline_name = "";
-        };
-
     private:
         int tracking_sats_menu_selected_1 = 0, tracking_sats_menu_selected_2 = 0;
-        std::vector<TrackedObject> enabled_satellites;
+        std::vector<tracking::TrackedObject> enabled_satellites;
 
         std::mutex upcoming_satellite_passes_mtx;
-        std::vector<SatellitePass> upcoming_satellite_passes_all;
-        std::vector<SatellitePass> upcoming_satellite_passes_sel;
+        std::vector<tracking::SatellitePass> upcoming_satellite_passes_all;
+        std::vector<tracking::SatellitePass> upcoming_satellite_passes_sel;
 
         bool autotrack_engaged = false;
 
@@ -134,9 +156,26 @@ namespace satdump
         void renderRotatorStatus();
         void renderConfigWindow();
 
+        void saveConfig()
+        {
+            config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = enabled_satellites;
+            config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"] = rotator_update_period;
+
+            config::saveUserConfig();
+        }
+
+        void loadConfig()
+        {
+            if (config::main_cfg["user"].contains("recorder_tracking"))
+            {
+                enabled_satellites = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["enabled_objects"], std::vector<tracking::TrackedObject>());
+                rotator_update_period = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"], rotator_update_period);
+            }
+        }
+
     public: // Handlers
-        std::function<void(SatellitePass, TrackedObject)> aos_callback = [](SatellitePass, TrackedObject) {};
-        std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
+        std::function<void(tracking::SatellitePass, tracking::TrackedObject)> aos_callback = [](tracking::SatellitePass, tracking::TrackedObject) {};
+        std::function<void(tracking::SatellitePass, tracking::TrackedObject)> los_callback = [](tracking::SatellitePass, tracking::TrackedObject) {};
 
     public:
         TrackingWidget();

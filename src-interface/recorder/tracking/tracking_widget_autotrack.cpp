@@ -20,7 +20,7 @@ namespace satdump
                 if (!autotrack_pass_has_started && getTime() > upcoming_satellite_passes_sel[0].aos_time)
                 {
                     logger->critical("AOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    TrackedObject obj;
+                    tracking::TrackedObject obj;
                     for (auto &v : enabled_satellites)
                         if (v.norad == upcoming_satellite_passes_sel[0].norad)
                             obj = v;
@@ -34,7 +34,7 @@ namespace satdump
                 if (autotrack_pass_has_started)
                 {
                     logger->critical("LOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    TrackedObject obj;
+                    tracking::TrackedObject obj;
                     for (auto &v : enabled_satellites)
                         if (v.norad == upcoming_satellite_passes_sel[0].norad)
                             obj = v;
@@ -58,7 +58,7 @@ namespace satdump
 
         double initial_time = getTime();
 
-        for (TrackedObject &obj : enabled_satellites)
+        for (tracking::TrackedObject &obj : enabled_satellites)
         {
             auto tle = general_tle_registry.get_from_norad(obj.norad).value();
             predict_orbital_elements_t *satellite_object_ = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
@@ -110,8 +110,8 @@ namespace satdump
         }
 
         std::sort(upcoming_satellite_passes_all.begin(), upcoming_satellite_passes_all.end(),
-                  [](SatellitePass &el1,
-                     SatellitePass &el2)
+                  [](tracking::SatellitePass &el1,
+                     tracking::SatellitePass &el2)
                   {
                       return el1.aos_time < el2.aos_time;
                   });
@@ -156,7 +156,7 @@ namespace satdump
         if (ImGui::BeginListBox("##trackingavailablesatsbox"))
         {
             for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
                     if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
                         tracking_sats_menu_selected_1 = i;
@@ -171,7 +171,7 @@ namespace satdump
         if (ImGui::BeginListBox("##trackingselectedsatsbox"))
         {
             for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
                     if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
                         tracking_sats_menu_selected_2 = i;
@@ -179,7 +179,7 @@ namespace satdump
         }
         if (ImGui::Button("<<<"))
         {
-            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](TrackedObject &t)
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](tracking::TrackedObject &t)
                                    { return t.norad == general_tle_registry[tracking_sats_menu_selected_2].norad; });
             if (it != enabled_satellites.end())
                 enabled_satellites.erase(it);
@@ -206,6 +206,8 @@ namespace satdump
             {
                 autotrack_engaged = false;
             }
+
+            saveConfig();
         }
 
 #if 1

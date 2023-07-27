@@ -48,6 +48,10 @@ namespace satdump
 
         rotator_handler = std::make_shared<RotctlHandler>();
 
+        // Restore settings
+        loadConfig();
+
+        // Start threads
         backend_thread = std::thread(&TrackingWidget::backend_run, this);
         rotatorth_thread = std::thread(&TrackingWidget::rotatorth_run, this);
     }
