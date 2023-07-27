@@ -83,6 +83,7 @@ namespace satdump
         bool rotator_tracking = false;
         float current_rotator_az = 0, current_rotator_el = 0;
         float current_req_rotator_az = 0, current_req_rotator_el = 0;
+        float current_reql_rotator_az = 0, current_reql_rotator_el = 0;
 
         int selected_rotator_handler = 0;
         std::mutex rotator_handler_mtx;
