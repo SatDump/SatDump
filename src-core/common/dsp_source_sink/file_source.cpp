@@ -167,6 +167,10 @@ void FileSource::drawControlUI()
         baseband_reader.set_progress(file_progress);
     if (!is_started)
         style::endDisabled();
+#ifdef BUILD_ZIQ
+    if (select_sample_format == 4)
+        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking\nmay be slow!");
+#endif
 }
 
 void FileSource::set_samplerate(uint64_t samplerate)
