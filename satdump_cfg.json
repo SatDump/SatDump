@@ -738,10 +738,28 @@
                         "equalize": true,
                         "geo_correct": true
                     },
+                    "Night Microphysics": {
+                        "equation": "ch6-ch5, ch5-ch4, ch5",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
                     "654": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
                         "equalize": true,
                         "autogen": true
+                    },
+                    "WXtoImg NO": {
+                        "lut": "noaa_apt/WXtoImg-NO.png",
+                        "channels": "1-ch4, 1-ch5",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "equalize": true,
+                        "draw_map": true,
+                        "map_overlay_colors": [
+                            1,
+                            1,
+                            0
+                        ]
                     }
                 }
             },
