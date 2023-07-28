@@ -179,6 +179,17 @@
     "grace_fo_link": {
         "name": "Grace-FO Dump",
         "samplerate": 20e6,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
