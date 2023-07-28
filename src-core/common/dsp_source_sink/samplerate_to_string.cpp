@@ -42,5 +42,17 @@ std::string formatSamplerateToString(uint64_t samplerate)
     else if (samplerate < 1e9)
         return vformat("%1.3fM", samplerate / 1e6);
     else
-        return vformat("%1.3f");
+        return vformat("%1.3fG", samplerate / 1e9);
+}
+
+std::string formatFrequencyToString(uint64_t samplerate)
+{
+    if (samplerate < 1e4)
+        return vformat("%d", samplerate);
+    else if (samplerate < 1e7)
+        return vformat("%1.3fk", samplerate / 1e3);
+    else if (samplerate < 1e10)
+        return vformat("%1.3fM", samplerate / 1e6);
+    else
+        return vformat("%1.3fG", samplerate / 1e9);
 }

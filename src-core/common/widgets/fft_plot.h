@@ -16,6 +16,9 @@ namespace widgets
         float scale_min, scale_max;
         float scale_resolution;
 
+        double bandwidth = 0;
+        double frequency = 0;
+
     public:
         FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
         void draw(ImVec2 size);

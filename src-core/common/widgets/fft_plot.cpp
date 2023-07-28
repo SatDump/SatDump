@@ -1,6 +1,8 @@
 #include "fft_plot.h"
 #include "imgui/imgui_internal.h"
 #include <string>
+#include "common/dsp_source_sink/samplerate_to_string.h"
+#include "core/module.h"
 
 namespace widgets
 {
@@ -77,6 +79,25 @@ namespace widgets
 
             t0 = t1;
             tp0 = tp1;
+        }
+
+        // Draw Freq Scale
+        // const ImU32 fcolor_scale = ImGui::GetColorU32(ImGuiCol_Text, 1.0);
+        {
+            float y_level = inner_bb.Max.y - 8 * ui_scale;
+            window->DrawList->AddLine({inner_bb.Min.x, y_level}, {inner_bb.Max.x, y_level}, col_base, 3 * ui_scale);
+            for (int i = 1; i < 10; i++)
+            {
+                float x_line = inner_bb.Min.x + (i / 10.0) * res_w;
+                double freq_here = frequency + ((i / 10.0) * bandwidth) - (bandwidth / 2);
+
+                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base, 3);
+
+                auto cstr = formatFrequencyToString(freq_here);
+                window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
+                                          i == 5 ? 0xFF00FF00 : col_base,
+                                          cstr.c_str());
+            }
         }
 
         ImGui::Dummy(size);

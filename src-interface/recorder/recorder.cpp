@@ -84,6 +84,7 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
+        fft_plot->frequency = frequency_mhz * 1e6;
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
 
         fft->on_fft = [this](float *v)
@@ -162,6 +163,7 @@ namespace satdump
                         }
 
                         source_ptr->set_frequency(frequency_mhz * 1e6);
+                        fft_plot->frequency = frequency_mhz * 1e6;
                         try_load_sdr_settings();
                     }
                     ImGui::SameLine();
@@ -182,6 +184,7 @@ namespace satdump
                         source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                         source_ptr->open();
                         source_ptr->set_frequency(frequency_mhz * 1e6);
+                        fft_plot->frequency = frequency_mhz * 1e6;
                         try_load_sdr_settings();
                     }
                     /*
@@ -207,7 +210,10 @@ namespace satdump
                     ImGui::Spacing();
 
                     if (ImGui::InputDouble("MHz", &frequency_mhz))
+                    {
                         source_ptr->set_frequency(frequency_mhz * 1e6);
+                        fft_plot->frequency = frequency_mhz * 1e6;
+                    }
 
                     source_ptr->drawControlUI();
 
@@ -310,6 +316,7 @@ namespace satdump
                                     {
                                         frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
                                         source_ptr->set_frequency(frequency_mhz * 1e6);
+                                        fft_plot->frequency = frequency_mhz * 1e6;
                                     }
                                 }
 
@@ -470,6 +477,7 @@ namespace satdump
 
                             frequency_mhz = obj.frequency;
                             source_ptr->set_frequency(frequency_mhz * 1e6);
+                            fft_plot->frequency = frequency_mhz * 1e6;
 
                             if (obj.live)
                             {
