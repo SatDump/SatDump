@@ -19,6 +19,8 @@ namespace widgets
         double bandwidth = 0;
         double frequency = 0;
 
+        bool enable_freq_scale = true;
+
     public:
         FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
         void draw(ImVec2 size);

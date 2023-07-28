@@ -83,6 +83,7 @@ namespace widgets
 
         // Draw Freq Scale
         // const ImU32 fcolor_scale = ImGui::GetColorU32(ImGuiCol_Text, 1.0);
+        if (enable_freq_scale && bandwidth != 0 && frequency != 0)
         {
             float y_level = inner_bb.Max.y - 8 * ui_scale;
             window->DrawList->AddLine({inner_bb.Min.x, y_level}, {inner_bb.Max.x, y_level}, col_base, 3 * ui_scale);

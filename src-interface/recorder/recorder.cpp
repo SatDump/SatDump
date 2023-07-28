@@ -269,6 +269,7 @@ namespace satdump
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                     ImGui::Checkbox("Show Waterfall", &show_waterfall);
+                    ImGui::Checkbox("Frequency Scale", &fft_plot->enable_freq_scale);
                 }
 
                 if (fft_plot->scale_max < fft_plot->scale_min)
@@ -470,7 +471,7 @@ namespace satdump
                     {
                         tracking_widget = new TrackingWidget();
 
-                        tracking_widget->aos_callback = [this](tracking::SatellitePass pass, tracking::TrackedObject obj)
+                        tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
                         {
                             stop_recording();
                             stop_processing();
@@ -491,7 +492,7 @@ namespace satdump
                             }
                         };
 
-                        tracking_widget->los_callback = [this](tracking::SatellitePass pass, tracking::TrackedObject obj)
+                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
                         {
                             stop_recording();
                             stop_processing();

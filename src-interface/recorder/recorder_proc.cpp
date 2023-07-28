@@ -78,6 +78,7 @@ namespace satdump
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
             waterfall_plot->set_rate(fft_rate, waterfall_rate);
             fft_plot->bandwidth = current_samplerate / current_decimation;
+            fft_plot->frequency = frequency_mhz * 1e6;
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
