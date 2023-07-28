@@ -365,8 +365,11 @@ namespace satdump
         if (product.needs_correlation)
         {
             std::vector<double> common_timestamps; // First, establish common timestamps between all required channels
-            if (product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_MULTIPLE_LINES)
+            if (product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_MULTIPLE_LINES ||
+                product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_LINE)
             {
+                bool single_line = product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_LINE;
+
                 for (double time1 : product.get_timestamps(channel_indexes[0]))
                 {
                     bool is_present_everywhere = true;
@@ -397,7 +400,8 @@ namespace satdump
                 std::vector<image::Image<uint16_t>> images_obj_new;
                 for (int i = 0; i < (int)channel_indexes.size(); i++)
                     images_obj_new.push_back(image::Image<uint16_t>(product.images[channel_indexes[i]].image.width(),
-                                                                    product.get_ifov_y_size(channel_indexes[i]) * common_timestamps.size(), 1));
+                                                                    (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
+                                                                    1));
 
                 // Recompose images to be synced
                 int y_index = 0;
@@ -413,9 +417,9 @@ namespace satdump
                             if (time1 == time2)
                             {
                                 //  Copy over scanlines
-                                memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * product.get_ifov_y_size(index)],
-                                       &product.images[index].image[t * images_obj_new[i].width() * product.get_ifov_y_size(index)],
-                                       images_obj_new[i].width() * product.get_ifov_y_size(index) * sizeof(uint16_t));
+                                memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       &product.images[index].image[t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
                                 break;
                             }
                         }

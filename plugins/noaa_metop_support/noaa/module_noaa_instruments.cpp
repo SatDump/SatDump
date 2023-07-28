@@ -188,7 +188,6 @@ namespace noaa
                         }
                         for (int c = 0; c < 6; c++)
                             avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
-
                     }
                     else
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
@@ -310,7 +309,8 @@ namespace noaa
                     {
                         mhs_reader.calibrate(calib_coefs[sat_name]);
                         mhs_products.set_calibration(mhs_reader.calib_out);
-                        for (int c = 0; c < 5; c++){
+                        for (int c = 0; c < 5; c++)
+                        {
                             mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
                             mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                         }
@@ -340,6 +340,7 @@ namespace noaa
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = true;
+                    amsu_products.needs_correlation = true;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
                     amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
