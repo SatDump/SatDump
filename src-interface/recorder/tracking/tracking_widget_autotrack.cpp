@@ -163,7 +163,12 @@ namespace satdump
             ImGui::EndListBox();
         }
         if (ImGui::Button(">>>"))
-            enabled_satellites.push_back({general_tle_registry[tracking_sats_menu_selected_1].norad});
+        {
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](tracking::TrackedObject &t)
+                                   { return t.norad == general_tle_registry[tracking_sats_menu_selected_1].norad; });
+            if (it == enabled_satellites.end())
+                enabled_satellites.push_back({general_tle_registry[tracking_sats_menu_selected_1].norad});
+        }
         ImGui::EndGroup();
         ImGui::SameLine();
         ImGui::BeginGroup();
