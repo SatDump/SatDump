@@ -67,7 +67,7 @@ namespace satdump
             }
         }
 
-        source_ptr->set_frequency(frequency_mhz * 1e6);
+        set_frequency(frequency_mhz);
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
@@ -162,8 +162,7 @@ namespace satdump
                             }
                         }
 
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
-                        fft_plot->frequency = frequency_mhz * 1e6;
+                        set_frequency(frequency_mhz);
                         try_load_sdr_settings();
                     }
                     ImGui::SameLine();
@@ -183,8 +182,7 @@ namespace satdump
 
                         source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                         source_ptr->open();
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
-                        fft_plot->frequency = frequency_mhz * 1e6;
+                        set_frequency(frequency_mhz);
                         try_load_sdr_settings();
                     }
                     /*
@@ -210,10 +208,7 @@ namespace satdump
                     ImGui::Spacing();
 
                     if (ImGui::InputDouble("MHz", &frequency_mhz))
-                    {
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
-                        fft_plot->frequency = frequency_mhz * 1e6;
-                    }
+                        set_frequency(frequency_mhz);
 
                     source_ptr->drawControlUI();
 
@@ -316,8 +311,7 @@ namespace satdump
                                     if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
                                         frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
-                                        source_ptr->set_frequency(frequency_mhz * 1e6);
-                                        fft_plot->frequency = frequency_mhz * 1e6;
+                                        set_frequency(frequency_mhz);
                                     }
                                 }
 
@@ -477,8 +471,7 @@ namespace satdump
                             stop_processing();
 
                             frequency_mhz = obj.frequency;
-                            source_ptr->set_frequency(frequency_mhz * 1e6);
-                            fft_plot->frequency = frequency_mhz * 1e6;
+                            set_frequency(frequency_mhz);
 
                             if (obj.live)
                             {

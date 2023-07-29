@@ -99,6 +99,13 @@ namespace satdump
 
         uint64_t get_samplerate() { return current_samplerate / current_decimation; }
 
+        void set_frequency(double freq_mhz)
+        {
+            source_ptr->set_frequency(freq_mhz * 1e6);
+            if (fft_plot)
+                fft_plot->frequency = freq_mhz * 1e6;
+        }
+
     public:
         RecorderApplication();
         ~RecorderApplication();
