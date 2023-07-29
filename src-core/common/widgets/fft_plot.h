@@ -21,6 +21,8 @@ namespace widgets
 
         bool enable_freq_scale = true;
 
+        double actual_sdr_freq = -1;
+
     public:
         FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
         void draw(ImVec2 size);

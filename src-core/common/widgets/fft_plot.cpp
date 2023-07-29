@@ -68,6 +68,13 @@ namespace widgets
                 window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
                                           i == 5 ? 0xFF00FF00 : col_base,
                                           cstr.c_str());
+                if (i == 5 && actual_sdr_freq != -1)
+                {
+                    auto cstr = "(" + formatFrequencyToString(actual_sdr_freq) + ")";
+                    window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 16 * ui_scale},
+                                              i == 5 ? 0xFF0000FF : col_base,
+                                              cstr.c_str());
+                }
             }
         }
 

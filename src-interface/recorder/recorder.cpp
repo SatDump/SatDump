@@ -200,6 +200,14 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
+                    bool pushed_color_xconv = xconverter_frequency != 0;
+                    if (pushed_color_xconv)
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
+                    if (ImGui::InputDouble("MHz (LO)##downupconverter", &xconverter_frequency))
+                        set_frequency(frequency_mhz);
+                    if (pushed_color_xconv)
+                        ImGui::PopStyleColor();
+
                     if (is_started)
                         style::endDisabled();
 
