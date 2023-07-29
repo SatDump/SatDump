@@ -137,7 +137,7 @@ namespace satdump
                 if (cfg.contains("decimation"))
                     current_decimation = cfg["decimation"].get<int>();
                 else
-                    current_decimation = 0;
+                    current_decimation = 1;
             }
         }
     }

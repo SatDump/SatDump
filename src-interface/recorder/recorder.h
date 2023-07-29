@@ -99,7 +99,13 @@ namespace satdump
         void start_recording();
         void stop_recording();
 
-        uint64_t get_samplerate() { return current_samplerate / current_decimation; }
+        uint64_t get_samplerate()
+        {
+            if (current_decimation > 0)
+                return current_samplerate / current_decimation;
+            else
+                return current_samplerate;
+        }
 
         void set_frequency(double freq_mhz)
         {
