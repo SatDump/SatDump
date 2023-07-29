@@ -484,6 +484,7 @@ namespace satdump
                             if (obj.live)
                             {
                                 pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                                pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
                                 start_processing();
                             }
 

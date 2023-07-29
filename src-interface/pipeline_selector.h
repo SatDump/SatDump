@@ -347,6 +347,12 @@ namespace satdump
             return params2;
         }
 
+        void setParameters(nlohmann::json params)
+        {
+            for (auto &el : params.items())
+                try_set_param(el.key(), el.value());
+        }
+
         void select_pipeline(std::string id)
         {
             for (int n = 0; n < (int)pipelines.size(); n++)

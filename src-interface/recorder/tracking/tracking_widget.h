@@ -28,7 +28,7 @@ namespace satdump
 
         struct TrackedObject
         {
-            int norad;
+            int norad = -1;
 
             // Config
             double frequency = 100e6;
@@ -46,6 +46,7 @@ namespace satdump
             j["record"] = v.record;
             j["live"] = v.live;
             j["pipeline_name"] = pipelines[v.pipeline_selector->pipeline_id].name;
+            j["pipeline_params"] = v.pipeline_selector->getParameters();
         }
 
         inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
@@ -55,6 +56,8 @@ namespace satdump
             v.record = j["record"];
             v.live = j["live"];
             v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
+            if (j.contains("pipeline_params"))
+                v.pipeline_selector->setParameters(j["pipeline_params"]);
         }
     }
 

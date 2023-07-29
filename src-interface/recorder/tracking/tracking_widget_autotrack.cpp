@@ -325,6 +325,7 @@ namespace satdump
                 ImGui::TableSetColumnIndex(4);
                 ImGui::PushID(cpass.norad);
                 cpass.pipeline_selector->renderSelectionBox();
+                cpass.pipeline_selector->renderParamTable();
                 ImGui::PopID();
                 // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
             }
