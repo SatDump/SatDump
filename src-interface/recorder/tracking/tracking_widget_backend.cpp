@@ -2,6 +2,7 @@
 #include "common/tracking/tle.h"
 #include "common/utils.h"
 #include "logger.h"
+#include <limits>
 
 namespace satdump
 {
