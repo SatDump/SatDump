@@ -12,6 +12,8 @@
 
 #include "rotator_handler.h"
 
+#include "../../pipeline_selector.h"
+
 namespace satdump
 {
     namespace tracking
@@ -32,7 +34,9 @@ namespace satdump
             double frequency = 100e6;
             bool record = false;
             bool live = false;
-            std::string pipeline_name = "";
+            // std::string pipeline_name = "";
+
+            std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
         };
 
         inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
@@ -41,7 +45,7 @@ namespace satdump
             j["frequency"] = v.frequency;
             j["record"] = v.record;
             j["live"] = v.live;
-            j["pipeline_name"] = v.pipeline_name;
+            j["pipeline_name"] = pipelines[v.pipeline_selector->pipeline_id].name;
         }
 
         inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
@@ -50,7 +54,7 @@ namespace satdump
             v.frequency = j["frequency"];
             v.record = j["record"];
             v.live = j["live"];
-            v.pipeline_name = j["pipeline_name"];
+            v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
         }
     }
 

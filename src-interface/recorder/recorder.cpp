@@ -483,7 +483,7 @@ namespace satdump
 
                             if (obj.live)
                             {
-                                pipeline_selector.select_pipeline(obj.pipeline_name);
+                                pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
                                 start_processing();
                             }
 
@@ -493,7 +493,7 @@ namespace satdump
                             }
                         };
 
-                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject)
                         {
                             stop_recording();
                             stop_processing();

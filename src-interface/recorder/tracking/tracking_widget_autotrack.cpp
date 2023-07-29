@@ -323,7 +323,10 @@ namespace satdump
                 ImGui::TableSetColumnIndex(3);
                 ImGui::Checkbox(((std::string) "Live##objcfgfreq3" + std::to_string(cpass.norad)).c_str(), &cpass.live);
                 ImGui::TableSetColumnIndex(4);
-                ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
+                ImGui::PushID(cpass.norad);
+                cpass.pipeline_selector->renderSelectionBox();
+                ImGui::PopID();
+                // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
             }
 
             ImGui::EndTable();
