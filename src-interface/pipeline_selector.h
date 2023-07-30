@@ -44,6 +44,8 @@ namespace satdump
             return false;
         }
 
+        std::mutex pipeline_mtx;
+
     public:
         PipelineUISelector(bool live_mode) : live_mode(live_mode)
         {
@@ -115,6 +117,7 @@ namespace satdump
 
         void renderSelectionBox(double width = -1)
         {
+            pipeline_mtx.lock();
             if (width != -1)
                 ImGui::SetNextItemWidth(width);
             ImGui::InputTextWithHint("##pipelinesearchbox", u8"\uf422   Search pipelines", &pipeline_search_in);
@@ -266,6 +269,7 @@ namespace satdump
                 }
                 ImGui::EndListBox();
             }
+            pipeline_mtx.unlock();
         }
 
         void try_set_param(std::string name, nlohmann::json v)
@@ -281,6 +285,7 @@ namespace satdump
 
         void drawMainparams()
         {
+            pipeline_mtx.lock();
             ImGui::BeginTable("##pipelinesmainoptions", 2);
             ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100);
             ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100);
@@ -316,6 +321,7 @@ namespace satdump
             ImGui::TableSetColumnIndex(1);
             ImGui::Combo("##pipelinelevel", &pipelines_levels_select_id, pipeline_levels_str.c_str());
             ImGui::EndTable();
+            pipeline_mtx.unlock();
         }
 
         void drawMainparamsLive()
@@ -349,17 +355,23 @@ namespace satdump
 
         void setParameters(nlohmann::json params)
         {
+            pipeline_mtx.lock();
             for (auto &el : params.items())
                 try_set_param(el.key(), el.value());
+            pipeline_mtx.unlock();
         }
 
         void select_pipeline(std::string id)
         {
+            pipeline_mtx.lock();
             for (int n = 0; n < (int)pipelines.size(); n++)
             {
                 if (id == pipelines[n].name)
                     pipeline_id = n;
             }
+
+            updateSelectedPipeline();
+            pipeline_mtx.unlock();
         }
     };
 }
