@@ -2,7 +2,7 @@
 #include "common/tracking/tle.h"
 #include "common/utils.h"
 #include "logger.h"
-#include <limits>
+#include <cfloat>
 
 namespace satdump
 {
@@ -181,7 +181,7 @@ namespace satdump
             if (predict_is_geosynchronous(satellite_object))
             {
                 next_aos_time = 0;
-                next_los_time = std::numeric_limits<double>::max();
+                next_los_time = DBL_MAX;
                 return;
             }
 
