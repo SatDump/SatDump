@@ -94,10 +94,11 @@ namespace satdump
                         max_el = observation_pos2.elevation * RAD_TO_DEG;
                 }
 
-                upcoming_satellite_passes_all.push_back({obj.norad,
-                                                         next_aos_time_,
-                                                         next_los_time_,
-                                                         max_el});
+                if (max_el >= autotrack_min_elevation)
+                    upcoming_satellite_passes_all.push_back({obj.norad,
+                                                             next_aos_time_,
+                                                             next_los_time_,
+                                                             max_el});
                 // logger->info("Pass of %s at AOS %s LOS %s elevation %.2f", tle.name.c_str(),
                 //              timestamp_to_string(next_aos_time_).c_str(),
                 //              timestamp_to_string(next_los_time_).c_str(),
@@ -191,6 +192,9 @@ namespace satdump
         }
         ImGui::EndGroup();
 
+        ImGui::SetNextItemWidth(200 * ui_scale);
+        ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
+
         if (ImGui::Button("Update Passes"))
         {
             updateAutotrackPasses();
@@ -217,7 +221,7 @@ namespace satdump
 
 #if 1
         {
-            int d_pplot_height = (upcoming_satellite_passes_all.size() * 5) * ui_scale;
+            int d_pplot_height = (enabled_satellites.size() * 20) * ui_scale;
             int d_pplot_size = ImGui::GetWindowContentRegionWidth();
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),

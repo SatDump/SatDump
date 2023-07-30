@@ -114,11 +114,16 @@ namespace dsp
             if (should_repeat && input_file.eof())
             {
                 input_file.clear();
+#ifdef BUILD_ZIQ
                 if (format == ZIQ)
                     ziqReader->seekg(0);
-                else if (format == ZIQ2)
+                else
+#endif
+#ifdef BUILD_ZIQ2
+                    if (format == ZIQ2)
                     input_file.seekg(4);
                 else
+#endif
                     input_file.seekg(0);
             }
 

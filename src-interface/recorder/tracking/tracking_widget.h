@@ -156,6 +156,8 @@ namespace satdump
 
         bool autotrack_pass_has_started = false;
 
+        float autotrack_min_elevation = 0;
+
     private: // UI Functions
         void renderPolarPlot();
         void renderSelectionMenu();
@@ -167,6 +169,7 @@ namespace satdump
         {
             config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = enabled_satellites;
             config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"] = rotator_update_period;
+            config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = autotrack_min_elevation;
 
             config::saveUserConfig();
         }
@@ -177,6 +180,7 @@ namespace satdump
             {
                 enabled_satellites = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["enabled_objects"], std::vector<tracking::TrackedObject>());
                 rotator_update_period = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"], rotator_update_period);
+                autotrack_min_elevation = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["min_elevation"], autotrack_min_elevation);
             }
         }
 
