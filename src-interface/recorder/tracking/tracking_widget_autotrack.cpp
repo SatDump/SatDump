@@ -152,6 +152,10 @@ namespace satdump
     void TrackingWidget::renderAutotrackConfig()
     {
         upcoming_satellite_passes_mtx.lock();
+
+        if (autotrack_engaged)
+            style::beginDisabled();
+
         ImGui::BeginGroup();
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingavailablesatsbox"))
@@ -195,13 +199,19 @@ namespace satdump
         ImGui::SetNextItemWidth(200 * ui_scale);
         ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
 
+        if (autotrack_engaged)
+            style::endDisabled();
+
         if (ImGui::Button("Update Passes"))
         {
             updateAutotrackPasses();
         }
+
         ImGui::SameLine();
         if (ImGui::Checkbox("Engage Autotrack", &autotrack_engaged))
         {
+            updateAutotrackPasses();
+
             if (upcoming_satellite_passes_sel.size() > 0)
             {
                 for (int i = 0; i < (int)general_tle_registry.size(); i++)
@@ -312,6 +322,8 @@ namespace satdump
             ImGui::Dummy(ImVec2(d_pplot_size + 3 * ui_scale, d_pplot_height + 3 * ui_scale));
         }
 #endif
+        if (autotrack_engaged)
+            style::beginDisabled();
 
         if (ImGui::BeginTable("##trackingwidgettrackeobjectsconfig", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
@@ -337,6 +349,8 @@ namespace satdump
             ImGui::EndTable();
         }
 
+        if (autotrack_engaged)
+            style::endDisabled();
 #if 0
         if (ImGui::BeginTable("##trackingwidgettable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
