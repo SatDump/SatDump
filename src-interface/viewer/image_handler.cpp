@@ -534,12 +534,24 @@ namespace satdump
 
             if (ImGui::Button("Save"))
             {
-                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>() + "/";
+                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+#ifdef _MSC_VER
+                if (default_path == ".")
+                {
+                    char* cwd;
+                    cwd = _getcwd(NULL, 0);
+                    if (cwd != 0)
+                        default_path = cwd;
+                }
+                default_path += "\\";
+#else
+                default_path += "/";
+#endif
                 std::string default_name = default_path +
                                            products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {"*.png"});
+                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

@@ -6,6 +6,10 @@
 #include "imgui/imgui_stdlib.h"
 #include "android_dialogs.h"
 
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
 struct FileSelectWidget
 {
     std::string label;
@@ -31,6 +35,16 @@ struct FileSelectWidget
         bool is_dir = std::filesystem::is_directory(path);
         file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
 
+#ifdef _MSC_VER
+        if (default_dir == ".")
+        {
+            char* cwd;
+            cwd = _getcwd(NULL, 0);
+            if (cwd != 0)
+                default_dir = cwd;
+        }
+#endif
+
         if (!file_valid)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
         changed |= ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
@@ -44,7 +58,7 @@ struct FileSelectWidget
 #ifdef __ANDROID__
                 show_select_file_dialog();
 #else
-                auto fileselect = pfd::open_file(selection_text.c_str(), default_dir, {});
+                auto fileselect = pfd::open_file(selection_text.c_str(), default_dir, { "All Files", "*" }, pfd::opt::force_path);
 
                 while (!fileselect.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -58,7 +72,7 @@ struct FileSelectWidget
 #ifdef __ANDROID__
                 show_select_directory_dialog();
 #else
-                auto dirselect = pfd::select_folder(selection_text.c_str(), default_dir);
+                auto dirselect = pfd::select_folder(selection_text.c_str(), default_dir, pfd::opt::force_path);
 
                 while (!dirselect.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
