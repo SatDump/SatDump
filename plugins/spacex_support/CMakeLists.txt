@@ -44,4 +44,4 @@ else()
     endif()
 endif()
 
-install(TARGETS spacex_support DESTINATION share/satdump/plugins)
+install(TARGETS spacex_support DESTINATION lib/satdump/plugins)

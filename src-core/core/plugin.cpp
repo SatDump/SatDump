@@ -42,10 +42,10 @@ std::string android_plugins_dir = "";
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)
 {
 #ifdef __ANDROID__
-    // std::string plugins_path = satdump::RESPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
+    // std::string plugins_path = satdump::LIBPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
     std::string plugins_path = android_plugins_dir + "/";
 #else
-    std::string plugins_path = satdump::RESPATH + "plugins";
+    std::string plugins_path = satdump::LIBPATH + "plugins";
 #endif
 
     if (std::filesystem::exists("plugins"))

@@ -30,8 +30,10 @@ target_include_directories(satdump_core PUBLIC .)
 # Set the resources path
 if(MSVC)
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/lib/satdump/")
 endif()
 
 # We have to... For MSVC

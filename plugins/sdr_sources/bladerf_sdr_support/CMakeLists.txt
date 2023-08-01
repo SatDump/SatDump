@@ -39,7 +39,7 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
 
     target_include_directories(bladerf_sdr_support PUBLIC src)
 
-    install(TARGETS bladerf_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("BladeRF Library could not be found! Not building.")
 endif()
