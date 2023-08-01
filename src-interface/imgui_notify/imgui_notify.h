@@ -31,7 +31,7 @@
 #include <vector>
 #include <string>
 #include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
+#include "common/imgui_utils.h"
 #include <chrono>
 #include <algorithm>
 #include <stdarg.h>
@@ -249,7 +249,7 @@ namespace ImGui
 			sprintf(window_name, "##TOAST%d", i);
 			i++;
 			Begin(window_name, NULL, NOTIFY_TOAST_FLAGS);
-			BringWindowToDisplayFront(GetCurrentWindow());
+			ImGuiUtils_BringCurrentWindowToFront();
 
 			// Here we render the toast content
 			{
