@@ -17,8 +17,13 @@ namespace satdump
         {
             pipeline_selector = std::make_unique<PipelineUISelector>(false);
 
-            pipeline_selector->inputfileselect.default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>() + "/";
-            pipeline_selector->outputdirselect.default_dir = config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>() + "/";
+            pipeline_selector->inputfileselect.default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
+            pipeline_selector->outputdirselect.default_dir = config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>();
+
+#ifndef _MSC_VER
+            pipeline_selector->inputfileselect.default_dir += "/";
+            pipeline_selector->outputdirselect.default_dir += "/";
+#endif
         }
 
         void render()

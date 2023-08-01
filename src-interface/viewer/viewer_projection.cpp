@@ -10,6 +10,10 @@
 #include "common/widgets/switch.h"
 #include "libs/tiny-regex-c/re.h"
 
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
 namespace satdump
 {
     re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
@@ -104,11 +108,23 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
-                std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>() + "/";
+                std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
+#ifdef _MSC_VER
+                if (default_path == ".")
+                {
+                    char* cwd;
+                    cwd = _getcwd(NULL, 0);
+                    if (cwd != 0)
+                        default_path = cwd;
+                }
+                default_path += "\\";
+#else
+                default_path += "/";
+#endif
                 std::string default_name = default_path + "projection.png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Projection", default_name, {"*.png"});
+                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
