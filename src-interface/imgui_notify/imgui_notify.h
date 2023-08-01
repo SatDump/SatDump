@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include <chrono>
 #include <algorithm>
 #include <stdarg.h>
@@ -46,7 +47,7 @@ const float NOTIFY_PADDING_X = 20.f;			// Bottom-left X padding
 const float NOTIFY_PADDING_Y = 20.f;			// Bottom-left Y padding
 const float NOTIFY_PADDING_MESSAGE_Y = 10.f;	// Padding Y between each message
 const float NOTIFY_OPACITY = 1.0f;				// 0-1 Toast opacity
-const ImGuiWindowFlags NOTIFY_TOAST_FLAGS = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing;
+const ImGuiWindowFlags NOTIFY_TOAST_FLAGS = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoSavedSettings;
 
 // Comment out if you don't want any separator between title and content
 #define NOTIFY_USE_SEPARATOR
@@ -248,6 +249,7 @@ namespace ImGui
 			sprintf(window_name, "##TOAST%d", i);
 			i++;
 			Begin(window_name, NULL, NOTIFY_TOAST_FLAGS);
+			BringWindowToDisplayFront(GetCurrentWindow());
 
 			// Here we render the toast content
 			{
