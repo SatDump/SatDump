@@ -62,9 +62,9 @@ namespace satdump
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Rot Az");
+            ImGui::Text("Rotator Az");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("Rot El");
+            ImGui::Text("Rotator El");
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
