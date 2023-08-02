@@ -17,4 +17,4 @@ else()
     message("Could not find HDF5 libraries. Geonetcast HDF5 processing disabled!")
 endif()
 
-install(TARGETS geonetcast_support DESTINATION share/satdump/plugins)
+install(TARGETS geonetcast_support DESTINATION lib/satdump/plugins)

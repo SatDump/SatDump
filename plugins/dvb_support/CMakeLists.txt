@@ -37,4 +37,4 @@ else()
     message("SSE Features not found! This is only an error on x86 CPUs that should support SSE4.1")
 endif()
 
-install(TARGETS dvb_support DESTINATION share/satdump/plugins)
+install(TARGETS dvb_support DESTINATION lib/satdump/plugins)

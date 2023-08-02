@@ -22,7 +22,7 @@ if(SDRPLAY_LIBRARY OR MSVC)
 
     target_include_directories(sdrplay_sdr_support PUBLIC src)
 
-    install(TARGETS sdrplay_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS sdrplay_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("SDRlay Library could not be found! Not building.")
 endif()

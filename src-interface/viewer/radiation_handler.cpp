@@ -5,6 +5,10 @@
 #include "core/style.h"
 #include "common/projection/reprojector.h"
 
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
 namespace satdump
 {
     void RadiationViewerHandler::init()
@@ -67,10 +71,23 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Save"))
             {
-                std::string default_name = products->instrument_name + "_map.png";
+                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+#ifdef _MSC_VER
+                if (default_path == ".")
+                {
+                    char* cwd;
+                    cwd = _getcwd(NULL, 0);
+                    if (cwd != 0)
+                        default_path = cwd;
+                }
+                default_path += "\\";
+#else
+                default_path += "/";
+#endif
+                std::string default_name = default_path + products->instrument_name + "_map.png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {"*.png"});
+                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

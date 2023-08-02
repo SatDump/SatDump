@@ -12,4 +12,4 @@ if(MSVC)
     target_link_libraries(spyserver_support PUBLIC ws2_32)
 endif()
 
-install(TARGETS spyserver_support DESTINATION share/satdump/plugins)
+install(TARGETS spyserver_support DESTINATION lib/satdump/plugins)
