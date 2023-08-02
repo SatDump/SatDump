@@ -6,6 +6,7 @@
 #include "core/config.h"
 #include <filesystem>
 #include "core/plugin.h"
+#include <thread>
 
 namespace satdump
 {
@@ -43,7 +44,10 @@ namespace satdump
                     success = false;
                 trials++;
                 if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
                     logger->warn("Failed getting TLEs. Retrying...");
+                }
             }
         }
 
