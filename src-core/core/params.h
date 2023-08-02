@@ -147,7 +147,7 @@ namespace satdump
                 if (d_type == PARAM_STRING)
                     ImGui::InputText(d_id.c_str(), p_string, 1000);
                 else if (d_type == PARAM_INT)
-                    ImGui::InputInt(d_id.c_str(), &p_int);
+                    ImGui::InputInt(d_id.c_str(), &p_int, 0);
                 else if (d_type == PARAM_FLOAT)
                     ImGui::InputDouble(d_id.c_str(), &p_float);
                 else if (d_type == PARAM_BOOL)
