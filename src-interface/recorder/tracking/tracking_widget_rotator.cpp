@@ -85,10 +85,7 @@ namespace satdump
         ImGui::SameLine();
         ImGui::Checkbox("Track", &rotator_tracking);
         ImGui::SameLine();
-        if (ImGui::Button("Cfg"))
-            show_window_config = true;
 
-        ImGui::Separator();
 
         if (rotator_handler->is_connected())
             style::beginDisabled();

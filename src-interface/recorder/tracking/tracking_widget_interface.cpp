@@ -105,7 +105,42 @@ namespace satdump
                 draw_list->AddLine({point_x, point_y + 5 * ui_scale}, {point_x, point_y + 12 * ui_scale}, ImColor(0, 237, 255, 255), 2.0);
             }
         }
+#if 1
+        if (next_aos_time != 0 && next_los_time != 0)
+        {
+            double timeOffset = 0, ctime = getTime();
+            if (next_aos_time > ctime)
+                timeOffset = next_aos_time - ctime;
+            else
+                timeOffset = next_los_time - ctime;
 
+            int hours = timeOffset / 3600;
+            int minutes = fmod(timeOffset / 60, 60);
+            int seconds = fmod(timeOffset, 60);
+
+            std::string time_dis = (hours < 10 ? "0" : "") + std::to_string(hours) + ":" +
+                                   (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
+                                   (seconds < 10 ? "0" : "") + std::to_string(seconds);
+
+            ImVec2 cur = ImGui::GetCursorPos();
+            ImVec2 curs = ImGui::GetCursorScreenPos();
+            ImVec2 size = ImGui::CalcTextSize((horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite] + (next_aos_time > ctime ? "AOS" : "LOS") + "in" + time_dis).c_str());
+            draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s %s in %s", horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite].c_str(), next_aos_time > ctime ? "AOS" : "LOS" , time_dis.c_str());
+            curs = ImGui::GetCursorScreenPos();
+            char buff[9];
+            snprintf(buff, sizeof(buff), "Az: %.1f", current_az);
+            size = ImGui::CalcTextSize(buff);
+            draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "Az: %.1f", current_az);
+            curs = ImGui::GetCursorScreenPos();
+            snprintf(buff, sizeof(buff), "El: %.1f", current_el);
+            size = ImGui::CalcTextSize(buff);
+            draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "El: %.1f", current_el);
+            ImGui::SetCursorPos(cur);
+        }
+#endif
         ImGui::Dummy(ImVec2(d_pplot_size + 3 * ui_scale, d_pplot_size + 3 * ui_scale));
     }
 
@@ -115,6 +150,26 @@ namespace satdump
 
         if (backend_needs_update)
             style::beginDisabled();
+
+        if (ImGui::BeginTable("##trackingradiotable", 2, (ImGuiTableFlags)NULL))
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            if (ImGui::RadioButton("Satellites", !horizons_mode))
+            {
+                horizons_mode = false;
+                update_global = true;
+            }
+            ImGui::TableSetColumnIndex(1);
+            if (ImGui::RadioButton("Horizons", horizons_mode))
+            {
+                if (horizonsoptions.size() == 1)
+                    horizonsoptions = pullHorizonsList();
+                horizons_mode = true;
+                update_global = true;
+            }
+            ImGui::EndTable();
+        }
 
         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
         if (horizons_mode)
@@ -160,26 +215,6 @@ namespace satdump
                 }
                 ImGui::EndCombo();
             }
-        }
-
-        if (ImGui::BeginTable("##trackingradiotable", 2, (ImGuiTableFlags)NULL))
-        {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            if (ImGui::RadioButton("Satellites", !horizons_mode))
-            {
-                horizons_mode = false;
-                update_global = true;
-            }
-            ImGui::TableSetColumnIndex(1);
-            if (ImGui::RadioButton("Horizons", horizons_mode))
-            {
-                if (horizonsoptions.size() == 1)
-                    horizonsoptions = pullHorizonsList();
-                horizons_mode = true;
-                update_global = true;
-            }
-            ImGui::EndTable();
         }
 
         if (backend_needs_update)
