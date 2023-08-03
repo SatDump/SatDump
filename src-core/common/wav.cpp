@@ -159,7 +159,7 @@ namespace wav
             }
 
             // Other filename (NOAA-APT-v2?)
-            int satnum = 0;
+            // satnum = 0;
             if (sscanf(filename.c_str(),
                        "NOAA%2d-%4d%2d%2d-%2d%2d%2d",
                        &satnum,
