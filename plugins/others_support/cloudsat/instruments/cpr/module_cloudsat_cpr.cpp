@@ -31,6 +31,7 @@ namespace cloudsat
             time_t lastTime = 0;
 
             CPReader reader;
+            std::string filename;
             uint8_t buffer[402];
 
             logger->info("Demultiplexing and deframing...");
@@ -61,7 +62,8 @@ namespace cloudsat
                 std::filesystem::create_directory(directory);
 
             image::Image<uint16_t> image = reader.getChannel();
-            WRITE_IMAGE(image, directory + "/CPR");
+            filename = directory + "/CPR";
+            WRITE_IMAGE(image, filename);
 
             image::Image<uint8_t> clut = image::scale_lut<uint8_t>(65536, 0, 65536, image::LUT_jet<uint8_t>());
             image::Image<uint8_t> rain(image.width(), image.height(), 3);
@@ -75,7 +77,8 @@ namespace cloudsat
                 rain.channel(2)[i] = clut.channel(2)[index];
             }
 
-            WRITE_IMAGE(rain, directory + "/CPR-LUT");
+            filename = directory + "/CPR-LUT";
+            WRITE_IMAGE(rain, filename);
         }
 
         void CloudSatCPRDecoderModule::drawUI(bool window)

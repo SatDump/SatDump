@@ -26,7 +26,7 @@ namespace elektro_arktika
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-
+            std::string filename;
             uint8_t cadu[1024];
 
             def::SimpleDeframer deframerVIS1(0x0218a7a392dd9abf, 64, 121680, 10, true);
@@ -117,20 +117,20 @@ namespace elektro_arktika
 
             image1.crop(0, 1421, 12008, 1421 + 12008);
             channels_statuses[0] = SAVING;
-            logger->info("Channel VIS 1...");
-            WRITE_IMAGE(image1, directory + "/MSU-GS-1");
+            filename = directory + "/MSU-GS-1";
+            WRITE_IMAGE(image1, filename);
             channels_statuses[0] = DONE;
 
             image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
             channels_statuses[1] = SAVING;
-            logger->info("Channel VIS 2...");
-            WRITE_IMAGE(image2, directory + "/MSU-GS-2");
+            filename = directory + "/MSU-GS-2";
+            WRITE_IMAGE(image2, filename);
             channels_statuses[1] = DONE;
 
             image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
             channels_statuses[2] = SAVING;
-            logger->info("Channel VIS 3...");
-            WRITE_IMAGE(image3, directory + "/MSU-GS-3");
+            filename = directory + "/MSU-GS-3";
+            WRITE_IMAGE(image3, filename);
             channels_statuses[2] = DONE;
 
             for (int i = 0; i < 7; i++)
@@ -140,7 +140,8 @@ namespace elektro_arktika
                 image::Image<uint16_t> img = infr_reader.getImage(i);
                 img.crop(183, 3294);
                 channels_statuses[3 + i] = SAVING;
-                WRITE_IMAGE(img, directory + "/MSU-GS-" + std::to_string(i + 4));
+                filename = directory + "/MSU-GS-" + std::to_string(i + 4);
+                WRITE_IMAGE(img, filename);
                 channels_statuses[3 + i] = DONE;
             }
 
@@ -154,7 +155,8 @@ namespace elektro_arktika
                     image221.draw_image(2, image1, 0, 0);
                 }
                 image221.white_balance();
-                WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221");
+                filename = directory + "/MSU-GS-RGB-221";
+                WRITE_IMAGE(image221, filename);
             }
 
             logger->info("Natural Color Composite...");
@@ -173,8 +175,8 @@ namespace elektro_arktika
 
                     imageNC.white_balance();
                 }
-                logger->info("Saving...");
-                WRITE_IMAGE(imageNC, directory + "/MSU-GS-RGB-NC");
+                filename = directory + "/MSU-GS-RGB-NC";
+                WRITE_IMAGE(imageNC, filename);
             }
             */
         }

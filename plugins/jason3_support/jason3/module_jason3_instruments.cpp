@@ -26,6 +26,7 @@ namespace jason3
             logger->info("Using input frames " + d_input_file);
 
             time_t lastTime = 0;
+            std::string filename;
             uint8_t cadu[1279];
 
             // Demuxers
@@ -92,8 +93,8 @@ namespace jason3
 
                 for (int i = 0; i < 3; i++)
                 {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(amr2_reader.getChannel(i), directory + "/AMR2-" + std::to_string(i + 1));
+                    filename = directory + "/AMR2-" + std::to_string(i + 1);
+                    WRITE_IMAGE(amr2_reader.getChannel(i), filename);
                 }
                 amr2_status = DONE;
             }

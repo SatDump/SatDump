@@ -39,6 +39,7 @@ namespace eos
             logger->info("Using input frames " + d_input_file);
 
             time_t lastTime = 0;
+            std::string filename;
             uint8_t cadu[1024];
 
             // Demuxers
@@ -323,20 +324,20 @@ namespace eos
                 logger->info("Lines (FM3) : " + std::to_string(ceres_fm3_reader.lines));
                 logger->info("Lines (FM4) : " + std::to_string(ceres_fm4_reader.lines));
 
-                logger->info("Shortwave Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(0), directory + "/CERES1-SHORTWAVE");
-                logger->info("Longwave Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(1), directory + "/CERES1-LONGWAVE");
-                logger->info("Total Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(2), directory + "/CERES1-TOTAL");
+                filename = directory + "/CERES1-SHORTWAVE";
+                WRITE_IMAGE(ceres_fm3_reader.getImage(0), filename);
+                filename = directory + "/CERES1-LONGWAVE";
+                WRITE_IMAGE(ceres_fm3_reader.getImage(1), filename);
+                filename = directory + "/CERES1-TOTAL";
+                WRITE_IMAGE(ceres_fm3_reader.getImage(2), filename);
                 ceres_fm3_status = DONE;
 
-                logger->info("Shortwave Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(0), directory + "/CERES2-SHORTWAVE");
-                logger->info("Longwave Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(1), directory + "/CERES2-LONGWAVE");
-                logger->info("Total Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(2), directory + "/CERES2-TOTAL");
+                filename = directory + "/CERES2-SHORTWAVE";
+                WRITE_IMAGE(ceres_fm4_reader.getImage(0), filename);
+                filename = directory + "/CERES2-LONGWAVE";
+                WRITE_IMAGE(ceres_fm4_reader.getImage(1), filename);
+                filename = directory + "/CERES2-TOTAL";
+                WRITE_IMAGE(ceres_fm4_reader.getImage(2), filename);
                 ceres_fm4_status = DONE;
             }
 
@@ -352,18 +353,24 @@ namespace eos
                 logger->info("Lines (UV) : " + std::to_string(omi_1_reader.lines));
                 logger->info("Lines (VIS) : " + std::to_string(omi_2_reader.lines));
 
-                WRITE_IMAGE(omi_1_reader.getImageRaw(), directory + "/OMI-1");
-                WRITE_IMAGE(omi_2_reader.getImageRaw(), directory + "/OMI-2");
+                filename = directory + "/OMI-1";
+                WRITE_IMAGE(omi_1_reader.getImageRaw(), filename);
+                filename = directory + "/OMI-2";
+                WRITE_IMAGE(omi_2_reader.getImageRaw(), filename);
 
-                WRITE_IMAGE(omi_1_reader.getImageVisible(), directory + "/OMI-VIS-1");
-                WRITE_IMAGE(omi_2_reader.getImageVisible(), directory + "/OMI-VIS-2");
+                filename = directory + "/OMI-VIS-1";
+                WRITE_IMAGE(omi_1_reader.getImageVisible(), filename);
+                filename = directory + "/OMI-VIS-2";
+                WRITE_IMAGE(omi_2_reader.getImageVisible(), filename);
 
                 image::Image<uint16_t> imageAll1 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
                                                                                            { return omi_1_reader.getChannel(c); });
                 image::Image<uint16_t> imageAll2 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
                                                                                            { return omi_2_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1");
-                WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2");
+                filename = directory + "/OMI-ALL-1";
+                WRITE_IMAGE(imageAll1, filename);
+                filename = directory + "/OMI-ALL-2";
+                WRITE_IMAGE(imageAll2, filename);
                 omi_status = DONE;
             }
 
