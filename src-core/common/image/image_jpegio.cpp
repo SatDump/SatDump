@@ -182,6 +182,7 @@ namespace image
         cinfo.input_components = jpeg_channels;
         cinfo.in_color_space = jpeg_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
         jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, 90, true);
         jpeg_start_compress(&cinfo, true);
 
         // Init output buffer
