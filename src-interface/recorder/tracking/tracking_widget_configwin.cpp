@@ -2,6 +2,7 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "common/imgui_utils.h"
 
 namespace satdump
 {
@@ -12,19 +13,24 @@ namespace satdump
             ImGui::Begin("Tracking Configuration", &show_window_config);
             ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
 
-            if (ImGui::BeginTabBar("##trackingtabbar")){
-                if (ImGui::BeginTabItem("Scheduling")){
+            if (ImGui::BeginTabBar("##trackingtabbar"))
+            {
+                if (ImGui::BeginTabItem("Scheduling"))
+                {
                     ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
                     renderAutotrackConfig();
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem("Rotator Config")){
+                if (ImGui::BeginTabItem("Rotator Config"))
+                {
                     ImGui::InputFloat("Update Period (s)", &rotator_update_period);
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
             }
+
+            ImGuiUtils_BringCurrentWindowToFront();
             ImGui::End();
         }
     }
