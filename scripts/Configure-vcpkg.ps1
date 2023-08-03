@@ -14,7 +14,7 @@ if(Test-Path "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..\vcpkg" -Erro
 Write-Output "Configuing vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 mkdir vcpkg | Out-Null
-git clone -b debug --depth 1 https://github.com/JVital2013/vcpkg-satdump.git vcpkg
+git clone --depth 1 https://github.com/Aang23/vcpkg.git
 cd vcpkg
 
 #Install SDRPlay API into vcpkg
