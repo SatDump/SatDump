@@ -72,8 +72,8 @@ namespace coriolis
 
             for (int i = 0; i < 11; i++)
             {
-                WRITE_IMAGE(readers[i]->getImage1(), directory + "/WindSat-" + std::to_string(i + 1) + ".png");
-                WRITE_IMAGE(readers[i]->getImage2(), directory + "/WindSat-" + std::to_string(i + 12) + ".png");
+                WRITE_IMAGE(readers[i]->getImage1(), directory + "/WindSat-" + std::to_string(i + 1));
+                WRITE_IMAGE(readers[i]->getImage2(), directory + "/WindSat-" + std::to_string(i + 12));
             }
 
             data_in.close();

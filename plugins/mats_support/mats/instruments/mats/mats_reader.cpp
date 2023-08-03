@@ -65,7 +65,7 @@ namespace mats
                                 std::string path = directory + "/Raw_Images/" + channel_names[channel_marker];
                                 if (!std::filesystem::exists(path))
                                     std::filesystem::create_directories(path);
-                                img.save_png(path + "/" + std::to_string(img_cnts[channel_marker]++) + ".png");
+                                img.save_img(path + "/" + std::to_string(img_cnts[channel_marker]++));
                             }
                         }
                     }

@@ -70,7 +70,7 @@ namespace oceansat
             ocm_products.bit_depth = 12;
 
             for (int i = 0; i < 8; i++)
-                ocm_products.images.push_back({"OCM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ocm_reader.getChannel(i)});
+                ocm_products.images.push_back({"OCM-" + std::to_string(i + 1), std::to_string(i + 1), ocm_reader.getChannel(i)});
 
             ocm_products.save(directory);
             dataset.products_list.push_back("OCM");
@@ -88,15 +88,15 @@ namespace oceansat
                     image642.draw_image(1, image4);
                     image642.draw_image(2, image2);
                 }
-                WRITE_IMAGE(image642, directory + "/OCM-RGB-642.png");
+                WRITE_IMAGE(image642, directory + "/OCM-RGB-642");
                 image642.equalize();
                 image642.normalize();
-                WRITE_IMAGE(image642, directory + "/OCM-RGB-642-EQU.png");
+                WRITE_IMAGE(image642, directory + "/OCM-RGB-642-EQU");
                 image::Image<uint16_t> corrected642 = image::earth_curvature::correct_earth_curvature(image642,
                                                                                                       OCEANSAT2_ORBIT_HEIGHT,
                                                                                                       OCEANSAT2_OCM2_SWATH,
                                                                                                       OCEANSAT2_OCM2_RES);
-                WRITE_IMAGE(corrected642, directory + "/OCM-RGB-642-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected642, directory + "/OCM-RGB-642-EQU-CORRECTED");
             }
 
             logger->info("654 Composite...");
@@ -107,15 +107,15 @@ namespace oceansat
                     image654.draw_image(1, image5);
                     image654.draw_image(2, image4);
                 }
-                WRITE_IMAGE(image654, directory + "/OCM-RGB-654.png");
+                WRITE_IMAGE(image654, directory + "/OCM-RGB-654");
                 image654.equalize();
                 image654.normalize();
-                WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU.png");
+                WRITE_IMAGE(image654, directory + "/OCM-RGB-654-EQU");
                 image::Image<uint16_t> corrected654 = image::earth_curvature::correct_earth_curvature(image654,
                                                                                                       OCEANSAT2_ORBIT_HEIGHT,
                                                                                                       OCEANSAT2_OCM2_SWATH,
                                                                                                       OCEANSAT2_OCM2_RES);
-                WRITE_IMAGE(corrected654, directory + "/OCM-RGB-654-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected654, directory + "/OCM-RGB-654-EQU-CORRECTED");
             }
 
             logger->info("754 Composite...");
@@ -126,15 +126,15 @@ namespace oceansat
                     image754.draw_image(1, image5);
                     image754.draw_image(2, image4);
                 }
-                WRITE_IMAGE(image754, directory + "/OCM-RGB-754.png");
+                WRITE_IMAGE(image754, directory + "/OCM-RGB-754");
                 image754.equalize();
                 image754.normalize();
-                WRITE_IMAGE(image754, directory + "/OCM-RGB-754-EQU.png");
+                WRITE_IMAGE(image754, directory + "/OCM-RGB-754-EQU");
                 image::Image<uint16_t> corrected754 = image::earth_curvature::correct_earth_curvature(image754,
                                                                                                       OCEANSAT2_ORBIT_HEIGHT,
                                                                                                       OCEANSAT2_OCM2_SWATH,
                                                                                                       OCEANSAT2_OCM2_RES);
-                WRITE_IMAGE(corrected754, directory + "/OCM-RGB-754-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected754, directory + "/OCM-RGB-754-EQU-CORRECTED");
             }
             logger->info("882 Composite...");
             {
@@ -144,15 +144,15 @@ namespace oceansat
                     image882.draw_image(1, image8);
                     image882.draw_image(2, image2);
                 }
-                WRITE_IMAGE(image882, directory + "/OCM-RGB-882.png");
+                WRITE_IMAGE(image882, directory + "/OCM-RGB-882");
                 image882.equalize();
                 image882.normalize();
-                WRITE_IMAGE(image882, directory + "/OCM-RGB-882-EQU.png");
+                WRITE_IMAGE(image882, directory + "/OCM-RGB-882-EQU");
                 image::Image<uint16_t> corrected882 = image::earth_curvature::correct_earth_curvature(image882,
                                                                                                       OCEANSAT2_ORBIT_HEIGHT,
                                                                                                       OCEANSAT2_OCM2_SWATH,
                                                                                                       OCEANSAT2_OCM2_RES);
-                WRITE_IMAGE(corrected882, directory + "/OCM-RGB-882-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected882, directory + "/OCM-RGB-882-EQU-CORRECTED");
             }
 
             logger->info("662 Composite...");
@@ -163,15 +163,15 @@ namespace oceansat
                     image662.draw_image(1, image6);
                     image662.draw_image(2, image2);
                 }
-                WRITE_IMAGE(image662, directory + "/OCM-RGB-662.png");
+                WRITE_IMAGE(image662, directory + "/OCM-RGB-662");
                 image662.equalize();
                 image662.normalize();
-                WRITE_IMAGE(image662, directory + "/OCM-RGB-662-EQU.png");
+                WRITE_IMAGE(image662, directory + "/OCM-RGB-662-EQU");
                 image::Image<uint16_t> corrected662 = image::earth_curvature::correct_earth_curvature(image662,
                                                                                                       OCEANSAT2_ORBIT_HEIGHT,
                                                                                                       OCEANSAT2_OCM2_SWATH,
                                                                                                       OCEANSAT2_OCM2_RES);
-                WRITE_IMAGE(corrected662, directory + "/OCM-RGB-662-EQU-CORRECTED.png");
+                WRITE_IMAGE(corrected662, directory + "/OCM-RGB-662-EQU-CORRECTED");
             }
             */
         }

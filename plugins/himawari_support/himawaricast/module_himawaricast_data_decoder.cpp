@@ -39,8 +39,7 @@ namespace himawari
                 segmented_decoders[channel_name].image.normalize();
                 if (!std::filesystem::exists(directory + "/" + channel_name))
                     std::filesystem::create_directory(directory + "/" + channel_name);
-                logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
                 // segmented_decoders[channel_name].image.clear();
                 // segmented_decoders.erase(channel_name);
                 // segmented_decoders_filenames.erase(channel_name);
@@ -301,8 +300,7 @@ namespace himawari
                                                     segmented_decoders[channel_name].image.normalize();
                                                     if (!std::filesystem::exists(directory + "/" + channel_name))
                                                         std::filesystem::create_directory(directory + "/" + channel_name);
-                                                    logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                                                    segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                                                    segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
                                                     segmented_decoders[channel_name].image.clear();
                                                     segmented_decoders.erase(channel_name);
                                                     segmented_decoders_filenames.erase(channel_name);

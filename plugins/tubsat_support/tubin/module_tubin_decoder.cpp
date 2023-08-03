@@ -170,10 +170,10 @@ namespace tubin
                 // tubin_products.set_timestamps(avhrr_reader.timestamps);
                 // tubin_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                tubin_products.images.push_back({"TUBIN-1.png", "1", image_ch1});
-                tubin_products.images.push_back({"TUBIN-2.png", "2", image_ch2});
-                tubin_products.images.push_back({"TUBIN-3.png", "3", image_ch3});
-                tubin_products.images.push_back({"TUBIN-4.png", "4", image_ch4});
+                tubin_products.images.push_back({"TUBIN-1", "1", image_ch1});
+                tubin_products.images.push_back({"TUBIN-2", "2", image_ch2});
+                tubin_products.images.push_back({"TUBIN-3", "3", image_ch3});
+                tubin_products.images.push_back({"TUBIN-4", "4", image_ch4});
 
                 tubin_products.save(directory);
                 dataset.products_list.push_back(product_name);

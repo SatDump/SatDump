@@ -125,7 +125,7 @@ namespace cryosat
 
             {
                 image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
-                WRITE_IMAGE(outputImage, directory + "/SIRAL.png");
+                WRITE_IMAGE(outputImage, directory + "/SIRAL");
             }
 
             fftImage.destroy();

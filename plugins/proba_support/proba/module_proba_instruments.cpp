@@ -303,15 +303,15 @@ namespace proba
 
                     std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
 
-                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1.png");
-                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2.png");
+                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
+                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
                     auto img3 = vegs_readers[i][2]->getImg();
                     img3.mirror(true, false);
-                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3.png");
+                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
                     img3.clear();
-                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4.png");
-                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5.png");
-                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6.png");
+                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
+                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
+                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
 
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = DONE;

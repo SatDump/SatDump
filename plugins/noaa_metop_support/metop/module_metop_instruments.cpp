@@ -226,7 +226,7 @@ namespace metop
 
                 std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                 for (int i = 0; i < 6; i++)
-                    avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+                    avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
 
                 avhrr_products.save(directory);
                 dataset.products_list.push_back("AVHRR");
@@ -255,7 +255,7 @@ namespace metop
                 mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 5; i++)
-                    mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+                    mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
                 if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
@@ -331,7 +331,7 @@ namespace metop
                     imageAll.draw_image(0, image4, 256 * 0, height * 2);
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
-                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL.png");
+                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL");
 
                 ascat_products.save(directory);
                 dataset.products_list.push_back("ASCAT");
@@ -374,7 +374,7 @@ namespace metop
                     iasi_img_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                     iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
                     iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
-                    iasi_img_products.images.push_back({"IASI-IMG.png", "1", iasi_imaging});
+                    iasi_img_products.images.push_back({"IASI-IMG", "1", iasi_imaging});
 
                     iasi_img_products.save(directory_img);
                     dataset.products_list.push_back("IASI-IMG");
@@ -391,7 +391,7 @@ namespace metop
                 iasi_products.save_as_matrix = true;
 
                 for (int i = 0; i < 8461; i++)
-                    iasi_products.images.push_back({"IASI-ALL.png", std::to_string(i + 1), iasi_reader.getChannel(i)});
+                    iasi_products.images.push_back({"IASI-ALL", std::to_string(i + 1), iasi_reader.getChannel(i)});
 
                 iasi_products.save(directory);
                 dataset.products_list.push_back("IASI");
@@ -422,10 +422,10 @@ namespace metop
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
                 for (int i = 0; i < 2; i++)
-                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
+                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1), std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
 
                 for (int i = 0; i < 13; i++)
-                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1) + ".png", std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
+                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1), std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
@@ -452,7 +452,7 @@ namespace metop
                 gome_products.save_as_matrix = true;
 
                 for (int i = 0; i < 6144; i++)
-                    gome_products.images.push_back({"GOME-ALL.png", std::to_string(i + 1), gome_reader.getChannel(i)});
+                    gome_products.images.push_back({"GOME-ALL", std::to_string(i + 1), gome_reader.getChannel(i)});
 
                 gome_products.save(directory);
                 dataset.products_list.push_back("GOME");
