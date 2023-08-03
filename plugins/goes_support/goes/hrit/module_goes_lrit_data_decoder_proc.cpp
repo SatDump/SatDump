@@ -274,10 +274,9 @@ namespace goes
                         if (segmentedDecoder.image_id != -1)
                         {
                             wip_img->imageStatus = SAVING;
-                            logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.filename + ".png" + "...");
                             if (is_goesn)
                                 segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.filename + ".png").c_str());
+                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.filename).c_str());
                             wip_img->imageStatus = RECEIVING;
                         }
 
@@ -350,10 +349,9 @@ namespace goes
                     if (segmentedDecoder.isComplete())
                     {
                         wip_img->imageStatus = SAVING;
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                         if (is_goesn)
                             segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         wip_img->imageStatus = IDLE;
 
@@ -396,17 +394,17 @@ namespace goes
                         //Do not overwrite files
                         std::string suffix = "";
                         int suffixInt = 1;
-                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".png"))
+                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".png") || 
+                            std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".jpg"))
                         {
                             suffixInt++;
                             suffix = "-" + std::to_string(suffixInt);
                         }
 
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + suffix + ".png" + "...");
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         if (is_goesn)
                             image.resize(image.width(), image.height() * 1.75);
-                        image.save_png(std::string(directory + "/IMAGES/" + current_filename + suffix + ".png").c_str());
+                        image.save_img(std::string(directory + "/IMAGES/" + current_filename + suffix).c_str());
 
                         // Check if this is GOES-R
                         if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||

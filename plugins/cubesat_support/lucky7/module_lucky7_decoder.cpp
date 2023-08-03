@@ -83,11 +83,8 @@ namespace lucky7
             image::Image<uint8_t> img;
             img.load_jpeg(imgp.second.payload.data(), imgp.second.payload.size());
 
-            std::string name = "Img_" + std::to_string(imgp.first) + ".png";
-
-            logger->info("Saving to " + name);
-
-            img.save_png(directory + "/" + name);
+            std::string name = "Img_" + std::to_string(imgp.first);
+            img.save_img(directory + "/" + name);
         }
     }
 

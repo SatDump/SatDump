@@ -122,9 +122,10 @@ namespace image
         void load_jpeg(uint8_t *buffer, int size); // Load a JPEG from memory
 
         // Generic loading/saving interface
-        void load_img(std::string file);          // Load a file, auto-detecting type
-        void load_img(uint8_t *buffer, int size); // Load from memory, auto-detecting type
-        void save_img(std::string file);          // Save file, determine type based on extension
+        void load_img(std::string file);                            // Load a file, auto-detecting type
+        void load_img(uint8_t *buffer, int size);                   // Load from memory, auto-detecting type
+        void save_img(std::string file, bool fast = true);          // Save file, determine type based on extension or default setting
+        bool append_ext(std::string* file);                         // If the filename has no extension, use the default image format
     };
 
     // Others

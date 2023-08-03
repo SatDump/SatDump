@@ -88,7 +88,7 @@ namespace geonetcast
 
                 img_cnt_pos++;
 
-                // chunk_image.save_png("ABI/TEST_FULL_ABI" + std::to_string(img_cnt_pos) + ".png");
+                // chunk_image.save_img("ABI/TEST_FULL_ABI" + std::to_string(img_cnt_pos));
             }
             else
             {

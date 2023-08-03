@@ -167,22 +167,22 @@ int main(int argc, char *argv[])
         if (bandsel[channel] != 'X')
             continue;
 
-        std::string path = "SEVIRI_" + std::to_string(channel + 1) + ".png";
+        std::string path = "SEVIRI_" + std::to_string(channel + 1);
 
         vis_ir_imgs[channel].mirror(true, true);
 
         logger->info("Saving " + path);
-        vis_ir_imgs[channel].save_png(path);
+        vis_ir_imgs[channel].save_img(path);
     }
 
-    std::string path = "SEVIRI_321.png";
-
+    std::string path = "SEVIRI_321";
     image::Image<uint16_t> compo_321(vis_ir_x_size, vis_ir_y_size, 3);
+    compo_321.append_ext(&path);
 
     compo_321.draw_image(0, vis_ir_imgs[2]);
     compo_321.draw_image(1, vis_ir_imgs[1]);
     compo_321.draw_image(2, vis_ir_imgs[0]);
 
     logger->info("Saving " + path);
-    compo_321.save_png(path);
+    compo_321.save_img(path);
 }

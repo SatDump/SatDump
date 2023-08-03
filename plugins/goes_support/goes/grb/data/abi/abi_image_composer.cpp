@@ -71,12 +71,11 @@ namespace goes
                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
                                        (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";
 
-            std::string filename = "ABI_" + zone + "_" + name + "_" + utc_filename + ".png";
+            std::string filename = "ABI_" + zone + "_" + name + "_" + utc_filename;
             std::string directory = abi_directory + "/" + zone + "/" + utc_filename + "/";
             std::filesystem::create_directories(directory);
 
-            // logger->info("Saving " + directory + filename);
-            // img.save_png(std::string(directory + filename).c_str());
+            // img.save_img(std::string(directory + filename).c_str());
             saving_thread->push(img, std::string(directory + filename));
         }
 

@@ -214,9 +214,7 @@ namespace noaa_apt
         std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
         apt_status = SAVING;
-
-        logger->info("Saving...");
-        wip_apt_image_sync.save_png(main_dir + "/raw.png");
+        wip_apt_image_sync.save_img(main_dir + "/raw");
 
         // Products ARE not yet being processed properly. Need to parse the wedges!
         int norad = 0;
@@ -288,7 +286,7 @@ namespace noaa_apt
 
             // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             // for (int i = 0; i < 6; i++)
-            //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+            //     avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
@@ -318,8 +316,8 @@ namespace noaa_apt
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
-            avhrr_products.images.push_back({"APT-A.png", "a", cha});
-            avhrr_products.images.push_back({"APT-B.png", "b", chb});
+            avhrr_products.images.push_back({"APT-A", "a", cha});
+            avhrr_products.images.push_back({"APT-B", "b", chb});
 
             avhrr_products.save(main_dir);
             dataset.products_list.push_back(".");

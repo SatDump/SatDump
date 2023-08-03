@@ -147,9 +147,9 @@ int main(int argc, char *argv[])
 
     imager_products.set_proj_cfg(proj_settings);
 
-    imager_products.images.push_back({"IMAGER-1.png", "1", image_r});
-    imager_products.images.push_back({"IMAGER-2.png", "2", image_g});
-    imager_products.images.push_back({"IMAGER-3.png", "3", image_b});
+    imager_products.images.push_back({"IMAGER-1", "1", image_r});
+    imager_products.images.push_back({"IMAGER-2", "2", image_g});
+    imager_products.images.push_back({"IMAGER-3", "3", image_b});
 
     if (!std::filesystem::exists(output_folder))
         std::filesystem::create_directories(output_folder);

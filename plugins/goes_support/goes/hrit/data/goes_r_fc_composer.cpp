@@ -94,9 +94,8 @@ namespace goes
         void GOESRFalseColorComposer::save()
         {
             imageStatus = SAVING;
-            logger->info("Writing image " + directory + "/IMAGES/" + filename + ".png" + "...");
             logger->info("This false color LUT was made by Harry Dove-Robinson, see resources/goes/abi/wxstar/README.md for more infos.");
-            falsecolor.save_png(std::string(directory + "/IMAGES/" + filename + ".png").c_str());
+            falsecolor.save_img(std::string(directory + "/IMAGES/" + filename).c_str());
             hasData = false;
             time2 = time13 = 0;
             imageStatus = IDLE;

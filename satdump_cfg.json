@@ -111,6 +111,16 @@
             "name": "Save log file",
             "description": "Save ALL SatDump logs to a file.\nThis is useful to send in\nbug reports and such."
         },
+        "image_format": {
+            "type": "options",
+            "value": "png",
+            "name": "Default Image Format",
+            "options": [
+                "png",
+                "jpg"
+            ],
+            "description": "Default format for processed images.\nDoes not apply to images transmitted\nin an already-viewable format."
+        },
         "opencl_device": {
             "platform": 0,
             "device": 0

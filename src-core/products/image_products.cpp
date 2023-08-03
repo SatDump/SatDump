@@ -24,6 +24,8 @@ namespace satdump
 
         for (size_t c = 0; c < images.size(); c++)
         {
+            if (!images[c].image.append_ext(&images[c].filename))
+                return;
             contents["images"][c]["file"] = images[c].filename;
             contents["images"][c]["name"] = images[c].channel_name;
 
@@ -38,10 +40,7 @@ namespace satdump
                 contents["images"][c]["offset_x"] = images[c].offset_x;
 
             if (!save_as_matrix)
-            {
-                logger->info("Saving " + images[c].filename);
-                images[c].image.save_png(directory + "/" + images[c].filename);
-            }
+                images[c].image.save_img(directory + "/" + images[c].filename);
         }
 
         if (save_as_matrix)
@@ -50,8 +49,7 @@ namespace satdump
             logger->debug("Using size %d", size);
             image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
                                                                                        { return images[c].image; });
-            logger->info("Saving " + images[0].filename);
-            image_all.save_png(directory + "/" + images[0].filename);
+            image_all.save_img(directory + "/" + images[0].filename);
             contents["img_matrix_size"] = size;
         }
 
@@ -76,7 +74,7 @@ namespace satdump
         if (save_as_matrix)
         {
             if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
-                img_matrix.load_png(directory + "/" + contents["images"][0]["file"].get<std::string>());
+                img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
         }
 
         for (size_t c = 0; c < contents["images"].size(); c++)
@@ -91,7 +89,7 @@ namespace satdump
             if (!save_as_matrix)
             {
                 if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
-                    img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
+                    img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
             }
             else
             {

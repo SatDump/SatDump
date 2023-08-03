@@ -36,9 +36,7 @@ namespace dscovr
                     std::string filename(&wip_payload[126], &wip_payload[126 + 8]);
 
                     auto img = image::decompress_jpeg12(wip_payload.data() + pos, wip_payload.size() - 140);
-                    img.save_png(directory + "/" + filename + ".png");
-
-                    logger->info("Saving EPIC image to " + directory + "/" + filename + ".png");
+                    img.save_img(directory + "/" + filename);
 
                     img_c++;
                 }

@@ -50,10 +50,8 @@ namespace goes
             std::string directory_d = directory_snd + "/" + timestamp;
 
             for (int i = 0; i < 19; i++)
-            {
-                logger->info("Saving Sounder_" + std::to_string(i + 1) + ".png");
-                sounderReader.getImage(i).save_png(directory_d + "/Sounder_" + std::to_string(i + 1) + ".png");
-            }
+                sounderReader.getImage(i).save_img(directory_d + "/Sounder_" + std::to_string(i + 1));
+
             sounderReader.clear();
         }
 
@@ -119,20 +117,11 @@ namespace goes
             images.image3.crop(0, 0, ir1_width, ir1_height);
             images.image4.crop(0, 0, ir1_width, ir1_height);
 
-            logger->info("Channel 1... " + getGvarFilename(sat_number, timeReadable, "1") + ".png");
-            images.image5.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1") + ".png").c_str(), false);
-
-            logger->info("Channel 2... " + getGvarFilename(sat_number, timeReadable, "2") + ".png");
-            images.image1.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2") + ".png").c_str());
-
-            logger->info("Channel 3... " + getGvarFilename(sat_number, timeReadable, "3") + ".png");
-            images.image2.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3") + ".png").c_str());
-
-            logger->info("Channel 4... " + getGvarFilename(sat_number, timeReadable, "4") + ".png");
-            images.image3.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4") + ".png").c_str());
-
-            logger->info("Channel 5... " + getGvarFilename(sat_number, timeReadable, "5") + ".png");
-            images.image4.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5") + ".png").c_str());
+            images.image5.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1")).c_str(), false);
+            images.image1.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2")).c_str());
+            images.image2.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3")).c_str());
+            images.image3.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4")).c_str());
+            images.image4.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5")).c_str());
 
             // Let plugins do something
             satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, timevalue, disk_folder});
@@ -189,9 +178,7 @@ namespace goes
                 hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
                 hueTuning.overlap = 100.0 / 100.0;
                 image::hue_saturation(compoImage, hueTuning);
-
-                logger->info("False color... " + getGvarFilename(sat_number, timeReadable, "FC") + ".png");
-                compoImage.save_png(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC") + ".png").c_str());
+                compoImage.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC")).c_str());
 
                 // Let plugins do something
                 satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, timevalue, disk_folder});

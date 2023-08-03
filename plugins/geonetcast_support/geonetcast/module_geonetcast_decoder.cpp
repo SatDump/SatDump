@@ -155,8 +155,7 @@ namespace geonetcast
 
                                         image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
 
-                                        logger->info("Saving complete " + file.name + ".png size " + filesize_str);
-                                        final_image.save_png(directory + "/PROCESSED/" + file.name + ".png");
+                                        final_image.save_img(directory + "/PROCESSED/" + file.name);
                                         // return;
                                     }
 #endif

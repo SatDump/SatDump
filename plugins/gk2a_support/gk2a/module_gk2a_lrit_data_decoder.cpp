@@ -237,13 +237,8 @@ namespace gk2a
             data_in.close();
 
             for (auto &segmentedDecoder : segmentedDecoders)
-            {
                 if (segmentedDecoder.second.image_id != "")
-                {
-                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png" + "...");
-                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png").c_str());
-                }
-            }
+                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
         }
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)
