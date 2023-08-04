@@ -377,8 +377,48 @@
             }
         }
     },
+    "fengyun3_tlm_old": {
+        "name": "FengYun-3 TLM (Old) A/B/C/D",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4096,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 65536,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2048,
+                    "nrzm": true,
+                    "derandomize": false,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
     "fengyun3_tlm": {
-        "name": "FengYun-3 TLM",
+        "name": "FengYun-3 TLM E/F/G",
         "live": true,
         "live_cfg": [
             [
