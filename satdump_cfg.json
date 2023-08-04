@@ -119,7 +119,7 @@
                 "png",
                 "jpg"
             ],
-            "description": "Default format for processed images.\nDoes not apply to images transmitted\nin an already-viewable format."
+            "description": "Default format for processed images.\n\nDoes not apply to images transmitted in an already viewable\nformat, or grayscale images less than 200 pixels wide."
         },
         "opencl_device": {
             "platform": 0,

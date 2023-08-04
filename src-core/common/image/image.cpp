@@ -264,6 +264,15 @@ namespace image
             file->find(".jpg") != std::string::npos)
             return true;
 
+		// Force PNG if the image is grayscale and less than
+		// 200px wide. Small grayscale jpegs don't save well
+		if(d_channels == 1 && d_width < 200)
+		{
+			*file += ".png";
+			return true;
+		}
+
+		//Otherwise, load the user setting
         std::string image_format;
         try
         {
