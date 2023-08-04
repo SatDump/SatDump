@@ -418,7 +418,7 @@
         }
     },
     "fengyun3_tlm": {
-        "name": "FengYun-3 TLM E/F/G",
+        "name": "FengYun-3 TLM E/F",
         "live": true,
         "live_cfg": [
             [
