@@ -18,13 +18,22 @@ void LimeSDRSource::set_gains()
     if (!is_started)
         return;
 
-#ifndef __ANDROID__
-    LMS_SetGaindB(limeDevice, 0, 0, gain);
-#else
-    limeDevice->SetGain(false, 0, gain, "");
-#endif
+    lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
 
-    logger->debug("Set LimeSDR Gain to %d", gain);
+    if (gain_mode_manual)
+    {
+        lms->SetGain(false, channel_id, gain_lna, "LNA");
+        lms->SetGain(false, channel_id, gain_tia, "TIA");
+        lms->SetGain(false, channel_id, gain_pga, "PGA");
+        logger->debug("Set LimeSDR (LNA) Gain to %d", gain_lna);
+        logger->debug("Set LimeSDR (TIA) Gain to %d", gain_tia);
+        logger->debug("Set LimeSDR (PGA) Gain to %d", gain_pga);
+    }
+    else
+    {
+        lms->SetGain(false, channel_id, gain, "");
+        logger->debug("Set LimeSDR (auto) Gain to %d", gain);
+    }
 }
 
 void LimeSDRSource::set_settings(nlohmann::json settings)
@@ -32,6 +41,9 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     d_settings = settings;
 
     gain = getValueOrDefault(d_settings["gain"], gain);
+    gain_lna = getValueOrDefault(d_settings["lna_gain"], gain_lna);
+    gain_tia = getValueOrDefault(d_settings["tia_gain"], gain_tia);
+    gain_pga = getValueOrDefault(d_settings["pga_gain"], gain_pga);
 
     if (is_started)
     {
@@ -42,6 +54,9 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
 nlohmann::json LimeSDRSource::get_settings()
 {
     d_settings["gain"] = gain;
+    d_settings["lna_gain"] = gain_lna;
+    d_settings["tia_gain"] = gain_tia;
+    d_settings["pga_gain"] = gain_pga;
 
     return d_settings;
 }
@@ -133,20 +148,20 @@ void LimeSDRSource::start()
     limeStream = limeStreamID;
     limeStream->Start();
 #else
-    LMS_EnableChannel(limeDevice, false, 0, true);
-    LMS_SetAntenna(limeDevice, false, 0, 3);
+    LMS_EnableChannel(limeDevice, false, channel_id, true);
+    LMS_SetAntenna(limeDevice, false, channel_id, 3);
 
     // limeStream.align = false;
     limeStream.isTx = false;
     limeStream.throughputVsLatency = 0.5;
     limeStream.fifoSize = 8192 * 10; // auto
     limeStream.dataFmt = limeStream.LMS_FMT_F32;
-    limeStream.channel = 0;
+    limeStream.channel = channel_id;
 
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
     LMS_SetSampleRate(limeDevice, current_samplerate, 0);
-    LMS_SetLPFBW(limeDevice, false, 0, current_samplerate);
-    LMS_SetLPF(limeDevice, false, 0, true);
+    LMS_SetLPFBW(limeDevice, false, channel_id, current_samplerate);
+    LMS_SetLPF(limeDevice, false, channel_id, true);
 
     is_started = true;
 
@@ -177,7 +192,7 @@ void LimeSDRSource::stop()
 #ifndef __ANDROID__
         LMS_StopStream(&limeStream);
         LMS_DestroyStream(limeDevice, &limeStream);
-        LMS_EnableChannel(limeDevice, false, 0, false);
+        LMS_EnableChannel(limeDevice, false, channel_id, false);
         LMS_Close(limeDevice);
 #else
         limeStream->Stop();
@@ -196,9 +211,9 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
 #ifndef __ANDROID__
-        LMS_SetLOFrequency(limeDevice, false, 0, frequency);
+        LMS_SetLOFrequency(limeDevice, false, channel_id, frequency);
 #else
-        limeDevice->SetFrequency(false, 0, frequency);
+        limeDevice->SetFrequency(false, channel_id, frequency);
 #endif
         logger->debug("Set LimeSDR frequency to %d", frequency);
     }
@@ -217,7 +232,29 @@ void LimeSDRSource::drawControlUI()
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 73);
+
+    if (ImGui::RadioButton("Auto", !gain_mode_manual))
+    {
+        gain_mode_manual = false;
+        gain_changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Manual", gain_mode_manual))
+    {
+        gain_mode_manual = true;
+        gain_changed = true;
+    }
+
+    if (gain_mode_manual)
+    {
+        gain_changed |= ImGui::SliderInt("LNA Gain", &gain, 0, 30);
+        gain_changed |= ImGui::SliderInt("TIA Gain", &gain, 0, 12);
+        gain_changed |= ImGui::SliderInt("PGA Gain", &gain, -12, 19);
+    }
+    else
+    {
+        gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 73);
+    }
 
     if (gain_changed)
         set_gains();
