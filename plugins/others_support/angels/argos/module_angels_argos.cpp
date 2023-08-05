@@ -27,7 +27,6 @@ namespace angels
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
-            std::string filename;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -85,8 +84,7 @@ namespace angels
             //frames_out.close();
 
             fft_image.crop(0, 0, 4096, lines);
-            filename = directory + "/argos_fft";
-            WRITE_IMAGE(fft_image, filename);
+            WRITE_IMAGE(fft_image, directory + "/argos_fft");
 
             logger->info("VCID 1 (ARGOS) Frames  : " + std::to_string(argos_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));

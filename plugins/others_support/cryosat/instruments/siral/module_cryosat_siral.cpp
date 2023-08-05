@@ -28,7 +28,6 @@ namespace cryosat
             std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SIRAL";
-            std::string filename;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -126,8 +125,7 @@ namespace cryosat
 
             {
                 image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
-                filename = directory + "/SIRAL";
-                WRITE_IMAGE(outputImage, filename);
+                WRITE_IMAGE(outputImage, directory + "/SIRAL");
             }
 
             fftImage.destroy();

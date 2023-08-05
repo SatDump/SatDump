@@ -31,7 +31,6 @@ namespace jpss
             logger->info("Using input frames " + d_input_file);
 
             time_t lastTime = 0;
-            std::string filename;
             uint8_t cadu[1279]; // Oversized for NPP, but not a big deal
 
             int mpdu_size = npp_mode ? 884 : 1094;
@@ -201,8 +200,7 @@ namespace jpss
 
                 for (int i = 0; i < 339; i++)
                 {
-                    filename = directory + "/OMPS-NADIR-" + std::to_string(i + 1);
-                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), filename);
+                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), directory + "/OMPS-NADIR-" + std::to_string(i + 1));
                 }
                 omps_nadir_status = DONE;
             }
@@ -220,8 +218,7 @@ namespace jpss
 
                 for (int i = 0; i < 135; i++)
                 {
-                    filename = directory + "/OMPS-LIMB-" + std::to_string(i + 1);
-                    WRITE_IMAGE(omps_limb_reader.getChannel(i), filename);
+                    WRITE_IMAGE(omps_limb_reader.getChannel(i), directory + "/OMPS-LIMB-" + std::to_string(i + 1));
                 }
                 omps_limb_status = DONE;
             }

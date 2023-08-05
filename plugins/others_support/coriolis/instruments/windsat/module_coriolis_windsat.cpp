@@ -31,7 +31,6 @@ namespace coriolis
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-            std::string filename;
             uint8_t buffer[1024];
 
             logger->info("Demultiplexing and deframing...");
@@ -72,10 +71,8 @@ namespace coriolis
 
             for (int i = 0; i < 11; i++)
             {
-                filename = directory + "/WindSat-" + std::to_string(i + 1);
-                WRITE_IMAGE(readers[i]->getImage1(), filename);
-                filename = directory + "/WindSat-" + std::to_string(i + 12);
-                WRITE_IMAGE(readers[i]->getImage2(), filename);
+                WRITE_IMAGE(readers[i]->getImage1(), directory + "/WindSat-" + std::to_string(i + 1));
+                WRITE_IMAGE(readers[i]->getImage2(), directory + "/WindSat-" + std::to_string(i + 12));
             }
 
             data_in.close();

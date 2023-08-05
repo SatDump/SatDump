@@ -33,7 +33,6 @@ namespace metop
             logger->info("Using input frames " + d_input_file);
 
             time_t lastTime = 0;
-            std::string filename;
             uint8_t cadu[1024];
 
             // Demuxers
@@ -333,8 +332,7 @@ namespace metop
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
 
-                filename = directory + "/ASCAT-ALL";
-                WRITE_IMAGE(imageAll, filename);
+                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL");
 
                 ascat_products.save(directory);
                 dataset.products_list.push_back("ASCAT");

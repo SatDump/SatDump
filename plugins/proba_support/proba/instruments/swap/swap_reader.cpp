@@ -10,10 +10,12 @@
 #include "common/ccsds/ccsds_time.h"
 
 #define WRITE_IMAGE_LOCAL(image, path)            \
+{                                                 \
     std::string newPath = path;                   \
     image.append_ext(&newPath);                   \
     image.save_img(std::string(newPath).c_str()); \
-    all_images.push_back(newPath);
+    all_images.push_back(newPath);                \
+}
 
 namespace proba
 {
