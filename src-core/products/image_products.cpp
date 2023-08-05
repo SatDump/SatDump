@@ -1,5 +1,6 @@
 #include "image_products.h"
 #include "logger.h"
+#include "core/config.h"
 #include "common/image/composite.h"
 #include "resources.h"
 #include "common/image/earth_curvature.h"
@@ -22,10 +23,20 @@ namespace satdump
         if (save_as_matrix)
             contents["save_as_matrix"] = save_as_matrix;
 
+        std::string image_format;
+        try
+        {
+            image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
+        }
+        catch (std::exception& e)
+        {
+            logger->error("Product format not specified, using PNG! %s", e.what());
+            image_format = "png";
+        }
+
         for (size_t c = 0; c < images.size(); c++)
         {
-            if (!images[c].image.append_ext(&images[c].filename))
-                return;
+            images[c].filename += "." + image_format;
             contents["images"][c]["file"] = images[c].filename;
             contents["images"][c]["name"] = images[c].channel_name;
 

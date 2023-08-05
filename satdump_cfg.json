@@ -111,15 +111,25 @@
             "name": "Save log file",
             "description": "Save ALL SatDump logs to a file.\nThis is useful to send in\nbug reports and such."
         },
-        "image_format": {
+        "product_format": {
             "type": "options",
             "value": "png",
-            "name": "Default Image Format",
+            "name": "Product Image Format",
             "options": [
                 "png",
                 "jpg"
             ],
-            "description": "Default format for processed images.\n\nDoes not apply to images transmitted in an already viewable\nformat, or grayscale images less than 200 pixels wide."
+            "description": "Image format for raw image products (PNG or JPEG)\n\nWARNING: Using JPEG for product images will degrade any\ncomposites or projections generated from them!"
+        },
+        "image_format": {
+            "type": "options",
+            "value": "png",
+            "name": "Processed Image Format",
+            "options": [
+                "png",
+                "jpg"
+            ],
+            "description": "Default format for processed images.\n\nDoes not apply to raw image products or images\ntransmitted in an already viewable format"
         },
         "opencl_device": {
             "platform": 0,
