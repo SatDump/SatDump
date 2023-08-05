@@ -30,7 +30,10 @@ namespace satdump
                 ImGui::EndTabBar();
             }
 
-            // ImGuiUtils_BringCurrentWindowToFront();
+            if (config_window_was_asked)
+                ImGuiUtils_BringCurrentWindowToFront();
+            config_window_was_asked = false;
+
             ImGui::End();
         }
     }

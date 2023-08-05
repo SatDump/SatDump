@@ -111,6 +111,7 @@ namespace satdump
         bool backend_needs_update = true;
 
     private: // Config Window
+        bool config_window_was_asked = false;
         bool show_window_config = false;
 
     private: // Current satellite

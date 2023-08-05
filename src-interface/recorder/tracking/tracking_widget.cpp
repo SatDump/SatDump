@@ -78,17 +78,15 @@ namespace satdump
         ImGui::Separator();
         renderSelectionMenu();
         ImGui::Spacing();
-        if (ImGui::CollapsingHeader("Object Information")){
+        if (ImGui::CollapsingHeader("Object Information"))
             renderObjectStatus();
-        }
-        if (ImGui::CollapsingHeader("Rotator Configuration")){
+        if (ImGui::CollapsingHeader("Rotator Configuration"))
             renderRotatorStatus();
-        }
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
         if (ImGui::Button("Schedule and Config"))
-            show_window_config = true;
+            config_window_was_asked = show_window_config = true;
 
         renderConfigWindow();
     }
