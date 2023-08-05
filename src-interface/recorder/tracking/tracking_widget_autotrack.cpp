@@ -354,7 +354,7 @@ namespace satdump
                 ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(120*ui_scale);
-                ImGui::InputDouble(((std::string) "Frequency##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0, 0, "%.0f MHz");
+                ImGui::InputDouble(((std::string) "Frequency##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0, 0, "%f MHz");
                 ImGui::TableSetColumnIndex(2);
                 ImGui::SetNextItemWidth(100*ui_scale);
                 ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + std::to_string(cpass.norad)).c_str(), &cpass.record);
