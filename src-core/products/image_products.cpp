@@ -36,9 +36,14 @@ namespace satdump
 
         for (size_t c = 0; c < images.size(); c++)
         {
-            images[c].filename += "." + image_format;
-            contents["images"][c]["file"] = images[c].filename;
-            contents["images"][c]["name"] = images[c].channel_name;
+            if (images[c].filename.find(".png") == std::string::npos &&
+                images[c].filename.find(".jpeg") == std::string::npos &&
+                images[c].filename.find(".jpg") == std::string::npos)
+            {
+                images[c].filename += "." + image_format;
+                contents["images"][c]["file"] = images[c].filename;
+                contents["images"][c]["name"] = images[c].channel_name;
+            }
 
             if (images[c].timestamps.size() > 0)
             {
