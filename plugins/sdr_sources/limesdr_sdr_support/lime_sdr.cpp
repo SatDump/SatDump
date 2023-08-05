@@ -44,6 +44,8 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     gain_lna = getValueOrDefault(d_settings["lna_gain"], gain_lna);
     gain_tia = getValueOrDefault(d_settings["tia_gain"], gain_tia);
     gain_pga = getValueOrDefault(d_settings["pga_gain"], gain_pga);
+    path_id = getValueOrDefault(d_settings["path_id"], path_id);
+    channel_id = getValueOrDefault(d_settings["channel_id"], channel_id);
 
     if (is_started)
     {
@@ -57,6 +59,8 @@ nlohmann::json LimeSDRSource::get_settings()
     d_settings["lna_gain"] = gain_lna;
     d_settings["tia_gain"] = gain_tia;
     d_settings["pga_gain"] = gain_pga;
+    d_settings["path_id"] = path_id;
+    d_settings["channel_id"] = channel_id;
 
     return d_settings;
 }
@@ -119,7 +123,7 @@ void LimeSDRSource::start()
 
 #ifdef __ANDROID__
     limeDevice->EnableChannel(false, 0, true);
-    limeDevice->SetPath(false, 0, 3);
+    limeDevice->SetPath(false, 0, path_id);
 
     limeConfig.align = false;
     limeConfig.isTx = false;
@@ -149,7 +153,7 @@ void LimeSDRSource::start()
     limeStream->Start();
 #else
     LMS_EnableChannel(limeDevice, false, channel_id, true);
-    LMS_SetAntenna(limeDevice, false, channel_id, 3);
+    LMS_SetAntenna(limeDevice, false, channel_id, path_id);
 
     // limeStream.align = false;
     limeStream.isTx = false;
@@ -226,6 +230,15 @@ void LimeSDRSource::drawControlUI()
         style::beginDisabled();
 
     samplerate_widget.render();
+
+    // Channel setting
+    ImGui::Combo("Channel####limesdrchannel", &channel_id, "Channel 1\0"
+                                                           "Channel 2\0");
+
+    ImGui::Combo("Path####limesdrpath", &path_id, "NONE\0"
+                                                  "LNAH\0"
+                                                  "LNAL\0"
+                                                  "LNAW\0");
 
     if (is_started)
         style::endDisabled();

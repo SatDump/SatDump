@@ -51,6 +51,7 @@ void BladeRFSource::set_settings(nlohmann::json settings)
     extclock_enable = getValueOrDefault(d_settings["extclock"], extclock_enable);
     manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
     bandwidth_widget.set_value(getValueOrDefault(d_settings["manual_bw_value"], samplerate_widget.get_value()));
+    channel_id = getValueOrDefault(d_settings["channel_id"], channel_id);
 
     if (is_open && is_started)
     {
@@ -68,6 +69,7 @@ nlohmann::json BladeRFSource::get_settings()
     d_settings["extclock"] = extclock_enable;
     d_settings["manual_bw"] = manual_bandwidth;
     d_settings["manual_bw_value"] = bandwidth_widget.get_value();
+    d_settings["channel_id"] = channel_id;
 
     return d_settings;
 }

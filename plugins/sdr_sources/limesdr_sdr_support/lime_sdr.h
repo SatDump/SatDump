@@ -34,6 +34,8 @@ protected:
 
     int channel_id = 0;
 
+    int path_id = 3;
+
     bool gain_mode_manual = false;
     int gain_lna = 0, gain_tia = 0, gain_pga = 0;
     int gain = 0;
