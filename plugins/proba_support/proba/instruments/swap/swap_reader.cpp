@@ -87,6 +87,7 @@ namespace proba
 
             for (std::pair<const time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
             {
+                std::string extension = "";
                 std::string filename = currentPair.second.second.first;
                 std::vector<uint8_t> &currentOutVec = currentPair.second.second.second;
 
@@ -112,11 +113,11 @@ namespace proba
 
                 // Despeckle
                 img.simple_despeckle(20);
-                if (std::filesystem::exists(output_folder + "/" + filename + ".png") || std::filesystem::exists(output_folder + "/" + filename + ".jpg"))
+                img.append_ext(&extension);
+                if (std::filesystem::exists(output_folder + "/" + filename + extension))
                 {
                     int i = 0;
-                    while (std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + ".png") || 
-                        std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + ".jpg"))
+                    while (std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + extension))
                         i++;
                     filename = filename + "-" + std::to_string(i);
                 }

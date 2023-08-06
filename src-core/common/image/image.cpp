@@ -266,7 +266,8 @@ namespace image
         //Do nothing if there's already an extension
         if (file->find(".png") != std::string::npos ||
             file->find(".jpeg") != std::string::npos ||
-            file->find(".jpg") != std::string::npos)
+            file->find(".jpg") != std::string::npos || 
+            file->find(".j2k") != std::string::npos)
             return true;
 
         //Otherwise, load the user setting
@@ -281,7 +282,7 @@ namespace image
             return false;
         }
 
-        if (image_format != "png" && image_format != "jpg")
+        if (image_format != "png" && image_format != "jpg" && image_format != "j2k")
         {
             logger->error("Image format not specified, and default format is invalid!");
             return false;

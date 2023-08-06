@@ -393,15 +393,18 @@ namespace goes
                         //Sometimes, multiple different images can be sent down with the same name
                         //Do not overwrite files
                         std::string suffix = "";
+                        std::string extension = "";
                         int suffixInt = 1;
-                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".png") || 
-                            std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + ".jpg"))
+
+                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image.append_ext(&extension);
+
+                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + extension))
                         {
                             suffixInt++;
                             suffix = "-" + std::to_string(suffixInt);
                         }
 
-                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         if (is_goesn)
                             image.resize(image.width(), image.height() * 1.75);
                         image.save_img(std::string(directory + "/IMAGES/" + current_filename + suffix).c_str());
