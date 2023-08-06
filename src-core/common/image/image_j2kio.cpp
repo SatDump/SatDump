@@ -21,6 +21,7 @@ namespace image
         OPJ_CODEC_FORMAT codec_format = OPJ_CODEC_J2K;
 
         opj_set_default_encoder_parameters(&parameters);
+        parameters.numresolution = 5;
 
         {
             opj_image_cmptparm_t comp_params[4];
@@ -162,10 +163,30 @@ namespace image
         }
 
         // Parse into image
+        int depth = image->comps[0].prec;
         init(image->x1, image->y1, image->numcomps);
-        for (int c = 0; c < d_channels; c++)
-            for (int i = 0; i < int(image->x1 * image->y1); i++)
-                channel(c)[i] = image->comps[c].data[i];
+
+        if (d_depth == 16)
+        {
+            for (int c = 0; c < d_channels; c++)
+                for (int i = 0; i < int(image->x1 * image->y1); i++)
+                    channel(c)[i] = image->comps[c].data[i] << (16 - depth);
+        }
+        else if (d_depth == 8)
+        {
+            if (depth >= 8)
+            {
+                for (int c = 0; c < d_channels; c++)
+                    for (int i = 0; i < int(image->x1 * image->y1); i++)
+                        channel(c)[i] = image->comps[c].data[i] >> (depth - 8);
+            }
+            else
+            {
+                for (int c = 0; c < d_channels; c++)
+                    for (int i = 0; i < int(image->x1 * image->y1); i++)
+                        channel(c)[i] = image->comps[c].data[i] << (8 - depth);
+            }
+        }
 
         // Free everything up
         opj_destroy_codec(l_codec);
