@@ -81,9 +81,9 @@ namespace stereo
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         if (last_timestamp_0 != 0)
-                            img.save_png(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_0) + ".png");
+                            img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_0));
                         else
-                            img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
+                            img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_0.size() > 0)
                             decompression_status_out << channel_name << "     " << last_filename_0 << " " << timestamp_to_string(last_timestamp_0) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -125,9 +125,9 @@ namespace stereo
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         // if (last_timestamp_1 != 0)
-                        //     img.save_png(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_1) + ".png");
+                        //     img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_1));
                         // else
-                        img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
+                        img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_1.size() > 0)
                             decompression_status_out << channel_name << "      " << last_filename_1 << " " << timestamp_to_string(last_timestamp_1) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -166,9 +166,9 @@ namespace stereo
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         // if (last_timestamp_2 != 0)
-                        //     img.save_png(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_2) + ".png");
+                        //     img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_2));
                         // else
-                        img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
+                        img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_2.size() > 0)
                             decompression_status_out << channel_name << "      " << last_filename_2 << " " << timestamp_to_string(last_timestamp_2) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -221,9 +221,9 @@ namespace stereo
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         if (last_timestamp_3 != 0)
-                            img.save_png(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_3) + ".png");
+                            img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_3));
                         else
-                            img.save_png(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) + ".png");
+                            img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++) );
 
                         if (last_filename_3.size() > 0)
                             decompression_status_out << channel_name << " " << last_filename_3 << " " << timestamp_to_string(last_timestamp_3) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";

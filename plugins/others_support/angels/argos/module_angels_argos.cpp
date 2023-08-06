@@ -84,7 +84,7 @@ namespace angels
             //frames_out.close();
 
             fft_image.crop(0, 0, 4096, lines);
-            WRITE_IMAGE(fft_image, directory + "/argos_fft.png");
+            WRITE_IMAGE(fft_image, directory + "/argos_fft");
 
             logger->info("VCID 1 (ARGOS) Frames  : " + std::to_string(argos_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));

@@ -95,8 +95,8 @@ namespace dmsp
             ols_products.has_timestamps = false;
             ols_products.bit_depth = 8;
 
-            ols_products.images.push_back({"OLS-VIS.png", "vis", ols_reader.getChannelVIS().to16bits()});
-            ols_products.images.push_back({"OLS-IR.png", "ir", ols_reader.getChannelIR().to16bits()});
+            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS().to16bits()});
+            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR().to16bits()});
 
             ols_products.save(directory);
             dataset.products_list.push_back("OLS");

@@ -194,7 +194,7 @@ namespace eos
                     image::Image<uint16_t> image = modis_reader.getImage250m(i);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
-                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image});
+                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 1), std::to_string(i + 1), image});
                 }
 
                 for (int i = 0; i < 5; i++)
@@ -202,7 +202,7 @@ namespace eos
                     image::Image<uint16_t> image = modis_reader.getImage500m(i);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
-                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 3) + ".png", std::to_string(i + 3), image});
+                    modis_products.images.push_back({"MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image});
                 }
 
                 for (int i = 0; i < 31; i++)
@@ -213,17 +213,17 @@ namespace eos
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     if (i < 5)
-                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 8) + ".png", std::to_string(i + 8), image});
+                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image});
                     else if (i == 5)
-                        modis_products.images.push_back({"MODIS-13L.png", "13L", image});
+                        modis_products.images.push_back({"MODIS-13L", "13L", image});
                     else if (i == 6)
-                        modis_products.images.push_back({"MODIS-13H.png", "13H", image});
+                        modis_products.images.push_back({"MODIS-13H", "13H", image});
                     else if (i == 7)
-                        modis_products.images.push_back({"MODIS-14L.png", "13L", image});
+                        modis_products.images.push_back({"MODIS-14L", "13L", image});
                     else if (i == 8)
-                        modis_products.images.push_back({"MODIS-14H.png", "14H", image});
+                        modis_products.images.push_back({"MODIS-14H", "14H", image});
                     else
-                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 6) + ".png", std::to_string(i + 6), image});
+                        modis_products.images.push_back({"MODIS-" + std::to_string(i + 6), std::to_string(i + 6), image});
                 }
 
                 modis_products.save(directory);
@@ -255,7 +255,7 @@ namespace eos
                 // airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
 
                 for (int i = 0; i < 4; i++)
-                    airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getHDChannel(i)});
+                    airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getHDChannel(i)});
 
                 airs_hd_products.save(directory_hd);
                 dataset.products_list.push_back("AIRS/HD");
@@ -270,7 +270,7 @@ namespace eos
                 // airs_products.set_timestamps(airs_reader.timestamps_ifov);
 
                 for (int i = 0; i < 2666; i++)
-                    airs_products.images.push_back({"AIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), airs_reader.getChannel(i)});
+                    airs_products.images.push_back({"AIRS-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getChannel(i)});
 
                 airs_products.save(directory);
                 dataset.products_list.push_back("AIRS");
@@ -300,10 +300,10 @@ namespace eos
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_amsu.json")));
 
                 for (int i = 0; i < 2; i++)
-                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
+                    amsu_products.images.push_back({"AMSU-A2-" + std::to_string(i + 1), std::to_string(i + 1), amsu_a2_reader.getChannel(i), amsu_a2_reader.timestamps});
 
                 for (int i = 0; i < 13; i++)
-                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1) + ".png", std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
+                    amsu_products.images.push_back({"AMSU-A1-" + std::to_string(i + 1), std::to_string(i + 3), amsu_a1_reader.getChannel(i), amsu_a1_reader.timestamps});
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
@@ -323,20 +323,14 @@ namespace eos
                 logger->info("Lines (FM3) : " + std::to_string(ceres_fm3_reader.lines));
                 logger->info("Lines (FM4) : " + std::to_string(ceres_fm4_reader.lines));
 
-                logger->info("Shortwave Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(0), directory + "/CERES1-SHORTWAVE.png");
-                logger->info("Longwave Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(1), directory + "/CERES1-LONGWAVE.png");
-                logger->info("Total Channel 1...");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(2), directory + "/CERES1-TOTAL.png");
+                WRITE_IMAGE(ceres_fm3_reader.getImage(0), directory + "/CERES1-SHORTWAVE");
+                WRITE_IMAGE(ceres_fm3_reader.getImage(1), directory + "/CERES1-LONGWAVE");
+                WRITE_IMAGE(ceres_fm3_reader.getImage(2), directory + "/CERES1-TOTAL");
                 ceres_fm3_status = DONE;
 
-                logger->info("Shortwave Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(0), directory + "/CERES2-SHORTWAVE.png");
-                logger->info("Longwave Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(1), directory + "/CERES2-LONGWAVE.png");
-                logger->info("Total Channel 2...");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(2), directory + "/CERES2-TOTAL.png");
+                WRITE_IMAGE(ceres_fm4_reader.getImage(0), directory + "/CERES2-SHORTWAVE");
+                WRITE_IMAGE(ceres_fm4_reader.getImage(1), directory + "/CERES2-LONGWAVE");
+                WRITE_IMAGE(ceres_fm4_reader.getImage(2), directory + "/CERES2-TOTAL");
                 ceres_fm4_status = DONE;
             }
 
@@ -352,18 +346,18 @@ namespace eos
                 logger->info("Lines (UV) : " + std::to_string(omi_1_reader.lines));
                 logger->info("Lines (VIS) : " + std::to_string(omi_2_reader.lines));
 
-                WRITE_IMAGE(omi_1_reader.getImageRaw(), directory + "/OMI-1.png");
-                WRITE_IMAGE(omi_2_reader.getImageRaw(), directory + "/OMI-2.png");
+                WRITE_IMAGE(omi_1_reader.getImageRaw(), directory + "/OMI-1");
+                WRITE_IMAGE(omi_2_reader.getImageRaw(), directory + "/OMI-2");
 
-                WRITE_IMAGE(omi_1_reader.getImageVisible(), directory + "/OMI-VIS-1.png");
-                WRITE_IMAGE(omi_2_reader.getImageVisible(), directory + "/OMI-VIS-2.png");
+                WRITE_IMAGE(omi_1_reader.getImageVisible(), directory + "/OMI-VIS-1");
+                WRITE_IMAGE(omi_2_reader.getImageVisible(), directory + "/OMI-VIS-2");
 
                 image::Image<uint16_t> imageAll1 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
                                                                                            { return omi_1_reader.getChannel(c); });
                 image::Image<uint16_t> imageAll2 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
                                                                                            { return omi_2_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1.png");
-                WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2.png");
+                WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1");
+                WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2");
                 omi_status = DONE;
             }
 

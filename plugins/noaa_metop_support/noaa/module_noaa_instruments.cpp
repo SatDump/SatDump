@@ -208,7 +208,7 @@ namespace noaa
 
                     std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                     for (int i = 0; i < 6; i++)
-                        avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+                        avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
@@ -240,7 +240,7 @@ namespace noaa
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");
@@ -299,7 +299,7 @@ namespace noaa
                     mhs_products.set_timestamps(mhs_reader.timestamps);
 
                     for (int i = 0; i < 5; i++)
-                        mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+                        mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                     mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
 
@@ -348,7 +348,7 @@ namespace noaa
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
+                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");
@@ -433,7 +433,7 @@ namespace noaa
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");

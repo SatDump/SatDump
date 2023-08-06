@@ -71,8 +71,7 @@ namespace elektro
         void ELEKTRO221Composer::save(std::string directory)
         {
             imageStatus = SAVING;
-            logger->info("Writing image " + directory + "/IMAGES/" + filename + ".png" + "...");
-            compo221.save_png(std::string(directory + "/IMAGES/" + filename + ".png").c_str());
+            compo221.save_img(std::string(directory + "/IMAGES/" + filename).c_str());
             hasData = false;
             imageStatus = IDLE;
         }

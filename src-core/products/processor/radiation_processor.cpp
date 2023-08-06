@@ -30,12 +30,9 @@ namespace satdump
                 RadiationMapCfg cfg = compo.value().get<RadiationMapCfg>();
                 image::Image<uint16_t> rad_map = satdump::make_radiation_map(*rad_products, cfg);
 
-                std::string name = products->instrument_name +
-                                   "_map_" +
-                                   initial_name + ".png";
+                std::string name = products->instrument_name + "_map_" + initial_name;
 
-                logger->info("Saving " + product_path + "/" + name);
-                rad_map.save_png(product_path + "/" + name);
+                rad_map.save_img(product_path + "/" + name);
             }
         }
     }

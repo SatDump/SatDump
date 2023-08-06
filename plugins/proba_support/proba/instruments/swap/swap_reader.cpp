@@ -9,9 +9,13 @@
 #include "resources.h"
 #include "common/ccsds/ccsds_time.h"
 
-#define WRITE_IMAGE_LOCAL(image, path)         \
-    image.save_png(std::string(path).c_str()); \
-    all_images.push_back(path);
+#define WRITE_IMAGE_LOCAL(image, path)            \
+{                                                 \
+    std::string newPath = path;                   \
+    image.append_ext(&newPath);                   \
+    image.save_img(std::string(newPath).c_str()); \
+    all_images.push_back(newPath);                \
+}
 
 namespace proba
 {
@@ -83,6 +87,7 @@ namespace proba
 
             for (std::pair<const time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
             {
+                std::string extension = "";
                 std::string filename = currentPair.second.second.first;
                 std::vector<uint8_t> &currentOutVec = currentPair.second.second.second;
 
@@ -108,16 +113,15 @@ namespace proba
 
                 // Despeckle
                 img.simple_despeckle(20);
-
-                logger->info("Good! Saving as png... ");
-                if (std::filesystem::exists(output_folder + "/" + filename + ".png"))
+                img.append_ext(&extension);
+                if (std::filesystem::exists(output_folder + "/" + filename + extension))
                 {
                     int i = 0;
-                    while (std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + ".png"))
+                    while (std::filesystem::exists(output_folder + "/" + filename + "-" + std::to_string(i) + extension))
                         i++;
                     filename = filename + "-" + std::to_string(i);
                 }
-                WRITE_IMAGE_LOCAL(img, output_folder + "/" + filename + ".png");
+                WRITE_IMAGE_LOCAL(img, output_folder + "/" + filename);
             }
         }
     } // namespace swap

@@ -551,7 +551,11 @@ namespace satdump
                                            products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
+                auto result = pfd::save_file("Save Image", default_name, {
+                    "PNG Files", "*.png",
+                    "JPEG 2000 Files", "*.j2k",
+                    "JPEG Files", "*.jpg *.jpeg"
+                    });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

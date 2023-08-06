@@ -251,8 +251,7 @@ namespace elektro
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
 
                             if (elektro_221_composer_full_disk->hasData)
                                 elektro_221_composer_full_disk->save(directory);
@@ -304,8 +303,7 @@ namespace elektro
                         current_filename = image_id;
 
                         wip_img->imageStatus = SAVING;
-                        logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                        segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
 
                         if (elektro_221_composer_full_disk->hasData)
                             elektro_221_composer_full_disk->save(directory);
@@ -319,9 +317,8 @@ namespace elektro
                 else
                 {
                     // Write raw image dats
-                    logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
                     image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                    image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                    image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
                 }
             }
             else

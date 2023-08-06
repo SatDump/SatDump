@@ -92,7 +92,7 @@ namespace mats
                 // mats_nadir_products.set_timestamps(mhs_reader.timestamps);
                 // mats_nadir_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
-                mats_nadir_products.images.push_back({"MATS-Nadir.png", "1", mats_reader.getNadirImage()});
+                mats_nadir_products.images.push_back({"MATS-Nadir", "1", mats_reader.getNadirImage()});
 
                 mats_nadir_products.save(directory);
                 dataset.products_list.push_back("Nadir");

@@ -171,7 +171,7 @@ namespace stereo
             logger->info("Lines : " + std::to_string(s_waves_lines));
 
             image::Image<uint8_t> image_s_waves(s_waves_data.data(), 162, s_waves_lines, 1);
-            image_s_waves.save_png(directory + "/S_WAVES.png");
+            image_s_waves.save_img(directory + "/S_WAVES");
         }
     }
 

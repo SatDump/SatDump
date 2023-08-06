@@ -16,7 +16,7 @@
 
 namespace satdump
 {
-    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
+    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
     int osm_url_regex_len = 0;
 
     void ViewerApplication::drawProjectionPanel()
@@ -124,7 +124,11 @@ namespace satdump
                 std::string default_name = default_path + "projection.png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
+                auto result = pfd::save_file("Save Image", default_name, {
+                    "PNG Files", "*.png",
+                    "JPEG 2000 Files", "*.j2k",
+                    "JPEG Files", "*.jpg *.jpeg"
+                    });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

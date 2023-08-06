@@ -96,11 +96,11 @@ namespace scisat1
                 if (!std::filesystem::exists(fts_directory))
                     std::filesystem::create_directory(fts_directory);
 
-                fts_reader.getImg().save_img(fts_directory + "/FTS.png");
+                fts_reader.getImg().save_img(fts_directory + "/FTS");
 
                 auto img = fts_reader.getImg();
                 img.resize_bilinear(img.width() / 10, img.height() * 10);
-                img.save_img(fts_directory + "/FTS_scaled.png");
+                img.save_img(fts_directory + "/FTS_scaled");
 
                 fts_status = DONE;
             }
@@ -118,8 +118,8 @@ namespace scisat1
                 if (!std::filesystem::exists(maestro_directory))
                     std::filesystem::create_directory(maestro_directory);
 
-                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1.png");
-                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2.png");
+                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1");
+                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2");
 
                 maestro_status = DONE;
             }

@@ -87,7 +87,11 @@ namespace satdump
                 std::string default_name = default_path + products->instrument_name + "_map.png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, { "PNG Files", "*.png" });
+                auto result = pfd::save_file("Save Image", default_name, {
+                    "PNG Files", "*.png",
+                    "JPEG 2000 Files", "*.j2k",
+                    "JPEG Files", "*.jpg *.jpeg"
+                    });
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

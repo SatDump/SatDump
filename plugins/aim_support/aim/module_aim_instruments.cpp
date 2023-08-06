@@ -97,7 +97,7 @@ namespace aim
                     int img_cnt = 0;
                     for (auto &img : cips_readers[i].images)
                     {
-                        img.save_png(cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1) + ".png");
+                        img.save_img(cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1));
                     }
 
                     cips_status[i] = DONE;

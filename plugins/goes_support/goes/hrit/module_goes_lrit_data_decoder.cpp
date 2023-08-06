@@ -189,10 +189,7 @@ namespace goes
             for (auto &segmentedDecoder : segmentedDecoders)
             {
                 if (segmentedDecoder.second.image.size())
-                {
-                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png" + "...");
-                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png").c_str());
-                }
+                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename).c_str());
             }
 
             if (goes_r_fc_composer_full_disk->hasData)
