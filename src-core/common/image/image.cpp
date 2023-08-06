@@ -90,8 +90,9 @@ namespace image
     {
         if (has_data)
             delete[] d_data;
-        
-        if (has_font){
+
+        if (has_font)
+        {
             font.chars.clear();
             delete[] ttf_buffer;
         }
@@ -232,6 +233,8 @@ namespace image
             load_jpeg(file);
         else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
             load_png(file);
+        else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
+            load_j2k(file);
     }
 
     template <typename T>
@@ -252,6 +255,8 @@ namespace image
             save_png(file, fast);
         else if (file.find(".jpeg") != std::string::npos || file.find(".jpg") != std::string::npos)
             save_jpeg(file);
+        else if (file.find(".j2k") != std::string::npos)
+            save_j2k(file);
     }
 
     // Append selected file extension

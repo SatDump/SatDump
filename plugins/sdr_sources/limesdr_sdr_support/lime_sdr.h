@@ -7,6 +7,7 @@
 #include "ConnectionRegistry/ConnectionRegistry.h"
 #else
 #include <lime/LimeSuite.h>
+#include <lime/lms7_device.h>
 #endif
 #include <thread>
 #include "logger.h"
@@ -31,6 +32,12 @@ protected:
 
     widgets::DoubleList samplerate_widget;
 
+    int channel_id = 0;
+
+    int path_id = 3;
+
+    bool gain_mode_manual = false;
+    int gain_lna = 0, gain_tia = 0, gain_pga = 0;
     int gain = 0;
 
     void set_gains();

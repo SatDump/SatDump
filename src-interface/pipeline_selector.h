@@ -373,5 +373,9 @@ namespace satdump
             updateSelectedPipeline();
             pipeline_mtx.unlock();
         }
+
+        std::string get_name(int index){
+            return pipelines[index].readable_name;
+        }
     };
 }

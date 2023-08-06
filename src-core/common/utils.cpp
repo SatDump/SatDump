@@ -64,6 +64,8 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_http_res *res;
     int rv;
 
+    int return_val = 0;
+
     if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) ||
         ((rv = nng_http_client_alloc(&client, url)) != 0))
     {
@@ -85,7 +87,7 @@ int perform_http_request(std::string url_str, std::string &result)
         ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
         return 1;
 
-    nng_aio_set_timeout(aio, 4000);
+    nng_aio_set_timeout(aio, 30000);
 
     nng_http_req_add_header(req, "User-Agent", std::string("SatDump/v" + (std::string)SATDUMP_VERSION).c_str());
 
@@ -104,7 +106,7 @@ int perform_http_request(std::string url_str, std::string &result)
     if ((rv = nng_aio_result(aio)) != 0)
     {
         logger->error("HTTP Request Error!");
-        return 1;
+        return_val = 1;
     }
 
     // Load result
@@ -124,7 +126,7 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_tls_config_free(tls_config);
 #endif
 
-    return 0;
+    return return_val;
 }
 
 std::string timestamp_to_string(double timestamp)

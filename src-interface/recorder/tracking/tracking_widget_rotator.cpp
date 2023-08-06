@@ -62,9 +62,9 @@ namespace satdump
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Rot Az");
+            ImGui::Text("Rotator Az");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("Rot El");
+            ImGui::Text("Rotator El");
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
@@ -85,10 +85,7 @@ namespace satdump
         ImGui::SameLine();
         ImGui::Checkbox("Track", &rotator_tracking);
         ImGui::SameLine();
-        if (ImGui::Button("Cfg"))
-            show_window_config = true;
 
-        ImGui::Separator();
 
         if (rotator_handler->is_connected())
             style::beginDisabled();

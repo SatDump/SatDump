@@ -6,6 +6,7 @@
 #include "core/config.h"
 #include <filesystem>
 #include "core/plugin.h"
+#include <thread>
 
 namespace satdump
 {
@@ -35,10 +36,18 @@ namespace satdump
             while (http_res == 1 && trials < 10)
             {
                 if ((http_res = perform_http_request(url_str, result)) != 1)
+                {
                     outfile << result;
+                    success = true;
+                }
                 else
                     success = false;
                 trials++;
+                if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    logger->warn("Failed getting TLEs. Retrying...");
+                }
             }
         }
 

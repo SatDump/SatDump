@@ -75,19 +75,18 @@ namespace satdump
             return;
 
         renderPolarPlot();
+        ImGui::Separator();
         renderSelectionMenu();
-        renderObjectStatus();
-
         ImGui::Spacing();
-
-        //////////////////
-
+        if (ImGui::CollapsingHeader("Object Information"))
+            renderObjectStatus();
+        if (ImGui::CollapsingHeader("Rotator Configuration"))
+            renderRotatorStatus();
+        ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
-
-        renderRotatorStatus();
-
-        ImGui::Spacing();
+        if (ImGui::Button("Schedule and Config"))
+            config_window_was_asked = show_window_config = true;
 
         renderConfigWindow();
     }

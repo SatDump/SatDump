@@ -237,6 +237,7 @@
             43010, // FengYun-3D
             49008, // FengYun-3E
             56232, // FengYun-3G
+            57490, // FengYun-3F
             35865, // METEOR-M1
             40069, // METEOR-M2
             44387, // METEOR-M2-2
@@ -766,12 +767,25 @@
                     "654": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
                         "equalize": true,
+                        "geo_correct": true,
                         "autogen": true
+                    },
+                    "456": {
+                        "equation": "1 - ch4, 1 - ch5, 1 - ch6",
+                        "equalize": true,
+                        "geo_correct": true,
+                        "autogen": true
+                    },
+                    "445": {
+                        "equation": "1 - ch4, 1 - ch4, 1 - ch5",
+                        "equalize": true,
+                        "geo_correct": true,
+                        "autogen": false
                     },
                     "WXtoImg NO": {
                         "lut": "noaa_apt/WXtoImg-NO.png",
                         "channels": "1-ch4, 1-ch5",
-                        "autogen": false,
+                        "autogen": true,
                         "geo_correct": true,
                         "equalize": true,
                         "draw_map": true,
