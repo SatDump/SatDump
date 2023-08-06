@@ -28,7 +28,7 @@ namespace satdump
         {
             image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             logger->error("Product format not specified, using PNG! %s", e.what());
             image_format = "png";
@@ -38,9 +38,11 @@ namespace satdump
         {
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
-                images[c].filename.find(".jpg") == std::string::npos && 
+                images[c].filename.find(".jpg") == std::string::npos &&
                 images[c].filename.find(".j2k") == std::string::npos)
                 images[c].filename += "." + image_format;
+            else
+                logger->trace("Image format was specified in product call. Not supposed to happen!");
 
             contents["images"][c]["file"] = images[c].filename;
             contents["images"][c]["name"] = images[c].channel_name;
