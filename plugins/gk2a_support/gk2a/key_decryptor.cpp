@@ -36,7 +36,7 @@ namespace gk2a
 
             int header_len = 8;
             int data_len = 540;
-            int crc_len = 2;
+            // int crc_len = 2;
 
             uint8_t *data = km_bytes + header_len;
             uint8_t *crc = km_bytes + header_len + data_len;

@@ -47,7 +47,7 @@ namespace goes
 
                 int x = is_shifted ? ((20917 - 70 + 12 - 3 - 8) / 4) : 0;
 
-                for (int y = 0; y < wip_scanline.size() / 48; y++)
+                for (int y = 0; y < (int)wip_scanline.size() / 48; y++)
                 {
                     uint16_t *block = &wip_scanline[y * 48];
 

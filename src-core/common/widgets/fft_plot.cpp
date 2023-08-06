@@ -26,7 +26,7 @@ namespace widgets
                               {frame_bb.Max.x - 1, frame_bb.Max.y - style.FramePadding.y});
 
         int res_w = size.x; // /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
-        int item_count = values_size - 1;
+        // int item_count = values_size - 1;
         const float t_step = 1.0f / (float)res_w;
         const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));
         float v0 = values[0];
@@ -83,7 +83,7 @@ namespace widgets
         for (int n = 0; n < res_w; n++)
         {
             const float t1 = t0 + t_step;
-            const int v1_idx = (int)(t0 * item_count + 0.5f);
+            // const int v1_idx = (int)(t0 * item_count + 0.5f);
 
             float ffpos = n * fz;
 

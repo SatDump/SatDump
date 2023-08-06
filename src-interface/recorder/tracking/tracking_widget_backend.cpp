@@ -300,11 +300,12 @@ namespace satdump
             double el = 0;
             double delta = 0;
             double deldot = 0;
+            double unk = 0;
 
             if (sscanf(line.c_str(), "%lf%*s    %lf %lf %lf  %lf  %lf",
-                       &julian_time, &az, &el, &delta, &deldot) == 5 ||
+                       &julian_time, &az, &el, &delta, &deldot, &unk) == 6 ||
                 sscanf(line.c_str(), "%lf    %lf %lf %lf  %lf  %lf",
-                       &julian_time, &az, &el, &delta, &deldot) == 5)
+                       &julian_time, &az, &el, &delta, &deldot, &unk) == 6)
             {
                 double ctime = (julian_time - 2440587.5) * 86400.0;
                 // logger->info("%s %f %f", timestamp_to_string(ctime).c_str(), az, el);

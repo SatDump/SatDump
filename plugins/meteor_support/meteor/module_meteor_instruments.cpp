@@ -98,7 +98,7 @@ namespace meteor
                 }
 
                 // BIS-M Processing
-                for (std::vector<uint8_t> &frame : bism_frames)
+                // for (std::vector<uint8_t> &frame : bism_frames)
                 {
                     // TODO
                 }

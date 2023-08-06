@@ -25,7 +25,7 @@ namespace fengyun3
         void PMRReader::work(std::vector<uint8_t> &packet)
         {
             int cnt = packet[11];
-            int cnt2 = packet[12] << 8 | packet[13];
+            // int cnt2 = packet[12] << 8 | packet[13];
             uint8_t marker = packet[5];
 
             if (cnt > 58 || !(marker == 90 || marker == 238))

@@ -173,7 +173,7 @@ namespace soho_compression
         int wip_buffer_sz;
         int wip_buffer_curr_bytepos;
 
-        int bfseek(int pos, int mode)
+        int bfseek(int pos, int /*mode*/)
         {
             if (pos >= wip_buffer_sz)
                 return 1;
@@ -216,7 +216,7 @@ namespace soho_compression
         int run_main_buff(uint8_t *input_buffer, int input_size, uint16_t **output_image, int *img_rows, int *img_cols)
         {
             /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96                          */
-            int i, ncol, nrow, SignFlag;
+            int ncol, nrow, SignFlag;
 #if ENABLE_PRINTF_OUT
             printf("Rice Decompression 07 Feb 2003 version\n");
 #endif

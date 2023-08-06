@@ -170,26 +170,28 @@ namespace ziq
 
     bool ziq_reader::seekg(size_t pos)
     {
-        //Move to location in file
+        // Move to location in file
         if (cfg.is_compressed)
         {
             size_t err;
             decompressed_cnt = 0;
-            if (pos + annotation_size + 22 < stream.tellg())
+            if (pos + annotation_size + 22 < (size_t)stream.tellg())
             {
                 err = ZSTD_DCtx_reset(zstd_ctx, ZSTD_reset_session_only);
-                if (ZSTD_isError(err)) return false;
+                if (ZSTD_isError(err))
+                    return false;
                 stream.seekg(annotation_size + 22);
             }
-            while (stream.tellg() < pos + annotation_size + 22)
+            while ((size_t)stream.tellg() < pos + annotation_size + 22)
             {
-                stream.read((char*)compressed_buffer, ZIQ_DECOMPRESS_BUFSIZE);
-                zstd_input = { compressed_buffer, (unsigned long)ZIQ_DECOMPRESS_BUFSIZE, 0 };
-                zstd_output = { output_decompressed, max_buffer_size, 0 };
+                stream.read((char *)compressed_buffer, ZIQ_DECOMPRESS_BUFSIZE);
+                zstd_input = {compressed_buffer, (unsigned long)ZIQ_DECOMPRESS_BUFSIZE, 0};
+                zstd_output = {output_decompressed, max_buffer_size, 0};
                 while (zstd_input.pos < zstd_input.size)
                 {
                     err = ZSTD_decompressStream(zstd_ctx, &zstd_output, &zstd_input);
-                    if (ZSTD_isError(err)) return false;
+                    if (ZSTD_isError(err))
+                        return false;
                 }
             }
         }

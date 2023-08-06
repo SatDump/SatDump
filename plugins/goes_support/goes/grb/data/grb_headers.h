@@ -17,6 +17,12 @@ namespace goes
 
             GRBSecondaryHeader()
             {
+                day_since_epoch = 0;
+                ms_of_day = 0;
+                grb_version = 0;
+                grb_payload_variant = 0;
+                assembler_identifier = 0;
+                system_environment = 0;
             }
 
             GRBSecondaryHeader(uint8_t *data)

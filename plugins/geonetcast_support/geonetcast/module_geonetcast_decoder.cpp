@@ -113,7 +113,7 @@ namespace geonetcast
 
                         auto function = [file, has_all_parts, this](int)
                         {
-                            std::string filesize_str = filesize_str;
+                            std::string filesize_str = "";
                             if (file.size >= 1e3)
                                 filesize_str = std::to_string(file.size / 1e3) + "kB";
                             if (file.size >= 1e6)

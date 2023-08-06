@@ -94,7 +94,7 @@ namespace umka
 
         uint8_t cadu[1024];
 
-        int payload_cnt_0 = 0, payload_cnt_1 = 0;
+        int /*payload_cnt_0 = 0,*/ payload_cnt_1 = 0;
         std::vector<uint8_t> wip_payload_0, wip_payload_1;
 
         while (!data_in.eof())

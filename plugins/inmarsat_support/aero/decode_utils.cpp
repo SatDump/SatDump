@@ -43,12 +43,12 @@ namespace inmarsat
         {
             // Voice
             int in_voice_byte = 0;
-            uint8_t voiceByte;
+            uint8_t voiceByte = 0;
             int voice_o = 0;
 
             // Blocks
             int in_block_byte = 0;
-            uint8_t blockByte;
+            uint8_t blockByte = 0;
             int block_o = 0;
 
             int bitpos = 0;

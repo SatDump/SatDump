@@ -810,7 +810,7 @@ namespace fengyun3
                 // BowTie values
                 const float alpha = 1.0 / 1.6;
                 const float beta = 0.58333; // 1.0 - alpha;
-                const long scanHeight_250 = 40;
+                // const long scanHeight_250 = 40;
                 const long scanHeight_1000 = 10;
 
                 logger->info("----------- MERSI-RM");
@@ -850,9 +850,9 @@ namespace fengyun3
                     if (d_parameters.contains("mersi_rotate") ? d_parameters["mersi_rotate"].get<bool>() : false)
                     {
                         auto img2 = image;
-                        for (int l = 0; l < img2.height() / 10; l++)
+                        for (int l = 0; l < (int)img2.height() / 10; l++)
                         {
-                            for (int x = 0; x < img2.width(); x++)
+                            for (int x = 0; x < (int)img2.width(); x++)
                             {
                                 for (int c = 0; c < 10; c++)
                                 {
