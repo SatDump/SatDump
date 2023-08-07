@@ -32,11 +32,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import android.widget.RelativeLayout
-import android.widget.EditText
-import android.text.TextWatcher
-import android.text.Editable
-import android.text.InputType
+import android.widget.RelativeLayout;
+import android.widget.EditText;
+import android.text.TextWatcher;
+import android.text.Editable;
+import android.text.InputType;
+
+import android.view.WindowManager;
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -116,6 +118,9 @@ class MainActivity : NativeActivity(), TextWatcher {
 
         // Hide system bars
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        // Keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Text crap
         mLayout = RelativeLayout(this);
