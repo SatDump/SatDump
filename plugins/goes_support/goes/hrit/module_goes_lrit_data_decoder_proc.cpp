@@ -4,6 +4,7 @@
 #include "libs/miniz/miniz.h"
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
+#include "goes/util/image_utils.h"
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime
@@ -317,7 +318,7 @@ namespace goes
 
                                 if (channel == 2)
                                 {
-                                    segmentedDecoder.image.fill_background(new uint8_t[1]{ 255 }, new uint8_t[1]{ 0 });
+                                    fill_background(&segmentedDecoder.image, new uint8_t[1]{ 255 }, new uint8_t[1]{ 0 });
                                     goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
                                     goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
