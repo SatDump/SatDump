@@ -4,17 +4,16 @@
 namespace goes
 {
     template <typename T>
-    void fill_background(image::Image<T> *image, T bgcolor[], T replaceColor[])
+    void fill_background(image::Image<T>* image, T bgcolor[], T replaceColor[])
     {
         bool stop;
         for (size_t i = 0; i < image->width() * image->width(); i += image->width())
         {
-            int c;
-            size_t j;
+            int c, j;
 
             //Left Side
             stop = false;
-            for (j = 0; j < image->width(); j++)
+            for (j = 0; (size_t)j < image->width(); j++)
             {
                 for (c = 0; c < image->channels(); c++)
                 {
