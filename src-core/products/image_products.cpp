@@ -1,5 +1,6 @@
 #include "image_products.h"
 #include "logger.h"
+#include "core/config.h"
 #include "common/image/composite.h"
 #include "resources.h"
 #include "common/image/earth_curvature.h"
@@ -22,8 +23,27 @@ namespace satdump
         if (save_as_matrix)
             contents["save_as_matrix"] = save_as_matrix;
 
+        std::string image_format;
+        try
+        {
+            image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Product format not specified, using PNG! %s", e.what());
+            image_format = "png";
+        }
+
         for (size_t c = 0; c < images.size(); c++)
         {
+            if (images[c].filename.find(".png") == std::string::npos &&
+                images[c].filename.find(".jpeg") == std::string::npos &&
+                images[c].filename.find(".jpg") == std::string::npos &&
+                images[c].filename.find(".j2k") == std::string::npos)
+                images[c].filename += "." + image_format;
+            else
+                logger->trace("Image format was specified in product call. Not supposed to happen!");
+
             contents["images"][c]["file"] = images[c].filename;
             contents["images"][c]["name"] = images[c].channel_name;
 
@@ -38,10 +58,7 @@ namespace satdump
                 contents["images"][c]["offset_x"] = images[c].offset_x;
 
             if (!save_as_matrix)
-            {
-                logger->info("Saving " + images[c].filename);
-                images[c].image.save_png(directory + "/" + images[c].filename);
-            }
+                images[c].image.save_img(directory + "/" + images[c].filename);
         }
 
         if (save_as_matrix)
@@ -50,8 +67,7 @@ namespace satdump
             logger->debug("Using size %d", size);
             image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
                                                                                        { return images[c].image; });
-            logger->info("Saving " + images[0].filename);
-            image_all.save_png(directory + "/" + images[0].filename);
+            image_all.save_img(directory + "/" + images[0].filename);
             contents["img_matrix_size"] = size;
         }
 
@@ -76,7 +92,7 @@ namespace satdump
         if (save_as_matrix)
         {
             if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
-                img_matrix.load_png(directory + "/" + contents["images"][0]["file"].get<std::string>());
+                img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
         }
 
         for (size_t c = 0; c < contents["images"].size(); c++)
@@ -91,7 +107,7 @@ namespace satdump
             if (!save_as_matrix)
             {
                 if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
-                    img_holder.image.load_png(directory + "/" + contents["images"][c]["file"].get<std::string>());
+                    img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
             }
             else
             {
@@ -365,8 +381,11 @@ namespace satdump
         if (product.needs_correlation)
         {
             std::vector<double> common_timestamps; // First, establish common timestamps between all required channels
-            if (product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_MULTIPLE_LINES)
+            if (product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_MULTIPLE_LINES ||
+                product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_LINE)
             {
+                bool single_line = product.timestamp_type == satdump::ImageProducts::Timestamp_Type::TIMESTAMP_LINE;
+
                 for (double time1 : product.get_timestamps(channel_indexes[0]))
                 {
                     bool is_present_everywhere = true;
@@ -397,7 +416,8 @@ namespace satdump
                 std::vector<image::Image<uint16_t>> images_obj_new;
                 for (int i = 0; i < (int)channel_indexes.size(); i++)
                     images_obj_new.push_back(image::Image<uint16_t>(product.images[channel_indexes[i]].image.width(),
-                                                                    product.get_ifov_y_size(channel_indexes[i]) * common_timestamps.size(), 1));
+                                                                    (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
+                                                                    1));
 
                 // Recompose images to be synced
                 int y_index = 0;
@@ -413,9 +433,9 @@ namespace satdump
                             if (time1 == time2)
                             {
                                 //  Copy over scanlines
-                                memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * product.get_ifov_y_size(index)],
-                                       &product.images[index].image[t * images_obj_new[i].width() * product.get_ifov_y_size(index)],
-                                       images_obj_new[i].width() * product.get_ifov_y_size(index) * sizeof(uint16_t));
+                                memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       &product.images[index].image[t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
                                 break;
                             }
                         }

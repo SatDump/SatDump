@@ -33,12 +33,8 @@ namespace satdump
                 GrayScaleScatCfg cfg = compo.value().get<GrayScaleScatCfg>();
                 image::Image<uint16_t> grayscale = satdump::make_scatterometer_grayscale(*rad_products, cfg);
 
-                std::string name = products->instrument_name +
-                                   "_grayscale_" +
-                                   initial_name + ".png";
-
-                logger->info("Saving " + product_path + "/" + name);
-                grayscale.save_png(product_path + "/" + name);
+                std::string name = products->instrument_name + "_grayscale_" + initial_name;
+                grayscale.save_img(product_path + "/" + name);
             }
         }
 
@@ -70,12 +66,8 @@ namespace satdump
                     }
                 }
 
-                std::string name = products->instrument_name +
-                                   "_grayscale_proj_" +
-                                   initial_name + ".png";
-
-                logger->info("Saving " + product_path + "/" + name);
-                grayscale.save_png(product_path + "/" + name);
+                std::string name = products->instrument_name + "_grayscale_proj_" + initial_name;
+                grayscale.save_img(product_path + "/" + name);
             }
         }
     }

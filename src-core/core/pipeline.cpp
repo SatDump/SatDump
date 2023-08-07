@@ -100,14 +100,8 @@ namespace satdump
                     uiCallListMutex->unlock();
                 }
 
-                std::thread module1_thread([m1]()
-                                           {
-                                           m1->process();
-                                           logger->info("MODULE 1 DONE"); });
-                std::thread module2_thread([m2]()
-                                           {
-                                           m2->process();
-                                           logger->info("MODULE 2 DONE"); });
+                std::thread module1_thread([m1]() { m1->process(); });
+                std::thread module2_thread([m2]() { m2->process(); });
 
                 if (module1_thread.joinable())
                     module1_thread.join();

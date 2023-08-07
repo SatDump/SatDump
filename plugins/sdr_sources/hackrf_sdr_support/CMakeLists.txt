@@ -20,7 +20,7 @@ if(HACKRF_LIBRARY OR MSVC OR ANDROID)
 
     target_include_directories(hackrf_sdr_support PUBLIC src)
 
-    install(TARGETS hackrf_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS hackrf_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("HackRF Library could not be found! Not building.")
 endif()

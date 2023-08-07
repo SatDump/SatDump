@@ -491,7 +491,7 @@ namespace fengyun3
                 mwhs1_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwhs1.json")));
 
                 for (int i = 0; i < 5; i++)
-                    mwhs1_products.images.push_back({"MWHS1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwhs1_reader.getChannel(i)});
+                    mwhs1_products.images.push_back({"MWHS1-" + std::to_string(i + 1), std::to_string(i + 1), mwhs1_reader.getChannel(i)});
 
                 mwhs1_products.set_timestamps(mwhs1_reader.timestamps);
 
@@ -521,7 +521,7 @@ namespace fengyun3
                 mwhs2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_cde_mwhs2.json")));
 
                 for (int i = 0; i < 15; i++)
-                    mwhs2_products.images.push_back({"MWHS2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwhs2_reader.getChannel(i)});
+                    mwhs2_products.images.push_back({"MWHS2-" + std::to_string(i + 1), std::to_string(i + 1), mwhs2_reader.getChannel(i)});
 
                 mwhs2_products.set_timestamps(mwhs2_reader.timestamps);
 
@@ -551,7 +551,7 @@ namespace fengyun3
                 virr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abc_virr.json")));
 
                 for (int i = 0; i < 10; i++)
-                    virr_products.images.push_back({"VIRR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), virr_reader.getChannel(i)});
+                    virr_products.images.push_back({"VIRR-" + std::to_string(i + 1), std::to_string(i + 1), virr_reader.getChannel(i)});
 
                 int timestamp_offset = 0;
                 if (scid == FY3_A_SCID)
@@ -635,12 +635,12 @@ namespace fengyun3
                         mersi::mersi_match_detector_histograms(image, i < 5 ? 40 : 10);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                    mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
                 // virr_products.set_timestamps(mwts2_reader.timestamps);
 
-                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+                // mersi2_reader.getChannel(-1).save_img(directory + "/calib");
 
                 mersi1_status = SAVING;
 
@@ -714,10 +714,10 @@ namespace fengyun3
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                    mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
-                // mersi2_reader.getChannel(-1).save_png(directory + "/calib.png");
+                // mersi2_reader.getChannel(-1).save_img(directory + "/calib");
 
                 mersi2_status = SAVING;
 
@@ -786,10 +786,10 @@ namespace fengyun3
                         mersi::mersi_offset_interleaved(image, 40, -3);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
-                    mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                    mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
-                // mersill_reader.getChannel(-1).save_png(directory + "/calib.png");
+                // mersill_reader.getChannel(-1).save_img(directory + "/calib");
 
                 mersill_status = SAVING;
 
@@ -810,7 +810,7 @@ namespace fengyun3
                 // BowTie values
                 const float alpha = 1.0 / 1.6;
                 const float beta = 0.58333; // 1.0 - alpha;
-                const long scanHeight_250 = 40;
+                // const long scanHeight_250 = 40;
                 const long scanHeight_1000 = 10;
 
                 logger->info("----------- MERSI-RM");
@@ -850,9 +850,9 @@ namespace fengyun3
                     if (d_parameters.contains("mersi_rotate") ? d_parameters["mersi_rotate"].get<bool>() : false)
                     {
                         auto img2 = image;
-                        for (int l = 0; l < img2.height() / 10; l++)
+                        for (int l = 0; l < (int)img2.height() / 10; l++)
                         {
-                            for (int x = 0; x < img2.width(); x++)
+                            for (int x = 0; x < (int)img2.width(); x++)
                             {
                                 for (int c = 0; c < 10; c++)
                                 {
@@ -864,10 +864,10 @@ namespace fengyun3
                         image.mirror(true, false);
                     }
 
-                    mersirm_products.images.push_back({"MERSIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), image, {}, -1, -1, offset[i]});
+                    mersirm_products.images.push_back({"MERSIRM-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
-                // mersirm_reader.getChannel(-1).save_png(directory + "/calib.png");
+                // mersirm_reader.getChannel(-1).save_img(directory + "/calib");
 
                 mersirm_status = SAVING;
 
@@ -898,7 +898,7 @@ namespace fengyun3
                 mwri_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abcd_mwri1.json")));
 
                 for (int i = 0; i < 10; i++)
-                    mwri_products.images.push_back({"MWRI-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwri_reader.getChannel(i)});
+                    mwri_products.images.push_back({"MWRI-" + std::to_string(i + 1), std::to_string(i + 1), mwri_reader.getChannel(i)});
 
                 mwri_products.save(directory);
                 dataset.products_list.push_back("MWRI");
@@ -927,7 +927,7 @@ namespace fengyun3
                 mwrirm_produducts.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mwrirm.json")));
 
                 for (int i = 0; i < 26; i++)
-                    mwrirm_produducts.images.push_back({"MWRIRM-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwrirm_reader.getChannel(i)});
+                    mwrirm_produducts.images.push_back({"MWRIRM-" + std::to_string(i + 1), std::to_string(i + 1), mwrirm_reader.getChannel(i)});
 
                 mwrirm_produducts.save(directory);
                 dataset.products_list.push_back("MWRI-RM");
@@ -957,7 +957,7 @@ namespace fengyun3
                 logger->info("----------- GAS");
                 logger->info("Lines : " + std::to_string(gas_reader.lines));
 
-                gas_reader.getChannel().save_png(directory + "/GAS.png");
+                gas_reader.getChannel().save_img(directory + "/GAS");
 
                 gas_status = DONE;
             }
@@ -981,7 +981,7 @@ namespace fengyun3
                 erm_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 erm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_abc_erm.json")));
 
-                erm_products.images.push_back({"ERM-1.png", "1", erm_reader.getChannel()});
+                erm_products.images.push_back({"ERM-1", "1", erm_reader.getChannel()});
 
                 erm_products.set_timestamps(erm_reader.timestamps);
 
@@ -1011,7 +1011,7 @@ namespace fengyun3
                 mwts1_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwts1.json")));
 
                 for (int i = 0; i < 27; i++)
-                    mwts1_products.images.push_back({"MWTS1-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts1_reader.getChannel(i)});
+                    mwts1_products.images.push_back({"MWTS1-" + std::to_string(i + 1), std::to_string(i + 1), mwts1_reader.getChannel(i)});
 
                 mwts1_products.set_timestamps(mwts2_reader.timestamps);
 
@@ -1041,7 +1041,7 @@ namespace fengyun3
                 mwts2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mwts2.json")));
 
                 for (int i = 0; i < 18; i++)
-                    mwts2_products.images.push_back({"MWTS2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts2_reader.getChannel(i)});
+                    mwts2_products.images.push_back({"MWTS2-" + std::to_string(i + 1), std::to_string(i + 1), mwts2_reader.getChannel(i)});
 
                 mwts2_products.set_timestamps(mwts2_reader.timestamps);
 
@@ -1071,7 +1071,7 @@ namespace fengyun3
                 mwts3_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_e_mwts3.json")));
 
                 for (int i = 0; i < 18; i++)
-                    mwts3_products.images.push_back({"MWTS3-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mwts3_reader.getChannel(i)});
+                    mwts3_products.images.push_back({"MWTS3-" + std::to_string(i + 1), std::to_string(i + 1), mwts3_reader.getChannel(i)});
 
                 mwts3_products.set_timestamps(mwts3_reader.timestamps);
 

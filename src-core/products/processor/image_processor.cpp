@@ -120,8 +120,7 @@ namespace satdump
                                                        100);
                     }
 
-                    logger->info("Saving " + product_path + "/" + name + ".png");
-                    rgb_image.save_png(product_path + "/" + name + ".png");
+                    rgb_image.save_img(product_path + "/" + name);
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
@@ -131,7 +130,7 @@ namespace satdump
                                                                         rgb_image,
                                                                         final_timestamps,
                                                                         *img_products);
-                        ret.img.save_png(product_path + "/rgb_" + name + "_projected.png");
+                        ret.img.save_img(product_path + "/rgb_" + name + "_projected");
                     }
 
                     if ((compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false) && rgb_image.size() > 0)
@@ -141,8 +140,7 @@ namespace satdump
 
                         if (success)
                         {
-                            logger->info("Saving " + product_path + "/" + name + "_corrected.png");
-                            rgb_image.save_png(product_path + "/" + name + "_corrected.png");
+                            rgb_image.save_img(product_path + "/" + name + "_corrected");
                         }
                     }
                 }
@@ -188,7 +186,7 @@ namespace satdump
                                                                 img.image,
                                                                 img_products->get_timestamps(chanid),
                                                                 *img_products);
-                ret.img.save_png(product_path + "/channel_" + img.channel_name + "_projected.png");
+                ret.img.save_img(product_path + "/channel_" + img.channel_name + "_projected");
             }
         }
     }

@@ -13,22 +13,23 @@ private:
     char input_address[100] = "127.0.0.1";
     int input_port = 4533;
 
+    const int MAX_CORRUPTED_CMD = 3;
+    int corrupted_cmd_count = 0;
+
 private:
-    std::string command(std::string cmd)
+    std::string command(std::string cmd, int *ret_sz)
     {
         client->sends((uint8_t *)cmd.data(), cmd.size());
 
         std::string result;
         result.resize(1000);
 
-        int sz = client->recvs((uint8_t *)result.data(), result.size());
+        *ret_sz = client->recvs((uint8_t *)result.data(), result.size());
 
-        if (sz < 0)
+        if (*ret_sz < 0)
             return "";
 
-        //    printf("%d\n", sz);
-
-        result.resize(sz);
+        result.resize(*ret_sz);
         return result;
     }
 
@@ -68,49 +69,63 @@ public:
         client = nullptr;
     }
 
-    bool get_pos(float *az, float *el)
+    rotator_status_t get_pos(float *az, float *el)
     {
         if (client == nullptr)
-            return true;
+            return ROT_ERROR_CON;
 
         float saz = 0, sel = 0;
-        std::string cmd = command("p\x0a");
+        int ret_sz = 0;
+        std::string cmd = command("p\x0a", &ret_sz);
         if (sscanf(cmd.c_str(), "%f\n%f", &saz, &sel) == 2)
         {
+            corrupted_cmd_count = 0;
             *az = saz;
             *el = sel;
-            return false;
+            return ROT_ERROR_OK;
         }
 
-        if (client != nullptr)
-            delete client;
-        client = nullptr;
+        corrupted_cmd_count++;
+        if (corrupted_cmd_count > MAX_CORRUPTED_CMD || ret_sz <= 0)
+        {
+            if (client != nullptr)
+                delete client;
+            client = nullptr;
+            corrupted_cmd_count = 0;
+        }
 
-        return true;
+        return ROT_ERROR_CON;
     }
 
-    bool set_pos(float az, float el)
+    rotator_status_t set_pos(float az, float el)
     {
         if (client == nullptr)
-            return true;
+            return ROT_ERROR_CON;
 
         char command_out[30];
         sprintf(command_out, "P %.2f %.2f\x0a", az, el);
-        std::string cmd = command(std::string(command_out));
+        int ret_sz = 0;
+        std::string cmd = command(std::string(command_out), &ret_sz);
         int result = 0;
         if (sscanf(cmd.c_str(), "RPRT %d", &result) == 1)
         {
+            corrupted_cmd_count = 0;
             if (result != 0)
-                return true;
+                return ROT_ERROR_CMD;
             else
-                return false;
+                return ROT_ERROR_OK;
         }
 
-        if (client != nullptr)
-            delete client;
-        client = nullptr;
+        corrupted_cmd_count++;
+        if (corrupted_cmd_count > MAX_CORRUPTED_CMD || ret_sz <= 0)
+        {
+            if (client != nullptr)
+                delete client;
+            client = nullptr;
+            corrupted_cmd_count = 0;
+        }
 
-        return true;
+        return ROT_ERROR_CON;
     }
 
     void render()

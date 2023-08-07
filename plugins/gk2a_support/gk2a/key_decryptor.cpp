@@ -36,7 +36,7 @@ namespace gk2a
 
             int header_len = 8;
             int data_len = 540;
-            int crc_len = 2;
+            // int crc_len = 2;
 
             uint8_t *data = km_bytes + header_len;
             uint8_t *crc = km_bytes + header_len + data_len;
@@ -82,7 +82,7 @@ namespace gk2a
             logger->info("\nDecrypting...");
 
             uint64_t mac_bin = 0;
-            uint64_t mac_bin2 = std::stoul(mac_address, nullptr, 16) << 16; //;
+            uint64_t mac_bin2 = std::stoull(mac_address, nullptr, 16) << 16;
 
             for (int i = 0; i < 8; i++)
             {

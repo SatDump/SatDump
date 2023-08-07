@@ -1,5 +1,6 @@
 #include "live.h"
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp/resamp/smart_resampler.h"
 #include <signal.h>
 #include "logger.h"
 #include "common/cli_utils.h"
@@ -44,12 +45,16 @@ int main_record(int argc, char *argv[])
     uint64_t timeout;
     std::string handler_id;
 
+    double decimation = 1;
+
     try
     {
         samplerate = parameters["samplerate"].get<uint64_t>();
         frequency = parameters["frequency"].get<uint64_t>();
         timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
         handler_id = parameters["source"].get<std::string>();
+        if (parameters.contains("decimation"))
+            decimation = parameters["decimation"].get<int>();
     }
     catch (std::exception &e)
     {
@@ -58,8 +63,9 @@ int main_record(int argc, char *argv[])
     }
 
     // Create output dir
-    if (!std::filesystem::exists(std::filesystem::path(output_file).parent_path().string()))
-        std::filesystem::create_directories(std::filesystem::path(output_file).parent_path().string());
+    if (std::filesystem::path(output_file).has_parent_path())
+        if (!std::filesystem::exists(std::filesystem::path(output_file).parent_path().string()))
+            std::filesystem::create_directories(std::filesystem::path(output_file).parent_path().string());
 
     // Get all sources
     dsp::registerAllSources();
@@ -93,6 +99,7 @@ int main_record(int argc, char *argv[])
     source_ptr->set_samplerate(samplerate);
     source_ptr->set_settings(parameters);
 
+    std::unique_ptr<dsp::SmartResamplerBlock<complex_t>> decim;
     std::unique_ptr<dsp::SplitterBlock> splitter;
     std::unique_ptr<dsp::FFTPanBlock> fft;
     bool webserver_already_set = false;
@@ -108,8 +115,12 @@ int main_record(int argc, char *argv[])
         return 1;
     }
 
+    // Decimation if requested
+    if (decimation > 1)
+        decim = std::make_unique<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, decimation);
+
     // Optional FFT
-    std::shared_ptr<dsp::stream<complex_t>> final_stream = source_ptr->output_stream;
+    std::shared_ptr<dsp::stream<complex_t>> final_stream = decimation > 1 ? decim->output_stream : source_ptr->output_stream;
 
     int fft_size = 0;
     if (parameters.contains("fft_enable"))
@@ -122,7 +133,7 @@ int main_record(int argc, char *argv[])
         splitter->set_enabled("fft", true);
         final_stream = splitter->output_stream;
         fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
-        fft->set_fft_settings(fft_size, samplerate, fft_rate);
+        fft->set_fft_settings(fft_size, samplerate / decimation, fft_rate);
         if (parameters.contains("fft_avg"))
             fft->avg_rate = parameters["fft_avg"].get<float>();
         splitter->start();
@@ -165,7 +176,7 @@ int main_record(int argc, char *argv[])
     }
 
     file_sink->start();
-    file_sink->start_recording(output_file, samplerate, ziq_bit_depth);
+    file_sink->start_recording(output_file, samplerate / decimation, ziq_bit_depth);
 
     // If requested, boot up webserver
     if (parameters.contains("http_server"))

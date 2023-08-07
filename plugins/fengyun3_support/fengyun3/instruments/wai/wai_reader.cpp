@@ -17,8 +17,7 @@ namespace fengyun3
 
         void WAIReader::writeCurrent()
         {
-            image.save_png(std::string(directory + "/WAI_" + std::to_string(images_count++ + 1) + ".png").c_str());
-            logger->info("Saving WAI image to" + directory + "/WAI_" + std::to_string(images_count++ + 1) + ".png");
+            image.save_img(std::string(directory + "/WAI_" + std::to_string(images_count++ + 1)).c_str());
             image = image::Image<uint16_t>(832, 832, 1);
 
             lines = 0;

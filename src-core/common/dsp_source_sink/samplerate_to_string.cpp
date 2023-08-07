@@ -42,5 +42,38 @@ std::string formatSamplerateToString(uint64_t samplerate)
     else if (samplerate < 1e9)
         return vformat("%1.3fM", samplerate / 1e6);
     else
-        return vformat("%1.3f");
+        return vformat("%1.3fG", samplerate / 1e9);
+}
+
+std::string formatFrequencyToString(uint64_t samplerate)
+{
+    std::string fmt;
+    if (samplerate < 1e4)
+        fmt = vformat("%d", samplerate);
+    else if (samplerate < 1e7)
+        fmt = vformat("%1.3fk", samplerate / 1e3);
+    else if (samplerate < 1e10)
+        fmt = vformat("%1.3fM", samplerate / 1e6);
+    else
+        fmt = vformat("%1.3fG", samplerate / 1e9);
+
+    if (fmt.size() > 1)
+    {
+        if (fmt[fmt.size() - 1] == '0')
+        {
+            while (fmt.size() > 1 && fmt[fmt.size() - 1] == '0')
+                fmt.erase(fmt.end() - 1);
+            if (fmt[fmt.size() - 1] == '.')
+                fmt.erase(fmt.end() - 1);
+        }
+        else
+        {
+            while (fmt.size() > 1 && fmt[fmt.size() - 2] == '0')
+                fmt.erase(fmt.end() - 2);
+            if (fmt[fmt.size() - 2] == '.')
+                fmt.erase(fmt.end() - 2);
+        }
+    }
+
+    return fmt;
 }

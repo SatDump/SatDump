@@ -2,16 +2,15 @@
 #include "common/tracking/tle.h"
 #include "common/utils.h"
 #include "logger.h"
+#include <cfloat>
 
 namespace satdump
 {
     void TrackingWidget::backend_run()
     {
-        time_t last_rot_update = 0;
-
         while (backend_should_run)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
             if (!has_tle)
                 continue;
@@ -31,7 +30,7 @@ namespace satdump
                     double timed = getTime();
 
                     int iter = 0;
-                    for (int i = 0; i < horizons_data.size(); i++)
+                    for (int i = 0; i < (int)horizons_data.size(); i++)
                         if (horizons_data[i].timestamp < timed)
                             iter = i;
 
@@ -79,16 +78,9 @@ namespace satdump
                 backend_needs_update = false;
             }
 
-            tle_update_mutex.unlock();
+            processAutotrack();
 
-            // TODO : MOVE THIS OUT OF THERE!!!!
-            rotator_handler_mtx.lock();
-            if (rotator_handler->is_connected() && time(0) - last_rot_update > 1)
-            {
-                updateRotator();
-                last_rot_update = time(0);
-            }
-            rotator_handler_mtx.unlock();
+            tle_update_mutex.unlock();
         }
     }
 
@@ -111,7 +103,7 @@ namespace satdump
             double timed = getTime();
 
             int iter = 0;
-            for (int i = 0; i < horizons_data.size(); i++)
+            for (int i = 0; i < (int)horizons_data.size(); i++)
                 if (horizons_data[i].timestamp < timed)
                     iter = i;
 
@@ -130,7 +122,7 @@ namespace satdump
                     }
                 }
 
-                for (int i = iter; i < horizons_data.size(); i++) // Find LOS
+                for (int i = iter; i < (int)horizons_data.size(); i++) // Find LOS
                 {
                     if (horizons_data[i].el <= 0)
                     {
@@ -142,7 +134,7 @@ namespace satdump
             else
             {
                 int aos_iter = 0;
-                for (int i = iter; i < horizons_data.size(); i++) // Find AOS
+                for (int i = iter; i < (int)horizons_data.size(); i++) // Find AOS
                 {
                     if (horizons_data[i].el > 0)
                     {
@@ -156,7 +148,7 @@ namespace satdump
 
                 if (next_aos_time != 0)
                 {
-                    for (int i = aos_iter; i < horizons_data.size(); i++) // Find LOS
+                    for (int i = aos_iter; i < (int)horizons_data.size(); i++) // Find LOS
                     {
                         if (horizons_data[i].el <= 0)
                         {
@@ -174,7 +166,7 @@ namespace satdump
                 for (double ctime = next_aos_time; ctime <= next_los_time; ctime += time_step)
                 {
                     int iter = 0;
-                    for (int i = 0; i < horizons_data.size(); i++)
+                    for (int i = 0; i < (int)horizons_data.size(); i++)
                         if (horizons_data[i].timestamp < ctime)
                             iter = i;
 
@@ -189,7 +181,7 @@ namespace satdump
             if (predict_is_geosynchronous(satellite_object))
             {
                 next_aos_time = 0;
-                next_los_time = std::numeric_limits<double>::max();
+                next_los_time = DBL_MAX;
                 return;
             }
 
@@ -238,6 +230,21 @@ namespace satdump
         double start_time = curr_time - 24 * 3600;
         double stop_time = curr_time + 24 * 3600;
 
+        auto hdata = pullHorizonsData(start_time, stop_time, 8640);
+
+        if (hdata.size() > 0)
+        {
+            horizons_data = hdata;
+            last_horizons_fetch_time = curr_time;
+        }
+
+        logger->trace("Done pulling Horizons data...");
+    }
+
+    std::vector<TrackingWidget::HorizonsV> TrackingWidget::pullHorizonsData(double start_time, double stop_time, int num_points)
+    {
+        std::vector<HorizonsV> hdata;
+
         std::string cmd = (std::string) "https://ssd.jpl.nasa.gov/api/horizons.api?format=text" +
                           "&OBJ_DATA=NO" +
                           "&MAKE_EPHEM=YES" +
@@ -251,7 +258,7 @@ namespace satdump
                           std::to_string(qth_alt / 1e3) + "'" +
                           "&START_TIME='JD " + std::to_string((start_time / 86400.0) + 2440587.5) + "'" +
                           "&STOP_TIME='JD " + std::to_string((stop_time / 86400.0) + 2440587.5) + "'" +
-                          "&STEP_SIZE='8640'" + // 86400
+                          "&STEP_SIZE='" + std::to_string(num_points) + "'" + // 86400
                           "&QUANTITIES='4,20'";
 
         std::string req_result;
@@ -261,15 +268,11 @@ namespace satdump
         if (err != 0)
         {
             logger->error("Could not fetch data from Horizons!");
-            return;
+            return hdata;
         }
-
-        last_horizons_fetch_time = curr_time;
 
         std::istringstream req_results(req_result);
         std::string line;
-
-        horizons_data.clear();
 
         bool fount_soe = false;
         bool fount_eoe = false;
@@ -297,19 +300,20 @@ namespace satdump
             double el = 0;
             double delta = 0;
             double deldot = 0;
+            double unk = 0;
 
             if (sscanf(line.c_str(), "%lf%*s    %lf %lf %lf  %lf  %lf",
-                       &julian_time, &az, &el, &delta, &deldot) == 5 ||
+                       &julian_time, &az, &el, &delta, &deldot, &unk) == 6 ||
                 sscanf(line.c_str(), "%lf    %lf %lf %lf  %lf  %lf",
-                       &julian_time, &az, &el, &delta, &deldot) == 5)
+                       &julian_time, &az, &el, &delta, &deldot, &unk) == 6)
             {
                 double ctime = (julian_time - 2440587.5) * 86400.0;
                 // logger->info("%s %f %f", timestamp_to_string(ctime).c_str(), az, el);
-                horizons_data.push_back({ctime, (float)az, (float)el});
+                hdata.push_back({ctime, (float)az, (float)el});
             }
         }
 
-        logger->trace("Done pulling Horizons data...");
+        return hdata;
     }
 
     std::vector<std::pair<int, std::string>> TrackingWidget::pullHorizonsList()
@@ -359,38 +363,9 @@ namespace satdump
             }
         }
 
-        return vv;
+        if (vv.size() > 0)
+            return vv;
+        else
+            return horizonsoptions;
     }
-
-    void TrackingWidget::updateRotator()
-    {
-        // logger->info("Rot update!");
-
-        if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el))
-            logger->error("Error getting rotator position!");
-
-        if (rotator_engaged)
-        {
-            if (rotator_tracking)
-            {
-                if (current_el > 0)
-                {
-                    current_req_rotator_az = current_az;
-                    current_req_rotator_el = current_el;
-                }
-                else
-                {
-                    current_req_rotator_az = next_aos_az;
-                    current_req_rotator_el = next_aos_el;
-                }
-            }
-
-            if (current_req_rotator_el < 0)
-                current_req_rotator_el = 0;
-
-            if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el))
-                logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
-        }
-    }
-
 }

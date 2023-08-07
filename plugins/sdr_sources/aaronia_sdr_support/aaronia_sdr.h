@@ -6,7 +6,11 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <thread>
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
 
 class AaroniaSource : public dsp::DSPSampleSource
 {
@@ -23,6 +27,8 @@ protected:
     uint64_t current_samplerate = 0;
 
     float d_min_level = -20;
+
+    int d_rx_channel = 0;
 
     float d_level = -20;
     int d_usb_compression = 0;

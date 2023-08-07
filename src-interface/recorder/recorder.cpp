@@ -67,7 +67,7 @@ namespace satdump
             }
         }
 
-        source_ptr->set_frequency(frequency_mhz * 1e6);
+        set_frequency(frequency_mhz);
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
@@ -84,6 +84,7 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
+        fft_plot->frequency = frequency_mhz * 1e6;
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
 
         fft->on_fft = [this](float *v)
@@ -108,6 +109,9 @@ namespace satdump
         splitter->stop();
         fft->stop();
         file_sink->stop();
+
+        if (tracking_widget != nullptr)
+            delete tracking_widget;
     }
 
     void RecorderApplication::drawUI()
@@ -158,7 +162,7 @@ namespace satdump
                             }
                         }
 
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
+                        set_frequency(frequency_mhz);
                         try_load_sdr_settings();
                     }
                     ImGui::SameLine();
@@ -178,7 +182,7 @@ namespace satdump
 
                         source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                         source_ptr->open();
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
+                        set_frequency(frequency_mhz);
                         try_load_sdr_settings();
                     }
                     /*
@@ -196,6 +200,14 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
+                    bool pushed_color_xconv = xconverter_frequency != 0;
+                    if (pushed_color_xconv)
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
+                    if (ImGui::InputDouble("MHz (LO)##downupconverter", &xconverter_frequency))
+                        set_frequency(frequency_mhz);
+                    if (pushed_color_xconv)
+                        ImGui::PopStyleColor();
+
                     if (is_started)
                         style::endDisabled();
 
@@ -204,7 +216,7 @@ namespace satdump
                     ImGui::Spacing();
 
                     if (ImGui::InputDouble("MHz", &frequency_mhz))
-                        source_ptr->set_frequency(frequency_mhz * 1e6);
+                        set_frequency(frequency_mhz);
 
                     source_ptr->drawControlUI();
 
@@ -260,6 +272,7 @@ namespace satdump
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                     ImGui::Checkbox("Show Waterfall", &show_waterfall);
+                    ImGui::Checkbox("Frequency Scale", &fft_plot->enable_freq_scale);
                 }
 
                 if (fft_plot->scale_max < fft_plot->scale_min)
@@ -306,7 +319,7 @@ namespace satdump
                                     if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
                                         frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
-                                        source_ptr->set_frequency(frequency_mhz * 1e6);
+                                        set_frequency(frequency_mhz);
                                     }
                                 }
 
@@ -456,7 +469,38 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("Tracking"))
                 {
-                    tracking_widget.render();
+                    if (tracking_widget == nullptr)
+                    {
+                        tracking_widget = new TrackingWidget();
+
+                        tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+                        {
+                            stop_recording();
+                            stop_processing();
+
+                            frequency_mhz = obj.frequency;
+                            set_frequency(frequency_mhz);
+
+                            if (obj.live)
+                            {
+                                pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                                pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                                start_processing();
+                            }
+
+                            if (obj.record)
+                            {
+                                start_recording();
+                            }
+                        };
+
+                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject)
+                        {
+                            stop_recording();
+                            stop_processing();
+                        };
+                    }
+                    tracking_widget->render();
                 }
             }
             ImGui::EndChild();
@@ -524,6 +568,7 @@ namespace satdump
                 float live_height = 250 * ui_scale;
                 float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
                 float currentPos = 0;
+                ImGui::PushStyleColor(11, ImGui::GetStyleColorVec4(10));
                 for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
                 {
                     ImGui::SetNextWindowPos({currentPos, y_pos});
@@ -535,6 +580,7 @@ namespace satdump
                     //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
                     //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
                 }
+                ImGui::PopStyleColor();
             }
         }
 

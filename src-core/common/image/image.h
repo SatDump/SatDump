@@ -9,14 +9,16 @@
 
 #include "common/image/font/imstb_truetype.h"
 
-struct char_el{
+struct char_el
+{
     int char_nb;
     int glyph_nb;
-    unsigned char* bitmap;
+    unsigned char *bitmap;
     int cx0, cx1, cy0, cy1, advance, lsb, w, h, ix0, ix1, iy0, iy1, size;
 };
 
-struct font_info{
+struct font_info
+{
     struct stbtt_fontinfo fontp;
     std::string path;
     int x0, x1, y0, y1, asc, dsc, lg, wdh, hht;
@@ -74,7 +76,7 @@ namespace image
         Image<uint16_t> to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
 
         // Info access functions
-        bool font_ready(){return has_font;}
+        bool font_ready() { return has_font; }
 
         // Image processing functions
         void fill_color(T color[]);                                          // Fill image with a single color
@@ -101,8 +103,8 @@ namespace image
         void draw_line(int x0, int y0, int x1, int y1, T color[]);                                     // Draw a line with Bresenham's algorithm
         void draw_circle(int x0, int y0, int radius, T color[], bool fill = false);                    // Draw a circle with Bresenham's Midpoint algorithm
         void draw_image(int channel, Image<T> image, int x = 0, int y = 0);                            // Draw a B&W Image onto a channel
-        void draw_text(int xs0, int ys0, T color[], int size, std::string text); // Draw text onto the image
-        void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); //old
+        void draw_text(int xs0, int ys0, T color[], int size, std::string text);                       // Draw text onto the image
+        void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // old
 
     public:
         Image();                                                     // Init null image
@@ -122,10 +124,15 @@ namespace image
         void load_jpeg(std::string file);          // Load a JPEG file
         void load_jpeg(uint8_t *buffer, int size); // Load a JPEG from memory
 
+        // J2K Interface
+        void save_j2k(std::string file); // Save to a J2K file
+        void load_j2k(std::string file); // Load a J2K file
+
         // Generic loading/saving interface
-        void load_img(std::string file);          // Load a file, auto-detecting type
-        void load_img(uint8_t *buffer, int size); // Load from memory, auto-detecting type
-        void save_img(std::string file);          // Save file, determine type based on extension
+        void load_img(std::string file);                            // Load a file, auto-detecting type
+        void load_img(uint8_t *buffer, int size);                   // Load from memory, auto-detecting type
+        void save_img(std::string file, bool fast = true);          // Save file, determine type based on extension or default setting
+        bool append_ext(std::string* file);                         // If the filename has no extension, use the default image format
     };
 
     // Others

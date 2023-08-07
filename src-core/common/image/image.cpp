@@ -1,4 +1,6 @@
 #include "image.h"
+#include "logger.h"
+#include "core/config.h"
 #include <cstring>
 #include <limits>
 #include <fstream>
@@ -88,8 +90,9 @@ namespace image
     {
         if (has_data)
             delete[] d_data;
-        
-        if (has_font){
+
+        if (has_font)
+        {
             font.chars.clear();
             delete[] ttf_buffer;
         }
@@ -230,6 +233,8 @@ namespace image
             load_jpeg(file);
         else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
             load_png(file);
+        else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
+            load_j2k(file);
     }
 
     template <typename T>
@@ -242,12 +247,49 @@ namespace image
     }
 
     template <typename T>
-    void Image<T>::save_img(std::string file)
+    void Image<T>::save_img(std::string file, bool fast)
     {
+        if(!append_ext(&file)) return;
+        logger->info("Saving " + file + "...");
         if (file.find(".png") != std::string::npos)
-            save_png(file);
+            save_png(file, fast);
         else if (file.find(".jpeg") != std::string::npos || file.find(".jpg") != std::string::npos)
             save_jpeg(file);
+        else if (file.find(".j2k") != std::string::npos)
+            save_j2k(file);
+    }
+
+    // Append selected file extension
+    template <typename T>
+    bool Image<T>::append_ext(std::string* file)
+    {
+        //Do nothing if there's already an extension
+        if (file->find(".png") != std::string::npos ||
+            file->find(".jpeg") != std::string::npos ||
+            file->find(".jpg") != std::string::npos || 
+            file->find(".j2k") != std::string::npos)
+            return true;
+
+        //Otherwise, load the user setting
+        std::string image_format;
+        try
+        {
+            image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
+        }
+        catch (std::exception& e)
+        {
+            logger->error("Image format not specified, and default format cannot be found! %s", e.what());
+            return false;
+        }
+
+        if (image_format != "png" && image_format != "jpg" && image_format != "j2k")
+        {
+            logger->error("Image format not specified, and default format is invalid!");
+            return false;
+        }
+
+        *file += "." + image_format;
+        return true;
     }
 
     // Generate Images for uint16_t and uint8_t

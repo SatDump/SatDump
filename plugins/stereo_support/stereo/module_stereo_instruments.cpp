@@ -79,12 +79,7 @@ namespace stereo
 
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
-        int payload_idk = 0;
-
         std::filesystem::create_directories(directory + "/SECCHI/");
-
-        double last_tt_1 = 0;
-        double last_pol_1 = 0;
 
         secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
 
@@ -99,13 +94,13 @@ namespace stereo
             // logger->info(pkt.header.apid);
             // logger->info(vcdu.vcid);
 
-            uint8_t *tttt = &cadu[4 + 7];
-            double timestamp = (tttt[0] << 24 |
-                                tttt[1] << 16 |
-                                tttt[2] << 8 |
-                                tttt[3]) +
-                               tttt[4] / 256.0 +
-                               1161734400 + 43200;
+            // uint8_t *tttt = &cadu[4 + 7];
+            // double timestamp = (tttt[0] << 24 |
+            //                     tttt[1] << 16 |
+            //                     tttt[2] << 8 |
+            //                     tttt[3]) +
+            //                    tttt[4] / 256.0 +
+            //                    1161734400 + 43200;
 
             //  logger->trace(timestamp_to_string(timestamp));
 
@@ -171,7 +166,7 @@ namespace stereo
             logger->info("Lines : " + std::to_string(s_waves_lines));
 
             image::Image<uint8_t> image_s_waves(s_waves_data.data(), 162, s_waves_lines, 1);
-            image_s_waves.save_png(directory + "/S_WAVES.png");
+            image_s_waves.save_img(directory + "/S_WAVES");
         }
     }
 

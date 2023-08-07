@@ -138,11 +138,11 @@ namespace ldcm
                 // tirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), tirs_reader1.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 1), std::to_string(i + 1), tirs_reader1.getChannel(i)});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 4) + ".png", std::to_string(i + 4), tirs_reader2.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 4), std::to_string(i + 4), tirs_reader2.getChannel(i)});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 7) + ".png", std::to_string(i + 7), tirs_reader3.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 7), std::to_string(i + 7), tirs_reader3.getChannel(i)});
 
                 tirs_products.save(directory);
                 dataset.products_list.push_back("TIRS");

@@ -163,6 +163,12 @@ if(PLUGIN_UMKA OR PLUGINS_ALL)
     add_subdirectory(umka_support)
 endif()
 
+option(PLUGIN_DSCOVR "Enable the DSCOVR support plugin" OFF)
+
+if(PLUGIN_DSCOVR OR PLUGINS_ALL)
+    add_subdirectory(dscovr_support)
+endif()
+
 option(PLUGIN_STEREO "Enable the support plugin for the STEREO probes" OFF)
 
 if(PLUGIN_STEREO OR PLUGINS_ALL)

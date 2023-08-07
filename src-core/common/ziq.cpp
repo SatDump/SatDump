@@ -114,16 +114,16 @@ namespace ziq
     // Reader
     ziq_reader::ziq_reader(std::ifstream &stream) : stream(stream)
     {
-        // Write header
+        // Read header
         char signature[4];
+        annotation_size = 0;
         stream.read((char *)signature, 4);
         stream.read((char *)&cfg.is_compressed, 1);
         stream.read((char *)&cfg.bits_per_sample, 1);
         stream.read((char *)&cfg.samplerate, 8);
-        uint64_t string_size = 0;
-        stream.read((char *)&string_size, 8);
-        cfg.annotation.resize(string_size);
-        stream.read((char *)cfg.annotation.c_str(), string_size);
+        stream.read((char *)&annotation_size, 8);
+        cfg.annotation.resize(annotation_size);
+        stream.read((char *)cfg.annotation.c_str(), annotation_size);
 
         if (std::string(&signature[0], &signature[4]) != ZIQ_SIGNATURE)
         {
@@ -166,6 +166,42 @@ namespace ziq
             delete[] buffer_i8;
         else if (cfg.bits_per_sample == 16)
             delete[] buffer_i16;
+    }
+
+    bool ziq_reader::seekg(size_t pos)
+    {
+        // Move to location in file
+        if (cfg.is_compressed)
+        {
+            size_t err;
+            decompressed_cnt = 0;
+            if (pos + annotation_size + 22 < (size_t)stream.tellg())
+            {
+                err = ZSTD_DCtx_reset(zstd_ctx, ZSTD_reset_session_only);
+                if (ZSTD_isError(err))
+                    return false;
+                stream.seekg(annotation_size + 22);
+            }
+            while ((size_t)stream.tellg() < pos + annotation_size + 22)
+            {
+                stream.read((char *)compressed_buffer, ZIQ_DECOMPRESS_BUFSIZE);
+                zstd_input = {compressed_buffer, (unsigned long)ZIQ_DECOMPRESS_BUFSIZE, 0};
+                zstd_output = {output_decompressed, max_buffer_size, 0};
+                while (zstd_input.pos < zstd_input.size)
+                {
+                    err = ZSTD_decompressStream(zstd_ctx, &zstd_output, &zstd_input);
+                    if (ZSTD_isError(err))
+                        return false;
+                }
+            }
+        }
+        else
+        {
+            stream.seekg(pos + annotation_size + 22);
+            return true;
+        }
+
+        return true;
     }
 
     int ziq_reader::decompress_at_least(int size)

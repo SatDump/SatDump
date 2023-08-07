@@ -148,7 +148,7 @@ namespace meteor
             {
                 image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
                 if (img.size() > 0)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), img, msureader.timestamps, 8});
+                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
 
             msumr_products.save(directory);

@@ -114,10 +114,17 @@ namespace dsp
             if (should_repeat && input_file.eof())
             {
                 input_file.clear();
-                input_file.seekg(0);
-
-                if (format == ZIQ2)
+#ifdef BUILD_ZIQ
+                if (format == ZIQ)
+                    ziqReader->seekg(0);
+                else
+#endif
+#ifdef BUILD_ZIQ2
+                    if (format == ZIQ2)
                     input_file.seekg(4);
+                else
+#endif
+                    input_file.seekg(0);
             }
 
             switch (format)
@@ -186,7 +193,12 @@ namespace dsp
         {
 #ifdef BUILD_ZIQ
             if (format == ZIQ)
+            {
+                main_mtx.lock();
+                ziqReader->seekg(filesize * (progress / 100.0f));
+                main_mtx.unlock();
                 return;
+            }
 #endif
 
             if (format == ZIQ2)

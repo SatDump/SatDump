@@ -11,4 +11,4 @@ if(MSVC)
     target_link_libraries(udp_source_support PUBLIC ws2_32)
 endif()
 
-install(TARGETS udp_source_support DESTINATION share/satdump/plugins)
+install(TARGETS udp_source_support DESTINATION lib/satdump/plugins)

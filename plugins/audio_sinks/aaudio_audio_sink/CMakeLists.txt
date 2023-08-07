@@ -8,7 +8,7 @@ if(ANDROID)
 
     target_link_libraries(aaudio_audio_sink PUBLIC satdump_core aaudio)
 
-    install(TARGETS aaudio_audio_sink DESTINATION share/satdump/plugins)
+    install(TARGETS aaudio_audio_sink DESTINATION lib/satdump/plugins)
 else()
     message("AAudio Library could not be found! Not building.")
 endif()

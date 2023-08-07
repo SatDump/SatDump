@@ -52,6 +52,9 @@ must also match.*/
 #include <stdlib.h>
 #include "rice_decomp.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 namespace soho_compression
 {
     /*      =======================Form of Call=======================
@@ -114,16 +117,16 @@ namespace soho_compression
                 iBlkVold = iBlkV;
                 if (iBlkH >= ncol / BlkSz || iBlkV >= nrow / BlkSz)
                 {
-                    Error("Out of range block # (%d)", 0, iblk, 0);
+                    Error((char *)"Out of range block # (%d)", 0, iblk, 0);
                     goto a;
                 }
                 if (UseBlock(iBlkH, iBlkV) == 0)
                 {
-                    Error("Block was not usable (occulted)", 0, 0, 0);
+                    Error((char *)"Block was not usable (occulted)", 0, 0, 0);
                     goto a;
                 }
                 if (iblkold >= iblk)
-                    Error("Out of sequence Block #", 0, 0, 0);
+                    Error((char *)"Out of sequence Block #", 0, 0, 0);
                 iblkold = iblk;
                 for (j = 0; j < BlkSz; j++)
                 { /*Copy Block into Image               */
@@ -143,7 +146,7 @@ namespace soho_compression
                             }
                             else
                             { /*Lossless--should not happen         */
-                                Error("Out of Bounds Pixel Value (%ld at pixel %d)",
+                                Error((char *)"Out of Bounds Pixel Value (%ld at pixel %d)",
                                       0, (int)Pix, i);
                             }
                         }
@@ -201,7 +204,7 @@ namespace soho_compression
     void SOHORiceDecompressor::StartPacket()
     { /*Start a Compression Packet          */
         /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96                          */
-        static unsigned long totalnWdP = 0l;
+        // static unsigned long totalnWdP = 0l;
         int nWdP;
         OldValid = Valid;
         ReadPack(Pack, &Valid, &AtEnd, &nByteP, &nBitP, &nBytePacket);
@@ -250,11 +253,11 @@ namespace soho_compression
 #endif
 
         if ((nByteP + 1) / 2 * 2 != nBytePacket)
-            Error("Wrong # of words in Packet", 0, 0, 0);
+            Error((char *)"Wrong # of words in Packet", 0, 0, 0);
         if (CheckSumAct != CheckSum)
         {
 #ifdef UseCheckSum
-            Error("Error:Invalid CheckSum: (Nominal, Actual)", 0, CheckSum, CheckSumAct);
+            Error((char *)"Error:Invalid CheckSum: (Nominal, Actual)", 0, CheckSum, CheckSumAct);
 #endif
 #ifndef UseCheckSum
             Warning("Invalid CheckSum: Nominal %d Actual %d", CheckSum, CheckSumAct);
@@ -302,7 +305,7 @@ namespace soho_compression
         { /*Image Header Packet                 */
             if (FoundHeader)
             {
-                Error("Header has already been read!", 0, 0, 0);
+                Error((char *)"Header has already been read!", 0, 0, 0);
             }
             else
             {
@@ -316,7 +319,7 @@ namespace soho_compression
                     nshift < 0 || nshift > 15 || SqrtFlag < 0 || SqrtFlag > 1 ||
                     ncol < 0 || ncol > maxncol || BCol1 < 0 || BCol1 > BCol2 ||
                     BCol2 >= MaxBlkH || BRow1 < 0 || BRow1 > BRow2 || BRow2 >= MaxBlkV)
-                    Error("Incorrect header parameter", 0, 0, 0);
+                    Error((char *)"Incorrect header parameter", 0, 0, 0);
                 nBitPix = nBitNeed((ulong)(MaxPixAll - MinPixAll));
                 if (Valid == 0)
                     FoundHeader = 0;
@@ -424,7 +427,7 @@ namespace soho_compression
             }
             if (Pix > (long)(ulong)MaxPix)
             {
-                Error("Out of bounds predict value (%d at pixel %d)", 0, (short)Pix, i);
+                Error((char *)"Out of bounds predict value (%d at pixel %d)", 0, (short)Pix, i);
                 return;
             }
             Predict[i] = (uword)Pix;
@@ -520,7 +523,7 @@ namespace soho_compression
         /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96                          */
         uword nDiscard, ival, MSB;
         if (ibit < 0 || ibit > 32)
-            Error("Invalid RdBit %d \n", 0, ibit, 0);
+            Error((char *)"Invalid RdBit %d \n", 0, ibit, 0);
         if (AtEnd)
             return 0;
         CheckSum += ibit;
@@ -532,7 +535,7 @@ namespace soho_compression
                 if (nByteP >= nBytePacket || nByteP < 0)
                 {
                     AtEnd = 1; /*End of file flag                    */
-                    Error("Packet extended past end of file", 0, nByteP, nBytePacket);
+                    Error((char *)"Packet extended past end of file", 0, nByteP, nBytePacket);
                 }
                 NextByte = Pack[nByteP++];
                 nBitP = 8;
@@ -621,7 +624,7 @@ namespace soho_compression
 #else
             if (fseek(fp1, PrevStart, SEEK_SET))
 #endif
-                Error("Bad fseek call", 1, 0, 0);
+                Error((char *)"Bad fseek call", 1, 0, 0);
         }
         else
         {
@@ -632,7 +635,7 @@ namespace soho_compression
 #else
         if ((PrevStart = ftell(fp1)) < 0)
 #endif
-            Error("Bad ftell call", 1, 0, 0);
+            Error((char *)"Bad ftell call", 1, 0, 0);
 
         *AtEnd = 0; /*Initialize                          */
 #if RICE_MEMORY_VERSION
@@ -680,7 +683,7 @@ namespace soho_compression
                 }
                 else
                 {
-                    Error("First block not image header--", 0, 0, 0);
+                    Error((char *)"First block not image header--", 0, 0, 0);
                 }
             }
         }
@@ -693,7 +696,7 @@ namespace soho_compression
             if (fread(&Pack[4], (size_t)(nWdP - 2), (size_t)2, fp1) != (size_t)2)
 #endif
             {
-                Error("Packet extended past end of file", 0, 0, 0);
+                Error((char *)"Packet extended past end of file", 0, 0, 0);
             }
         }
         if (byterev)
@@ -762,7 +765,7 @@ namespace soho_compression
     void SOHORiceDecompressor::ImageHeader(int *BCol1, int *BCol2, int *BRow1, int *BRow2,
                                            uword *MinPixAll, uword *MaxPixAll,
                                            int *Method, int *SignFlag, int *nshift, int *SqrtFlag,
-                                           int *ncol, int *nrow, int *Valid)
+                                           int *ncol, int *nrow, int * /*Valid*/)
     { /*Reconstruct Image Header Packet     */
         /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96 */
         long index;
@@ -827,7 +830,7 @@ namespace soho_compression
     by code 7230.  Our example simply prints a message:                           */
 
     /*============================================================================*/
-    void SOHORiceDecompressor::OtherBlock(int iblk)
+    void SOHORiceDecompressor::OtherBlock(int /*iblk*/)
     { /*Interpret other types of block      */
         /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96                          */
         static unsigned int firstOther = 0;
@@ -867,10 +870,11 @@ namespace soho_compression
     In our example, UseBlock will always indicate that the block number was valid:*/
 
     /*============================================================================*/
-    int SOHORiceDecompressor::UseBlock(int iBlkH, int iBlkV)
+    int SOHORiceDecompressor::UseBlock(int /*iBlkH*/, int /*iBlkV*/)
     {             /*Return 0 if sub-image block is to be
                     sent, else return non-zero.         */
                   /*  Written by Mitchell R Grunes, ATSC/NRL, 07/11/96                          */
         return 1; /*For this example we always send.    */
     }
 }
+#pragma GCC diagnostic pop

@@ -15,8 +15,9 @@ The aim of this is to list all possible satellite processing pipelines as well a
 ## Meteor M
 
 - `meteor_hrpt`: METEOR HRPT
-- `meteor_m2_lrpt`: METEOR M2 LRPT
-- `meteor_m2-x_lrpt`: METEOR M2-X LRPT
+- `meteor_m2_lrpt`: METEOR M2 LRPT 72k
+- `meteor_m2-x_lrpt`: METEOR M2-X LRPT 72k
+- `meteor_m2-x_lrpt_80k`: METEOR M2-x LRPT 80k
 
 ## MetOp
 
@@ -111,6 +112,7 @@ The aim of this is to list all possible satellite processing pipelines as well a
 - `gk2a_lrit`: GK-2A LRIT
 - `gk2a_lrit_tcp`: GK-2A LRIT to xrit-rx
 - `gk2a_hrit`: GK-2A HRIT
+- `gk2a_cdas`: GK-2A CDAS
 
 ## GOES
 
@@ -185,7 +187,8 @@ The aim of this is to list all possible satellite processing pipelines as well a
 
 ## Stereo
 
-- `stereo_lr`: Stereo-A/B/C Low Rate
+- `stereo_lr`: Stereo-A/B Low Rate
+- `stereo_hr`: Stereo-A/B High Rate
 
 ## TGO
 
@@ -213,9 +216,55 @@ The aim of this is to list all possible satellite processing pipelines as well a
 - `syracuse3b_tlm`: Syracuse 3B TLM
 - `scisat1_dump`: SciSat-1 dump
 - `CALIPSO`: Calipso S-Band dump
+- `youthsat_dump`: YouthSat dump
+
+## Chandrayaan
+
+- `chandrayaan3_link_1k`: Chandrayaan-3 1k Link
+- `chandrayaan3_link_2k`: Chandrayaan-3 2k Link
+- `chandrayaan3_link_4k`: Chandrayaan-3 4k Link
+- `chandrayaan3_link_8k`: Chandrayaan-3 8k Link
+
+## DISCOVR
+
+- `dscovr_tlm`: DSCOVR TLM Link
+- `dscovr_hr`: DSCOVR High-Rate Link
+
+## Hinode
+
+- `hinode_s_dump`: Hinode S-Band Dump
+- `hinode_s_tlm`: Hinode S-Band TLM
+
+## Iris
+
+- `iris_s_dump`: IRIS S-Band Dump
+- `iris_dump`: IRIS X-Band Dump
+
+## KPLO
+
+- `kplo_sband_link`: KPLO (Danuri) S-Band Link
+
+## Landsat
+
 - `landsat_ldcm_tlm`: LandSat 8/9 S-band
 - `landsat_ldcm_link`: LandSat 8/9 X-band
-- `youthsat_dump`: YouthSat dump
+
+# Orion
+
+- `orion_link`: Orion S-Band
+
+## Sentinel-6
+
+- `sentinel6_dump`: Sentinel-6 Dump
+- `sentinel6_tlm`: Sentinel 6 S-Band TLM
+
+## Tianwen
+
+- `tianwen1_link`: Tianwen-1 Link
+
+## ViaSat
+
+- `viasat3_tlm`: ViaSat-3 TLM
 
 #
 

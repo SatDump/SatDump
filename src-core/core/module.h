@@ -14,9 +14,13 @@
 #include "plugin.h"
 
 // Utils
-#define WRITE_IMAGE(image, path)               \
-    image.save_png(std::string(path).c_str()); \
-    d_output_files.push_back(path);
+#define WRITE_IMAGE(image, path)                  \
+{                                                 \
+    std::string newPath = path;                   \
+    image.append_ext(&newPath);                   \
+    image.save_img(std::string(newPath).c_str()); \
+    d_output_files.push_back(newPath);            \
+}
 #define UITO_C_STR(input) "%s", std::to_string(input).c_str()
 
 // Colors

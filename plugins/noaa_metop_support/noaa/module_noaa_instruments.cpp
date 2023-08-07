@@ -188,7 +188,6 @@ namespace noaa
                         }
                         for (int c = 0; c < 6; c++)
                             avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
-
                     }
                     else
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
@@ -209,7 +208,7 @@ namespace noaa
 
                     std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                     for (int i = 0; i < 6; i++)
-                        avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+                        avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
@@ -241,7 +240,7 @@ namespace noaa
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");
@@ -300,7 +299,7 @@ namespace noaa
                     mhs_products.set_timestamps(mhs_reader.timestamps);
 
                     for (int i = 0; i < 5; i++)
-                        mhs_products.images.push_back({"MHS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), mhs_reader.getChannel(i)});
+                        mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i)});
 
                     mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
 
@@ -310,7 +309,8 @@ namespace noaa
                     {
                         mhs_reader.calibrate(calib_coefs[sat_name]);
                         mhs_products.set_calibration(mhs_reader.calib_out);
-                        for (int c = 0; c < 5; c++){
+                        for (int c = 0; c < 5; c++)
+                        {
                             mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
                             mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                         }
@@ -340,6 +340,7 @@ namespace noaa
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = true;
+                    amsu_products.needs_correlation = true;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
                     amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
@@ -347,7 +348,7 @@ namespace noaa
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
+                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");
@@ -432,7 +433,7 @@ namespace noaa
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 
                     for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), hirs_reader.getChannel(i)});
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");

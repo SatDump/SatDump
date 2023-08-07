@@ -1,6 +1,8 @@
 #include "fft_plot.h"
 #include "imgui/imgui_internal.h"
 #include <string>
+#include "common/dsp_source_sink/samplerate_to_string.h"
+#include "core/module.h"
 
 namespace widgets
 {
@@ -24,7 +26,7 @@ namespace widgets
                               {frame_bb.Max.x - 1, frame_bb.Max.y - style.FramePadding.y});
 
         int res_w = size.x; // /*ImMin((int)size.x,*/ values_size /*)*/ - 1;
-        int item_count = values_size - 1;
+        // int item_count = values_size - 1;
         const float t_step = 1.0f / (float)res_w;
         const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));
         float v0 = values[0];
@@ -49,13 +51,39 @@ namespace widgets
             window->DrawList->AddText({pos0.x, pos0.y + 2}, color_scale, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
-        double fz = (double)values_size / (double)res_w;
+        // Draw Freq Scale
+        // const ImU32 fcolor_scale = ImGui::GetColorU32(ImGuiCol_Text, 1.0);
+        if (enable_freq_scale && bandwidth != 0 && frequency != 0)
+        {
+            float y_level = inner_bb.Max.y - 8 * ui_scale;
+            window->DrawList->AddLine({inner_bb.Min.x, y_level}, {inner_bb.Max.x, y_level}, col_base, 3 * ui_scale);
+            for (int i = 1; i < 10; i++)
+            {
+                float x_line = inner_bb.Min.x + (i / 10.0) * res_w;
+                double freq_here = frequency + ((i / 10.0) * bandwidth) - (bandwidth / 2);
+
+                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base, 3);
+
+                auto cstr = formatFrequencyToString(freq_here);
+                window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
+                                          i == 5 ? 0xFF00FF00 : col_base,
+                                          cstr.c_str());
+                if (i == 5 && actual_sdr_freq != -1)
+                {
+                    auto cstr = "(" + formatFrequencyToString(actual_sdr_freq) + ")";
+                    window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 16 * ui_scale},
+                                              i == 5 ? 0xFF0000FF : col_base,
+                                              cstr.c_str());
+                }
+            }
+        }
 
         // Draw lines
+        double fz = (double)values_size / (double)res_w;
         for (int n = 0; n < res_w; n++)
         {
             const float t1 = t0 + t_step;
-            const int v1_idx = (int)(t0 * item_count + 0.5f);
+            // const int v1_idx = (int)(t0 * item_count + 0.5f);
 
             float ffpos = n * fz;
 

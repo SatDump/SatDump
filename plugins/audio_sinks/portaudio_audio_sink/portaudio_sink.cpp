@@ -2,8 +2,8 @@
 #include <cstring>
 #include "logger.h"
 
-int PortAudioSink::audio_callback(const void *input, void *output, unsigned long frameCount,
-                                  const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
+int PortAudioSink::audio_callback(const void *, void *output, unsigned long frameCount,
+                                  const PaStreamCallbackTimeInfo *, PaStreamCallbackFlags,
                                   void *userData)
 {
     PortAudioSink *tthis = (PortAudioSink *)userData;

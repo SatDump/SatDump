@@ -88,7 +88,5 @@ int main(int /*argc*/, char *argv[])
     }
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
-    logger->info("Saving...");
-
-    result.output_image.save_png("test.png");
+    result.output_image.save_img("test");
 }

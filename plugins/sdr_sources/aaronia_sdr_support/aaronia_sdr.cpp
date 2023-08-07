@@ -88,6 +88,7 @@ void AaroniaSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
+    d_rx_channel = getValueOrDefault(d_settings["rx_channel"], d_rx_channel);
     d_level = getValueOrDefault(d_settings["ref_level"], d_level);
     d_usb_compression = getValueOrDefault(d_settings["usb_compression"], d_usb_compression);
     d_agc_mode = getValueOrDefault(d_settings["agc_mode"], d_agc_mode);
@@ -104,6 +105,7 @@ void AaroniaSource::set_settings(nlohmann::json settings)
 
 nlohmann::json AaroniaSource::get_settings()
 {
+    d_settings["rx_channel"] = d_rx_channel;
     d_settings["ref_level"] = d_level;
     d_settings["usb_compression"] = d_level;
     d_settings["agc_mode"] = d_agc_mode;
@@ -152,7 +154,12 @@ void AaroniaSource::start()
         throw std::runtime_error("Could not get Aaronia ConfigRoot!");
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverchannel") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx1");
+    {
+        if (d_rx_channel == 0)
+            AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx1");
+        else if (d_rx_channel == 1)
+            AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx2");
+    }
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/outputformat") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"iq");
@@ -178,7 +185,7 @@ void AaroniaSource::start()
         throw std::runtime_error("Could not start Aaronia device!");
 
     // Wait
-    logger->info("Waiting for devide to stream...");
+    logger->info("Waiting for device to stream...");
 
     AARTSAAPI_Packet packet;
     while (AARTSAAPI_GetPacket(&aaronia_device, 0, 0, &packet) == AARTSAAPI_EMPTY)
@@ -233,8 +240,16 @@ void AaroniaSource::drawControlUI()
 {
     if (is_started)
         style::beginDisabled();
+
     ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
+
+    // Channel
+    if (ImGui::RadioButton("Rx1", d_rx_channel == 0))
+        d_rx_channel = 0;
+    else if (ImGui::RadioButton("Rx2", d_rx_channel == 1))
+        d_rx_channel = 1;
+
     if (is_started)
         style::endDisabled();
 

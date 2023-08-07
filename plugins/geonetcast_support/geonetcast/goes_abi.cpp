@@ -11,7 +11,7 @@ namespace geonetcast
 #ifdef ENABLE_HDF5_PARSING
     image::Image<uint16_t> parse_goesr_abi_netcdf_fulldisk_CMI(std::vector<uint8_t> data, int bit_depth)
     {
-        herr_t status;
+        // herr_t status;
         hsize_t image_dims[2];
 
         hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
@@ -26,7 +26,7 @@ namespace geonetcast
 
         hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
         int rank = H5Sget_simple_extent_ndims(dataspace);
-        int status_n = H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
+        /*int status_n =*/H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
 
         if (rank != 2)
             return image::Image<uint16_t>();
@@ -35,7 +35,7 @@ namespace geonetcast
 
         image::Image<uint16_t> image_out(image_dims[0], image_dims[1], 1);
 
-        status = H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, image_out.data());
+        /*status =*/H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, image_out.data());
 
         for (size_t i = 0; i < image_out.size(); i++)
             image_out[i] <<= (16 - bit_depth);
@@ -88,7 +88,7 @@ namespace geonetcast
 
                 img_cnt_pos++;
 
-                // chunk_image.save_png("ABI/TEST_FULL_ABI" + std::to_string(img_cnt_pos) + ".png");
+                // chunk_image.save_img("ABI/TEST_FULL_ABI" + std::to_string(img_cnt_pos));
             }
             else
             {

@@ -113,7 +113,7 @@ namespace geonetcast
 
                         auto function = [file, has_all_parts, this](int)
                         {
-                            std::string filesize_str = filesize_str;
+                            std::string filesize_str = "";
                             if (file.size >= 1e3)
                                 filesize_str = std::to_string(file.size / 1e3) + "kB";
                             if (file.size >= 1e6)
@@ -155,8 +155,7 @@ namespace geonetcast
 
                                         image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
 
-                                        logger->info("Saving complete " + file.name + ".png size " + filesize_str);
-                                        final_image.save_png(directory + "/PROCESSED/" + file.name + ".png");
+                                        final_image.save_img(directory + "/PROCESSED/" + file.name);
                                         // return;
                                     }
 #endif

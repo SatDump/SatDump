@@ -16,17 +16,16 @@ namespace fengyun3
 
         void PMRReader::writeCurrent()
         {
-            logger->info("Saving PMR image to " + directory + "/PMR_" + std::to_string(images_count++ + 1) + ".png");
             // image.equalize();
             // image.normalize();
-            image.save_png(std::string(directory + "/PMR_" + std::to_string(images_count + 1) + ".png").c_str());
+            image.save_img(std::string(directory + "/PMR_" + std::to_string(images_count + 1)).c_str());
             image.fill(0);
         }
 
         void PMRReader::work(std::vector<uint8_t> &packet)
         {
             int cnt = packet[11];
-            int cnt2 = packet[12] << 8 | packet[13];
+            // int cnt2 = packet[12] << 8 | packet[13];
             uint8_t marker = packet[5];
 
             if (cnt > 58 || !(marker == 90 || marker == 238))

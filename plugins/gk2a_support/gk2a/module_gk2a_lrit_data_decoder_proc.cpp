@@ -128,8 +128,7 @@ namespace gk2a
                                 current_filename = image_id;
 
                                 wip_img->imageStatus = SAVING;
-                                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                                segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                                segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
                                 wip_img->imageStatus = RECEIVING;
                             }
 
@@ -165,8 +164,7 @@ namespace gk2a
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                            segmentedDecoder.image.save_png(std::string(directory + "/IMAGES/" + current_filename + ".png").c_str());
+                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
                             segmentedDecoder = SegmentedLRITImageDecoder();
                             wip_img->imageStatus = IDLE;
                         }
@@ -175,9 +173,8 @@ namespace gk2a
                     {
                         std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                         // Write raw image dats
-                        logger->info("Writing image " + directory + "/IMAGES/" + clean_filename + ".png" + "...");
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        image.save_png(std::string(directory + "/IMAGES/" + clean_filename + ".png").c_str());
+                        image.save_img(std::string(directory + "/IMAGES/" + clean_filename).c_str());
                     }
                 }
             }

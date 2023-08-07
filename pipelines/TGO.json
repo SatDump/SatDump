@@ -26,7 +26,7 @@
                     "subcarrier_offset": 262e3
                 }
             },
-            "frames": {
+            "cadu": {
                 "ccsds_turbo_decoder": {
                     "turbo_rate": "1/2",
                     "turbo_base": 1115,

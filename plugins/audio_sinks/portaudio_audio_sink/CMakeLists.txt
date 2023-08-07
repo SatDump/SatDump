@@ -14,7 +14,7 @@ if(PORTAUDIO_LIBRARY OR MSVC)
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core ${PORTAUDIO_LIBRARY})
     endif()
 
-    install(TARGETS portaudio_audio_sink DESTINATION share/satdump/plugins)
+    install(TARGETS portaudio_audio_sink DESTINATION lib/satdump/plugins)
 else()
     message("RtAudio Library could not be found! Not building.")
 endif()

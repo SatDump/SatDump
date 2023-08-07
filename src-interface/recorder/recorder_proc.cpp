@@ -61,7 +61,7 @@ namespace satdump
 
     void RecorderApplication::start()
     {
-        source_ptr->set_frequency(frequency_mhz * 1e6);
+        set_frequency(frequency_mhz);
         try
         {
             source_ptr->start();
@@ -77,6 +77,8 @@ namespace satdump
 
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
             waterfall_plot->set_rate(fft_rate, waterfall_rate);
+            fft_plot->bandwidth = current_samplerate / current_decimation;
+            // fft_plot->frequency = frequency_mhz * 1e6;
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
@@ -100,6 +102,8 @@ namespace satdump
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
         config::saveUserConfig();
     }
 
@@ -124,8 +128,16 @@ namespace satdump
                 if (cfg.contains("frequency"))
                 {
                     frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
-                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    set_frequency(frequency_mhz);
                 }
+                if (cfg.contains("xconverter_frequency"))
+                    xconverter_frequency = cfg["xconverter_frequency"].get<double>();
+                else
+                    xconverter_frequency = 0;
+                if (cfg.contains("decimation"))
+                    current_decimation = cfg["decimation"].get<int>();
+                else
+                    current_decimation = 1;
             }
         }
     }
