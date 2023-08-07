@@ -25,6 +25,7 @@ namespace goes
             bool write_dcs;
             bool write_unknown;
             bool write_lrit;
+            bool fill_background;
 
             std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
             std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;

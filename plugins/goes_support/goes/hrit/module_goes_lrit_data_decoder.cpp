@@ -18,7 +18,8 @@ namespace goes
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_dcs(parameters["write_dcs"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
-                                                                                                                                                write_lrit(parameters["write_lrit"].get<bool>())
+                                                                                                                                                write_lrit(parameters["write_lrit"].get<bool>()),
+                                                                                                                                                fill_background(parameters["fill_background"].get<bool>())
         {
             goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
