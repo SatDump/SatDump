@@ -4,10 +4,10 @@
 namespace goes
 {
     template <typename T>
-    void fill_background(image::Image<T>* image, T bgcolor[], T replaceColor[])
+    void fill_background(image::Image<T> *image, T bgcolor[], T replaceColor[])
     {
         bool stop;
-        for (size_t i = 0; i < image->width() * image->width(); i += image->width())
+        for (size_t i = 0; i < image->width() * image->height(); i += image->width())
         {
             int c, j;
 
