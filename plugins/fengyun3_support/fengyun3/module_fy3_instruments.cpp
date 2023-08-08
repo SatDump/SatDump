@@ -127,7 +127,7 @@ namespace fengyun3
             std::vector<uint8_t> fy_scids;
 
             // std::ofstream gas_test("gas.frm");
-            std::ofstream mersi_bin;
+            // std::ofstream mersi_bin;
 
             if (d_dump_mersi)
             {
