@@ -331,7 +331,7 @@ namespace fengyun3
                     //  idk_out.write((char *)&cadu[14], 882);
                     //  }
 
-                    else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
+                    if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                     {
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
