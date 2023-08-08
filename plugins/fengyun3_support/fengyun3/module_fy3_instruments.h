@@ -32,6 +32,7 @@ namespace fengyun3
                 FY_3C,
                 FY_3D,
                 FY_3E,
+                FY_3F,
                 FY_3G,
             };
 

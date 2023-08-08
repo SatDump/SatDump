@@ -5,6 +5,7 @@
 #define FY3_C_SCID 51
 #define FY3_D_SCID 52
 #define FY3_E_SCID 56
+#define FY3_F_SCID 60
 #define FY3_G_SCID 64
 
 #define FY3_A_NORAD 32958
@@ -12,6 +13,7 @@
 #define FY3_C_NORAD 39260
 #define FY3_D_NORAD 43010
 #define FY3_E_NORAD 49008
+#define FY3_F_NORAD 57490
 #define FY3_G_NORAD 56232
 
 #define FY3_ORBIT_HEIGHT 842

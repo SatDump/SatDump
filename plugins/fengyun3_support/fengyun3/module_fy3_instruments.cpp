@@ -32,6 +32,8 @@ namespace fengyun3
                 d_satellite = FY_3D;
             else if (parameters["satellite"] == "fy3e")
                 d_satellite = FY_3E;
+            else if (parameters["satellite"] == "fy3f")
+                d_satellite = FY_3F;
             else if (parameters["satellite"] == "fy3g")
                 d_satellite = FY_3G;
             else
@@ -140,7 +142,7 @@ namespace fengyun3
                 virr_to_c10->open(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/tmp.c10");
             }
 
-            // std::ofstream idk_out("idk_frm.bin");
+            std::ofstream idk_out("idk_frm.bin");
 
             is_init = true;
 
@@ -157,6 +159,7 @@ namespace fengyun3
                     vcdu.spacecraft_id == FY3_C_SCID ||
                     vcdu.spacecraft_id == FY3_D_SCID ||
                     vcdu.spacecraft_id == FY3_E_SCID ||
+                    vcdu.spacecraft_id == FY3_F_SCID ||
                     vcdu.spacecraft_id == FY3_G_SCID)
                     fy_scids.push_back(vcdu.spacecraft_id);
 
@@ -314,6 +317,30 @@ namespace fengyun3
                                 mwts3_reader.work(pkt);
                     }
                 }
+                else if (d_satellite == FY_3F)
+                {
+                    //  printf("VCID %d\n", vcdu.vcid);
+
+                    // 6 HIRAS
+
+                    // if (vcdu.vcid == 5) //
+                    // {
+                    // std::vector<std::vector<uint8_t>> out = pmr1_deframer.work(&cadu[14], 882);
+                    // for (std::vector<uint8_t> frameVec : out)
+                    //     pmr1_reader->work(frameVec);
+                    //  idk_out.write((char *)&cadu[14], 882);
+                    //  }
+
+                    else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
+                    {
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
+                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                            if (pkt.header.apid == 16) // MWHS-2
+                                mwhs2_reader.work(pkt, true);
+                        // else if (pkt.header.apid == 7) // MWTS-3
+                        //     mwts3_reader.work(pkt);
+                    }
+                }
                 else if (d_satellite == FY_3G)
                 {
                     // 12 = 0x4fa3aa06 6944
@@ -410,6 +437,8 @@ namespace fengyun3
                 sat_name = "FengYun-3D";
             else if (scid == FY3_E_SCID)
                 sat_name = "FengYun-3E";
+            else if (scid == FY3_F_SCID)
+                sat_name = "FengYun-3F";
             else if (scid == FY3_G_SCID)
                 sat_name = "FengYun-3G";
 
@@ -424,6 +453,8 @@ namespace fengyun3
                 norad = FY3_D_NORAD;
             else if (scid == FY3_E_SCID)
                 norad = FY3_E_NORAD;
+            else if (scid == FY3_F_SCID)
+                norad = FY3_F_NORAD;
             else if (scid == FY3_G_SCID)
                 norad = FY3_G_NORAD;
 
@@ -501,7 +532,7 @@ namespace fengyun3
                 mwhs1_status = DONE;
             }
 
-            if (d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C) // MWHS-2
+            if (d_satellite == FY_3F || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C) // MWHS-2
             {
                 mwhs2_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWHS-2";
@@ -1265,7 +1296,7 @@ namespace fengyun3
                     drawStatus(mwts3_status);
                 }
 
-                if (d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C)
+                if (d_satellite == FY_3F || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
