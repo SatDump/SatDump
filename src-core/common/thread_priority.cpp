@@ -25,6 +25,13 @@ void setLowestThreadPriority(std::thread &th)
 #ifdef _WIN32
     if (SetThreadPriority(th.native_handle(), -2) == 0)
         logger->error("Could not set thread priority!");
+#elif defined(__APPLE__)
+    sched_param sch_params;
+    int policy = 0;
+    pthread_getschedparam(th.native_handle(), &policy, &sch_params);
+    sch_params.sched_priority = PRIORITY_LOWEST;
+    if (pthread_setschedparam(th.native_handle(), SCHED_RR, &sch_params))
+        logger->error("Could not set thread priority!");
 #else
     sched_param sch_params;
     int policy = 0;
