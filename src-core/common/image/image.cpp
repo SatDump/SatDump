@@ -21,6 +21,11 @@ namespace image
         // Set to 0
         memset(d_data, 0, sizeof(T) * data_size);
 
+        // Alpha defaults to 1
+        if (d_channels == 4)
+            for (size_t x = 0; x < d_width * d_height; x++)
+                channel(3)[x] = std::numeric_limits<T>::max();
+
         // Init local variables
         d_depth = sizeof(T) * 8;
         d_width = width;
@@ -249,7 +254,8 @@ namespace image
     template <typename T>
     void Image<T>::save_img(std::string file, bool fast)
     {
-        if(!append_ext(&file)) return;
+        if (!append_ext(&file))
+            return;
         logger->info("Saving " + file + "...");
         if (file.find(".png") != std::string::npos)
             save_png(file, fast);
@@ -261,22 +267,22 @@ namespace image
 
     // Append selected file extension
     template <typename T>
-    bool Image<T>::append_ext(std::string* file)
+    bool Image<T>::append_ext(std::string *file)
     {
-        //Do nothing if there's already an extension
+        // Do nothing if there's already an extension
         if (file->find(".png") != std::string::npos ||
             file->find(".jpeg") != std::string::npos ||
-            file->find(".jpg") != std::string::npos || 
+            file->find(".jpg") != std::string::npos ||
             file->find(".j2k") != std::string::npos)
             return true;
 
-        //Otherwise, load the user setting
+        // Otherwise, load the user setting
         std::string image_format;
         try
         {
             image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             logger->error("Image format not specified, and default format cannot be found! %s", e.what());
             return false;

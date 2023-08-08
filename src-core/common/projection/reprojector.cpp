@@ -230,14 +230,24 @@ namespace satdump
                                 continue;
 
                             if (warped_image.channels() == 4)
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            }
                             else if (warped_image.channels() == 3)
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(c)[y2 * warped_image.width() + x2];
+                                if (projected_image.channels() == 4)
+                                    projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                            }
                             else
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(0)[y2 * warped_image.width() + x2];
+                                if (projected_image.channels() == 4)
+                                    projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                            }
                         }
 
                         if (progress != nullptr)
