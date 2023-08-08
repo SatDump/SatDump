@@ -260,9 +260,9 @@ void LimeSDRSource::drawControlUI()
 
     if (gain_mode_manual)
     {
-        gain_changed |= ImGui::SliderInt("LNA Gain", &gain, 0, 30);
-        gain_changed |= ImGui::SliderInt("TIA Gain", &gain, 0, 12);
-        gain_changed |= ImGui::SliderInt("PGA Gain", &gain, -12, 19);
+        gain_changed |= ImGui::SliderInt("LNA Gain", &gain_lna, 0, 30);
+        gain_changed |= ImGui::SliderInt("TIA Gain", &gain_tia, 0, 12);
+        gain_changed |= ImGui::SliderInt("PGA Gain", &gain_pga, -12, 19);
     }
     else
     {
