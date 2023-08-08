@@ -21,11 +21,6 @@ namespace image
         // Set to 0
         memset(d_data, 0, sizeof(T) * data_size);
 
-        // Alpha defaults to 1
-        if (channels == 4)
-            for (size_t x = 0; x < width * height; x++)
-                channel(3)[x] = std::numeric_limits<T>::max();
-
         // Init local variables
         d_depth = sizeof(T) * 8;
         d_width = width;
