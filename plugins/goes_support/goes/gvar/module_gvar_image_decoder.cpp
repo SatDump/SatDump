@@ -259,7 +259,7 @@ namespace goes
             if (writeImagesAync)
             {
                 imageSavingThread = std::thread(&GVARImageDecoderModule::writeImagesThread, this);
-                setThreadPriority(imageSavingThread, PRIORITY_LOWEST); // Low priority to avoid sampledrop
+                setLowestThreadPriority(imageSavingThread); // Low priority to avoid sampledrop
             }
 
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";

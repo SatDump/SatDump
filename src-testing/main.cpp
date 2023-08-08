@@ -11,15 +11,8 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/image.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
-
-    image::Image<uint16_t> img;
-
-    img.load_img(argv[1]);
-
-    img.save_img(argv[2]);
 }
