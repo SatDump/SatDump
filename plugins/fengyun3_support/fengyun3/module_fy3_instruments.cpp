@@ -127,7 +127,7 @@ namespace fengyun3
             std::vector<uint8_t> fy_scids;
 
             // std::ofstream gas_test("gas.frm");
-            // std::ofstream mersi_bin;
+            std::ofstream mersi_bin;
 
             if (d_dump_mersi)
             {
@@ -142,7 +142,7 @@ namespace fengyun3
                 virr_to_c10->open(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/tmp.c10");
             }
 
-            std::ofstream idk_out("idk_frm.bin");
+            // std::ofstream idk_out("idk_frm.bin");
 
             is_init = true;
 
