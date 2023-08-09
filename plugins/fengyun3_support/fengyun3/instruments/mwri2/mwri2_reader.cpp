@@ -1,12 +1,12 @@
-#include "mwrirm_reader.h"
+#include "mwri2_reader.h"
 
 #include "common/repack.h"
 
 namespace fengyun3
 {
-    namespace mwrirm
+    namespace mwri2
     {
-        MWRIRMReader::MWRIRMReader()
+        MWRI2Reader::MWRI2Reader()
         {
             for (int i = 0; i < 26; i++)
                 channels[i].resize(1000 * 492);
@@ -14,13 +14,13 @@ namespace fengyun3
             lines = 0;
         }
 
-        MWRIRMReader::~MWRIRMReader()
+        MWRI2Reader::~MWRI2Reader()
         {
             for (int i = 0; i < 26; i++)
                 channels[i].clear();
         }
 
-        void MWRIRMReader::work(std::vector<uint8_t> &packet)
+        void MWRI2Reader::work(std::vector<uint8_t> &packet)
         {
             if (packet.size() < 43000)
                 return;
@@ -29,7 +29,7 @@ namespace fengyun3
             {
                 for (int i = 0; i < 492; i++)
                 {
-                    channels[ch][lines * 492 + 491 - i] = packet[1300 - 146 * 2 - 28 * 2 + ch * 1604 + i * 2 + 0] << 8 | packet[1300 - 146 * 2 - 28 * 2 + ch * 1604 + i * 2 + 1];
+                    channels[ch][lines * 492 + 491 - i] = packet[1300 - 146 * 2 + ch * 1604 + i * 2 + 0] << 8 | packet[1300 - 146 * 2 + ch * 1604 + i * 2 + 1];
                 }
             }
 
@@ -64,7 +64,7 @@ namespace fengyun3
                 channels[i].resize((lines + 1) * 492);
         }
 
-        image::Image<uint16_t> MWRIRMReader::getChannel(int channel)
+        image::Image<uint16_t> MWRI2Reader::getChannel(int channel)
         {
             return image::Image<uint16_t>(channels[channel].data(), 492, lines, 1);
         }

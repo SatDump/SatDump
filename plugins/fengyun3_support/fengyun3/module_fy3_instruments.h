@@ -9,6 +9,7 @@
 #include "instruments/mwts2/mwts2_reader.h"
 #include "instruments/mwts3/mwts3_reader.h"
 #include "instruments/mwri/mwri_reader.h"
+#include "instruments/mwri2/mwri2_reader.h"
 #include "instruments/mwrirm/mwrirm_reader.h"
 #include "instruments/wai/wai_reader.h"
 #include "instruments/virr/virr_reader.h"
@@ -60,6 +61,7 @@ namespace fengyun3
             virr::VIRRReader virr_reader;
             std::unique_ptr<wai::WAIReader> wai_reader;
             mwri::MWRIReader mwri_reader;
+            mwri2::MWRI2Reader mwri2_reader;
             mwrirm::MWRIRMReader mwrirm_reader;
             mwts::MWTSReader mwts1_reader;
             mwts2::MWTS2Reader mwts2_reader;
@@ -72,6 +74,7 @@ namespace fengyun3
             std::unique_ptr<pmr::PMRReader> pmr2_reader;
             mersi::MERSI1Reader mersi1_reader;
             mersi::MERSI2Reader mersi2_reader;
+            mersi::MERSI3Reader mersi3_reader;
             mersi::MERSILLReader mersill_reader;
             mersi::MERSIRMReader mersirm_reader;
             gas::GASReader gas_reader;
@@ -80,6 +83,7 @@ namespace fengyun3
             // Statuses
             instrument_status_t mersi1_status = DECODING;
             instrument_status_t mersi2_status = DECODING;
+            instrument_status_t mersi3_status = DECODING;
             instrument_status_t mersill_status = DECODING;
             instrument_status_t mersirm_status = DECODING;
             instrument_status_t erm_status = DECODING;
@@ -87,6 +91,7 @@ namespace fengyun3
             instrument_status_t wai_status = DECODING;
             instrument_status_t gas_status = DECODING;
             instrument_status_t mwri_status = DECODING;
+            instrument_status_t mwri2_status = DECODING;
             instrument_status_t mwrirm_status = DECODING;
             instrument_status_t mwts1_status = DECODING;
             instrument_status_t mwts2_status = DECODING;
