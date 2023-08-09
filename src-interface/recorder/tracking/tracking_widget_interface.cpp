@@ -124,9 +124,9 @@ namespace satdump
 
             ImVec2 cur = ImGui::GetCursorPos();
             ImVec2 curs = ImGui::GetCursorScreenPos();
-            ImVec2 size = ImGui::CalcTextSize((horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite] + (next_aos_time > ctime ? "AOS" : "LOS") + "in" + time_dis).c_str());
+            ImVec2 size = ImGui::CalcTextSize((horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite]).c_str());
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
-            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s %s in %s", horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite].c_str(), next_aos_time > ctime ? "AOS" : "LOS" , time_dis.c_str());
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s", horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite].c_str());
             curs = ImGui::GetCursorScreenPos();
             char buff[9];
             snprintf(buff, sizeof(buff), "Az: %.1f", current_az);
@@ -138,6 +138,17 @@ namespace satdump
             size = ImGui::CalcTextSize(buff);
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
             ImGui::TextColored(ImColor(0, 255, 0, 255), "El: %.1f", current_el);
+            
+            if (next_aos_time > ctime)
+                size = ImGui::CalcTextSize(("AOS in" + time_dis).c_str());
+            else
+                size = ImGui::CalcTextSize(("LOS in" + time_dis).c_str());
+
+            ImGui::SetCursorPosY(cur.y + d_pplot_size - 20 * ui_scale);
+            curs = ImGui::GetCursorPos();
+            draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s in %s", next_aos_time > ctime ? "AOS" : "LOS" , time_dis.c_str());
+
             ImGui::SetCursorPos(cur);
         }
 #endif
