@@ -116,8 +116,11 @@ int main_record(int argc, char *argv[])
     }
 
     // Decimation if requested
-    if (decimation > 1)
+    if (decimation > 1){
         decim = std::make_unique<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, decimation);
+        decim->start();
+        logger->info("Setting up resampler...");
+    }
 
     // Optional FFT
     std::shared_ptr<dsp::stream<complex_t>> final_stream = decimation > 1 ? decim->output_stream : source_ptr->output_stream;
