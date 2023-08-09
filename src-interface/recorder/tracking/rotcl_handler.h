@@ -24,7 +24,13 @@ private:
         std::string result;
         result.resize(1000);
 
+        try {
         *ret_sz = client->recvs((uint8_t *)result.data(), result.size());
+        } catch (std::exception &e){
+            logger->error(e.what());
+            disconnect();
+            return "";
+        }
 
         if (*ret_sz < 0)
             return "";
