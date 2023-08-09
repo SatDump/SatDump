@@ -126,7 +126,7 @@ namespace satdump
             ImGui::BeginGroup();
 
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false);
+            ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
                 {
