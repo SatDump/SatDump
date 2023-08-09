@@ -1,4 +1,5 @@
 #include "image.h"
+#include "logger.h"
 #include <cstring>
 #include <csetjmp>
 extern "C"
@@ -153,6 +154,12 @@ namespace image
     template <typename T>
     void Image<T>::save_jpeg(std::string file)
     {
+        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        {
+            logger->trace("Tried to save empty JPEG!");
+            return;
+        }
+
         FILE *fp = fopen(file.c_str(), "wb");
         if (!fp)
             abort();
