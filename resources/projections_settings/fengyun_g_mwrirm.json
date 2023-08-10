@@ -1,8 +1,8 @@
 {
     "type": "normal_single_line",
-    "scan_angle": 121,
+    "scan_angle": 126,
     "roll_offset": 0, // -2.4,
-    "pitch_offset": 45,
+    "pitch_offset": 49,
     "yaw_offset": 0,
     "rotate_yaw": true,
     "image_width": 492,

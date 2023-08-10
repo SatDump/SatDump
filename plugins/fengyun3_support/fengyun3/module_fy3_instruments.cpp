@@ -388,12 +388,12 @@ namespace fengyun3
                         if (d_dump_mersi)
                             mersi_bin.write((char *)&cadu[14], 882);
                     }
-#if 0
                     else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                     {
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         {
+#if 1
                             printf("APID %d\n", pkt.header.apid);
                             if (pkt.header.apid == 1)
                             {
@@ -408,13 +408,13 @@ namespace fengyun3
                                     idk_out.write((char *)pkt.payload.data(), 862);
                                 }
                             }
+#endif
                         }
                         //    if (pkt.header.apid == 16) // MWHS-2
                         //        mwhs2_reader.work(pkt, true);
                         //    else if (pkt.header.apid == 7) // MWTS-3
                         //        mwts3_reader.work(pkt);
                     }
-#endif
                 }
 
                 progress = data_in.tellg();
