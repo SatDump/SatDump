@@ -86,6 +86,12 @@
             "value": false,
             "name": "Recorder Baseband Filename Milliseconds",
             "description": "Add milliseconds to the output filenames for basebands recorded in the recorder"
+        },
+         "status_bar": {
+            "type": "bool",
+            "value": true,
+            "name": "Show Status Bar",
+            "description": "Show status bar with last log at the bottom of the UI"
         }
     },
     // More generic SatDump settings

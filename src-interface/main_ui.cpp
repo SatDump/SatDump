@@ -13,6 +13,7 @@
 #include "common/audio/audio_sink.h"
 #include "imgui_notify/imgui_notify.h"
 #include "notify_logger_sink.h"
+#include "status_logger_sink.h"
 
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
@@ -33,6 +34,7 @@ namespace satdump
     widgets::MarkdownHelper credits_md;
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
+    std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
     void initMainUI()
     {
@@ -43,6 +45,7 @@ namespace satdump
 
         light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
         float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+        status_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<float>();
 
 #ifdef __ANDROID__
         manual_dpi_scaling *= 3; // Otherwise it's just too small by default!
@@ -72,6 +75,13 @@ namespace satdump
         // Logger notify sink
         notify_logger_sink = std::make_shared<NotifyLoggerSink>();
         logger->add_sink(notify_logger_sink);
+
+        //Logger status bar sync
+        if (status_bar)
+        {
+            status_logger_sink = std::make_shared<StatusLoggerSink>();
+            logger->add_sink(status_logger_sink);
+        }
     }
 
     void exitMainUI()
@@ -111,6 +121,8 @@ namespace satdump
         }*/
         // else
         {
+            if(status_bar)
+                wheight -= status_logger_sink->draw();
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
@@ -239,6 +251,7 @@ namespace satdump
     }
 
     bool light_theme;
+    bool status_bar;
 
     ctpl::thread_pool ui_thread_pool(8);
 }

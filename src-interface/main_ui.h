@@ -15,6 +15,7 @@ namespace satdump
     extern ctpl::thread_pool ui_thread_pool;
 
     extern bool light_theme;
+    extern bool status_bar;
 
     extern std::shared_ptr<RecorderApplication> recorder_app;
     extern std::shared_ptr<ViewerApplication> viewer_app;
