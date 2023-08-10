@@ -393,7 +393,7 @@ namespace fengyun3
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         {
-#if 1
+#if 0
                             printf("APID %d\n", pkt.header.apid);
                             if (pkt.header.apid == 1)
                             {
