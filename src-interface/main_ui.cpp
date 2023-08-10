@@ -45,7 +45,6 @@ namespace satdump
 
         light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
         float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-        status_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<float>();
 
 #ifdef __ANDROID__
         manual_dpi_scaling *= 3; // Otherwise it's just too small by default!
@@ -77,11 +76,9 @@ namespace satdump
         logger->add_sink(notify_logger_sink);
 
         //Logger status bar sync
-        if (status_bar)
-        {
-            status_logger_sink = std::make_shared<StatusLoggerSink>();
+        status_logger_sink = std::make_shared<StatusLoggerSink>();
+        if(status_logger_sink->is_shown())
             logger->add_sink(status_logger_sink);
-        }
     }
 
     void exitMainUI()
@@ -121,8 +118,22 @@ namespace satdump
         }*/
         // else
         {
+            bool status_bar = status_logger_sink->is_shown();
+            if (status_bar && processing::is_processing && main_ui_is_processing_selected)
+            {
+                for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+                {
+                    std::string module_id = module->getIDM();
+                    if (module_id == "products_processor")
+                    {
+                        status_bar = false;
+                        break;
+                    }
+                }
+            }
             if(status_bar)
                 wheight -= status_logger_sink->draw();
+
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
@@ -251,7 +262,6 @@ namespace satdump
     }
 
     bool light_theme;
-    bool status_bar;
 
     ctpl::thread_pool ui_thread_pool(8);
 }

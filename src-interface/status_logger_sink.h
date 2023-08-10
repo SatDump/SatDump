@@ -9,10 +9,12 @@ namespace satdump
     private:
         std::string str;
         std::string lvl;
+        bool show;
     public:
         StatusLoggerSink();
         ~StatusLoggerSink();
         void receive(slog::LogMsg log);
         int draw();
+        bool is_shown();
     };
 }
