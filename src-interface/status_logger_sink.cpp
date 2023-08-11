@@ -3,6 +3,8 @@
 #include "imgui/imgui_internal.h"
 #include "core/config.h"
 
+SATDUMP_DLL extern float ui_scale;
+
 namespace satdump
 {
     StatusLoggerSink::StatusLoggerSink()
@@ -47,7 +49,7 @@ namespace satdump
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar)) {
             if (ImGui::BeginMenuBar()) {
                 ImGui::TextUnformatted(lvl.c_str());
-                ImGui::SameLine(75);
+                ImGui::SameLine(75 * ui_scale);
                 ImGui::Separator();
                 ImGui::TextDisabled("%s", str.c_str());
                 height = ImGui::GetWindowHeight();
