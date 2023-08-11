@@ -192,10 +192,20 @@ int main(int argc, char *argv[])
         img.height = image.height();
         img.width = image.width();
 
-        for (int y = 0; y < (int)image.height(); y++)
-            for (int x = 0; x < (int)image.width(); x++)
-                for (int c = 0; c < 3; c++)
-                    px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        if (image.channels() == 4)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 4; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
+        else if (image.channels() == 3)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 3; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
         image.clear();
 
         img.pixels = px;
@@ -221,7 +231,8 @@ int main(int argc, char *argv[])
     do
     {
         glfwPollEvents();
-        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED)){
+        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
+        {
             glfwRestoreWindow(window);
             glfwWaitEvents();
             glfwPollEvents();
@@ -234,7 +245,7 @@ int main(int argc, char *argv[])
 
         int wwidth, wheight;
         glfwGetWindowSize(window, &wwidth, &wheight);
-        //std::cout<<wwidth<<std::endl;
+        // std::cout<<wwidth<<std::endl;
 
         // User rendering
         satdump::renderMainUI(wwidth, wheight);
