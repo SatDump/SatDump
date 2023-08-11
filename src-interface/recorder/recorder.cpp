@@ -537,7 +537,7 @@ namespace satdump
                     {
                         ImVec2 mouse_pos = ImGui::GetMousePos();
                         float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale) / (recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale) - 0.5;
-                        ImGui::SetTooltip(((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio) * get_samplerate()) + "Hz\n" +
+                        ImGui::SetTooltip("%s", ((ratio >= 0 ? "" : "- ") + formatSamplerateToString(abs(ratio) * get_samplerate()) + "Hz\n" +
                                            formatSamplerateToString(source_ptr->get_frequency() + ratio * get_samplerate()) + "Hz")
                                               .c_str());
                     }
