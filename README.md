@@ -104,8 +104,9 @@ sudo apt install libnng-dev                                                     
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
 sudo apt install libglew-dev libglfw3-dev                                                                     # Only if you want to build the GUI Version (optional)
 sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
-sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
+sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with 
 (optional)
+
 # Linux: Install dependencies on Red-Hat-based systems:
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
 sudo dnf install nng-devel
