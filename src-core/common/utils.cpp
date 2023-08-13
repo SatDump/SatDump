@@ -70,7 +70,7 @@ int perform_http_request(std::string url_str, std::string &result)
         ((rv = nng_http_client_alloc(&client, url)) != 0))
     {
         if (rv == NNG_ENOTSUP)
-            logger->error("Protocol not supported!");
+            logger->trace("Protocol not supported!");
         return 1;
     }
 
@@ -96,7 +96,7 @@ int perform_http_request(std::string url_str, std::string &result)
 
     if (nng_http_res_get_status(res) != NNG_HTTP_STATUS_OK)
     {
-        logger->error("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
+        logger->trace("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
         return 1;
     }
 
@@ -105,7 +105,7 @@ int perform_http_request(std::string url_str, std::string &result)
 
     if ((rv = nng_aio_result(aio)) != 0)
     {
-        logger->error("HTTP Request Error!");
+        logger->trace("HTTP Request Error!");
         return_val = 1;
     }
 

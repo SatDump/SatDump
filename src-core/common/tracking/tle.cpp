@@ -46,9 +46,12 @@ namespace satdump
                 if (!success)
                 {
                     std::this_thread::sleep_for(std::chrono::seconds(1));
-                    logger->warn("Failed getting TLEs. Retrying...");
+                    logger->info("Failed getting TLEs. Retrying...");
                 }
             }
+
+            if (!success)
+                logger->warn("Failed to get TLE for %d", norad);
         }
 
         outfile.close();
