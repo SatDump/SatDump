@@ -508,5 +508,31 @@
                 "goes_sd_image_decoder": {}
             }
         }
+    },
+    "goesr_raw": {
+        "name": "GOES-R Raw Data",
+        "samplerate": 20e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 60e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.001
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_method3": true,
+                    "cadu_size": 8192,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            }
+        }
     }
 }
