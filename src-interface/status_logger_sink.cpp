@@ -1,5 +1,4 @@
 #include "status_logger_sink.h"
-#include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "core/config.h"
 
@@ -9,9 +8,14 @@ namespace satdump
 {
     StatusLoggerSink::StatusLoggerSink()
     {
-        str = "Welcome to SatDump!";
-        lvl = "";
-        show = config::main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
+        slog::LogMsg welcome_message;
+        welcome_message.lvl = slog::LOG_INFO;
+        welcome_message.str = "Welcome to SatDump!";
+        receive(welcome_message);
+
+        lastY = -1;
+        show_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
+        show_log = false;
     }
 
     StatusLoggerSink::~StatusLoggerSink()
@@ -20,11 +24,12 @@ namespace satdump
 
     bool StatusLoggerSink::is_shown()
     {
-        return show;
+        return show_bar;
     }
 
     void StatusLoggerSink::receive(slog::LogMsg log)
     {
+        widgets::LoggerSinkWidget::receive(log);
         if (log.lvl >= slog::LOG_INFO)
         {
             if (log.lvl == slog::LOG_INFO)
@@ -52,9 +57,35 @@ namespace satdump
                 ImGui::SameLine(75 * ui_scale);
                 ImGui::Separator();
                 ImGui::TextDisabled("%s", str.c_str());
+                if (ImGui::IsItemClicked())
+                    show_log = true;
+
                 height = ImGui::GetWindowHeight();
                 ImGui::EndMenuBar();
             }
+            ImGui::End();
+        }
+
+        if (show_log)
+        {
+            ImVec2 display_size = ImGui::GetIO().DisplaySize;
+            ImGui::SetNextWindowSize(ImVec2(display_size.x, (display_size.y * 0.3) - height), ImGuiCond_Appearing);
+            ImGui::SetNextWindowPos(ImVec2(0, display_size.y * 0.7), ImGuiCond_Appearing, ImVec2(0, 0));
+            ImGui::SetNextWindowBgAlpha(1.0);
+            ImGui::Begin("SatDump Log", &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+            if (ImGui::IsWindowFocused())
+            {
+                widgets::LoggerSinkWidget::draw();
+                if (lastY != ImGui::GetScrollMaxY())
+                {
+                    lastY = ImGui::GetScrollMaxY();
+                    ImGui::SetScrollY(lastY);
+                }
+
+            }
+            else
+                show_log = false;
+
             ImGui::End();
         }
 

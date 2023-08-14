@@ -1,15 +1,17 @@
 #pragma once
 
-#include "logger.h"
+#include "common/widgets/logger_sink.h"
 
 namespace satdump
 {
-    class StatusLoggerSink : public slog::LoggerSink
+    class StatusLoggerSink : public widgets::LoggerSinkWidget
     {
     private:
         std::string str;
         std::string lvl;
-        bool show;
+        bool show_bar;
+        bool show_log;
+        float lastY;
     protected:
         void receive(slog::LogMsg log);
     public:
