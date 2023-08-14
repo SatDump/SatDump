@@ -501,6 +501,22 @@
                             1,
                             0
                         ]
+                    },
+                    "Sea Surface Temperature": {
+                        "channels": "cch4",
+                        "lua": "scripted_compos/sst_landmask.lua",
+                        "lua_vars": {
+                            "minval": 0,
+                            "maxval": 1
+                        },
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 270.65,
+                                "max": 313.15
+                            }
+                        },
+                        "autogen": false
                     }
                 },
                 "project_channels": {

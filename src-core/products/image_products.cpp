@@ -194,13 +194,15 @@ namespace satdump
             double wn = get_wavenumber(image_index);
 
             if (range.first == 0 && range.second == 0)
+            {
                 range = get_calibration_default_radiance_range(image_index);
 
-            if (get_calibration_type(image_index) == CALIB_RADIANCE)
-            {
-                if (vtype == CALIB_VTYPE_TEMPERATURE)
-                    range = {radiance_to_temperature(range.first, wn),
-                             radiance_to_temperature(range.second, wn)};
+                if (get_calibration_type(image_index) == CALIB_RADIANCE)
+                {
+                    if (vtype == CALIB_VTYPE_TEMPERATURE)
+                        range = {radiance_to_temperature(range.first, wn),
+                                 radiance_to_temperature(range.second, wn)};
+                }
             }
 
             logger->trace("Generating calibrated image channel %d. Range %f %f. Type %d", image_index + 1, range.first, range.second, vtype);

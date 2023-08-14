@@ -99,6 +99,8 @@ namespace lua_utils
     {
         bindImageType<uint8_t>(lua, "image8");
         bindImageType<uint16_t>(lua, "image16");
+
+        lua["image8_lut_jet"] = &image::LUT_jet<uint8_t>;
     }
 
     void bindGeoTypes(sol::state &lua)

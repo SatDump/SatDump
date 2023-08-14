@@ -267,6 +267,7 @@ namespace satdump
                     cfg.channels = rgb_compo_cfg.channels;
                     cfg.lua = rgb_compo_cfg.lua;
                     cfg.lua_vars = rgb_compo_cfg.lua_vars;
+                    cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
                     equalize_image = rgb_compo_cfg.equalize;
                     invert_image = rgb_compo_cfg.invert;
@@ -394,22 +395,25 @@ namespace satdump
                     ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                     ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
                     bool buff = false;
-                    double tmp_min = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                    double tmp_max = is_temp && products->get_calibration_type(active_channel_id) ? radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id)) : (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_min = (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_max = (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
-                        disaplay_ranges[active_channel_id].first = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_min, products->get_wavenumber(active_channel_id)) : (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                        disaplay_ranges[active_channel_id].second = is_temp && products->get_calibration_type(active_channel_id) ? temperature_to_radiance(tmp_max, products->get_wavenumber(active_channel_id)) : (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].first = (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        disaplay_ranges[active_channel_id].second = (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
                         update_needed = true;
                         asyncUpdate();
                     }
                     if (ImGui::Button("Default"))
                     {
-                        disaplay_ranges[active_channel_id] = products->get_calibration_default_radiance_range(active_channel_id);
+                        disaplay_ranges[active_channel_id] =
+                            is_temp ? std::pair<double, double>{radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).first, products->get_wavenumber(active_channel_id)),
+                                                                radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).second, products->get_wavenumber(active_channel_id))}
+                                    : products->get_calibration_default_radiance_range(active_channel_id);
                         update_needed = true;
                         asyncUpdate();
                     }
@@ -430,8 +434,6 @@ namespace satdump
                     {
                         ImGui::SetCursorPosY(y + i * 49 * ui_scale);
                         std::pair<double, double> actual_ranges = disaplay_ranges[active_channel_id];
-                        if (is_temp)
-                            actual_ranges = {radiance_to_temperature(actual_ranges.first, products->get_wavenumber(active_channel_id)), radiance_to_temperature(actual_ranges.second, products->get_wavenumber(active_channel_id))};
                         ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second) / 9.0);
                     }
                     ImGui::EndGroup();
@@ -462,6 +464,12 @@ namespace satdump
                     {
                         if (ImGui::Selectable("Radiance", !is_temp))
                         {
+                            if (is_temp)
+                            {
+                                disaplay_ranges[active_channel_id].first = temperature_to_radiance(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id));
+                                disaplay_ranges[active_channel_id].second = temperature_to_radiance(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id));
+                            }
+
                             asyncUpdate();
                             is_temp = false;
                         }
@@ -470,6 +478,12 @@ namespace satdump
 
                         if (ImGui::Selectable("Temperature", is_temp))
                         {
+                            if (!is_temp)
+                            {
+                                disaplay_ranges[active_channel_id].first = radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id));
+                                disaplay_ranges[active_channel_id].second = radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id));
+                            }
+
                             asyncUpdate();
                             is_temp = true;
                         }
@@ -538,7 +552,7 @@ namespace satdump
 #ifdef _MSC_VER
                 if (default_path == ".")
                 {
-                    char* cwd;
+                    char *cwd;
                     cwd = _getcwd(NULL, 0);
                     if (cwd != 0)
                         default_path = cwd;
@@ -551,11 +565,7 @@ namespace satdump
                                            products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {
-                    "PNG Files", "*.png",
-                    "JPEG 2000 Files", "*.j2k",
-                    "JPEG Files", "*.jpg *.jpeg"
-                    });
+                auto result = pfd::save_file("Save Image", default_name, {"PNG Files", "*.png", "JPEG 2000 Files", "*.j2k", "JPEG Files", "*.jpg *.jpeg"});
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
