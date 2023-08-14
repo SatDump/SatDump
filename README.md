@@ -98,19 +98,25 @@ On Linux (or MacOS), building from source is recommended and no builds are curre
 Here are some generic (Debian-oriented) build instructions.
 
 ```
-# Linux: Install dependencies
+# Linux: Install dependencies on Debian-based systems:
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
 sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
 sudo apt install libglew-dev libglfw3-dev                                                                     # Only if you want to build the GUI Version (optional)
 sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
-sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
 (optional)
+sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
+sudo apt install ocl-icd-opencl-dev                                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 
-# Optional, but recommended as it drastically 
-# increases speed of some operations.
-# Install OpenCL. Not required on MacOS
-sudo apt install ocl-icd-opencl-dev
+# Linux: Install dependencies on Red-Hat-based systems:
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
+sudo dnf install nng-devel
+sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
+sudo dnf install glew-devel glfw-devel
+sudo dnf install libzstd-devel
+(optional)
+sudo dnf install libomp-devel
+sudo dnf install ocl-icd                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
