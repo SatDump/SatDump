@@ -112,6 +112,8 @@ namespace satdump
 
         if (tracking_widget != nullptr)
             delete tracking_widget;
+        if (constellation_debug != nullptr)
+            delete constellation_debug;
     }
 
     void RecorderApplication::drawUI()
@@ -501,6 +503,14 @@ namespace satdump
                         };
                     }
                     tracking_widget->render();
+                }
+
+                if (ImGui::CollapsingHeader("Debug"))
+                {
+                    if (constellation_debug == nullptr)
+                        constellation_debug = new widgets::ConstellationViewer();
+                    constellation_debug->pushComplex(source_ptr->output_stream->readBuf, 256);
+                    constellation_debug->draw();
                 }
             }
             ImGui::EndChild();

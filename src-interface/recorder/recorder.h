@@ -13,6 +13,8 @@
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 
+#include "common/widgets/constellation.h"
+
 #include "pipeline_selector.h"
 #include "core/live_pipeline.h"
 
@@ -88,6 +90,9 @@ namespace satdump
         void try_load_sdr_settings();
 
         TrackingWidget *tracking_widget = nullptr;
+
+        // Debug
+        widgets::ConstellationViewer *constellation_debug = nullptr;
 
     private:
         void start();
