@@ -513,7 +513,7 @@
                             "cch4": {
                                 "type": "temperature",
                                 "min": 270.65,
-                                "max": 313.15
+                                "max": 307.15
                             }
                         },
                         "autogen": false
