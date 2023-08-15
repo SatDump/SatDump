@@ -13,6 +13,7 @@
 #include "common/audio/audio_sink.h"
 #include "imgui_notify/imgui_notify.h"
 #include "notify_logger_sink.h"
+#include "status_logger_sink.h"
 
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
@@ -33,6 +34,7 @@ namespace satdump
     widgets::MarkdownHelper credits_md;
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
+    std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
     void initMainUI()
     {
@@ -72,6 +74,11 @@ namespace satdump
         // Logger notify sink
         notify_logger_sink = std::make_shared<NotifyLoggerSink>();
         logger->add_sink(notify_logger_sink);
+
+        //Logger status bar sync
+        status_logger_sink = std::make_shared<StatusLoggerSink>();
+        if(status_logger_sink->is_shown())
+            logger->add_sink(status_logger_sink);
     }
 
     void exitMainUI()
@@ -111,6 +118,22 @@ namespace satdump
         }*/
         // else
         {
+            bool status_bar = status_logger_sink->is_shown();
+            if (status_bar && processing::is_processing && main_ui_is_processing_selected)
+            {
+                for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+                {
+                    std::string module_id = module->getIDM();
+                    if (module_id == "products_processor")
+                    {
+                        status_bar = false;
+                        break;
+                    }
+                }
+            }
+            if(status_bar)
+                wheight -= status_logger_sink->draw();
+
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
             ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);

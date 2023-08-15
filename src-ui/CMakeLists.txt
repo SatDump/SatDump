@@ -41,4 +41,9 @@ else()
     target_link_libraries(satdump-ui PRIVATE glfw)
 endif()
 
+#Disable console on Windows builds
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+endif()
+
 install(TARGETS satdump-ui DESTINATION bin)
