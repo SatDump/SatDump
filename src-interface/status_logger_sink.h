@@ -11,7 +11,6 @@ namespace satdump
         std::string lvl;
         bool show_bar;
         bool show_log;
-        float lastY;
     protected:
         void receive(slog::LogMsg log);
     public:
