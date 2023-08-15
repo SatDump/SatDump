@@ -523,14 +523,12 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_method3": true,
-                    "cadu_size": 8192,
-                    "nrzm": false,
-                    "derandomize": true,
-                    "rs_i": 4,
-                    "rs_type": "rs223"
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": false,
+                    "internal_cadu_size": 0
                 }
             }
         }
