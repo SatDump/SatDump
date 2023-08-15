@@ -304,7 +304,7 @@ namespace satdump
                     ImGui::Text("%s", label.c_str());
                     if (ImGui::IsItemHovered() && layer.type == 0)
                     {
-                        ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
+                        ImGui::SetTooltip("%s", layer.viewer_prods->dataset_name.c_str());
                     }
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
