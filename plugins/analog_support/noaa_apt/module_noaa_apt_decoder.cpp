@@ -271,9 +271,30 @@ namespace noaa_apt
             logger->warn("Could not get satellite number from parameters or filename!");
         }
 
+        double start_tt = -1;
+        if (d_parameters.contains("start_timestamp") && norad != 0)
+            start_tt = d_parameters["start_timestamp"];
+
         satdump::ProductDataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = time(0);
+        dataset.timestamp = start_tt;
+
+        if (sat_name == "NOAA-15" && start_tt != -1)
+        {
+            time_t noaa15_age = dataset.timestamp - 895074720;
+            int seconds = noaa15_age % 60;
+            int minutes = (noaa15_age % 3600) / 60;
+            int hours = (noaa15_age % 86400) / 3600;
+            int days = noaa15_age / 86400;
+            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+            if (dataset.timestamp > 0)
+            {
+                time_t tttime = dataset.timestamp;
+                std::tm *timeReadable = gmtime(&tttime);
+                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
+                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
+            }
+        }
 
         // AVHRR
         {
@@ -290,8 +311,6 @@ namespace noaa_apt
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
-                double start_tt = d_parameters["start_timestamp"];
-
                 if (start_tt != -1)
                 {
                     std::vector<double> timestamps;

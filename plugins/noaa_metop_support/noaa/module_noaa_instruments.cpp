@@ -153,6 +153,22 @@ namespace noaa
                         logger->warn("NOAA-18 detected. MHS data will not be saved!");
                     if (scid == 7)
                         logger->warn("NOAA-15 detected. No MHS available!");
+                    if (scid == 7)
+                    {
+                        time_t noaa15_age = dataset.timestamp - 895074720;
+                        int seconds = noaa15_age % 60;
+                        int minutes = (noaa15_age % 3600) / 60;
+                        int hours = (noaa15_age % 86400) / 3600;
+                        int days = noaa15_age / 86400;
+                        logger->warn("Congratulations for receiving NOAA 15 on HRPT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+                        if (dataset.timestamp > 0)
+                        {
+                            time_t tttime = dataset.timestamp;
+                            std::tm *timeReadable = gmtime(&tttime);
+                            if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
+                                logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
+                        }
+                    }
                 }
 
                 // AVHRR
