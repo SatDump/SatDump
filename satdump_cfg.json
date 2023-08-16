@@ -600,7 +600,7 @@
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "lua_vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.1,
                             "scalar": 1,
                             "thresold": 0,
                             "lut": "noaa_apt/WXtoImg-NO_mod.png"

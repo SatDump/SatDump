@@ -36,11 +36,19 @@ function process()
                 lut_x = get_channel_value(0) * img_rainnolut:width()
 
                 if lut_y >= img_rainnolut:height() then
-                    lut_y = img_rainnolut:height()
+                    lut_y = img_rainnolut:height() - 1
                 end
 
                 if lut_x >= img_rainnolut:width() then
-                    lut_x = img_rainnolut:width()
+                    lut_x = img_rainnolut:width() - 1
+                end
+
+                if lut_y < 0 then
+                    lut_y = 0
+                end
+
+                if lut_x < 0 then
+                    lut_x = 0
                 end
 
                 val_lut = {}

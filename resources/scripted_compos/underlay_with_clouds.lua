@@ -29,6 +29,13 @@ function process()
 
                 mappos = y2 * img_background:width() + x2
 
+                if mappos >= (img_background:height() * img_background:width()) then
+                    mappos = (img_background:height() * img_background:width()) - 1
+                end
+
+                if mappos < 0 then
+                    mappos = 0
+                end
 
                 if cfg_blend == 1 then
                     for c = 0, 2, 1 do
@@ -40,7 +47,7 @@ function process()
                     if cfg_thresold == 0 then
                         for c = 0, 2, 1 do
                             mval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
-                            255.0
+                                255.0
                             fval = mval * 0.4 + val * 0.6;
                             set_img_out(c, x, y, fval)
                         end
