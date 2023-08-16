@@ -11,6 +11,7 @@
 #include "main_ui.h"
 #include "satdump_vars.h"
 
+#include "loading_screen.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
 
@@ -178,10 +179,6 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
 
-    // Init SatDump
-    satdump::tle_do_update_on_init = false;
-    satdump::initSatdump();
-
     // Setup Icon
     GLFWimage img;
     {
@@ -212,6 +209,17 @@ int main(int argc, char *argv[])
     }
     glfwSetWindowIcon(window, 1, &img);
 
+    //Set font
+    style::setFonts();
+
+    // Init Loading Screen
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, &img);
+    logger->add_sink(loading_screen_sink);
+
+    // Init SatDump
+    satdump::tle_do_update_on_init = false;
+    satdump::initSatdump();
+
     // Init UI
     satdump::initMainUI();
 
@@ -226,6 +234,10 @@ int main(int argc, char *argv[])
         satdump::ui_thread_pool.push([&](int)
                                      {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
                                         satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
+
+    //Shut down loading screen
+    logger->del_sink(loading_screen_sink);
+    loading_screen_sink.reset();
 
     // Main loop
     do

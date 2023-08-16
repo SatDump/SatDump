@@ -1,3 +1,5 @@
+#define SATDUMP_DLL_EXPORT 1
+
 #include "style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
@@ -10,9 +12,9 @@
 
 namespace style
 {
-    ImFont *baseFont;
-    ImFont *bigFont;
-    ImFont *hugeFont;
+    SATDUMP_DLL ImFont *baseFont;
+    SATDUMP_DLL ImFont *bigFont;
+    SATDUMP_DLL ImFont *hugeFont;
 
     bool setDefaultStyle()
     {
@@ -23,8 +25,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsDark();
         // ImGui::StyleColorsLight();
@@ -41,8 +41,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsLight();
 
@@ -108,8 +106,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsDark();
 
