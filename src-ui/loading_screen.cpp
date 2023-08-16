@@ -40,15 +40,31 @@ namespace satdump
         ImGui::SetNextWindowPos({ 0, 0 });
         ImGui::SetNextWindowSize({(float)display_w, (float)display_h});
         ImGui::Begin("Loading Screen", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
-        ImVec2 reference_pos = { (float)display_w * 0.25f, ((float)display_h * 0.5f) - 125 };
-        ImGui::SetCursorPos(reference_pos);
-        ImGui::Image((void*)(intptr_t)image_texture, ImVec2(225, 225));
 
-        ImGui::SetCursorPos({ reference_pos.x + 275, reference_pos.y + 70 });
-        ImGui::PushFont(style::bigFont);
-        ImGui::TextUnformatted("SatDump");
-        ImGui::PopFont();
-        ImGui::SetCursorPos({ reference_pos.x + 275, reference_pos.y + 125 });
+        if(display_w > display_h)
+        {
+            ImVec2 reference_pos = { (float)display_w * 0.2f, ((float)display_h * 0.5f) - 125 };
+            ImGui::SetCursorPos(reference_pos);
+            ImGui::Image((void*)(intptr_t)image_texture, ImVec2(225, 225));
+            ImGui::SetCursorPos({ reference_pos.x + 260, reference_pos.y + 70 });
+            ImGui::PushFont(style::bigFont);
+            ImGui::TextUnformatted("SatDump");
+            ImGui::PopFont();
+            ImGui::SetCursorPos({ reference_pos.x + 260, reference_pos.y + 125 });
+        }
+        else
+        {
+            ImGui::SetCursorPos({ ((float)display_w / 2) - 112, ((float)display_h / 2) - 200 });
+            ImGui::Image((void*)(intptr_t)image_texture, ImVec2(225, 225));
+            ImVec2 reference_pos = ImGui::GetCursorPos();
+            ImGui::PushFont(style::bigFont);
+            ImGui::SetCursorPos({((float)display_w / 2) - (ImGui::CalcTextSize("SatDump").x / 2), reference_pos.y + 20});
+            ImGui::TextUnformatted("SatDump");
+            ImGui::PopFont();
+            reference_pos = ImGui::GetCursorPos();
+            ImGui::SetCursorPos({ ((float)display_w / 2) - (ImGui::CalcTextSize(str.c_str()).x) / 2, reference_pos.y + 10 });
+        }
+
         ImGui::TextUnformatted(str.c_str());
         ImGui::End();
 
