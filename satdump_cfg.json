@@ -87,7 +87,7 @@
             "name": "Recorder Baseband Filename Milliseconds",
             "description": "Add milliseconds to the output filenames for basebands recorded in the recorder"
         },
-         "status_bar": {
+        "status_bar": {
             "type": "bool",
             "value": true,
             "name": "Show Status Bar",
@@ -600,8 +600,8 @@
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "lua_vars": {
-                            "minoffset": 0.1,
-                            "scalar": 1,
+                            "minoffset": 0.2,
+                            "scalar": 1.5,
                             "thresold": 0,
                             "lut": "noaa_apt/WXtoImg-NO_mod.png"
                         },
@@ -843,13 +843,15 @@
                     },
                     "Night Microphysics": {
                         "equation": "(1-chi5)-(1-chi4),(1-chi4)-(1-chi3),(1-chi4)",
-                        "geo_correct": true,
                         "equalize": true,
                         "white_balance": true
                     },
                     "Day Microphysics": {
                         "equation": "chi1, (1-chi3)^2.5,(1-chi4)",
-                        "geo_correct": true,
+                        "equalize": true
+                    },
+                    "Thermal Channel": {
+                        "equation": "1-chi4",
                         "equalize": true
                     }
                 }
@@ -891,6 +893,12 @@
                         "equation": "(ch2 + ch1) / 2, (ch2 + ch4) / 2, (ch1 + ch3) / 2",
                         "white_balance": true,
                         "geo_correct": true
+                    },
+                    "Day Microphysics": {
+                        "equation": "ch17, ch22^2.5, ch31",
+                        "geo_correct": true,
+                        "equalize": true,
+                        "white_balance": true
                     }
                 }
             },
@@ -940,6 +948,17 @@
                         "equation": "1.0 - ch5",
                         "equalize": true,
                         "geo_correct": true
+                    },
+                    "Thermal Channel": {
+                        "equation": "1.0 - ch5",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "Day Microphysics": {
+                        "equation": "ch14,ch22^2.5,ch5",
+                        "equalize": true,
+                        "geo_correct": true,
+                        "white_balance": true
                     }
                 }
             },
