@@ -241,13 +241,11 @@ namespace satdump
 
         if (config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
         {
-            timestamp += "-";
+            std::ostringstream ss;
+
             double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
-            if (ms_val < 10)
-                timestamp += "00";
-            else if (ms_val < 100)
-                timestamp += "0";
-            timestamp += std::to_string(timeValue_precise);
+            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0')  << ms_val;
+            timestamp += ss.str();
         }
 
         std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
