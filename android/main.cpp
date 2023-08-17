@@ -4,7 +4,6 @@
 #include "imgui/imgui.h"
 #include "imgui_impl_android.h"
 #include "imgui_impl_opengl3.h"
-#include "loading_screen.h"
 #include <android/log.h>
 #include <android_native_app_glue.h>
 #include <android/asset_manager.h>
@@ -27,7 +26,9 @@ static int GetAssetData(const char *filename, void **out_data);
 #include "logger.h"
 #include "init.h"
 #include "main_ui.h"
+#include "loading_screen.h"
 #include "core/style.h"
+#include "core/module.h"
 
 bool was_init = false;
 
@@ -96,6 +97,7 @@ void init(struct android_app *app)
         // ImGui::StyleColorsDark();
         // ImGui::StyleColorsClassic();
 
+        ui_scale = 2.0;
         initLogger();
         style::setFonts();
         std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface);
@@ -103,15 +105,7 @@ void init(struct android_app *app)
 
         satdump::tle_do_update_on_init = false;
         satdump::initSatdump();
-
-        // TLE
-        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
-            satdump::ui_thread_pool.push([&](int)
-                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
-                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
-
         satdump::initMainUI();
-        style::setFonts();
 
         //Shut down loading screen
         logger->del_sink(loading_screen_sink);
@@ -121,6 +115,12 @@ void init(struct android_app *app)
         style::setFonts();
         ImGui_ImplOpenGL3_DestroyFontsTexture();
         ImGui_ImplOpenGL3_CreateFontsTexture();
+
+        // TLE
+        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
+            satdump::ui_thread_pool.push([&](int)
+                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
 
         was_init = true;
     }
