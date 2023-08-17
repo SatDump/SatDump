@@ -223,6 +223,15 @@ int main(int argc, char *argv[])
     // Init UI
     satdump::initMainUI();
 
+    //Shut down loading screen
+    logger->del_sink(loading_screen_sink);
+    loading_screen_sink.reset();
+
+    //Set font again to adjust for DPI
+    style::setFonts();
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+
     if (satdump::processing::is_processing)
     {
         satdump::ui_thread_pool.push([&](int)
@@ -234,10 +243,6 @@ int main(int argc, char *argv[])
         satdump::ui_thread_pool.push([&](int)
                                      {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
                                         satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
-
-    //Shut down loading screen
-    logger->del_sink(loading_screen_sink);
-    loading_screen_sink.reset();
 
     // Main loop
     do

@@ -25,14 +25,13 @@ namespace widgets
     void MarkdownHelper::init()
     {
         mdConfig.linkCallback = link_callback;
-
-        mdConfig.headingFormats[0] = {style::bigFont, true};
-        mdConfig.headingFormats[1] = {style::bigFont, true};
-        mdConfig.headingFormats[2] = {style::baseFont, true};
     };
 
     void MarkdownHelper::render()
     {
+        mdConfig.headingFormats[0] = { style::bigFont, true };
+        mdConfig.headingFormats[1] = { style::bigFont, true };
+        mdConfig.headingFormats[2] = { style::baseFont, true };
         ImGui::Markdown(markdown_.c_str(), markdown_.length(), mdConfig);
     }
 

@@ -95,6 +95,7 @@ void init(struct android_app *app)
         // ImGui::StyleColorsClassic();
 
         satdump::initMainUI();
+        style::setFonts();
         was_init = true;
     }
 
