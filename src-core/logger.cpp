@@ -232,9 +232,8 @@ namespace slog
     void Logger::del_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();
-        auto it = std::find_if(sinks.rbegin(), sinks.rend(), [&sink](std::shared_ptr<LoggerSink> &c)
-                               { return sink.get() == c.get(); })
-                      .base();
+        auto it = std::find_if(sinks.begin(), sinks.end(), [&sink](std::shared_ptr<LoggerSink>& c)
+            { return sink.get() == c.get(); });
         if (it != sinks.end())
             sinks.erase(it);
         sink_mtx.unlock();

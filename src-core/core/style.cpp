@@ -1,3 +1,5 @@
+#define SATDUMP_DLL_EXPORT 1
+
 #include "style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
@@ -10,9 +12,9 @@
 
 namespace style
 {
-    ImFont *baseFont;
-    ImFont *bigFont;
-    ImFont *hugeFont;
+    SATDUMP_DLL ImFont *baseFont;
+    SATDUMP_DLL ImFont *bigFont;
+    SATDUMP_DLL ImFont *hugeFont;
 
     bool setDefaultStyle()
     {
@@ -23,8 +25,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsDark();
         // ImGui::StyleColorsLight();
@@ -41,8 +41,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsLight();
 
@@ -108,8 +106,6 @@ namespace style
         ImGui::GetStyle().GrabRounding = round;
         ImGui::GetStyle().PopupRounding = round;
         ImGui::GetStyle().ScrollbarRounding = round;
-
-        setFonts();
 
         ImGui::StyleColorsDark();
 
@@ -182,7 +178,7 @@ namespace style
 
     void setFonts()
     {
-
+        ImGui::GetIO().Fonts->Clear();
         ImFontGlyphRangesBuilder builder;
         static const ImWchar def[] = {0x20, 0x2300, 0}; //default range
         static ImFontConfig config;
@@ -193,7 +189,9 @@ namespace style
         for (int i = 0; i < 6; i++)
             baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * ui_scale, &config, list[i]); 
 
+        config.MergeMode = false;
         bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * ui_scale);   //, &config, ranges);
         //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * ui_scale); //, &config, ranges);
+        ImGui::GetIO().Fonts->Build();
     }
 }

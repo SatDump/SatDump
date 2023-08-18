@@ -1,13 +1,13 @@
 #pragma once
-
+#include "dll_export.h"
 #include "imgui/imgui.h"
 #include <string>
 
 namespace style
 {
-    extern ImFont *baseFont;
-    extern ImFont *bigFont;
-    extern ImFont *hugeFont;
+    SATDUMP_DLL extern ImFont *baseFont;
+    SATDUMP_DLL extern ImFont *bigFont;
+    SATDUMP_DLL extern ImFont *hugeFont;
 
     bool setDefaultStyle();
     bool setLightStyle(float dpi_scaling = 1.0f);

@@ -26,6 +26,9 @@ static int GetAssetData(const char *filename, void **out_data);
 #include "logger.h"
 #include "init.h"
 #include "main_ui.h"
+#include "loading_screen.h"
+#include "core/style.h"
+#include "core/module.h"
 
 bool was_init = false;
 
@@ -94,7 +97,31 @@ void init(struct android_app *app)
         // ImGui::StyleColorsDark();
         // ImGui::StyleColorsClassic();
 
+        ui_scale = 2.0;
+        initLogger();
+        style::setFonts();
+        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface);
+        logger->add_sink(loading_screen_sink);
+
+        satdump::tle_do_update_on_init = false;
+        satdump::initSatdump();
         satdump::initMainUI();
+
+        //Shut down loading screen
+        logger->del_sink(loading_screen_sink);
+        loading_screen_sink.reset();
+
+        //Set font again to adjust for DPI
+        style::setFonts();
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+
+        // TLE
+        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
+            satdump::ui_thread_pool.push([&](int)
+                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
+
         was_init = true;
     }
 
@@ -110,7 +137,6 @@ void tick()
     // Our state
     static bool show_demo_window = true;
     static bool show_another_window = false;
-    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Poll Unicode characters via JNI
     // FIXME: do not call this every frame because of JNI overhead
@@ -291,16 +317,6 @@ void android_main(struct android_app *app)
         android_plugins_dir = getPluginsDir(app);
 
         chdir(path.c_str());
-
-        initLogger();
-        satdump::tle_do_update_on_init = false;
-        satdump::initSatdump();
-
-        // TLE
-        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
-            satdump::ui_thread_pool.push([&](int)
-                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
-                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
     }
 
     app->onAppCmd = handleAppCmd;
