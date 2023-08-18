@@ -509,7 +509,8 @@ namespace satdump
                 {
                     if (constellation_debug == nullptr)
                         constellation_debug = new widgets::ConstellationViewer();
-                    constellation_debug->pushComplex(source_ptr->output_stream->readBuf, 256);
+                    if(is_started)
+                        constellation_debug->pushComplex(source_ptr->output_stream->readBuf, 256);
                     constellation_debug->draw();
                 }
             }
