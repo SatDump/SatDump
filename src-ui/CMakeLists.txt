@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.0.0)
 
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+    enable_language("RC")
+    set (WIN32_RESOURCES ../windows/resource.rc)
+endif()
+
 file(GLOB_RECURSE SatDump_ui_CPPS *.cpp)
 
-add_executable(satdump-ui ${SatDump_ui_CPPS})
+add_executable(satdump-ui ${SatDump_ui_CPPS} ${WIN32_RESOURCES})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
 
 # Set the resources path
@@ -39,11 +45,6 @@ else()
     # GLFW3
     find_package(glfw3 CONFIG REQUIRED)
     target_link_libraries(satdump-ui PRIVATE glfw)
-endif()
-
-#Disable console on Windows builds
-if(MSVC)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 endif()
 
 install(TARGETS satdump-ui DESTINATION bin)
