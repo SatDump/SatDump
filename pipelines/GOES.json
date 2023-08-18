@@ -530,6 +530,9 @@
                     "internal_stream": false,
                     "internal_cadu_size": 0
                 }
+            },
+            "products": {
+                "goesr_instruments": {}
             }
         }
     }

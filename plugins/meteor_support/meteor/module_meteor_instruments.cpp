@@ -35,7 +35,13 @@ namespace meteor
             def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
             def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, true);
 
-            time_t currentDay = time(0) + 3 * 3600.0;            // Moscow Time
+            time_t current_time = d_parameters.contains("start_timestamp")
+                                      ? (d_parameters["start_timestamp"].get<double>() != -1
+                                             ? d_parameters["start_timestamp"].get<double>()
+                                             : time(0))
+                                      : time(0);
+
+            time_t currentDay = current_time + 3 * 3600.0;       // Moscow Time
             time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
 
             std::vector<double> msumr_timestamps;
