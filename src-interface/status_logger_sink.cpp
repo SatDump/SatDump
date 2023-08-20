@@ -78,15 +78,7 @@ namespace satdump
             ImGui::SetNextWindowBgAlpha(1.0);
             ImGui::Begin("SatDump Log", &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
             if (ImGui::IsWindowFocused())
-            {
                 widgets::LoggerSinkWidget::draw();
-                if (lastY != ImGui::GetScrollMaxY())
-                {
-                    lastY = ImGui::GetScrollMaxY();
-                    ImGui::SetScrollY(lastY);
-                }
-
-            }
             else
                 show_log = false;
 
