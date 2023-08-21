@@ -2,6 +2,7 @@
 #include "logger.h"
 #include <cstring>
 #include <csetjmp>
+#include <filesystem>
 extern "C"
 {
 #include "libs/jpeg/jpeglib.h"
