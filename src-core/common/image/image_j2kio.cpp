@@ -2,6 +2,7 @@
 #include <cstring>
 #include "logger.h"
 #include "libs/openjp2/openjpeg.h"
+#include <filesystem>
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
 
