@@ -16,7 +16,7 @@ namespace meteor
 
             // Readers
             msumr::MSUMRReader msumr_reader;
-            mtvza::MTVZAReader mtvza_reader;
+            mtvza::MTVZAReader mtvza_reader, mtvza_reader2;
 
             // Statuses
             instrument_status_t msumr_status = DECODING;

@@ -30,9 +30,12 @@ namespace meteor
             time_t lastTime = 0;
             uint8_t cadu[1024];
 
+            mtvza_reader2.endian_mode = true;
+
             // Deframers
             def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, true);
             def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
+            def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, true);
             def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, true);
 
             time_t current_time = d_parameters.contains("start_timestamp")
@@ -55,7 +58,7 @@ namespace meteor
                 data_in.read((char *)&cadu, 1024);
 
                 std::vector<std::vector<uint8_t>> msumr_frames;
-                std::vector<std::vector<uint8_t>> mtvza_frames;
+                std::vector<std::vector<uint8_t>> mtvza_frames, mtvza_frames2;
                 std::vector<std::vector<uint8_t>> bism_frames;
 
                 // MSU-MR Deframing
@@ -87,11 +90,14 @@ namespace meteor
                     mtvza_data.insert(mtvza_data.end(), &cadu[527 - 1], &cadu[527 - 1] + 8);
                     mtvza_data.insert(mtvza_data.end(), &cadu[783 - 1], &cadu[783 - 1] + 8);
                     mtvza_frames = mtvza_deframer.work(mtvza_data.data(), mtvza_data.size());
+                    mtvza_frames2 = mtvza_deframer2.work(mtvza_data.data(), mtvza_data.size());
                 }
 
                 // MTVZA Processing
                 for (std::vector<uint8_t> &frame : mtvza_frames)
                     mtvza_reader.work(frame.data());
+                for (std::vector<uint8_t> &frame : mtvza_frames2)
+                    mtvza_reader2.work(frame.data());
 
                 // BIS-M Deframing
                 {
@@ -217,6 +223,10 @@ namespace meteor
 
             // MTVZA
             {
+                auto &mreader = mtvza_reader2.lines > mtvza_reader.lines
+                                    ? mtvza_reader2
+                                    : mtvza_reader;
+
                 mtvza_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MTVZA";
 
@@ -224,17 +234,17 @@ namespace meteor
                     std::filesystem::create_directory(directory);
 
                 logger->info("----------- MTVZA");
-                logger->info("Lines : " + std::to_string(mtvza_reader.lines));
+                logger->info("Lines : " + std::to_string(mreader.lines));
 
                 satdump::ImageProducts mtvza_products;
                 mtvza_products.instrument_name = "mtvza";
                 mtvza_products.has_timestamps = true;
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-                mtvza_products.set_timestamps(mtvza_reader.timestamps);
+                mtvza_products.set_timestamps(mreader.timestamps);
 
                 for (int i = 0; i < 30; i++)
-                    mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), mtvza_reader.getChannel(i)});
+                    mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), mreader.getChannel(i)});
 
                 mtvza_products.save(directory);
                 dataset.products_list.push_back("MTVZA");
@@ -271,7 +281,10 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MTVZA");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", mtvza_reader.lines);
+                ImGui::TextColored(ImColor(0, 255, 0), "%d",
+                                   mtvza_reader2.lines > mtvza_reader.lines
+                                       ? mtvza_reader2.lines
+                                       : mtvza_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mtvza_status);
 
