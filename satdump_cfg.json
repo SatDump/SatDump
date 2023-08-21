@@ -1049,16 +1049,20 @@
                 "name": "MHS",
                 "rgb_composites": {
                     "221": {
-                        "equation": "ch2, ch2, ch1",
+                        "equation": "cch2, cch2, cch1",
                         "equalize": true
                     },
                     "421": {
-                        "equation": "ch4, ch2, ch1",
+                        "equation": "cch4, cch2, cch1",
                         "equalize": true
                     },
                     "543": {
-                        "equation": "ch5, ch4, ch3",
+                        "equation": "cch5, cch4, cch3",
                         "equalize": true
+                    },
+                    "Rain": {
+                        "equation": "((1-(cch5-cch4))-0.9)^0.25",
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
