@@ -273,6 +273,7 @@ namespace satdump
                     invert_image = rgb_compo_cfg.invert;
                     normalize_image = rgb_compo_cfg.normalize;
                     white_balance_image = rgb_compo_cfg.white_balance;
+                    using_lut = rgb_compo_cfg.apply_lut;
 
                     rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
                     select_image_id = 0;
