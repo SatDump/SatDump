@@ -95,7 +95,7 @@
             "baseband": {},
             "soft": {
                 "fsk_demod": {
-                    "symbolrate": 4.8e3,//16276.0625,
+                    "symbolrate": 4.8e3, //16276.0625,
                     "rrc_alpha": 0.35
                 }
             },
@@ -164,6 +164,56 @@
                     "rs_i": 4,
                     "rs_type": "rs223"
                 }
+            }
+        }
+    },
+    "ominous_orb": {
+        "name": "Ominous Rebroadcast (ORB)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 500e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "orb_decoder_test": {}
             }
         }
     }
