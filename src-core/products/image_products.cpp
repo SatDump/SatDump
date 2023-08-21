@@ -467,6 +467,22 @@ namespace satdump
         else
             rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
+        if (cfg.apply_lut)
+        {
+            auto lut_image = image::LUT_jet<uint16_t>();
+            rgb_composite.to_rgb();
+            for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
+            {
+                uint16_t val = rgb_composite[i];
+                val = (float(val) / 65535.0) * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                rgb_composite.channel(0)[i] = lut_image.channel(0)[val];
+                rgb_composite.channel(1)[i] = lut_image.channel(1)[val];
+                rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
+            }
+        }
+
         if (cfg.equalize)
             rgb_composite.equalize();
 

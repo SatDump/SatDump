@@ -236,6 +236,7 @@ namespace satdump
         bool invert = false;
         bool normalize = false;
         bool white_balance = false;
+        bool apply_lut = false;
 
         std::string lut = "";
         std::string channels = "";
@@ -251,6 +252,7 @@ namespace satdump
         j["invert"] = v.invert;
         j["normalize"] = v.normalize;
         j["white_balance"] = v.white_balance;
+        j["apply_lut"] = v.apply_lut;
 
         j["lut"] = v.lut;
         j["channels"] = v.channels;
@@ -290,6 +292,8 @@ namespace satdump
             v.normalize = j["normalize"].get<bool>();
         if (j.contains("white_balance"))
             v.white_balance = j["white_balance"].get<bool>();
+        if (j.contains("apply_lut"))
+            v.apply_lut = j["apply_lut"].get<bool>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
