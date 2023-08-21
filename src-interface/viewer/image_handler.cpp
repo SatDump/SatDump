@@ -87,22 +87,6 @@ namespace satdump
         if (select_image_id != 0)
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
-        // TODO : Cleanup?
-        if (using_lut)
-        {
-            current_image.to_rgb();
-            for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
-            {
-                uint16_t val = current_image[i];
-                val = (float(val) / 65535.0) * lut_image.width();
-                if (val >= lut_image.width())
-                    val = lut_image.width() - 1;
-                current_image.channel(0)[i] = lut_image.channel(0)[val];
-                current_image.channel(1)[i] = lut_image.channel(1)[val];
-                current_image.channel(2)[i] = lut_image.channel(2)[val];
-            }
-        }
-
         if (median_blur)
             current_image.median_blur();
 
@@ -120,6 +104,22 @@ namespace satdump
 
         if (normalize_image)
             current_image.normalize();
+
+        // TODO : Cleanup?
+        if (using_lut)
+        {
+            current_image.to_rgb();
+            for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
+            {
+                uint16_t val = current_image[i];
+                val = (float(val) / 65535.0) * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                current_image.channel(0)[i] = lut_image.channel(0)[val];
+                current_image.channel(1)[i] = lut_image.channel(1)[val];
+                current_image.channel(2)[i] = lut_image.channel(2)[val];
+            }
+        }
 
         int pre_corrected_width = current_image.width();
         int pre_corrected_height = current_image.height();
@@ -592,7 +592,8 @@ namespace satdump
                 updateRGB();
             }
 
-            ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation);
+            if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
+                select_rgb_presets = -1; // Editing, NOT the compo anymore!
             if (rgb_processing)
                 style::beginDisabled();
             if (ImGui::Button("Apply") && !rgb_processing)

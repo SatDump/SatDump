@@ -467,6 +467,18 @@ namespace satdump
         else
             rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
+        if (cfg.equalize)
+            rgb_composite.equalize();
+
+        if (cfg.white_balance)
+            rgb_composite.white_balance();
+
+        if (cfg.invert)
+            rgb_composite.linear_invert();
+
+        if (cfg.normalize)
+            rgb_composite.normalize();
+
         if (cfg.apply_lut)
         {
             auto lut_image = image::LUT_jet<uint16_t>();
@@ -482,18 +494,6 @@ namespace satdump
                 rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
             }
         }
-
-        if (cfg.equalize)
-            rgb_composite.equalize();
-
-        if (cfg.white_balance)
-            rgb_composite.white_balance();
-
-        if (cfg.invert)
-            rgb_composite.linear_invert();
-
-        if (cfg.normalize)
-            rgb_composite.normalize();
 
         return rgb_composite;
     }
