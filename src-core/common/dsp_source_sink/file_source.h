@@ -23,7 +23,7 @@ protected:
     std::string file_path;
     bool iq_swap = false;
 
-    long total_samples = 0;
+    unsigned long long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
 

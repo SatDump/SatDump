@@ -68,7 +68,6 @@ namespace satdump
         if (show_log)
         {
             static ImVec2 last_size;
-            static float lastY;
             ImVec2 display_size = ImGui::GetIO().DisplaySize;
             bool did_resize = display_size.x != last_size.x || display_size.y != last_size.y;
             ImGui::SetNextWindowSize(ImVec2(display_size.x, (display_size.y * 0.3) - height), did_resize ? ImGuiCond_Always : ImGuiCond_Appearing);
@@ -78,15 +77,7 @@ namespace satdump
             ImGui::SetNextWindowBgAlpha(1.0);
             ImGui::Begin("SatDump Log", &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
             if (ImGui::IsWindowFocused())
-            {
                 widgets::LoggerSinkWidget::draw();
-                if (lastY != ImGui::GetScrollMaxY())
-                {
-                    lastY = ImGui::GetScrollMaxY();
-                    ImGui::SetScrollY(lastY);
-                }
-
-            }
             else
                 show_log = false;
 
