@@ -25,6 +25,9 @@ namespace image
     template <typename T>
     void Image<T>::load_jpeg(std::string file)
     {
+        if (!std::filesystem::exists(file))
+            return;
+
         FILE *fp = fopen(file.c_str(), "rb");
         if (!fp)
             abort();

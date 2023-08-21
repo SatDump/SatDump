@@ -83,6 +83,9 @@ namespace image
     template <typename T>
     void Image<T>::load_png(std::string file, bool disableIndexing)
     {
+        if (!std::filesystem::exists(file))
+            return;
+
         FILE *fp = fopen(file.c_str(), "rb");
 
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);

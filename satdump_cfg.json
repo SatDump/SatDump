@@ -523,6 +523,10 @@
                             }
                         },
                         "autogen": false
+                    },
+                    "NOAA BD (Hurricane)": {
+                        "channels": "cch4",
+                        "lut": "lut/bd.png"
                     }
                 },
                 "project_channels": {

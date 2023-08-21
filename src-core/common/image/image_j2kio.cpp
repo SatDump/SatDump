@@ -118,6 +118,9 @@ namespace image
     template <typename T>
     void Image<T>::load_j2k(std::string file)
     {
+        if (!std::filesystem::exists(file))
+            return;
+
         // Init decoder parameters
         opj_dparameters_t core;
         memset(&core, 0, sizeof(opj_dparameters_t));
