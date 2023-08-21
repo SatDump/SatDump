@@ -14,6 +14,7 @@ namespace meteor
     protected:
         bool diff_decode;
 
+        int8_t *_buffer;
         int8_t *buffer;
 
         std::ifstream data_in;

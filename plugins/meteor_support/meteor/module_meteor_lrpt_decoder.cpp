@@ -22,7 +22,8 @@ namespace meteor
                                                                                                                                         diff_decode(parameters["diff_decode"].get<bool>())
     {
         m2x_mode = d_parameters.contains("m2x_mode") ? d_parameters["m2x_mode"].get<bool>() : false;
-        buffer = new int8_t[ENCODED_FRAME_SIZE];
+        _buffer = new int8_t[ENCODED_FRAME_SIZE + INTER_MARKER_STRIDE];
+        buffer = &_buffer[INTER_MARKER_STRIDE];
 
         if (m2x_mode)
         {
@@ -50,7 +51,7 @@ namespace meteor
 
     METEORLRPTDecoderModule::~METEORLRPTDecoderModule()
     {
-        delete[] buffer;
+        delete[] _buffer;
     }
 
     void METEORLRPTDecoderModule::process()

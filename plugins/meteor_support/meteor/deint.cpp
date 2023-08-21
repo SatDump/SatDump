@@ -22,18 +22,12 @@ namespace meteor
     {
         int i, j, k;
         uint8_t tmp, _xor, window;
-        std::vector<int> ones_count(8 * period);
-        std::vector<int> average_bit(8 * period);
+        std::vector<int> ones_count(8 * period, 0);
+        std::vector<int> average_bit(8 * period + 8, 0);
         int corr, best_corr, best_idx;
 
         /* Make len a multiple of the period */
         len -= len % period;
-
-        for (i = 0; i < (int)ones_count.size(); i++)
-        {
-            ones_count[i] = 0;
-            average_bit[i] = 0;
-        }
 
         /* XOR the bitstream with a delayed version of itself */
         for (i = 0; i < period; i++)
