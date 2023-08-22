@@ -16,6 +16,7 @@ namespace widgets
 
         std::deque<LogLine> all_lines;
         std::mutex mtx;
+        bool new_item = false;
 
     protected:
         void receive(slog::LogMsg log);
