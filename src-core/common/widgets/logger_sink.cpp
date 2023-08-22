@@ -8,6 +8,7 @@ namespace widgets
         if (log.lvl >= sink_lvl)
         {
             mtx.lock();
+            new_item = true;
             all_lines.push_back({ log.lvl, format_log(log, false) });
             if (all_lines.size() == max_lines)
                 all_lines.pop_front();
@@ -38,10 +39,12 @@ namespace widgets
                 ImGui::TextColored(ImColor(255, 0, 0), "%s", text.c_str());
             else if (ll.lvl == slog::LOG_CRIT)
                 ImGui::TextColored(ImColor(255, 0, 255), "%s", text.c_str());
-
-
+        }
+        if (new_item)
+        {
+            ImGui::SetScrollY(ImGui::GetScrollMaxY());
+            new_item = false;
         }
         mtx.unlock();
-        ImGui::SetScrollY(ImGui::GetScrollMaxY());
     }
 }
