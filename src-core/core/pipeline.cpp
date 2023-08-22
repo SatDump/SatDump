@@ -316,7 +316,7 @@ namespace satdump
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
                 }
-                catch (std::exception)
+                catch (std::exception&)
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"]["default"].get<std::vector<std::pair<int, int>>>();
                     if (pipelineConfig.value()["live_cfg"].contains("server"))

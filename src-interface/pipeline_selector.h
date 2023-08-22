@@ -68,7 +68,7 @@ namespace satdump
                                     favourite.push_back(i);
                         }
                     }
-                    catch (std::exception)
+                    catch (std::exception&)
                     {
                     }
                 }

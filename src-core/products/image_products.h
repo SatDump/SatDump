@@ -64,7 +64,7 @@ namespace satdump
                 else
                     return contents["timestamps"].get<std::vector<double>>();
             }
-            catch (std::exception)
+            catch (std::exception&)
             {
                 return {};
             }

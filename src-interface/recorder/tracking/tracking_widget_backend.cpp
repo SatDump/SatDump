@@ -358,7 +358,7 @@ namespace satdump
                 if (is_valid && name.find("simulation") == std::string::npos)
                     vv.push_back({id, name});
             }
-            catch (std::exception)
+            catch (std::exception&)
             {
             }
         }
