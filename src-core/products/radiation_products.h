@@ -36,12 +36,12 @@ namespace satdump
                 {
                     timestamps = contents["timestamps"][channel].get<std::vector<double>>();
                 }
-                catch (std::exception &e)
+                catch (std::exception)
                 {
                     timestamps = contents["timestamps"].get<std::vector<double>>();
                 }
             }
-            catch (std::exception &e)
+            catch (std::exception)
             {
                 logger->trace("This radiation product has no timestamps!");
             }

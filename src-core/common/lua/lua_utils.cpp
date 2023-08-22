@@ -25,7 +25,7 @@ namespace lua_utils
                     else
                         l[index] = mapJsonToLua(lua, el.value());
                 }
-                catch (std::exception &e)
+                catch (std::exception)
                 {
                     if (el.value().is_number_integer())
                         l[el.key()] = el.value().get<int>();
@@ -37,7 +37,7 @@ namespace lua_utils
                         l[el.key()] = mapJsonToLua(lua, el.value());
                 }
             }
-            catch (std::exception &e)
+            catch (std::exception)
             {
             }
         }

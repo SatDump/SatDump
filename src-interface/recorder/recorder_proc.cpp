@@ -121,7 +121,7 @@ namespace satdump
                     {
                         source_ptr->set_samplerate(cfg["samplerate"]);
                     }
-                    catch (std::exception &e)
+                    catch (std::exception)
                     {
                     }
                 }

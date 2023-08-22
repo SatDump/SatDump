@@ -293,7 +293,7 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(2);
                             ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                         }
-                        catch (std::exception &e)
+                        catch (std::exception)
                         {
                         }
                     }
@@ -322,7 +322,7 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(2);
                             ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                         }
-                        catch (std::exception &e)
+                        catch (std::exception)
                         {
                         }
                     }
@@ -374,7 +374,7 @@ namespace inmarsat
                                 ImGui::TextColored(ImColor(255, 255, 255), "%s", msg.dump().c_str());
                             }
                         }
-                        catch (std::exception &e)
+                        catch (std::exception)
                         {
                         }
                     }
