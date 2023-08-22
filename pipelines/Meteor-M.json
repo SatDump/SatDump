@@ -214,8 +214,8 @@
         }
     },
     // TEST
-    "meteor_m_dump1": {
-        "name": "METEOR-M Dump Test",
+    "meteor_m_dump_narrow": {
+        "name": "METEOR-M Narrow Dump",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -229,6 +229,29 @@
                 "psk_demod": {
                     "constellation": "bpsk",
                     "symbolrate": 15.36e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {}
+        }
+    },
+    "meteor_m_dump_wide": {
+        "name": "METEOR-M Wide Dump",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 61.4e6,
                     "rrc_taps": 31,
                     "rrc_alpha": 0.6,
                     "pll_bw": 0.004
