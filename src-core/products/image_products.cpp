@@ -253,6 +253,7 @@ namespace satdump
     bool equation_contains(std::string init, std::string match)
     {
         size_t pos = init.find(match);
+    retry:
         if (pos != std::string::npos)
         {
             std::string final_ex;
@@ -269,6 +270,9 @@ namespace satdump
 
             if (match == final_ex)
                 return true;
+
+            pos = init.find(match, pos + 1);
+            goto retry;
         }
 
         return false;
