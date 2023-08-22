@@ -14,8 +14,8 @@ namespace meteor
     protected:
         bool diff_decode;
 
-        int8_t *_buffer;
-        int8_t *buffer;
+        int8_t *_buffer, *_buffer2;
+        int8_t *buffer, *buffer2;
 
         std::ifstream data_in;
         std::ofstream data_out;
@@ -33,7 +33,7 @@ namespace meteor
 
         std::shared_ptr<viterbi::Viterbi27> viterbi;
 
-        std::shared_ptr<viterbi::Viterbi1_2> viterbin;
+        std::shared_ptr<viterbi::Viterbi1_2> viterbin, viterbin2;
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
 
         // UI Stuff

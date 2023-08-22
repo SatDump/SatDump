@@ -11,8 +11,24 @@
  **********************************************************************/
 
 #include "logger.h"
+#include <fstream>
+#include "common/codings/rotation.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
+
+    int8_t *buffer = new int8_t[8192];
+
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_out(argv[2], std::ios::binary);
+
+    while (!data_in.eof())
+    {
+        data_in.read((char *)buffer, 8192);
+
+        rotate_soft(buffer, 8192, PHASE_90, false);
+
+        data_out.write((char *)buffer, 8192);
+    }
 }

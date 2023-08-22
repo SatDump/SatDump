@@ -32,6 +32,13 @@ namespace meteor
             std::vector<phase_t> phases = {PHASE_0, PHASE_90};
             viterbin = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, phases, true);
             deframer = std::make_shared<deframing::BPSK_CCSDS_Deframer>(8192);
+
+            if (d_parameters.contains("interleaved") ? d_parameters["interleaved"].get<bool>() : false)
+            {
+                _buffer2 = new int8_t[ENCODED_FRAME_SIZE + INTER_MARKER_STRIDE];
+                buffer2 = &_buffer2[INTER_MARKER_STRIDE];
+                viterbin2 = std::make_shared<viterbi::Viterbi1_2>(d_viterbi_ber_threasold, d_viterbi_outsync_after, BUFFER_SIZE, phases, true);
+            }
         }
         else
         {
@@ -52,7 +59,52 @@ namespace meteor
     METEORLRPTDecoderModule::~METEORLRPTDecoderModule()
     {
         delete[] _buffer;
+        if (d_parameters.contains("interleaved") ? d_parameters["interleaved"].get<bool>() : false)
+            delete[] _buffer2;
     }
+
+    class DintSampleReader
+    {
+    private:
+        bool iserror = false;
+        std::vector<int8_t> buffer1, buffer2;
+
+        void read_more()
+        {
+            buffer1.resize(buffer1.size() + 8192);
+            iserror = iserror ||
+                      !input_function(&buffer1[buffer1.size() - 8192], 8192);
+
+            buffer2.resize(buffer2.size() + 8192);
+            memcpy(&buffer2[buffer2.size() - 8192], &buffer1[buffer1.size() - 8192], 8192);
+            rotate_soft(&buffer2[buffer2.size() - 8192], 8192, PHASE_90, false);
+        }
+
+    public:
+        std::function<int(int8_t *, size_t)> input_function;
+
+        int read1(int8_t *buf, size_t len)
+        {
+            while (buffer1.size() < len && !iserror)
+                read_more();
+            if (iserror)
+                return 0;
+            memcpy(buf, buffer1.data(), len);
+            buffer1.erase(buffer1.begin(), buffer1.begin() + len);
+            return len;
+        }
+
+        int read2(int8_t *buf, size_t len)
+        {
+            while (buffer2.size() < len && !iserror)
+                read_more();
+            if (iserror)
+                return 0;
+            memcpy(buf, buffer2.data(), len);
+            buffer2.erase(buffer2.begin(), buffer2.begin() + len);
+            return len;
+        }
+    };
 
     void METEORLRPTDecoderModule::process()
     {
@@ -74,30 +126,42 @@ namespace meteor
         {
             bool interleaved = d_parameters.contains("interleaved") ? d_parameters["interleaved"].get<bool>() : false;
 
-            std::shared_ptr<DeinterleaverReader> deint;
+            std::shared_ptr<DeinterleaverReader> deint1, deint2;
 
             if (interleaved)
-                deint = std::make_shared<DeinterleaverReader>();
+            {
+                deint1 = std::make_shared<DeinterleaverReader>();
+                deint2 = std::make_shared<DeinterleaverReader>();
+            }
 
             uint8_t *viterbi_out = new uint8_t[BUFFER_SIZE * 2];
+            uint8_t *viterbi_out2 = new uint8_t[BUFFER_SIZE * 2];
             uint8_t *frame_buffer = new uint8_t[BUFFER_SIZE * 2];
 
             reedsolomon::ReedSolomon reed_solomon(reedsolomon::RS223);
             diff::NRZMDiff diff;
+
+            DintSampleReader file_reader;
+            if (input_data_type == DATA_FILE)
+                file_reader.input_function =
+                    [this](int8_t *buf, size_t len) -> int
+                { return !(!data_in.read((char *)buf, len)); };
+            else
+                file_reader.input_function =
+                    [this](int8_t *buf, size_t len) -> int
+                { return !(!input_fifo->read((uint8_t *)buf, len)); };
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
                 if (interleaved)
                 {
-                    if (input_data_type == DATA_FILE)
-                        deint->read_samples([this](int8_t *buf, size_t len) -> int
-                                            { return !(!data_in.read((char *)buf, len)); },
-                                            buffer, 8192);
-                    else
-                        deint->read_samples([this](int8_t *buf, size_t len) -> int
-                                            { return !(!input_fifo->read((uint8_t *)buf, len)); },
-                                            buffer, 8192);
+                    deint1->read_samples([&file_reader](int8_t *buf, size_t len) -> int
+                                         { return (bool)file_reader.read1(buf, len); },
+                                         buffer, 8192);
+                    deint2->read_samples([&file_reader](int8_t *buf, size_t len) -> int
+                                         { return (bool)file_reader.read2(buf, len); },
+                                         buffer2, 8192);
                 }
                 else
                 {
@@ -108,10 +172,32 @@ namespace meteor
                 }
 
                 // Perform Viterbi decoding
-                int vitout = viterbin->work((int8_t *)buffer, BUFFER_SIZE, viterbi_out);
+                int vitout = 0, vitout1 = 0, vitout2 = 0;
 
-                viterbi_ber = viterbin->ber();
-                viterbi_lock = viterbin->getState();
+                if (interleaved)
+                {
+                    vitout1 = viterbin->work((int8_t *)buffer, BUFFER_SIZE, viterbi_out);
+                    vitout2 = viterbin2->work((int8_t *)buffer2, BUFFER_SIZE, viterbi_out2);
+                    if (viterbin2->getState() > viterbin->getState())
+                    {
+                        vitout = vitout2;
+                        viterbi_ber = viterbin2->ber();
+                        viterbi_lock = viterbin2->getState();
+                        memcpy(viterbi_out, viterbi_out2, vitout2);
+                    }
+                    else
+                    {
+                        vitout = vitout1;
+                        viterbi_ber = viterbin->ber();
+                        viterbi_lock = viterbin->getState();
+                    }
+                }
+                else
+                {
+                    vitout = viterbin->work((int8_t *)buffer, BUFFER_SIZE, viterbi_out);
+                    viterbi_ber = viterbin->ber();
+                    viterbi_lock = viterbin->getState();
+                }
 
                 if (diff_decode) // Diff decoding if required
                     diff.decode_bits(viterbi_out, vitout);
@@ -157,6 +243,7 @@ namespace meteor
             }
 
             delete[] viterbi_out;
+            delete[] viterbi_out2;
             delete[] frame_buffer;
         }
         else
