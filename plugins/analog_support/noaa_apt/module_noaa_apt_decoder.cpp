@@ -269,7 +269,7 @@ namespace noaa_apt
 
             for (int i = 0; i < wedges1.size(); i++)
             {
-                if (wedges1[i].max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wedges1[i].max_diff < 30e3)
                 {
                     if (first_valid_wedge > wedges1[i].start_line)
                         first_valid_wedge = wedges1[i].start_line;
@@ -280,7 +280,7 @@ namespace noaa_apt
 
             for (int i = 0; i < wedges2.size(); i++)
             {
-                if (wedges2[i].max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wedges2[i].max_diff < 30e3)
                 {
                     if (first_valid_wedge > wedges2[i].start_line)
                         first_valid_wedge = wedges2[i].start_line;
