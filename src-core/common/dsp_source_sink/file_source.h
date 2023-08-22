@@ -21,7 +21,7 @@ protected:
     std::chrono::duration<double> sample_time_period;
     int buffer_size = 8192;
     std::string file_path;
-    bool iq_swap = false;
+    bool iq_swap = false, fast_playback = false;
 
     unsigned long long total_samples = 0;
 
