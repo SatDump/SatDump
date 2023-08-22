@@ -52,9 +52,12 @@ must also match.*/
 #include <stdlib.h>
 #include "rice_decomp.h"
 
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+
 namespace soho_compression
 {
     /*      =======================Form of Call=======================
@@ -877,4 +880,7 @@ namespace soho_compression
         return 1; /*For this example we always send.    */
     }
 }
+
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
+#endif
