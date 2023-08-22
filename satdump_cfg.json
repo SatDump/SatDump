@@ -1311,6 +1311,16 @@
                     "Clouds Only": {
                         "equation": "ch14, ch13, ch9",
                         "equalize": true
+                    },
+                    "Low Level Water Vapor": {
+                        "equation": "ch10",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "Mid Level Water Vapor": {
+                        "equation": "ch11",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 }
             },
