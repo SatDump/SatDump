@@ -153,7 +153,18 @@ int main_live(int argc, char *argv[])
             {
                 if (parameters.contains("source_id"))
                 {
+#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
+                    char cmp_buff1[100];
+                    char cmp_buff2[100];
+
+                    snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                    std::string cmp1 = cmp_buff1;
+                    snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                    std::string cmp2 = cmp_buff2;
+                    if (cmp1 == cmp2)
+#else
                     if (hdl_dev_id == src.unique_id)
+#endif
                     {
                         selected_src = src;
                         src_found = true;
