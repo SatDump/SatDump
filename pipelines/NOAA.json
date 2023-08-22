@@ -210,6 +210,12 @@
                 "value": -1,
                 "name": "Start Timestamp",
                 "description": "Unix timestamp of the start of the file provided.\nMust be UTC Unix timestamp in seconds.\nRequired for projections and overlays\n\nIf your .wav filename is a support format it will be read automatically."
+            },
+            "autocrop_wedges": {
+                "type": "bool",
+                "value": false,
+                "name": "Autocrop with Wedges",
+                "description": "This will automatically crop the image to only include\ntelemetry wedges considered valid.\nMay discard a lot on bad images!"
             }
         },
         "work": {
