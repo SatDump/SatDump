@@ -1267,17 +1267,14 @@
                 "handler": "image_handler",
                 "name": "AMSU-A",
                 "rgb_composites": {
-                    "221": {
-                        "equation": "ch2, ch2, ch1",
-                        "equalize": true
-                    },
-                    "421": {
-                        "equation": "ch4, ch2, ch1",
-                        "equalize": true
-                    },
                     "543": {
                         "equation": "ch5, ch4, ch3",
                         "equalize": true
+                    },
+                    "Surface Relative Temperature (WIP)": {
+                        "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
