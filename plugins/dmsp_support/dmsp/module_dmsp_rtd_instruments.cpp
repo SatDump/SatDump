@@ -39,7 +39,7 @@ namespace dmsp
         {
             sat_num = d_parameters["satellite_number"];
         }
-        catch (std::exception &e)
+        catch (std::exception&)
         {
             sat_num = std::stoi(d_parameters["satellite_number"].get<std::string>());
         }

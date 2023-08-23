@@ -31,6 +31,8 @@ void FileSource::run_thread()
         {
             int read = baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
 
+            output_stream->getDataSize();
+
             if (iq_swap)
                 for (int i = 0; i < read; i++)
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
@@ -38,12 +40,22 @@ void FileSource::run_thread()
             output_stream->swap(read);
             file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
 
-            total_samples += read;
-            auto now = std::chrono::steady_clock::now();
-            auto expected_time = start_time_point + sample_time_period * total_samples;
+            if (!fast_playback)
+            {
+                total_samples += read;
+                auto now = std::chrono::steady_clock::now();
+                auto expected_time = start_time_point + sample_time_period * total_samples;
 
-            if (expected_time > now)
-                std::this_thread::sleep_until(expected_time);
+                if (expected_time < now)
+                {
+                    // We got behind, either because we're slow or fast
+                    // mode stopped. Reset counters and carry on.
+                    start_time_point = now;
+                    total_samples = 0;
+                }
+                else
+                    std::this_thread::sleep_until(expected_time);
+            }
         }
         else
         {
@@ -161,6 +173,12 @@ void FileSource::drawControlUI()
 
     if (is_started)
         style::endDisabled();
+
+    ImGui::SameLine(0.0, 15.0);
+    ImGui::Checkbox("Fast", &fast_playback);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Play/demod the baseband as fast as your PC can handle it");
+
     if (!is_started)
         style::beginDisabled();
     if (ImGui::SliderFloat("Progress", &file_progress, 0, 100))
@@ -169,7 +187,7 @@ void FileSource::drawControlUI()
         style::endDisabled();
 #ifdef BUILD_ZIQ
     if (select_sample_format == 4)
-        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking\nmay be slow!");
+        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking may be slow!");
 #endif
 }
 

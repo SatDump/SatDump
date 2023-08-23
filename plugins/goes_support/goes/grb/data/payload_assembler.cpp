@@ -93,7 +93,7 @@ namespace goes
                 fullPkt.insert(fullPkt.end(), &pkt.header.raw[0], &pkt.header.raw[6]);
                 fullPkt.insert(fullPkt.end(), &pkt.payload[0], &pkt.payload[pkt.payload.size() - 4]);
             }
-            catch (std::exception &e)
+            catch (std::exception&)
             {
                 return false;
             }

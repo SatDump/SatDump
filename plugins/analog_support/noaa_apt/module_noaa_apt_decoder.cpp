@@ -325,7 +325,7 @@ namespace noaa_apt
                 {
                     number = d_parameters["satellite_number"];
                 }
-                catch (std::exception &e)
+                catch (std::exception&)
                 {
                     number = std::stoi(d_parameters["satellite_number"].get<std::string>());
                 }
