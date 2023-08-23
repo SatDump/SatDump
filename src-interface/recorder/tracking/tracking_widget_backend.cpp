@@ -236,9 +236,10 @@ namespace satdump
         {
             horizons_data = hdata;
             last_horizons_fetch_time = curr_time;
+            logger->trace("Done pulling Horizons data...");
         }
-
-        logger->trace("Done pulling Horizons data...");
+        else
+            logger->trace("Pulled 0 Horizons objects!");
     }
 
     std::vector<TrackingWidget::HorizonsV> TrackingWidget::pullHorizonsData(double start_time, double stop_time, int num_points)
@@ -304,6 +305,8 @@ namespace satdump
 
             if (sscanf(line.c_str(), "%lf%*s    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6 ||
+                sscanf(line.c_str(), "%lf %*s   %lf %lf %lf  %lf  %lf",
+                    &julian_time, &az, &el, &delta, &deldot) == 5 ||
                 sscanf(line.c_str(), "%lf    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6)
             {
