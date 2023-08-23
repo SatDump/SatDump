@@ -6,7 +6,8 @@
 
 namespace satdump
 {
-    LoadingScreenSink::LoadingScreenSink(GLFWwindow* window, GLFWimage* img) : window{window}
+    LoadingScreenSink::LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img) : window{window},
+                                                                                            scale{scale}
     {
         glGenTextures(1, &image_texture);
         glBindTexture(GL_TEXTURE_2D, image_texture);
@@ -35,7 +36,7 @@ namespace satdump
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
 
-        draw_loader(display_w, display_h, &image_texture, str);
+        draw_loader(display_w, display_h, scale, &image_texture, str);
 
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);

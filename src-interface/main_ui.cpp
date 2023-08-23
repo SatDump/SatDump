@@ -36,28 +36,14 @@ namespace satdump
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
-    void initMainUI()
+    void initMainUI(float device_scale)
     {
         audio::registerSinks();
-
         offline::setup();
         settings::setup();
 
-        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
-        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-
-#ifdef __ANDROID__
-        manual_dpi_scaling *= 3; // Otherwise it's just too small by default!
-#endif
-
-        ui_scale = manual_dpi_scaling;
-
-        // Setup Theme
-
-        if (light_theme)
-            style::setLightStyle(manual_dpi_scaling);
-        else
-            style::setDarkStyle(manual_dpi_scaling);
+        // Setup DPI/Theme
+        updateUI(device_scale);
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
@@ -79,6 +65,20 @@ namespace satdump
         status_logger_sink = std::make_shared<StatusLoggerSink>();
         if(status_logger_sink->is_shown())
             logger->add_sink(status_logger_sink);
+    }
+
+    void updateUI(float device_scale)
+    {
+        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
+        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+        ui_scale = device_scale * manual_dpi_scaling;
+        ImGui::GetStyle() = ImGuiStyle::ImGuiStyle();
+        ImGui::GetStyle().ScaleAllSizes(ui_scale);
+
+        if (light_theme)
+            style::setLightStyle();
+        else
+            style::setDarkStyle();
     }
 
     void exitMainUI()

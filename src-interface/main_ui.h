@@ -19,7 +19,8 @@ namespace satdump
     extern std::shared_ptr<RecorderApplication> recorder_app;
     extern std::shared_ptr<ViewerApplication> viewer_app;
 
-    void initMainUI();
+    void initMainUI(float device_scale);
+    void updateUI(float device_scale);
     void exitMainUI();
     void renderMainUI(int wwidth, int wheight);
 }

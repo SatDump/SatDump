@@ -155,6 +155,10 @@ class MainActivity : NativeActivity(), TextWatcher {
         return getApplicationInfo().nativeLibraryDir;
     }
 
+    public fun get_dpi() : float {
+        return getResources().getDisplayMetrics().density;
+    }
+
     fun showSoftInput() {
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.showSoftInput(editText, 0)

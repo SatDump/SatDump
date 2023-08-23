@@ -8,7 +8,9 @@
 
 namespace satdump
 {
-    LoadingScreenSink::LoadingScreenSink(EGLDisplay *g_EglDisplay, EGLSurface *g_EglSurface) : g_EglDisplay{g_EglDisplay}, g_EglSurface{g_EglSurface}
+    LoadingScreenSink::LoadingScreenSink(EGLDisplay *g_EglDisplay, EGLSurface *g_EglSurface, float scale) : g_EglDisplay{g_EglDisplay},
+                                                                                                            g_EglSurface{g_EglSurface},
+                                                                                                            scale{scale}
     {
         image::Image<uint8_t> image;
         image.load_png(resources::getResourcePath("icon.png"));
@@ -59,7 +61,7 @@ namespace satdump
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplAndroid_NewFrame();
-        draw_loader(width, height, &image_texture, str);
+        draw_loader(width, height, scale, &image_texture, str);
         glViewport(0, 0, (int)width, (int)height);
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
