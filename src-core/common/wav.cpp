@@ -60,7 +60,7 @@ namespace wav
         {
             // SDR++ Audio filename
             if (sscanf(filename.c_str(),
-                       "audio_%luHz_%d-%d-%d_%d-%d-%d",
+                       "audio_%lluHz_%d-%d-%d_%d-%d-%d",
                        &freq,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &timeS.tm_mday, &timeS.tm_mon, &timeS.tm_year) == 7)
@@ -73,7 +73,7 @@ namespace wav
 
             // HDSDR Audio filename
             if (sscanf(filename.c_str(),
-                       "HDSDR_%4d%2d%2d_%2d%2d%2dZ_%lukHz_AF",
+                       "HDSDR_%4d%2d%2d_%2d%2d%2dZ_%llukHz_AF",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &freq) == 7)
@@ -86,7 +86,7 @@ namespace wav
 
             // SDRSharp Audio filename
             if (sscanf(filename.c_str(),
-                       "SDRSharp_%4d%2d%2d_%2d%2d%2dZ_%luHz_AF",
+                       "SDRSharp_%4d%2d%2d_%2d%2d%2dZ_%lluHz_AF",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &freq) == 7)
@@ -99,7 +99,7 @@ namespace wav
 
             // SDRUno Audio filename
             if (sscanf(filename.c_str(),
-                       "SDRUno_%4d%2d%2d_%2d%2d%2d_%luHz",
+                       "SDRUno_%4d%2d%2d_%2d%2d%2d_%lluHz",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &freq) == 7)
@@ -123,7 +123,7 @@ namespace wav
 
             // GQRX Audio filename (UTC)
             if (sscanf(filename.c_str(),
-                       "gqrx_%4d%2d%2d_%2d%2d%2d_%lu",
+                       "gqrx_%4d%2d%2d_%2d%2d%2d_%llu",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &freq) == 7)
@@ -175,7 +175,7 @@ namespace wav
         {
             // SDR++ Baseband filename
             if (sscanf(filename.c_str(),
-                       "baseband_%luHz_%d-%d-%d_%d-%d-%d",
+                       "baseband_%lluHz_%d-%d-%d_%d-%d-%d",
                        &freq,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &timeS.tm_mday, &timeS.tm_mon, &timeS.tm_year) == 7)
