@@ -155,7 +155,7 @@ class MainActivity : NativeActivity(), TextWatcher {
         return getApplicationInfo().nativeLibraryDir;
     }
 
-    public fun get_dpi() : float {
+    public fun get_dpi() : Float {
         return getResources().getDisplayMetrics().density;
     }
 

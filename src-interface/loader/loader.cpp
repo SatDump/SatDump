@@ -33,8 +33,8 @@ namespace satdump
         {
             ImGui::PushFont(style::bigFont);
             ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
-            ImGui::SetCursorPos({((float)width / 2) - (150 * scale), ((float)height / 2) - title_size.y - (315 * scale)});
-            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(300 * scale, 300 * scale));
+            ImGui::SetCursorPos({((float)width / 2) - (100 * scale), ((float)height / 2) - title_size.y - (215 * scale)});
+            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(200 * scale, 200 * scale));
             ImGui::SetCursorPos({((float)width / 2) - (title_size.x / 2), ((float)height / 2) - title_size.y});
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();

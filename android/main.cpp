@@ -31,6 +31,36 @@ static int GetAssetData(const char *filename, void **out_data);
 
 bool was_init = false;
 
+float get_dpi(struct android_app* app)
+{
+    JavaVM* java_vm = app->activity->vm;
+    JNIEnv* java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        throw std::runtime_error("Could not get JNI environement");
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not attach to thread");
+
+    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
+    if (native_activity_clazz == NULL)
+        throw std::runtime_error("Could not get MainActivity class");
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
+    if (method_id == NULL)
+        throw std::runtime_error("Could not get methode ID");
+
+    jfloat jflt = java_env->CallFloatMethod(app->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not detach from thread");
+
+    return jflt;
+}
+
 void init(struct android_app *app)
 {
     if (g_Initialized)
@@ -294,36 +324,6 @@ std::string getPluginsDir(struct android_app *app)
         throw std::runtime_error("Could not detach from thread");
 
     return str;
-}
-
-float get_dpi(struct android_app* app)
-{
-    JavaVM* java_vm = app->activity->vm;
-    JNIEnv* java_env = NULL;
-
-    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
-    if (jni_return == JNI_ERR)
-        throw std::runtime_error("Could not get JNI environement");
-
-    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
-    if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not attach to thread");
-
-    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
-    if (native_activity_clazz == NULL)
-        throw std::runtime_error("Could not get MainActivity class");
-
-    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()Ljava/lang/float;");
-    if (method_id == NULL)
-        throw std::runtime_error("Could not get methode ID");
-
-    float jflt = (float)java_env->CallFloatMethod(app->activity->clazz, method_id);
-
-    jni_return = java_vm->DetachCurrentThread();
-    if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not detach from thread");
-
-    return jflt;
 }
 
 #include <unistd.h>

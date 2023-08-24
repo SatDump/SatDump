@@ -72,7 +72,7 @@ namespace satdump
         light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
         float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
         ui_scale = device_scale * manual_dpi_scaling;
-        ImGui::GetStyle() = ImGuiStyle::ImGuiStyle();
+        ImGui::GetStyle() = ImGuiStyle();
         ImGui::GetStyle().ScaleAllSizes(ui_scale);
 
         if (light_theme)
