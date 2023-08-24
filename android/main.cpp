@@ -28,9 +28,38 @@ static int GetAssetData(const char *filename, void **out_data);
 #include "main_ui.h"
 #include "loading_screen.h"
 #include "core/style.h"
-#include "core/module.h"
 
 bool was_init = false;
+
+float get_dpi(struct android_app* app)
+{
+    JavaVM* java_vm = app->activity->vm;
+    JNIEnv* java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        throw std::runtime_error("Could not get JNI environement");
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not attach to thread");
+
+    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
+    if (native_activity_clazz == NULL)
+        throw std::runtime_error("Could not get MainActivity class");
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
+    if (method_id == NULL)
+        throw std::runtime_error("Could not get methode ID");
+
+    jfloat jflt = java_env->CallFloatMethod(app->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not detach from thread");
+
+    return jflt;
+}
 
 void init(struct android_app *app)
 {
@@ -97,15 +126,15 @@ void init(struct android_app *app)
         // ImGui::StyleColorsDark();
         // ImGui::StyleColorsClassic();
 
-        ui_scale = 2.0;
+        float display_scale = get_dpi(app);
         initLogger();
-        style::setFonts();
-        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface);
+        style::setFonts(display_scale);
+        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface, display_scale);
         logger->add_sink(loading_screen_sink);
 
         satdump::tle_do_update_on_init = false;
         satdump::initSatdump();
-        satdump::initMainUI();
+        satdump::initMainUI(display_scale);
 
         //Shut down loading screen
         logger->del_sink(loading_screen_sink);

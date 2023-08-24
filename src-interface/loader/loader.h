@@ -7,5 +7,5 @@
 
 namespace satdump
 {
-	void draw_loader(int width, int height, GLuint *image_texture, std::string str);
+	void draw_loader(int width, int height, float scale, GLuint *image_texture, std::string str);
 }

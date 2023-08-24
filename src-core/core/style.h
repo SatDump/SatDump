@@ -10,9 +10,10 @@ namespace style
     SATDUMP_DLL extern ImFont *hugeFont;
 
     bool setDefaultStyle();
-    bool setLightStyle(float dpi_scaling = 1.0f);
-    bool setDarkStyle(float dpi_scaling = 1.0f);
+    bool setLightStyle();
+    bool setDarkStyle();
     void beginDisabled();
     void endDisabled();
     void setFonts();
+    void setFonts(float dpi_scaling);
 }
