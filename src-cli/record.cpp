@@ -71,7 +71,7 @@ int main_record(int argc, char *argv[])
     dsp::registerAllSources();
     std::vector<dsp::SourceDescriptor> source_tr = dsp::getAllAvailableSources();
     dsp::SourceDescriptor selected_src;
-
+    /*
     for (dsp::SourceDescriptor src : source_tr)
         logger->debug("Device " + src.name);
 
@@ -91,7 +91,47 @@ int main_record(int argc, char *argv[])
         logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
         return 1;
     }
+*/
+###############################
+        // Try to find it and check it's usable
+        bool src_found = false;
+        for (dsp::SourceDescriptor src : source_tr)
+        {
+            if (handler_id == src.source_type)
+            {
+                if (parameters.contains("source_id"))
+                {
+#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
+                    char cmp_buff1[100];
+                    char cmp_buff2[100];
 
+                    snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                    std::string cmp1 = cmp_buff1;
+                    snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                    std::string cmp2 = cmp_buff2;
+                    if (cmp1 == cmp2)
+#else
+                    if (hdl_dev_id == src.unique_id)
+#endif
+                    {
+                        selected_src = src;
+                        src_found = true;
+                    }
+                }
+                else
+                {
+                    selected_src = src;
+                    src_found = true;
+                }
+            }
+        }
+
+        if (!src_found)
+        {
+            logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
+            return 1;
+        }
+###################    
     // Init source
     std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
     source_ptr->open();
