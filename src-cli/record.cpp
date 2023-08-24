@@ -44,7 +44,7 @@ int main_record(int argc, char *argv[])
     uint64_t frequency;
     uint64_t timeout;
     std::string handler_id;
-
+    uint64_t hdl_dev_id = 0;
     double decimation = 1;
 
     try
@@ -55,6 +55,9 @@ int main_record(int argc, char *argv[])
         handler_id = parameters["source"].get<std::string>();
         if (parameters.contains("decimation"))
             decimation = parameters["decimation"].get<int>();
+        if (parameters.contains("source_id"))
+            hdl_dev_id = parameters["source_id"].get<uint64_t>();
+        
     }
     catch (std::exception &e)
     {
