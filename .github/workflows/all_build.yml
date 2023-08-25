@@ -220,6 +220,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         shell: bash
         env:
+          MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
