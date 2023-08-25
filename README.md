@@ -93,7 +93,7 @@ If you really want to build it yourself on Windows, see the dedicated documentat
 
 ### Linux (or MacOS)
 
-On Linux (or MacOS), building from source is recommended and no builds are currently provided.
+On Linux, building from source is recommended and no builds are currently provided. Dependency-free builds are provided for macOS on the releases page.
 
 Here are some generic (Debian-oriented) build instructions.
 
