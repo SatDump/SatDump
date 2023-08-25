@@ -9,7 +9,7 @@ fi
 if [[ -n "$MACOS_CERTIFICATE" && -n "$MACOS_CERTIFICATE_PWD" ]]
 then
     echo "Extracting signing certificate..."
-    echo $MACOS_CERTIFICATE | base64 -decode > certificate.p12
+    echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
     security create-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
     security default-keychain -s build.keychain
     security unlock-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
