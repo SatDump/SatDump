@@ -217,8 +217,9 @@ jobs:
         run: make -j8
 
       - name: Bundle
+        working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: ./macOS/bundle.sh
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh
 
       - name: Upload DMG
         uses: actions/upload-artifact@v2
