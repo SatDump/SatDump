@@ -85,7 +85,7 @@ if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
     codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS.dmg
 
-    if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" && -n "$MACOS_NOTARIZATION_TEAM" ]]
+    if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" && -n "$MACOS_TEAM" ]]
     then
         echo "Notarizing DMG..."
         #xcrun altool -t osx -f SatDump-macOS.dmg --primary-bundle-id com.altillimity.satdump --notarize-app --username $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD
