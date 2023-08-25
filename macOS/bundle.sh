@@ -6,6 +6,20 @@ then
     cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../build
 fi
 
+if [[ -n "$MACOS_CERTIFICATE" && -n "$MACOS_CERTIFICATE_PW" ]]
+then
+    echo "Extracting signing certificate..."
+    echo $MACOS_CERTIFICATE | base64 —decode > certificate.p12
+    security create-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
+    security default-keychain -s build.keychain
+    security unlock-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
+    security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+    security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD build.keychain
+fi
+
+rm -rf MapApp
+rm -rf SatDump-macOS.dmg
+
 echo "Making app shell..." 
 mkdir -p MacApp/SatDump.app/Contents/MacOS
 mkdir -p MacApp/SatDump.app/Contents/Resources/plugins
@@ -35,11 +49,47 @@ cp satdump MacApp/SatDump.app/Contents/MacOS
 cp satdump-ui MacApp/SatDump.app/Contents/MacOS
 cp plugins/*.dylib MacApp/SatDump.app/Contents/Resources/plugins
 
+if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
+then
+    SIGN_FLAG="-ns"
+fi
+
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib $plugin_args
+dylibbundler $SIGN_FLAG -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib $plugin_args
+
+if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
+then
+    echo "Code signing..."
+    for dylib in MacApp/SatDump.app/Contents/libs/*.dylib
+    do
+	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
+    done
+
+    for dylib in MacApp/SatDump.app/Contents/Resources/plugins/*.dylib
+    do
+	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
+    done
+
+    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib
+    codesign -v --force --options runtime --entitlements ../macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump
+    codesign -v --force --options runtime --entitlements ../macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
+fi
 
 echo "Creating SatDump.dmg..."
 hdiutil create -srcfolder MacApp/ -volname SatDump SatDump-macOS.dmg
+
+if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
+then
+    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS.dmg
+
+    if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PW" ]]
+    then
+        echo "Notarizing DMG..."
+        #xcrun altool -t osx -f SatDump-macOS.dmg --primary-bundle-id com.altillimity.satdump --notarize-app --username $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD
+        xcrun notarytool submit SatDump-macOS.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --verbose --wait
+        xcrun stapler staple -v SatDump-macOS.dmg
+    fi
+fi
 
 echo "Done!"
