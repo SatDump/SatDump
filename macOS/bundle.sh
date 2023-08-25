@@ -32,6 +32,7 @@ cp plugins/*.dylib MacApp/SatDump.app/Contents/Resources/plugins
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
 dylibbundler -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib $plugin_args
+xattr -cr MacApp/SatDump.app
 
 echo "Creating SatDump.dmg..."
 hdiutil create -srcfolder MacApp/ -volname SatDump SatDump-macOS.dmg
