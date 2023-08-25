@@ -6,10 +6,10 @@ then
     cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../build
 fi
 
-if [[ -n "$MACOS_CERTIFICATE" && -n "$MACOS_CERTIFICATE_PW" ]]
+if [[ -n "$MACOS_CERTIFICATE" && -n "$MACOS_CERTIFICATE_PWD" ]]
 then
     echo "Extracting signing certificate..."
-    echo $MACOS_CERTIFICATE | base64 —decode > certificate.p12
+    echo $MACOS_CERTIFICATE | base64 -decode > certificate.p12
     security create-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
     security default-keychain -s build.keychain
     security unlock-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
@@ -83,7 +83,7 @@ if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
     codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS.dmg
 
-    if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PW" ]]
+    if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" ]]
     then
         echo "Notarizing DMG..."
         #xcrun altool -t osx -f SatDump-macOS.dmg --primary-bundle-id com.altillimity.satdump --notarize-app --username $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD
