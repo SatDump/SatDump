@@ -27,6 +27,7 @@ cp -r $GITHUB_WORKSPACE/resources MacApp/SatDump.app/Contents/Resources/resource
 cp -r $GITHUB_WORKSPACE/pipelines MacApp/SatDump.app/Contents/Resources/pipelines
 cp $GITHUB_WORKSPACE/satdump_cfg.json MacApp/SatDump.app/Contents/Resources
 cp $GITHUB_WORKSPACE/macOS/Info.plist MacApp/SatDump.app/Contents
+cp $GITHUB_WORKSPACE/macOS/Readme.rtf MacApp/Readme.rtf
 
 echo "Creating app icon..." 
 mkdir macOSIcon.iconset
@@ -45,9 +46,8 @@ rm -rf macOSIcon.iconset
 
 echo "Copying binaries..."
 cp satdump-ui MacApp/SatDump.app/Contents/MacOS
-cp libsatdump_core.dylib MacApp/SatDump.app/Contents/MacOS #Temporary for dylibbundler
-cp libsatdump_core.dylib MacApp/SatDump.app/Contents/Resources
-cp satdump MacApp/SatDump.app/Contents/Resources
+cp libsatdump_core.dylib MacApp/SatDump.app/Contents/MacOS
+cp satdump MacApp/SatDump.app/Contents/MacOS
 cp plugins/*.dylib MacApp/SatDump.app/Contents/Resources/plugins
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
@@ -57,8 +57,7 @@ fi
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler $SIGN_FLAG -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/Resources/satdump -x MacApp/SatDump.app/Contents/Resources/libsatdump_core.dylib $plugin_args
-rm MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib #No longer needed
+dylibbundler $SIGN_FLAG -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump -x MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib $plugin_args
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
@@ -73,8 +72,8 @@ then
 	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
     done
 
-    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/Resources/libsatdump_core.dylib
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/Resources/satdump
+    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
 fi
 
@@ -88,7 +87,6 @@ then
     if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" && -n "$MACOS_TEAM" ]]
     then
         echo "Notarizing DMG..."
-        #xcrun altool -t osx -f SatDump-macOS.dmg --primary-bundle-id com.altillimity.satdump --notarize-app --username $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD
         xcrun notarytool submit SatDump-macOS.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --team-id $MACOS_TEAM --wait
         xcrun stapler staple SatDump-macOS.dmg
     fi
