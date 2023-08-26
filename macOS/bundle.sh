@@ -17,7 +17,7 @@ then
     security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD build.keychain
 fi
 
-rm -rf MapApp
+rm -rf MacApp
 rm -rf SatDump-macOS.dmg
 
 echo "Making app shell..." 
