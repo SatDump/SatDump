@@ -46,6 +46,44 @@ namespace satdump
                 logger->warn("No user configuration found! Keeping defaults.");
                 user_cfg_path = user_path + "/settings.json";
             }
+#ifdef __APPLE__
+            {
+                bool bad_path = false;
+                std::string documents_dir = std::string(getenv("HOME")) + "/Documents";
+                if (config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() == ".")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["recording_path"]["value"] = documents_dir;
+                }
+                if (config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() == "./live_output")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["live_processing_path"]["value"] = documents_dir + "/live_output";
+                }
+                if (config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>() == ".")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["default_input_directory"]["value"] = documents_dir;
+                }
+                if (config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>() == ".")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["default_output_directory"]["value"] = documents_dir;
+                }
+                if (config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>() == ".")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"] = documents_dir;
+                }
+                if (config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>() == ".")
+                {
+                    bad_path = true;
+                    config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"] = documents_dir;
+                }
+                if (bad_path)
+                    saveUserConfig();
+            }
+#endif
         }
 
         void saveUserConfig()
