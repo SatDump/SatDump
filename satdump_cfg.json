@@ -54,8 +54,8 @@
         "manual_dpi_scaling": {
             "type": "float",
             "value": 1.0,
-            "name": "DPI Scaling",
-            "description": "DPI Scaling defines the overall UI scale. This can be used to make it bigger or smaller depending on your display's pixel density."
+            "name": "UI Scaling",
+            "description": "Defines the overall UI scale. This can be used to make UI elements bigger or smaller\n\n1.0 = normal\n0.5 = half size\n2.0 = double size"
         },
         "finish_processing_after_live": {
             "type": "bool",

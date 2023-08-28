@@ -287,8 +287,8 @@ namespace satdump
         {
             pipeline_mtx.lock();
             ImGui::BeginTable("##pipelinesmainoptions", 2);
-            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100);
-            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100);
+            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100 * ui_scale);
+            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100 * ui_scale);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);

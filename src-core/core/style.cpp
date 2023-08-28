@@ -18,7 +18,7 @@ namespace style
 
     bool setDefaultStyle()
     {
-        float round = 2.0f;
+        float round = pow(2.0f, ui_scale);
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
         ImGui::GetStyle().FrameRounding = round;
@@ -32,9 +32,9 @@ namespace style
         return true;
     }
 
-    bool setLightStyle(float dpi_scaling)
+    bool setLightStyle()
     {
-        float round = 2.0f;
+        float round = pow(2.0f, ui_scale);
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
         ImGui::GetStyle().FrameRounding = round;
@@ -91,15 +91,12 @@ namespace style
         colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);*/
 
-        ImGui::GetStyle().ScaleAllSizes(dpi_scaling);
-        ui_scale = dpi_scaling;
-
         return true;
     }
 
-    bool setDarkStyle(float dpi_scaling)
+    bool setDarkStyle()
     {
-        float round = 2.0f;
+        float round = pow(2.0f, ui_scale);
         ImGui::GetStyle().WindowRounding = round;
         ImGui::GetStyle().ChildRounding = round;
         ImGui::GetStyle().FrameRounding = round;
@@ -156,9 +153,6 @@ namespace style
         colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 
-        ImGui::GetStyle().ScaleAllSizes(dpi_scaling);
-        ui_scale = dpi_scaling;
-
         return true;
     }
 
@@ -178,20 +172,25 @@ namespace style
 
     void setFonts()
     {
+        setFonts(ui_scale);
+    }
+
+    void setFonts(float dpi_scaling)
+    {
         ImGui::GetIO().Fonts->Clear();
         ImFontGlyphRangesBuilder builder;
         static const ImWchar def[] = {0x20, 0x2300, 0}; //default range
         static ImFontConfig config;
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * ui_scale, &config, def);
+        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * dpi_scaling, &config, def);
         config.MergeMode = true;
         static const ImWchar list[6][3] = {{0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0}, {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0}};   
 
         for (int i = 0; i < 6; i++)
-            baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * ui_scale, &config, list[i]); 
+            baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * dpi_scaling, &config, list[i]);
 
         config.MergeMode = false;
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * ui_scale);   //, &config, ranges);
-        //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * ui_scale); //, &config, ranges);
+        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * dpi_scaling);   //, &config, ranges);
+        //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * dpi_scaling); //, &config, ranges);
         ImGui::GetIO().Fonts->Build();
     }
 }

@@ -9,7 +9,7 @@ namespace satdump
     class LoadingScreenSink : public slog::LoggerSink
     {
     public:
-        LoadingScreenSink(EGLDisplay *g_EglDisplay, EGLSurface *g_EglSurface);
+        LoadingScreenSink(EGLDisplay *g_EglDisplay, EGLSurface *g_EglSurface, float scale);
         ~LoadingScreenSink();
     protected:
         void receive(slog::LogMsg log);
@@ -18,5 +18,6 @@ namespace satdump
         EGLDisplay *g_EglDisplay;
         EGLSurface *g_EglSurface;
         GLuint image_texture;
+        float scale;
     };
 }

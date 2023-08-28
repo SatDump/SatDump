@@ -22,6 +22,14 @@ static void glfw_error_callback(int error, const char *description)
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
 }
 
+void window_content_scale_callback(GLFWwindow* window, float xscale, float yscale)
+{
+    satdump::updateUI(xscale);
+    style::setFonts();
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+}
+
 void bindImageTextureFunctions();
 
 // OpenGL versions to try to start
@@ -69,6 +77,7 @@ int main(int argc, char *argv[])
     // Initialize GLFW
     GLFWwindow *window = nullptr;
     int final_gl_version = 0;
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -209,11 +218,16 @@ int main(int argc, char *argv[])
     }
     glfwSetWindowIcon(window, 1, &img);
 
+    //Handle DPI changes
+    float display_scale;
+    glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
+    glfwGetWindowContentScale(window, &display_scale, nullptr);
+
     //Set font
-    style::setFonts();
+    style::setFonts(display_scale);
 
     // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, &img);
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img);
     logger->add_sink(loading_screen_sink);
 
     // Init SatDump
@@ -221,7 +235,7 @@ int main(int argc, char *argv[])
     satdump::initSatdump();
 
     // Init UI
-    satdump::initMainUI();
+    satdump::initMainUI(display_scale);
 
     //Shut down loading screen
     logger->del_sink(loading_screen_sink);
