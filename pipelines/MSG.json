@@ -1,0 +1,47 @@
+{
+    "msg_raw": {
+        "name": "MSG Raw Data",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 3.75e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0004,
+                    "clock_alpha": 1e-3
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.400,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    }
+}

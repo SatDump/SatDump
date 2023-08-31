@@ -93,7 +93,7 @@ If you really want to build it yourself on Windows, see the dedicated documentat
 
 ### Linux (or MacOS)
 
-On Linux (or MacOS), building from source is recommended and no builds are currently provided.
+On Linux, building from source is recommended and no builds are currently provided. Dependency-free builds are provided for macOS on the releases page (Thanks to JVital2013, the builds are also signed!).
 
 Here are some generic (Debian-oriented) build instructions.
 
@@ -130,7 +130,7 @@ cd ../..
 rm -rf nng
 
 # macOS: Install dependencies
-brew install cmake volk libpng glew glfw nng pkg-config llvm libomp luajit
+brew install cmake volk libpng glew glfw nng pkg-config llvm libomp luajit portaudio
 
 # macOS ONLY: build and install libfftw3
 # if you install fftw via brew, cmake won't be able to find it

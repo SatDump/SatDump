@@ -78,7 +78,7 @@ namespace meteor
                     double timestamp = dayValue + (msumr_frame[8]) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
                     timestamp -= 3 * 3600.0;
                     msumr_timestamps.push_back(timestamp);
-                    mtvza_reader.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
+                    mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);
                 }
 
@@ -242,6 +242,11 @@ namespace meteor
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 mtvza_products.set_timestamps(mreader.timestamps);
+
+                if (msumr_serial_number == 2)
+                    mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_mtvza.json")));
+                else if (msumr_serial_number == 3)
+                    mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza.json")));
 
                 for (int i = 0; i < 30; i++)
                     mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), mreader.getChannel(i)});

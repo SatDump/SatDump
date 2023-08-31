@@ -190,7 +190,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit
+        run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
 
       - name: Build airspyhf
         run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
@@ -216,9 +216,27 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: make -j8
 
+      - name: Bundle
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        env:
+          MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
+          MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
+          MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-macOS
+          path: ${{runner.workspace}}/build/*.dmg
+
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux"] #, "build_android"]
+    needs: ["build_windows", "build_linux", "build_macos"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -230,7 +248,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump_1.1.0_amd64.deb satdump_out/satdump_ubuntu_latest_1.1.0_amd64.deb && (cd SatDump-Windows_x64_MSVC && zip -r ../satdump_out/SatDump-Windows_x64_MSVC.zip *) # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump_1.1.0_amd64.deb satdump_out/satdump_ubuntu_latest_1.1.0_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_MSVC && zip -r ../satdump_out/SatDump-Windows_x64_MSVC.zip *) # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber

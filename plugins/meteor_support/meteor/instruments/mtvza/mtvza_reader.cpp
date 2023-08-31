@@ -49,7 +49,7 @@ namespace meteor
             parse_samples(data, 5, 5, 2, 4, counter - 2);   // Parse 2 full-resolution channels
             parse_samples(data, 7, 13, 23, 2, counter - 2); // Parse 23 medium-resolution channels
 
-            printf("%d\n", counter);
+            // printf("%d\n", counter);
 
             // Frame counter
             if (counter == 26)
