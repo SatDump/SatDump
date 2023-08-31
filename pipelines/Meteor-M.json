@@ -215,7 +215,7 @@
     },
     // TEST
     "meteor_m_dump_narrow": {
-        "name": "METEOR-M Narrow Dump",
+        "name": "METEOR-M Narrow Dump (WIP!)",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -234,11 +234,16 @@
                     "pll_bw": 0.004
                 }
             },
-            "frm": {}
+            "frm": {
+                "meteor_dump_decoder": {}
+            },
+            "products": {
+                "meteor_dump_instruments": {}
+            }
         }
     },
     "meteor_m_dump_wide": {
-        "name": "METEOR-M Wide Dump",
+        "name": "METEOR-M Wide Dump (WIP!)",
         "live": false,
         "frequencies": [],
         "parameters": {
