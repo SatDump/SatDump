@@ -44,7 +44,7 @@ int main_record(int argc, char *argv[])
     uint64_t frequency;
     uint64_t timeout;
     std::string handler_id;
-
+    uint64_t hdl_dev_id = 0;
     double decimation = 1;
 
     try
@@ -55,6 +55,9 @@ int main_record(int argc, char *argv[])
         handler_id = parameters["source"].get<std::string>();
         if (parameters.contains("decimation"))
             decimation = parameters["decimation"].get<int>();
+        if (parameters.contains("source_id"))
+            hdl_dev_id = parameters["source_id"].get<uint64_t>();
+        
     }
     catch (std::exception &e)
     {
@@ -72,17 +75,37 @@ int main_record(int argc, char *argv[])
     std::vector<dsp::SourceDescriptor> source_tr = dsp::getAllAvailableSources();
     dsp::SourceDescriptor selected_src;
 
-    for (dsp::SourceDescriptor src : source_tr)
-        logger->debug("Device " + src.name);
-
     // Try to find it and check it's usable
     bool src_found = false;
     for (dsp::SourceDescriptor src : source_tr)
     {
+        logger->debug("Device " + src.name);
         if (handler_id == src.source_type)
         {
-            selected_src = src;
-            src_found = true;
+            if (parameters.contains("source_id"))
+            {
+#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
+                char cmp_buff1[100];
+                char cmp_buff2[100];
+
+                snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                std::string cmp1 = cmp_buff1;
+                snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                std::string cmp2 = cmp_buff2;
+                if (cmp1 == cmp2)
+#else
+                if (hdl_dev_id == src.unique_id)
+#endif
+                {
+                    selected_src = src;
+                    src_found = true;
+                }
+            }
+            else
+            {
+                selected_src = src;
+                src_found = true;
+            }
         }
     }
 
@@ -91,7 +114,7 @@ int main_record(int argc, char *argv[])
         logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
         return 1;
     }
-
+ 
     // Init source
     std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
     source_ptr->open();
