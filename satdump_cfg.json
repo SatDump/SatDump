@@ -1364,14 +1364,11 @@
                         "equation": "ch8, ch4, ch3",
                         "equalize": true
                     },
-                    "Basic False Color": {
-                        "equation": "ch1, ch8, ch15",
-                        "equalize": true
-                    },
-                    "Clouds Only": {
-                        "equation": "ch29, ch28, ch1",
+                    "Soil Moisture (WIP)": {
+                        "equation": "ch14,ch13,ch12",
                         "equalize": true
                     }
+
                 }
             },
             "iasi": {
