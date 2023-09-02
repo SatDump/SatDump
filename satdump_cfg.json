@@ -1064,7 +1064,7 @@
                         "equation": "cch5, cch4, cch3",
                         "equalize": true
                     },
-                    "Rain": {
+                    "Rainfall": {
                         "equation": "((1-(cch5-cch4))-0.9)^0.25",
                         "apply_lut": true
                     }
@@ -1246,9 +1246,26 @@
                 "handler": "image_handler",
                 "name": "ATMS",
                 "rgb_composites": {
-                    "16-17-18": {
+                    "ATMS 16-17-18": {
                         "equation": "ch16, ch17, ch18",
                         "equalize": true
+                    },
+                    "MHS 221": {
+                        "equation": "ch17,ch17,ch16",
+                        "equalize": true
+                    },
+                    "MHS 421": {
+                        "equation": "ch20,ch17,ch16",
+                        "equalize": true
+                    },
+                    "Microwave Airmass": {
+                        "equation": "ch18,ch19,ch20",
+                        "equalize": true
+                    },
+                    "AMSU Surface Relative Temperature": {
+                        "equation": "cos(ln(ch1) + ln(ch2)+0.8)",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
@@ -1271,7 +1288,7 @@
                         "equation": "ch5, ch4, ch3",
                         "equalize": true
                     },
-                    "Surface Relative Temperature (WIP)": {
+                    "Surface Relative Temperature": {
                         "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
                         "equalize": true,
                         "apply_lut": true
