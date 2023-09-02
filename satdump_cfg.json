@@ -1213,6 +1213,16 @@
                     "123": {
                         "equation": "ch1, ch2, ch3",
                         "equalize": true
+                    },
+                    "Low Level Water Vapor": {
+                        "equation": "1-((ch2+ch1)/2)",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "High Level Water Vapor": {
+                        "equation": "1-((ch4+ch3)/2)",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
@@ -1273,6 +1283,16 @@
                     "10.20.23": {
                         "equation": "ch10, ch20, ch23",
                         "equalize": true
+                    },
+                    "Low Level Water Vapor": {
+                        "equation": "1-((ch2+ch1)/2)",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "High Level Water Vapor": {
+                        "equation": "1-((ch4+ch3)/2)",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
