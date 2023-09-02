@@ -1117,6 +1117,10 @@
                     "543": {
                         "equation": "ch5, ch4, ch3",
                         "equalize": true
+                    },
+                    "Microwave Airmass": {
+                        "equation": "ch11,ch12,ch13",
+                        "equalize": true
                     }
                 },
                 "project_channels": {
@@ -1150,7 +1154,28 @@
             "mwts2": {
                 "handler": "image_handler",
                 "name": "MWTS-2",
-                "rgb_composites": {},
+                "rgb_composites": {
+                    "550hPa Temperature (~5 km)": {
+                        "equation": "ch4",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "350hPa Temperature (~10 km)": {
+                        "equation": "ch5",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "200hPa Temperature (~12 km)": {
+                        "equation": "ch6",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "100hPa Temperature (~15 km)": {
+                        "equation": "ch7",
+                        "equalize": true,
+                        "apply_lut": true
+                    }
+                },
                 "project_channels": {
                     "channels": "all",
                     "width": 2048,
@@ -1266,6 +1291,26 @@
                         "equation": "cos(ln(ch1) + ln(ch2)+0.8)",
                         "equalize": true,
                         "apply_lut": true
+                    },
+                    "550hPa Temperature (~5 km)": {
+                        "equation": "ch6",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "350hPa Temperature (~10 km)": {
+                        "equation": "ch7",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "200hPa Temperature (~12 km)": {
+                        "equation": "ch8",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "100hPa Temperature (~15 km)": {
+                        "equation": "ch9",
+                        "equalize": true,
+                        "apply_lut": true
                     }
                 },
                 "project_channels": {
@@ -1290,6 +1335,26 @@
                     },
                     "Surface Relative Temperature": {
                         "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "550hPa Temperature (~5 km)": {
+                        "equation": "ch5",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "350hPa Temperature (~10 km)": {
+                        "equation": "ch6",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "200hPa Temperature (~12 km)": {
+                        "equation": "ch7",
+                        "equalize": true,
+                        "apply_lut": true
+                    },
+                    "100hPa Temperature (~15 km)": {
+                        "equation": "ch8",
                         "equalize": true,
                         "apply_lut": true
                     }
