@@ -7,15 +7,15 @@ namespace widgets {
     {
     private:
         struct tm *timestamp;
-        std::string seconds_decimal;
         bool auto_time;
-        int year_holder, month_holder;
-        void handle_input(float input_time);
+        int year_holder, month_holder, seconds_decimal;
+        std::string d_id;
+        void handle_input(double input_time);
     public:
-        DateTimePicker(float input_time);
+        DateTimePicker(std::string d_id, double input_time);
         ~DateTimePicker();
-        float get();
-        void set(float input_time);
+        double get();
+        void set(double input_time);
         void draw();
     };
 } // namespace widgets

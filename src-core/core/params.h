@@ -136,7 +136,7 @@ namespace satdump
                 else if (type_str == "timestamp")
                 {
                     d_type = PARAM_TIMESTAMP;
-                    date_time_picker = std::make_shared<widgets::DateTimePicker>(hasValue ? p_json["value"].get<double>() : 0);
+                    date_time_picker = std::make_shared<widgets::DateTimePicker>(d_id, hasValue ? p_json["value"].get<double>() : -1);
                 }
                 else
                 {

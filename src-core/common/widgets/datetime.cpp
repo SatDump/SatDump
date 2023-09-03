@@ -9,16 +9,18 @@
 
 namespace widgets
 {
-	DateTimePicker::DateTimePicker(float input_time)
+	DateTimePicker::DateTimePicker(std::string d_id, double input_time)
 	{
+		this->d_id = d_id;
 		handle_input(input_time);
 	}
 	DateTimePicker::~DateTimePicker()
 	{
 	}
-	void DateTimePicker::handle_input(float input_time)
+	void DateTimePicker::handle_input(double input_time)
 	{
 		time_t input_timet;
+		std::string seconds_holder;
 		if (input_time == -1)
 		{
 			auto_time = true;
@@ -30,20 +32,19 @@ namespace widgets
 			input_timet = (time_t)input_time;
 		}
 		timestamp = gmtime(&input_timet);
-		seconds_decimal = std::to_string(input_time - input_timet);
-		size_t decimal_pos = seconds_decimal.find(".");
-		seconds_decimal = seconds_decimal.substr(decimal_pos + 1);
+		seconds_holder = std::to_string(input_time - input_timet);
+		seconds_decimal = std::stoi(seconds_holder.substr(seconds_holder.find(".") + 1));
 		year_holder = timestamp->tm_year + 1900;
 		month_holder = timestamp->tm_mon + 1;
 	}
-	float DateTimePicker::get()
+	double DateTimePicker::get()
 	{
 		if (auto_time)
 			return -1.0f;
 		else
-			return stof(std::to_string(timegm(timestamp)) + "." + seconds_decimal);
+			return (double)timegm(timestamp) + ((double)seconds_decimal / std::pow(10.0, int(log10(seconds_decimal) + 1)));
 	}
-	void DateTimePicker::set(float input_time)
+	void DateTimePicker::set(double input_time)
 	{
 		handle_input(input_time);
 	}
@@ -70,7 +71,7 @@ namespace widgets
 			ImVec2 dot_size = ImGui::CalcTextSize(".");
 			ImVec2 digit_size = ImGui::CalcTextSize("0");
 			int date_width = (slash_size.x * 2) + (digit_size.x * 8) + (18 * ui_scale);
-			int time_width = (dot_size.x * 3) + (digit_size.x * 12) + (24 * ui_scale);
+			int time_width = (dot_size.x * 3) + (digit_size.x * 10) + (24 * ui_scale);
 
 			//Draw backgrounds
 			ImVec2 start_position = ImGui::GetCursorScreenPos();
@@ -81,14 +82,14 @@ namespace widgets
 				ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
 
 			//Date
-			ImGui::SetCursorPosX(start_position.x + (3 * ui_scale));
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (3 * ui_scale));
 			ImGui::PushItemWidth(digit_size.x * 4);
-			if (ImGui::InputInt("/###dsparamyear", &year_holder, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputInt(std::string("/" + d_id + "year").c_str(), &year_holder, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll))
 				timestamp->tm_year = year_holder - 1900;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ImGui::PushItemWidth(digit_size.x * 2);
-			if (ImGui::InputScalar("/###dsparammonth", ImGuiDataType_S32, (void*)&month_holder, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string("/" + d_id + "month").c_str(), ImGuiDataType_S32, (void*)&month_holder, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
 				if (month_holder > 12)
 					month_holder = 12;
@@ -97,7 +98,7 @@ namespace widgets
 				timestamp->tm_mon = month_holder - 1;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar("###dsparamday", ImGuiDataType_S32, (void*)&timestamp->tm_mday, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(d_id + "day").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_mday, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
 				if (timestamp->tm_mday > 31 || timestamp->tm_mday < 1)
 					timestamp->tm_mday = 1;
@@ -105,7 +106,7 @@ namespace widgets
 			ImGui::SameLine(0.0, 16.0 * ui_scale);
 
 			//Time
-			if (ImGui::InputScalar(":###dsparamhour", ImGuiDataType_S32, (void*)&timestamp->tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(":" + d_id + "hour").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
 				if (timestamp->tm_hour > 23)
 					timestamp->tm_hour = 23;
@@ -113,7 +114,7 @@ namespace widgets
 					timestamp->tm_hour = 0;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar(":###dsparammin", ImGuiDataType_S32, (void*)&timestamp->tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(":" + d_id + "min").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
 				if (timestamp->tm_min > 59)
 					timestamp->tm_min = 59;
@@ -121,7 +122,7 @@ namespace widgets
 					timestamp->tm_min = 0;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar(".###dsparamsec", ImGuiDataType_S32, (void*)&timestamp->tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string("." + d_id + "sec").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
 				if (timestamp->tm_sec > 59)
 					timestamp->tm_sec = 59;
@@ -130,8 +131,8 @@ namespace widgets
 			}
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
-			ImGui::PushItemWidth(digit_size.x * 6);
-			ImGui::InputText("###dsparamsecdec", &seconds_decimal, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
+			ImGui::PushItemWidth(digit_size.x * 4);
+			ImGui::InputInt(std::string(d_id + "dsec").c_str(), &seconds_decimal, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll);
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ImGui::PopStyleVar(3);
