@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "imgui/pfd/widget.h"
+#include "common/widgets/datetime.h"
 
 namespace satdump
 {
@@ -22,6 +23,7 @@ namespace satdump
             PARAM_BOOL,
             PARAM_OPTIONS,
             PARAM_PATH,
+            PARAM_TIMESTAMP
         };
 
         class EditableParameter
@@ -47,6 +49,8 @@ namespace satdump
             std::vector<std::string> d_options;
 
             std::shared_ptr<FileSelectWidget> file_select;
+
+            std::shared_ptr<widgets::DateTimePicker> date_time_picker;
 
         public:
             EditableParameter() {}
@@ -129,6 +133,11 @@ namespace satdump
                     file_select = std::make_shared<FileSelectWidget>(p_json["name"], p_json["name"], p_json["is_directory"]);
                     file_select->path = p_json["value"];
                 }
+                else if (type_str == "timestamp")
+                {
+                    d_type = PARAM_TIMESTAMP;
+                    date_time_picker = std::make_shared<widgets::DateTimePicker>(d_id, hasValue ? p_json["value"].get<double>() : -1);
+                }
                 else
                 {
                     logger->error("Invalid options on EditableParameter!");
@@ -156,6 +165,8 @@ namespace satdump
                     ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str());
                 else if (d_type == PARAM_PATH)
                     file_select->draw();
+                else if (d_type == PARAM_TIMESTAMP)
+                    date_time_picker->draw();
             }
 
             nlohmann::json getValue()
@@ -173,6 +184,8 @@ namespace satdump
                     v = d_options[d_option];
                 else if (d_type == PARAM_PATH)
                     return file_select->getPath();
+                else if (d_type == PARAM_TIMESTAMP)
+                    v = date_time_picker->get();
                 return v;
             }
 
@@ -200,6 +213,8 @@ namespace satdump
                 }
                 else if (d_type == PARAM_PATH)
                     file_select->path = v.get<std::string>();
+                else if (d_type == PARAM_TIMESTAMP)
+                    date_time_picker->set(v.get<double>());
                 return v;
             }
         };

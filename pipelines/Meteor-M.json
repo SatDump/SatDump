@@ -23,10 +23,10 @@
                 "value": 3e6
             },
             "start_timestamp": {
-                "type": "float",
+                "type": "timestamp",
                 "value": -1,
                 "name": "Start Timestamp",
-                "description": "Unix timestamp of the start of the file provided.\nMust be UTC Unix timestamp in seconds.\nRequired in case you are not\nprocessing your file on the same Mocow day."
+                "description": "Unix timestamp of the start of the file provided.\nRequired in case you are not\nprocessing your file on the same Mocow day."
             }
         },
         "work": {

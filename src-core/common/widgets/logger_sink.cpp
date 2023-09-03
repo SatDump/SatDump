@@ -45,6 +45,8 @@ namespace widgets
             ImGui::SetScrollY(ImGui::GetScrollMaxY());
             new_item = false;
         }
+        if(ImGui::IsWindowAppearing())
+            new_item = true;
         mtx.unlock();
     }
 }

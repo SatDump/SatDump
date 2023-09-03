@@ -363,12 +363,12 @@ namespace satdump
                 ImGui::TableSetColumnIndex(3);
                 ImGui::SetNextItemWidth(300*ui_scale);
                 ImGui::PushID(cpass.norad);
-                if (ImGui::BeginCombo("##pipelinesel", cpass.pipeline_selector->get_name(cpass.pipeline_selector->pipeline_id).c_str()))
+                if (ImGui::BeginCombo("##pipelinesel", cpass.pipeline_selector->get_name(cpass.pipeline_selector->pipeline_id).c_str(), ImGuiComboFlags_HeightLarge))
                 {
-                    cpass.pipeline_selector->renderSelectionBox();
+                    cpass.pipeline_selector->renderSelectionBox(300 * ui_scale);
                     ImGui::EndCombo();
                 }
-                if (ImGui::BeginCombo("##params", "Configure...", ImGuiComboFlags_NoArrowButton))
+                if (ImGui::BeginCombo("##params", "Configure..."))
                 {
                     cpass.pipeline_selector->renderParamTable();
                     ImGui::EndCombo();
