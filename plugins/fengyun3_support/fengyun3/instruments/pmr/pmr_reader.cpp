@@ -18,7 +18,7 @@ namespace fengyun3
         {
             // image.equalize();
             // image.normalize();
-            image.save_img(std::string(directory + "/PMR_" + std::to_string(images_count + 1)).c_str());
+            image.save_img(std::string(directory + "/PMR_" + std::to_string(images_count++ + 1)).c_str());
             image.fill(0);
         }
 
