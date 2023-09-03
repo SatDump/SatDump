@@ -6,7 +6,7 @@ namespace widgets {
     class DateTimePicker
     {
     private:
-        struct tm *timestamp;
+        struct tm timestamp;
         bool auto_time;
         int year_holder, month_holder, seconds_decimal;
         std::string d_id;

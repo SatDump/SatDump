@@ -31,18 +31,18 @@ namespace widgets
 			auto_time = false;
 			input_timet = (time_t)input_time;
 		}
-		timestamp = gmtime(&input_timet);
+		timestamp = *gmtime(&input_timet);
 		seconds_holder = std::to_string(input_time - input_timet);
 		seconds_decimal = std::stoi(seconds_holder.substr(seconds_holder.find(".") + 1));
-		year_holder = timestamp->tm_year + 1900;
-		month_holder = timestamp->tm_mon + 1;
+		year_holder = timestamp.tm_year + 1900;
+		month_holder = timestamp.tm_mon + 1;
 	}
 	double DateTimePicker::get()
 	{
 		if (auto_time)
 			return -1.0f;
 		else
-			return (double)timegm(timestamp) + ((double)seconds_decimal / std::pow(10.0, int(log10(seconds_decimal) + 1)));
+			return (double)timegm(&timestamp) + ((double)seconds_decimal / std::pow(10.0, int(log10(seconds_decimal) + 1)));
 	}
 	void DateTimePicker::set(double input_time)
 	{
@@ -85,7 +85,7 @@ namespace widgets
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (3 * ui_scale));
 			ImGui::PushItemWidth(digit_size.x * 4);
 			if (ImGui::InputInt(std::string("/" + d_id + "year").c_str(), &year_holder, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll))
-				timestamp->tm_year = year_holder - 1900;
+				timestamp.tm_year = year_holder - 1900;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ImGui::PushItemWidth(digit_size.x * 2);
@@ -95,39 +95,39 @@ namespace widgets
 					month_holder = 12;
 				if (month_holder < 1)
 					month_holder = 1;
-				timestamp->tm_mon = month_holder - 1;
+				timestamp.tm_mon = month_holder - 1;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar(std::string(d_id + "day").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_mday, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(d_id + "day").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_mday, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
-				if (timestamp->tm_mday > 31 || timestamp->tm_mday < 1)
-					timestamp->tm_mday = 1;
+				if (timestamp.tm_mday > 31 || timestamp.tm_mday < 1)
+					timestamp.tm_mday = 1;
 			}
 			ImGui::SameLine(0.0, 16.0 * ui_scale);
 
 			//Time
-			if (ImGui::InputScalar(std::string(":" + d_id + "hour").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(":" + d_id + "hour").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
-				if (timestamp->tm_hour > 23)
-					timestamp->tm_hour = 23;
-				if (timestamp->tm_hour < 0)
-					timestamp->tm_hour = 0;
+				if (timestamp.tm_hour > 23)
+					timestamp.tm_hour = 23;
+				if (timestamp.tm_hour < 0)
+					timestamp.tm_hour = 0;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar(std::string(":" + d_id + "min").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string(":" + d_id + "min").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
-				if (timestamp->tm_min > 59)
-					timestamp->tm_min = 59;
-				if (timestamp->tm_min < 0)
-					timestamp->tm_min = 0;
+				if (timestamp.tm_min > 59)
+					timestamp.tm_min = 59;
+				if (timestamp.tm_min < 0)
+					timestamp.tm_min = 0;
 			}
 			ImGui::SameLine();
-			if (ImGui::InputScalar(std::string("." + d_id + "sec").c_str(), ImGuiDataType_S32, (void*)&timestamp->tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+			if (ImGui::InputScalar(std::string("." + d_id + "sec").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
 			{
-				if (timestamp->tm_sec > 59)
-					timestamp->tm_sec = 59;
-				if (timestamp->tm_sec < 0)
-					timestamp->tm_sec = 0;
+				if (timestamp.tm_sec > 59)
+					timestamp.tm_sec = 59;
+				if (timestamp.tm_sec < 0)
+					timestamp.tm_sec = 0;
 			}
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
