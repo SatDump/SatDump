@@ -148,7 +148,7 @@ namespace satdump
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%s", d_name.c_str());
+                ImGui::Text("%s        ", d_name.c_str());
                 if (ImGui::IsItemHovered() && d_description.size() > 0)
                     ImGui::SetTooltip("%s", d_description.c_str());
                 ImGui::TableSetColumnIndex(1);
