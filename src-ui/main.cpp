@@ -22,7 +22,7 @@ static void glfw_error_callback(int error, const char *description)
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
 }
 
-void window_content_scale_callback(GLFWwindow* window, float xscale, float yscale)
+void window_content_scale_callback(GLFWwindow*, float xscale, float)
 {
     satdump::updateUI(xscale);
     style::setFonts();
@@ -77,7 +77,10 @@ int main(int argc, char *argv[])
     // Initialize GLFW
     GLFWwindow *window = nullptr;
     int final_gl_version = 0;
+
+#if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+#endif
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -220,8 +223,12 @@ int main(int argc, char *argv[])
 
     //Handle DPI changes
     float display_scale;
+#if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
     glfwGetWindowContentScale(window, &display_scale, nullptr);
+#else
+    display_scale = 1.0f;
+#endif
 
     //Set font
     style::setFonts(display_scale);
