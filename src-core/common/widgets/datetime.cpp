@@ -42,7 +42,13 @@ namespace widgets
 		if (auto_time)
 			return -1.0f;
 		else
-			return (double)timegm(&timestamp) + ((double)seconds_decimal / std::pow(10.0, int(log10(seconds_decimal) + 1)));
+		{
+			double return_value = timegm(&timestamp);
+			if (seconds_decimal > 0)
+				return_value += ((double)seconds_decimal / std::pow(10.0, int(log10(seconds_decimal) + 1)));
+
+			return return_value;
+		}
 	}
 	void DateTimePicker::set(double input_time)
 	{
