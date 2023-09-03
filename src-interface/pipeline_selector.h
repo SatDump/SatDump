@@ -335,8 +335,6 @@ namespace satdump
         {
             if (ImGui::BeginTable("##pipelineoptions", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
-                ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
-                ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui)
                     p.second.draw();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui_pipeline)
