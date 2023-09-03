@@ -34,8 +34,11 @@ namespace satdump
             image_format = "png";
         }
 
+        std::mutex savemtx;
+#pragma omp parallel for
         for (size_t c = 0; c < images.size(); c++)
         {
+            savemtx.lock();
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
@@ -57,6 +60,7 @@ namespace satdump
             if (images[c].offset_x != 0)
                 contents["images"][c]["offset_x"] = images[c].offset_x;
 
+            savemtx.unlock();
             if (!save_as_matrix)
                 images[c].image.save_img(directory + "/" + images[c].filename);
         }
@@ -68,7 +72,9 @@ namespace satdump
             image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
                                                                                        { return images[c].image; });
             image_all.save_img(directory + "/" + images[0].filename);
+            savemtx.lock();
             contents["img_matrix_size"] = size;
+            savemtx.unlock();
         }
 
         Products::save(directory);

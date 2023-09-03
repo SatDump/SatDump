@@ -29,10 +29,13 @@ namespace meteor
             time_t lastTime = 0;
             uint8_t frame[380];
 
-            std::vector<uint16_t> mtvza_channels[36];
+            std::vector<uint16_t> mtvza_channels[46];
 
-            for (int i = 0; i < 36; i++)
+            for (int i = 0; i < 46; i++)
                 mtvza_channels[i].resize(200);
+
+            double last_timestamp = 0;
+            std::vector<double> timestamps;
 
             while (!data_in.eof())
             {
@@ -42,27 +45,8 @@ namespace meteor
                 {
                     int counter = frame[4];
 
-#if 0
-                    if (counter == 0)
-                    {
-                        uint64_t vt = // frm[20] << 40 |
-                                      // frm[21] << 32 |
-                            // frm[24] << 24 |
-                            // frm[25] << 16 |
-                            frm[6] << 8 |
-                            frm[7] << 0;
-                        // vt /= 1e4;
-                        double v1 = last_vt;
-                        double v2 = vt;
-                        int h = vt / 3600;
-                        int m = (vt % 3600) / 60;
-                        logger->trace("%f ---- %f           %dh %dmin", v2, v2 - v1, h, m);
-                        last_vt = vt;
-                    }
-#endif
-
                     int pos = 10;
-                    for (int c = 0; c < 36; c++)
+                    for (int c = 0; c < 46; c++)
                     {
                         for (int p = 0; p < 4; p++)
                         {
@@ -80,10 +64,28 @@ namespace meteor
                     {
                         mtvza_lines++;
 
-                        for (int i = 0; i < 36; i++)
+                        for (int i = 0; i < 46; i++)
                             mtvza_channels[i].resize((mtvza_lines + 1) * 200);
+                        timestamps.push_back(last_timestamp);
 
                         logger->info("Lines %d CNT %d", mtvza_lines, counter);
+                    }
+                    else if (counter == 0)
+                    {
+                        uint16_t vidk1 = frame[12] << 8 | frame[13];
+                        //  uint16_t vidk2 = frame[36] << 8 | frame[37];
+                        uint32_t vidk2 = frame[14] << 8 | frame[15] << 0; //| frame[16] << 8 | frame[17];
+
+                        // uint16_t counter = frame[6] << 8 | frame[7];
+
+                        double vtidk = 16708 * 24 * 3600 + (vidk2) * 65536 + vidk1 + 189 * 60 - 101.1 * 10 * 60; // (double)vidk1 + (double(vidk2) / 65535.0);
+
+                        last_timestamp = vtidk; // dayValue + double(counter) * (60.0 / 24.85) - 4 * 3600; //+ 5 * 60; //- 3 * 3600.0; //- 14 * 3600 + 3 * 60; //+ 12 * 3600.0;
+
+                        // logger->trace("%f ---- %f               %f", last_vidk, vtidk - last_vidk, last_timestamp);
+
+                        // printf("TIMET %s \n", timestamp_to_string(last_timestamp).c_str());
+                        // last_vidk = vtidk;
                     }
                 }
 
@@ -211,13 +213,15 @@ namespace meteor
                 logger->info("Lines : " + std::to_string(mtvza_lines));
 
                 satdump::ImageProducts mtvza_products;
-                mtvza_products.instrument_name = "mtvza_dump";
-                // mtvza_products.has_timestamps = true;
-                // mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                // mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-                // mtvza_products.set_timestamps(mreader.timestamps);
+                mtvza_products.instrument_name = "mtvza";
+                mtvza_products.has_timestamps = true;
+                mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                int norad = 57166;
+                mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                mtvza_products.set_timestamps(timestamps);
+                mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")));
 
-                for (int i = 0; i < 36; i++)
+                for (int i = 0; i < 46; i++)
                     mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image<uint16_t>(mtvza_channels[i].data(), 200, mtvza_lines, 1)});
 
                 mtvza_products.save(directory);

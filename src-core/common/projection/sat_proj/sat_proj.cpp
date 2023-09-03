@@ -48,6 +48,9 @@ namespace satdump
         float pitch_offset;
         float yaw_offset;
 
+        float yaw_offset_asc;
+        float yaw_offset_des;
+
         // Pre-computed stuff
         std::vector<geodetic::geodetic_coords_t> sat_positions;
         std::vector<double> az_angles;
@@ -74,6 +77,9 @@ namespace satdump
             roll_offset = getValueOrDefault(cfg["roll_offset"], 0.0);
             pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0.0);
             yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
+
+            yaw_offset_asc = getValueOrDefault(cfg["yaw_offset_asc"], 0.0);
+            yaw_offset_des = getValueOrDefault(cfg["yaw_offset_des"], 0.0);
 
             img_size_x = image_width;
             img_size_y = timestamps.size();
@@ -111,6 +117,13 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             if (rotate_yaw)
             {
+                if (yaw_offset_asc != 0 || yaw_offset_des != 0)
+                {
+                    if (ascending)
+                        yaw_offset = yaw_offset_asc;
+                    else
+                        yaw_offset = yaw_offset_des;
+                }
                 satellite_pointing.roll = roll_offset;
                 satellite_pointing.pitch = pitch_offset;
                 satellite_pointing.yaw = (90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle + -(((final_x - (image_width / 2.0)) / image_width) * scan_angle);

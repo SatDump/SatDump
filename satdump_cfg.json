@@ -1371,6 +1371,35 @@
                     "Clouds Only": {
                         "equation": "ch29, ch28, ch1",
                         "equalize": true
+                    },
+                    "Test1": {
+                        "equation": "1-ch37",
+                        "equalize": true,
+                        "apply_lut": true,
+                        "project": {
+                            "width": 2048,
+                            "height": 1024,
+                            "old_algo": true,
+                            "draw_map": true,
+                            "equalize": true,
+                            "config": {
+                                "type": "equirectangular"
+                            }
+                        }
+                    },
+                    "Test2": {
+                        "equation": "1-ch33,1-ch34,1-ch35",
+                        "equalize": true,
+                        "project": {
+                            "width": 2048,
+                            "height": 1024,
+                            "old_algo": true,
+                            "draw_map": true,
+                            "equalize": true,
+                            "config": {
+                                "type": "equirectangular"
+                            }
+                        }
                     }
                 }
             },
