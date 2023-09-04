@@ -11,6 +11,10 @@ static char ag_LogTag[] = "SatDump";
 #include <windows.h>
 #include <wincon.h>
 #endif
+#ifdef __APPLE__
+#include <sysdir.h>
+#include <glob.h>
+#endif
 
 // Logger and sinks. We got a console sink and file sink
 #ifdef __ANDROID__
@@ -275,7 +279,19 @@ void initFileSink()
 {
     try
     {
-        file_sink = std::make_shared<slog::FileSink>("satdump.logs");
+#ifdef __APPLE__
+        char library_glob[PATH_MAX];
+        glob_t globbuf;
+        sysdir_search_path_enumeration_state search_state = sysdir_start_search_path_enumeration(SYSDIR_DIRECTORY_LIBRARY, SYSDIR_DOMAIN_MASK_USER);
+        sysdir_get_next_search_path_enumeration(search_state, library_glob);
+        glob(library_glob, GLOB_TILDE, nullptr, &globbuf);
+        std::string log_path = std::string(globbuf.gl_pathv[0]) + "/Logs/satdump.log";
+        globfree(&globbuf);
+#else
+        std::string log_path = "satdump.logs";
+#endif
+
+        file_sink = std::make_shared<slog::FileSink>(log_path);
         logger->add_sink(file_sink);
         // file_sink->set_pattern("[%D - %T] (%L) %v");
         file_sink->set_level(slog::LOG_TRACE);
