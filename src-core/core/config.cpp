@@ -4,6 +4,11 @@
 #include "logger.h"
 #include <filesystem>
 
+#ifdef __APPLE__
+#include <sysdir.h>
+#include <glob.h>
+#endif
+
 namespace satdump
 {
     namespace config
@@ -49,7 +54,14 @@ namespace satdump
 #ifdef __APPLE__
             {
                 bool bad_path = false;
-                std::string documents_dir = std::string(getenv("HOME")) + "/Documents";
+                char documents_glob[PATH_MAX];
+                glob_t globbuf;
+                sysdir_search_path_enumeration_state search_state = sysdir_start_search_path_enumeration(SYSDIR_DIRECTORY_DOCUMENT, SYSDIR_DOMAIN_MASK_USER);
+                sysdir_get_next_search_path_enumeration(search_state, documents_glob);
+                glob(documents_glob, GLOB_TILDE, nullptr, &globbuf);
+                std::string documents_dir(globbuf.gl_pathv[0]);
+                globfree(&globbuf);
+
                 if (config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() == ".")
                 {
                     bad_path = true;
