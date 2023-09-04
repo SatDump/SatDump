@@ -23,6 +23,8 @@
 
 #include "common/codings/differential/qpsk_diff.h"
 
+#include "common/dsp/utils/random.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -31,11 +33,9 @@ int main(int argc, char *argv[])
     std::ofstream data_out(argv[2], std::ios::binary);
 
     uint8_t buffer1[1024];
-    uint8_t buffer2[8192];
-    uint8_t buffer3[8192];
-    uint8_t buffer4[1024];
+    int8_t buffer2[8192];
 
-    diff::QPSKDiff diff;
+    dsp::Random gaussian;
 
     while (!data_in.eof()) //&& lines_img < 500)
     {
@@ -44,30 +44,11 @@ int main(int argc, char *argv[])
         int bit2pos = 0;
         for (int i = 0; i < 1024; i++)
             for (int x = 6; x >= 0; x -= 2)
-                buffer2[bit2pos++] = ((buffer1[i] >> (x + 1)) & 1) << 1 | ((buffer1[i] >> (x + 0)) & 1);
+            {
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 0)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 1)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
+            }
 
-        diff.work(buffer2, bit2pos, buffer3);
-
-        // if ((cadu[24] >> 5) == 0b000)
-        // {
-        //     if (cadu[25] == 0) // cadu[25] == 0x95 && cadu[26] == 0x73)
-        //     {
-        //         data_out.write((char *)cadu, 2044);
-        //     }
-        // }
-
-        // printf("%d\n", bit2pos);
-
-        for (int i = 0; i < 1024; i++)
-            buffer4[i] = buffer3[i * 8 + 0] << 7 |
-                         buffer3[i * 8 + 1] << 6 |
-                         buffer3[i * 8 + 2] << 5 |
-                         buffer3[i * 8 + 3] << 4 |
-                         buffer3[i * 8 + 4] << 3 |
-                         buffer3[i * 8 + 5] << 2 |
-                         buffer3[i * 8 + 6] << 1 |
-                         buffer3[i * 8 + 7] << 0;
-
-        data_out.write((char *)buffer4, 1024);
+        data_out.write((char *)buffer2, bit2pos);
     }
 }
