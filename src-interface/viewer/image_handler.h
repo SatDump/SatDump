@@ -31,6 +31,7 @@ namespace satdump
         bool median_blur = false;
         bool rotate_image = false;
         bool equalize_image = false;
+        bool individual_equalize_image = false;
         bool invert_image = false;
         bool correct_image = false;
         bool normalize_image = false;

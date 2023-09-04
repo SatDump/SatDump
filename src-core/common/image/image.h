@@ -82,7 +82,7 @@ namespace image
         void fill_color(T color[]);                                          // Fill image with a single color
         void fill(T val);                                                    // Fill image with a single value
         void mirror(bool x, bool y);                                         // Mirror the image along the X or Y axis
-        Image<T> &equalize();                                                // Perform histogram equalization
+        Image<T> &equalize(bool per_channel = false);                        // Perform histogram equalization
         Image<T> &normalize();                                               // Normalize the current image data. This takes the current min and max values and extends it to the full bit depth range
         void white_balance(float percentileValue = 0.05f);                   // While balance algorithm from Gimp
         void crop(int x0, int y0, int x1, int y1);                           // Crop an image region. Must be with x0 <= x1 and y0 <= y1
@@ -128,10 +128,10 @@ namespace image
         void load_j2k(std::string file); // Load a J2K file
 
         // Generic loading/saving interface
-        void load_img(std::string file);                            // Load a file, auto-detecting type
-        void load_img(uint8_t *buffer, int size);                   // Load from memory, auto-detecting type
-        void save_img(std::string file, bool fast = true);          // Save file, determine type based on extension or default setting
-        bool append_ext(std::string* file);                         // If the filename has no extension, use the default image format
+        void load_img(std::string file);                   // Load a file, auto-detecting type
+        void load_img(uint8_t *buffer, int size);          // Load from memory, auto-detecting type
+        void save_img(std::string file, bool fast = true); // Save file, determine type based on extension or default setting
+        bool append_ext(std::string *file);                // If the filename has no extension, use the default image format
     };
 
     // Others

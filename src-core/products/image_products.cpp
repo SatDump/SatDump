@@ -480,6 +480,9 @@ namespace satdump
         if (cfg.equalize)
             rgb_composite.equalize();
 
+        if (cfg.individual_equalize)
+            rgb_composite.equalize(true);
+
         if (cfg.white_balance)
             rgb_composite.white_balance();
 

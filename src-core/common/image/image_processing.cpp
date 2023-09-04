@@ -67,14 +67,14 @@ namespace image
     }
 
     template <typename T>
-    Image<T> &Image<T>::equalize()
+    Image<T> &Image<T>::equalize(bool per_channel)
     {
-        for (int c = 0; c < d_channels; c++)
+        for (int c = 0; c < (per_channel ? channels() : 1); c++)
         {
             T *data_ptr = channel(c);
 
             int nlevels = std::numeric_limits<T>::max() + 1;
-            int size = d_width * d_height;
+            int size = d_width * d_height * (per_channel ? 1 : d_channels);
 
             // Init histogram buffer
             int *histogram = new int[nlevels];

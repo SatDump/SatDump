@@ -96,6 +96,9 @@ namespace satdump
         if (equalize_image)
             current_image.equalize();
 
+        if (individual_equalize_image)
+            current_image.equalize(true);
+
         if (white_balance_image)
             current_image.white_balance();
 
@@ -270,6 +273,7 @@ namespace satdump
                     cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
                     equalize_image = rgb_compo_cfg.equalize;
+                    individual_equalize_image = rgb_compo_cfg.individual_equalize;
                     invert_image = rgb_compo_cfg.invert;
                     normalize_image = rgb_compo_cfg.normalize;
                     white_balance_image = rgb_compo_cfg.white_balance;
@@ -527,6 +531,9 @@ namespace satdump
             }
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
+                asyncUpdate();
+
+            if (ImGui::Checkbox("Individual Equalize", &individual_equalize_image))
                 asyncUpdate();
 
             if (ImGui::Checkbox("White Balance", &white_balance_image))
