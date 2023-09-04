@@ -10,6 +10,10 @@
 #include "core/module.h"
 #include "resources.h"
 
+#ifdef __APPLE__
+#include <CoreGraphics/CGDirectDisplay.h>
+#endif
+
 namespace style
 {
     SATDUMP_DLL ImFont *baseFont;
@@ -177,20 +181,38 @@ namespace style
 
     void setFonts(float dpi_scaling)
     {
-        ImGui::GetIO().Fonts->Clear();
-        ImFontGlyphRangesBuilder builder;
+        ImGuiIO &io = ImGui::GetIO();
+        (void)io;
+        io.Fonts->Clear();
         static const ImWchar def[] = {0x20, 0x2300, 0}; //default range
         static ImFontConfig config;
-        baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * dpi_scaling, &config, def);
+        float macos_fbs = macos_framebuffer_scale();
+        float font_scaling = dpi_scaling * macos_fbs;
+
+        baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * font_scaling, &config, def);
         config.MergeMode = true;
         static const ImWchar list[6][3] = {{0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0}, {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0}};   
 
         for (int i = 0; i < 6; i++)
-            baseFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * dpi_scaling, &config, list[i]);
+            baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * font_scaling, &config, list[i]);
 
         config.MergeMode = false;
-        bigFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * dpi_scaling);   //, &config, ranges);
-        //hugeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * dpi_scaling); //, &config, ranges);
-        ImGui::GetIO().Fonts->Build();
+        bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
+        //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
+        io.Fonts->Build();
+        io.FontGlobalScale = 1 / macos_fbs;
+    }
+
+    float macos_framebuffer_scale()
+    {
+#ifdef __APPLE__
+        CGDirectDisplayID display_id = CGMainDisplayID();
+        CGDisplayModeRef display_mode = CGDisplayCopyDisplayMode(display_id);
+        float return_value = (float)CGDisplayModeGetPixelWidth(display_mode) / (float)CGDisplayPixelsWide(display_id);
+        CGDisplayModeRelease(display_mode);
+        return return_value;
+#else
+        return 1.0f;
+#endif
     }
 }

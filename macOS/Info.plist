@@ -12,6 +12,8 @@
   <string>SatDump</string>
   <key>CFBundleIconFile</key>
   <string>icon.icns</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
   <key>CFBundleShortVersionString</key>
   <string>1.1.0</string>
   <key>CFBundleInfoDictionaryVersion</key>
