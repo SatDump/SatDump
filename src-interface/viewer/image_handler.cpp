@@ -185,7 +185,7 @@ namespace satdump
             }
             if (cities_overlay)
             {
-                logger->info("Drawing map overlay...");
+                logger->info("Drawing cities overlay...");
                 unsigned short color[3] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f)};
                 map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                                 current_image,
