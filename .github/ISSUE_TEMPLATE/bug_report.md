@@ -11,8 +11,8 @@ assignees: ''
 
 **Hardware (SDR/PC/OS)**
 
-**Version (Eg, 1.0.0, CI Build #171)**
+**Version (Eg, 1.0.0, CI Build 171)**
 
-**Logs after the cras (satdump.logs)**
+**Logs after the crash (satdump.logs, or satdump.log in Console.app on macOS)**
 
 **Other info (Eg, Screenshots) / Files useful for debugging (CADU, etc)**
