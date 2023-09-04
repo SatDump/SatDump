@@ -14,8 +14,8 @@ namespace satdump
         void receive(slog::LogMsg log);
     private:
         void push_frame(std::string str);
-        float scale;
         GLFWwindow* window;
+        float scale;
         GLuint image_texture;
     };
 }
