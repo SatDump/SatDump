@@ -24,7 +24,7 @@ static void glfw_error_callback(int error, const char *description)
 
 void window_content_scale_callback(GLFWwindow*, float xscale, float)
 {
-    satdump::updateUI(xscale);
+    satdump::updateUI(xscale / style::macos_framebuffer_scale());
     style::setFonts();
     ImGui_ImplOpenGL3_DestroyFontsTexture();
     ImGui_ImplOpenGL3_CreateFontsTexture();
@@ -226,6 +226,7 @@ int main(int argc, char *argv[])
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
     glfwGetWindowContentScale(window, &display_scale, nullptr);
+    display_scale /= style::macos_framebuffer_scale();
 #else
     display_scale = 1.0f;
 #endif
