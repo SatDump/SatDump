@@ -1120,14 +1120,18 @@
             },
             "mwhs2": {
                 "handler": "image_handler",
-                "name": "MHWS-2",
+                "name": "MWHS-2",
                 "rgb_composites": {
-                    "421": {
+                    "MWHS 421": {
                         "equation": "ch8, ch12, ch8",
                         "individual_equalize": true
                     },
-                    "543": {
-                        "equation": "ch5, ch4, ch3",
+                    "ATMS False Color": {
+                        "equation": "ch1, ch10, ch13",
+                        "individual_equalize": true
+                    },
+                    "MHS 421": {
+                        "equation": "ch13, ch10, ch1",
                         "individual_equalize": true
                     },
                     "Microwave Airmass": {
@@ -1321,7 +1325,7 @@
                 "handler": "image_handler",
                 "name": "ATMS",
                 "rgb_composites": {
-                    "ATMS 16-17-18": {
+                    "ATMS False Color": {
                         "equation": "ch16, ch17, ch18",
                         "individual_equalize": true
                     },
