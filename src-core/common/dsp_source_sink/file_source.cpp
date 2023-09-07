@@ -76,7 +76,7 @@ void FileSource::start()
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
 
     DSPSampleSource::start();
-    sample_time_period = std::chrono::duration<double>(1.0 / samplerate_input.get());
+    sample_time_period = std::chrono::duration<double>(1.0 / (double)samplerate_input.get());
     start_time_point = std::chrono::steady_clock::now();
     total_samples = 0;
 
