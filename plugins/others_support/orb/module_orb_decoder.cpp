@@ -38,6 +38,13 @@ namespace orb
             l2_parser.directory = l2_dir;
         }
 
+        {
+            std::string l3_dir = directory + "/ELEKTRO-L3";
+            if (!std::filesystem::exists(l3_dir))
+                std::filesystem::create_directories(l3_dir);
+            l2_parser.directory = l3_dir;
+        }
+
         while (!data_in.eof())
         {
             // Read a buffer
@@ -53,8 +60,12 @@ namespace orb
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid4.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                {
                     if (pkt.header.apid == 2)
                         l2_parser.work(pkt);
+                    if (pkt.header.apid == 3)
+                        l3_parser.work(pkt);
+                }
             }
 
             progress = data_in.tellg();
@@ -100,6 +111,46 @@ namespace orb
                     hasImage = true;
 
                     if (ImGui::BeginTabItem(std::string("L2 Ch " + std::to_string(imgMap.first)).c_str()))
+                    {
+                        ImGui::Image((void *)(intptr_t)dec.textureID, {200 * ui_scale, 200 * ui_scale});
+                        ImGui::SameLine();
+                        ImGui::BeginGroup();
+                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
+                        // if (dec.imageStatus == SAVING)
+                        //     ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                        /*else*/
+                        if (dec.is_dling)
+                            ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                        else
+                            ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                        ImGui::EndGroup();
+                        ImGui::EndTabItem();
+                    }
+                }
+            }
+
+            // ELEKTRO-L 3
+            for (auto &imgMap : l3_parser.decoded_imgs)
+            {
+                auto &dec = imgMap.second;
+
+                if (dec.textureID == 0)
+                {
+                    dec.textureID = makeImageTexture();
+                    dec.textureBuffer = new uint32_t[1000 * 1000];
+                }
+
+                if (dec.is_dling)
+                {
+                    if (dec.hasToUpdate)
+                    {
+                        dec.hasToUpdate = false;
+                        updateImageTexture(dec.textureID, dec.textureBuffer, 1000, 1000);
+                    }
+
+                    hasImage = true;
+
+                    if (ImGui::BeginTabItem(std::string("L3 Ch " + std::to_string(imgMap.first)).c_str()))
                     {
                         ImGui::Image((void *)(intptr_t)dec.textureID, {200 * ui_scale, 200 * ui_scale});
                         ImGui::SameLine();

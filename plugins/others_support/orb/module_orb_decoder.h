@@ -12,6 +12,7 @@ namespace orb
         std::atomic<size_t> progress;
 
         ImageParser l2_parser;
+        ImageParser l3_parser;
 
     public:
         ORBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

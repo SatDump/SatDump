@@ -43,7 +43,18 @@ namespace orb
         void work(ccsds::CCSDSPacket &pkt)
         {
             if (pkt.payload.size() < 18)
+            {
+                if (pkt.payload.size() == 10) // END?
+                {
+                    if (pkt.payload[9] == 0xFF)
+                    {
+                        int channel = pkt.payload[8];
+                        saveAll(channel);
+                    }
+                }
+
                 return;
+            }
 
             image::Image<uint16_t> imgt = image::decompress_j2k_openjp2(&pkt.payload[17], pkt.payload.size() - 17);
 
@@ -93,7 +104,7 @@ namespace orb
             }
         }
 
-        void saveAll()
+        void saveAll(int channel = -1)
         {
             std::string dirpath = directory + "/" +
                                   // timestamp_to_string(last_timestamp) +
@@ -102,14 +113,27 @@ namespace orb
             if (!std::filesystem::exists(dirpath))
                 std::filesystem::create_directories(dirpath);
 
-            for (auto &ch : decoded_imgs)
+            if (channel == -1)
             {
+                for (auto &ch : decoded_imgs)
+                {
+                    std::string path = dirpath +
+                                       "/" +
+                                       std::to_string(ch.first);
+
+                    decoded_imgs[ch.first].img.save_img(path);
+                    decoded_imgs[ch.first].is_dling = false;
+                }
+            }
+            else if (decoded_imgs.count(channel) > 0)
+            {
+                auto &ch = decoded_imgs[channel];
                 std::string path = dirpath +
                                    "/" +
-                                   std::to_string(ch.first);
+                                   std::to_string(channel);
 
-                decoded_imgs[ch.first].img.save_img(path);
-                decoded_imgs[ch.first].is_dling = false;
+                decoded_imgs[channel].img.save_img(path);
+                decoded_imgs[channel].is_dling = false;
             }
         }
     };

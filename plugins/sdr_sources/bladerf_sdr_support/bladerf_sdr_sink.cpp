@@ -99,7 +99,7 @@ void BladeRFSink::open()
         available_samplerates.push_back(i);
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
-
+  
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
