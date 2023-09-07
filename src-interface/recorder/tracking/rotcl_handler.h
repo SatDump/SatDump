@@ -2,6 +2,7 @@
 
 #include "common/net/tcp.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 #include "core/style.h"
 #include "rotator_handler.h"
 

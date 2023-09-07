@@ -1,6 +1,7 @@
 #include "tracking_widget.h"
 #include "common/tracking/tle.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 #include "core/module.h"
 #include "core/config.h"
 #include "main_ui.h"
