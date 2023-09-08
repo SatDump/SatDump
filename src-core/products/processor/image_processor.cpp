@@ -89,20 +89,65 @@ namespace satdump
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+                    image::Image<uint16_t> rgb_image_corr;
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
                                        initial_name;
 
-                    if (compo.value().contains("map_overlay") ? compo.value()["map_overlay"].get<bool>() : false)
+                    bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
+                    bool map_overlay = compo.value().contains("map_overlay") && compo.value()["map_overlay"].get<bool>();
+                    bool cities_overlay = compo.value().contains("cities_overlay");
+                    std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+                    std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
+                    std::vector<float> corrected_stuff;
+
+                    if (geo_correct)
+                    {
+                        corrected_stuff.resize(rgb_image.width());
+                        bool success = false;
+                        image::Image<uint16_t> cor;
+                        rgb_image_corr = perform_geometric_correction(*img_products, rgb_image, success, corrected_stuff.data());
+                        if (!success) {
+                            geo_correct = false;
+                            corrected_stuff.clear();
+                        }
+                    }
+
+                    rgb_image.save_img(product_path + "/" + name);
+                    if (geo_correct)
+                        rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
+
+                    if (map_overlay || cities_overlay)
                     {
                         rgb_image.to_rgb(); // Ensure this is RGB!!
-                        auto proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
-                                                                                        rgb_image.height(),
-                                                                                        img_products->get_proj_cfg(),
-                                                                                        final_metadata,
-                                                                                        img_products->get_tle(),
-                                                                                        final_timestamps);
+                        proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
+                                                                                   rgb_image.height(),
+                                                                                   img_products->get_proj_cfg(),
+                                                                                   final_metadata,
+                                                                                   img_products->get_tle(),
+                                                                                   final_timestamps);
+
+                        if (geo_correct)
+                        {
+                            std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                                [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                            {
+                                std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                                if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                                {
+                                    ret.first = corrected_stuff[ret.first];
+                                }
+                                else
+                                    ret.second = ret.first = -1;
+                                return ret;
+                            };
+                            corr_proj_func = newfun;
+                        }
+                    }
+
+                    if (map_overlay)
+                    {
                         logger->info("Drawing map...");
                         unsigned short color[3] = {0, 65535, 0};
 
@@ -118,9 +163,70 @@ namespace satdump
                                                        color,
                                                        proj_func,
                                                        100);
+                        if (geo_correct)
+                            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                           rgb_image_corr,
+                                                           color,
+                                                           corr_proj_func,
+                                                           100);
                     }
 
-                    rgb_image.save_img(product_path + "/" + name);
+                    if (cities_overlay)
+                    {
+                        logger->info("Drawing cities...");
+                        auto overlay_cfg = compo.value()["cities_overlay"].get<nlohmann::json>();
+                        unsigned short color[3] = {65535, 0, 0};
+                        int font_size = 50;
+                        int cities_type = 0;
+                        int scale_rank = 3;
+
+                        if (overlay_cfg.contains("color"))
+                        {
+                            color[0] = overlay_cfg["color"].get<std::vector<float>>()[0] * 65535;
+                            color[1] = overlay_cfg["color"].get<std::vector<float>>()[1] * 65535;
+                            color[2] = overlay_cfg["color"].get<std::vector<float>>()[2] * 65535;
+                        }
+                        if (overlay_cfg.contains("font_size"))
+                            font_size = overlay_cfg["font_size"].get<int>();
+                        if (overlay_cfg.contains("type"))
+                        {
+                            if (overlay_cfg["type"] == "capitals")
+                                cities_type = 0;
+                            else if (overlay_cfg["type"] == "rcapitals")
+                                cities_type = 1;
+                            else if (overlay_cfg["type"] == "all")
+                                cities_type = 2;
+                        }
+                        if (overlay_cfg.contains("scale_rank"))
+                            scale_rank = overlay_cfg["scale_rank"].get<int>();
+
+                        rgb_image.init_font(resources::getResourcePath("fonts/font.ttf"));
+                        map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+                                                        rgb_image,
+                                                        color,
+                                                        proj_func,
+                                                        font_size,
+                                                        cities_type,
+                                                        scale_rank);
+                        if (geo_correct)
+                        {
+                            rgb_image_corr.init_font(resources::getResourcePath("fonts/font.ttf"));
+                            map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
+                                                            rgb_image_corr,
+                                                            color,
+                                                            corr_proj_func,
+                                                            font_size,
+                                                            cities_type,
+                                                            scale_rank);
+                        }
+                    }
+
+                    if (map_overlay || cities_overlay)
+                    {
+                        rgb_image.save_img(product_path + "/" + name + "_map");
+                        if (geo_correct)
+                            rgb_image_corr.save_img(product_path + "/" + name + "_corrected_map");
+                    }
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
@@ -133,16 +239,6 @@ namespace satdump
                         ret.img.save_img(product_path + "/rgb_" + name + "_projected");
                     }
 
-                    if ((compo.value().contains("geo_correct") ? compo.value()["geo_correct"].get<bool>() : false) && rgb_image.size() > 0)
-                    {
-                        bool success = false;
-                        rgb_image = perform_geometric_correction(*img_products, rgb_image, success);
-
-                        if (success)
-                        {
-                            rgb_image.save_img(product_path + "/" + name + "_corrected");
-                        }
-                    }
                 }
                 catch (std::exception &e)
                 {
