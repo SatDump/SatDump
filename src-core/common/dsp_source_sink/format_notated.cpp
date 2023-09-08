@@ -17,7 +17,7 @@ std::string format_notated(T val, std::string units)
     if constexpr (std::is_unsigned<T>::value)
         abs_val = val;
     else
-        abs_val = abs(val);
+        abs_val = std::abs(val);
 
     if (abs_val < 1e3)
     {

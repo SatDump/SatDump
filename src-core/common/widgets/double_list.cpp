@@ -37,7 +37,7 @@ namespace widgets
         available_values = list;
 
         for (double& v : available_values)
-            values_option_str += format_notated(v, "sps") + '\0';
+            values_option_str += format_notated(v, units) + '\0';
 
         if (allow_manual)
         {

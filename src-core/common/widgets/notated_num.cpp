@@ -36,12 +36,17 @@ namespace widgets
             multiplier = 1e6;
         else if (suffix == 'G')
             multiplier = 1e9;
-        else if (suffix == 'T')
-            multiplier = 1e12;
-        else if (suffix == 'P')
-            multiplier = 1e15;
-        else
+        else if constexpr (std::is_same<T, int32_t>::value)
             had_suffix = false;
+        else
+        {
+            if (suffix == 'T')
+                multiplier = 1e12;
+            else if (suffix == 'P')
+                multiplier = 1e15;
+            else
+                had_suffix = false;
+        }
 
         //Remove suffix
         if(had_suffix)
