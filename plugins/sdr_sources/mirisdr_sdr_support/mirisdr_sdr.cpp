@@ -80,8 +80,7 @@ void MiriSdrSource::open()
     available_samplerates.push_back(9e6);
     available_samplerates.push_back(10e6);
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void MiriSdrSource::start()

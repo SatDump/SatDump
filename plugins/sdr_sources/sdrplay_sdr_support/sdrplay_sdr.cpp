@@ -201,8 +201,7 @@ void SDRPlaySource::open()
     available_samplerates.push_back(9000000);
     available_samplerates.push_back(10000000);
 
-    samplerate_widget.set_list(available_samplerates, false, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, false);
 
     // Set max gain
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1_ID) // RSP1

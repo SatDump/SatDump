@@ -74,8 +74,7 @@ void LimeSDRSource::open()
     for (int i = 1; i < 81; i++)
         available_samplerates.push_back(i * 1e6);
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void LimeSDRSource::start()

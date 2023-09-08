@@ -8,7 +8,7 @@
 #include "common/dsp/io/baseband_interface.h"
 #include <thread>
 #include "imgui/pfd/widget.h"
-#include "common/widgets/notated_int.h"
+#include "common/widgets/notated_num.h"
 #include <chrono>
 
 class FileSource : public dsp::DSPSampleSource
@@ -25,7 +25,7 @@ protected:
     unsigned long long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
-    widgets::NotatedInt samplerate_input = widgets::NotatedInt("Samplerate", 0, "sps");
+    widgets::NotatedNum<int> samplerate_input = widgets::NotatedNum("Samplerate", 0, "sps");
 
     int select_sample_format;
     std::string baseband_type = "f32";

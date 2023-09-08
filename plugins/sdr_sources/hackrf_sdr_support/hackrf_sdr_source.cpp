@@ -74,8 +74,7 @@ void HackRFSource::open()
         available_samplerates.push_back(i * 1e6);
     }
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void HackRFSource::start()

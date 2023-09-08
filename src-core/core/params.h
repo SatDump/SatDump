@@ -2,7 +2,7 @@
 #include "nlohmann/json.hpp"
 #include "imgui/pfd/widget.h"
 #include "common/widgets/datetime.h"
-#include "common/widgets/notated_int.h"
+#include "common/widgets/notated_num.h"
 
 namespace satdump
 {
@@ -41,7 +41,7 @@ namespace satdump
             bool p_bool;
             std::shared_ptr<FileSelectWidget> file_select;
             std::shared_ptr<widgets::DateTimePicker> date_time_picker;
-            std::shared_ptr<widgets::NotatedInt> notated_int;
+            std::shared_ptr<widgets::NotatedNum<int64_t>> notated_int;
 
             int d_option;
             std::string d_options_str;

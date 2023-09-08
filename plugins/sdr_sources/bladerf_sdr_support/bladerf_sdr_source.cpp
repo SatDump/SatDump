@@ -127,10 +127,8 @@ void BladeRFSource::open()
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
-    bandwidth_widget.set_list(available_samplerates, true, [](double v)
-                              { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
+    bandwidth_widget.set_list(available_samplerates, true, "Hz");
 
     // Close it
     bladerf_close(bladerf_dev_obj);

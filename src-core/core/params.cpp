@@ -97,7 +97,7 @@ namespace satdump
                 else
                     units = "";
 
-                notated_int = std::make_shared<widgets::NotatedInt>(d_id, hasValue ? p_json["value"].get<uint64_t>() : 0, units);
+                notated_int = std::make_shared<widgets::NotatedNum<int64_t>>(d_id, hasValue ? p_json["value"].get<int64_t>() : 0, units);
             }
             else
             {

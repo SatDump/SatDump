@@ -68,8 +68,7 @@ void RTLTCPSource::open()
     available_samplerates.push_back(2880000);
     available_samplerates.push_back(3200000);
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void RTLTCPSource::start()

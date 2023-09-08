@@ -81,8 +81,7 @@ void USRPSource::open_channel()
         }
     }
 
-    samplerate_widget.set_list(available_samplerates, false, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, false);
 
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);

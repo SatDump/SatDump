@@ -62,8 +62,7 @@ void PlutoSDRSource::open()
     for (int sr = 1000000; sr <= 20000000; sr += 500000)
         available_samplerates.push_back(sr);
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void PlutoSDRSource::start()
