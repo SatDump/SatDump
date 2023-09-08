@@ -11,8 +11,7 @@ namespace widgets
     private:
         bool allow_manual = false;
         int selected_value = 0;
-        std::string d_id, d_id_man;
-        std::string values_option_str;
+        std::string d_id, values_option_str;
         std::vector<double> available_values;
         NotatedNum<double> *current_value;
 
