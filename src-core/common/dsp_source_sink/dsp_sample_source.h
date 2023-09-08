@@ -15,6 +15,9 @@ namespace dsp
         std::string source_type;
         std::string name;
         uint64_t unique_id;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(SourceDescriptor,
+                                       source_type, name, unique_id)
     };
 
     class DSPSampleSource
@@ -66,6 +69,6 @@ namespace dsp
 
     extern std::map<std::string, RegisteredSource> dsp_sources_registry;
     void registerAllSources();
-    std::vector<SourceDescriptor> getAllAvailableSources();
+    std::vector<SourceDescriptor> getAllAvailableSources(bool remote = false);
     std::shared_ptr<DSPSampleSource> getSourceFromDescriptor(SourceDescriptor descriptor);
 }

@@ -11,112 +11,66 @@
  **********************************************************************/
 
 #include "logger.h"
-#include <fstream>
-#include <cstdint>
-#include "common/codings/deframing/bpsk_ccsds_deframer.h"
+#include "init.h"
+#include "common/dsp_source_sink/remote.h"
+#include "common/net/udp_discovery.h"
 
-#include "common/utils.h"
+#include <unistd.h>
 
-#include "common/codings/randomization.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp_source_sink/dsp_sample_sink.h"
 
-#include "common/codings/reedsolomon/reedsolomon.h"
+#include "common/net/tcp_test.h"
 
-#include "common/codings/differential/qpsk_diff.h"
+// The TCP Server
+TCPServer *tcp_server;
 
-#include "common/codings/differential/nrzm.h"
+void tcp_rx_handler(uint8_t *buffer, int len)
+{
+    int pkt_type = buffer[0];
 
-#include "common/dsp/utils/random.h"
+    if (pkt_type == dsp::remote::PKT_TYPE_PING)
+    { // Simply reply
+        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_PING);
+        logger->debug("Ping!");
+    }
+
+    if (pkt_type == dsp::remote::PKT_TYPE_SOURCELIST)
+    {
+        std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+
+        logger->trace("Found devices (sources) :");
+        for (dsp::SourceDescriptor src : sources)
+            logger->trace("- " + src.name);
+
+        // TODO SIMPLIFY TO BINARY?
+        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SOURCELIST, nlohmann::json::to_cbor(nlohmann::json(sources)));
+    }
+}
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-#if 0
-    std::ifstream data_in(argv[1], std::ios::binary);
-    std::ofstream data_out(argv[2], std::ios::binary);
+    int port_used = 7887;
 
-    uint8_t buffer1[1024];
-    int8_t buffer2[8192];
+    // We don't wanna spam with init this time around
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
+    logger->set_level(slog::LOG_TRACE);
 
-    dsp::Random gaussian;
+    dsp::registerAllSources();
+    dsp::registerAllSinks();
 
-    while (!data_in.eof()) //&& lines_img < 500)
-    {
-        data_in.read((char *)buffer1, 1024);
+    // Start UDP discovery system
+    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT, port_used};
+    service_discovery::UDPDiscoveryServerRunner runner(cfg);
 
-        int bit2pos = 0;
-        for (int i = 0; i < 1024; i++)
-            for (int x = 6; x >= 0; x -= 2)
-            {
-                buffer2[bit2pos++] = (((buffer1[i] >> (x + 0)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
-                buffer2[bit2pos++] = (((buffer1[i] >> (x + 1)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
-            }
+    // Start the main TCP Server
+    tcp_server = new TCPServer(port_used);
+    tcp_server->callback_func = tcp_rx_handler;
 
-        data_out.write((char *)buffer2, bit2pos);
-    }
-#elif 1
-    std::ifstream data_in(argv[1], std::ios::binary);
-    std::ofstream data_out(argv[2], std::ios::binary);
-
-    uint8_t buffer1[1024];
-    uint8_t buffer2[8192];
-    uint8_t buffer3[8192];
-    uint8_t buffer4[8192];
-
-    diff::QPSKDiff diff;
-
-    while (!data_in.eof()) //&& lines_img < 500)
-    {
-        data_in.read((char *)buffer1, 1024);
-
-        int bit2pos = 0;
-        for (int i = 0; i < 1024; i++)
-        {
-            for (int x = 6; x >= 0; x -= 2)
-            {
-                buffer2[bit2pos++] = ((buffer1[i] >> (x + 1)) & 1) << 1 |
-                                     ((buffer1[i] >> (x + 0)) & 1);
-            }
-        }
-
-        diff.work(buffer2, bit2pos, buffer3);
-
-        for (int i = 0; i < 8192; i++)
-            buffer4[i / 8] = buffer4[i / 8] << 1 | buffer3[i];
-
-        data_out.write((char *)buffer4, 1024);
-    }
-#else
-    std::ifstream data_in(argv[1], std::ios::binary);
-    std::ofstream data_out(argv[2], std::ios::binary);
-
-    uint8_t buffer1[1024];
-    uint8_t buffer2[8192];
-    uint8_t buffer3[8192];
-    uint8_t buffer4[8192];
-
-    diff::NRZMDiff diff;
-
-    while (!data_in.eof()) //&& lines_img < 500)
-    {
-        data_in.read((char *)buffer1, 1024);
-
-        int bit2pos = 0;
-        for (int i = 0; i < 1024; i++)
-        {
-            for (int x = 6; x >= 0; x -= 2)
-            {
-                buffer2[bit2pos++] = ((buffer1[i] >> (x + 1)) & 1); //<< 1 |
-                                                                    // ((buffer1[i] >> (x + 0)) & 1);
-            }
-        }
-
-        diff.decode_bits(buffer2, bit2pos);
-
-        for (int i = 0; i < 8192; i++)
-            buffer4[i / 8] = buffer4[i / 8] << 1 | buffer2[i];
-
-        data_out.write((char *)buffer4, 1024 / 2);
-    }
-#endif
+    while (1)
+        sleep(1);
+    return 0;
 }
