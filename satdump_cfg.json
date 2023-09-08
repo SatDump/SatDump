@@ -18,8 +18,9 @@
                 "no_live": true
             },
             "samplerate": {
-                "type": "int",
+                "type": "notated_int",
                 "value": 6000000,
+                "units": "sps",
                 "name": "Samplerate",
                 "no_live": true
             },
@@ -36,8 +37,9 @@
                 "description": "In some cases, the I and Q branches can be swapped.\nThat can happen when using some downconverters,\nor perhaps some software that records the file in an unusual way."
             },
             "freq_shift": {
-                "type": "int",
+                "type": "notated_int",
                 "value": 0,
+                "units": "Hz",
                 "name": "Frequency Shift",
                 "description": "Can be used to offset the signal."
             }

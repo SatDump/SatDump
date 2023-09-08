@@ -103,7 +103,7 @@ void BladeRFSink::open()
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+        samplerate_option_str += format_notated(samplerate, "sps") + '\0';
 
     // Close it
     bladerf_close(bladerf_dev_obj);

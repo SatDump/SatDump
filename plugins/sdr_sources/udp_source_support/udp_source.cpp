@@ -75,7 +75,7 @@ void UDPSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
 
-    ImGui::InputInt("Samplerate", &current_samplerate, 0);
+    current_samplerate.draw();
 
     ImGui::InputInt("Port", &port);
 
@@ -85,12 +85,12 @@ void UDPSource::drawControlUI()
 
 void UDPSource::set_samplerate(uint64_t samplerate)
 {
-    current_samplerate = samplerate;
+    current_samplerate.set(samplerate);
 }
 
 uint64_t UDPSource::get_samplerate()
 {
-    return current_samplerate;
+    return current_samplerate.get();
 }
 
 std::vector<dsp::SourceDescriptor> UDPSource::getAvailableSources()

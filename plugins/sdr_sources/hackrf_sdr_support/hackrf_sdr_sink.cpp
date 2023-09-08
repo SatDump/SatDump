@@ -77,9 +77,9 @@ void HackRFSink::open()
     // Init UI stuff
     samplerate_option_str = samplerate_option_str_exp = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+        samplerate_option_str += format_notated(samplerate, "sps") + '\0';
     for (uint64_t samplerate : available_samplerates_exp)
-        samplerate_option_str_exp += formatSamplerateToString(samplerate) + '\0';
+        samplerate_option_str_exp += format_notated(samplerate, "sps") + '\0';
 }
 
 void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)

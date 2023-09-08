@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <functional>
+#include "notated_num.h"
 
 namespace widgets
 {
@@ -11,17 +11,15 @@ namespace widgets
     private:
         bool allow_manual = false;
         int selected_value = 0;
-        std::string d_id, d_id_man;
-        std::string values_option_str;
+        std::string d_id, values_option_str;
         std::vector<double> available_values;
-        double current_value = 0;
+        NotatedNum<double> *current_value;
 
     public:
         DoubleList(std::string name);
+        ~DoubleList();
         bool render();
-        void set_list(
-            std::vector<double> list, bool allow_manual, std::function<std::string(double v)> format_func = [](double v)
-                                                         { return std::to_string(v); });
+        void set_list(std::vector<double> list, bool allow_manual, std::string units = "sps");
 
         double get_value();
         bool set_value(double v, double manual_max = 0);

@@ -132,8 +132,7 @@ void AirspySource::open()
     if (!has_10msps)
         available_samplerates.push_back(10e6);
 
-    samplerate_widget.set_list(available_samplerates, false, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, false);
 
     airspy_close(airspy_dev_obj);
 }

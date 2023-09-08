@@ -1,7 +1,7 @@
 #include "fft_plot.h"
 #include "imgui/imgui_internal.h"
 #include <string>
-#include "common/dsp_source_sink/samplerate_to_string.h"
+#include "common/dsp_source_sink/format_notated.h"
 #include "core/module.h"
 
 namespace widgets
@@ -64,13 +64,13 @@ namespace widgets
 
                 window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base, 3);
 
-                auto cstr = formatFrequencyToString(freq_here);
+                auto cstr = format_notated(freq_here);
                 window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
                                           i == 5 ? 0xFF00FF00 : col_base,
                                           cstr.c_str());
                 if (i == 5 && actual_sdr_freq != -1)
                 {
-                    auto cstr = "(" + formatFrequencyToString(actual_sdr_freq) + ")";
+                    auto cstr = "(" + format_notated(actual_sdr_freq) + ")";
                     window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 16 * ui_scale},
                                               i == 5 ? 0xFF0000FF : col_base,
                                               cstr.c_str());

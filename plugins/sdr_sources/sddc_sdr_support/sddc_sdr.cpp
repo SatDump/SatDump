@@ -81,7 +81,7 @@ void SDDCSource::open()
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate / 2) + '\0';
+        samplerate_option_str += format_notated(samplerate / 2, "sps") + '\0';
 }
 
 void SDDCSource::start()

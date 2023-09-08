@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/widgets/notated_num.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/style.h"
@@ -13,7 +14,7 @@ protected:
     bool is_open = false, is_started = false;
     std::shared_ptr<net::UDPServer> udp_server;
 
-    int current_samplerate = 0;
+    widgets::NotatedNum<uint64_t> current_samplerate = widgets::NotatedNum<uint64_t>("Samplerate##udp", 0, "sps");
 
     int port = 8877;
 

@@ -6,7 +6,6 @@
 void FileSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
-
     iq_swap = getValueOrDefault(d_settings["iq_swap"], iq_swap);
     buffer_size = getValueOrDefault(d_settings["buffer_size"], buffer_size);
     file_path = getValueOrDefault(d_settings["file_path"], file_path);
@@ -74,10 +73,10 @@ void FileSource::start()
     if (is_ui)
         file_path = file_input.getPath();
 
-    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
+    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
 
     DSPSampleSource::start();
-    sample_time_period = std::chrono::duration<double>(1.0 / (double)current_samplerate);
+    sample_time_period = std::chrono::duration<double>(1.0 / (double)samplerate_input.get());
     start_time_point = std::chrono::steady_clock::now();
     total_samples = 0;
 
@@ -135,14 +134,14 @@ void FileSource::drawControlUI()
                 else if (hdr.type == "ziq2")
                     select_sample_format = 5;
 
-                current_samplerate = hdr.samplerate;
+                samplerate_input.set(hdr.samplerate);
 
                 update_format = true;
             }
         }
     }
 
-    ImGui::InputInt("Samplerate", &current_samplerate, 0);
+    samplerate_input.draw();
     if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "f32\0"
                                                                              "s16\0"
                                                                              "s8\0"
@@ -193,12 +192,12 @@ void FileSource::drawControlUI()
 
 void FileSource::set_samplerate(uint64_t samplerate)
 {
-    current_samplerate = samplerate;
+    samplerate_input.set(samplerate);
 }
 
 uint64_t FileSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_input.get();
 }
 
 std::vector<dsp::SourceDescriptor> FileSource::getAvailableSources()

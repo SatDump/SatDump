@@ -98,8 +98,7 @@ void AirspyHFSource::open()
         available_samplerates.push_back(dev_samplerates[i]);
     }
 
-    samplerate_widget.set_list(available_samplerates, true, [](double v)
-                               { return formatSamplerateToString(v); });
+    samplerate_widget.set_list(available_samplerates, true);
     airspyhf_close(airspyhf_dev_obj);
 }
 

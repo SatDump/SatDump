@@ -1,6 +1,7 @@
 #include "recorder.h"
 
 #include "main_ui.h"
+#include "logger.h"
 #include "processing.h"
 
 namespace satdump
