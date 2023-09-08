@@ -57,6 +57,12 @@ void SDRPlaySource::set_bias()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
         logger->debug("Set SDRPlay bias to %d", (int)bias);
     }
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPduo
+    {
+        channel_params->rspDuoTunerParams.biasTEnable = bias;
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_BiasTControl, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay bias to %d", (int)bias);
+    }
 }
 
 void SDRPlaySource::set_duo_channel()
