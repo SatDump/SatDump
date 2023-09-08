@@ -246,43 +246,43 @@ void BladeRFSource::set_frequency(uint64_t frequency)
 void BladeRFSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (channel_cnt > 1)
-        ImGui::Combo("Channel", &channel_id, "RX1\0"
-                                             "RX2\0");
+        RImGui::Combo("Channel", &channel_id, "RX1\0"
+                                              "RX2\0");
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
-    if (ImGui::Combo("Gain Mode", &gain_mode, "Default\0"
-                                              "Manual\0"
-                                              "Fast\0"
-                                              "Slow\0"
-                                              "Hybrid\0") &&
+    if (RImGui::Combo("Gain Mode", &gain_mode, "Default\0"
+                                               "Manual\0"
+                                               "Fast\0"
+                                               "Slow\0"
+                                               "Hybrid\0") &&
         is_started)
         set_gains();
-    if (ImGui::SliderInt("Gain", &general_gain, bladerf_range_gain->min, bladerf_range_gain->max) && is_started)
+    if (RImGui::SliderInt("Gain", &general_gain, bladerf_range_gain->min, bladerf_range_gain->max) && is_started)
         set_gains();
 
     if (bladerf_model == 2)
     {
-        if (ImGui::Checkbox("Bias-Tee", &bias_enabled) && is_started)
+        if (RImGui::Checkbox("Bias-Tee", &bias_enabled) && is_started)
             set_bias();
 
         if (is_started)
-            style::beginDisabled();
+            RImGui::beginDisabled();
 
-        if (ImGui::Checkbox("External Clock", &extclock_enable) && is_started)
+        if (RImGui::Checkbox("External Clock", &extclock_enable) && is_started)
             set_others();
 
         if (is_started)
-            style::endDisabled();
+            RImGui::endDisabled();
     }
 
-    bool bw_update = ImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
+    bool bw_update = RImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
     if (manual_bandwidth)
         bw_update = bw_update || bandwidth_widget.render();
     if (bw_update && is_started)

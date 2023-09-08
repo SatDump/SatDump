@@ -16,37 +16,67 @@ nlohmann::json RemoteSource::get_settings()
 
 void RemoteSource::open()
 {
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SOURCEOPEN, nlohmann::json::to_cbor(nlohmann::json(remote_source_desc)));
     is_open = true;
 }
 
 void RemoteSource::start()
 {
     DSPSampleSource::start();
-
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SOURCESTART);
     is_started = true;
 }
 
 void RemoteSource::stop()
 {
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SOURCESTOP);
 
-    is_started = false;
+    if (is_started)
+    {
+        is_started = false;
+
+        output_stream->stopReader();
+        output_stream->stopWriter();
+    }
 }
 
 void RemoteSource::close()
 {
     if (is_open)
     {
+        sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SOURCECLOSE);
         is_open = false;
     }
 }
 
 void RemoteSource::set_frequency(uint64_t frequency)
 {
+    std::vector<uint8_t> pkt(8);
+    *((double *)&pkt[0]) = frequency;
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SETFREQ, pkt);
     DSPSampleSource::set_frequency(frequency);
 }
 
 void RemoteSource::drawControlUI()
 {
+    // Draw remote UI
+    drawelems_mtx.lock();
+    std::vector<RImGui::UiElem> feedback = RImGui::draw(&gui_remote, last_draw_elems);
+    last_draw_elems.clear();
+    drawelems_mtx.unlock();
+
+    if (feedback.size() > 0)
+    {
+        logger->info("FeedBack %d", feedback.size());
+
+        drawelems_mtx.lock();
+        uint8_t buffer_tx[10000];
+        gui_buffer_tx.resize(65535);
+        int len = RImGui::encode_vec(gui_buffer_tx.data(), feedback);
+        gui_buffer_tx.resize(len);
+        sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_GUI, gui_buffer_tx);
+        drawelems_mtx.unlock();
+    }
 }
 
 void RemoteSource::set_samplerate(uint64_t samplerate)

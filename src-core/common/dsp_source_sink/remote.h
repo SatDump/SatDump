@@ -57,7 +57,14 @@ namespace dsp
         {
             PKT_TYPE_PING,
             PKT_TYPE_SOURCELIST,
-            // PKT_TYPE_SOURCEOPEN,
+            PKT_TYPE_SOURCEOPEN,
+            PKT_TYPE_SOURCECLOSE,
+            PKT_TYPE_GUI,
+            PKT_TYPE_IQ,
+            PKT_TYPE_SAMPLERATEFBK,
+            PKT_TYPE_SOURCESTART,
+            PKT_TYPE_SOURCESTOP,
+            PKT_TYPE_SETFREQ,
         };
 
         template <typename T>

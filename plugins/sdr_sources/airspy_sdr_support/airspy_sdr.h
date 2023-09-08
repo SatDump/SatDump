@@ -7,8 +7,7 @@
 #include <libairspy/airspy.h>
 #endif
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include "common/widgets/double_list.h"
 
 class AirspySource : public dsp::DSPSampleSource

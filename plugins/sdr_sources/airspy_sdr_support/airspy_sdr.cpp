@@ -187,42 +187,52 @@ void AirspySource::set_frequency(uint64_t frequency)
 void AirspySource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::RadioButton("Sensitive", &gain_type, 0);
-    // ImGui::SameLine();
-    gain_changed |= ImGui::RadioButton("Linear", &gain_type, 1);
-    // ImGui::SameLine();
-    gain_changed |= ImGui::RadioButton("Manual", &gain_type, 2);
+    if (RImGui::RadioButton("Sensitive", gain_type == 0))
+    {
+        gain_type = 0;
+        gain_changed = true;
+    }
+    if (RImGui::RadioButton("Linear", gain_type == 1))
+    {
+        gain_type = 1;
+        gain_changed = true;
+    }
+    if (RImGui::RadioButton("Manual", gain_type == 22))
+    {
+        gain_type = 2;
+        gain_changed = true;
+    }
 
     if (gain_type == 2)
     {
-        gain_changed |= ImGui::SliderInt("LNA Gain", &manual_gains[0], 0, 15);
-        gain_changed |= ImGui::SliderInt("Mixer Gain", &manual_gains[1], 0, 15);
-        gain_changed |= ImGui::SliderInt("VGA Gain", &manual_gains[2], 0, 15);
+        gain_changed |= RImGui::SliderInt("LNA Gain", &manual_gains[0], 0, 15);
+        gain_changed |= RImGui::SliderInt("Mixer Gain", &manual_gains[1], 0, 15);
+        gain_changed |= RImGui::SliderInt("VGA Gain", &manual_gains[2], 0, 15);
     }
     else
     {
-        gain_changed |= ImGui::SliderInt("Gain", &general_gain, 0, 21);
+        gain_changed |= RImGui::SliderInt("Gain", &general_gain, 0, 21);
     }
 
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 
-    if (ImGui::Checkbox("LNA AGC", &lna_agc_enabled))
+    if (RImGui::Checkbox("LNA AGC", &lna_agc_enabled))
         set_agcs();
 
-    if (ImGui::Checkbox("Mixer AGC", &mixer_agc_enabled))
+    if (RImGui::Checkbox("Mixer AGC", &mixer_agc_enabled))
         set_agcs();
 }
 

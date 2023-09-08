@@ -23,6 +23,8 @@ private:
     std::thread rx_thread;
     std::mutex write_mtx;
 
+    uint8_t *buffer_tx;
+
 public:
     std::function<void(uint8_t *, int)> callback_func;
 
@@ -51,6 +53,8 @@ public:
             logger->trace("Server listening");
 
         rx_thread = std::thread(&TCPServer::rx_thread_func, this);
+
+        buffer_tx = new uint8_t[3000000];
     }
 
     ~TCPServer()
@@ -58,6 +62,8 @@ public:
         thread_should_run = false;
         if (rx_thread.joinable())
             rx_thread.join();
+
+        delete[] buffer_tx;
     }
 
 private:
@@ -75,12 +81,12 @@ private:
 public:
     void rx_thread_func()
     {
-        uint8_t *buffer = new uint8_t[100000];
+        uint8_t *buffer = new uint8_t[3000000];
         while (thread_should_run)
         {
             if (clientsockfd != -1)
             {
-                int lpkt_size = sread(buffer, 2);
+                int lpkt_size = sread(buffer, 4);
                 if (lpkt_size == -1)
                 {
                     clientsockfd = -1;
@@ -88,7 +94,7 @@ public:
                 }
 
                 int current_pkt_size = lpkt_size;
-                int expected_pkt_size = (buffer[0] << 8 | buffer[1]) + 2;
+                int expected_pkt_size = uint32_t(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]) + 4;
                 while (current_pkt_size < expected_pkt_size)
                 {
                     int ret = sread(buffer + current_pkt_size, expected_pkt_size - current_pkt_size);
@@ -97,7 +103,7 @@ public:
                     current_pkt_size += ret;
                 }
 
-                callback_func(buffer + 2, expected_pkt_size - 2);
+                callback_func(buffer + 4, expected_pkt_size - 4);
             }
             else
             {
@@ -125,12 +131,12 @@ public:
     void swrite(uint8_t *buff, int len)
     {
         write_mtx.lock();
-        std::vector<uint8_t> buff2;
-        buff2.resize(len + 2);
-        buff2[0] = len >> 8;
-        buff2[1] = len & 0xFF;
-        memcpy(&buff2[2], buff, len);
-        write(clientsockfd, buff2.data(), buff2.size());
+        buffer_tx[0] = (len >> 24) & 0xFF;
+        buffer_tx[1] = (len >> 16) & 0xFF;
+        buffer_tx[2] = (len >> 8) & 0xFF;
+        buffer_tx[3] = len & 0xFF;
+        memcpy(&buffer_tx[4], buff, len);
+        write(clientsockfd, buffer_tx, len + 4);
         // logger->critical("HEADESENTR %d %d", len, buff2.size());
         write_mtx.unlock();
     }
@@ -145,6 +151,8 @@ private:
     bool thread_should_run = true;
     std::thread rx_thread;
     std::mutex write_mtx;
+
+    uint8_t *buffer_tx;
 
 public:
     std::function<void(uint8_t *, int)> callback_func;
@@ -170,6 +178,8 @@ public:
         //     logger->trace("Connected to the server");
 
         rx_thread = std::thread(&TCPClient::rx_thread_func, this);
+
+        buffer_tx = new uint8_t[3000000];
     }
 
     ~TCPClient()
@@ -178,30 +188,32 @@ public:
         if (rx_thread.joinable())
             rx_thread.join();
         close(clientsockfd);
+
+        delete[] buffer_tx;
     }
 
 public:
     void rx_thread_func()
     {
-        uint8_t *buffer = new uint8_t[100000];
+        uint8_t *buffer = new uint8_t[3000000];
         int current_pkt_size = 0;
         int current_pkt_size_exp = -1;
         while (thread_should_run)
         {
             if (clientsockfd != -1)
             {
-                int lpkt_size = sread(buffer, 2);
+                int lpkt_size = sread(buffer, 4);
                 if (lpkt_size == -1)
                     continue;
 
                 if (current_pkt_size_exp == -1)
                 {
-                    current_pkt_size_exp = (buffer[0] << 8 | buffer[1]) + 2;
+                    current_pkt_size_exp = uint32_t(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]) + 4;
                     current_pkt_size = 0;
                 }
 
                 int current_pkt_size = lpkt_size;
-                int expected_pkt_size = (buffer[0] << 8 | buffer[1]) + 2;
+                int expected_pkt_size = uint32_t(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]) + 4;
                 while (current_pkt_size < expected_pkt_size)
                 {
                     int ret = sread(buffer + current_pkt_size, expected_pkt_size - current_pkt_size);
@@ -210,7 +222,7 @@ public:
                     current_pkt_size += ret;
                 }
 
-                callback_func(buffer + 2, expected_pkt_size - 2);
+                callback_func(buffer + 4, expected_pkt_size - 4);
 
                 if (readOne)
                     break;
@@ -233,12 +245,12 @@ public:
     void swrite(uint8_t *buff, int len)
     {
         write_mtx.lock();
-        std::vector<uint8_t> buff2;
-        buff2.resize(len + 2);
-        buff2[0] = len >> 8;
-        buff2[1] = len & 0xFF;
-        memcpy(&buff2[2], buff, len);
-        write(clientsockfd, buff2.data(), buff2.size());
+        buffer_tx[0] = (len >> 24) & 0xFF;
+        buffer_tx[1] = (len >> 16) & 0xFF;
+        buffer_tx[2] = (len >> 8) & 0xFF;
+        buffer_tx[3] = len & 0xFF;
+        memcpy(&buffer_tx[4], buff, len);
+        write(clientsockfd, buffer_tx, len + 4);
         //  logger->critical("HEADESENTR %d %d", len, buff2.size());
         write_mtx.unlock();
     }

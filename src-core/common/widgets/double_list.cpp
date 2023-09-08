@@ -1,5 +1,5 @@
 #include "double_list.h"
-#include "imgui/imgui.h"
+#include "common/rimgui.h"
 #include "common/dsp_source_sink/format_notated.h"
 
 namespace widgets
@@ -17,7 +17,7 @@ namespace widgets
 
     bool DoubleList::render()
     {
-        bool v = ImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
+        bool v = RImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
 
         if (allow_manual && selected_value == (int)available_values.size() - 1)
             v = v || current_value->draw();
@@ -36,7 +36,7 @@ namespace widgets
 
         available_values = list;
 
-        for (double& v : available_values)
+        for (double &v : available_values)
             values_option_str += format_notated(v, units) + '\0';
 
         if (allow_manual)

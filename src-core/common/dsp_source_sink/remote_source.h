@@ -9,15 +9,26 @@
 
 #include "common/net/tcp_test.h"
 #include "remote.h"
+#include "common/rimgui.h"
+
+#define BUILD_ZIQ2
+#include "common/ziq2.h"
 
 class RemoteSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
 
+    dsp::SourceDescriptor remote_source_desc;
+
     TCPClient *tcp_client = nullptr;
 
     uint64_t samplerate_current = 0;
+
+    std::vector<uint8_t> gui_buffer_tx;
+    RImGui::RImGui gui_remote;
+    std::mutex drawelems_mtx;
+    std::vector<RImGui::UiElem> last_draw_elems;
 
 public:
     RemoteSource(dsp::SourceDescriptor source)
@@ -30,6 +41,9 @@ public:
         tcp_client = new TCPClient((char *)ip.c_str(), std::stoi(port));
         tcp_client->callback_func = [this](uint8_t *buf, int len)
         { handler(buf, len); };
+
+        remote_source_desc = source;
+        remote_source_desc.name = source.name.substr(source.name.find('-') + 2, source.name.size() - 2 - source.name.find('-'));
     }
 
     void handler(uint8_t *buffer, int len)
@@ -38,6 +52,39 @@ public:
 
         if (pkt_type == dsp::remote::PKT_TYPE_PING)
             logger->debug("Pong!");
+
+        if (pkt_type == dsp::remote::PKT_TYPE_GUI)
+        {
+#if 0
+                bool is_zero = false;
+                while (!is_zero)
+                {
+                    drawelems_mtx.lock();
+                    is_zero = last_draw_elems.size() == 0;
+                    drawelems_mtx.unlock();
+                    // sleep(1);
+                }
+#endif
+            drawelems_mtx.lock();
+            last_draw_elems = RImGui::decode_vec(buffer + 1, len - 1);
+            logger->info("DrawElems %d ----- %d", last_draw_elems.size(), len);
+            drawelems_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATEFBK)
+        {
+            samplerate_current = *((uint64_t *)&buffer[1]);
+            logger->debug("Samplerate sent %llu", samplerate_current);
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_IQ)
+        {
+            int nsamples = 0;
+            ziq2::ziq2_read_iq_pkt(&buffer[1], output_stream->writeBuf, &nsamples);
+            // memcpy(output_stream->writeBuf, &buffer[3], nsamples * sizeof(complex_t));
+            // logger->trace("SAMPLES %d %d", nsamples, len);
+            output_stream->swap(nsamples);
+        }
     }
 
     ~RemoteSource()
