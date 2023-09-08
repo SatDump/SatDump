@@ -669,7 +669,7 @@ namespace satdump
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                 ImGui::SliderInt("Cities Font Size", &cities_size, 10, 500);
-                static const char* items[] = { "Capital Only", "Regional Capital Also", "All (by Scale Rank)" };
+                static const char *items[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
                 if (ImGui::Combo("Cities Type", &cities_type, items, IM_ARRAYSIZE(items)))
                     asyncUpdate();
                 if (cities_type == 2 && ImGui::SliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10))
