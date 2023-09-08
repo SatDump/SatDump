@@ -7,12 +7,12 @@ namespace widgets
     DoubleList::DoubleList(std::string name)
     {
         d_id = name + "##id" + std::to_string(rand());
-        manual_input = new NotatedNum<double>("Manual " + name + "##id" + std::to_string(rand()), 0, "sps");
+        current_value = new NotatedNum<double>("Manual " + name + "##id" + std::to_string(rand()), 0, "sps");
     }
 
     DoubleList::~DoubleList()
     {
-        delete manual_input;
+        delete current_value;
     }
 
     bool DoubleList::render()
@@ -20,9 +20,9 @@ namespace widgets
         bool v = ImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
 
         if (allow_manual && selected_value == (int)available_values.size() - 1)
-            v = v || manual_input->draw();
+            v = v || current_value->draw();
         else
-            current_value = available_values[selected_value];
+            current_value->set(available_values[selected_value]);
 
         return v;
     }
@@ -38,7 +38,6 @@ namespace widgets
 
         for (double& v : available_values)
             values_option_str += format_notated(v, "sps") + '\0';
-        manual_input->set(available_values[0]);
 
         if (allow_manual)
         {
@@ -50,12 +49,10 @@ namespace widgets
 
     double DoubleList::get_value()
     {
-        if (allow_manual && selected_value == (int)available_values.size() - 1)
-            current_value = manual_input->get();
-        else
-            current_value = available_values[selected_value];
+        if (!allow_manual || selected_value != (int)available_values.size() - 1)
+            current_value->set(available_values[selected_value]);
 
-        return current_value;
+        return current_value->get();
     }
 
     bool DoubleList::set_value(double v, double manual_max)
@@ -65,7 +62,7 @@ namespace widgets
             if (v == available_values[i])
             {
                 selected_value = i;
-                current_value = v;
+                current_value->set(v);
                 return true;
             }
         }
@@ -73,8 +70,7 @@ namespace widgets
         if (allow_manual && manual_max != 0 && v <= manual_max)
         {
             selected_value = (int)available_values.size() - 1;
-            current_value = v;
-            manual_input->set(current_value);
+            current_value->set(v);
             return true;
         }
 

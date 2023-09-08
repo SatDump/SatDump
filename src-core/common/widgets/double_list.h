@@ -14,8 +14,7 @@ namespace widgets
         std::string d_id, d_id_man;
         std::string values_option_str;
         std::vector<double> available_values;
-        NotatedNum<double> *manual_input;
-        double current_value = 0;
+        NotatedNum<double> *current_value;
 
     public:
         DoubleList(std::string name);
