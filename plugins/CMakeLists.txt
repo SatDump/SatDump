@@ -322,6 +322,12 @@ if(PLUGIN_UDP_SOURCE_SDR_SUPPORT)
     add_subdirectory(sdr_sources/udp_source_support)
 endif()
 
+option(PLUGIN_REMOTE_SDR_SUPPORT "Enable Remote SDR Support plugin (WIP!)" OFF)
+
+if(PLUGIN_REMOTE_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/remote_sdr_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 

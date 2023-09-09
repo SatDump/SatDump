@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/net/tcp_test.h"
+#include "tcp_test.h"
 
 #define REMOTE_NETWORK_DISCOVERY_PORT 4567
 

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <thread>
 
-#include "common/net/tcp_test.h"
+#include "tcp_test.h"
 #include "remote.h"
 #include "common/rimgui.h"
 

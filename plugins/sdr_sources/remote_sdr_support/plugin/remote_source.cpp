@@ -1,7 +1,7 @@
 #include "remote_source.h"
 #include "common/utils.h"
 
-#include "common/net/udp_discovery.h"
+#include "udp_discovery.h"
 
 void RemoteSource::set_settings(nlohmann::json settings)
 {
