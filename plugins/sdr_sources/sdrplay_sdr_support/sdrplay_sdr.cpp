@@ -329,94 +329,94 @@ void SDRPlaySource::set_frequency(uint64_t frequency)
 void SDRPlaySource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     if (!is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain);
-    gain_changed |= ImGui::SliderInt("IF Gain", &if_gain, 20, 59);
+    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain);
+    gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 20, 59);
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
-                                            "5HZ\0"
-                                            "50HZ\0"
-                                            "100HZ\0"))
+    if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
+                                             "5HZ\0"
+                                             "50HZ\0"
+                                             "100HZ\0"))
         set_agcs();
 
     // RSP1A-specific settings
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID)
     {
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSP2-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID)
     {
-        if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                    "Antenna A (Hi-Z)\0"
-                                                    "Antenna B\0"))
+        if (RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                     "Antenna A (Hi-Z)\0"
+                                                     "Antenna B\0"))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSPDuo-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
     {
         if (is_started)
-            style::beginDisabled();
+            RImGui::beginDisabled();
         else
-            style::endDisabled();
-        ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                "Antenna A (Hi-Z)\0"
-                                                "Antenna B\0");
+            RImGui::endDisabled();
+        RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                 "Antenna A (Hi-Z)\0"
+                                                 "Antenna B\0");
         if (is_started)
-            style::endDisabled();
+            RImGui::endDisabled();
         else
-            style::beginDisabled();
+            RImGui::beginDisabled();
 
-        if (ImGui::Checkbox("AM Notch", &am_notch))
+        if (RImGui::Checkbox("AM Notch", &am_notch))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSPDx-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID)
     {
-        if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                    "Atenna B\0"
-                                                    "Atenna C\0"))
+        if (RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                     "Atenna B\0"
+                                                     "Atenna C\0"))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     else
     {
-        ImGui::Text("This device is not supported yet,\n or perhaps a clone!");
+        RImGui::Text("This device is not supported yet,\n or perhaps a clone!");
     }
     if (!is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 }
 
 void SDRPlaySource::set_samplerate(uint64_t samplerate)

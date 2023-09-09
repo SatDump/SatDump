@@ -204,20 +204,20 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
 void RtlSdrSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
-    if (ImGui::SliderInt("LNA Gain", &gain, 0, 49))
+    if (RImGui::SliderInt("LNA Gain", &gain, 0, 49))
         set_gains();
 
-    if (ImGui::Checkbox("AGC", &lna_agc_enabled))
+    if (RImGui::Checkbox("AGC", &lna_agc_enabled))
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 }
 

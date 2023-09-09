@@ -3,8 +3,7 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include <sdrplay_api.h>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include "common/widgets/double_list.h"
 
 class SDRPlaySource : public dsp::DSPSampleSource
