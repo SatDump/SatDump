@@ -11,8 +11,7 @@
 #include "remote.h"
 #include "common/rimgui.h"
 
-#define BUILD_ZIQ2
-#include "common/ziq2.h"
+#include "iq_pkt.h"
 
 class RemoteSource : public dsp::DSPSampleSource
 {
@@ -82,7 +81,7 @@ public:
         if (pkt_type == dsp::remote::PKT_TYPE_IQ)
         {
             int nsamples = 0;
-            ziq2::ziq2_read_iq_pkt(&buffer[1], output_stream->writeBuf, &nsamples);
+            remote_sdr::decode_iq_pkt(&buffer[1], output_stream->writeBuf, &nsamples);
             // memcpy(output_stream->writeBuf, &buffer[3], nsamples * sizeof(complex_t));
             // logger->trace("SAMPLES %d %d", nsamples, len);
             output_stream->swap(nsamples);

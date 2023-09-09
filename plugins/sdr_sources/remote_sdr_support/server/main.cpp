@@ -24,8 +24,7 @@
 
 #include "common/rimgui.h"
 
-#define BUILD_ZIQ2
-#include "common/ziq2.h"
+#include "iq_pkt.h"
 
 // The TCP Server
 TCPServer *tcp_server;
@@ -113,7 +112,7 @@ void sourceStreamThread()
                     // buffer_tx[1] = nsamples >> 8;
                     // buffer_tx[2] = nsamples & 0xFF;
                     // memcpy(&buffer_tx[3], current_sample_source->output_stream->readBuf, nsamples * sizeof(complex_t));
-                    pktlen += ziq2::ziq2_write_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, 8, false);
+                    pktlen += remote_sdr::encode_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, 8);
 
                     tcp_server->swrite(buffer_tx, pktlen);
                 }
