@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  satdump:
+    build:
+      context: .
+    image: satdump:latest
+    command: 
+    network_mode: host
+    device_cgroup_rules:
+      - 'c 189:* rwm'
+    devices:
+      - '/dev/bus/usb'
+    restart: 'unless-stopped'
