@@ -30,6 +30,8 @@ protected:
     std::mutex drawelems_mtx;
     std::vector<RImGui::UiElem> last_draw_elems;
 
+    std::mutex waiting_for_settings;
+
 public:
     RemoteSource(dsp::SourceDescriptor source)
         : DSPSampleSource(source)
@@ -84,6 +86,13 @@ public:
             // memcpy(output_stream->writeBuf, &buffer[3], nsamples * sizeof(complex_t));
             // logger->trace("SAMPLES %d %d", nsamples, len);
             output_stream->swap(nsamples);
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
+        {
+            logger->debug("Got source settings");
+            d_settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
+            waiting_for_settings.unlock();
         }
     }
 

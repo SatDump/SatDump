@@ -5,12 +5,17 @@
 
 void RemoteSource::set_settings(nlohmann::json settings)
 {
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SETSETTINGS, nlohmann::json::to_cbor(settings));
     d_settings = settings;
 }
 
 nlohmann::json RemoteSource::get_settings()
 {
-
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_GETSETTINGS);
+    waiting_for_settings.lock();
+    waiting_for_settings.lock();
+    logger->trace("Done waiting for settings!");
+    waiting_for_settings.unlock();
     return d_settings;
 }
 

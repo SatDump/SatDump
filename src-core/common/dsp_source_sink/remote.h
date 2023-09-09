@@ -65,6 +65,8 @@ namespace dsp
             PKT_TYPE_SOURCESTART,
             PKT_TYPE_SOURCESTOP,
             PKT_TYPE_SETFREQ,
+            PKT_TYPE_SETSETTINGS,
+            PKT_TYPE_GETSETTINGS,
         };
 
         template <typename T>

@@ -281,13 +281,34 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             current_sample_source->set_frequency(freq);
         source_mtx.unlock();
     }
+
+    if (pkt_type == dsp::remote::PKT_TYPE_SETSETTINGS)
+    {
+        source_mtx.lock();
+        auto settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
+        logger->debug("Setting source settings");
+        if (source_is_open)
+            current_sample_source->set_settings(settings);
+        source_mtx.unlock();
+    }
+
+    if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
+    {
+        source_mtx.lock();
+        nlohmann::json settings;
+        logger->debug("Sending source settings");
+        if (source_is_open)
+            settings = current_sample_source->get_settings();
+        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_GETSETTINGS, nlohmann::json::to_cbor(settings));
+        source_mtx.unlock();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    int port_used = 7887;
+    int port_used = 7888;
 
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);
