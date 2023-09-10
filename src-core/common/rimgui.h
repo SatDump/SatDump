@@ -83,7 +83,7 @@ namespace RImGui
 
             buffer[pos++] = (sv.size() >> 8) & 0xFF;
             buffer[pos++] = (sv.size() >> 0) & 0xFF;
-            for (int i = 0; i < sv.size(); i++)
+            for (int i = 0; i < (int)sv.size(); i++)
                 buffer[pos++] = sv[i];
 
             *((int *)&buffer[pos]) = iv;
@@ -101,7 +101,7 @@ namespace RImGui
 
             buffer[pos++] = (sv2.size() >> 8) & 0xFF;
             buffer[pos++] = (sv2.size() >> 0) & 0xFF;
-            for (int i = 0; i < sv2.size(); i++)
+            for (int i = 0; i < (int)sv2.size(); i++)
                 buffer[pos++] = sv2[i];
 
             buffer[pos++] = clicked;
@@ -115,16 +115,18 @@ namespace RImGui
 
             t = (UiElemType)buffer[pos++];
 
-            id = buffer[pos++] << 8 | buffer[pos++];
+            id = buffer[pos + 0] << 8 | buffer[pos + 1];
+            pos += 2;
 
             size_x = *((float *)&buffer[pos]);
             pos += 4;
             size_y = *((float *)&buffer[pos]);
             pos += 4;
 
-            int svsize = buffer[pos++] << 8 | buffer[pos++];
+            int svsize = buffer[pos + 0] << 8 | buffer[pos + 1];
+            pos += 2;
             sv.resize(svsize);
-            for (int i = 0; i < sv.size(); i++)
+            for (int i = 0; i < (int)sv.size(); i++)
                 sv[i] = buffer[pos++];
 
             iv = *((int *)&buffer[pos]);
@@ -140,9 +142,10 @@ namespace RImGui
             max = *((double *)&buffer[pos]);
             pos += 8;
 
-            int sv2size = buffer[pos++] << 8 | buffer[pos++];
+            int sv2size = buffer[pos + 0] << 8 | buffer[pos + 1];
+            pos += 2;
             sv2.resize(sv2size);
-            for (int i = 0; i < sv2.size(); i++)
+            for (int i = 0; i < (int)sv2.size(); i++)
                 sv2[i] = buffer[pos++];
 
             clicked = buffer[pos++];
@@ -158,7 +161,7 @@ namespace RImGui
             buffer[0] = (elems.size() >> 8) & 0xFF;
             buffer[1] = (elems.size() >> 0) & 0xFF;
             int pos = 2;
-            for (int i = 0; i < elems.size(); i++)
+            for (int i = 0; i < (int)elems.size(); i++)
                 pos += elems[i].encode(buffer + pos);
             return pos;
         }
@@ -176,7 +179,7 @@ namespace RImGui
             int nel = buffer[0] << 8 | buffer[1];
             elems.resize(nel);
             int pos = 2;
-            for (int i = 0; i < elems.size() && pos <= len; i++)
+            for (int i = 0; i < (int)elems.size() && pos <= len; i++)
                 pos += elems[i].decode(buffer + pos);
             return elems;
         }
@@ -203,7 +206,7 @@ namespace RImGui
         if (current_instance->ui_elements.size() == current_instance->ui_elems_last.size() && !force)
         {
             bool has_one_not_equal = false;
-            for (int i = 0; i < current_instance->ui_elements.size(); i++)
+            for (int i = 0; i < (int)current_instance->ui_elements.size(); i++)
                 if (!(current_instance->ui_elems_last[i] == current_instance->ui_elements[i]))
                     has_one_not_equal = true;
             if (has_one_not_equal)
@@ -261,7 +264,7 @@ namespace RImGui
                 style::endDisabled();
         }
         std::vector<UiElem> elems_f;
-        for (int i = 0; i < elems_o.size(); i++)
+        for (int i = 0; i < (int)elems_o.size(); i++)
             // if (elems[i].clicked != elems_o[i].clicked ||
             //     elems[i].iv != elems_o[i].iv)
             if (!(elems[i] == elems_o[i]))
@@ -447,7 +450,7 @@ namespace RImGui
             current_instance->ui_elements.push_back({UI_ELEMENT_INPUTDOUBLE,
                                                      current_instance->current_id++,
                                                      0, 0, std::string(label), 0,
-                                                     false, step, *v, step_fast, std::string(format)});
+                                                     false, (float)step, *v, step_fast, std::string(format)});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_INPUTDOUBLE)
                     if (el.sv == std::string(label))
