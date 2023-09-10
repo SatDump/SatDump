@@ -67,6 +67,7 @@ namespace dsp
             PKT_TYPE_SETFREQ,
             PKT_TYPE_SETSETTINGS,
             PKT_TYPE_GETSETTINGS,
+            PKT_TYPE_SAMPLERATESET,
         };
 
         template <typename T>

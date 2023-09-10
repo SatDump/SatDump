@@ -6,6 +6,7 @@
 #include "core/style.h"
 #include <fstream>
 #include <thread>
+#include <atomic>
 
 #include "tcp_test.h"
 #include "remote.h"

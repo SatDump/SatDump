@@ -299,6 +299,16 @@ void tcp_rx_handler(uint8_t *buffer, int len)
         sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_GETSETTINGS, nlohmann::json::to_cbor(settings));
         source_mtx.unlock();
     }
+
+    if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
+    {
+        source_mtx.lock();
+        uint64_t sampr = *((uint64_t *)&buffer[1]);
+        logger->debug("Samplerate sent %llu", sampr);
+        if (source_is_open)
+            current_sample_source->set_samplerate(sampr);
+        source_mtx.unlock();
+    }
 }
 
 int main(int argc, char *argv[])
@@ -316,7 +326,7 @@ int main(int argc, char *argv[])
     dsp::registerAllSinks();
 
     // Start UDP discovery system
-    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT, port_used};
+    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT, (uint32_t)port_used};
     service_discovery::UDPDiscoveryServerRunner runner(cfg);
 
     // Start the main TCP Server

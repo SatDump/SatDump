@@ -13,7 +13,7 @@ nlohmann::json RemoteSource::get_settings()
 {
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_GETSETTINGS);
     waiting_for_settings = true;
-    while(waiting_for_settings)
+    while (waiting_for_settings)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     logger->trace("Done waiting for settings!");
     return d_settings;
@@ -85,6 +85,9 @@ void RemoteSource::drawControlUI()
 
 void RemoteSource::set_samplerate(uint64_t samplerate)
 {
+    std::vector<uint8_t> pkt(8);
+    *((uint64_t *)&pkt[0]) = samplerate;
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SAMPLERATESET, pkt);
 }
 
 uint64_t RemoteSource::get_samplerate()
@@ -99,8 +102,6 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
     service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
     auto detected_servers = service_discovery::discoverUDPServers(cfg, 100);
-
-    detected_servers.push_back({"192.168.1.116", 9999});
 
     for (auto server_ip : detected_servers)
     {

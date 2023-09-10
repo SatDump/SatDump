@@ -234,7 +234,6 @@ public:
     void rx_thread_func()
     {
         uint8_t *buffer = new uint8_t[3000000];
-        int current_pkt_size = 0;
         int current_pkt_size_exp = -1;
         while (thread_should_run)
         {
@@ -247,7 +246,6 @@ public:
                 if (current_pkt_size_exp == -1)
                 {
                     current_pkt_size_exp = uint32_t(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]) + 4;
-                    current_pkt_size = 0;
                 }
 
                 int current_pkt_size = lpkt_size;
