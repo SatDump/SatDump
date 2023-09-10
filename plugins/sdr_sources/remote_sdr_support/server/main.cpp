@@ -340,6 +340,7 @@ int main(int argc, char *argv[])
     std::thread source_iq_th(sourceStreamThread);
 
     while (1)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        tcp_server->wait_client();
+    //  std::this_thread::sleep_for(std::chrono::seconds(1));
     return 0;
 }

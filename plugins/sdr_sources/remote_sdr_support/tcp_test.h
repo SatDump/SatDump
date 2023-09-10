@@ -36,7 +36,7 @@ private:
     uint8_t *buffer_tx;
 
 #if defined(_WIN32)
-        WSADATA wsa;
+    WSADATA wsa;
 #endif
 
 public:
@@ -47,8 +47,8 @@ public:
         : d_port(port)
     {
 #if defined(_WIN32)
-            if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-                throw std::runtime_error("Couldn't startup WSA socket!");
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
 #endif
 
         serversockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -85,16 +85,27 @@ public:
         delete[] buffer_tx;
     }
 
-private:
+public:
     void wait_client()
     {
         logger->trace("Waiting for client!");
-        int len = sizeof(clientaddr);
-        clientsockfd = accept(serversockfd, (struct sockaddr *)&clientaddr, (socklen_t *)&len);
-        if (clientsockfd < 0)
+        struct sockaddr_in nclientaddr;
+        int len = sizeof(nclientaddr);
+        int nclientsockfd = accept(serversockfd, (struct sockaddr *)&nclientaddr, (socklen_t *)&len);
+        if (nclientsockfd < 0)
             throw std::runtime_error("Server accept failed");
         else
-            logger->trace("server accept the client");
+            logger->trace("Server accepted the client");
+        if (clientsockfd != -1)
+        {
+            logger->trace("Still got client! Refusing request.");
+            close(nclientsockfd);
+        }
+        else
+        {
+            clientaddr = nclientaddr;
+            clientsockfd = nclientsockfd;
+        }
     }
 
 public:
@@ -126,7 +137,7 @@ public:
             }
             else
             {
-                wait_client();
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         }
         delete[] buffer;
@@ -180,7 +191,7 @@ private:
     uint8_t *buffer_tx;
 
 #if defined(_WIN32)
-        WSADATA wsa;
+    WSADATA wsa;
 #endif
 
 public:
@@ -192,8 +203,8 @@ public:
         : d_port(port)
     {
 #if defined(_WIN32)
-            if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-                throw std::runtime_error("Couldn't startup WSA socket!");
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
 #endif
 
         clientsockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

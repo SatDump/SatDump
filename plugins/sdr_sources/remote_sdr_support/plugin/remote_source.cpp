@@ -107,25 +107,32 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
     {
         logger->debug("Found server on %s:%d", server_ip.first.c_str(), server_ip.second);
 
-        TCPClient tcp_client((char *)server_ip.first.c_str(), server_ip.second);
-
-        tcp_client.readOne = true;
-        tcp_client.callback_func = [&results, &server_ip](uint8_t *buf, int len)
+        try
         {
-            if (buf[0] == dsp::remote::PKT_TYPE_SOURCELIST && len > 2)
-            {
-                std::vector<uint8_t> pkt(buf + 1, buf + len);
-                for (dsp::SourceDescriptor &src : nlohmann::json::from_cbor(pkt).get<std::vector<dsp::SourceDescriptor>>())
-                {
-                    src.source_type = "remote";
-                    src.name = server_ip.first + ":" + std::to_string(server_ip.second) + " - " + src.name;
-                    results.push_back(src);
-                }
-            }
-        };
+            TCPClient tcp_client((char *)server_ip.first.c_str(), server_ip.second);
 
-        sendPacketWithVector(&tcp_client, dsp::remote::PKT_TYPE_SOURCELIST); // Request source list
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+            tcp_client.readOne = true;
+            tcp_client.callback_func = [&results, &server_ip](uint8_t *buf, int len)
+            {
+                if (buf[0] == dsp::remote::PKT_TYPE_SOURCELIST && len > 2)
+                {
+                    std::vector<uint8_t> pkt(buf + 1, buf + len);
+                    for (dsp::SourceDescriptor &src : nlohmann::json::from_cbor(pkt).get<std::vector<dsp::SourceDescriptor>>())
+                    {
+                        src.source_type = "remote";
+                        src.name = server_ip.first + ":" + std::to_string(server_ip.second) + " - " + src.name;
+                        results.push_back(src);
+                    }
+                }
+            };
+
+            sendPacketWithVector(&tcp_client, dsp::remote::PKT_TYPE_SOURCELIST); // Request source list
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error connecting to Remote SDR Server : %s", e.what());
+        }
     }
 
     return results;
