@@ -322,7 +322,7 @@ if(PLUGIN_UDP_SOURCE_SDR_SUPPORT)
     add_subdirectory(sdr_sources/udp_source_support)
 endif()
 
-option(PLUGIN_REMOTE_SDR_SUPPORT "Enable Remote SDR Support plugin (WIP!)" OFF)
+option(PLUGIN_REMOTE_SDR_SUPPORT "Enable Remote SDR Support plugin (WIP!)" ON)
 
 if(PLUGIN_REMOTE_SDR_SUPPORT)
     add_subdirectory(sdr_sources/remote_sdr_support)
