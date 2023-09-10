@@ -17,10 +17,16 @@ namespace service_discovery
 {
     void sendUdpBroadcast(int port, uint8_t *data, int len)
     {
+#if defined(_WIN32)
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         struct sockaddr_in send_addr;
         int fd = -1;
 
-        if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+        if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
             throw std::runtime_error("Error creating socket!");
 
         int val_true = 1;
@@ -32,11 +38,12 @@ namespace service_discovery
         send_addr.sin_port = htons(port);
         send_addr.sin_addr.s_addr = INADDR_BROADCAST;
 
-        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
+        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr)) < 0)
             throw std::runtime_error("Error on send!");
 
 #if defined(_WIN32)
         closesocket(fd);
+        WSACleanup();
 #else
         close(fd);
 #endif
@@ -47,12 +54,8 @@ namespace service_discovery
         struct sockaddr_in send_addr;
         int fd = -1;
 
-        if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+        if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
             throw std::runtime_error("Error creating socket!");
-
-        int val_true = 1;
-        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (const char *)&val_true, sizeof(val_true)) < 0)
-            throw std::runtime_error("Error setting socket option!");
 
         memset(&send_addr, 0, sizeof(send_addr));
         send_addr.sin_family = AF_INET;
@@ -64,11 +67,15 @@ namespace service_discovery
         inet_aton(address, &send_addr.sin_addr);
 #endif
 
-        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
+        int ret = sendto(fd, (char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr));
+#ifndef _WIN32
+        if (ret < 0)
             throw std::runtime_error("Error on send!");
+#endif
 
 #if defined(_WIN32)
         closesocket(fd);
+        WSACleanup();
 #else
         close(fd);
 #endif
@@ -85,7 +92,7 @@ namespace service_discovery
         struct sockaddr_in recv_addr;
         int fd = -1;
 
-        if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+        if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
             throw std::runtime_error("Error creating socket!");
 
         int val_true = 1;
@@ -157,6 +164,12 @@ namespace service_discovery
 
     std::vector<std::pair<std::string, int>> discoverUDPServers(UDPDiscoveryConfig cfg, int wait_millis)
     {
+#if defined(_WIN32)
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         std::vector<std::pair<std::string, int>> servers;
 
         bool should_wait = true;
@@ -165,7 +178,7 @@ namespace service_discovery
             struct sockaddr_in recv_addr;
             int fd = -1;
 
-            if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+            if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
                 throw std::runtime_error("Error creating socket!");
 
             int val_true = 1;
@@ -213,6 +226,7 @@ namespace service_discovery
 
 #if defined(_WIN32)
         closesocket(fd);
+        WSACleanup();
 #else
         close(fd);
 #endif

@@ -51,7 +51,7 @@ public:
                 throw std::runtime_error("Couldn't startup WSA socket!");
 #endif
 
-        serversockfd = socket(AF_INET, SOCK_STREAM, 0);
+        serversockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (serversockfd == -1)
             throw std::runtime_error("Socket creation failed");
 
@@ -196,7 +196,7 @@ public:
                 throw std::runtime_error("Couldn't startup WSA socket!");
 #endif
 
-        clientsockfd = socket(AF_INET, SOCK_STREAM, 0);
+        clientsockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (clientsockfd == -1)
             throw std::runtime_error("Socket creation failed");
 

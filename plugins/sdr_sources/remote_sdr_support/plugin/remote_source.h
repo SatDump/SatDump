@@ -29,7 +29,7 @@ protected:
     std::mutex drawelems_mtx;
     std::vector<RImGui::UiElem> last_draw_elems;
 
-    std::mutex waiting_for_settings;
+    std::atomic<bool> waiting_for_settings;
 
 public:
     RemoteSource(dsp::SourceDescriptor source)
@@ -91,7 +91,7 @@ public:
         {
             logger->debug("Got source settings");
             d_settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
-            waiting_for_settings.unlock();
+            waiting_for_settings = false;
         }
     }
 
