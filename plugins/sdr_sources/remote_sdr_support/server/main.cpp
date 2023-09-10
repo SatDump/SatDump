@@ -15,8 +15,6 @@
 #include "remote.h"
 #include "udp_discovery.h"
 
-#include <unistd.h>
-
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp_source_sink/dsp_sample_sink.h"
 
@@ -332,6 +330,6 @@ int main(int argc, char *argv[])
     std::thread source_iq_th(sourceStreamThread);
 
     while (1)
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     return 0;
 }

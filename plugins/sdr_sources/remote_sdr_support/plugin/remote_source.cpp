@@ -75,7 +75,6 @@ void RemoteSource::drawControlUI()
         logger->info("FeedBack %d", feedback.size());
 
         drawelems_mtx.lock();
-        uint8_t buffer_tx[10000];
         gui_buffer_tx.resize(65535);
         int len = RImGui::encode_vec(gui_buffer_tx.data(), feedback);
         gui_buffer_tx.resize(len);
@@ -123,7 +122,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
         };
 
         sendPacketWithVector(&tcp_client, dsp::remote::PKT_TYPE_SOURCELIST); // Request source list
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     return results;

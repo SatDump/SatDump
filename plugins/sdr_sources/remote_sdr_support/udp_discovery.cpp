@@ -1,12 +1,17 @@
 #include "udp_discovery.h"
 
 #include <sys/types.h>
+#include <stdexcept>
+#include <cstring>
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdexcept>
-#include <unistd.h>
-#include <cstring>
+#endif
 
 namespace service_discovery
 {
@@ -19,7 +24,7 @@ namespace service_discovery
             throw std::runtime_error("Error creating socket!");
 
         int val_true = 1;
-        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &val_true, sizeof(val_true)) < 0)
+        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (const char *)&val_true, sizeof(val_true)) < 0)
             throw std::runtime_error("Error setting socket option!");
 
         memset(&send_addr, 0, sizeof(send_addr));
@@ -27,10 +32,14 @@ namespace service_discovery
         send_addr.sin_port = htons(port);
         send_addr.sin_addr.s_addr = INADDR_BROADCAST;
 
-        if (sendto(fd, data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
+        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
             throw std::runtime_error("Error on send!");
 
+#if defined(_WIN32)
+        closesocket(fd);
+#else
         close(fd);
+#endif
     }
 
     void sendUdpPacket(char *address, int port, uint8_t *data, int len)
@@ -42,23 +51,37 @@ namespace service_discovery
             throw std::runtime_error("Error creating socket!");
 
         int val_true = 1;
-        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &val_true, sizeof(val_true)) < 0)
+        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (const char *)&val_true, sizeof(val_true)) < 0)
             throw std::runtime_error("Error setting socket option!");
 
         memset(&send_addr, 0, sizeof(send_addr));
         send_addr.sin_family = AF_INET;
         send_addr.sin_port = htons(port);
         // send_addr.sin_addr.s_addr = INADDR_BROADCAST;
+#if defined(_WIN32)
+        send_addr.sin_addr.S_un.S_addr = inet_addr(address);
+#else
         inet_aton(address, &send_addr.sin_addr);
+#endif
 
-        if (sendto(fd, data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
+        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
             throw std::runtime_error("Error on send!");
 
+#if defined(_WIN32)
+        closesocket(fd);
+#else
         close(fd);
+#endif
     }
 
     void UDPDiscoveryServerRunner::discovery_thread()
     {
+#if defined(_WIN32)
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         struct sockaddr_in recv_addr;
         int fd = -1;
 
@@ -66,7 +89,7 @@ namespace service_discovery
             throw std::runtime_error("Error creating socket!");
 
         int val_true = 1;
-        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val_true, sizeof(val_true)) < 0)
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
             throw std::runtime_error("Error setting socket option!");
 
         memset(&recv_addr, 0, sizeof(recv_addr));
@@ -83,7 +106,7 @@ namespace service_discovery
         {
             struct sockaddr_in response_addr;
             socklen_t response_addr_len = sizeof(response_addr);
-            int nrecv = recvfrom(fd, buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
+            int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
             if (nrecv < 0)
                 throw std::runtime_error("Error on recvfrom!");
 
@@ -112,7 +135,12 @@ namespace service_discovery
             }
         }
 
+#if defined(_WIN32)
+        closesocket(fd);
+        WSACleanup();
+#else
         close(fd);
+#endif
     }
 
     UDPDiscoveryServerRunner::UDPDiscoveryServerRunner(UDPDiscoveryConfig cfg) : cfg(cfg)
@@ -141,7 +169,7 @@ namespace service_discovery
                 throw std::runtime_error("Error creating socket!");
 
             int val_true = 1;
-            if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val_true, sizeof(val_true)) < 0)
+            if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
                 throw std::runtime_error("Error setting socket option!");
 
             memset(&recv_addr, 0, sizeof(recv_addr));
@@ -158,7 +186,7 @@ namespace service_discovery
             {
                 struct sockaddr_in response_addr;
                 socklen_t response_addr_len = sizeof(response_addr);
-                int nrecv = recvfrom(fd, buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
+                int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
                 if (nrecv < 0)
                     throw std::runtime_error("Error on recvfrom!");
 
@@ -183,7 +211,11 @@ namespace service_discovery
                 }
             }
 
-            close(fd);
+#if defined(_WIN32)
+        closesocket(fd);
+#else
+        close(fd);
+#endif
         };
         std::thread funrx_th(fun_rx);
 

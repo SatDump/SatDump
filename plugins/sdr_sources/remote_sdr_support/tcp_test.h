@@ -1,14 +1,24 @@
 #pragma once
 
-#include <sys/socket.h>
+#include "logger.h"
+
 #include <sys/types.h>
-#include <unistd.h>
-#include <netinet/in.h>
 #include <stdlib.h>
 #include <cstring>
-#include <arpa/inet.h>
 #include <thread>
 #include <functional>
+#include <mutex>
+#include <stdexcept>
+#include <stdio.h>
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
 
 class TCPServer
 {
@@ -25,6 +35,10 @@ private:
 
     uint8_t *buffer_tx;
 
+#if defined(_WIN32)
+        WSADATA wsa;
+#endif
+
 public:
     std::function<void(uint8_t *, int)> callback_func;
 
@@ -32,12 +46,17 @@ public:
     TCPServer(int port)
         : d_port(port)
     {
+#if defined(_WIN32)
+            if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+                throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         serversockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (serversockfd == -1)
             throw std::runtime_error("Socket creation failed");
 
         struct sockaddr_in servaddr;
-        bzero(&servaddr, sizeof(servaddr));
+        memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
         servaddr.sin_port = htons(d_port);
@@ -116,11 +135,16 @@ public:
 private:
     int sread(uint8_t *buff, int len)
     {
-        int ret = read(clientsockfd, buff, len);
-        if (ret == 0)
+        // int ret = read(clientsockfd, buff, len);
+        int ret = recv(clientsockfd, (char *)buff, len, 0);
+        if (ret <= 0)
         {
             logger->trace("Server lost client");
+#if defined(_WIN32)
+            closesocket(clientsockfd);
+#else
             close(clientsockfd);
+#endif
             clientsockfd = -1;
             ret = -1;
         }
@@ -136,7 +160,8 @@ public:
         buffer_tx[2] = (len >> 8) & 0xFF;
         buffer_tx[3] = len & 0xFF;
         memcpy(&buffer_tx[4], buff, len);
-        write(clientsockfd, buffer_tx, len + 4);
+        // write(clientsockfd, buffer_tx, len + 4);
+        send(clientsockfd, (char *)buffer_tx, len + 4, 0);
         // logger->critical("HEADESENTR %d %d", len, buff2.size());
         write_mtx.unlock();
     }
@@ -154,6 +179,10 @@ private:
 
     uint8_t *buffer_tx;
 
+#if defined(_WIN32)
+        WSADATA wsa;
+#endif
+
 public:
     std::function<void(uint8_t *, int)> callback_func;
     bool readOne = false;
@@ -162,12 +191,17 @@ public:
     TCPClient(char *address, int port)
         : d_port(port)
     {
+#if defined(_WIN32)
+            if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+                throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         clientsockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (clientsockfd == -1)
             throw std::runtime_error("Socket creation failed");
 
         struct sockaddr_in servaddr;
-        bzero(&servaddr, sizeof(servaddr));
+        memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_addr.s_addr = inet_addr(address);
         servaddr.sin_port = htons(d_port);
@@ -187,7 +221,11 @@ public:
         thread_should_run = false;
         if (rx_thread.joinable())
             rx_thread.join();
+#if defined(_WIN32)
+        closesocket(clientsockfd);
+#else
         close(clientsockfd);
+#endif
 
         delete[] buffer_tx;
     }
@@ -203,7 +241,7 @@ public:
             if (clientsockfd != -1)
             {
                 int lpkt_size = sread(buffer, 4);
-                if (lpkt_size == -1)
+                if (lpkt_size <= 0)
                     continue;
 
                 if (current_pkt_size_exp == -1)
@@ -238,7 +276,8 @@ public:
 private:
     int sread(uint8_t *buff, int len)
     {
-        return read(clientsockfd, buff, len);
+        // return read(clientsockfd, buff, len);
+        return recv(clientsockfd, (char *)buff, len, 0);
     }
 
 public:
@@ -250,7 +289,8 @@ public:
         buffer_tx[2] = (len >> 8) & 0xFF;
         buffer_tx[3] = len & 0xFF;
         memcpy(&buffer_tx[4], buff, len);
-        write(clientsockfd, buffer_tx, len + 4);
+        // write(clientsockfd, buffer_tx, len + 4);
+        send(clientsockfd, (char *)buffer_tx, len + 4, 0);
         //  logger->critical("HEADESENTR %d %d", len, buff2.size());
         write_mtx.unlock();
     }

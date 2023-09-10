@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdint>
 #include "core/style.h"
+#include "dll_export.h"
 
 /*
 Super Basic & Crappy remote ImGui Scheme,
@@ -195,8 +196,8 @@ namespace RImGui
     };
 
     // Global variables
-    extern bool is_local;
-    extern RImGui *current_instance;
+    SATDUMP_DLL extern bool is_local;
+    SATDUMP_DLL extern RImGui *current_instance;
 
     // Handlings functions for the "server" rendering
     inline std::vector<UiElem> end_frame(bool force = false)
