@@ -41,6 +41,7 @@ private:
 
 public:
     std::function<void(uint8_t *, int)> callback_func;
+    std::function<void()> callback_func_on_lost_client;
 
 public:
     TCPServer(int port)
@@ -88,7 +89,8 @@ public:
 public:
     void wait_client()
     {
-        try {
+        try
+        {
             logger->trace("Waiting for client!");
             struct sockaddr_in nclientaddr;
             int len = sizeof(nclientaddr);
@@ -100,11 +102,11 @@ public:
             if (clientsockfd != -1)
             {
                 logger->trace("Still got client! Refusing request.");
-    #if defined(_WIN32)
+#if defined(_WIN32)
                 closesocket(nclientsockfd);
-    #else
+#else
                 close(nclientsockfd);
-    #endif
+#endif
             }
             else
             {
@@ -112,7 +114,7 @@ public:
                 clientsockfd = nclientsockfd;
             }
         }
-        catch (std::exception &e) 
+        catch (std::exception &e)
         {
             logger->error("Failed accepting client. %s", e.what());
         }
@@ -168,6 +170,7 @@ private:
 #endif
             clientsockfd = -1;
             ret = -1;
+            callback_func_on_lost_client();
         }
         return ret;
     }
@@ -176,14 +179,17 @@ public:
     void swrite(uint8_t *buff, int len)
     {
         write_mtx.lock();
-        buffer_tx[0] = (len >> 24) & 0xFF;
-        buffer_tx[1] = (len >> 16) & 0xFF;
-        buffer_tx[2] = (len >> 8) & 0xFF;
-        buffer_tx[3] = len & 0xFF;
-        memcpy(&buffer_tx[4], buff, len);
-        // write(clientsockfd, buffer_tx, len + 4);
-        send(clientsockfd, (char *)buffer_tx, len + 4, 0);
-        // logger->critical("HEADESENTR %d %d", len, buff2.size());
+        if (clientsockfd != -1)
+        {
+            buffer_tx[0] = (len >> 24) & 0xFF;
+            buffer_tx[1] = (len >> 16) & 0xFF;
+            buffer_tx[2] = (len >> 8) & 0xFF;
+            buffer_tx[3] = len & 0xFF;
+            memcpy(&buffer_tx[4], buff, len);
+            // write(clientsockfd, buffer_tx, len + 4);
+            send(clientsockfd, (char *)buffer_tx, len + 4, 0);
+            // logger->critical("HEADESENTR %d %d", len, buff2.size());
+        }
         write_mtx.unlock();
     }
 };
