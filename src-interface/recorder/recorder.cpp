@@ -137,16 +137,15 @@ namespace satdump
                         style::beginDisabled();
                     if (ImGui::Combo("##Source", &sdr_select_id, sdr_select_string.c_str()))
                     {
-                        source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
-
                         // Try to open a device, if it doesn't work, we re-open a device we can
                         try
                         {
+                            source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                             source_ptr->open();
                         }
                         catch (std::runtime_error &e)
                         {
-                            logger->error(e.what());
+                            logger->error("Could not open device! %s", e.what());
 
                             for (int i = 0; i < (int)sources.size(); i++)
                             {
@@ -509,7 +508,7 @@ namespace satdump
                 {
                     if (constellation_debug == nullptr)
                         constellation_debug = new widgets::ConstellationViewer();
-                    if(is_started)
+                    if (is_started)
                         constellation_debug->pushComplex(source_ptr->output_stream->readBuf, 256);
                     constellation_debug->draw();
                 }
@@ -549,7 +548,8 @@ namespace satdump
                         ImVec2 mouse_pos = ImGui::GetMousePos();
                         float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale) / (recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale) - 0.5;
                         ImGui::SetTooltip("%s", ((ratio >= 0 ? "" : "- ") + format_notated(abs(ratio) * get_samplerate(), "Hz\n") +
-                                          format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz")).c_str());
+                                                 format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
+                                                    .c_str());
                     }
                     ImGui::EndChild();
                 }

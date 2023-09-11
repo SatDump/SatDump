@@ -201,124 +201,131 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 {
     int pkt_type = buffer[0];
 
-    if (pkt_type == dsp::remote::PKT_TYPE_PING)
-    { // Simply reply
-        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_PING);
-        logger->debug("Ping!");
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SOURCELIST)
+    try
     {
-        std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
-        std::vector<dsp::SourceDescriptor> sources_final;
-
-        logger->trace("Found devices (sources) :");
-        for (dsp::SourceDescriptor src : sources)
-        {
-            logger->trace("- " + src.name);
-
-            if (src.source_type == "file" ||
-                src.source_type == "plutosdr" ||
-                src.source_type == "rtltcp" ||
-                src.source_type == "sdrpp_server" ||
-                src.source_type == "spyserver" ||
-                src.source_type == "udp_source")
-                continue;
-
-            sources_final.push_back(src);
+        if (pkt_type == dsp::remote::PKT_TYPE_PING)
+        { // Simply reply
+            sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_PING);
+            logger->debug("Ping!");
         }
 
-        // TODO SIMPLIFY TO BINARY?
-        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SOURCELIST, nlohmann::json::to_cbor(nlohmann::json(sources_final)));
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SOURCEOPEN)
-    {
-        source_mtx.lock();
-        if (source_is_open)
+        if (pkt_type == dsp::remote::PKT_TYPE_SOURCELIST)
         {
-            current_sample_source->close();
-            current_sample_source.reset();
-            logger->info("Source closed!");
-        }
+            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            std::vector<dsp::SourceDescriptor> sources_final;
 
-        dsp::SourceDescriptor source = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
-
-        logger->info("Opening " + source.name);
-
-        std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
-        for (dsp::SourceDescriptor src : sources)
-        {
-            if (src.name == source.name && src.unique_id == source.unique_id)
+            logger->trace("Found devices (sources) :");
+            for (dsp::SourceDescriptor src : sources)
             {
-                current_sample_source = dsp::getSourceFromDescriptor(src);
-                current_sample_source->open();
+                logger->trace("- " + src.name);
 
-                source_is_open = true;
-                last_samplerate = 0;
+                if (src.source_type == "file" ||
+                    src.source_type == "plutosdr" ||
+                    src.source_type == "rtltcp" ||
+                    src.source_type == "sdrpp_server" ||
+                    src.source_type == "spyserver" ||
+                    src.source_type == "udp_source")
+                    continue;
 
-                logger->info("Source opened!");
+                sources_final.push_back(src);
             }
+
+            // TODO SIMPLIFY TO BINARY?
+            sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SOURCELIST, nlohmann::json::to_cbor(nlohmann::json(sources_final)));
         }
-        source_mtx.unlock();
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SOURCEOPEN)
+        {
+            source_mtx.lock();
+            if (source_is_open)
+            {
+                current_sample_source->close();
+                current_sample_source.reset();
+                logger->info("Source closed!");
+            }
+
+            dsp::SourceDescriptor source = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
+
+            logger->info("Opening " + source.name);
+
+            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            for (dsp::SourceDescriptor src : sources)
+            {
+                if (src.name == source.name && src.unique_id == source.unique_id)
+                {
+                    current_sample_source = dsp::getSourceFromDescriptor(src);
+                    current_sample_source->open();
+
+                    source_is_open = true;
+                    last_samplerate = 0;
+
+                    logger->info("Source opened!");
+                }
+            }
+            source_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SOURCECLOSE)
+            action_sourceClose();
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SOURCESTART)
+            action_sourceStart();
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SOURCESTOP)
+            action_sourceStop();
+
+        if (pkt_type == dsp::remote::PKT_TYPE_GUI)
+        {
+            logger->info("GUI_FEEDBACK");
+            gui_feedback_mtx.lock();
+            last_draw_feedback = RImGui::decode_vec(buffer + 1, len - 1);
+            gui_feedback_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SETFREQ)
+        {
+            source_mtx.lock();
+            double freq = *((double *)&buffer[1]);
+            logger->debug("Frequency sent %f", freq);
+            if (source_is_open)
+                current_sample_source->set_frequency(freq);
+            source_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SETSETTINGS)
+        {
+            source_mtx.lock();
+            auto settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
+            logger->debug("Setting source settings");
+            if (source_is_open)
+                current_sample_source->set_settings(settings);
+            source_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
+        {
+            source_mtx.lock();
+            nlohmann::json settings;
+            logger->debug("Sending source settings");
+            if (source_is_open)
+                settings = current_sample_source->get_settings();
+            sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_GETSETTINGS, nlohmann::json::to_cbor(settings));
+            source_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
+        {
+            source_mtx.lock();
+            uint64_t sampr = *((uint64_t *)&buffer[1]);
+            logger->debug("Samplerate sent %llu", sampr);
+            if (source_is_open)
+                current_sample_source->set_samplerate(sampr);
+            source_mtx.unlock();
+        }
     }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SOURCECLOSE)
-        action_sourceClose();
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SOURCESTART)
-        action_sourceStart();
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SOURCESTOP)
-        action_sourceStop();
-
-    if (pkt_type == dsp::remote::PKT_TYPE_GUI)
+    catch (std::exception &e)
     {
-        logger->info("GUI_FEEDBACK");
-        gui_feedback_mtx.lock();
-        last_draw_feedback = RImGui::decode_vec(buffer + 1, len - 1);
-        gui_feedback_mtx.unlock();
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SETFREQ)
-    {
-        source_mtx.lock();
-        double freq = *((double *)&buffer[1]);
-        logger->debug("Frequency sent %f", freq);
-        if (source_is_open)
-            current_sample_source->set_frequency(freq);
-        source_mtx.unlock();
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SETSETTINGS)
-    {
-        source_mtx.lock();
-        auto settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
-        logger->debug("Setting source settings");
-        if (source_is_open)
-            current_sample_source->set_settings(settings);
-        source_mtx.unlock();
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
-    {
-        source_mtx.lock();
-        nlohmann::json settings;
-        logger->debug("Sending source settings");
-        if (source_is_open)
-            settings = current_sample_source->get_settings();
-        sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_GETSETTINGS, nlohmann::json::to_cbor(settings));
-        source_mtx.unlock();
-    }
-
-    if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
-    {
-        source_mtx.lock();
-        uint64_t sampr = *((uint64_t *)&buffer[1]);
-        logger->debug("Samplerate sent %llu", sampr);
-        if (source_is_open)
-            current_sample_source->set_samplerate(sampr);
-        source_mtx.unlock();
+        logger->error("Error parsing packet from client : %s", e.what());
     }
 }
 
