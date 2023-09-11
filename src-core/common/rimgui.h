@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
 #include "common/utils.h"
 #include <vector>
 #include <string>
@@ -30,6 +31,8 @@ namespace RImGui
         UI_ELEMENT_COMBO,
         UI_ELEMENT_INPUTDOUBLE,
         UI_ELEMENT_SEPARATOR,
+        UI_ELEMENT_INPUTTEXT,
+        UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT,
 
         UI_ELEMENT_BEGINDISABLED,
         UI_ELEMENT_ENDDISABLED,
@@ -261,6 +264,10 @@ namespace RImGui
                 el.clicked = ImGui::InputDouble(el.sv.c_str(), &el.min, el.fv, el.max, el.sv2.c_str());
             else if (el.t == UI_ELEMENT_SEPARATOR)
                 ImGui::Separator();
+            else if (el.t == UI_ELEMENT_INPUTTEXT)
+                el.clicked = ImGui::InputText(el.sv.c_str(), &el.sv2, el.iv);
+            else if (el.t == UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT)
+                el.clicked = ImGui::IsItemDeactivatedAfterEdit();
 
             else if (el.t == UI_ELEMENT_BEGINDISABLED)
                 style::beginDisabled();
@@ -472,6 +479,53 @@ namespace RImGui
             current_instance->ui_elements.push_back({UI_ELEMENT_SEPARATOR,
                                                      current_instance->current_id++,
                                                      0, 0, "##noid"});
+    }
+
+    inline bool InputText(const char *label, std::string *str, ImGuiInputTextFlags flags = 0)
+    {
+        if (is_local)
+        {
+            return ImGui::InputText(label, str, flags);
+        }
+        else
+        {
+            for (auto &el : current_instance->ui_elems_fbk)
+                if (el.t == UI_ELEMENT_INPUTTEXT)
+                    if (el.sv == std::string(label))
+                        if (el.id == current_instance->current_id)
+                            *str = el.sv2;
+            current_instance->ui_elements.push_back({UI_ELEMENT_INPUTTEXT,
+                                                     current_instance->current_id++,
+                                                     0, 0, std::string(label), flags,
+                                                     false, 0, 0, 0, std::string(*str)});
+            for (auto &el : current_instance->ui_elems_fbk)
+                if (el.t == UI_ELEMENT_INPUTTEXT)
+                    if (el.sv == std::string(label))
+                        if (el.id == current_instance->current_id - 1)
+                            return el.clicked;
+            return false;
+        }
+    }
+
+    inline bool IsItemDeactivatedAfterEdit()
+    {
+        if (is_local)
+        {
+            return ImGui::IsItemDeactivatedAfterEdit();
+        }
+        else
+        {
+            current_instance->ui_elements.push_back({UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT,
+                                                     current_instance->current_id++,
+                                                     0, 0, "##nolabelisitemdeactivatedafteredit", 0,
+                                                     false, 0, 0, 0, ""});
+            for (auto &el : current_instance->ui_elems_fbk)
+                if (el.t == UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT)
+                    if (el.sv == "##nolabelisitemdeactivatedafteredit")
+                        if (el.id == current_instance->current_id - 1)
+                            return el.clicked;
+            return false;
+        }
     }
 
     inline void beginDisabled()

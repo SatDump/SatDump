@@ -1,6 +1,5 @@
 #include <regex>
-#include "imgui/imgui.h"
-#include "imgui/imgui_stdlib.h"
+#include "common/rimgui.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "logger.h"
 #include "notated_num.h"
@@ -73,8 +72,8 @@ namespace widgets
     template <typename T>
     bool NotatedNum<T>::draw()
     {
-        ImGui::InputText(d_id.c_str(), &display_val, ImGuiInputTextFlags_AutoSelectAll);
-        bool retval = ImGui::IsItemDeactivatedAfterEdit();
+        RImGui::InputText(d_id.c_str(), &display_val, ImGuiInputTextFlags_AutoSelectAll);
+        bool retval = RImGui::IsItemDeactivatedAfterEdit();
         if (retval)
             parse_input();
 
