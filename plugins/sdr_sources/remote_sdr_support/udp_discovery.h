@@ -9,7 +9,8 @@ namespace service_discovery
 {
     struct UDPDiscoveryConfig
     {
-        int port;
+        int req_port;
+        int rep_port;
         std::vector<uint8_t> req_pkt;
         std::vector<uint8_t> rep_pkt;
         uint32_t discover_port = 0;

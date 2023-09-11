@@ -128,7 +128,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
+    service_discovery::UDPDiscoveryConfig cfg = { REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
     auto detected_servers = service_discovery::discoverUDPServers(cfg, 100);
 

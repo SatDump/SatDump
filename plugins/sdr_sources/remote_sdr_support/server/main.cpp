@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
     dsp::registerAllSinks();
 
     // Start UDP discovery system
-    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_PORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT, (uint32_t)port_used};
+    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT, (uint32_t)port_used};
     service_discovery::UDPDiscoveryServerRunner runner(cfg);
 
     // Start the main TCP Server
