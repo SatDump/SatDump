@@ -5,7 +5,7 @@
 
 void RemoteSource::set_others()
 {
-    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_BITDEPTHSET, {bit_depth_used});
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_BITDEPTHSET, {(uint8_t)bit_depth_used});
 }
 
 void RemoteSource::set_settings(nlohmann::json settings)
