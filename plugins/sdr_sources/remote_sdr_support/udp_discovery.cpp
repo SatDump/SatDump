@@ -107,7 +107,7 @@ namespace service_discovery
 
         memset(&recv_addr, 0, sizeof(recv_addr));
         recv_addr.sin_family = AF_INET;
-        recv_addr.sin_port = htons(cfg.port);
+        recv_addr.sin_port = htons(cfg.req_port);
         recv_addr.sin_addr.s_addr = INADDR_ANY;
 
         if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
@@ -145,11 +145,8 @@ namespace service_discovery
                 pkt.push_back((cfg.discover_port >> 8) & 0xFF);
                 pkt.push_back(cfg.discover_port & 0xFF);
                 logger->trace("Replying to %s", ip_add);
-#if defined(_WIN32)
-                sendUdpPacket(ip_add, cfg.port, (uint8_t *)pkt.data(), pkt.size());
-#else
-                sendUdpBroadcast(cfg.port, (uint8_t *)pkt.data(), pkt.size());
-#endif
+                sendUdpPacket(ip_add, cfg.rep_port, (uint8_t *)pkt.data(), pkt.size());
+
             }
         }
 
@@ -198,7 +195,7 @@ namespace service_discovery
 
             memset(&recv_addr, 0, sizeof(recv_addr));
             recv_addr.sin_family = AF_INET;
-            recv_addr.sin_port = htons(cfg.port);
+            recv_addr.sin_port = htons(cfg.rep_port);
             recv_addr.sin_addr.s_addr = INADDR_ANY;
 
             if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
@@ -248,16 +245,12 @@ namespace service_discovery
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        sendUdpBroadcast(cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        sendUdpBroadcast(cfg.req_port, cfg.req_pkt.data(), cfg.req_pkt.size());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(wait_millis));
 
         should_wait = false; // Force close with a new packet
-#if defined(_WIN32)
-        sendUdpBroadcast(cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size() - 1);
-#else
-        sendUdpPacket("127.0.0.1", cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size());
-#endif
+        sendUdpPacket("127.0.0.1", cfg.rep_port, cfg.req_pkt.data(), cfg.req_pkt.size());
 
         if (funrx_th.joinable())
             funrx_th.join();

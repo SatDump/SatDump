@@ -2,7 +2,8 @@
 
 #include "tcp_test.h"
 
-#define REMOTE_NETWORK_DISCOVERY_PORT 4567
+#define REMOTE_NETWORK_DISCOVERY_REQPORT 4567
+#define REMOTE_NETWORK_DISCOVERY_REPPORT 7890
 
 #define REMOTE_NETWORK_DISCOVERY_REQPKT \
     {                                   \
