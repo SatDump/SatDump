@@ -32,6 +32,11 @@ protected:
 
     std::atomic<bool> waiting_for_settings;
 
+    int bit_depth_used = 8;
+    int selected_bit_depth = 0;
+
+    void set_others();
+
 public:
     RemoteSource(dsp::SourceDescriptor source)
         : DSPSampleSource(source)

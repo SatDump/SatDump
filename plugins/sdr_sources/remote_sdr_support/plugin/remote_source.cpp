@@ -3,9 +3,21 @@
 
 #include "udp_discovery.h"
 
+void RemoteSource::set_others()
+{
+    sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_BITDEPTHSET, {bit_depth_used});
+}
+
 void RemoteSource::set_settings(nlohmann::json settings)
 {
+    if (d_settings.contains("remote_bit_depth"))
+        bit_depth_used = d_settings["remote_bit_depth"];
+
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SETSETTINGS, nlohmann::json::to_cbor(settings));
+
+    if (is_open)
+        set_others();
+
     d_settings = settings;
 }
 
@@ -16,6 +28,7 @@ nlohmann::json RemoteSource::get_settings()
     while (waiting_for_settings)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     logger->trace("Done waiting for settings!");
+    d_settings["remote_bit_depth"] = bit_depth_used;
     return d_settings;
 }
 
@@ -64,6 +77,22 @@ void RemoteSource::set_frequency(uint64_t frequency)
 
 void RemoteSource::drawControlUI()
 {
+    // Local settings
+    if (RImGui::Combo("Bit Depth###remotesdrbitdepth", &selected_bit_depth, "8\0"
+                                                                            "16\0"
+                                                                            "32\0"))
+    {
+        if (selected_bit_depth == 0)
+            bit_depth_used = 8;
+        else if (selected_bit_depth == 1)
+            bit_depth_used = 16;
+        else if (selected_bit_depth == 2)
+            bit_depth_used = 32;
+        set_others();
+    }
+
+    RImGui::Separator();
+
     // Draw remote UI
     drawelems_mtx.lock();
     std::vector<RImGui::UiElem> feedback = RImGui::draw(&gui_remote, last_draw_elems);

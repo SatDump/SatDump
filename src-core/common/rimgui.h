@@ -29,6 +29,7 @@ namespace RImGui
         UI_ELEMENT_CHECKBOX,
         UI_ELEMENT_COMBO,
         UI_ELEMENT_INPUTDOUBLE,
+        UI_ELEMENT_SEPARATOR,
 
         UI_ELEMENT_BEGINDISABLED,
         UI_ELEMENT_ENDDISABLED,
@@ -258,6 +259,8 @@ namespace RImGui
                 el.clicked = ImGui::Combo(el.sv.c_str(), &el.iv, el.sv2.c_str());
             else if (el.t == UI_ELEMENT_INPUTDOUBLE)
                 el.clicked = ImGui::InputDouble(el.sv.c_str(), &el.min, el.fv, el.max, el.sv2.c_str());
+            else if (el.t == UI_ELEMENT_SEPARATOR)
+                ImGui::Separator();
 
             else if (el.t == UI_ELEMENT_BEGINDISABLED)
                 style::beginDisabled();
@@ -459,6 +462,16 @@ namespace RImGui
                             return el.clicked;
             return false;
         }
+    }
+
+    inline void Separator()
+    {
+        if (is_local)
+            ImGui::Separator();
+        else
+            current_instance->ui_elements.push_back({UI_ELEMENT_SEPARATOR,
+                                                     current_instance->current_id++,
+                                                     0, 0, "##noid"});
     }
 
     inline void beginDisabled()

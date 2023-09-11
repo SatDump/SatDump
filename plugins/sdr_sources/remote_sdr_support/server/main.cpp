@@ -24,6 +24,8 @@
 
 #include "iq_pkt.h"
 
+#include <atomic>
+
 // The TCP Server
 TCPServer *tcp_server;
 
@@ -37,6 +39,8 @@ bool source_is_started = false;
 std::mutex gui_feedback_mtx;
 RImGui::RImGui gui_local;
 std::vector<RImGui::UiElem> last_draw_feedback;
+
+std::atomic<int> streaming_bit_depth = 32;
 
 void sourceGuiThread()
 {
@@ -110,7 +114,7 @@ void sourceStreamThread()
                     // buffer_tx[1] = nsamples >> 8;
                     // buffer_tx[2] = nsamples & 0xFF;
                     // memcpy(&buffer_tx[3], current_sample_source->output_stream->readBuf, nsamples * sizeof(complex_t));
-                    pktlen += remote_sdr::encode_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, 8);
+                    pktlen += remote_sdr::encode_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, streaming_bit_depth);
 
                     tcp_server->swrite(buffer_tx, pktlen);
                 }
@@ -321,6 +325,12 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             if (source_is_open)
                 current_sample_source->set_samplerate(sampr);
             source_mtx.unlock();
+        }
+
+        if (pkt_type == dsp::remote::PKT_TYPE_BITDEPTHSET)
+        {
+            logger->debug("Bit Depth sent %d", buffer[1]);
+            streaming_bit_depth = buffer[1];
         }
     }
     catch (std::exception &e)

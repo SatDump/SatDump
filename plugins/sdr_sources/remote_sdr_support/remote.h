@@ -68,6 +68,7 @@ namespace dsp
             PKT_TYPE_SETSETTINGS,
             PKT_TYPE_GETSETTINGS,
             PKT_TYPE_SAMPLERATESET,
+            PKT_TYPE_BITDEPTHSET,
         };
 
         template <typename T>
