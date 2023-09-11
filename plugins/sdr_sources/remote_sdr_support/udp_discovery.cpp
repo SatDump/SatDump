@@ -13,6 +13,8 @@
 #include <arpa/inet.h>
 #endif
 
+#include "logger.h"
+
 namespace service_discovery
 {
     void sendUdpBroadcast(int port, uint8_t *data, int len)
@@ -51,6 +53,12 @@ namespace service_discovery
 
     void sendUdpPacket(char *address, int port, uint8_t *data, int len)
     {
+#if defined(_WIN32)
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
         struct sockaddr_in send_addr;
         int fd = -1;
 
@@ -68,10 +76,8 @@ namespace service_discovery
 #endif
 
         int ret = sendto(fd, (char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr));
-#ifndef _WIN32
         if (ret < 0)
             throw std::runtime_error("Error on send!");
-#endif
 
 #if defined(_WIN32)
         closesocket(fd);
@@ -138,7 +144,12 @@ namespace service_discovery
                 pkt.push_back((cfg.discover_port >> 16) & 0xFF);
                 pkt.push_back((cfg.discover_port >> 8) & 0xFF);
                 pkt.push_back(cfg.discover_port & 0xFF);
+                logger->trace("Replying to %s", ip_add);
+#if defined(_WIN32)
                 sendUdpPacket(ip_add, cfg.port, (uint8_t *)pkt.data(), pkt.size());
+#else
+                sendUdpBroadcast(cfg.port, (uint8_t *)pkt.data(), pkt.size());
+#endif
             }
         }
 
@@ -222,6 +233,8 @@ namespace service_discovery
                     int dport = buffer_rx[nrecv - 4] << 24 | buffer_rx[nrecv - 3] << 16 | buffer_rx[nrecv - 2] << 8 | buffer_rx[nrecv - 1];
                     servers.push_back({std::string(ip_add), dport});
                 }
+                
+                // logger->info("EXIT %d %d %d", (int)is_valid, nrecv, cfg.rep_pkt.size());
             }
 
 #if defined(_WIN32)
@@ -240,7 +253,11 @@ namespace service_discovery
         std::this_thread::sleep_for(std::chrono::milliseconds(wait_millis));
 
         should_wait = false; // Force close with a new packet
-        sendUdpPacket("0.0.0.0", cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size());
+#if defined(_WIN32)
+        sendUdpBroadcast(cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size() - 1);
+#else
+        sendUdpPacket("127.0.0.1", cfg.port, cfg.req_pkt.data(), cfg.req_pkt.size());
+#endif
 
         if (funrx_th.joinable())
             funrx_th.join();

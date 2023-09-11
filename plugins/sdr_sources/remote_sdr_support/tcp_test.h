@@ -64,7 +64,7 @@ public:
         if ((bind(serversockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) != 0)
             throw std::runtime_error("Socket bind failed");
         else
-            logger->trace("Socket successfully binded");
+            logger->trace("Socket successfully binded %d", port);
 
         if ((listen(serversockfd, 5)) != 0)
             throw std::runtime_error("Listen failed");
@@ -88,27 +88,33 @@ public:
 public:
     void wait_client()
     {
-        logger->trace("Waiting for client!");
-        struct sockaddr_in nclientaddr;
-        int len = sizeof(nclientaddr);
-        int nclientsockfd = accept(serversockfd, (struct sockaddr *)&nclientaddr, (socklen_t *)&len);
-        if (nclientsockfd < 0)
-            throw std::runtime_error("Server accept failed");
-        else
-            logger->trace("Server accepted the client");
-        if (clientsockfd != -1)
-        {
-            logger->trace("Still got client! Refusing request.");
-#if defined(_WIN32)
-            closesocket(nclientsockfd);
-#else
-            close(nclientsockfd);
-#endif
+        try {
+            logger->trace("Waiting for client!");
+            struct sockaddr_in nclientaddr;
+            int len = sizeof(nclientaddr);
+            int nclientsockfd = accept(serversockfd, (struct sockaddr *)&nclientaddr, (socklen_t *)&len);
+            if (nclientsockfd < 0)
+                throw std::runtime_error("Server accept failed");
+            else
+                logger->trace("Server accepted the client");
+            if (clientsockfd != -1)
+            {
+                logger->trace("Still got client! Refusing request.");
+    #if defined(_WIN32)
+                closesocket(nclientsockfd);
+    #else
+                close(nclientsockfd);
+    #endif
+            }
+            else
+            {
+                clientaddr = nclientaddr;
+                clientsockfd = nclientsockfd;
+            }
         }
-        else
+        catch (std::exception &e) 
         {
-            clientaddr = nclientaddr;
-            clientsockfd = nclientsockfd;
+            logger->error("Failed accepting client. %s", e.what());
         }
     }
 
