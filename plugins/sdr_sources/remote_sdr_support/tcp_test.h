@@ -99,8 +99,11 @@ public:
                 throw std::runtime_error("Server accept failed");
             else
                 logger->trace("Server accepted the client");
+
             if (clientsockfd != -1)
             {
+                uint8_t refused = 0x00;
+                send(nclientsockfd, (char *)&refused, 1, 0);
                 logger->trace("Still got client! Refusing request.");
 #if defined(_WIN32)
                 closesocket(nclientsockfd);
@@ -110,6 +113,8 @@ public:
             }
             else
             {
+                uint8_t accepted = 0xFF;
+                send(nclientsockfd, (char *)&accepted, 1, 0);
                 clientaddr = nclientaddr;
                 clientsockfd = nclientsockfd;
             }
@@ -237,6 +242,13 @@ public:
             throw std::runtime_error("Connection with the server failed");
         // else
         //     logger->trace("Connected to the server");
+
+        uint8_t response = 0;
+        if (recv(clientsockfd, (char *)&response, 1, 0) == -1)
+            throw std::runtime_error("Receive from the server failed");
+
+        if (response != 0xFF)
+            throw std::runtime_error("Server refused client!");
 
         rx_thread = std::thread(&TCPClient::rx_thread_func, this);
 
