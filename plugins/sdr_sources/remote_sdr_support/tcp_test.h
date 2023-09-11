@@ -99,7 +99,11 @@ public:
         if (clientsockfd != -1)
         {
             logger->trace("Still got client! Refusing request.");
+#if defined(_WIN32)
+            closesocket(nclientsockfd);
+#else
             close(nclientsockfd);
+#endif
         }
         else
         {
