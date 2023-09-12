@@ -79,7 +79,7 @@ public:
 #endif
             drawelems_mtx.lock();
             last_draw_elems = RImGui::decode_vec(buffer + 1, len - 1);
-            logger->info("DrawElems %d ----- %d", last_draw_elems.size(), len);
+            // logger->info("DrawElems %d ----- %d", last_draw_elems.size(), len);
             drawelems_mtx.unlock();
         }
 

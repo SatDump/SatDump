@@ -122,7 +122,7 @@ void RemoteSource::drawControlUI()
 
     if (feedback.size() > 0)
     {
-        logger->info("FeedBack %d", feedback.size());
+        // logger->info("FeedBack %d", feedback.size());
 
         drawelems_mtx.lock();
         gui_buffer_tx.resize(65535);
