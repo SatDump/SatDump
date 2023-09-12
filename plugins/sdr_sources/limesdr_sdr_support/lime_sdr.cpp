@@ -226,32 +226,32 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 void LimeSDRSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     // Channel setting
-    ImGui::Combo("Channel####limesdrchannel", &channel_id, "Channel 1\0"
-                                                           "Channel 2\0");
+    RImGui::Combo("Channel####limesdrchannel", &channel_id, "Channel 1\0"
+                                                            "Channel 2\0");
 
-    ImGui::Combo("Path####limesdrpath", &path_id, "NONE\0"
-                                                  "LNAH\0"
-                                                  "LNAL\0"
-                                                  "LNAW\0");
+    RImGui::Combo("Path####limesdrpath", &path_id, "NONE\0"
+                                                   "LNAH\0"
+                                                   "LNAL\0"
+                                                   "LNAW\0");
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
 
-    if (ImGui::RadioButton("Auto", !gain_mode_manual))
+    if (RImGui::RadioButton("Auto", !gain_mode_manual))
     {
         gain_mode_manual = false;
         gain_changed = true;
     }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Manual", gain_mode_manual))
+    RImGui::SameLine();
+    if (RImGui::RadioButton("Manual", gain_mode_manual))
     {
         gain_mode_manual = true;
         gain_changed = true;
@@ -259,13 +259,13 @@ void LimeSDRSource::drawControlUI()
 
     if (gain_mode_manual)
     {
-        gain_changed |= ImGui::SliderInt("LNA Gain", &gain_lna, 0, 30);
-        gain_changed |= ImGui::SliderInt("TIA Gain", &gain_tia, 0, 12);
-        gain_changed |= ImGui::SliderInt("PGA Gain", &gain_pga, -12, 19);
+        gain_changed |= RImGui::SliderInt("LNA Gain", &gain_lna, 0, 30);
+        gain_changed |= RImGui::SliderInt("TIA Gain", &gain_tia, 0, 12);
+        gain_changed |= RImGui::SliderInt("PGA Gain", &gain_pga, -12, 19);
     }
     else
     {
-        gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 73);
+        gain_changed |= RImGui::SliderInt("Gain", &gain, 0, 73);
     }
 
     if (gain_changed)

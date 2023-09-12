@@ -151,22 +151,22 @@ void AirspyHFSource::set_frequency(uint64_t frequency)
 void AirspyHFSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
-    if (ImGui::SliderInt("Attenuation", &attenuation, 0, 48))
+    if (RImGui::SliderInt("Attenuation", &attenuation, 0, 48))
         set_atte();
 
-    if (ImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
+    if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
                                             "LOW\0"
                                             "HIGH\0"))
         set_agcs();
 
-    if (ImGui::Checkbox("HF LNA", &hf_lna_enabled))
+    if (RImGui::Checkbox("HF LNA", &hf_lna_enabled))
         set_lna();
 }
 

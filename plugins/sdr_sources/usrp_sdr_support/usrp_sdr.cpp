@@ -210,9 +210,9 @@ void USRPSource::set_frequency(uint64_t frequency)
 void USRPSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    if (ImGui::Combo("Channel", &channel, channel_option_str.c_str()))
+    if (RImGui::Combo("Channel", &channel, channel_option_str.c_str()))
     {
         open_sdr();
         open_channel();
@@ -220,12 +220,12 @@ void USRPSource::drawControlUI()
         usrp_device.reset();
     }
 
-    ImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
+    RImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
 
     samplerate_widget.render();
 
-    if (ImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
-                                                       "16-bits\0"))
+    if (RImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
+                                                        "16-bits\0"))
     {
         if (selected_bit_depth == 0)
             bit_depth = 8;
@@ -234,10 +234,10 @@ void USRPSource::drawControlUI()
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
-    if (ImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
+    if (RImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
         set_gains();
 }
 

@@ -3,8 +3,7 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include <rtaudio/RtAudio.h>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 
 class RtAudioSource : public dsp::DSPSampleSource
 {

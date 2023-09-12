@@ -140,23 +140,23 @@ void HackRFSource::set_frequency(uint64_t frequency)
 void HackRFSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::Checkbox("Amp", &amp_enabled);
-    gain_changed |= ImGui::SliderInt("LNA Gain", &lna_gain, 0, 49);
-    gain_changed |= ImGui::SliderInt("VGA Gain", &vga_gain, 0, 49);
+    gain_changed |= RImGui::Checkbox("Amp", &amp_enabled);
+    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, 49);
+    gain_changed |= RImGui::SliderInt("VGA Gain", &vga_gain, 0, 49);
 
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 }
 

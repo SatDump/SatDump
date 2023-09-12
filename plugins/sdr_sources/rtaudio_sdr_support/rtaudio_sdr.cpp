@@ -108,23 +108,22 @@ void RtAudioSource::set_frequency(uint64_t frequency)
 
 void RtAudioSource::drawControlUI()
 {
-
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    RImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
 
     if (channel_count >= 2)
     {
-        if (ImGui::RadioButton("Mono##rtaudiomono", channel_mode == 1))
+        if (RImGui::RadioButton("Mono##rtaudiomono", channel_mode == 1))
             channel_mode = 1;
-        if (ImGui::RadioButton("Stereo##rtaudiomono", channel_mode == 2))
+        if (RImGui::RadioButton("Stereo##rtaudiomono", channel_mode == 2))
             channel_mode = 2;
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 }
 
 void RtAudioSource::set_samplerate(uint64_t samplerate)

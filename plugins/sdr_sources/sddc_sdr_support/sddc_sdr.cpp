@@ -146,34 +146,34 @@ void SDDCSource::set_frequency(uint64_t frequency)
 void SDDCSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    RImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
 
-    ImGui::Combo("Mode", &mode, "HF\0"
-                                "VHF\0");
+    RImGui::Combo("Mode", &mode, "HF\0"
+                                 "VHF\0");
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
     if (mode == 1)
     {
-        gain_changed |= ImGui::SliderInt("RF Gain", &rf_gain, 0, 29);
-        gain_changed |= ImGui::SliderInt("IF Gain", &if_gain, 0, 16);
+        gain_changed |= RImGui::SliderInt("RF Gain", &rf_gain, 0, 29);
+        gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 0, 16);
     }
     else
     {
-        gain_changed |= ImGui::SliderInt("RF Gain", &rf_gain, 0, 64);
-        gain_changed |= ImGui::SliderInt("IF Gain", &if_gain, 0, 127);
+        gain_changed |= RImGui::SliderInt("RF Gain", &rf_gain, 0, 64);
+        gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 0, 127);
     }
     if (gain_changed)
         set_att();
 
     // Bias
-    if (ImGui::Checkbox("Bias", &bias))
+    if (RImGui::Checkbox("Bias", &bias))
         set_bias();
 }
 

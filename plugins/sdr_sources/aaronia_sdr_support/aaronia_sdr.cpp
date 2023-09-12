@@ -239,19 +239,19 @@ void AaroniaSource::set_frequency(uint64_t frequency)
 void AaroniaSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    RImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
 
     // Channel
-    if (ImGui::RadioButton("Rx1", d_rx_channel == 0))
+    if (RImGui::RadioButton("Rx1", d_rx_channel == 0))
         d_rx_channel = 0;
-    else if (ImGui::RadioButton("Rx2", d_rx_channel == 1))
+    else if (RImGui::RadioButton("Rx2", d_rx_channel == 1))
         d_rx_channel = 1;
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // USB Compression
     if (ImGui::Combo("USB Compression##aaronia_usb_comp", &d_usb_compression, "Auto\0"
@@ -261,17 +261,17 @@ void AaroniaSource::drawControlUI()
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
-    gain_changed |= ImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
+    gain_changed |= RImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
+    gain_changed |= RImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
                                                                             "Peak\0"
                                                                             "Power\0");
-    gain_changed |= ImGui::Checkbox("Amp##aaronia_amp", &d_enable_amp);
-    gain_changed |= ImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
+    gain_changed |= RImGui::Checkbox("Amp##aaronia_amp", &d_enable_amp);
+    gain_changed |= RImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
     if (gain_changed)
         set_gains();
 
     // Rescaling
-    ImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
+    RImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
 }
 
 void AaroniaSource::set_samplerate(uint64_t samplerate)

@@ -33,6 +33,7 @@ namespace RImGui
         UI_ELEMENT_SEPARATOR,
         UI_ELEMENT_INPUTTEXT,
         UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT,
+        UI_ELEMENT_SAMELINE,
 
         UI_ELEMENT_BEGINDISABLED,
         UI_ELEMENT_ENDDISABLED,
@@ -268,6 +269,8 @@ namespace RImGui
                 el.clicked = ImGui::InputText(el.sv.c_str(), &el.sv2, el.iv);
             else if (el.t == UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT)
                 el.clicked = ImGui::IsItemDeactivatedAfterEdit();
+            else if (el.t == UI_ELEMENT_SAMELINE)
+                ImGui::SameLine();
 
             else if (el.t == UI_ELEMENT_BEGINDISABLED)
                 style::beginDisabled();
@@ -526,6 +529,16 @@ namespace RImGui
                             return el.clicked;
             return false;
         }
+    }
+
+    inline void SameLine()
+    {
+        if (is_local)
+            ImGui::SameLine();
+        else
+            current_instance->ui_elements.push_back({UI_ELEMENT_SAMELINE,
+                                                     current_instance->current_id++,
+                                                     0, 0, "##noid"});
     }
 
     inline void beginDisabled()

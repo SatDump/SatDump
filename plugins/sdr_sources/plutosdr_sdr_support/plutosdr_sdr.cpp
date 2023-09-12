@@ -97,27 +97,27 @@ void PlutoSDRSource::set_frequency(uint64_t frequency)
 void PlutoSDRSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
     samplerate_widget.render();
 
     if (!is_usb)
     {
-        ImGui::InputText("Address", &ip_address);
-        ImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
+        RImGui::InputText("Address", &ip_address);
+        RImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     if (gain_mode == 0)
     {
         // Gain settings
-        if (ImGui::SliderInt("Gain", &gain, 0, 76))
+        if (RImGui::SliderInt("Gain", &gain, 0, 76))
             set_gains();
     }
 
-    if (ImGui::Combo("Gain Mode", &gain_mode, "Manual\0Fast Attack\0Slow Attack\0Hybrid\0"))
+    if (RImGui::Combo("Gain Mode", &gain_mode, "Manual\0Fast Attack\0Slow Attack\0Hybrid\0"))
         set_gains();
 }
 
