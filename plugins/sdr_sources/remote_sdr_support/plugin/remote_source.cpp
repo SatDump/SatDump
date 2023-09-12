@@ -13,6 +13,13 @@ void RemoteSource::set_settings(nlohmann::json settings)
     if (d_settings.contains("remote_bit_depth"))
         bit_depth_used = d_settings["remote_bit_depth"];
 
+    if (bit_depth_used == 8)
+        selected_bit_depth = 0;
+    else if (bit_depth_used == 16)
+        selected_bit_depth = 1;
+    else if (bit_depth_used == 32)
+        selected_bit_depth = 2;
+
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SETSETTINGS, nlohmann::json::to_cbor(settings));
 
     if (is_open)
