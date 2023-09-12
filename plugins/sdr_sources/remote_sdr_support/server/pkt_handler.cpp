@@ -28,12 +28,7 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             {
                 logger->trace("- " + src.name);
 
-                if (src.source_type == "file" ||
-                    src.source_type == "plutosdr" ||
-                    src.source_type == "rtltcp" ||
-                    src.source_type == "sdrpp_server" ||
-                    src.source_type == "spyserver" ||
-                    src.source_type == "udp_source")
+                if (!src.remote_ok)
                     continue;
 
                 sources_final.push_back(src);

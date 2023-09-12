@@ -137,7 +137,7 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
     std::vector<dsp::SourceDescriptor> results;
 
 #ifndef __ANDROID__
-    results.push_back({"plutosdr", "PlutoSDR IP", 0});
+    results.push_back({"plutosdr", "PlutoSDR IP", 0, false});
 
     // Try to find local USB devices
     iio_scan_context *scan_ctx = iio_create_scan_context("usb", 0);

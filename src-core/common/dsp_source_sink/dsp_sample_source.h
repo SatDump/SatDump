@@ -16,6 +16,8 @@ namespace dsp
         std::string name;
         uint64_t unique_id;
 
+        bool remote_ok = true;
+
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(SourceDescriptor,
                                        source_type, name, unique_id)
     };

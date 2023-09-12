@@ -97,7 +97,7 @@ std::vector<dsp::SourceDescriptor> UDPSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"udp_source", "UDP Source", 0});
+    results.push_back({"udp_source", "UDP Source", 0, false});
 
     return results;
 }

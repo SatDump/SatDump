@@ -178,6 +178,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
                     {
                         src.source_type = "remote";
                         src.name = server_ip.first + ":" + std::to_string(server_ip.second) + " - " + src.name;
+                        src.remote_ok = false;
                         results.push_back(src);
                     }
                 }

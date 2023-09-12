@@ -220,7 +220,7 @@ std::vector<dsp::SourceDescriptor> SpyServerSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"spyserver", "SpyServer", 0});
+    results.push_back({"spyserver", "SpyServer", 0, false});
 
     return results;
 }
