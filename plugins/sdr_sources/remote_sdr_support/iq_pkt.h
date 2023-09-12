@@ -20,7 +20,7 @@ namespace remote_sdr
             if (bit_depth == 8)
                 scale = 127.0f / mag_buf[max_index];
             else if (bit_depth == 16)
-                scale = 65535.0f / mag_buf[max_index];
+                scale = 32767.0f / mag_buf[max_index];
         }
 
         output[0] = bit_depth;
