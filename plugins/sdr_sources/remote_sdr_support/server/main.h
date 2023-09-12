@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tcp_test.h"
+#include "tcp_proto.h"
 #include "common/dsp_source_sink/dsp_sample_source.h"
 
 extern TCPServer *tcp_server;

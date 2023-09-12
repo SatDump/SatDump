@@ -8,7 +8,7 @@
 #include <thread>
 #include <atomic>
 
-#include "tcp_test.h"
+#include "tcp_proto.h"
 #include "remote.h"
 #include "common/rimgui.h"
 

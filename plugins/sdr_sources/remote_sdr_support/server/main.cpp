@@ -36,7 +36,10 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    int port_used = std::stoi(argv[1]);
+    int port_used = 5656;
+
+    if (argc > 1)
+        port_used = std::stoi(argv[1]);
 
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);

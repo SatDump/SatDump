@@ -192,8 +192,10 @@ public:
             buffer_tx[3] = len & 0xFF;
             memcpy(&buffer_tx[4], buff, len);
             // write(clientsockfd, buffer_tx, len + 4);
-            send(clientsockfd, (char *)buffer_tx, len + 4, 0);
+            int r = send(clientsockfd, (char *)buffer_tx, len + 4, MSG_NOSIGNAL);
             // logger->critical("HEADESENTR %d %d", len, buff2.size());
+            if (r == -1)
+                clientsockfd = -1;
         }
         write_mtx.unlock();
     }

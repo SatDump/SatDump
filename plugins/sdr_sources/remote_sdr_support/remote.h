@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tcp_test.h"
+#include "tcp_proto.h"
 
 #define REMOTE_NETWORK_DISCOVERY_REQPORT 4567
 #define REMOTE_NETWORK_DISCOVERY_REPPORT 7890
