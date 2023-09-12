@@ -171,6 +171,20 @@ namespace wav
                 timeS.tm_mon -= 1;
                 md.timestamp = mktime(&timeS);
             }
+
+            // Other filename (NOAA-APT-v2?)
+            // satnum = 0;
+            if (sscanf(filename.c_str(),
+                       "NOAA-%2d-%4d%2d%2d-%2d%2d%2d",
+                       &satnum,
+                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 7)
+            {
+                timeS.tm_isdst = -1;
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                md.timestamp = mktime(&timeS);
+            }
         }
         else
         {
