@@ -9,7 +9,7 @@ std::atomic<int> streaming_bit_depth = 32;
 
 void sourceStreamThread()
 {
-    uint8_t *buffer_tx = new uint8_t[3000000];
+    uint8_t *buffer_tx = new uint8_t[dsp::STREAM_BUFFER_SIZE * sizeof(complex_t)];
     float *mag_buffer = new float[dsp::STREAM_BUFFER_SIZE];
     while (1)
     {
