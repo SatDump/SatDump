@@ -1,6 +1,6 @@
 #include "remote_source.h"
 #include "common/utils.h"
-
+#include "common/dsp_source_sink/format_notated.h"
 #include "udp_discovery.h"
 
 void RemoteSource::set_others()
@@ -91,6 +91,27 @@ void RemoteSource::drawControlUI()
         set_others();
     }
 
+    // Incoming datarate
+    frame_time_cnt += ImGui::GetIO().DeltaTime;
+    if (frame_time_cnt >= 0.5)
+    {
+        current_datarate = ((float)bytes_received / (frame_time_cnt * 1024.0f * 1024.0f));
+        current_samplerate = (((float)bytes_received / frame_time_cnt) * 8) / ((float)bit_depth_used * 2.0f);
+        frame_time_cnt = 0;
+        bytes_received = 0;
+    }
+
+    if (is_started)
+    {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Streaming %.3f MB/s", current_datarate);
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Samplerate %s", format_notated(current_samplerate, "sps").c_str());
+    }
+    else
+    {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Streaming --.-- MB/s");
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Samplerate --.-- sps");
+    }
+
     RImGui::Separator();
 
     // Draw remote UI
@@ -128,7 +149,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    service_discovery::UDPDiscoveryConfig cfg = { REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
+    service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
     auto detected_servers = service_discovery::discoverUDPServers(cfg, 100);
 

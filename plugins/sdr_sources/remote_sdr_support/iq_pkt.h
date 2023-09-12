@@ -45,6 +45,8 @@ namespace remote_sdr
             final_size = nsamples * sizeof(complex_t);
         }
 
+        // printf("Final Size %d\n", final_size);
+
         return final_size;
     }
 
