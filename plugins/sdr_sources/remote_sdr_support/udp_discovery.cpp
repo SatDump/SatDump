@@ -41,7 +41,7 @@ namespace service_discovery
         send_addr.sin_addr.s_addr = INADDR_BROADCAST;
 
         if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr)) < 0)
-            throw std::runtime_error("Error on send!");
+            throw std::runtime_error(std::strerror(errno));
 
 #if defined(_WIN32)
         closesocket(fd);
@@ -244,11 +244,14 @@ namespace service_discovery
         std::thread funrx_th(fun_rx);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-        sendUdpBroadcast(cfg.req_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        try {
+            sendUdpBroadcast(cfg.req_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        }
+        catch (std::exception &e) {
+            logger->trace("Error on Remote SDR Discovery - " + std::string(e.what()));
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(wait_millis));
-
         should_wait = false; // Force close with a new packet
         sendUdpPacket("127.0.0.1", cfg.rep_port, cfg.req_pkt.data(), cfg.req_pkt.size());
 
