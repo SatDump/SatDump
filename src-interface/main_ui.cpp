@@ -250,10 +250,12 @@ namespace satdump
 
         // Render toasts on top of everything, at the end of your code!
         // You should push style vars here
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);                                                    // Round borders
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 100.f / 255.f)); // Background color
-        ImGui::RenderNotifications();                                                                              // <-- Here we render all notifications
-        ImGui::PopStyleVar(1);                                                                                     // Don't forget to Pop()
+        float notification_bgcolor = (light_theme ? 212.f : 43.f) / 255.f;
+        float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
+        ImGui::RenderNotifications();
+        ImGui::PopStyleVar(1);
         ImGui::PopStyleColor(1);
     }
 
