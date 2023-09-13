@@ -4,7 +4,6 @@
 #include "processing.h"
 #include "offline.h"
 #include "settings.h"
-#include "error.h"
 #include "satdump_vars.h"
 #include "core/config.h"
 #include "core/style.h"
@@ -244,9 +243,6 @@ namespace satdump
             }
             ImGui::EndTabBar();
             ImGui::End();
-
-            if (error::hasError)
-                error::render();
 
             if (settings::show_imgui_demo)
                 ImGui::ShowDemoWindow();

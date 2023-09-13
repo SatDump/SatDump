@@ -2,7 +2,6 @@
 #include "processing.h"
 #include "logger.h"
 #include "core/pipeline.h"
-#include "error.h"
 
 #include "core/config.h"
 #include "main_ui.h"
@@ -49,7 +48,6 @@ namespace satdump
                 catch (std::exception &e)
                 {
                     logger->error("Fatal error running pipeline : " + std::string(e.what()));
-                    error::set_error("Pipeline Error", e.what());
                     is_processing = false;
                     processing_mutex.unlock();
                     return;

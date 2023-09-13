@@ -5,7 +5,6 @@
 #include "core/config.h"
 #include "products/dataset.h"
 #include "common/utils.h"
-#include "error.h"
 #include "resources.h"
 
 void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komówki w tabelii na wybrany kolor w RGBA
@@ -285,7 +284,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            error::set_error("Error opening dataset!", e.what());
+                            logger->error("Error opening dataset - %s", e.what());
                         }
                     }
                     ImGui::Text("Load Products :");
@@ -297,7 +296,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            error::set_error("Error opening products!", e.what());
+                            logger->error("Error opening products - %s", e.what());
                         }
                     }
                 }
