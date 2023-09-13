@@ -13,6 +13,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <WS2tcpip.h>
+#define MSG_NOSIGNAL 0
 #else
 #include <sys/socket.h>
 #include <unistd.h>
