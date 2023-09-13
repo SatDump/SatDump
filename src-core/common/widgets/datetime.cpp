@@ -56,12 +56,16 @@ namespace widgets
     }
     void DateTimePicker::draw()
     {
-        std::string checkbox_label = "###dsauto";
+        char* checkbox_label;
+        show_picker = auto_time;
         if (auto_time)
             checkbox_label = "Auto###dsauto";
-        ImGui::Checkbox(checkbox_label.c_str(), &auto_time);
+        else
+            checkbox_label = "###dsauto";
 
-        if (!auto_time)
+        ImGui::Checkbox(checkbox_label, &auto_time);
+
+        if (!show_picker)
         {
             ImGui::SameLine();
             ImGuiStyle style = ImGui::GetStyle();
