@@ -494,7 +494,7 @@
                         "autogen": false
                     },
                     "WXtoImg NO": {
-                        "lut": "noaa_apt/WXtoImg-NO.png",
+                        "lut": "noaa_apt/WXtoImg-NO_mod.png",
                         "channels": "ch3b, ch4",
                         "autogen": false,
                         "geo_correct": true,
@@ -799,8 +799,8 @@
                         "autogen": true
                     },
                     "WXtoImg NO": {
-                        "lut": "noaa_apt/WXtoImg-NO.png",
-                        "channels": "1-ch5, 1-ch4",
+                        "lut": "lut/WXtoImg-NO_mod_meteor.png",
+                        "channels": "ch4, ch5",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
