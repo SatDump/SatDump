@@ -33,7 +33,7 @@
                     "ccsds": false,
                     "nrzm": true,
                     "derandomize": false,
-                    "asm": "0xfaf3200d",
+                    "asm": "0x14337f13",
                     "rs_i": 0
                 }
             },
