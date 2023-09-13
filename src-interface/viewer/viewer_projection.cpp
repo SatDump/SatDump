@@ -1,5 +1,4 @@
 #include "viewer.h"
-#include "error.h"
 #include "common/map/map_drawer.h"
 #include "common/projection/reprojector.h"
 #include "logger.h"
