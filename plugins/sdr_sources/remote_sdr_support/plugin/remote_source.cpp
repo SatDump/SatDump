@@ -103,9 +103,10 @@ void RemoteSource::drawControlUI()
     if (frame_time_cnt >= 0.5)
     {
         current_datarate = ((float)bytes_received / (frame_time_cnt * 1024.0f * 1024.0f));
-        current_samplerate = (((float)bytes_received / frame_time_cnt) * 8) / ((float)bit_depth_used * 2.0f);
+        current_samplerate = (float)samples_received / frame_time_cnt;
         frame_time_cnt = 0;
         bytes_received = 0;
+        samples_received = 0;
     }
 
     if (is_started)

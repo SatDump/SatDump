@@ -38,6 +38,7 @@ protected:
     void set_others();
 
     uint64_t bytes_received = 0;
+    uint64_t samples_received = 0;
     float frame_time_cnt = 0;
     float current_datarate = 0;
     float current_samplerate = 0;
@@ -97,6 +98,7 @@ public:
             // logger->trace("SAMPLES %d %d", nsamples, len);
             output_stream->swap(nsamples);
             bytes_received += len;
+            samples_received += nsamples;
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
