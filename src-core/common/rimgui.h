@@ -248,7 +248,7 @@ namespace RImGui
         for (auto &el : elems)
         {
             if (el.t == UI_ELEMENT_TEXT)
-                ImGui::Text(el.sv.c_str());
+                ImGui::TextUnformatted(el.sv.c_str());
             else if (el.t == UI_ELEMENT_BUTTON)
                 el.clicked = ImGui::Button(el.sv.c_str(), {el.size_x, el.size_y});
             else if (el.t == UI_ELEMENT_RADIOBUTTON)

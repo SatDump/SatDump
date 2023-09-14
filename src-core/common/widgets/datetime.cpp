@@ -56,7 +56,7 @@ namespace widgets
     }
     void DateTimePicker::draw()
     {
-        char* checkbox_label;
+        const char* checkbox_label;
         show_picker = auto_time;
         if (auto_time)
             checkbox_label = "Auto###dsauto";

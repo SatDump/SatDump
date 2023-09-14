@@ -1,7 +1,26 @@
+#include "logger.h"
+#include "core/config.h"
+#include "core/style.h"
 #include "file_source.h"
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/detect_header.h"
+
+FileSource::FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+{
+    file_input.default_dir = satdump::config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
+    should_run = true;
+    work_thread = std::thread(&FileSource::run_thread, this);
+}
+
+FileSource::~FileSource()
+{
+    stop();
+    close();
+    should_run = false;
+    if (work_thread.joinable())
+        work_thread.join();
+}
 
 void FileSource::set_settings(nlohmann::json settings)
 {

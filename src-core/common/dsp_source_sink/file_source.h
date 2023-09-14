@@ -1,9 +1,7 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "logger.h"
 #include "imgui/imgui.h"
-#include "core/style.h"
 #include <fstream>
 #include "common/dsp/io/baseband_interface.h"
 #include <thread>
@@ -42,20 +40,8 @@ protected:
     bool is_ui = false;
 
 public:
-    FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
-    {
-        should_run = true;
-        work_thread = std::thread(&FileSource::run_thread, this);
-    }
-
-    ~FileSource()
-    {
-        stop();
-        close();
-        should_run = false;
-        if (work_thread.joinable())
-            work_thread.join();
-    }
+    FileSource(dsp::SourceDescriptor source);
+    ~FileSource();
 
     void set_settings(nlohmann::json settings);
     nlohmann::json get_settings();
