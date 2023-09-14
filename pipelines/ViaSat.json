@@ -40,7 +40,7 @@
             "products": {}
         }
     },
-    "viasat3_12.2GHz_tlm": {
+    "viasat3_tlm_12200": {
         "name": "ViaSat-3 12.2GHz TLM",
         "live": true,
         "live_cfg": [
