@@ -153,6 +153,8 @@ uint64_t RemoteSource::get_samplerate()
     return samplerate_current;
 }
 
+extern std::vector<std::pair<std::string, int>> additional_servers;
+
 std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
@@ -160,6 +162,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
     service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
     auto detected_servers = service_discovery::discoverUDPServers(cfg, 100);
+    detected_servers.insert(detected_servers.end(), additional_servers.begin(), additional_servers.end());
 
     for (auto server_ip : detected_servers)
     {

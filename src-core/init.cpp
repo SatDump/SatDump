@@ -72,6 +72,9 @@ namespace satdump
 
         loadPlugins();
 
+        // Let plugins know we started
+        eventBus->fire_event<config::RegisterPluginConfigHandlersEvent>({config::plugin_config_handlers});
+
         registerModules();
 
         // Load pipelines

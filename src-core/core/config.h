@@ -2,6 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "dll_export.h"
+#include <functional>
 
 namespace satdump
 {
@@ -13,5 +14,19 @@ namespace satdump
         void loadConfig(std::string path, std::string user_path);
         void loadUserConfig(std::string user_path);
         void saveUserConfig();
+
+        struct PluginConfigHandler
+        {
+            std::string name;
+            std::function<void()> render;
+            std::function<void()> save;
+        };
+
+        SATDUMP_DLL extern std::vector<PluginConfigHandler> plugin_config_handlers;
+
+        struct RegisterPluginConfigHandlersEvent
+        {
+            std::vector<PluginConfigHandler> &plugin_config_handlers;
+        };
     }
 }

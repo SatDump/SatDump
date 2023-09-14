@@ -16,6 +16,8 @@ namespace satdump
         nlohmann::ordered_json master_cfg;
         nlohmann::ordered_json main_cfg;
 
+        std::vector<PluginConfigHandler> plugin_config_handlers;
+
         std::string user_cfg_path;
 
         void loadConfig(std::string path, std::string user_path)
