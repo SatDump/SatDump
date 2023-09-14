@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 #include "core/plugin.h"
 #include "logger.h"
 #include "remote_source.h"
@@ -18,29 +24,72 @@ public:
     {
         // ImGui::Text("This is the config!!");
 
-        if (ImGui::BeginTable("##satdumpgeneralsettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        if (additional_servers.size() > 0)
         {
-            int i = 0;
-            for (auto &servers : additional_servers)
+            ImGuiStyle style = ImGui::GetStyle();
+            ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(style.CellPadding.x, 5.0 * ui_scale));
+            if (ImGui::BeginTable("##satdumpremotesdrsettings", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
+                ImGui::TableSetupColumn("##satdumpremotesdrsettingsip");
+                ImGui::TableSetupColumn("##satdumpremotesdrsettingsport");
+                ImGui::TableSetupColumn("##satdumpremotesdrsettingsremove", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::InputText(std::string("##ipinpuputremote" + std::to_string(i)).c_str(), &servers.first);
+                ImGui::TextUnformatted("SDR Server");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::InputInt(std::string("##ipinpuputport" + std::to_string(i)).c_str(), &servers.second);
-                i++;
+                ImGui::TextUnformatted("Port");
+                int i = 0;
+                for (auto& servers : additional_servers)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::SetNextItemWidth(200 * ui_scale);
+                    ImGui::InputTextWithHint(std::string("##ipinpuputremote" + std::to_string(i)).c_str(), "127.0.0.1", &servers.first, ImGuiInputTextFlags_CharsDecimal);
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::SetNextItemWidth(100 * ui_scale);
+                    if (ImGui::InputInt(std::string("##ipinpuputport" + std::to_string(i)).c_str(), &servers.second))
+                    {
+                        if (servers.second < 1)
+                            servers.second = 1;
+                        if (servers.second > 65535)
+                            servers.second = 65535;
+                    }
+                    ImGui::TableSetColumnIndex(2);
+                    if (ImGui::Button(std::string("Remove##remoteserverremove" + std::to_string(i)).c_str()))
+                        additional_servers.erase(additional_servers.begin() + i);
+                    i++;
+                }
+                ImGui::EndTable();
             }
-            ImGui::EndTable();
+            ImGui::PopStyleVar();
         }
 
+        ImGui::TextUnformatted("Add new Server: ");
+        ImGui::SameLine();
         ImGui::SetNextItemWidth(200 * ui_scale);
-        ImGui::InputText("##remoteaddaddress", &address_to_add);
+        ImGui::InputTextWithHint("##remoteaddaddress", "127.0.0.1", &address_to_add, ImGuiInputTextFlags_CharsDecimal);
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100 * ui_scale);
-        ImGui::InputInt("##remoteaddport", &port_to_add);
+        if (ImGui::InputInt("##remoteaddport", &port_to_add))
+        {
+            if (port_to_add < 1)
+                port_to_add = 1;
+            if (port_to_add > 65535)
+                port_to_add = 65535;
+        }
         ImGui::SameLine();
         if (ImGui::Button("Add###addremotenew"))
-            additional_servers.push_back({address_to_add, port_to_add});
+        {
+            struct sockaddr_in sa;
+            if (inet_pton(AF_INET, address_to_add.c_str(), &(sa.sin_addr)) > 0)
+            {
+                additional_servers.push_back({ address_to_add, port_to_add });
+                address_to_add = "";
+                port_to_add = 5656;
+            }
+            else
+                logger->warn("Not adding invalid Remote SDR IP %s", address_to_add.c_str());
+        }
     }
 
     static void save()
@@ -72,6 +121,6 @@ public:
 };
 
 std::string RemoteSDRSupport::address_to_add = "";
-int RemoteSDRSupport::port_to_add = 0;
+int RemoteSDRSupport::port_to_add = 5656;
 
 PLUGIN_LOADER(RemoteSDRSupport)
