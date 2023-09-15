@@ -308,7 +308,8 @@ namespace satdump
                     Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
                     if (selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_mhz * 1e6 ?
+                            selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
                             for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
                             {
