@@ -1500,7 +1500,7 @@
                     },
                     "Test2": {
                         "equation": "1-ch33,1-ch34,1-ch35",
-                        "individual_individual_equalize": true,
+                        "individual_equalize": true,
                         "project": {
                             "width": 2048,
                             "height": 1024,
