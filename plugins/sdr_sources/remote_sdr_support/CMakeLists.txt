@@ -25,3 +25,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
 
 # Link against the core
 target_link_libraries(satdump_sdr_server PUBLIC satdump_core)
+
+install(TARGETS satdump_sdr_server DESTINATION bin)
