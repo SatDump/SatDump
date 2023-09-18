@@ -11,13 +11,6 @@ file(GLOB_RECURSE SatDump_ui_CPPS *.cpp)
 add_executable(satdump-ui ${SatDump_ui_CPPS} ${WIN32_RESOURCES})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
 
-# Set the resources path
-if(MSVC)
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
-else()
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-endif()
-
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 

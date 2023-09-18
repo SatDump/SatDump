@@ -58,6 +58,12 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cmake --build . --config $BUILD_TYPE
 
+      - name: Build Installer
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cpack -C $BUILD_TYPE
+
       - name: Copy DLLs
         working-directory: ${{runner.workspace}}/build
         shell: powershell
@@ -91,8 +97,14 @@ jobs:
       - name: Upload ZIP
         uses: actions/upload-artifact@v2
         with:
-          name: SatDump-Windows_x64_MSVC
+          name: SatDump-Windows_x64_Portable
           path: ${{runner.workspace}}/build/Release/*
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: SatDump-Windows_x64_Installer
+          path: ${{runner.workspace}}/build/SatDump-*.exe
 
   build_android:
     runs-on: ubuntu-latest
