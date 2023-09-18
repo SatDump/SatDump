@@ -260,7 +260,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump_1.1.0_amd64.deb satdump_out/satdump_ubuntu_latest_1.1.0_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
