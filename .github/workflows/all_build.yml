@@ -54,13 +54,13 @@ jobs:
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
-        shell: bash
+        shell: cmd
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cmake --build . --config $BUILD_TYPE
 
       - name: Build Installer
         working-directory: ${{runner.workspace}}/build
-        shell: bash
+        shell: cmd
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cpack -C $BUILD_TYPE
 

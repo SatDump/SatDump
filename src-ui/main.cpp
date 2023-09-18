@@ -219,7 +219,10 @@ int main(int argc, char *argv[])
 
         img.pixels = px;
     }
+
+#ifndef _WIN32
     glfwSetWindowIcon(window, 1, &img);
+#endif
 
     //Handle DPI changes
     float display_scale;
