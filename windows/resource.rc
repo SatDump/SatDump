@@ -1,1 +1,1 @@
-IDI_ICON1               ICON                    "icon.ico"
+GLFW_ICON 				ICON DISCARDABLE        "icon.ico"
