@@ -16,6 +16,8 @@ static char ag_LogTag[] = "SatDump";
 #include <glob.h>
 #endif
 
+#include "init.h"
+
 // Logger and sinks. We got a console sink and file sink
 #ifdef __ANDROID__
 std::shared_ptr<slog::AndroidSink> console_sink;
@@ -287,6 +289,8 @@ void initFileSink()
         glob(library_glob, GLOB_TILDE, nullptr, &globbuf);
         std::string log_path = std::string(globbuf.gl_pathv[0]) + "/Logs/satdump.log";
         globfree(&globbuf);
+#elif defined(_WIN32)
+        std::string log_path = satdump::user_path + "/satdump.logs";
 #else
         std::string log_path = "satdump.logs";
 #endif
