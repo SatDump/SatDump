@@ -1,4 +1,5 @@
 #include "sdrplay_sdr.h"
+#include <thread>
 
 namespace sdrplay_settings
 {
@@ -28,10 +29,10 @@ void SDRPlaySource::set_gains()
 
     // Gains
     channel_params->tunerParams.gain.LNAstate = (max_gain - 1) - lna_gain;
-    channel_params->tunerParams.gain.gRdB = (59 - 1) - if_gain;
+    channel_params->tunerParams.gain.gRdB = 59 - (if_gain - 20);
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
-    logger->debug("Set SDRPlay LNA to %d", lna_gain);
-    logger->debug("Set SDRPlay IF gain to %d", if_gain);
+    logger->debug("Set SDRPlay LNA to %d", channel_params->tunerParams.gain.LNAstate);
+    logger->debug("Set SDRPlay IF gain to %d", channel_params->tunerParams.gain.gRdB);
 }
 
 void SDRPlaySource::set_bias()
@@ -346,7 +347,7 @@ void SDRPlaySource::drawControlUI()
         RImGui::beginDisabled();
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain);
+    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain - 1);
     gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 20, 59);
     if (gain_changed)
         set_gains();
