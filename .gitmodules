@@ -1,4 +1,3 @@
 [submodule "android/deps"]
 	path = android/deps
 	url = https://github.com/JVital2013/Android-Dependencies
-	branch = BumpVersion
