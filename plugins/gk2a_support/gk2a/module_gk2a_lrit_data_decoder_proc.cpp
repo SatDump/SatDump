@@ -4,6 +4,7 @@
 #include <fstream>
 #include "common/image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
+#include <filesystem>
 
 extern "C"
 {

@@ -8,6 +8,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/utils.h"
 #include "imgui/imgui_image.h"
+#include <filesystem>
 
 namespace orb
 {

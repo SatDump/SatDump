@@ -5,6 +5,7 @@
 #include "common/image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
 #include "common/image/j2k_utils.h"
+#include <filesystem>
 
 namespace fy4
 {

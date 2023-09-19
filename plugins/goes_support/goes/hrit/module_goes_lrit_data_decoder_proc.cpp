@@ -4,6 +4,7 @@
 #include "libs/miniz/miniz.h"
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
+#include <filesystem>
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime

@@ -7,6 +7,7 @@
 #include "common/repack.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
+#include <filesystem>
 
 namespace dmsp
 {
