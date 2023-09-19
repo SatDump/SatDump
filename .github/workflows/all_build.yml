@@ -121,16 +121,13 @@ jobs:
       - name: Install packages
         run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle build-essential git python3-mako
 
-      - name: Build CMake 3.18.1
-        run: git clone https://github.com/Kitware/CMake -b v3.18.1 --depth 1 && cd CMake && ./bootstrap && make -j16 && sudo make install
-
       # Setup Android SDK, and auto-accept licenses
       - name: Install Android SDK
         run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
 
       # Call SDKManager to install the Android NDK
       - name: Install Android NDK
-        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.1.8937393" --channel=3
+        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.2.9519653" --channel=3
 
       - name: Build dependencies
         shell: bash
@@ -138,7 +135,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: export ANDROID_SDK_ROOT=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
+        run: unset ANDROID_SDK_ROOT && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v2
