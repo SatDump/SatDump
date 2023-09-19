@@ -235,9 +235,18 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_VERSION ${SATDUMP_VERSION})
 
     if(MSVC OR BUILD_MSVC)
+        # Customize NSIS template
+        file(READ "${CMAKE_ROOT}/Modules/Internal/CPack/NSIS.template.in" NSIS_template)
+        set(CREATE_ICONS_REPLACE "  SetOutPath \"$INSTDIR\\bin\"\n@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@\n  SetOutPath \"$INSTDIR\"")
+        string(REPLACE "@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@" "${CREATE_ICONS_REPLACE}" NSIS_template "${NSIS_template}")
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in" "${NSIS_template}")
+        set(CPACK_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+
+        # Generate Installer
         set(CPACK_GENERATOR NSIS)
         set(CPACK_PACKAGE_INSTALL_DIRECTORY SatDump)
         set(CPACK_NSIS_MANIFEST_DPI_AWARE ON)
+        set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
         set(CPACK_NSIS_BRANDING_TEXT "SatDump - The General Purpose Satellite Decoder")
         set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/windows\\\\icon.ico")
         set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
