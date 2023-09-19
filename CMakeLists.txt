@@ -235,6 +235,17 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_VERSION ${SATDUMP_VERSION})
 
     if(MSVC OR BUILD_MSVC)
+        # Customize NSIS template
+        file(READ "${CMAKE_ROOT}/Modules/Internal/CPack/NSIS.template.in" NSIS_template)
+        set(CREATE_ICONS_REPLACE "
+            SetOutPath \"$INSTDIR\\bin\"
+            @CPACK_NSIS_CREATE_ICONS@
+            SetOutPath \"$INSTDIR\"")
+        string(REPLACE "@CPACK_NSIS_CREATE_ICONS@" "${CREATE_ICONS_REPLACE}" NSIS_template "${NSIS_template}")
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in" "${NSIS_template}")
+        set(CPACK_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+
+        # Generate Installer
         set(CPACK_GENERATOR NSIS)
         set(CPACK_PACKAGE_INSTALL_DIRECTORY SatDump)
         set(CPACK_NSIS_MANIFEST_DPI_AWARE ON)
