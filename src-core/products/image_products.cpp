@@ -513,6 +513,9 @@ namespace satdump
 
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table)
     {
+        if (img.width() == 0)
+            return img;
+
         success = false;
         if (!product.contents.contains("projection_cfg"))
             return img;
