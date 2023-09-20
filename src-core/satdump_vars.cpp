@@ -5,10 +5,14 @@
 #include <filesystem>
 #include <mach-o/dyld.h>
 #include <libgen.h>
+#define LIBRARIES_SEARCH_PATH "/../Resources/"
+#define RESOURCES_SEARCH_PATH "/../Resources/"
 #elif defined (_WIN32)
 #include <filesystem>
 #include <Windows.h>
 #include <shlwapi.h>
+#define LIBRARIES_SEARCH_PATH "\\..\\lib\\satdump\\"
+#define RESOURCES_SEARCH_PATH "\\..\\share\\satdump\\"
 #endif
 
 namespace satdump
@@ -17,28 +21,14 @@ namespace satdump
         std::string get_search_path(const char *target)
         {
             uint32_t bufsize = PATH_MAX;
-            char exec_path[bufsize], ret_val[bufsize];
+            char exec_path[bufsize], ret_val[bufsize], search_dir[bufsize];
+            char *exec_dir;
             _NSGetExecutablePath(exec_path, &bufsize);
-            dirname(exec_path);
-            strcat(exec_path, target);
-            realpath(exec_path, ret_val);
-            return std::string(ret_val);
-        }
-        std::string init_res_path()
-        {
-            std::string search_dir = get_search_path("/../Resources/");
-            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
-                return search_dir;
-            else
-                return std::string(RESOURCES_PATH) + "/";
-        }
-        std::string init_lib_path()
-        {
-            std::string search_dir = get_search_path("/../Resources/");
-            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
-                return search_dir;
-            else
-                return std::string(LIBRARIES_PATH) + "/";
+            exec_dir = dirname(exec_path);
+            strcpy(search_dir, exec_dir);
+            strcat(search_dir, target);
+            realpath(search_dir, ret_val);
+            return std::string(ret_val) + "/";
         }
 #elif defined (_WIN32)
         std::string get_search_path(const char *target)
@@ -50,9 +40,12 @@ namespace satdump
             PathCanonicalizeA(ret_val, exe_path);
             return std::string(ret_val);
         }
+#endif
+
+#if defined (__APPLE__) || defined (_WIN32)
         std::string init_res_path()
         {
-            std::string search_dir = get_search_path("\\..\\share\\satdump\\");
+            std::string search_dir = get_search_path(RESOURCES_SEARCH_PATH);
             if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
                 return search_dir;
             else
@@ -60,7 +53,7 @@ namespace satdump
         }
         std::string init_lib_path()
         {
-			std::string search_dir = get_search_path("\\..\\lib\\satdump\\");
+            std::string search_dir = get_search_path(LIBRARIES_SEARCH_PATH);
             if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
                 return search_dir;
             else
