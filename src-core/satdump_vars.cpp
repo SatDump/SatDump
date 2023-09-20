@@ -1,36 +1,68 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "satdump_vars.h"
 
-#ifdef __APPLE__
+#if defined (__APPLE__)
 #include <filesystem>
 #include <mach-o/dyld.h>
+#include <libgen.h>
+#elif defined (_WIN32)
+#include <filesystem>
+#include <Windows.h>
+#include <shlwapi.h>
 #endif
 
 namespace satdump
 {
 #if defined (__APPLE__)
-        std::string get_macos_exec_dir()
+        std::string get_search_path(const char *target)
         {
             uint32_t bufsize = PATH_MAX;
-            char exec_path[bufsize], real_path[bufsize];
+            char exec_path[bufsize], ret_val[bufsize];
             _NSGetExecutablePath(exec_path, &bufsize);
-            realpath(exec_path, real_path);
-            std::string ret_val = std::string(real_path);
-            return ret_val.substr(0, ret_val.find_last_of("/") + 1);
+            dirname(exec_path);
+            strcat(exec_path, target);
+            realpath(exec_path, ret_val);
+            return std::string(ret_val);
         }
         std::string init_res_path()
         {
-            std::string exec_dir = get_macos_exec_dir();
-            if (std::filesystem::exists(exec_dir + "../Resources/") && std::filesystem::is_directory(exec_dir + "../Resources/"))
-                return exec_dir + "../Resources/";
+            std::string search_dir = get_search_path("/../Resources/");
+            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
+                return search_dir;
             else
                 return std::string(RESOURCES_PATH) + "/";
         }
         std::string init_lib_path()
         {
-            std::string exec_dir = get_macos_exec_dir();
-            if (std::filesystem::exists(exec_dir + "../Resources/") && std::filesystem::is_directory(exec_dir + "../Resources/"))
-                return exec_dir + "../Resources/";
+            std::string search_dir = get_search_path("/../Resources/");
+            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
+                return search_dir;
+            else
+                return std::string(LIBRARIES_PATH) + "/";
+        }
+#elif defined (_WIN32)
+        std::string get_search_path(const char *target)
+        {
+            char exe_path[MAX_PATH], ret_val[MAX_PATH];
+            GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+            PathRemoveFileSpecA(exe_path);
+            strcat_s(exe_path, MAX_PATH, target);
+            PathCanonicalizeA(ret_val, exe_path);
+            return std::string(ret_val);
+        }
+        std::string init_res_path()
+        {
+            std::string search_dir = get_search_path("\\..\\share\\satdump\\");
+            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
+                return search_dir;
+            else
+                return std::string(RESOURCES_PATH) + "/";
+        }
+        std::string init_lib_path()
+        {
+			std::string search_dir = get_search_path("\\..\\lib\\satdump\\");
+            if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
+                return search_dir;
             else
                 return std::string(LIBRARIES_PATH) + "/";
         }
