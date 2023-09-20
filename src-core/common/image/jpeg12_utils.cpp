@@ -4,7 +4,7 @@
 #include <csetjmp>
 extern "C"
 {
-#include "jpeg12/jpeglib12.h"
+#include "libs/jpeg12/jpeglib12.h"
 }
 //#include "libs/openjp2/openjpeg.h"
 
@@ -49,7 +49,7 @@ namespace image
         jpeg_create_decompress(&cinfo);
 
         // Parse and start decompressing
-        jpeg_mem__src(&cinfo, data, length);
+        jpeg_mem__src12(&cinfo, data, length);
         jpeg_read_header(&cinfo, FALSE);
         jpeg_start_decompress(&cinfo);
 

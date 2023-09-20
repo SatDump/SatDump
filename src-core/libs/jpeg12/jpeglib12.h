@@ -1012,7 +1012,7 @@ EXTERN(void) jpeg_destroy_decompress JPP((j_decompress_ptr cinfo));
 EXTERN(void) jpeg_stdio_dest JPP((j_compress_ptr cinfo, FILE * outfile));
 EXTERN(void) jpeg_stdio_src JPP((j_decompress_ptr cinfo, FILE * infile));
 
-EXTERN(void) jpeg_mem__src(j_decompress_ptr cinfo,
+EXTERN(void) jpeg_mem__src12(j_decompress_ptr cinfo,
                           const unsigned char *inbuffer, unsigned long insize);
 
 /* Default parameter setup for compression */

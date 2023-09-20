@@ -1,6 +1,6 @@
 #include "epic_reader.h"
 #include "logger.h"
-#include "../../../../mats_support/jpeg12_utils.h"
+#include "common/image/jpeg12_utils.h"
 
 namespace dscovr
 {

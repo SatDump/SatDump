@@ -12,6 +12,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/miniz/*.c
     libs/libtom/*.c
     libs/jpeg/*.c
+    libs/jpeg12/*.c
     libs/dlfcn/dlfcn.c
     common/map/maidenhead.c
     libs/correct/*.c

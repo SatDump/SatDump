@@ -9,7 +9,7 @@
 
 #include "common/utils.h"
 
-#include "../../../jpeg12_utils.h"
+#include "common/image/jpeg12_utils.h"
 #include "common/image/jpeg_utils.h"
 
 namespace mats

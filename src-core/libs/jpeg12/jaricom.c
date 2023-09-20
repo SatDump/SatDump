@@ -12,4 +12,4 @@
 #include "jinclude12.h"
 #include "jpeglib12.h"
 
-IJG_INT32 jaritab[1];	/* dummy table */
+IJG_INT32 jaritab12[1];	/* dummy table */
