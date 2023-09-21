@@ -334,7 +334,7 @@ namespace image
             { get_channel_vals(channelValues, inputChannels, channelNumbers, f, y, x); };
             lua["get_calibrated_image"] = [img_pro](int ch, std::string type, float min, float max)
             { 
-                satdump::ImageProducts::calib_vtype_t ctype;
+                satdump::ImageProducts::calib_vtype_t ctype = satdump::ImageProducts::CALIB_VTYPE_AUTO;
 
                 if(type == "auto")
                     ctype = satdump::ImageProducts::CALIB_VTYPE_AUTO;
