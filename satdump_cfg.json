@@ -157,17 +157,17 @@
             "name": "Automatically Process Products",
             "description": "Process products once the pipeline is done."
         },
-        "qth_lon": {
-            "type": "float",
-            "value": 0.0,
-            "name": "QTH Longitude",
-            "description": "Longitude of your station's QTH"
-        },
         "qth_lat": {
             "type": "float",
             "value": 0.0,
             "name": "QTH Latitude",
             "description": "Latitude of your station's QTH"
+        },
+        "qth_lon": {
+            "type": "float",
+            "value": 0.0,
+            "name": "QTH Longitude",
+            "description": "Longitude of your station's QTH"
         },
         "qth_alt": {
             "type": "float",
