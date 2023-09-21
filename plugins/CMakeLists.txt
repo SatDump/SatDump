@@ -9,6 +9,14 @@ option(PLUGINS_ALL "Enable all plugins by default" ON)
 
 option(PLUGIN_SPACEX "Enable the SpaceX support plugin" OFF)
 
+# ######################
+option(PLUGIN_SCRIPTING "Enable the scripting support plugin (EXPERIMENTAL)" OFF)
+
+if(PLUGIN_SCRIPTING) # OR PLUGINS_ALL)
+    add_subdirectory(scripting_support)
+endif()
+
+# ######################
 if(PLUGIN_SPACEX OR PLUGINS_ALL)
     add_subdirectory(spacex_support)
 endif()

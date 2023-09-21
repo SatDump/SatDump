@@ -100,8 +100,10 @@ namespace satdump
                     uiCallListMutex->unlock();
                 }
 
-                std::thread module1_thread([m1]() { m1->process(); });
-                std::thread module2_thread([m2]() { m2->process(); });
+                std::thread module1_thread([m1]()
+                                           { m1->process(); });
+                std::thread module2_thread([m2]()
+                                           { m2->process(); });
 
                 if (module1_thread.joinable())
                     module1_thread.join();
@@ -220,6 +222,8 @@ namespace satdump
 
             module.reset();
         }
+
+        satdump::eventBus->fire_event<events::PipelineDoneProcessingEvent>({name, output_directory});
     }
 
     nlohmann::json Pipeline::prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params)
@@ -316,7 +320,7 @@ namespace satdump
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"]["default"].get<std::vector<std::pair<int, int>>>();
                     if (pipelineConfig.value()["live_cfg"].contains("server"))
