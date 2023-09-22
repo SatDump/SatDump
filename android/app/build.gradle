@@ -2,15 +2,19 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.2"
+    compileSdkVersion 28
+    buildToolsVersion "30.0.3"
     ndkVersion "25.2.9519653"
+
+    lintOptions {
+        disable 'ExpiredTargetSdkVersion'
+    }
 
     defaultConfig {
         applicationId "org.satdump.SatDump"
         namespace "org.satdump.SatDump"
         minSdkVersion 26
-        targetSdkVersion 33
+        targetSdkVersion 28
         versionCode 1
         versionName "1.1.0"
     }
@@ -23,8 +27,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     
     packagingOptions {
@@ -34,7 +38,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget="11"
+        jvmTarget="1.8"
     }
 
     externalNativeBuild {
