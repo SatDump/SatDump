@@ -214,7 +214,7 @@ void AaroniaSource::start()
     else if (current_decimation == 512)
         decimation_str = L"1 / 512";
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/decimation") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, decimation_str);
+        AARTSAAPI_ConfigSetString(&aaronia_device, &config, decimation_str.c_str());
     logger->info("Set Spectran decimation to %d", current_decimation);
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"calibration/rffilter") == AARTSAAPI_OK)
