@@ -125,8 +125,7 @@ cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release .. # Mac OS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j`nproc`
 
 # To run without installing
@@ -170,8 +169,7 @@ sudo dnf install ocl-icd                                                        
 git clone https://github.com/nanomsg/nng.git
 cd nng
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..                             # MacOS
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j4
 sudo make install
 cd ../..
@@ -183,8 +181,7 @@ cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release .. # Mac OS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j`nproc`
 
 # To run without installing
