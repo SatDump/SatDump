@@ -120,6 +120,15 @@ void AaroniaSource::open()
 {
     // Get available samplerates
     available_samplerates.clear();
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 512);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 256);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 128);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 64);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 32);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 16);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 8);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 4);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 2);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_122M);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_184M);
@@ -168,8 +177,45 @@ void AaroniaSource::start()
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate).c_str());
     logger->info("Set Spectran receiver clock to %s", ws2s(get_spectran_samplerate_str(current_samplerate)).c_str());
 
+    int current_decimation = 1;
+    if (current_samplerate < SPECTRAN_SAMPLERATE_92M)
+    {
+        int decim = 1;
+        while (decim < 512)
+        {
+            uint64_t samprate = SPECTRAN_SAMPLERATE_92M / decim;
+            if (samprate == current_samplerate)
+            {
+                current_decimation = decim;
+                break;
+            }
+            decim *= 2;
+        }
+    }
+    std::wstring decimation_str = L"Full";
+    if (current_decimation <= 1)
+        decimation_str = L"Full";
+    else if (current_decimation == 2)
+        decimation_str = L"1 / 2";
+    else if (current_decimation == 4)
+        decimation_str = L"1 / 4";
+    else if (current_decimation == 8)
+        decimation_str = L"1 / 8";
+    else if (current_decimation == 16)
+        decimation_str = L"1 / 16";
+    else if (current_decimation == 32)
+        decimation_str = L"1 / 32";
+    else if (current_decimation == 64)
+        decimation_str = L"1 / 64";
+    else if (current_decimation == 128)
+        decimation_str = L"1 / 128";
+    else if (current_decimation == 256)
+        decimation_str = L"1 / 256";
+    else if (current_decimation == 512)
+        decimation_str = L"1 / 512";
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/decimation") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Full");
+        AARTSAAPI_ConfigSetString(&aaronia_device, &config, decimation_str);
+    logger->info("Set Spectran decimation to %d", current_decimation);
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"calibration/rffilter") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Auto Extended");
@@ -263,8 +309,8 @@ void AaroniaSource::drawControlUI()
     bool gain_changed = false;
     gain_changed |= RImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
     gain_changed |= RImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
-                                                                            "Peak\0"
-                                                                            "Power\0");
+                                                                             "Peak\0"
+                                                                             "Power\0");
     gain_changed |= RImGui::Checkbox("Amp##aaronia_amp", &d_enable_amp);
     gain_changed |= RImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
     if (gain_changed)
