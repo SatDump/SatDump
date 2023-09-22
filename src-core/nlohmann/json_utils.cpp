@@ -27,15 +27,17 @@ nlohmann::ordered_json merge_json_diffs(nlohmann::ordered_json master, nlohmann:
 {
     nlohmann::ordered_json output = master;
 
-    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : master.items())
+    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : diff.items())
     {
-        if (diff.contains(cfg.key()))
+        if (master.contains(cfg.key()))
         {
             if (cfg.value().is_object())
-                output[cfg.key()] = merge_json_diffs(cfg.value(), diff[cfg.key()]);
+                output[cfg.key()] = merge_json_diffs(master[cfg.key()], cfg.value());
             else
                 output[cfg.key()] = diff[cfg.key()];
         }
+        else
+            output[cfg.key()] = cfg.value();
     }
 
     return output;
@@ -45,14 +47,14 @@ nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann
 {
     nlohmann::ordered_json diff;
 
-    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : master.items())
+    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : modified.items())
     {
-        if (modified[cfg.key()] != cfg.value())
+        if (master[cfg.key()] != cfg.value())
         {
             if (cfg.value().is_object())
-                diff[cfg.key()] = perform_json_diff(cfg.value(), modified[cfg.key()]);
+                diff[cfg.key()] = perform_json_diff(master[cfg.key()], cfg.value());
             else
-                diff[cfg.key()] = modified[cfg.key()];
+                diff[cfg.key()] = cfg.value();
         }
     }
 
