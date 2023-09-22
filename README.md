@@ -1,9 +1,9 @@
 # SatDump
 
-![Icon](https://github.com/altillimity/satdump/raw/master/icon.png)
+<img src='/icon.png' width='500px' />
 
 A generic satellite data processing software.
-*Thanks Mnux for the icon!*
+*Thanks Crosswalkersam for the icon!*
 
 There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat!
 
@@ -82,23 +82,70 @@ satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3
 # Building / Installing
 
 ### Windows
+The fastest way to get started is to head over to the [Releases](https://github.com/altillimity/SatDump/releases) page, where you can download SatDump's installer or portable app - no compilation necessary.
 
-On Windows the recommended method of running SatDump is getting the latest pre-built release off the [Release](https://github.com/altillimity/SatDump/releases) page, which includes everything you will need to run it.  
-Those builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   
+Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
 
-From there, just run either satdump-ui.exe or satdump.exe (CLI) and everything will work.
+For compilation information, see the dedicated documentation [here](/docs/Building-Windows.md). *Note : Mingw builds are NOT supported, VOLK will not work.*
 
-If you really want to build it yourself on Windows, see the dedicated documentation [here](/docs/Building-Windows.md).  
-*Note : Mingw builds are NOT supported, VOLK will not work.*
+### macOS
+Dependency-free Intel (x64) macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
 
-### Linux (or MacOS)
+While those will work for Apple Silicon (M1/M2) Macs, it is NOT recommended as performance will suffer greatly compared to natively-compiled builds. Pre-compiled ARM/Universal builds are planned.
 
-On Linux, building from source is recommended and no builds are currently provided. Dependency-free builds are provided for macOS on the releases page (Thanks to JVital2013, the builds are also signed!).
+General build instructions (Brew and XCode command line tools required)
 
-Here are some generic (Debian-oriented) build instructions.
+```bash
+# Install dependencies
+brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
 
+# Build and install libfftw3 to work around issue with brew version
+wget http://www.fftw.org/fftw-3.3.9.tar.gz
+tar xf fftw-3.3.9.tar.gz
+rm fftw-3.3.9.tar.gz
+cd fftw-3.3.9
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
+make
+sudo make install
+cd ../..
+
+# Build and install airspyhf
+git clone https://github.com/airspy/airspyhf.git
+cd airspyhf
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+sudo make install
+cd ../..
+
+# Finally, SatDump
+git clone https://github.com/altillimity/satdump.git
+cd satdump
+mkdir build && cd build
+# If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
+# If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j`nproc`
+
+# To run without installing
+ln -s ../pipelines .        # Symlink pipelines so it can run
+ln -s ../resources .        # Symlink resources so it can run
+ln -s ../satdump_cfg.json . # Symlink settings so it can run
+
+# To install system-wide
+sudo make install
+
+# Make an app bundle (to add to your /Applications folder)
+../macOS/bundle.sh
 ```
-# Linux: Install dependencies on Debian-based systems:
+
+### Linux
+
+On Linux, building from source is recommended, but builds are provided for x64-based Ubuntu distributions. Here are some generic (Debian-oriented) build instructions.
+
+```bash
+# Install dependencies on Debian-based systems:
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
 sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
@@ -108,7 +155,7 @@ sudo apt install libzstd-dev                                                    
 sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
 sudo apt install ocl-icd-opencl-dev                                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 
-# Linux: Install dependencies on Red-Hat-based systems:
+# Install dependencies on Red-Hat-based systems:
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
 sudo dnf install nng-devel
 sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
@@ -122,28 +169,11 @@ sudo dnf install ocl-icd                                                        
 git clone https://github.com/nanomsg/nng.git
 cd nng
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..                             # MacOS
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j4
 sudo make install
 cd ../..
 rm -rf nng
-
-# macOS: Install dependencies
-brew install cmake volk libpng glew glfw nng pkg-config llvm libomp luajit portaudio
-
-# macOS ONLY: build and install libfftw3
-# if you install fftw via brew, cmake won't be able to find it
-wget http://www.fftw.org/fftw-3.3.9.tar.gz
-tar xf fftw-3.3.9.tar.gz
-rm fftw-3.3.9.tar.gz
-cd fftw-3.3.9
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
-make
-sudo make install
-cd ../..
-rm -rf fftw-3.3.9
 
 # Finally, SatDump
 git clone https://github.com/altillimity/satdump.git
@@ -151,8 +181,7 @@ cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release .. # Mac OS
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. # Linux
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j`nproc`
 
 # To run without installing
