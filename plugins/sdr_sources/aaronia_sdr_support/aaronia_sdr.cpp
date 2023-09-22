@@ -300,9 +300,9 @@ void AaroniaSource::drawControlUI()
         RImGui::endDisabled();
 
     // USB Compression
-    if (ImGui::Combo("USB Compression##aaronia_usb_comp", &d_usb_compression, "Auto\0"
-                                                                              "Raw\0"
-                                                                              "Compressed\0"))
+    if (RImGui::Combo("USB Compression##aaronia_usb_comp", &d_usb_compression, "Auto\0"
+                                                                               "Raw\0"
+                                                                               "Compressed\0"))
         set_others();
 
     // Gain settings
