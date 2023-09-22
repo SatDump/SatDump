@@ -166,8 +166,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
 
     for (auto server_ip : detected_servers)
     {
-        logger->debug("Found server on %s:%d", server_ip.first.c_str(), server_ip.second);
-
+        logger->info("Querying SDR Server at %s:%d", server_ip.first.c_str(), server_ip.second);
         try
         {
             TCPClient tcp_client((char *)server_ip.first.c_str(), server_ip.second);
