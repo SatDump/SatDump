@@ -69,7 +69,7 @@ namespace noaa_apt
             }
             else
             {
-                logger->warn("Could not get timestamp from filename or parameters!");
+                logger->warn("Couldn't automatically determine the timestamp, in case of unexpected results, please verify you have specified the correct timestamp manually");
             }
 
             if (abs(md.frequency - 137.1e6) < 1e4)
@@ -89,7 +89,7 @@ namespace noaa_apt
             }
             else
             {
-                logger->warn("Could not get satellite number from filename or parameters!");
+                logger->warn("Couldn't automatically determine the satellite, in case of unexpected results, please verify you have specified the correct satellite manually");
             }
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
