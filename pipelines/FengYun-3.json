@@ -264,6 +264,12 @@
         "live": false,
         "frequencies": [],
         "parameters": {
+            "mersi_rotate": {
+                "type": "bool",
+                "value": false,
+                "name": "Rotate MERSI",
+                "description": "FengYun-3G sometimes gets rotated.\nWhen this happens, the image will appear very choppy.\nThis option will fix it."
+            },
             "dump_mersi": {
                 "type": "bool",
                 "value": false,
@@ -292,8 +298,8 @@
                 "fy3_instruments": {
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true,
-                    "mersi_rotate": false // Not turned 180 anymore
+                    "mersi_histmatch": true
+                   // "mersi_rotate": false // Not turned 180 anymore
                 }
             }
         }
