@@ -161,13 +161,13 @@
             "type": "float",
             "value": 0.0,
             "name": "QTH Latitude",
-            "description": "Latitude of your station's QTH"
+            "description": "Latitude of your station's QTH (North is positive; South is negative)"
         },
         "qth_lon": {
             "type": "float",
             "value": 0.0,
             "name": "QTH Longitude",
-            "description": "Longitude of your station's QTH"
+            "description": "Longitude of your station's QTH (East is positive; West is negative)"
         },
         "qth_alt": {
             "type": "float",
