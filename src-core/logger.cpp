@@ -290,9 +290,9 @@ void initFileSink()
         std::string log_path = std::string(globbuf.gl_pathv[0]) + "/Logs/satdump.log";
         globfree(&globbuf);
 #elif defined(_WIN32)
-        std::string log_path = satdump::user_path + "/satdump.logs";
+        std::string log_path = satdump::user_path + "/satdump.log";
 #else
-        std::string log_path = "satdump.logs";
+        std::string log_path = "satdump.log";
 #endif
 
         file_sink = std::make_shared<slog::FileSink>(log_path);
