@@ -162,7 +162,7 @@ namespace satdump
         if (backend_needs_update)
             style::beginDisabled();
 
-        if (ImGui::BeginTable("##trackingradiotable", 2, (ImGuiTableFlags)NULL))
+        if (ImGui::BeginTable("##trackingradiotable", 2, ImGuiTableFlags_None))
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
