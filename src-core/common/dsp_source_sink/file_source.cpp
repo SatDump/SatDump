@@ -8,7 +8,7 @@
 
 FileSource::FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
 {
-    file_input.default_dir = satdump::config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
+    file_input.setPath(satdump::config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>());
     should_run = true;
     work_thread = std::thread(&FileSource::run_thread, this);
 }

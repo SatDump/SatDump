@@ -14,6 +14,10 @@
 #include "core/opencl.h"
 #include "common/widgets/switch.h"
 
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
 namespace satdump
 {
     void ImageViewerHandler::init()

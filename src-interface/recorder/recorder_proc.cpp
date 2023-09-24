@@ -145,7 +145,7 @@ namespace satdump
 
     void RecorderApplication::start_processing()
     {
-        if (pipeline_selector.outputdirselect.file_valid || automated_live_output_dir)
+        if (pipeline_selector.outputdirselect.isValid() || automated_live_output_dir)
         {
             logger->trace("Start pipeline...");
             pipeline_params = pipeline_selector.getParameters();

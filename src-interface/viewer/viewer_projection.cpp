@@ -205,8 +205,8 @@ namespace satdump
                             projection_new_layer_cfg.draw("Projection Config File");
                     }
 
-                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.file_valid &&
-                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
+                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
+                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
                     {
                         if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
                         {
