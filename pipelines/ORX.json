@@ -25,6 +25,13 @@
                     "costas_bw": 0.005,
                     "subcarrier_offset": 275e3
                 }
+            },
+            "cadu": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 1115,
+                    "turbo_iters": 1
+                }
             }
         }
     }
