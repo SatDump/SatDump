@@ -132,6 +132,10 @@ void FileSelectWidget::setPath(std::string new_path)
 void FileSelectWidget::setDefaultDir(std::string new_path)
 {
     default_dir = new_path;
+#ifndef _MSC_VER
+    if(default_dir.back() != '/')
+        default_dir += "/";
+#endif
 }
 
 bool FileSelectWidget::isValid()
