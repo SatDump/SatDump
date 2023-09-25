@@ -81,7 +81,7 @@ namespace satdump
                 d_type = PARAM_PATH;
 
                 file_select = std::make_shared<FileSelectWidget>(p_json["name"], p_json["name"], p_json["is_directory"]);
-                file_select->path = p_json["value"];
+                file_select->setPath(p_json["value"]);
             }
             else if (type_str == "timestamp")
             {
@@ -173,7 +173,7 @@ namespace satdump
                 }
             }
             else if (d_type == PARAM_PATH)
-                file_select->path = v.get<std::string>();
+                file_select->setPath(v.get<std::string>());
             else if (d_type == PARAM_TIMESTAMP)
                 date_time_picker->set(v.get<double>());
             else if (d_type == PARAM_NOTATED_INT)

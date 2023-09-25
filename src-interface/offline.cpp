@@ -16,14 +16,8 @@ namespace satdump
         void setup()
         {
             pipeline_selector = std::make_unique<PipelineUISelector>(false);
-
-            pipeline_selector->inputfileselect.default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
-            pipeline_selector->outputdirselect.default_dir = config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>();
-
-#ifndef _MSC_VER
-            pipeline_selector->inputfileselect.default_dir += "/";
-            pipeline_selector->outputdirselect.default_dir += "/";
-#endif
+            pipeline_selector->inputfileselect.setDefaultDir(config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>());
+            pipeline_selector->outputdirselect.setDefaultDir(config::main_cfg["satdump_directories"]["default_output_directory"]["value"].get<std::string>());
         }
 
         void render()
@@ -46,9 +40,9 @@ namespace satdump
             {
                 nlohmann::json params2 = pipeline_selector->getParameters();
 
-                if (!pipeline_selector->inputfileselect.file_valid)
+                if (!pipeline_selector->inputfileselect.isValid())
                     error_message = "Input file is invalid!";
-                else if (!pipeline_selector->outputdirselect.file_valid)
+                else if (!pipeline_selector->outputdirselect.isValid())
                     error_message = "Output folder is invalid!";
                 else
                     ui_thread_pool.push([&, params2](int)

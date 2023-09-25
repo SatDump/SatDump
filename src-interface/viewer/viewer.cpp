@@ -35,6 +35,12 @@ namespace satdump
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
         }
 
+        std::string default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
+        projection_new_layer_file.setDefaultDir(default_dir);
+        projection_new_layer_cfg.setDefaultDir(default_dir);
+        select_dataset_dialog.setDefaultDir(default_dir);
+        select_products_dialog.setDefaultDir(default_dir);
+
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
 
