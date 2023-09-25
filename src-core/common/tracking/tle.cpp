@@ -114,12 +114,14 @@ namespace satdump
                                                           { return t.norad == norad; }),
                                            general_tle_registry.end());
 
-                logger->trace("Add satellite " + name);
+                // logger->trace("Add satellite " + name);
                 general_tle_registry.push_back({norad, name, tle1, tle2});
             }
 
             line_count++;
         }
+
+        logger->info("TLEs loaded!");
 
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
