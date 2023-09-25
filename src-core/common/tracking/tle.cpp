@@ -15,6 +15,7 @@ namespace satdump
     void updateTLEFile(std::string path)
     {
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
+        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
 
         if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
             std::filesystem::create_directories(std::filesystem::path(path).parent_path());
@@ -25,9 +26,13 @@ namespace satdump
         for (int norad : norads_to_fetch)
         {
             std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
-
             while (url_str.find("%NORAD%") != std::string::npos)
                 url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+            urls_to_fetch.push_back(url_str);
+        }
+
+        for (auto &url_str : urls_to_fetch)
+        {
 
             logger->info(url_str);
             std::string result;
@@ -51,7 +56,7 @@ namespace satdump
             }
 
             if (!success)
-                logger->warn("Failed to get TLE for %d", norad);
+                logger->warn("Failed to get TLE for %s", url_str.c_str());
         }
 
         outfile.close();
@@ -106,7 +111,8 @@ namespace satdump
 
                 // Delete duplicates
                 general_tle_registry.erase(std::remove_if(general_tle_registry.begin(), general_tle_registry.end(), [norad](TLE t)
-                               { return t.norad == norad; }), general_tle_registry.end());
+                                                          { return t.norad == norad; }),
+                                           general_tle_registry.end());
 
                 logger->trace("Add satellite " + name);
                 general_tle_registry.push_back({norad, name, tle1, tle2});
