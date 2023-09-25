@@ -17,7 +17,7 @@ namespace satdump
 
         if(width > height)
         {
-            ImVec2 reference_pos = { (float)width * 0.2f, ((float)height * 0.5f) - (125 * scale)};
+            ImVec2 reference_pos = { ((float)width * 0.5f) - (300 * scale), ((float)height * 0.5f) - (125 * scale)};
             ImGui::SetCursorPos(reference_pos);
             ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(200 * scale, 200 * scale));
             ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (40 * scale) });
