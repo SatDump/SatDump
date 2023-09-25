@@ -145,7 +145,7 @@ namespace satdump
                 size = ImGui::CalcTextSize(("LOS in" + time_dis).c_str());
 
             ImGui::SetCursorPosY(cur.y + d_pplot_size - 20 * ui_scale);
-            curs = ImGui::GetCursorPos();
+            curs = ImGui::GetCursorScreenPos();
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
             ImGui::TextColored(ImColor(0, 255, 0, 255), "%s in %s", next_aos_time > ctime ? "AOS" : "LOS" , time_dis.c_str());
 
