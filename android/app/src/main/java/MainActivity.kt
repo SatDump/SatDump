@@ -80,7 +80,7 @@ class MainActivity : NativeActivity(), TextWatcher {
                         _this.SDR_conn = _this.usbManager!!.openDevice(_this.SDR_device);
                         
                         _this.SDR_VID = _this.SDR_device!!.getVendorId();
-                        _this.SDR_PID = _this.SDR_device!!.getProductId()
+                        _this.SDR_PID = _this.SDR_device!!.getProductId();
                         _this.SDR_FD = _this.SDR_conn!!.getFileDescriptor();
                         _this.SDR_PATH = _this.SDR_device!!.getDeviceName();
                     }
@@ -106,7 +106,7 @@ class MainActivity : NativeActivity(), TextWatcher {
 
         // Register events
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager;
-        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
+        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(usbReceiver, filter)
 
