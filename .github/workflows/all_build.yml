@@ -15,7 +15,7 @@ jobs:
     runs-on: windows-2019
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Clone pre-setup VCPKG
         run: git clone https://github.com/Aang23/vcpkg.git --depth 1
@@ -95,13 +95,13 @@ jobs:
         run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-Windows_x64_Portable
           path: ${{runner.workspace}}/build/Release/*
 
       - name: Upload Installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Add gradle PPA
         run: sudo add-apt-repository ppa:cwchien/gradle -y
@@ -138,7 +138,7 @@ jobs:
         run: unset ANDROID_SDK_ROOT && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-debug.apk
           path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/debug/app-debug.apk
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Update repositories
         run: sudo apt update
@@ -187,7 +187,7 @@ jobs:
         run: make package
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-Ubuntu-Latest
           path: ${{runner.workspace}}/build/*.deb
@@ -196,7 +196,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
@@ -238,7 +238,7 @@ jobs:
         run: $GITHUB_WORKSPACE/macOS/bundle.sh
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-macOS
           path: ${{runner.workspace}}/build/*.dmg
