@@ -15,6 +15,7 @@ protected:
     RTLTCPClient client;
 
     widgets::DoubleList samplerate_widget;
+    widgets::NotatedNum<int> ppm_widget;
 
     std::string ip_address = "0.0.0.0";
     int port = 1234;
@@ -24,6 +25,7 @@ protected:
 
     void set_gains();
     void set_bias();
+    void set_ppm();
 
     std::thread work_thread;
 
@@ -42,7 +44,7 @@ protected:
     }
 
 public:
-    RTLTCPSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    RTLTCPSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), ppm_widget("Correction##ppm", 0, "ppm")
     {
     }
 

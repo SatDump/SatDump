@@ -10,7 +10,6 @@
 #include "common/rimgui.h"
 #include <thread>
 #include "common/widgets/double_list.h"
-#include "common/widgets/notated_num.h"
 
 class RtlSdrSource : public dsp::DSPSampleSource
 {

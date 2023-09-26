@@ -21,6 +21,15 @@ void RTLTCPSource::set_bias()
     logger->debug("Set RTL-TCP Bias to %d", (int)bias);
 }
 
+void RTLTCPSource::set_ppm()
+{
+    if (!is_started)
+        return;
+    int ppm = ppm_widget.get();
+    client.setPPM(ppm);
+    logger->debug("Set RTL-TCP PPM Correction to %d", ppm);
+}
+
 void RTLTCPSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
@@ -30,11 +39,13 @@ void RTLTCPSource::set_settings(nlohmann::json settings)
     gain = getValueOrDefault(d_settings["gain"], gain);
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
     bias = getValueOrDefault(d_settings["bias"], bias);
+    ppm_widget.set(getValueOrDefault(d_settings["ppm_correction"], ppm_widget.get()));
 
     if (is_open && is_started)
     {
         set_gains();
         set_bias();
+        set_ppm();
     }
 }
 
@@ -45,6 +56,7 @@ nlohmann::json RTLTCPSource::get_settings()
     d_settings["gain"] = gain;
     d_settings["lna_agc"] = lna_agc_enabled;
     d_settings["bias"] = bias;
+    d_settings["ppm_correction"] = ppm_widget.get();
 
     return d_settings;
 }
@@ -88,6 +100,7 @@ void RTLTCPSource::start()
 
     set_gains();
     set_bias();
+    set_ppm();
 
     thread_should_run = true;
     work_thread = std::thread(&RTLTCPSource::mainThread, this);
@@ -145,6 +158,8 @@ void RTLTCPSource::drawControlUI()
     if (!is_started)
         style::beginDisabled();
     bool gain_changed = false;
+    if (ppm_widget.draw())
+        set_ppm();
     gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 49);
     gain_changed |= ImGui::Checkbox("AGC", &lna_agc_enabled);
     if (gain_changed)

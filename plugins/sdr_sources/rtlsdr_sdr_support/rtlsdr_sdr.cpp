@@ -225,11 +225,11 @@ void RtlSdrSource::drawControlUI()
     if (is_started)
         RImGui::endDisabled();
 
-    if (RImGui::SliderInt("LNA Gain", &gain, 0, 49))
-        set_gains();
-
     if (ppm_widget.draw())
         set_ppm();
+
+    if (RImGui::SliderInt("LNA Gain", &gain, 0, 49))
+        set_gains();
 
     if (RImGui::Checkbox("AGC", &lna_agc_enabled))
         set_gains();
