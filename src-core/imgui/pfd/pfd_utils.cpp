@@ -1,11 +1,10 @@
-#include "core/config.h"
+#include <algorithm>
 #include "pfd_utils.h"
 
 namespace satdump
 {
-    std::vector<std::string> get_file_formats()
+    std::vector<std::string> get_file_formats(std::string default_ext)
     {
-        std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
             "JPEG 2000 Files", "*.j2k",

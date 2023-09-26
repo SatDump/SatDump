@@ -108,6 +108,7 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
+                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
                 std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
 #ifdef _MSC_VER
                 if (default_path == ".")
@@ -121,10 +122,10 @@ namespace satdump
 #else
                 default_path += "/";
 #endif
-                std::string default_name = default_path + "projection.png";
+                std::string default_name = default_path + "projection." + default_ext;
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, get_file_formats());
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

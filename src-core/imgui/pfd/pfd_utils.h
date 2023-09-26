@@ -3,5 +3,5 @@
 
 namespace satdump
 {
-    std::vector<std::string> get_file_formats();
+    std::vector<std::string> get_file_formats(std::string default_ext);
 }
