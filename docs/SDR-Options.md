@@ -60,6 +60,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `gain` : Device Gain in dBs
 - `lna_agc` : Enable or disable the built-in LNA AGC
 - `bias` : Enable Bias-Tee power (if supported)
+- `ppm_correction` : Frequency correction for dongles with drift
 
 ## Aaronia Spectran V6
 
