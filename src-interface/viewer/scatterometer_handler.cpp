@@ -4,6 +4,7 @@
 #include "common/projection/reprojector.h"
 #include "core/style.h"
 #include "common/map/map_drawer.h"
+#include "imgui/pfd/pfd_utils.h"
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -129,11 +130,7 @@ namespace satdump
                 std::string default_name = default_path + products->instrument_name + "_" + ((selected_visualization_id == 1 && current_scat_type == SCAT_ASCAT) ? ch_ascatp : ch_normal) + ".png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {
-                    "PNG Files", "*.png",
-                    "JPEG 2000 Files", "*.j2k",
-                    "JPEG Files", "*.jpg *.jpeg"
-                    });
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats());
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

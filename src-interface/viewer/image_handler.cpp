@@ -3,6 +3,7 @@
 #include "core/config.h"
 #include "common/calibration.h"
 
+#include "imgui/pfd/pfd_utils.h"
 #include "imgui/imgui_internal.h"
 
 #include "common/projection/gcp_compute/gcp_compute.h"
@@ -579,7 +580,7 @@ namespace satdump
                                            products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) + ".png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {"PNG Files", "*.png", "JPEG 2000 Files", "*.j2k", "JPEG Files", "*.jpg *.jpeg"});
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats());
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

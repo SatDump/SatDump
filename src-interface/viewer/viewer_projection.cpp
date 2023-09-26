@@ -8,6 +8,7 @@
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
 #include "libs/tiny-regex-c/re.h"
+#include "imgui/pfd/pfd_utils.h"
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -123,11 +124,7 @@ namespace satdump
                 std::string default_name = default_path + "projection.png";
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {
-                    "PNG Files", "*.png",
-                    "JPEG 2000 Files", "*.j2k",
-                    "JPEG Files", "*.jpg *.jpeg"
-                    });
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats());
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
