@@ -86,6 +86,7 @@ namespace satdump
         std::string line;
         int line_count = 0;
         int norad = 0;
+        bool found_bad = false;
         std::string name, tle1, tle2;
         while (getline(tle_file, line))
         {
@@ -100,14 +101,35 @@ namespace satdump
             }
             else if (line_count % 3 == 1)
             {
+                if (line.at(0) != '1')
+                {
+                    line_count = 0;
+                    found_bad = true;
+                    continue;
+                }
                 tle1 = line;
             }
             else if (line_count % 3 == 2)
             {
+                if (line.at(0) != '2')
+                {
+                    line_count = 0;
+                    found_bad = true;
+                    continue;
+                }
                 tle2 = line;
 
-                std::string noradstr = tle2.substr(2, tle2.substr(2, tle2.size() - 1).find(' '));
-                norad = std::stoi(noradstr);
+                try
+                {
+                    std::string noradstr = tle2.substr(2, tle2.substr(2, tle2.size() - 1).find(' '));
+                    norad = std::stoi(noradstr);
+                }
+                catch (std::exception&)
+                {
+                    line_count = 0;
+                    found_bad = true;
+                    continue;
+                }
 
                 // logger->trace("Add satellite " + name);
                 general_tle_registry.push_back({norad, name, tle1, tle2});
@@ -116,12 +138,15 @@ namespace satdump
             line_count++;
         }
 
+        if (found_bad)
+            logger->warn("Bad TLEs found! Please verify your TLE file");
+
         //Sort and remove duplicates
         sort(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
         general_tle_registry.erase(std::unique(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
             general_tle_registry.end());
 
-        logger->info("TLEs loaded!");
+        logger->info("%zu TLEs loaded!", general_tle_registry.size());
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
