@@ -155,11 +155,12 @@ void RTLTCPSource::drawControlUI()
     if (is_started)
         style::endDisabled();
 
+    if (ppm_widget.draw())
+        set_ppm();
+
     if (!is_started)
         style::beginDisabled();
     bool gain_changed = false;
-    if (ppm_widget.draw())
-        set_ppm();
     gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 49);
     gain_changed |= ImGui::Checkbox("AGC", &lna_agc_enabled);
     if (gain_changed)
