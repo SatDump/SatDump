@@ -51,6 +51,7 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `gain` : Device Gain in dBs
 - `agc` : Enable or disable the AGC
 - `bias` : Enable Bias-Tee power
+- `ppm_correction` : Frequency correction for dongles with drift
 
 ## RTL-TCP
 

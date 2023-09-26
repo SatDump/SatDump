@@ -91,6 +91,16 @@ void RtlSdrSource::set_bias()
     logger->debug("Set RTL-SDR Bias to %d", (int)bias_enabled);
 }
 
+void RtlSdrSource::set_ppm()
+{
+    if (!is_started)
+        return;
+    int ppm = ppm_widget.get();
+    for (int i = 0; i < 20 && rtlsdr_set_freq_correction(rtlsdr_dev_obj, ppm) < 0; i++)
+        ;
+    logger->debug("Set RTL-SDR PPM Correction to %d", ppm);
+}
+
 void RtlSdrSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
@@ -98,11 +108,13 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     gain = getValueOrDefault(d_settings["gain"], gain);
     lna_agc_enabled = getValueOrDefault(d_settings["agc"], lna_agc_enabled);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
+    ppm_widget.set(getValueOrDefault(d_settings["ppm_correction"], ppm_widget.get()));
 
     if (is_started)
     {
         set_bias();
         set_gains();
+        set_ppm();
     }
 }
 
@@ -111,6 +123,7 @@ nlohmann::json RtlSdrSource::get_settings()
     d_settings["gain"] = gain;
     d_settings["agc"] = lna_agc_enabled;
     d_settings["bias"] = bias_enabled;
+    d_settings["ppm_correction"] = ppm_widget.get();
 
     return d_settings;
 }
@@ -161,6 +174,7 @@ void RtlSdrSource::start()
 
     set_bias();
     set_gains();
+    set_ppm();
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
 
@@ -213,6 +227,9 @@ void RtlSdrSource::drawControlUI()
 
     if (RImGui::SliderInt("LNA Gain", &gain, 0, 49))
         set_gains();
+
+    if (ppm_widget.draw())
+        set_ppm();
 
     if (RImGui::Checkbox("AGC", &lna_agc_enabled))
         set_gains();

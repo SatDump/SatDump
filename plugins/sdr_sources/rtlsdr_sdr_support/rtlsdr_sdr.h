@@ -10,6 +10,7 @@
 #include "common/rimgui.h"
 #include <thread>
 #include "common/widgets/double_list.h"
+#include "common/widgets/notated_num.h"
 
 class RtlSdrSource : public dsp::DSPSampleSource
 {
@@ -19,6 +20,7 @@ protected:
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
     widgets::DoubleList samplerate_widget;
+    widgets::NotatedNum<int> ppm_widget;
 
     int gain = 0;
     bool bias_enabled = false;
@@ -26,6 +28,7 @@ protected:
 
     void set_gains();
     void set_bias();
+    void set_ppm();
 
     std::thread work_thread;
 
@@ -42,7 +45,7 @@ protected:
     }
 
 public:
-    RtlSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    RtlSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), ppm_widget("Correction##ppm", 0, "ppm")
     {
     }
 
