@@ -109,11 +109,6 @@ namespace satdump
                 std::string noradstr = tle2.substr(2, tle2.substr(2, tle2.size() - 1).find(' '));
                 norad = std::stoi(noradstr);
 
-                // Delete duplicates
-                general_tle_registry.erase(std::remove_if(general_tle_registry.begin(), general_tle_registry.end(), [norad](TLE t)
-                                                          { return t.norad == norad; }),
-                                           general_tle_registry.end());
-
                 // logger->trace("Add satellite " + name);
                 general_tle_registry.push_back({norad, name, tle1, tle2});
             }
@@ -121,8 +116,12 @@ namespace satdump
             line_count++;
         }
 
-        logger->info("TLEs loaded!");
+        //Sort and remove duplicates
+        sort(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
+        general_tle_registry.erase(std::unique(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
+            general_tle_registry.end());
 
+        logger->info("TLEs loaded!");
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
