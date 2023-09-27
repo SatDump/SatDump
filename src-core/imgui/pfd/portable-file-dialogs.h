@@ -1237,11 +1237,20 @@ namespace pfd
 
             if (default_path.size())
             {
-                if (in_type == type::folder || is_directory(default_path))
-                    script += " default location ";
+                if (in_type == type::save && !is_directory(default_path) && default_path.find("/") != std::string::npos)
+                {
+                    std::size_t last_slash = default_path.find_last_of("/");
+                    script += " default location " + osascript_quote(default_path.substr(0, last_slash));
+                    script += " default name " + osascript_quote(default_path.substr(last_slash + 1, default_path.length()));
+                }
                 else
-                    script += " default name ";
-                script += osascript_quote(default_path);
+                {
+                    if (in_type == type::folder || is_directory(default_path))
+                        script += " default location ";
+                    else
+                        script += " default name ";
+                    script += osascript_quote(default_path);
+                }
             }
 
             script += " with prompt " + osascript_quote(title);
