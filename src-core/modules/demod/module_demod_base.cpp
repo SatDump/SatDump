@@ -206,33 +206,35 @@ namespace demod
         if (show_fft && !streamingInput)
         {
             ImGui::SetNextWindowSize({400 * (float)ui_scale, (float)(showWaterfall ? 400 : 200) * (float)ui_scale});
-            ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize);
-            fft_plot->draw({float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0)});
-
-            //Find "actual" left edge of FFT, before frequency shift.
-            //Inset by 10% (819), then account for > 100% freq shifts via modulo
-            int pos = (abs((float)d_frequency_shift / (float)d_samplerate) * (float)8192) + 819;
-            pos %= 8192;
-
-            //Compute min and max of the middle 80% of original baseband
-            float min = 1000;
-            float max = -1000;
-            for (int i = 0; i < 6554; i++) //8192 * 80% = 6554
+            if (ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
             {
-                if (fft_proc->output_stream->writeBuf[pos] < min)
-                    min = fft_proc->output_stream->writeBuf[pos];
-                if (fft_proc->output_stream->writeBuf[pos] > max)
-                    max = fft_proc->output_stream->writeBuf[pos];
-                pos++;
-                if (pos >= 8192)
-                    pos = 0;
+                fft_plot->draw({ float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0) });
+
+                //Find "actual" left edge of FFT, before frequency shift.
+                //Inset by 10% (819), then account for > 100% freq shifts via modulo
+                int pos = (abs((float)d_frequency_shift / (float)d_samplerate) * (float)8192) + 819;
+                pos %= 8192;
+
+                //Compute min and max of the middle 80% of original baseband
+                float min = 1000;
+                float max = -1000;
+                for (int i = 0; i < 6554; i++) //8192 * 80% = 6554
+                {
+                    if (fft_proc->output_stream->writeBuf[pos] < min)
+                        min = fft_proc->output_stream->writeBuf[pos];
+                    if (fft_proc->output_stream->writeBuf[pos] > max)
+                        max = fft_proc->output_stream->writeBuf[pos];
+                    pos++;
+                    if (pos >= 8192)
+                        pos = 0;
+                }
+
+                waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
+                waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+
+                if (showWaterfall)
+                    waterfall_plot->draw({ ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2 });
             }
-
-            waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
-            waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
-
-            if (showWaterfall)
-                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2});
 
             ImGui::End();
         }
