@@ -18,6 +18,7 @@ namespace fengyun3
         {
             image.save_img(std::string(directory + "/XEUVI_" + std::to_string(images_count + 1)).c_str());
             image.fill(0);
+            images_count++;
         }
 
         void XEUVIReader::work(std::vector<uint8_t> &packet)
@@ -25,7 +26,7 @@ namespace fengyun3
             int cnt = (packet[34] << 8 | packet[35]) + 1;
             uint8_t marker = packet[10] >> 6;
 
-            if (cnt > 1021 && marker != 1)
+            if (cnt >= 1021 && marker != 1)
                 return; // Make sure we don't go out of bounds due to an invalid counter
 
             if (marker == 2) // End
