@@ -58,6 +58,8 @@ namespace satdump
                 logger->critical("SPLITTING INTO %d SEGMENTS", int((media_dist * gcps_curr.size()) / 3000));
 
                 nsegs = int((media_dist * gcps_curr.size()) / 3000);
+                if (nsegs == 0)
+                    nsegs = 1;
                 // return 0;
             }
 
