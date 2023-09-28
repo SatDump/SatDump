@@ -21,6 +21,9 @@ namespace satdump
             int output_width;
             int output_height;
             int output_rgba = false;
+
+            int shift_lon = 0;
+            int shift_lat = 0;
         };
 
         /*
