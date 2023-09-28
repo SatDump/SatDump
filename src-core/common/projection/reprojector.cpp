@@ -191,11 +191,15 @@ namespace satdump
 
                     logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
+#if 0
                     satdump::warp::ImageWarper warper;
                     warper.op = operation;
                     warper.update();
 
                     satdump::warp::WarpResult result = warper.warp();
+#else
+                    satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation);
+#endif
 
                     warped_image = result.output_image;
                     tl_lon = result.top_left.lon;

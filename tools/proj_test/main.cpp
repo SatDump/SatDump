@@ -80,6 +80,26 @@ int main(int /*argc*/, char *argv[])
     operation_t.output_height = 1024 * 5;
     operation_t.output_rgba = true;
 
+#if 1
+
+    auto warp_result = satdump::warp::performSmartWarp(operation_t);
+
+    geodetic::projection::EquirectangularProjection projector_final;
+    projector_final.init(warp_result.output_image.width(), warp_result.output_image.height(), warp_result.top_left.lon, warp_result.top_left.lat, warp_result.bottom_right.lon, warp_result.bottom_right.lat);
+
+    unsigned short color[4] = {0, 65535, 0, 65535};
+    map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                   warp_result.output_image,
+                                   color,
+                                   [&projector_final](float lat, float lon, int, int) -> std::pair<int, int>
+                                   {
+                                       int x, y;
+                                       projector_final.forward(lon, lat, x, y);
+                                       return {x, y};
+                                   });
+
+    warp_result.output_image.save_img("test");
+#else 0
     image::Image<uint16_t> final_image(operation_t.output_width, operation_t.output_height, 4);
     geodetic::projection::EquirectangularProjection projector_final;
     projector_final.init(final_image.width(), final_image.height(), -180, 90, 180, -90);
@@ -431,5 +451,6 @@ int main(int /*argc*/, char *argv[])
 
     // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
     final_image.save_img("test");
+#endif
 #endif
 }

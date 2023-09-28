@@ -119,5 +119,7 @@ namespace satdump
             // a slower CPU function instead.
             WarpResult warp();
         };
+
+        WarpResult performSmartWarp(WarpOperation op);
     }
 }
